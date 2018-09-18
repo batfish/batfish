@@ -69,7 +69,7 @@ public class TestFiltersAnswerer extends Answerer {
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    _ipSpaceRepresentative = IpSpaceRepresentative.load();
+    _ipSpaceRepresentative = new IpSpaceRepresentative();
     _sourceIpAssignment =
         initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext());
   }
@@ -231,7 +231,7 @@ public class TestFiltersAnswerer extends Answerer {
     }
     checkArgument(
         rows.size() > 0,
-        "No valid flow found for specified parameters. Potential problems: %d",
+        "No valid flow found for specified parameters. Potential problems: %s",
         String.join(",", allProblems.build()));
     return rows;
   }
@@ -278,11 +278,8 @@ public class TestFiltersAnswerer extends Answerer {
               .filter(e -> e.getLocations().contains(srcLocation))
               .findFirst();
 
-      final String locationSpecifierInput = ((TestFiltersQuestion) _question).getStartLocation();
       checkArgument(
-          entry.isPresent(),
-          "Cannot resolve a source IP address from location %s",
-          locationSpecifierInput);
+          entry.isPresent(), "Cannot resolve a source IP address from location %s", srcLocation);
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
       checkArgument(
           srcIp.isPresent(),

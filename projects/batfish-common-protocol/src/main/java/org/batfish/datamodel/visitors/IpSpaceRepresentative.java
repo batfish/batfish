@@ -7,9 +7,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
-/**
- * Simple class for finding representative {@link Ip IP Addresses} in an {@link IpSpace}.
- */
+/** Simple class for finding representative {@link Ip IP Addresses} in an {@link IpSpace}. */
 public final class IpSpaceRepresentative {
   private final IpSpaceToBDD _ipSpaceToBDD;
 
