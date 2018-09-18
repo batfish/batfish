@@ -10,7 +10,8 @@ public final class AnswerMetadataTest {
     AnswerMetadata.Builder builder = AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS);
     AnswerMetadata group1Elem1 = builder.build();
     AnswerMetadata group1Elem2 = builder.build();
-    AnswerMetadata group2Elem1 = builder.setMetrics(Metrics.builder().build()).build();
+    AnswerMetadata group2Elem1 =
+        builder.setMetrics(Metrics.builder().setNumRows(5).build()).build();
     AnswerMetadata group3Elem1 = builder.setStatus(AnswerStatus.FAILURE).build();
 
     new EqualsTester()
