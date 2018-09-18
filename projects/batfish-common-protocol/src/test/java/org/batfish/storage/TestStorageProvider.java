@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -182,8 +183,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public @Nullable FileTime getMajorIssueConfigLastModifiedTime(
-      String network, String majorIssueType) {
+  public @Nonnull Map<String, MajorIssueConfig> loadMajorIssueConfigs(
+      String network, Set<String> majorIssueTypes) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

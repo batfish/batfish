@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Comparator.nullsFirst;
 import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -16,10 +15,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -796,13 +795,7 @@ public class WorkMgr extends AbstractCoordinator {
         return AnswerMetadata.forStatus(AnswerStatus.STALE);
       }
       return applyPendingIssuesSettingsChanges(
-          answerMetadata,
-          answerMetadataLastModifiedTime,
-          network,
-          snapshot,
-          question,
-          referenceSnapshot,
-          analysis);
+          answerMetadata, network, snapshot, question, referenceSnapshot, analysis);
     } catch (FileNotFoundException e) {
       return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
     } catch (IOException e) {
@@ -816,7 +809,6 @@ public class WorkMgr extends AbstractCoordinator {
   @Nonnull
   AnswerMetadata applyPendingIssuesSettingsChanges(
       @Nonnull AnswerMetadata currentAnswerMetadata,
-      @Nonnull FileTime answerMetadataLastModifiedTime,
       @Nonnull String network,
       @Nonnull String snapshot,
       @Nonnull String question,
@@ -827,40 +819,52 @@ public class WorkMgr extends AbstractCoordinator {
       // issues configuration not applicable to this answer, so nothing to do.
       return currentAnswerMetadata;
     }
-    Comparator<FileTime> nullsOlder = nullsFirst(FileTime::compareTo);
-    Set<String> majorIssueTypes = currentAnswerMetadata.getMetrics().getMajorIssueTypes();
-    if (majorIssueTypes
-        .stream()
-        .noneMatch(
-            majorIssueType ->
-                nullsOlder.compare(
-                        _storage.getMajorIssueConfigLastModifiedTime(network, majorIssueType),
-                        answerMetadataLastModifiedTime)
-                    > 0)) {
-      // No major issue configuration is newer than the answer metadata, so nothing to do.
+    Map<String, MajorIssueConfig> answerMajorIssueConfigs =
+        currentAnswerMetadata.getMetrics().getMajorIssueConfigs();
+    Map<String, MajorIssueConfig> latestMajorIssueConfigs =
+        _storage.loadMajorIssueConfigs(network, answerMajorIssueConfigs.keySet());
+    if (answerIssueConfigsMatchConfiguredIssues(currentAnswerMetadata, latestMajorIssueConfigs)) {
       return currentAnswerMetadata;
     }
     return applyIssuesConfiguration(
-        majorIssueTypes, network, snapshot, question, referenceSnapshot, analysis);
+        latestMajorIssueConfigs, network, snapshot, question, referenceSnapshot, analysis);
+  }
+
+  private boolean answerIssueConfigsMatchConfiguredIssues(
+      AnswerMetadata answerMetadata, Map<String, MajorIssueConfig> configuredMajorIssues) {
+    return answerMetadata
+        .getMetrics()
+        .getMajorIssueConfigs()
+        .values()
+        .stream()
+        .allMatch(
+            answerMajor ->
+                answerIssueConfigMatchesConfiguredIssues(answerMajor, configuredMajorIssues));
+  }
+
+  @VisibleForTesting
+  boolean answerIssueConfigMatchesConfiguredIssues(
+      MajorIssueConfig answerIssueConfig, Map<String, MajorIssueConfig> configuredMajorIssues) {
+    MajorIssueConfig configuredMajorIssue =
+        configuredMajorIssues.get(answerIssueConfig.getMajorIssue());
+    Map<String, MinorIssueConfig> answerMinorIssues = answerIssueConfig.getMinorIssueConfigsMap();
+    Map<String, MinorIssueConfig> configuredMinorIssues =
+        configuredMajorIssue.getMinorIssueConfigsMap();
+    return Sets.intersection(answerMinorIssues.keySet(), configuredMinorIssues.keySet())
+        .stream()
+        .allMatch(minor -> answerMinorIssues.get(minor).equals(configuredMinorIssues.get(minor)));
   }
 
   @VisibleForTesting
   @Nonnull
   AnswerMetadata applyIssuesConfiguration(
-      @Nonnull Set<String> majorIssueTypes,
+      @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
       @Nonnull String network,
       @Nonnull String snapshot,
       @Nonnull String question,
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
       throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
-    Map<String, MajorIssueConfig> issueConfigs =
-        majorIssueTypes
-            .stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Function.identity(),
-                    majorIssueType -> _storage.loadMajorIssueConfig(network, majorIssueType)));
     Answer oldAnswer =
         BatfishObjectMapper.mapper()
             .readValue(
@@ -876,10 +880,10 @@ public class WorkMgr extends AbstractCoordinator {
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
     TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
-    applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, issueConfigs)
+    applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, majorIssueConfigs)
         .forEach(newTable::addRow);
     applyIssuesConfigurationToAllExcludedRows(
-            oldTable.getExcludedRows(), issueColumns, issueConfigs)
+            oldTable.getExcludedRows(), issueColumns, majorIssueConfigs)
         .forEach(
             excludedRows -> {
               String exclusionName = excludedRows.getExclusionName();

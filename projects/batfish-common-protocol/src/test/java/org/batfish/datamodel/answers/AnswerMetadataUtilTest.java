@@ -64,7 +64,8 @@ public class AnswerMetadataUtilTest {
                                 ImmutableMap.of(Aggregation.MAX, value),
                                 issueColumnName,
                                 ImmutableMap.of(Aggregation.MAX, severity)))
-                        .setMajorIssueTypes(ImmutableSet.of(major))
+                        .setMajorIssueConfigs(
+                            ImmutableMap.of(major, new MajorIssueConfig(major, ImmutableMap.of())))
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)
@@ -274,7 +275,7 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of()));
+    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of()));
   }
 
   @Test
@@ -288,7 +289,7 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of());
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of()));
+    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of()));
   }
 
   @Test
@@ -304,6 +305,6 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueTypes(table), equalTo(ImmutableSet.of(major)));
+    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of(major)));
   }
 }

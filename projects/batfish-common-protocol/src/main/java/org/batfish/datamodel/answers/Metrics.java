@@ -22,18 +22,19 @@ public class Metrics {
 
     private Set<String> _emptyColumns;
 
-    private Set<String> _majorIssueTypes;
+    private Map<String, MajorIssueConfig> _majorIssueConfigs;
 
     private Integer _numRows;
 
     private Builder() {
       _aggregations = ImmutableMap.of();
       _emptyColumns = ImmutableSet.of();
-      _majorIssueTypes = ImmutableSet.of();
+      _majorIssueConfigs = ImmutableMap.of();
     }
 
     public @Nonnull Metrics build() {
-      return new Metrics(_aggregations, _emptyColumns, _majorIssueTypes, requireNonNull(_numRows));
+      return new Metrics(
+          _aggregations, _emptyColumns, _majorIssueConfigs, requireNonNull(_numRows));
     }
 
     public @Nonnull Builder setAggregations(
@@ -47,8 +48,9 @@ public class Metrics {
       return this;
     }
 
-    public @Nonnull Builder setMajorIssueTypes(@Nonnull Set<String> majorIssueTypes) {
-      _majorIssueTypes = ImmutableSet.copyOf(majorIssueTypes);
+    public @Nonnull Builder setMajorIssueConfigs(
+        @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs) {
+      _majorIssueConfigs = ImmutableMap.copyOf(majorIssueConfigs);
       return this;
     }
 
@@ -66,12 +68,13 @@ public class Metrics {
   private static @Nonnull Metrics create(
       @JsonProperty(BfConsts.PROP_AGGREGATIONS) Map<String, Map<Aggregation, Object>> aggregations,
       @JsonProperty(BfConsts.PROP_EMPTY_COLUMNS) Set<String> emptyColumns,
-      @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_TYPES) Set<String> majorIssueTypes,
+      @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_CONFIGS)
+          Map<String, MajorIssueConfig> majorIssueConfigs,
       @JsonProperty(BfConsts.PROP_NUM_ROWS) int numRows) {
     return new Metrics(
         firstNonNull(aggregations, ImmutableMap.of()),
         firstNonNull(emptyColumns, ImmutableSet.of()),
-        firstNonNull(majorIssueTypes, ImmutableSet.of()),
+        firstNonNull(majorIssueConfigs, ImmutableMap.of()),
         numRows);
   }
 
@@ -79,18 +82,18 @@ public class Metrics {
 
   private final Set<String> _emptyColumns;
 
-  private final Set<String> _majorIssueTypes;
+  private final Map<String, MajorIssueConfig> _majorIssueConfigs;
 
   private final int _numRows;
 
   private Metrics(
       @Nonnull Map<String, Map<Aggregation, Object>> aggregations,
       @Nonnull Set<String> emptyColumns,
-      @Nonnull Set<String> majorIssueTypes,
+      @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
       int numRows) {
     _aggregations = aggregations;
     _emptyColumns = emptyColumns;
-    _majorIssueTypes = majorIssueTypes;
+    _majorIssueConfigs = majorIssueConfigs;
     _numRows = numRows;
   }
 
@@ -105,7 +108,7 @@ public class Metrics {
     Metrics rhs = (Metrics) obj;
     return _aggregations.equals(rhs._aggregations)
         && _emptyColumns.equals(rhs._emptyColumns)
-        && _majorIssueTypes.equals(rhs._majorIssueTypes)
+        && _majorIssueConfigs.equals(rhs._majorIssueConfigs)
         && _numRows == rhs._numRows;
   }
 
@@ -119,9 +122,9 @@ public class Metrics {
     return _emptyColumns;
   }
 
-  @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_TYPES)
-  public Set<String> getMajorIssueTypes() {
-    return _majorIssueTypes;
+  @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_CONFIGS)
+  public Map<String, MajorIssueConfig> getMajorIssueConfigs() {
+    return _majorIssueConfigs;
   }
 
   @JsonProperty(BfConsts.PROP_NUM_ROWS)
@@ -131,7 +134,7 @@ public class Metrics {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aggregations, _emptyColumns, _majorIssueTypes, _numRows);
+    return Objects.hash(_aggregations, _emptyColumns, _majorIssueConfigs, _numRows);
   }
 
   @Override
@@ -140,7 +143,9 @@ public class Metrics {
         .omitNullValues()
         .add(BfConsts.PROP_AGGREGATIONS, _aggregations)
         .add(BfConsts.PROP_EMPTY_COLUMNS, _emptyColumns)
-        .add(BfConsts.PROP_MAJOR_ISSUE_TYPES, !_majorIssueTypes.isEmpty() ? _majorIssueTypes : null)
+        .add(
+            BfConsts.PROP_MAJOR_ISSUE_CONFIGS,
+            !_majorIssueConfigs.isEmpty() ? _majorIssueConfigs : null)
         .add(BfConsts.PROP_NUM_ROWS, _numRows)
         .toString();
   }

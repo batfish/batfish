@@ -1,5 +1,6 @@
 package org.batfish.datamodel.answers;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -17,7 +18,11 @@ public final class MetricsTest {
             .setAggregations(ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")))
             .build();
     Metrics group3Elem1 = builder.setEmptyColumns(ImmutableSet.of("b")).build();
-    Metrics group4Elem1 = builder.setMajorIssueTypes(ImmutableSet.of("c")).build();
+    Metrics group4Elem1 =
+        builder
+            .setMajorIssueConfigs(
+                ImmutableMap.of("c", new MajorIssueConfig("m", ImmutableList.of())))
+            .build();
     Metrics group5Elem1 = builder.setNumRows(3).build();
 
     new EqualsTester()

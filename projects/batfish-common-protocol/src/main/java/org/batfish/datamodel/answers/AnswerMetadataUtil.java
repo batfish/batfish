@@ -122,8 +122,10 @@ public final class AnswerMetadataUtil {
   }
 
   @VisibleForTesting
-  static @Nonnull Set<String> computeMajorIssueTypes(TableAnswerElement table) {
-    return table
+  static @Nonnull Map<String, MajorIssueConfig> computeMajorIssueConfigs(TableAnswerElement table) {
+    Map<String, ImmutableList.Builder<MinorIssueConfig>> majorIssueConfigs = new HashMap<>();
+    // For every issue column of every row, extract the issue and use it to update the map
+    table
         .getMetadata()
         .getColumnMetadata()
         .stream()
@@ -135,10 +137,18 @@ public final class AnswerMetadataUtil {
                     .getRowsList()
                     .stream()
                     .filter(row -> row.hasNonNull(column))
-                    .map(row -> row.getIssue(column))
-                    .map(Issue::getType)
-                    .map(Issue.Type::getMajor))
-        .collect(ImmutableSet.toImmutableSet());
+                    .map(row -> row.getIssue(column)))
+        .forEach(
+            issue ->
+                majorIssueConfigs
+                    .computeIfAbsent(issue.getType().getMajor(), m -> ImmutableList.builder())
+                    .add(
+                        new MinorIssueConfig(
+                            issue.getType().getMinor(), issue.getSeverity(), issue.getUrl())));
+    return CommonUtil.toImmutableMap(
+        majorIssueConfigs,
+        Entry::getKey, // major issue type
+        e -> new MajorIssueConfig(e.getKey(), e.getValue().build()));
   }
 
   @VisibleForTesting
@@ -168,11 +178,11 @@ public final class AnswerMetadataUtil {
     Map<String, Map<Aggregation, Object>> columnAggregationResults =
         computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     Set<String> emptyColumns = computeEmptyColumns(table);
-    Set<String> majorIssueTypes = computeMajorIssueTypes(table);
+    Map<String, MajorIssueConfig> majorIssueTypes = computeMajorIssueConfigs(table);
     return Metrics.builder()
         .setAggregations(columnAggregationResults)
         .setEmptyColumns(emptyColumns)
-        .setMajorIssueTypes(majorIssueTypes)
+        .setMajorIssueConfigs(majorIssueTypes)
         .setNumRows(numRows)
         .build();
   }
