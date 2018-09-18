@@ -52,7 +52,7 @@ def test_instance_vars_with_values(question):
     whitelist = ['edges', 'neighbors', 'routes']
     instance = question['instance']
     for name, var in instance.get('variables', {}).items():
-        assert 'allowedValues' not in var, f'variable {name} should migrate to values'
+        assert 'allowedValues' not in var, 'variable {} should migrate to values'.format(name)
         if instance['instanceName'] in whitelist:
             # Whitelisted, skip check that description is present
             continue
