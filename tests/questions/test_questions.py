@@ -47,6 +47,20 @@ def test_instance_vars_present(question, question_text):
         assert v_pattern in question_text
 
 
+def test_instance_vars_with_values(question):
+    """Tests that variables with allowed values have descriptions."""
+    whitelist = ['edges', 'neighbors', 'routes']
+    instance = question['instance']
+    for name, var in instance.get('variables', {}).items():
+        assert 'allowedValues' not in var, f'variable {name} should migrate to values'
+        if instance['instanceName'] in whitelist:
+            # Whitelisted, skip check that description is present
+            continue
+
+        for value in var.get('values', []):
+            assert 'description' in value
+
+
 def test_types(question):
     """Tests (partially) that instance variable properties have the correct types."""
     instance = question['instance']
