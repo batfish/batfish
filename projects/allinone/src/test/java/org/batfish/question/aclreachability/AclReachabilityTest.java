@@ -12,9 +12,8 @@ import static org.batfish.datamodel.answers.AclReachabilityRows.COL_LINES;
 import static org.batfish.datamodel.answers.AclReachabilityRows.COL_MESSAGE;
 import static org.batfish.datamodel.answers.AclReachabilityRows.COL_REASON;
 import static org.batfish.datamodel.answers.AclReachabilityRows.COL_SOURCES;
+import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.BLOCKING_LINES;
 import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.CYCLICAL_REFERENCE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.MULTIPLE_BLOCKING_LINES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.SINGLE_BLOCKING_LINE;
 import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNDEFINED_REFERENCE;
 import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNMATCHABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,7 +111,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
@@ -156,7 +155,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
@@ -331,7 +330,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl2 } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
@@ -367,8 +366,6 @@ public class AclReachabilityTest {
 
     /*
      Construct the expected result. Line 2 should be blocked by both previous lines.
-     Currently we are not finding the line numbers of multiple blocking lines, so list of blocking
-     line numbers should be empty.
     */
     Multiset<Row> expected =
         ImmutableMultiset.of(
@@ -377,14 +374,17 @@ public class AclReachabilityTest {
                 .put(COL_LINES, lineNames)
                 .put(COL_BLOCKED_LINE_NUM, 2)
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0, 1))
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, MULTIPLE_BLOCKING_LINES)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 2] IpAccessListLine{action=PERMIT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}"
-                        + "\nMultiple earlier lines partially block this line, making it unreachable.")
+                        + "\nBlocking line(s):\n  [index 0] "
+                        + lineNames.get(0)
+                        + "\n  [index 1] "
+                        + lineNames.get(1))
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -426,7 +426,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, true)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
@@ -455,7 +455,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, true)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 3] IpAccessListLine{action=PERMIT, "
@@ -532,7 +532,7 @@ public class AclReachabilityTest {
                 .put(COL_BLOCKED_LINE_ACTION, PERMIT)
                 .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, SINGLE_BLOCKING_LINE)
+                .put(COL_REASON, BLOCKING_LINES)
                 .put(
                     COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT,"
