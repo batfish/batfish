@@ -1,9 +1,8 @@
 package org.batfish.question;
 
-import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_FILENAME;
-import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_LINES;
-import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCT_NAME;
-import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCT_TYPE;
+import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_SOURCE_LINES;
+import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCTURE_NAME;
+import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswerer.COL_STRUCTURE_TYPE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -31,6 +30,7 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
+/** Tests of {@link UnusedStructuresAnswerer}. */
 public class UnusedStructuresAnswererTest {
 
   // Entry is: filename -> struct type -> struct name -> defined structure info
@@ -47,13 +47,11 @@ public class UnusedStructuresAnswererTest {
                       new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))));
   private static final Row BASIC_ROW =
       Row.of(
-          COL_FILENAME,
-          "f",
-          COL_STRUCT_TYPE,
+          COL_STRUCTURE_TYPE,
           "t",
-          COL_STRUCT_NAME,
+          COL_STRUCTURE_NAME,
           "n",
-          COL_LINES,
+          COL_SOURCE_LINES,
           new FileLines("f", ImmutableSortedSet.of(1)));
 
   @Test
@@ -83,13 +81,11 @@ public class UnusedStructuresAnswererTest {
         ImmutableList.of(
             BASIC_ROW,
             Row.of(
-                COL_FILENAME,
-                "f",
-                COL_STRUCT_TYPE,
+                COL_STRUCTURE_TYPE,
                 "t",
-                COL_STRUCT_NAME,
+                COL_STRUCTURE_NAME,
                 "n2",
-                COL_LINES,
+                COL_SOURCE_LINES,
                 new FileLines("f", ImmutableSortedSet.of(2, 3))));
 
     List<Row> rows =
