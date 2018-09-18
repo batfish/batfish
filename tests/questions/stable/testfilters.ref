@@ -124,9 +124,7 @@
       "state" : {
         "allowedValues" : [
           "established",
-          "invalid",
-          "new",
-          "related"
+          "new"
         ],
         "description" : "Non-transitive stateful-firewall state (applies to all protocols, and is independent of TCP flags)",
         "optional" : true,
@@ -134,16 +132,12 @@
         "value" : "new",
         "values" : [
           {
-            "name" : "established"
-          },
-          {
-            "name" : "invalid"
-          },
-          {
+            "description" : "Firewalls consider this a new flow",
             "name" : "new"
           },
           {
-            "name" : "related"
+            "description" : "Firewalls consider this flow as having already been established",
+            "name" : "established"
           }
         ]
       },
