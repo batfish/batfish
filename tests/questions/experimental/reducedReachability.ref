@@ -5,7 +5,7 @@
   "instance" : {
     "description" : "Detect reduced reachability.",
     "instanceName" : "qname",
-    "longDescription" : "Zero-input reduced reachability check using BDDs",
+    "longDescription" : "Finds flows that are accepted in one snapshot but dropped in another",
     "tags" : [
       "dataPlane",
       "reachability",
