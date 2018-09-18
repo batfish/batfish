@@ -108,18 +108,18 @@ public class PacketHeaderConstraintsTest {
 
   @Test
   public void testResolveIpProtocols() {
-    assertThat(resolveIpProtocols(null, null, null, null, null), nullValue());
+    assertThat(resolveIpProtocols(null, null, null, null), nullValue());
     assertThat(
-        resolveIpProtocols(ImmutableSet.of(IpProtocol.TCP), null, null, null, null),
+        resolveIpProtocols(ImmutableSet.of(IpProtocol.TCP), null, null, null),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
     assertThat(
-        resolveIpProtocols(null, ImmutableSet.of(new SubRange(22, 80)), null, null, null),
+        resolveIpProtocols(null, ImmutableSet.of(new SubRange(22, 80)), null, null),
         equalTo(IP_PROTOCOLS_WITH_PORTS));
     assertThat(
-        resolveIpProtocols(null, null, ImmutableSet.of(new SubRange(22, 80)), null, null),
+        resolveIpProtocols(null, null, ImmutableSet.of(new SubRange(22, 80)), null),
         equalTo(IP_PROTOCOLS_WITH_PORTS));
     assertThat(
-        resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), null),
+        resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH)),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
   }
 
@@ -127,7 +127,7 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsTcpAndUdp() {
     thrown.expect(IllegalArgumentException.class);
     // both tcp and udp at the same time in src/dst
-    resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), ImmutableSet.of(DNS));
+    resolveIpProtocols(Collections.singleton(IpProtocol.TCP), null, null, ImmutableSet.of(DNS));
   }
 
   @Test
@@ -137,7 +137,6 @@ public class PacketHeaderConstraintsTest {
         Collections.singleton(IpProtocol.ICMP),
         Collections.singleton(new SubRange(10, 10)),
         null,
-        null,
         null);
   }
 
@@ -145,7 +144,7 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsIcmpAndTcp() {
     thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
-        Collections.singleton(IpProtocol.ICMP), null, null, null, Collections.singleton(SSH));
+        Collections.singleton(IpProtocol.ICMP), null, null, Collections.singleton(SSH));
   }
 
   @Test
@@ -184,10 +183,8 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getSrcProtocols(), nullValue());
     assertThat(constraints.getDstProtocols(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
-    assertThat(constraints.resolveSrcPorts(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }
 
@@ -207,10 +204,8 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getSrcProtocols(), nullValue());
     assertThat(constraints.getDstProtocols(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
-    assertThat(constraints.resolveSrcPorts(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }
 
@@ -220,22 +215,17 @@ public class PacketHeaderConstraintsTest {
     // concrete resolution
     constraints =
         PacketHeaderConstraints.builder()
-            .setDstProtocols(Collections.singleton(Protocol.SSH))
+            .setApplications(Collections.singleton(Protocol.SSH))
             .build();
     assertThat(constraints.resolveIpProtocols(), equalTo(Collections.singleton(IpProtocol.TCP)));
-    assertThat(constraints.resolveSrcPorts(), nullValue());
     assertThat(constraints.resolveDstPorts(), equalTo(Collections.singleton(new SubRange(22, 22))));
 
     // Headerspace-like resolution
     constraints =
         PacketHeaderConstraints.builder()
-            .setSrcProtocols(ImmutableSet.of(Protocol.SSH, Protocol.HTTP))
-            .setDstProtocols(ImmutableSet.of(Protocol.SSH, Protocol.HTTP))
+            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.HTTP))
             .build();
     assertThat(constraints.resolveIpProtocols(), equalTo(Collections.singleton(IpProtocol.TCP)));
-    assertThat(
-        constraints.resolveSrcPorts(),
-        equalTo(ImmutableSet.of(new SubRange(22, 22), new SubRange(80, 80))));
     assertThat(
         constraints.resolveDstPorts(),
         equalTo(ImmutableSet.of(new SubRange(22, 22), new SubRange(80, 80))));
@@ -272,24 +262,13 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testValidationResolveSrcPorts() {
-    // src port resolution
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(Collections.singleton(IpProtocol.TCP))
-        .setSrcPorts(Collections.singleton(new SubRange(30, 40)))
-        .setSrcProtocols(Collections.singleton(SSH))
-        .build();
-  }
-
-  @Test
   public void testValidationResolveDstPorts() {
     // dst port resolution
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(Collections.singleton(IpProtocol.TCP))
         .setDstPorts(Collections.singleton(new SubRange(30, 40)))
-        .setDstProtocols(Collections.singleton(SSH))
+        .setApplications(Collections.singleton(SSH))
         .build();
   }
 
@@ -348,7 +327,7 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP, IpProtocol.TCP))
-        .setDstProtocols(Collections.singleton(Protocol.DNS))
+        .setApplications(Collections.singleton(Protocol.DNS))
         .build();
   }
 
@@ -357,7 +336,7 @@ public class PacketHeaderConstraintsTest {
     // Reject empty port intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
-        .setDstProtocols(Collections.singleton(Protocol.DNS))
+        .setApplications(Collections.singleton(Protocol.DNS))
         .setDstPorts(Collections.singleton(new SubRange(1, 2)))
         .build();
   }

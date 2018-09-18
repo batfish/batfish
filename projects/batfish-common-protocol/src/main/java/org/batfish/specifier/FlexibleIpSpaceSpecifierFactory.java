@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * An abstract IpSpaceSpecifierFactory that accepts the following types of inputs:
@@ -27,7 +28,7 @@ public abstract class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifie
   protected abstract IpSpaceSpecifier defaultIpSpaceSpecifier();
 
   @Override
-  public IpSpaceSpecifier buildIpSpaceSpecifier(Object input) {
+  public IpSpaceSpecifier buildIpSpaceSpecifier(@Nullable Object input) {
     if (input == null) {
       return defaultIpSpaceSpecifier();
     }
