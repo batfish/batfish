@@ -736,7 +736,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
       IpAccessListToBDD ipAccessListToBDD =
           IpAccessListToBDD.create(
-              bddPacket, aclSpec.acl.getDependencies(), ImmutableMap.of(), sourceMgr);
+              bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
       List<IpAccessListLine> lines = ipAcl.getLines();
@@ -749,7 +749,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (int lineNum = 0; lineNum < lines.size(); lineNum++) {
         IpAccessListLine line = lines.get(lineNum);
         AclLineMatchExpr matchExpr = line.getMatchCondition();
-        BDD lineBDD = matchExpr.accept(ipAccessListToBDD.getAclLineMatchExprToBDD());
+        BDD lineBDD = matchExpr.accept(ipAccessListToBDD);
         ipLineToBDDMap.add(lineBDD);
         if (lineBDD.isZero()) {
           // this line is unmatchable
@@ -762,7 +762,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       // compute blocking lines
       for (int lineNum : unreachableButMatchableLineNums) {
-        SortedSet<Integer> blockingLineNums = new TreeSet<Integer>();
+        SortedSet<Integer> blockingLineNums = new TreeSet<>();
         BDD restOfLine = ipLineToBDDMap.get(lineNum);
 
         for (int prevLineNum = 0; prevLineNum < lineNum; prevLineNum++) {
