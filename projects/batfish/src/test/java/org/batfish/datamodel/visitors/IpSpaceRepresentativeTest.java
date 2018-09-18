@@ -25,7 +25,7 @@ public class IpSpaceRepresentativeTest {
 
   @Before
   public void setup() {
-    _ipSpaceRepresentative = IpSpaceRepresentative.load();
+    _ipSpaceRepresentative = new IpSpaceRepresentative();
   }
 
   @Test
