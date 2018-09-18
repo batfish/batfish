@@ -9,7 +9,6 @@ import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.normalize.Negate;
 
 /**
@@ -88,9 +87,5 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
 
   public boolean unsat() {
     return getBdd().isZero();
-  }
-
-  public boolean containsOrMatchExpr() {
-    return getExprs().stream().anyMatch(OrMatchExpr.class::isInstance);
   }
 }
