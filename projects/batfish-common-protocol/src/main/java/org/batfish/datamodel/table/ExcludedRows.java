@@ -6,11 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 /**
- * Represents rows that have been excludes from {@link TableAnswerElement} because they were covered
+ * Represents rows that have been excluded from {@link TableAnswerElement} because they were covered
  * by an exclusion.
  */
 public class ExcludedRows {
@@ -45,17 +44,6 @@ public class ExcludedRows {
   @JsonIgnore
   public Rows getRows() {
     return _rows;
-  }
-
-  @JsonIgnore
-  private void setRows(Rows rows) {
-    if (rows == null) {
-      _rows = new Rows();
-      _rowsList = new LinkedList<>();
-    } else {
-      _rows = rows;
-      _rowsList = rows.getData().stream().collect(Collectors.toList());
-    }
   }
 
   @JsonProperty(PROP_ROWS)

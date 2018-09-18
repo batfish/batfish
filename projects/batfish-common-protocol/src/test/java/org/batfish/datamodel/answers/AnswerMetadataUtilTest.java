@@ -122,7 +122,8 @@ public class AnswerMetadataUtilTest {
                 new TableMetadata(
                     ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
                     new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
+            .addRow(Row.of(columnName, value))
+            .addRow(Row.of(columnName, 2));
     ColumnAggregation columnAggregation = new ColumnAggregation(Aggregation.MAX, columnName);
 
     assertThat(
