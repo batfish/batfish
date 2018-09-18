@@ -1,19 +1,18 @@
 {
   "class": "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
-  "debug": "${debug}",
   "innerQuestion": {
     "actions": "${actions}",
     "class": "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
-    "destinationIpSpaceSpecifierFactory": "${destinationIpSpaceSpecifierFactory}",
-    "destinationIpSpaceSpecifierInput": "${dst}",
-    "finalNodesSpecifierFactory": "${finalNodesSpecifierFactory}",
-    "finalNodesSpecifierInput": "${finalNodesSpecifierInput}",
-    "sourceLocationSpecifierFactory": "${sourceLocationSpecifierFactory}",
-    "sourceLocationSpecifierInput": "${src}"
+    "forbiddenTransitNodesNodeSpecifierInput" : "${avoidNodes}",
+    "destinationIpSpaceSpecifierInput": "${dstIps}",
+    "finalNodesSpecifierInput": "${finalNodes}",
+    "requiredTransitNodesNodeSpecifierInput": "${transitNodes}",
+    "sourceLocationSpecifierInput": "${start}",
+    "sourceIpSpaceSpecifierInput": "${srcIps}"
   },
   "instance": {
     "description": "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
-    "instanceName": "specifiersReachability",
+    "instanceName": "reachability",
     "tags": [
       "dataPlane",
       "reachability"
@@ -28,39 +27,34 @@
           "accept"
         ]
       },
-      "debug": {
-        "description": "Flag to decide whether to embed debug information in the answer",
-         "type": "boolean",
-         "value": false
-      },
-      "dst": {
-        "description": "Restrict query to destination nodes that match this regex",
-        "optional": false,
-        "type": "string"
-      },
-      "destinationIpSpaceSpecifierFactory": {
-        "description": "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+      "avoidNodes": {
+        "description": "Flexible specification of locations that should not be transitted",
         "optional": true,
         "type": "string"
       },
-      "finalNodesSpecifierFactory": {
-        "description": "Name of the NodeSpecifierFactory to use for finalNodes",
+      "dstIps": {
+        "description": "Flexible specification of destination Ip -- filled based on location if unspecified",
         "optional": true,
         "type": "string"
       },
-      "finalNodesSpecifierInput": {
+      "finalNodes": {
         "description": "Input to specify the set of nodes at which traces should end",
         "optional": true,
         "type": "string"
       },
-      "sourceLocationSpecifierFactory": {
-        "description": "Name of the LocationSpecifierFactory to use for the src location",
+      "start": {
+        "description": "Flexible specification of start locations",
         "optional": true,
         "type": "string"
       },
-      "src": {
-        "description": "Flexible specification of source locations",
-        "optional": false,
+      "srcIps": {
+        "description": "Flexible specification of source Ip -- filled based on location if unspecified",
+        "optional": true,
+        "type": "string"
+      },
+      "transitNodes": {
+        "description": "Flexible specification of transit locations",
+        "optional": true,
         "type": "string"
       }
     }
