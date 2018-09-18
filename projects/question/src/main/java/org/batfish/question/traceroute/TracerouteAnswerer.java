@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowHistory;
@@ -49,7 +50,7 @@ import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 
-/** Prouces the answer for {@link org.batfish.question.traceroute.TracerouteQuestion} */
+/** Produces the answer for {@link TracerouteQuestion} */
 public final class TracerouteAnswerer extends Answerer {
 
   private static final String SRC_LOCATION_SPECIFIER_FACTORY =
@@ -275,18 +276,30 @@ public final class TracerouteAnswerer extends Answerer {
       PacketHeaderConstraints constraints, Location srcLocation, Builder builder) {
     String headerSrcIp = constraints.getSrcIps();
     if (headerSrcIp != null) {
-      // interpret given Src IP using sane mode
+      // interpret given Src IP "flexibly"
       IpSpaceSpecifier srcIpSpecifier =
           IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerSrcIp);
+      // Resolve to set of locations/IPs
       IpSpaceAssignment srcIps =
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+      // Filter out empty IP assignments
+      ImmutableList<Entry> nonEmptyIpSpaces =
+          srcIps
+              .getEntries()
+              .stream()
+              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
+              .collect(ImmutableList.toImmutableList());
       checkArgument(
-          srcIps.getEntries().size() == 1,
-          "Specified source: %s, resolves to more than one IP",
-          headerSrcIp);
+          nonEmptyIpSpaces.size() > 0, "At least one source IP is required, could not resolve any");
+      checkArgument(
+          nonEmptyIpSpaces.size() == 1,
+          "Specified source IP %s resolves to more than one location/IP: %s",
+          headerSrcIp,
+          nonEmptyIpSpaces);
       IpSpace space = srcIps.getEntries().iterator().next().getIpSpace();
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(srcIp.isPresent(), "At least one source IP is required");
+      // Extra check to ensure that we actually got an IP
+      checkArgument(srcIp.isPresent(), "At least one source IP is required, could not resolve any");
       builder.setSrcIp(srcIp.get());
     } else {
       // Use from source location to determine header Src IP
@@ -353,6 +366,8 @@ public final class TracerouteAnswerer extends Answerer {
         "Cannot perform traceroute with multiple destination ports");
     if (dstPorts != null) {
       SubRange dstPort = dstPorts.iterator().next();
+      checkArgument(
+          dstPort.isSingleValue(), "Cannot perform traceroute with multiple destination ports");
       builder.setDstPort(dstPort.getStart());
     } else {
       builder.setDstPort(TRACEROUTE_PORT);
@@ -367,6 +382,8 @@ public final class TracerouteAnswerer extends Answerer {
         "Cannot perform traceroute with multiple source ports");
     if (srcPorts != null) {
       SubRange srcPort = srcPorts.iterator().next();
+      checkArgument(
+          srcPort.isSingleValue(), "Cannot perform traceroute with multiple source ports");
       builder.setSrcPort(srcPort.getStart());
     } else {
       builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());

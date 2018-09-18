@@ -31,9 +31,13 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TracerouteAnswererTest {
+
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testCreateMetadata() {
@@ -132,7 +136,6 @@ public class TracerouteAnswererTest {
 
   @Test
   public void flowHistoryToRow() {
-
     Set<FlowTrace> traces =
         ImmutableSet.of(
             new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), "notes1"),
@@ -158,37 +161,41 @@ public class TracerouteAnswererTest {
                 historyInfo.getPaths().values().stream().findAny())));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testSetIcmpValueMultiple() {
-    setIcmpValue(
+    PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIcmpCodes(ImmutableSet.of(new SubRange(0, 10)))
-            .build(),
-        Flow.builder());
+            .build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setIcmpValue(phc, builder);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testSetDscpValueMultiple() {
-    setDscpValue(
-        PacketHeaderConstraints.builder().setDscps(ImmutableSet.of(new SubRange(0, 10))).build(),
-        Flow.builder());
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setDscps(ImmutableSet.of(new SubRange(0, 10))).build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setDscpValue(phc, builder);
   }
 
-  @Test()
+  @Test
   public void testSetSrcPortMultiple() {
     Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
-    setSrcPort(
-        PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of(new SubRange(1, 10))).build(),
-        builder);
-    assertThat(builder.build().getSrcPort(), equalTo(1));
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+    thrown.expect(IllegalArgumentException.class);
+    setSrcPort(phc, builder);
   }
 
-  @Test()
+  @Test
   public void testSetDstPortMultiple() {
-    Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
-    setDstPort(
-        PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of(new SubRange(1, 10))).build(),
-        builder);
-    assertThat(builder.build().getDstPort(), equalTo(1));
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setDstPort(phc, builder);
   }
 }
