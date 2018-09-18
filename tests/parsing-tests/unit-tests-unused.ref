@@ -1,6 +1,32 @@
 [
   {
     "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "Vendor-specific type of the structure",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Structure_Type",
+          "schema" : "String"
+        },
+        {
+          "description" : "Name of the structure",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Structure_Name",
+          "schema" : "String"
+        },
+        {
+          "description" : "File and line numbers where the structure is defined",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Source_Lines",
+          "schema" : "FileLines"
+        }
+      ],
+      "textDesc" : "An unused structure of type ${Structure_Type} named ${Structure_Name} is defined at ${Source_Lines}."
+    },
     "rows" : [
       {
         "Structure_Type" : "extended ipv4 access-list",
