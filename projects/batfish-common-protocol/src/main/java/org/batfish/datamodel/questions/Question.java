@@ -54,6 +54,7 @@ public abstract class Question implements IQuestion {
         COMPARATOR("comparator", true),
         DOUBLE("double", false),
         FLOAT("float", false),
+        HEADER_CONSTRAINT("headerConstraint", false),
         INTEGER("integer", false),
         INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
         IP("ip", true),

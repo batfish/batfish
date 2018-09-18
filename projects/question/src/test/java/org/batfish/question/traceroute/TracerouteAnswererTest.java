@@ -2,6 +2,10 @@ package org.batfish.question.traceroute;
 
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setDscpValue;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setDstPort;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setIcmpValue;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,20 +17,27 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TracerouteAnswererTest {
+
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testCreateMetadata() {
@@ -125,7 +136,6 @@ public class TracerouteAnswererTest {
 
   @Test
   public void flowHistoryToRow() {
-
     Set<FlowTrace> traces =
         ImmutableSet.of(
             new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), "notes1"),
@@ -149,5 +159,43 @@ public class TracerouteAnswererTest {
                 flow,
                 TracerouteAnswerer.COL_TRACES,
                 historyInfo.getPaths().values().stream().findAny())));
+  }
+
+  @Test
+  public void testSetIcmpValueMultiple() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setIcmpCodes(ImmutableSet.of(new SubRange(0, 10)))
+            .build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setIcmpValue(phc, builder);
+  }
+
+  @Test
+  public void testSetDscpValueMultiple() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setDscps(ImmutableSet.of(new SubRange(0, 10))).build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setDscpValue(phc, builder);
+  }
+
+  @Test
+  public void testSetSrcPortMultiple() {
+    Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+    thrown.expect(IllegalArgumentException.class);
+    setSrcPort(phc, builder);
+  }
+
+  @Test
+  public void testSetDstPortMultiple() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setDstPort(phc, builder);
   }
 }
