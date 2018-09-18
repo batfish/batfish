@@ -42,7 +42,11 @@ public abstract class AclLineMatchExprSetBuilder {
 
   public abstract AclLineMatchExpr build();
 
-  public void add(AclLineMatchExpr expr) {
+  /** This is the public method to add elements. Abstract so that subclasses can preprocess. */
+  public abstract void add(AclLineMatchExpr expr);
+
+  /** Helper method for subclasses to use to implement {@link AclLineMatchExprSetBuilder#add}. */
+  protected void addHelper(AclLineMatchExpr expr) {
     if (_bdd.equals(shortCircuitBDD()) || _exprs.containsKey(expr)) {
       return;
     }
