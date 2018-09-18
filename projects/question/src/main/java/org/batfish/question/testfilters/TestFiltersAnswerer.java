@@ -266,8 +266,9 @@ public class TestFiltersAnswerer extends Answerer {
       builder.setSrcIp(srcIp.get());
     } else if (srcLocation == null) {
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
-      checkArgument(srcIp.isPresent(), "At least one source IP is required");
-      builder.setSrcIp(srcIp.get());
+      builder.setSrcIp(
+          srcIp.orElseThrow(
+              () -> new IllegalArgumentException("Failed to pick an IP for unspecified location")));
     } else {
       // Use from source location to determine header Src IP
       Optional<Entry> entry =
