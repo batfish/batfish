@@ -3347,13 +3347,15 @@ public class CiscoGrammarTest {
     Configuration iosRecovery = configurations.get(hostname);
     Map<String, Interface> iosRecoveryInterfaces = iosRecovery.getAllInterfaces();
     Set<String> iosRecoveryInterfaceNames = iosRecoveryInterfaces.keySet();
-    Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
-    Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
 
     assertThat("Loopback0", in(iosRecoveryInterfaceNames));
     assertThat("Loopback1", in(iosRecoveryInterfaceNames));
     assertThat("Loopback2", not(in(iosRecoveryInterfaceNames)));
     assertThat("Loopback3", in(iosRecoveryInterfaceNames));
+
+    Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
+    Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
+
     assertThat(new InterfaceAddress("10.0.0.1/32"), not(in(l3Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.2/32"), in(l3Prefixes));
     assertThat("Loopback4", in(iosRecoveryInterfaceNames));
