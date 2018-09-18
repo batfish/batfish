@@ -8,14 +8,13 @@
     "actions" : [
       "ACCEPT"
     ],
-    "destinationIpSpaceSpecifierFactory" : "destFactory",
-    "destinationIpSpaceSpecifierInput" : "destination.*",
+    "destinationIpSpaceSpecifierInput" : "ddd",
     "differential" : false,
-    "finalNodesSpecifierFactory" : "finalNodeFactory",
-    "finalNodesSpecifierInput" : "finalNode",
+    "finalNodesSpecifierInput" : "bbb",
     "includeOneTableKeys" : true,
-    "sourceLocationSpecifierFactory" : "sourceFactory",
-    "sourceLocationSpecifierInput" : "sourceNode"
+    "requiredTransitNodesNodeSpecifierInput" : "ccc",
+    "sourceIpSpaceSpecifierInput" : "sss",
+    "sourceLocationSpecifierInput" : "aaa"
   },
   "instance" : {
     "description" : "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
@@ -34,47 +33,41 @@
           "accept"
         ]
       },
-      "debug" : {
-        "description" : "Flag to decide whether to embed debug information in the answer",
-        "optional" : false,
-        "type" : "boolean",
-        "value" : false
-      },
-      "destinationIpSpaceSpecifierFactory" : {
-        "description" : "Name of the IpSpaceSpecifierFactory to use for the destination IpSpace",
+      "avoidNodes" : {
+        "description" : "Flexible specification of locations that should not be transitted",
         "optional" : true,
         "type" : "string",
-        "value" : "destFactory"
+        "value" : "ddd"
       },
-      "dst" : {
-        "description" : "Restrict query to destination nodes that match this regex",
-        "optional" : false,
-        "type" : "string",
-        "value" : "destination.*"
-      },
-      "finalNodesSpecifierFactory" : {
-        "description" : "Name of the NodeSpecifierFactory to use for finalNodes",
+      "dstIps" : {
+        "description" : "Flexible specification of destination Ip -- filled based on location if unspecified",
         "optional" : true,
         "type" : "string",
-        "value" : "finalNodeFactory"
+        "value" : "ddd"
       },
-      "finalNodesSpecifierInput" : {
+      "finalNodes" : {
         "description" : "Input to specify the set of nodes at which traces should end",
         "optional" : true,
         "type" : "string",
-        "value" : "finalNode"
+        "value" : "bbb"
       },
-      "sourceLocationSpecifierFactory" : {
-        "description" : "Name of the LocationSpecifierFactory to use for the src location",
+      "srcIps" : {
+        "description" : "Flexible specification of source Ip -- filled based on location if unspecified",
         "optional" : true,
         "type" : "string",
-        "value" : "sourceFactory"
+        "value" : "sss"
       },
-      "src" : {
-        "description" : "Flexible specification of source locations",
-        "optional" : false,
+      "start" : {
+        "description" : "Flexible specification of start locations",
+        "optional" : true,
         "type" : "string",
-        "value" : "sourceNode"
+        "value" : "aaa"
+      },
+      "transitNodes" : {
+        "description" : "Flexible specification of transit locations",
+        "optional" : true,
+        "type" : "string",
+        "value" : "ccc"
       }
     }
   },

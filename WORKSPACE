@@ -298,7 +298,7 @@ maven_repository(
         "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
         "39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3",
         "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
-        "3be1b88f1cfc6592acbcbfe1f3a420f79eb2b146:com.google.guava:guava-testlib:26.0-jre",
+        "3d6b3f4877cf8b203860333811af4764de93c8c1:com.google.guava:guava-testlib:26.0-jre",
         "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
         "2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12",
         "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",

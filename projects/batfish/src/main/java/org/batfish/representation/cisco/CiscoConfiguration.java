@@ -157,6 +157,8 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
+import org.batfish.vendor.StructureType;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -298,6 +300,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
   }
 
+  public static String computeIcmpObjectGroupAclName(String name) {
+    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
+  }
+
   public static String computeProtocolObjectGroupAclName(String name) {
     return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
   }
@@ -413,6 +419,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NatPool> _natPools;
 
+  private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
+
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObject> _networkObjects;
@@ -497,6 +505,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
+    _icmpTypeObjectGroups = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -3028,6 +3037,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         new IpSpaceMetadata(
                             name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
 
+    // convert each IcmpTypeGroup to IpAccessList
+    _icmpTypeObjectGroups.forEach(
+        (name, icmpTypeObjectGroups) ->
+            c.getIpAccessLists()
+                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
@@ -3296,13 +3311,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         });
 
     // warn about references to undefined peer groups
-    for (Entry<String, Integer> e : _undefinedPeerGroups.entrySet()) {
-      undefined(
-          CiscoStructureType.BGP_PEER_GROUP,
-          e.getKey(),
-          CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT,
-          e.getValue());
-    }
+    undefinedGroups(
+        _undefinedPeerGroups,
+        CiscoStructureType.BGP_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
 
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
@@ -3522,9 +3534,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markConcreteStructure(
+        CiscoStructureType.ICMP_TYPE_OBJECT_GROUP,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
+        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
+    markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
+    markConcreteStructure(
+        CiscoStructureType.PROTOCOL_OBJECT_GROUP,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_OBJECT_GROUP,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+        CiscoStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
     markAbstractStructure(
         CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
@@ -3533,9 +3557,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // objects
     markConcreteStructure(
+        CiscoStructureType.ICMP_TYPE_OBJECT,
+        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
+    markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
+    markConcreteStructure(
+        CiscoStructureType.PROTOCOL_OBJECT,
+        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(
@@ -3574,6 +3604,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return c;
   }
 
+  private void undefinedGroups(
+      Map<String, Integer> groupReferences,
+      StructureType structureType,
+      StructureUsage structureUsage) {
+    for (Entry<String, Integer> e : groupReferences.entrySet()) {
+      undefined(structureType, e.getKey(), structureUsage, e.getValue());
+    }
+  }
+
   private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
     return IpAccessList.builder()
         .setLines(
@@ -3584,6 +3623,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .setSourceName(protocolObjectGroup.getName())
         .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
+  private IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
+        .setSourceName(icmpTypeObjectGroup.getName())
+        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -4112,6 +4164,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }
+  }
+
+  public Map<String, IcmpTypeObjectGroup> getIcmpTypeObjectGroups() {
+    return _icmpTypeObjectGroups;
   }
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
