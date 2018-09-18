@@ -35,8 +35,7 @@ public class AclReachabilityRows {
 
   public static enum Reason {
     CYCLICAL_REFERENCE,
-    MULTIPLE_BLOCKING_LINES,
-    SINGLE_BLOCKING_LINE,
+    BLOCKING_LINES,
     UNDEFINED_REFERENCE,
     UNMATCHABLE
   }
@@ -109,9 +108,7 @@ public class AclReachabilityRows {
             ? Reason.UNDEFINED_REFERENCE
             : unmatchable
                 ? Reason.UNMATCHABLE
-                : blockingLines.size() > 1
-                    ? Reason.MULTIPLE_BLOCKING_LINES
-                    : Reason.SINGLE_BLOCKING_LINE;
+                : Reason.BLOCKING_LINES;
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
@@ -193,10 +190,7 @@ public class AclReachabilityRows {
       case UNMATCHABLE:
         sb.append("This line will never match any packet, independent of preceding lines.");
         break;
-      case MULTIPLE_BLOCKING_LINES:
-        sb.append("Multiple earlier lines partially block this line, making it unreachable.");
-        break;
-      case SINGLE_BLOCKING_LINE:
+      case BLOCKING_LINES:
         sb.append(
             String.format(
                 "Blocking line(s):\n%s",
