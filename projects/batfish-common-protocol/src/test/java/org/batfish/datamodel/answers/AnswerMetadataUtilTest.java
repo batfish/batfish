@@ -37,9 +37,10 @@ public class AnswerMetadataUtilTest {
     String columnName = "col";
     String issueColumnName = "colIssue";
     int value = 5;
-    String major = "m";
+    String major = "major";
+    String minor = "minor";
     int severity = 1;
-    Issue issueValue = new Issue("a", severity, new Issue.Type(major, "c"));
+    Issue issueValue = new Issue("a", severity, new Issue.Type(major, minor));
 
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
@@ -65,7 +66,12 @@ public class AnswerMetadataUtilTest {
                                 issueColumnName,
                                 ImmutableMap.of(Aggregation.MAX, severity)))
                         .setMajorIssueConfigs(
-                            ImmutableMap.of(major, new MajorIssueConfig(major, ImmutableMap.of())))
+                            ImmutableMap.of(
+                                major,
+                                new MajorIssueConfig(
+                                    major,
+                                    ImmutableMap.of(
+                                        minor, new MinorIssueConfig(minor, severity, null)))))
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)
@@ -275,7 +281,7 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of()));
+    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableMap.of()));
   }
 
   @Test
@@ -289,14 +295,16 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of());
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of()));
+    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableMap.of()));
   }
 
   @Test
   public void testComputeMajorIssueTypesSome() {
     String columnName = "col";
-    String major = "m";
-    Issue value = new Issue("a", 1, new Issue.Type(major, "c"));
+    String major = "major";
+    String minor = "minor";
+    int severity = 5;
+    Issue value = new Issue("a", severity, new Issue.Type(major, minor));
 
     TableAnswerElement table =
         new TableAnswerElement(
@@ -305,6 +313,12 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableSet.of(major)));
+    assertThat(
+        AnswerMetadataUtil.computeMajorIssueConfigs(table),
+        equalTo(
+            ImmutableMap.of(
+                major,
+                new MajorIssueConfig(
+                    major, ImmutableMap.of(minor, new MinorIssueConfig(minor, severity, null))))));
   }
 }
