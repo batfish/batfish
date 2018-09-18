@@ -97,7 +97,7 @@
           0
         ],
         "Different_Action" : true,
-        "Reason" : "BLOCKING_LINE",
+        "Reason" : "BLOCKING_LINES",
         "Message" : "ACLs { as2dept1: RESTRICT_HOST_TRAFFIC_OUT } contain an unreachable line:\n  [index 1] deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255\nBlocking line(s):\n  [index 0] permit ip any 2.128.0.0 0.0.255.255"
       }
     ],
