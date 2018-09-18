@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -735,11 +734,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (AclSpecs aclSpec : aclSpecs) {
       BDDSourceManager sourceMgr =
           BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-      IpAccessListToBDD ipAccessListToBDD = IpAccessListToBDD.create(
-          bddPacket,
-          aclSpec.acl.getDependencies(),
-          ImmutableMap.of(),
-          sourceMgr);
+      IpAccessListToBDD ipAccessListToBDD =
+          IpAccessListToBDD.create(
+              bddPacket, aclSpec.acl.getDependencies(), ImmutableMap.of(), sourceMgr);
 
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
       List<IpAccessListLine> lines = ipAcl.getLines();
@@ -764,7 +761,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       // compute blocking lines
-      // can be parallelized
       for (int lineNum : unreachableButMatchableLineNums) {
         SortedSet<Integer> blockingLineNums = new TreeSet<Integer>();
         BDD restOfLine = ipLineToBDDMap.get(lineNum);
