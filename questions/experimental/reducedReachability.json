@@ -3,8 +3,8 @@
   "differential": true,
   "instance": {
     "description": "Detect reduced reachability.",
-    "instanceName": "bddReducedReachability",
-    "longDescription": "Zero-input reduced reachability check using BDDs",
+    "instanceName": "reducedReachability",
+    "longDescription": "Finds flows that are accepted in one snapshot but dropped in another",
     "tags": [
       "dataPlane",
       "reachability",

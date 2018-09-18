@@ -5,7 +5,7 @@
   "instance" : {
     "description" : "Validate multipath consistency.",
     "instanceName" : "qname",
-    "longDescription" : "Zero-input multipath consistency check using BDDs",
+    "longDescription" : "Finds flows that are treated differently by different paths in the presence of multipath routing",
     "tags" : [
       "dataPlane",
       "multipath consistency",

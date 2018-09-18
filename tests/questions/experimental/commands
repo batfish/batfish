@@ -3,12 +3,6 @@ load-questions questions/experimental
 # validate aclReachability
 test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filters=".*", nodes=".*"
 
-# validate bddMultipathConsistency
-test -raw tests/questions/experimental/bddMultipathConsistency.ref validate-template bddMultipathConsistency
-
-# validate bddReducedReachability
-test -raw tests/questions/experimental/bddReducedReachability.ref validate-template bddReducedReachability
-
 # validate bgpProperties
 test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodes=".*", properties="multipath-.*"
 
@@ -23,6 +17,9 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 
 # validate interfaceProperties
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
+
+# validate multipathConsistency
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency
 
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
@@ -44,6 +41,9 @@ test -raw tests/questions/experimental/prefixTracer.ref validate-template prefix
 
 # validate reachfilter
 test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+
+# validate reducedReachability
+test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability
 
 # validate specifiers
 test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
