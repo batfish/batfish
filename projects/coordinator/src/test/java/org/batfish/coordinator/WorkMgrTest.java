@@ -51,6 +51,7 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
@@ -1305,11 +1306,7 @@ public class WorkMgrTest {
     table.addRow(Row.of(col, new Issue("blah", 1, new Issue.Type(major, minor))));
     oldAnswer.setAnswerElements(ImmutableList.of(table));
     AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(
-                Metrics.builder().setNumRows(1).setMajorIssueTypes(ImmutableSet.of(major)).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
+        AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
     _manager.initContainer(network, null);
     _storage.storeAnswer(
         BatfishObjectMapper.writeString(oldAnswer),
@@ -1342,7 +1339,8 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testApplyPendingIssuesSettingsChangesNewerIssueConfig() throws IOException {
+  public void testApplyPendingIssuesSettingsChangesNewerIssueConfig()
+      throws IOException, InterruptedException {
     String network = "network1";
     String snapshot = "snapshot1";
     String question = "question2Name";
@@ -1353,17 +1351,13 @@ public class WorkMgrTest {
     String major = "maj";
     String minor = "min";
     oldAnswer.setStatus(AnswerStatus.SUCCESS);
-    TableAnswerElement table =
+    TableAnswerElement oldTable =
         new TableAnswerElement(
             new TableMetadata(ImmutableList.of(new ColumnMetadata(col, Schema.ISSUE, "desc"))));
-    table.addRow(Row.of(col, new Issue("blah", 1, new Issue.Type(major, minor))));
-    oldAnswer.setAnswerElements(ImmutableList.of(table));
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(
-                Metrics.builder().setNumRows(1).setMajorIssueTypes(ImmutableSet.of(major)).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
+    oldTable.addRow(Row.of(col, new Issue("blah", 1, new Issue.Type(major, minor))));
+    oldAnswer.setAnswerElements(ImmutableList.of(oldTable));
+    AnswerMetadata oldAnswerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
     _manager.initContainer(network, null);
     _storage.storeAnswer(
         BatfishObjectMapper.writeString(oldAnswer),
@@ -1373,10 +1367,13 @@ public class WorkMgrTest {
         referenceSnapshot,
         analysis);
     _storage.storeAnswerMetadata(
-        answerMetadata, network, snapshot, question, referenceSnapshot, analysis);
-    FileTime answerMetadataLastModifiedTime =
+        oldAnswerMetadata, network, snapshot, question, referenceSnapshot, analysis);
+    FileTime oldAnswerMetadataLastModifiedTime =
         _storage.getAnswerMetadataLastModifiedTime(
             network, snapshot, question, referenceSnapshot, analysis);
+    // TODO: stop using timestamps so hacky workaround for timestamp equality during testing is
+    // unnecessary
+    Thread.sleep(0);
     _storage.storeMajorIssueConfig(
         network,
         major,
@@ -1385,14 +1382,14 @@ public class WorkMgrTest {
 
     assertThat(
         _manager.applyPendingIssuesSettingsChanges(
-            answerMetadata,
-            answerMetadataLastModifiedTime,
+            oldAnswerMetadata,
+            oldAnswerMetadataLastModifiedTime,
             network,
             snapshot,
             question,
             referenceSnapshot,
             analysis),
-        not(sameInstance(answerMetadata)));
+        not(sameInstance(oldAnswerMetadata)));
   }
 
   @Test
