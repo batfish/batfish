@@ -8,7 +8,6 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 /**
  * A builder for the conjuncts of an {@link AndMatchExpr}. Uses {@link BDD BDDs} to remove redundant
@@ -53,9 +52,5 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
 
   public boolean unsat() {
     return getBdd().isZero();
-  }
-
-  public boolean containsOrMatchExpr() {
-    return getExprs().stream().anyMatch(OrMatchExpr.class::isInstance);
   }
 }
