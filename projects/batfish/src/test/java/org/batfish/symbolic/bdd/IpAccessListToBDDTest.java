@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.TreeMap;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
@@ -48,6 +49,21 @@ public class IpAccessListToBDDTest {
 
   private static IpAccessListLine accepting(HeaderSpace headerSpace) {
     return accepting(new MatchHeaderSpace(headerSpace));
+  }
+
+  @Test
+  public void testPermittedByAcl2() {
+    Ip fooIp = new Ip("1.1.1.1");
+    BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
+    IpAccessList fooAcl =
+        aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
+    Map<String, IpAccessList> namedAcls = new TreeMap<>();
+    namedAcls.put("foo", fooAcl);
+    IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
+    namedAcls.put("acl", acl);
+    IpAccessList acl2 = aclWithLines(accepting(new PermittedByAcl("acl")));
+    BDD bdd = BDDAcl.create(_pkt, acl2, namedAcls, ImmutableMap.of()).getBdd();
+    assertThat(bdd, equalTo(fooIpBDD));
   }
 
   @Test
