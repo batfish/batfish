@@ -304,8 +304,8 @@ public interface StorageProvider {
    * Returns the last-modified time of the configuration for the specified major issue type for the
    * specified network, or {@code null} if no such configuration exists
    *
-   * @param network
-   * @param majorIssueType
+   * @param network The name of the network
+   * @param majorIssueType The name of the {@link MajorIssueConfig} to be read
    */
   @Nullable
   FileTime getMajorIssueConfigLastModifiedTime(String network, String majorIssueType);
