@@ -5,6 +5,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -72,5 +74,19 @@ public class ConjunctsBuilderTest {
     _andBuilder.add(SRC_IP);
     _andBuilder.add(matchSrcIp("1.1.1.1"));
     assertThat(_andBuilder.build(), equalTo(FALSE));
+  }
+
+  @Test
+  public void testExpandAnd() {
+    _andBuilder.add(and(DST_IP, SRC_IP));
+    _andBuilder.add(DST_PREFIX);
+    assertThat(_andBuilder.build(), equalTo(and(SRC_IP, DST_IP)));
+  }
+
+  @Test
+  public void testDeMorgan() {
+    _andBuilder.add(not(or(not(DST_IP), SRC_IP)));
+    _andBuilder.add(DST_PREFIX);
+    assertThat(_andBuilder.build(), equalTo(and(not(SRC_IP), DST_IP)));
   }
 }
