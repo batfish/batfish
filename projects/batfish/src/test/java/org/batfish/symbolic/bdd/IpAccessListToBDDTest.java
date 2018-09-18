@@ -61,9 +61,9 @@ public class IpAccessListToBDDTest {
     BDD bdd =
         IpAccessListToBDD.create(
                 _pkt,
+                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
                 namedAcls,
-                ImmutableMap.of(),
-                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()))
+                ImmutableMap.of())
             .toBdd(acl);
     assertThat(bdd, equalTo(fooIpBDD));
   }
@@ -74,9 +74,9 @@ public class IpAccessListToBDDTest {
     IpAccessListToBDD ipAccessListToBDD =
         IpAccessListToBDD.create(
             _pkt,
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             ImmutableMap.of(),
-            ImmutableMap.of(),
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()));
+            ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
     ipAccessListToBDD.toBdd(acl);
@@ -90,9 +90,9 @@ public class IpAccessListToBDDTest {
     IpAccessListToBDD ipAccessListToBDD =
         IpAccessListToBDD.create(
             _pkt,
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             namedAcls,
-            ImmutableMap.of(),
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()));
+            ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     ipAccessListToBDD.toBdd(fooAcl);

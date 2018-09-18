@@ -9,8 +9,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -27,8 +29,12 @@ public class ConjunctsBuilderTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of());
+    IpAccessListToBDD toBDD =
+        new IpAccessListToBDD(
+            pkt,
+            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     _andBuilder = new ConjunctsBuilder(toBDD);
   }
 

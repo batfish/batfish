@@ -54,7 +54,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -82,10 +81,10 @@ import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -840,37 +839,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   BDDPacket bddPacket = new BDDPacket();
                   BDDSourceManager sourceMgr =
                       BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-                  List<PermittedByAcl> aclMatchExprs = matchExpr.accept(permittedByAclFinder);
-                  Map<String, Supplier<BDD>> aclEnv = new TreeMap<>();
-                  if (!aclMatchExprs.isEmpty()) {
-                    Map<String, IpAccessList> dependencies = aclSpec.acl.getDependencies();
-                    aclEnv =
-                        dependencies
-                            .entrySet()
-                            .stream()
-                            .collect(
-                                Collectors.toMap(
-                                    dep -> dep.getKey(),
-                                    dep ->
-                                        () ->
-                                            BDDAcl.create(
-                                                    bddPacket,
-                                                    dep.getValue(),
-                                                    dependencies,
-                                                    ImmutableMap.of(),
-                                                    sourceMgr)
-                                                .getBdd()));
-                  }
 
                   // Specialize ACL and dependencies to current line
                   BDD lineBDD =
-                      matchExpr.accept(
-                          new AclLineMatchExprToBDD(
-                              bddPacket.getFactory(),
+                      IpAccessListToBDD.create(
                               bddPacket,
-                              aclEnv,
-                              ImmutableMap.of(),
-                              sourceMgr));
+                              sourceMgr,
+                              aclSpec.acl.getDependencies(),
+                              ImmutableMap.of())
+                          .visit(matchExpr);
                   BDDIpAccessListSpecializer specializer =
                       new BDDIpAccessListSpecializer(
                           bddPacket, lineBDD, ImmutableMap.of(), sourceMgr);

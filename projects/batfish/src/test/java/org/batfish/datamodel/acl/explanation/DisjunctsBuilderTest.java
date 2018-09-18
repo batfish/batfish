@@ -9,8 +9,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -28,8 +28,7 @@ public class DisjunctsBuilderTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    AclLineMatchExprToBDD toBdd =
-        new AclLineMatchExprToBDD(pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of());
+    IpAccessListToBDD toBdd = IpAccessListToBDD.create(pkt, ImmutableMap.of(), ImmutableMap.of());
     _orBuilder = new DisjunctsBuilder(toBdd);
   }
 

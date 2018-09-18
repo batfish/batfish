@@ -5,7 +5,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
@@ -17,9 +17,9 @@ public final class DisjunctsBuilder extends AclLineMatchExprSetBuilder {
   BDD _zero;
   BDD _one;
 
-  public DisjunctsBuilder(AclLineMatchExprToBDD aclLineMatchExprToBDD) {
-    super(aclLineMatchExprToBDD, aclLineMatchExprToBDD.getBDDPacket().getFactory().zero());
-    BDDFactory factory = aclLineMatchExprToBDD.getBDDPacket().getFactory();
+  public DisjunctsBuilder(IpAccessListToBDD ipAccessListToBDD) {
+    super(ipAccessListToBDD, ipAccessListToBDD.getBDDPacket().getFactory().zero());
+    BDDFactory factory = ipAccessListToBDD.getBDDPacket().getFactory();
     _one = factory.one();
     _zero = factory.zero();
   }

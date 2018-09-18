@@ -5,7 +5,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 
@@ -17,9 +17,9 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
   private final BDD _one;
   private final BDD _zero;
 
-  public ConjunctsBuilder(AclLineMatchExprToBDD aclLineMatchExprToBDD) {
-    super(aclLineMatchExprToBDD, aclLineMatchExprToBDD.getBDDPacket().getFactory().one());
-    BDDFactory factory = aclLineMatchExprToBDD.getBDDPacket().getFactory();
+  public ConjunctsBuilder(IpAccessListToBDD ipAccessListToBDD) {
+    super(ipAccessListToBDD, ipAccessListToBDD.getBDDPacket().getFactory().one());
+    BDDFactory factory = ipAccessListToBDD.getBDDPacket().getFactory();
     _one = factory.one();
     _zero = factory.zero();
   }
