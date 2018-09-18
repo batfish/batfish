@@ -54,7 +54,6 @@ public final class DisjunctsBuilder extends AclLineMatchExprSetBuilder {
      * If expr is an OrMatchExpr (or can be simplified by one using deMorgan's law, then add each
      * disjunct separately (so we can detect and remove redundant disjuncts). This could create some
      * extra work though, so only do this if the conjunction won't be valid after adding.
-     * work
      */
     if (_aclLineMatchExprToBDD.visit(expr).or(getBdd()).isOne()) {
       /*

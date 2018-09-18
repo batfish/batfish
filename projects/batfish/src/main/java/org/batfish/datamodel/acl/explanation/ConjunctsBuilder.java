@@ -61,7 +61,6 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
      * If expr is an AndMatchExpr (or can be simplified by one using deMorgan's law, then add each
      * conjunct separately (so we can detect and remove redundant conjuncts). This could create some
      * extra work though, so only do this if the conjunction won't be unsat after adding.
-     * work
      */
     if (_aclLineMatchExprToBDD.visit(expr).and(getBdd()).isZero()) {
       /*
