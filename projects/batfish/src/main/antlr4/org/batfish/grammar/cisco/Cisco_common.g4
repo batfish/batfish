@@ -157,6 +157,7 @@ icmp_object_type
    | TIMESTAMP_REQUEST
    | TRACEROUTE
    | UNREACHABLE
+   | UNSET
 ;
 
 int_expr
@@ -574,6 +575,16 @@ variable_permissive
 variable_secret
 :
    ~( NEWLINE | ROLE )+
+;
+
+variable_group_id
+:
+    ~( NEWLINE | TCP | TCP_UDP | UDP )+
+;
+
+variable_service_protocol
+:
+     TCP | TCP_UDP | UDP
 ;
 
 variable_vlan

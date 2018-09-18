@@ -25,6 +25,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
@@ -127,7 +128,10 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
@@ -186,6 +190,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CL
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
@@ -671,15 +676,29 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_icmp_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogg_icmp_typeContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogg_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogg_protocolContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogg_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Oggit_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Oggn_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Oggp_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Oggs_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogit_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogit_icmp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogp_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_port_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_service_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
@@ -989,6 +1008,9 @@ import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_group_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_permissiveContext;
+import org.batfish.grammar.cisco.CiscoParser.Variable_service_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
@@ -1031,6 +1053,9 @@ import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
+import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
+import org.batfish.representation.cisco.IcmpTypeGroupTypeLine;
+import org.batfish.representation.cisco.IcmpTypeObjectGroup;
 import org.batfish.representation.cisco.InspectClassMap;
 import org.batfish.representation.cisco.InspectClassMapMatch;
 import org.batfish.representation.cisco.InspectClassMapMatchAccessGroup;
@@ -1072,6 +1097,7 @@ import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
+import org.batfish.representation.cisco.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.RangeCommunitySetElemHalf;
 import org.batfish.representation.cisco.RipProcess;
@@ -1158,6 +1184,9 @@ import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.SecurityZonePair;
 import org.batfish.representation.cisco.ServiceObject;
 import org.batfish.representation.cisco.ServiceObjectGroup;
+import org.batfish.representation.cisco.ServiceObjectGroup.ServiceProtocol;
+import org.batfish.representation.cisco.ServiceObjectGroupLine;
+import org.batfish.representation.cisco.ServiceObjectGroupReferenceServiceObjectGroupLine;
 import org.batfish.representation.cisco.ServiceObjectReferenceServiceObjectGroupLine;
 import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
@@ -1170,6 +1199,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
+import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
@@ -1455,6 +1485,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NetworkObject _currentNetworkObject;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private IcmpTypeObjectGroup _currentIcmpTypeObjectGroup;
 
   private ProtocolObjectGroup _currentProtocolObjectGroup;
 
@@ -2538,6 +2570,146 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterOg_icmp_type(Og_icmp_typeContext ctx) {
+    String name = ctx.name.getText();
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
+      warnObjectGroupRedefinition(name);
+    } else {
+      _currentIcmpTypeObjectGroup =
+          _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
+      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOgit_icmp_object(Ogit_icmp_objectContext ctx) {
+    _currentIcmpTypeObjectGroup
+        .getLines()
+        .add(new IcmpTypeGroupTypeLine(toIcmpType(ctx.icmp_object_type())));
+  }
+
+  @Override
+  public void exitOgit_group_object(Ogit_group_objectContext ctx) {
+    addIcmpTypeGroupReference(ctx.name);
+  }
+
+  @Override
+  public void exitOg_icmp_type(Og_icmp_typeContext ctx) {
+    _currentIcmpTypeObjectGroup = null;
+  }
+
+  @Override
+  public void enterOgg_icmp_type(Ogg_icmp_typeContext ctx) {
+    String name = ctx.name.getText();
+    _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      warnObjectGroupRedefinition(name);
+    } else {
+      _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
+      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOggit_group_object(Oggit_group_objectContext ctx) {
+    addIcmpTypeGroupReference(ctx.name);
+  }
+
+  @Override
+  public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
+    _currentIcmpTypeObjectGroup = null;
+  }
+
+  private void addIcmpTypeGroupReference(Variable_permissiveContext nameCtx) {
+    String name = nameCtx.getText();
+    _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
+  }
+
+  @Override
+  public void enterOgg_network(Ogg_networkContext ctx) {
+    String name = ctx.name.getText();
+    _currentNetworkObjectGroup = new NetworkObjectGroup(name);
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      warnObjectGroupRedefinition(name);
+    } else {
+      _configuration.getNetworkObjectGroups().put(name, _currentNetworkObjectGroup);
+      _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
+      defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOggn_group_object(Oggn_group_objectContext ctx) {
+    String name = ctx.name.getText();
+    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _configuration.referenceStructure(
+        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
+  }
+
+  @Override
+  public void exitOgg_network(Ogg_networkContext ctx) {
+    _currentNetworkObjectGroup = null;
+  }
+
+  @Override
+  public void enterOgg_protocol(Ogg_protocolContext ctx) {
+    String name = ctx.name.getText();
+    _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      warnObjectGroupRedefinition(name);
+    } else {
+      _configuration.getProtocolObjectGroups().put(name, _currentProtocolObjectGroup);
+      _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
+      defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOggp_group_object(Oggp_group_objectContext ctx) {
+    String name = ctx.name.getText();
+    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        PROTOCOL_OBJECT_GROUP,
+        name,
+        EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+        ctx.name.start.getLine());
+  }
+
+  @Override
+  public void exitOgg_protocol(Ogg_protocolContext ctx) {
+    _currentProtocolObjectGroup = null;
+  }
+
+  @Override
+  public void enterOgg_service(Ogg_serviceContext ctx) {
+    String name = ctx.name.getText();
+    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
+    _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
+    if (_configuration.getObjectGroups().containsKey(name)) {
+      warnObjectGroupRedefinition(name);
+    } else {
+      _configuration.getServiceObjectGroups().put(name, _currentServiceObjectGroup);
+      _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
+      defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOggs_group_object(Oggs_group_objectContext ctx) {
+    addServiceGroupReference(ctx.name);
+  }
+
+  @Override
+  public void exitOgg_service(Ogg_serviceContext ctx) {
+    _currentServiceObjectGroup = null;
+  }
+
+  @Override
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
     // If there is a conflict, create a dummy object group
@@ -2560,13 +2732,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterOg_service(Og_serviceContext ctx) {
     String name = ctx.name.getText();
+    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
-      _currentServiceObjectGroup = new ServiceObjectGroup(name);
+      _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
       warnObjectGroupRedefinition(name);
     } else {
       _currentServiceObjectGroup =
-          _configuration.getServiceObjectGroups().computeIfAbsent(name, ServiceObjectGroup::new);
+          _configuration
+              .getServiceObjectGroups()
+              .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
       defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
@@ -2650,6 +2825,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgp_group_object(Ogp_group_objectContext ctx) {
+    String name = ctx.name.getText();
+    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
+    _configuration.referenceStructure(
+        PROTOCOL_OBJECT_GROUP, name, PROTOCOL_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
+  }
+
+  @Override
   public void exitOgs_icmp(Ogs_icmpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new IcmpServiceObjectGroupLine());
   }
@@ -2680,6 +2863,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgs_group_object(Ogs_group_objectContext ctx) {
+    addServiceGroupReference(ctx.name);
+  }
+
+  private void addServiceGroupReference(Variable_group_idContext nameCtx) {
+    String name = nameCtx.getText();
+    _currentServiceObjectGroup
+        .getLines()
+        .add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
+    _configuration.referenceStructure(
+        SERVICE_OBJECT_GROUP,
+        name,
+        EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+        nameCtx.start.getLine());
+  }
+
+  @Override
   public void exitOgs_tcp(Ogs_tcpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new TcpServiceObjectGroupLine(toPortRanges(ctx.ps)));
   }
@@ -2687,6 +2887,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOgs_udp(Ogs_udpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new UdpServiceObjectGroupLine(toPortRanges(ctx.ps)));
+  }
+
+  @Override
+  public void exitOgs_port_object(Ogs_port_objectContext ctx) {
+    List<SubRange> ranges = toPortRanges(ctx.ps);
+    ServiceProtocol protocol = _currentServiceObjectGroup.getProtocol();
+    ServiceObjectGroupLine line;
+    if (protocol == null || protocol == ServiceProtocol.TCP_UDP) {
+      line = new TcpUdpServiceObjectGroupLine(ranges);
+    } else if (protocol == ServiceProtocol.TCP) {
+      line = new TcpServiceObjectGroupLine(ranges);
+    } else if (protocol == ServiceProtocol.UDP) {
+      line = new UdpServiceObjectGroupLine(ranges);
+    } else {
+      throw new IllegalStateException(
+          "Unexpected service object group protocol: '" + protocol + "'");
+    }
+    _currentServiceObjectGroup.getLines().add(line);
   }
 
   @Override
@@ -9379,6 +9597,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IcmpType.ECHO_REQUEST;
     } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
+    } else if (ctx.INFORMATION_REPLY() != null) {
+      return IcmpType.INFO_REPLY;
+    } else if (ctx.INFORMATION_REQUEST() != null) {
+      return IcmpType.INFO_REQUEST;
+    } else if (ctx.MASK_REPLY() != null) {
+      return IcmpType.MASK_REPLY;
+    } else if (ctx.MASK_REQUEST() != null) {
+      return IcmpType.MASK_REQUEST;
     } else if (ctx.MOBILE_REDIRECT() != null) {
       return IcmpType.MOBILE_REDIRECT;
     } else if (ctx.PARAMETER_PROBLEM() != null) {
@@ -9401,6 +9627,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IcmpType.TRACEROUTE;
     } else if (ctx.UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
+    } else if (ctx.UNSET() != null) {
+      return IcmpType.UNSET;
     } else {
       throw convError(IcmpType.class, ctx);
     }
@@ -10490,6 +10718,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void warnObjectGroupRedefinition(String name) {
     _w.redFlag("Object group defined multiple times: '" + name + "'");
+  }
+
+  private void warnUndefinedObjectGroupReferenced(String name) {
+    _w.redFlag("Referenced object group was not defined: '" + name + "'");
+  }
+
+  @Nullable
+  private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
+      Variable_service_protocolContext protocol) {
+    if (protocol == null) {
+      return null;
+    }
+    switch (protocol.getText()) {
+      case "tcp":
+        return ServiceProtocol.TCP;
+      case "udp":
+        return ServiceProtocol.UDP;
+      case "tcp-udp":
+        return ServiceProtocol.TCP_UDP;
+      default:
+        _w.redFlag("got unexpected service protocol type: '" + protocol.getText() + "'");
+        return null;
+    }
   }
 
   @Override

@@ -46,13 +46,13 @@
         "value" : "main",
         "values" : [
           {
+            "name" : "main"
+          },
+          {
             "name" : "bgp"
           },
           {
             "name" : "bgpmp"
-          },
-          {
-            "name" : "main"
           }
         ]
       },

@@ -4,20 +4,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
 /** A utility class to diff two tables */
@@ -28,19 +25,12 @@ public final class TableDiff {
 
   private static final String COL_BASE_PREFIX = "Base_";
   private static final String COL_DELTA_PREFIX = "Delta_";
-  private static final String COL_DIFF_PREFIX = "Diff_";
 
   public static final String COL_KEY_PRESENCE = "KeyPresence";
   public static final String COL_KEY_PRESENCE_DESC = "In which table(s) is the key present";
   public static final String COL_KEY_STATUS_BOTH = "In both";
   public static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
   public static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
-
-  static final String NULL_VALUE_BASE = "Base value is null";
-  private static final String NULL_VALUE_DELTA = "Delta value is null";
-
-  public static final String RESULT_DIFFERENT = "<Different>";
-  public static final String RESULT_SAME = "<Same>";
 
   /** Returns the modified column name to represent the delta value of the original column */
   public static String baseColumnName(String originalColumnName) {
@@ -65,56 +55,6 @@ public final class TableDiff {
   /** Returns the modified column name to represent the delta value of the original column */
   public static String deltaColumnName(String originalColumnName) {
     return COL_DELTA_PREFIX + originalColumnName;
-  }
-
-  @VisibleForTesting
-  static String diffColumnDescription(String originalColumnName) {
-    return "Difference between base and delta for " + originalColumnName;
-  }
-
-  /** Returns the modified column name to represent the delta value of the original column */
-  public static String diffColumnName(String originalColumnName) {
-    return COL_DIFF_PREFIX + originalColumnName;
-  }
-
-  @VisibleForTesting
-  static String resultDifferent(String message) {
-    return RESULT_DIFFERENT + ": " + message;
-  }
-
-  /**
-   * Computes the String representation of the difference for base and delta values.
-   *
-   * <p>The underlying Schema of both values should be the same, though one or both values may be
-   * null. Meaningful diffs are currently computed only for Integers and Sets.
-   */
-  @VisibleForTesting
-  static String diffCells(@Nullable Object baseValue, @Nullable Object deltaValue, Schema schema) {
-    if (baseValue == null && deltaValue == null) {
-      return RESULT_SAME;
-    } else if (baseValue == null) {
-      return resultDifferent(NULL_VALUE_BASE);
-    } else if (deltaValue == null) {
-      return resultDifferent(NULL_VALUE_DELTA);
-    } else if (baseValue.equals(deltaValue)) {
-      return RESULT_SAME;
-    }
-    if (schema.equals(Schema.INTEGER)) {
-      return resultDifferent(Objects.toString((Integer) baseValue - (Integer) deltaValue));
-    } else if (schema.getType() == Type.SET) {
-      Sets.SetView<?> added = Sets.difference((Set<?>) baseValue, (Set<?>) deltaValue);
-      Sets.SetView<?> removed = Sets.difference((Set<?>) deltaValue, (Set<?>) baseValue);
-      StringBuilder diff = new StringBuilder();
-      if (!added.isEmpty()) {
-        diff.append("\n + ").append(Objects.toString(added.immutableCopy()));
-      }
-      if (!removed.isEmpty()) {
-        diff.append("\n - ").append(Objects.toString(removed.immutableCopy()));
-      }
-      return resultDifferent(diff.toString());
-    } else {
-      return RESULT_DIFFERENT;
-    }
   }
 
   /**
@@ -154,15 +94,6 @@ public final class TableDiff {
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
         continue;
-      }
-      if (cm.getIsValue()) {
-        diffColumnMetatadata.add(
-            new ColumnMetadata(
-                diffColumnName(cm.getName()),
-                Schema.STRING,
-                diffColumnDescription(cm.getName()),
-                false,
-                true));
       }
       diffColumnMetatadata.add(
           new ColumnMetadata(
@@ -205,14 +136,6 @@ public final class TableDiff {
       }
       Object baseValue = baseRow == null ? null : baseRow.get(cm.getName(), cm.getSchema());
       Object deltaValue = deltaRow == null ? null : deltaRow.get(cm.getName(), cm.getSchema());
-      if (cm.getIsValue()) {
-        if (baseRow == null || deltaRow == null) {
-          rowBuilder.put(diffColumnName(cm.getName()), resultDifferent(keyStatus));
-        } else {
-          rowBuilder.put(
-              diffColumnName(cm.getName()), diffCells(baseValue, deltaValue, cm.getSchema()));
-        }
-      }
       rowBuilder
           .put(baseColumnName(cm.getName()), baseValue)
           .put(deltaColumnName(cm.getName()), deltaValue);
