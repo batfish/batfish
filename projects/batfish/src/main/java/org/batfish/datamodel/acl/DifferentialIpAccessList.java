@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceRenamer;
+import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
 /**
  * Given two {@link IpAccessList ACLs} {@code denyAcl} and {@code permitAcl}, generate a new ACL
@@ -104,7 +104,7 @@ public final class DifferentialIpAccessList {
                                 RENAMER.apply(entry.getKey()),
                                 ipSpaceRenamer.apply(entry.getValue())))
                     .collect(Collectors.toList()))
-            // include add the permitIpSpaces (no need to renamed).
+            // include add the permitIpSpaces (no need to rename).
             .putAll(permitNamedIpSpaces)
             .build();
     return new DifferentialIpAccessList(differentialAcl, namedAcls, namedIpSpaces);

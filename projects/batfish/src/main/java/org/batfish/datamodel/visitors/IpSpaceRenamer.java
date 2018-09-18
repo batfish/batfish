@@ -1,9 +1,17 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.visitors;
 
 import com.google.common.collect.ImmutableList;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcardIpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.UniverseIpSpace;
 
 /**
  * Renames all {@link IpSpaceReference} expressions in an input {@link IpSpace} using an input

@@ -1,9 +1,20 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.visitors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
 
 public class IpSpaceRenamerTest {

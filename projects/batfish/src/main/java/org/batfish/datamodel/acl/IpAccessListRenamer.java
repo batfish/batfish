@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceRenamer;
+import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
 /**
  * Renames references to named {@link org.batfish.datamodel.IpAccessList ACLs} and {@link IpSpace

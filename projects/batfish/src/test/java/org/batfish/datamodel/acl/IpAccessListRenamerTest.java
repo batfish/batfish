@@ -18,8 +18,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpSpaceRenamer;
 import org.batfish.datamodel.acl.IpAccessListRenamer.Visitor;
+import org.batfish.datamodel.visitors.IpSpaceRenamer;
 import org.junit.Test;
 
 public class IpAccessListRenamerTest {
