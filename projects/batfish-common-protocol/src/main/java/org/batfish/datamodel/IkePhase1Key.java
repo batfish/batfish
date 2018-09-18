@@ -75,7 +75,7 @@ public class IkePhase1Key implements Serializable {
    */
   public boolean match(String localInterface, IpWildcard matchIdentity) {
     return matchIdentity != null
-        && IpSpaceRepresentative.load()
+        && new IpSpaceRepresentative()
             .getRepresentative(AclIpSpace.intersection(_remoteIdentity, matchIdentity.toIpSpace()))
             .isPresent()
         && (_localInterface.equals(UNSET_LOCAL_INTERFACE)
