@@ -2,8 +2,10 @@ package org.batfish.datamodel.acl.explanation;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -73,5 +75,19 @@ public class DisjunctsBuilderTest {
     _orBuilder.add(DST_PREFIX);
     _orBuilder.add(new NotMatchExpr(DST_PREFIX));
     assertThat(_orBuilder.build(), equalTo(TRUE));
+  }
+
+  @Test
+  public void testExpandOr() {
+    _orBuilder.add(or(DST_IP, SRC_IP));
+    _orBuilder.add(DST_PREFIX);
+    assertThat(_orBuilder.build(), equalTo(or(SRC_IP, DST_PREFIX)));
+  }
+
+  @Test
+  public void testDeMorgan() {
+    _orBuilder.add(not(and(not(DST_IP), SRC_IP)));
+    _orBuilder.add(DST_PREFIX);
+    assertThat(_orBuilder.build(), equalTo(or(not(SRC_IP), DST_PREFIX)));
   }
 }
