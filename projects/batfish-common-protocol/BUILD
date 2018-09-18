@@ -105,6 +105,7 @@ java_library(
     deps = [
         ":common",
         ":recovery_grammar",
+        "//projects/lib/bdd",
         "@antlr4_runtime//:compile",
         "@commons_configuration2//:compile",
         "@commons_lang3//:compile",
