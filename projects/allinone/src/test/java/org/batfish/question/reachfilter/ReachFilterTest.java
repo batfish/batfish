@@ -66,8 +66,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link ReachFilterQuestion}. */
-public final class ReachFilterQuestionTestEndToEnd {
+/** End-to-end tests of {@link org.batfish.question.reachfilter}. */
+public final class ReachFilterTest {
   private static final String IFACE1 = "iface1";
 
   private static final String IFACE2 = "iface2";
