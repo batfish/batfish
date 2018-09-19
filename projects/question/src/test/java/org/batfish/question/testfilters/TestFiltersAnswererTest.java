@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.SortedMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
@@ -67,11 +66,6 @@ public class TestFiltersAnswererTest {
     public MockBatfish(SortedMap<String, Configuration> configurations, SpecifierContext ctxt) {
       _configurations = configurations;
       _specifierContext = ctxt;
-    }
-
-    @Override
-    public BatfishLogger getLogger() {
-      return null;
     }
 
     @Override
