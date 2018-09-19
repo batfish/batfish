@@ -16,6 +16,13 @@ public class FlexibleFilterSpecifierFactoryTest {
   }
 
   @Test
+  public void testInFilterOf() {
+    assertThat(
+        new FlexibleFilterSpecifierFactory().buildFilterSpecifier("inFilterOf(a)"),
+        equalTo(new ShorthandFilterSpecifier(new FiltersSpecifier("INPUTFILTERON:a"))));
+  }
+
+  @Test
   public void testLoad() {
     assertTrue(
         FilterSpecifierFactory.load(FlexibleFilterSpecifierFactory.NAME)
@@ -27,6 +34,13 @@ public class FlexibleFilterSpecifierFactoryTest {
     assertThat(
         new FlexibleFilterSpecifierFactory().buildFilterSpecifier(null),
         equalTo(new ShorthandFilterSpecifierFactory().buildFilterSpecifier(null)));
+  }
+
+  @Test
+  public void testOutFilterOf() {
+    assertThat(
+        new FlexibleFilterSpecifierFactory().buildFilterSpecifier("outFilterOf(a)"),
+        equalTo(new ShorthandFilterSpecifier(new FiltersSpecifier("OUTPUTFILTERON:a"))));
   }
 
   @Test
