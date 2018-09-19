@@ -47,22 +47,6 @@ junit_tests(
 )
 
 junit_tests(
-    name = "AclReachabilityTest",
-    size = "small",
-    srcs = [
-        "src/test/java/org/batfish/question/aclreachability/AclReachabilityTest.java",
-    ],
-    deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-    ],
-)
-
-junit_tests(
     name = "CompareSameNameTest",
     size = "small",
     srcs = [
