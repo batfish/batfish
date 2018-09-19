@@ -1,6 +1,7 @@
 package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.DifferentialIpAccessList.RENAMER;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -84,7 +85,7 @@ public class DifferentialIpAccessListTest {
             .setName(DifferentialIpAccessList.DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
-                    .add(IpAccessListLine.rejecting(permittedByAcl(renamedDenyAclName)))
+                    .add(rejecting(permittedByAcl(renamedDenyAclName)))
                     .addAll(permitAclLines)
                     .build())
             .build();

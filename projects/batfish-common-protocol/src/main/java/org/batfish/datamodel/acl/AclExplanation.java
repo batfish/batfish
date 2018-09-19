@@ -3,7 +3,9 @@ package org.batfish.datamodel.acl;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
 import java.util.Optional;
@@ -173,5 +175,31 @@ public final class AclExplanation {
     AclExplanation explanation = new AclExplanation();
     conjuncts.forEach(explanation._visitor::visit);
     return explanation.build();
+  }
+
+  /** A factor is either a literal or a conjunction of literals. */
+  static AclLineMatchExpr explainFactor(AclLineMatchExpr factor) {
+    if (factor instanceof AndMatchExpr) {
+      return explainLiterals(((AndMatchExpr) factor).getConjuncts());
+    }
+    return explainLiterals(ImmutableList.of(factor));
+  }
+
+  public static AclLineMatchExpr explainNormalForm(AclLineMatchExpr nf) {
+    /*
+     * A normal form is either a factor or a disjunction of factors.
+     */
+    if (nf instanceof OrMatchExpr) {
+      /*
+       * Each disjunct is a factor.
+       */
+      return new OrMatchExpr(
+          ((OrMatchExpr) nf)
+              .getDisjuncts()
+              .stream()
+              .map(AclExplanation::explainFactor)
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+    }
+    return explainFactor(nf);
   }
 }
