@@ -1,7 +1,6 @@
 package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -46,8 +45,20 @@ public final class DifferentialIpAccessList {
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
 
+  /**
+   * Create a new {@link IpAccessList} that permits the difference between two other {@link
+   * IpAccessList IpAccessLists}.
+   *
+   * @param denyAcl The {@link IpAccessList} subtracted in the difference.
+   * @param denyNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
+   *     denyAcl}.
+   * @param denyNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param denyAcl}.
+   * @param permitAcl The {@link IpAccessList} that is subtracted from in the difference.
+   * @param permitNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
+   *     permitAcl}.
+   * @param permitNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param permitAcl}.
+   */
   public static DifferentialIpAccessList create(
-      AclLineMatchExpr invariantExpr,
       IpAccessList denyAcl,
       Map<String, IpAccessList> denyNamedAcls,
       Map<String, IpSpace> denyNamedIpSpaces,
@@ -65,8 +76,6 @@ public final class DifferentialIpAccessList {
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
-                    // reject if invariant not satisfied
-                    .add(rejecting(not(invariantExpr)))
                     // reject if permitted by denyAcl
                     .add(rejecting(new PermittedByAcl(denyAclName)))
                     .addAll(permitAcl.getLines())
