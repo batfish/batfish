@@ -930,6 +930,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_blankContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Send_community_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Service_group_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Service_specifier_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Service_specifier_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Service_specifier_tcp_udpContext;
