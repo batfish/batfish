@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -80,18 +79,14 @@ public class AclToAclLineMatchExprTest {
               ImmutableList.of(ACCEPT_C, REJECT_C, accepting(EXPR_REFERENCE), ACCEPT_D, REJECT_E))
           .build();
 
-  private static AclLineMatchExprToBDD aclLineMatchExprToBDD() {
+  private static IpAccessListToBDD aclLineMatchExprToBDD() {
     return aclLineMatchExprToBDD(ImmutableMap.of());
   }
 
-  private static AclLineMatchExprToBDD aclLineMatchExprToBDD(Map<String, IpAccessList> namedAcls) {
+  private static IpAccessListToBDD aclLineMatchExprToBDD(Map<String, IpAccessList> namedAcls) {
     BDDPacket pkt = new BDDPacket();
     return IpAccessListToBDD.create(
-            pkt,
-            namedAcls,
-            ImmutableMap.of(),
-            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()))
-        .getAclLineMatchExprToBDD();
+        pkt, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()), namedAcls, ImmutableMap.of());
   }
 
   private static AclToAclLineMatchExpr aclToAclLineMatchExpr() {

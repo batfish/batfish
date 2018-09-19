@@ -7,18 +7,18 @@ import static org.hamcrest.Matchers.oneOf;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -29,7 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class AclLineMatchExprToBDDTest {
+/** Test the visitor methods of {@link IpAccessListToBDD}. */
+public class IpAccessListToBDDVisitorTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   private static final String IFACE1 = "iface1";
@@ -40,33 +41,38 @@ public class AclLineMatchExprToBDDTest {
 
   private BDDSourceManager _sourceMgr;
 
-  private AclLineMatchExprToBDD _toBDD;
+  private IpAccessListToBDD _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
     _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of(IFACE1, IFACE2));
-    _toBDD =
-        new AclLineMatchExprToBDD(
-            _pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of(), _sourceMgr);
+    _toBDD = new IpAccessListToBDD(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
   public void testPermittedByAcl() {
     Ip fooIp = new Ip("1.1.1.1");
-    BDD fooIpBDD = _pkt.getSrcIp().value(fooIp.asLong());
+    BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
-    Map<String, Supplier<BDD>> namedAclBDDs = ImmutableMap.of("foo", () -> fooIpBDD);
-    AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, namedAclBDDs, ImmutableMap.of());
+    Map<String, IpAccessList> namedAclBDDs =
+        ImmutableMap.of(
+            "foo",
+            IpAccessList.builder()
+                .setName("foo")
+                .setLines(
+                    ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.matchDst(fooIp))))
+                .build());
+    IpAccessListToBDD toBDD =
+        new IpAccessListToBDD(_pkt, _sourceMgr, namedAclBDDs, ImmutableMap.of());
     assertThat(permittedByAcl.accept(toBDD), equalTo(fooIpBDD));
   }
 
   @Test
   public void testPermittedByAcl_undefined() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
-    AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, ImmutableMap.of(), ImmutableMap.of());
+    IpAccessListToBDD toBDD =
+        new IpAccessListToBDD(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);
@@ -75,10 +81,14 @@ public class AclLineMatchExprToBDDTest {
   @Test
   public void testPermittedByAcl_circular() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
-    Map<String, Supplier<BDD>> namedAclBDDs = new HashMap<>();
-    namedAclBDDs.put("foo", new NonRecursiveSupplier<>(() -> namedAclBDDs.get("foo").get()));
-    AclLineMatchExprToBDD toBDD =
-        new AclLineMatchExprToBDD(_pkt.getFactory(), _pkt, namedAclBDDs, ImmutableMap.of());
+    Map<String, IpAccessList> namedAclBDDs =
+        ImmutableMap.of(
+            "foo",
+            IpAccessList.builder()
+                .setName("foo")
+                .setLines(ImmutableList.of(IpAccessListLine.accepting(permittedByAcl)))
+                .build());
+    IpAccessListToBDD toBDD = IpAccessListToBDD.create(_pkt, namedAclBDDs, ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);

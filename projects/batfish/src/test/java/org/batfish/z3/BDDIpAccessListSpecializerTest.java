@@ -15,10 +15,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
@@ -309,8 +309,7 @@ public class BDDIpAccessListSpecializerTest {
     BDDSourceManager sourceMgr = BDDSourceManager.forInterfaces(pkt, interfaces);
     BDD line2BDD =
         line2.accept(
-            new AclLineMatchExprToBDD(
-                pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of(), sourceMgr));
+            IpAccessListToBDD.create(pkt, sourceMgr, ImmutableMap.of(), ImmutableMap.of()));
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(pkt, line2BDD, ImmutableMap.of(), sourceMgr);
     return line1.accept(specializer);
@@ -456,8 +455,8 @@ public class BDDIpAccessListSpecializerTest {
 
   @Test
   public void testNegate() {
-    AclLineMatchExprToBDD aclLineMatchExprToBDD =
-        new AclLineMatchExprToBDD(PKT.getFactory(), PKT, ImmutableMap.of(), ImmutableMap.of());
+    IpAccessListToBDD ipAccessListToBDD =
+        IpAccessListToBDD.create(PKT, ImmutableMap.of(), ImmutableMap.of());
     IpSpace dstIpSpace = new Ip("1.2.3.4").toIpSpace();
     HeaderSpace headerSpace =
         HeaderSpace.builder()
@@ -470,17 +469,16 @@ public class BDDIpAccessListSpecializerTest {
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     AclLineMatchExpr specialized = expr.accept(specializer);
-    BDD exprBDD = expr.accept(aclLineMatchExprToBDD).and(headerSpaceBDD);
-    BDD specializedBDD = specialized.accept(aclLineMatchExprToBDD).and(headerSpaceBDD);
+    BDD exprBDD = expr.accept(ipAccessListToBDD).and(headerSpaceBDD);
+    BDD specializedBDD = specialized.accept(ipAccessListToBDD).and(headerSpaceBDD);
     assertThat(exprBDD, equalTo(specializedBDD));
 
     headerSpaceBDD = DST_IP_SPACE_TO_BDD.visit(new Ip("0.0.0.1").toIpSpace());
     specializer = new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     specialized = expr.accept(specializer);
-    exprBDD = expr.accept(aclLineMatchExprToBDD).and(headerSpaceBDD);
-    specializedBDD = specialized.accept(aclLineMatchExprToBDD).and(headerSpaceBDD);
+    exprBDD = expr.accept(ipAccessListToBDD).and(headerSpaceBDD);
+    specializedBDD = specialized.accept(ipAccessListToBDD).and(headerSpaceBDD);
     assertThat(exprBDD, equalTo(specializedBDD));
-    return;
   }
 
   @Test
