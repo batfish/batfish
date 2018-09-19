@@ -758,7 +758,6 @@ if_null_block
       | ROUTE_CACHE
       | ROUTE_ONLY
       | SCRAMBLE
-      | SECURITY_LEVEL
       | SERIAL
       | SERVICE_MODULE
       | SFLOW
@@ -1246,6 +1245,11 @@ if_zone_member
    ZONE_MEMBER SECURITY name = variable_permissive NEWLINE
 ;
 
+if_security_level
+:
+   SECURITY_LEVEL level = variable_permissive NEWLINE
+;
+
 ifdhcp_null
 :
    (
@@ -1518,6 +1522,7 @@ if_inner
    | if_vrf_member
    | if_vrrp
    | if_zone_member
+   | if_security_level
    // do not rearrange items below
  
    | if_null_single

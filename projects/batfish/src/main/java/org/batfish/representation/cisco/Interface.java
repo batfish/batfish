@@ -208,6 +208,8 @@ public class Interface implements Serializable {
 
   private String _securityZone;
 
+  @Nullable private Integer _securityLevel;
+
   public static double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
@@ -475,6 +477,11 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
+  @Nullable
+  public Integer getSecurityLevel() {
+    return _securityLevel;
+  }
+
   public String getVrf() {
     return _vrf;
   }
@@ -657,5 +664,9 @@ public class Interface implements Serializable {
 
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
+  }
+
+  public void setSecurityLevel(@Nullable Integer level) {
+    _securityLevel = level;
   }
 }
