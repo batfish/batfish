@@ -5,7 +5,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -16,14 +16,14 @@ import org.batfish.datamodel.acl.normalize.Negate;
  * disjuncts and to short-circuit when the set of disjuncts is valid.
  */
 public final class DisjunctsBuilder extends AclLineMatchExprSetBuilder {
-  private AclLineMatchExprToBDD _aclLineMatchExprToBDD;
-  BDD _zero;
-  BDD _one;
+  private final IpAccessListToBDD _ipAccessListToBDD;
+  private final BDD _zero;
+  private final BDD _one;
 
-  public DisjunctsBuilder(AclLineMatchExprToBDD aclLineMatchExprToBDD) {
-    super(aclLineMatchExprToBDD, aclLineMatchExprToBDD.getBDDPacket().getFactory().zero());
-    BDDFactory factory = aclLineMatchExprToBDD.getBDDPacket().getFactory();
-    _aclLineMatchExprToBDD = aclLineMatchExprToBDD;
+  public DisjunctsBuilder(IpAccessListToBDD ipAccessListToBDD) {
+    super(ipAccessListToBDD, ipAccessListToBDD.getBDDPacket().getFactory().zero());
+    BDDFactory factory = ipAccessListToBDD.getBDDPacket().getFactory();
+    _ipAccessListToBDD = ipAccessListToBDD;
     _one = factory.one();
     _zero = factory.zero();
   }
@@ -55,7 +55,7 @@ public final class DisjunctsBuilder extends AclLineMatchExprSetBuilder {
      * disjunct separately (so we can detect and remove redundant disjuncts). This could create some
      * extra work though, so only do this if the conjunction won't be valid after adding.
      */
-    if (_aclLineMatchExprToBDD.visit(expr).or(getBdd()).isOne()) {
+    if (_ipAccessListToBDD.visit(expr).or(getBdd()).isOne()) {
       /*
        * expr is valid with the other conjuncts. Just add it now.
        */

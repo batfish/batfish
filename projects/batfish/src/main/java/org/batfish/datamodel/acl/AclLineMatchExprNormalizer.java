@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.datamodel.acl.explanation.ConjunctsBuilder;
 import org.batfish.datamodel.acl.normalize.Negate;
 
@@ -25,17 +25,17 @@ import org.batfish.datamodel.acl.normalize.Negate;
  * simpler to grok) in order to detect those contradictions earlier.
  */
 public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExprVisitor<Void> {
-  private final AclLineMatchExprToBDD _aclLineMatchExprToBDD;
+  private final IpAccessListToBDD _ipAccessListToBDD;
   private Set<ConjunctsBuilder> _conjunctsBuilders;
 
-  private AclLineMatchExprNormalizer(AclLineMatchExprToBDD aclLineMatchExprToBDD) {
-    _aclLineMatchExprToBDD = aclLineMatchExprToBDD;
+  private AclLineMatchExprNormalizer(IpAccessListToBDD ipAccessListToBDD) {
+    _ipAccessListToBDD = ipAccessListToBDD;
     _conjunctsBuilders = new HashSet<>();
-    _conjunctsBuilders.add(new ConjunctsBuilder(_aclLineMatchExprToBDD));
+    _conjunctsBuilders.add(new ConjunctsBuilder(_ipAccessListToBDD));
   }
 
   private AclLineMatchExprNormalizer(AclLineMatchExprNormalizer other) {
-    _aclLineMatchExprToBDD = other._aclLineMatchExprToBDD;
+    _ipAccessListToBDD = other._ipAccessListToBDD;
     _conjunctsBuilders =
         other._conjunctsBuilders.stream().map(ConjunctsBuilder::new).collect(Collectors.toSet());
   }
@@ -43,7 +43,7 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
   /**
    * This method is the public API of the class. It normalizes the input {@link AclLineMatchExpr}.
    */
-  public static AclLineMatchExpr normalize(AclLineMatchExprToBDD toBDD, AclLineMatchExpr expr) {
+  public static AclLineMatchExpr normalize(IpAccessListToBDD toBDD, AclLineMatchExpr expr) {
     AclLineMatchExprNormalizer normalizer = new AclLineMatchExprNormalizer(toBDD);
     expr.accept(normalizer);
     Set<AclLineMatchExpr> disjuncts =
