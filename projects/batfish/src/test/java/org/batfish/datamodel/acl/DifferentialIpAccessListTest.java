@@ -1,7 +1,9 @@
 package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstIp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.DifferentialIpAccessList.RENAMER;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -71,9 +73,10 @@ public class DifferentialIpAccessListTest {
     Map<String, IpSpace> permitNamedIpSpaces =
         ImmutableMap.of(permitNamedIpSpace, new IpSpaceReference(permitNamedIpSpace));
 
+    AclLineMatchExpr invariantExpr = matchDstIp("1.1.1.1");
     DifferentialIpAccessList differential =
         DifferentialIpAccessList.create(
-            TRUE,
+            invariantExpr,
             denyAcl,
             denyNamedAcls,
             denyNamedIpSpaces,
@@ -86,7 +89,8 @@ public class DifferentialIpAccessListTest {
             .setName(DifferentialIpAccessList.DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
-                    .add(IpAccessListLine.rejecting(permittedByAcl(renamedDenyAclName)))
+                    .add(rejecting(not(invariantExpr)))
+                    .add(rejecting(permittedByAcl(renamedDenyAclName)))
                     .addAll(permitAclLines)
                     .build())
             .build();
