@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.AclLineMatchExprToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -55,10 +55,10 @@ public final class AclToAclLineMatchExpr
 
   /** Reduce an entire {@link IpAccessList} to a single {@link AclLineMatchExpr}. */
   public static AclLineMatchExpr toAclLineMatchExpr(
-      @Nonnull AclLineMatchExprToBDD aclMatchExprToBDD,
+      @Nonnull IpAccessListToBDD ipAccessListToBDD,
       IpAccessList acl,
       Map<String, IpAccessList> namedAcls) {
-    return new AclToAclLineMatchExpr(aclMatchExprToBDD, namedAcls).toAclLineMatchExpr(acl);
+    return new AclToAclLineMatchExpr(ipAccessListToBDD, namedAcls).toAclLineMatchExpr(acl);
   }
 
   /**
@@ -67,10 +67,8 @@ public final class AclToAclLineMatchExpr
    * equivalent to the input ACL.
    */
   public static List<IpAccessListLine> aclLines(
-      AclLineMatchExprToBDD aclMatchExprToBDD,
-      IpAccessList acl,
-      Map<String, IpAccessList> namedAcls) {
-    AclToAclLineMatchExpr toMatchExpr = new AclToAclLineMatchExpr(aclMatchExprToBDD, namedAcls);
+      IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
+    AclToAclLineMatchExpr toMatchExpr = new AclToAclLineMatchExpr(ipAccessListToBDD, namedAcls);
     return acl.getLines()
         .stream()
         .map(
@@ -84,12 +82,12 @@ public final class AclToAclLineMatchExpr
 
   private final Map<String, Supplier<AclLineMatchExpr>> _namedAclThunks;
 
-  private AclLineMatchExprToBDD _aclMatchExprToBDD;
+  private IpAccessListToBDD _ipAccessListToBDD;
 
   @VisibleForTesting
   AclToAclLineMatchExpr(
-      @Nonnull AclLineMatchExprToBDD aclMatchExprToBDD, Map<String, IpAccessList> namedAcls) {
-    _aclMatchExprToBDD = aclMatchExprToBDD;
+      @Nonnull IpAccessListToBDD ipAccessListToBDD, Map<String, IpAccessList> namedAcls) {
+    _ipAccessListToBDD = ipAccessListToBDD;
     _namedAclThunks = createThunks(namedAcls);
   }
 
@@ -107,7 +105,7 @@ public final class AclToAclLineMatchExpr
      * We're going to construct an OrMatchExpr with a disjunct per PERMIT line in the ACL. We use
      * a disjuncts builder to remove redundant disjuncts.
      */
-    DisjunctsBuilder disjunctsBuilder = new DisjunctsBuilder(_aclMatchExprToBDD);
+    DisjunctsBuilder disjunctsBuilder = new DisjunctsBuilder(_ipAccessListToBDD);
 
     /*
      * The disjunct for each PERMIT line is the expression "match the line but do not match any
@@ -124,7 +122,7 @@ public final class AclToAclLineMatchExpr
          * is an AndMatchExpr -- matches this line, and doesn't match each previous DENY line. We
          * use a ConjunctsBuilder to remove redundant conjuncts.
          */
-        ConjunctsBuilder conjunctsBuilder = new ConjunctsBuilder(_aclMatchExprToBDD);
+        ConjunctsBuilder conjunctsBuilder = new ConjunctsBuilder(_ipAccessListToBDD);
         // matches this PERMIT line
         conjunctsBuilder.add(expr);
         // does not match any earlier DENY line.
