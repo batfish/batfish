@@ -1,12 +1,12 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -42,14 +42,16 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.TransformationList;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.LocationVisitor;
+import org.batfish.symbolic.bdd.TransformationToBDD;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
@@ -345,31 +347,31 @@ public final class BDDReachabilityAnalysisFactory {
         .map(
             action -> {
               switch (action) {
-                case ACCEPTED:
-                  return new Edge(Accept.INSTANCE, Query.INSTANCE, _one);
-                case DENIED_IN:
-                  return new Edge(DropAclIn.INSTANCE, Query.INSTANCE, _one);
-                case DENIED_OUT:
-                  return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
-                case LOOP:
-                  throw new BatfishException("FlowDisposition LOOP is unsupported");
-                case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
-                  throw new BatfishException(
-                      "FlowDisposition NEIGHBOR_UNREACHABLE_OR_EXITS is unsupported");
-                case NEIGHBOR_UNREACHABLE:
-                  return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
-                case DELIVERED_TO_SUBNET:
-                  return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
-                case EXITS_NETWORK:
-                  return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE, _one);
-                case INSUFFICIENT_INFO:
-                  return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE, _one);
-                case NO_ROUTE:
-                  return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
-                case NULL_ROUTED:
-                  return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE, _one);
-                default:
-                  throw new BatfishException("Unknown FlowDisposition " + action.toString());
+              case ACCEPTED:
+                return new Edge(Accept.INSTANCE, Query.INSTANCE, _one);
+              case DENIED_IN:
+                return new Edge(DropAclIn.INSTANCE, Query.INSTANCE, _one);
+              case DENIED_OUT:
+                return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
+              case LOOP:
+                throw new BatfishException("FlowDisposition LOOP is unsupported");
+              case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
+                throw new BatfishException(
+                    "FlowDisposition NEIGHBOR_UNREACHABLE_OR_EXITS is unsupported");
+              case NEIGHBOR_UNREACHABLE:
+                return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
+              case DELIVERED_TO_SUBNET:
+                return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
+              case EXITS_NETWORK:
+                return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE, _one);
+              case INSUFFICIENT_INFO:
+                return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE, _one);
+              case NO_ROUTE:
+                return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
+              case NULL_ROUTED:
+                return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE, _one);
+              default:
+                throw new BatfishException("Unknown FlowDisposition " + action.toString());
               }
             });
   }
@@ -672,31 +674,21 @@ public final class BDDReachabilityAnalysisFactory {
               PreOutEdgePostNat preOutEdgePostNat =
                   new PreOutEdgePostNat(node1, iface1, node2, iface2);
 
-              List<SourceNat> sourceNats =
-                  _configs.get(node1).getAllInterfaces().get(iface1).getSourceNats();
+              List<Transformation> nats =
+                  Optional.ofNullable(
+                          _configs.get(node1).getAllInterfaces().get(iface1).getEgressNats())
+                      .orElse(new TransformationList())
+                      .getTransformations();
 
-              if (sourceNats == null) {
-                return new Edge(preOutEdge, preOutEdgePostNat, _one);
-              }
-
+              // Only dynamic source NAT implemented in TransformationToBDD
+              TransformationToBDD natToBdd =
+                  new TransformationToBDD(node1, _aclPermitBDDs, _bddPacket);
+              // Safe to remove filter when TransformationToBDD is fully implemented
               List<BDDSourceNat> bddSourceNats =
-                  sourceNats
-                      .stream()
-                      .map(
-                          sourceNat -> {
-                            String aclName = sourceNat.getAcl().getName();
-                            BDD match = aclPermitBDD(node1, aclName);
-                            BDD setSrcIp =
-                                _bddPacket
-                                    .getSrcIp()
-                                    .geq(sourceNat.getPoolIpFirst().asLong())
-                                    .and(
-                                        _bddPacket
-                                            .getSrcIp()
-                                            .leq(sourceNat.getPoolIpLast().asLong()));
-                            return new BDDSourceNat(match, setSrcIp);
-                          })
-                      .collect(ImmutableList.toImmutableList());
+                  nats.stream()
+                      .map(nat -> nat.accept(natToBdd))
+                      .filter(Objects::nonNull)
+                      .collect(toImmutableList());
 
               return new Edge(
                   preOutEdge,
@@ -800,10 +792,10 @@ public final class BDDReachabilityAnalysisFactory {
                                   String name = iface.getName();
                                   BDD ipSpaceBDD =
                                       Stream.of(
-                                              deliveredToSubnetBDDs.get(name),
-                                              exitsNetworkBDDs.get(name),
-                                              neighborUnreachableBDDs.get(name),
-                                              insufficientInfoBDDs.get(name))
+                                          deliveredToSubnetBDDs.get(name),
+                                          exitsNetworkBDDs.get(name),
+                                          neighborUnreachableBDDs.get(name),
+                                          insufficientInfoBDDs.get(name))
                                           .reduce(_zero, BDD::or);
                                   String outAcl = iface.getOutgoingFilterName();
                                   BDD outAclDenyBDD = ignorableAclDenyBDD(node, outAcl);
@@ -1318,7 +1310,7 @@ public final class BDDReachabilityAnalysisFactory {
             !(edge.getPreState() instanceof PreOutEdgePostNat
                 && edge.getPostState() instanceof PreInInterface
                 && forbiddenTransitNodes.contains(
-                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+                ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
   }
 
   /**

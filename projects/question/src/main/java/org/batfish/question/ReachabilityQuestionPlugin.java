@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Objects;
 import java.util.SortedSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -490,7 +491,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getSrcOrDstProtocols() != null && !getSrcOrDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
-        if (!getTransitNodes().equals(DEFAULT_TRANSIT_NODES)) {
+        if (!Objects.equals(getTransitNodes(), DEFAULT_TRANSIT_NODES)) {
           retString += String.format(", %s=%s", PROP_TRANSIT_NODES, getTransitNodes());
         }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
@@ -502,7 +503,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotDstProtocols() != null && !getNotDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_DST_PROTOCOLS, getNotDstProtocols());
         }
-        if (!getNotFinalNodeRegex().equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
+        if (!Objects.equals(getNotFinalNodeRegex(), DEFAULT_NOT_FINAL_NODE_REGEX)) {
           retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, getNotFinalNodeRegex());
         }
         if (getNotFragmentOffsets() != null && !getNotFragmentOffsets().isEmpty()) {
@@ -514,7 +515,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotIcmpTypes() != null && !getNotIcmpTypes().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_ICMP_TYPES, getNotIcmpTypes());
         }
-        if (!getNotIngressNodeRegex().equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
+        if (!Objects.equals(getNotIngressNodeRegex(), DEFAULT_NOT_INGRESS_NODE_REGEX)) {
           retString +=
               String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, getNotIngressNodeRegex());
         }
@@ -533,7 +534,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
-        if (!getNonTransitNodes().equals(DEFAULT_NON_TRANSIT_NODES)) {
+        if (!Objects.equals(getNonTransitNodes(), DEFAULT_NON_TRANSIT_NODES)) {
           retString += String.format(", %s=%s", PROP_NON_TRANSIT_NODES, getNonTransitNodes());
         }
         if (getSrcNatted() != null) {

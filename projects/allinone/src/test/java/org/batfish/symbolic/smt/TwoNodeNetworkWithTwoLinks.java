@@ -51,7 +51,7 @@ public class TwoNodeNetworkWithTwoLinks {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     // second link
@@ -64,7 +64,7 @@ public class TwoNodeNetworkWithTwoLinks {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     // destination for the first link

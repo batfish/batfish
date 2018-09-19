@@ -309,6 +309,16 @@ ADDRESS_HIDING
    'address-hiding'
 ;
 
+ADDRESS_MASK_REPLY
+:
+   'address-mask-reply'
+;
+
+ADDRESS_MASK_REQUEST
+:
+   'address-mask-request'
+;
+
 ADDRESS_POOL
 :
    'address-pool'
@@ -13737,6 +13747,11 @@ IP_PREFIX
 
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
 ;
+
+//IP_PREFIX_LENGTH
+//:
+//   '/' F_Digit F_Digit?
+//;
 
 IPV6_ADDRESS
 :

@@ -1,5 +1,7 @@
 package org.batfish.bddreachability;
 
+import static java.util.Objects.requireNonNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -16,10 +18,11 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 
 /** A test network with two nodes and two static routes from one to the other. */
 public final class TestNetwork {
@@ -104,19 +107,19 @@ public final class TestNetwork {
     _link2Src =
         ib.setAddress(
                 new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(_link2SrcSourceNatAcl)
-                        .setPoolIpFirst(SOURCE_NAT_POOL_IP)
-                        .setPoolIpLast(SOURCE_NAT_POOL_IP)
-                        .build()))
+            .setEgressNats(
+                ImmutableList.of(requireNonNull(DynamicNatRule.builder()
+                    .setAcl(_link2SrcSourceNatAcl)
+                    .setAction(RuleAction.SOURCE_INSIDE)
+                    .setPoolIpFirst(SOURCE_NAT_POOL_IP)
+                    .setPoolIpLast(SOURCE_NAT_POOL_IP)
+                    .build())))
             .setOutgoingFilter(link2PostSourceNatAcl)
             .setOwner(_srcNode)
             .setVrf(srcVrf)
             .build();
 
-    ib.setSourceNats(null);
+    ib.setEgressNats(ImmutableList.of());
     ib.setOutgoingFilter(null);
 
     _link2Dst =

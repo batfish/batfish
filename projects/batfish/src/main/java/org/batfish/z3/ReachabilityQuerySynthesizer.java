@@ -13,6 +13,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -105,7 +106,9 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final void addOriginateRules(ImmutableList.Builder<RuleStatement> rules) {
     // create rules for injecting symbolic packets into ingress node(s)
     BooleanExpr initialConstraint =
-        new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
+        new AndExpr(ImmutableList.of(
+            new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)),
+            new EqExpr(new VarIntExpr(Field.DST_IP), new VarIntExpr(Field.ORIG_DST_IP))));
 
     _srcIpConstraints.forEach(
         (ingressLocation, srcIpConstraint) -> {

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -27,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -46,8 +44,10 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.TransformationList;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.Transformation.Direction;
 
 @ParametersAreNonnullByDefault
 class TracerouteEngineImplContext {
@@ -104,48 +104,42 @@ class TracerouteEngineImplContext {
   private static final String TRACEROUTE_INGRESS_NODE_NAME = "traceroute_source_node";
 
   /**
-   * Applies the given list of source NAT rules to the given flow and returns the new transformed
-   * flow. If {@code sourceNats} is null, empty, or does not contain any ACL rules matching the
-   * {@link Flow}, the original flow is returned.
+   * Applies the given list of NAT rules to the given flow and returns the new transformed flow. If
+   * {@code egressNats} is null, empty, or does not contain any ACL rules matching the {@link Flow},
+   * the original flow is returned.
    *
-   * <p>Each {@link SourceNat} is expected to be valid: it must have a NAT IP or pool.
+   * <p>Each {@link Transformation} is expected to be valid
    */
   @VisibleForTesting
-  static Flow applySourceNat(
+  static Flow applyEgressNats(
       Flow flow,
       @Nullable String srcInterface,
       Map<String, IpAccessList> aclDefinitions,
       Map<String, IpSpace> namedIpSpaces,
-      @Nullable List<SourceNat> sourceNats) {
-    if (CommonUtil.isNullOrEmpty(sourceNats)) {
+      @Nullable TransformationList egressNats) {
+    if (egressNats != null) {
+      return egressNats.apply(flow, Direction.EGRESS, srcInterface, aclDefinitions, namedIpSpaces);
+    }
+    return flow;
+  }
+
+  /**
+   * Applies the given list of NAT rules to the given flow and returns the new transformed flow. If
+   * {@code ingressNats} is null, empty, or does not contain any ACL rules matching the {@link
+   * Flow}, the original flow is returned.
+   *
+   * <p>Each {@link Transformation} is expected to be valid
+   */
+  private static Flow applyIngressNats(
+      Flow flow,
+      Map<String, IpAccessList> aclDefinitions,
+      NavigableMap<String, IpSpace> namedIpSpaces,
+      @Nullable TransformationList ingressNats) {
+    if (ingressNats != null) {
+      return ingressNats.apply(flow, Direction.INGRESS, null, aclDefinitions, namedIpSpaces);
+    } else {
       return flow;
     }
-    Optional<SourceNat> matchingSourceNat =
-        sourceNats
-            .stream()
-            .filter(
-                sourceNat ->
-                    sourceNat.getAcl() != null
-                        && sourceNat
-                                .getAcl()
-                                .filter(flow, srcInterface, aclDefinitions, namedIpSpaces)
-                                .getAction()
-                            != LineAction.DENY)
-            .findFirst();
-    if (!matchingSourceNat.isPresent()) {
-      // No NAT rule matched.
-      return flow;
-    }
-    SourceNat sourceNat = matchingSourceNat.get();
-    Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-    if (natPoolStartIp == null) {
-      throw new BatfishException(
-          String.format(
-              "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
-    }
-    Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
-    transformedFlowBuilder.setSrcIp(natPoolStartIp);
-    return transformedFlowBuilder.build();
   }
 
   @VisibleForTesting
@@ -364,14 +358,14 @@ class TracerouteEngineImplContext {
                 Interface outgoingInterface =
                     nodeConfig.getAllInterfaces().get(nextHopInterface.getInterface());
 
-                // Apply any relevant source NAT rules.
+                // Apply any relevant NAT rules.
                 Flow newTransformedFlow =
-                    applySourceNat(
+                    applyEgressNats(
                         transformedFlow,
                         srcInterfaceName,
                         aclDefinitions,
                         namedIpSpaces,
-                        outgoingInterface.getSourceNats());
+                        outgoingInterface.getEgressNats());
 
                 SortedSet<Edge> edges =
                     _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
@@ -607,6 +601,15 @@ class TracerouteEngineImplContext {
         return;
       }
     }
+
+    // Apply any relevant NAT rules.
+    Flow newTransformedFlow =
+        applyIngressNats(
+            transmissionContext._transformedFlow,
+            transmissionContext._aclDefinitions,
+            transmissionContext._namedIpSpaces,
+            nextInterface.getIngressNats());
+
     // recurse
     collectFlowTraces(
         nextNodeName,
@@ -615,7 +618,7 @@ class TracerouteEngineImplContext {
         transmissionContext._hopsSoFar,
         transmissionContext._flowTraces,
         transmissionContext._originalFlow,
-        transmissionContext._transformedFlow);
+        newTransformedFlow);
   }
 
   SortedMap<Flow, Set<FlowTrace>> processFlows() {

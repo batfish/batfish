@@ -98,7 +98,13 @@ public interface SynthesizerInput {
    * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
    * transformationToApply)]
    */
-  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressNats();
+
+  /**
+   * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
+   * transformationToApply)]
+   */
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressNats();
 
   /** The set of nodes for which we should track whether they are transited */
   Set<String> getTransitNodes();

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -12,7 +11,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +31,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -48,6 +47,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    @Nullable private TransformationList _egressNats;
+
     @Nullable private EigrpInterfaceSettings _eigrp;
 
     private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -55,6 +56,8 @@ public final class Interface extends ComparableStructure<String> {
     private String _hsrpVersion;
 
     private IpAccessList _incomingFilter;
+
+    @Nullable private TransformationList _ingressNats;
 
     private IsisInterfaceSettings _isis;
 
@@ -78,8 +81,6 @@ public final class Interface extends ComparableStructure<String> {
 
     private Set<InterfaceAddress> _secondaryAddresses;
 
-    private List<SourceNat> _sourceNats;
-
     private SortedSet<Ip> _additionalArpIps;
 
     private Vrf _vrf;
@@ -93,7 +94,6 @@ public final class Interface extends ComparableStructure<String> {
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
-      _sourceNats = ImmutableList.of();
       _vrrpGroups = ImmutableSortedMap.of();
     }
 
@@ -112,10 +112,12 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setEgressNats(_egressNats);
       iface.setEigrp(_eigrp);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
       iface.setIncomingFilter(_incomingFilter);
+      iface.setIngressNats(_ingressNats);
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
@@ -132,7 +134,6 @@ public final class Interface extends ComparableStructure<String> {
         _owner.getAllInterfaces().put(name, iface);
       }
       iface.setProxyArp(_proxyArp);
-      iface.setSourceNats(_sourceNats);
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -217,6 +218,16 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setEgressNats(TransformationList egressNats) {
+      _egressNats = egressNats;
+      return this;
+    }
+
+    public Builder setEgressNats(List<Transformation> egressNats) {
+      _egressNats = new TransformationList(egressNats);
+      return this;
+    }
+
     public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
       return this;
@@ -234,6 +245,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setIncomingFilter(IpAccessList incomingFilter) {
       _incomingFilter = incomingFilter;
+      return this;
+    }
+
+    public Builder setIngressNats(List<Transformation> ingressNats) {
+      _ingressNats = new TransformationList(ingressNats);
       return this;
     }
 
@@ -299,11 +315,6 @@ public final class Interface extends ComparableStructure<String> {
      */
     public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
-      return this;
-    }
-
-    public Builder setSourceNats(List<SourceNat> sourceNats) {
-      _sourceNats = sourceNats;
       return this;
     }
 
@@ -403,6 +414,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
+  private static final String PROP_EGRESS_NATS = "egressNats";
+
   private static final String PROP_EIGRP = "eigrp";
 
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
@@ -412,6 +425,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
+
+  private static final String PROP_INGRESS_NATS = "ingressNats";
 
   private static final String PROP_INTERFACE_TYPE = "type";
 
@@ -452,8 +467,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_RIP_PASSIVE = "ripPassive";
 
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
-
-  private static final String PROP_SOURCE_NATS = "sourceNats";
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
@@ -672,6 +685,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<Ip> _dhcpRelayAddresses;
 
+  @Nullable private TransformationList _egressNats;
+
   @Nullable private EigrpInterfaceSettings _eigrp;
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -683,6 +698,8 @@ public final class Interface extends ComparableStructure<String> {
   private IpAccessList _incomingFilter;
 
   private transient String _incomingFilterName;
+
+  @Nullable private TransformationList _ingressNats;
 
   private InterfaceType _interfaceType;
 
@@ -723,8 +740,6 @@ public final class Interface extends ComparableStructure<String> {
   private RoutingPolicy _routingPolicy;
 
   private transient String _routingPolicyName;
-
-  private List<SourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
@@ -783,7 +798,6 @@ public final class Interface extends ComparableStructure<String> {
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
-    _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
   }
@@ -960,6 +974,12 @@ public final class Interface extends ComparableStructure<String> {
     return _dhcpRelayAddresses;
   }
 
+  @JsonProperty(PROP_EGRESS_NATS)
+  @Nullable
+  public TransformationList getEgressNats() {
+    return _egressNats;
+  }
+
   @JsonProperty(PROP_EIGRP)
   public @Nullable EigrpInterfaceSettings getEigrp() {
     return _eigrp;
@@ -1013,6 +1033,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("The type of this interface")
   public InterfaceType getInterfaceType() {
     return _interfaceType;
+  }
+
+  @JsonProperty(PROP_INGRESS_NATS)
+  @Nullable
+  public TransformationList getIngressNats() {
+    return _ingressNats;
   }
 
   @JsonProperty(PROP_ISIS)
@@ -1177,11 +1203,6 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  @JsonProperty(PROP_SOURCE_NATS)
-  public List<SourceNat> getSourceNats() {
-    return _sourceNats;
-  }
-
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
   @JsonPropertyDescription("Whether or not spanning-tree portfast feature is enabled")
   public boolean getSpanningTreePortfast() {
@@ -1335,6 +1356,11 @@ public final class Interface extends ComparableStructure<String> {
     _dhcpRelayAddresses = ImmutableList.copyOf(dhcpRelayAddresses);
   }
 
+  @JsonProperty(PROP_EGRESS_NATS)
+  public void setEgressNats(@Nullable TransformationList egressNats) {
+    _egressNats = egressNats;
+  }
+
   @JsonProperty(PROP_EIGRP)
   public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
     _eigrp = eigrp;
@@ -1368,6 +1394,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_INCOMING_FILTER)
   public void setIncomingFilterName(String incomingFilterName) {
     _incomingFilterName = incomingFilterName;
+  }
+
+  @JsonProperty(PROP_INGRESS_NATS)
+  public void setIngressNats(@Nullable TransformationList ingressNats) {
+    _ingressNats = ingressNats;
   }
 
   @JsonProperty(PROP_INTERFACE_TYPE)
@@ -1495,11 +1526,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ROUTING_POLICY)
   public void setRoutingPolicy(String routingPolicyName) {
     _routingPolicyName = routingPolicyName;
-  }
-
-  @JsonProperty(PROP_SOURCE_NATS)
-  public void setSourceNats(List<SourceNat> sourceNats) {
-    _sourceNats = sourceNats;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)

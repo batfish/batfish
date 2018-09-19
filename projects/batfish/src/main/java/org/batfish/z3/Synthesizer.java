@@ -37,6 +37,7 @@ import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
+import org.batfish.z3.state.PostInInterfacePostNat;
 
 public class Synthesizer {
 
@@ -91,6 +92,7 @@ public class Synthesizer {
               NodeNeighborUnreachableOrExitsNetwork.State.INSTANCE,
               OriginateVrf.State.INSTANCE,
               PostInInterface.State.INSTANCE,
+              PostInInterfacePostNat.State.INSTANCE,
               PostInVrf.State.INSTANCE,
               PostOutEdge.State.INSTANCE,
               PreInInterface.State.INSTANCE,

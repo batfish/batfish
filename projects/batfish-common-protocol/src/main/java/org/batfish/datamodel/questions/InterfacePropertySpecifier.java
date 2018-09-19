@@ -40,9 +40,11 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String DECLARED_NAMES = "Declared_Names";
   public static final String DESCRIPTION = "Description";
   public static final String DHCP_RELAY_ADDRESSES = "DHCP_Relay_Addresses";
+  public static final String EGRESS_NATS = "Egress_Nats";
   public static final String HSRP_GROUPS = "HSRP_Groups";
   public static final String HSRP_VERSION = "HSRP_Version";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
+  public static final String INGRESS_NATS = "Ingress_Nats";
   public static final String INTERFACE_TYPE = "Interface_Type";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
@@ -59,7 +61,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String RIP_ENABLED = "Rip_Enabled";
   public static final String RIP_PASSIVE = "Rip_Passive";
   public static final String ROUTING_POLICY_NAME = "Routing_Policy_Name";
-  public static final String SOURCE_NATS = "Source_NATs";
   public static final String SPANNING_TREE_PORTFAST = "Spanning_Tree_Portfast";
   public static final String SWITCHPORT = "Switchport";
   public static final String SWITCHPORT_MODE = "Switchport_Mode";
@@ -94,6 +95,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               DHCP_RELAY_ADDRESSES,
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
+          .put(EGRESS_NATS,
+              new PropertyDescriptor<>(Interface::getEgressNats,
+                  Schema.list(Schema.STRING)))
           .put(
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
@@ -102,6 +106,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
+          .put(INGRESS_NATS,
+              new PropertyDescriptor<>(Interface::getIngressNats,
+                  Schema.list(Schema.STRING)))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
           .put(NATIVE_VLAN, new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
@@ -132,9 +139,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               ROUTING_POLICY_NAME,
               new PropertyDescriptor<>(Interface::getRoutingPolicyName, Schema.STRING))
-          .put(
-              SOURCE_NATS,
-              new PropertyDescriptor<>(Interface::getSourceNats, Schema.list(Schema.STRING)))
           .put(
               SPANNING_TREE_PORTFAST,
               new PropertyDescriptor<>(Interface::getSpanningTreePortfast, Schema.BOOLEAN))

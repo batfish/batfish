@@ -122,6 +122,8 @@ public class Interface implements Serializable {
 
   private List<SubRange> _allowedVlans;
 
+  private List<CiscoDynamicNat> _aristaNats;
+
   private boolean _autoState;
 
   @Nullable private Double _bandwidth;
@@ -177,8 +179,6 @@ public class Interface implements Serializable {
   private String _routingPolicy;
 
   private Set<InterfaceAddress> _secondaryAddresses;
-
-  private List<CiscoSourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
@@ -301,6 +301,10 @@ public class Interface implements Serializable {
     return allAddresses;
   }
 
+  public List<CiscoDynamicNat> getAristaNats() {
+    return _aristaNats;
+  }
+
   public boolean getAutoState() {
     return _autoState;
   }
@@ -415,10 +419,6 @@ public class Interface implements Serializable {
     return _secondaryAddresses;
   }
 
-  public List<CiscoSourceNat> getSourceNats() {
-    return _sourceNats;
-  }
-
   public boolean getSpanningTreePortfast() {
     return _spanningTreePortfast;
   }
@@ -473,6 +473,10 @@ public class Interface implements Serializable {
 
   public void setAlias(String alias) {
     _alias = alias;
+  }
+
+  public void setAristaNats(List<CiscoDynamicNat> aristaNats) {
+    _aristaNats = aristaNats;
   }
 
   public void setAutoState(boolean autoState) {
@@ -569,10 +573,6 @@ public class Interface implements Serializable {
 
   public void setRoutingPolicy(String routingPolicy) {
     _routingPolicy = routingPolicy;
-  }
-
-  public void setSourceNats(List<CiscoSourceNat> sourceNats) {
-    _sourceNats = sourceNats;
   }
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {

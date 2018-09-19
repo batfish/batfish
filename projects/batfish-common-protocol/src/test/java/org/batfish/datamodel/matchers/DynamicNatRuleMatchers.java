@@ -4,15 +4,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.matchers.SourceNatMatchersImpl.HasPoolIpFirst;
-import org.batfish.datamodel.matchers.SourceNatMatchersImpl.HasPoolIpLast;
+import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.HasPoolIpFirst;
+import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.HasPoolIpLast;
+import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.IsDynamicNatRuleThat;
+import org.batfish.datamodel.transformation.DynamicNatRule;
 import org.hamcrest.Matcher;
 
-public final class SourceNatMatchers {
+public final class DynamicNatRuleMatchers {
+
+  private DynamicNatRuleMatchers() {}
 
   /**
    * Provides a matcher that matches when {@code expectedPoolIpFirst} is equal to the {@link
-   * SourceNat}'s first pool-ip.
+   * DynamicNatRule}'s first pool-ip.
    */
   public static HasPoolIpFirst hasPoolIpFirst(Ip expectedPoolIpFirst) {
     return new HasPoolIpFirst(equalTo(expectedPoolIpFirst));
@@ -20,7 +24,7 @@ public final class SourceNatMatchers {
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
-   * SourceNat}'s first pool-ip.
+   * DynamicNatRule}'s first pool-ip.
    */
   public static HasPoolIpFirst hasPoolIpFirst(@Nonnull Matcher<? super Ip> subMatcher) {
     return new HasPoolIpFirst(subMatcher);
@@ -28,7 +32,7 @@ public final class SourceNatMatchers {
 
   /**
    * Provides a matcher that matches when {@code expectedPoolIpLast} is equal to the {@link
-   * SourceNat}'s last pool-ip.
+   * DynamicNatRule}'s last pool-ip.
    */
   public static HasPoolIpLast hasPoolIpLast(Ip expectedPoolIpLast) {
     return new HasPoolIpLast(equalTo(expectedPoolIpLast));
@@ -36,11 +40,19 @@ public final class SourceNatMatchers {
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
-   * SourceNat}'s last pool-ip.
+   * DynamicNatRule}'s last pool-ip.
    */
   public static HasPoolIpLast hasPoolIpLast(@Nonnull Matcher<? super Ip> subMatcher) {
     return new HasPoolIpLast(subMatcher);
   }
 
-  private SourceNatMatchers() {}
+  /**
+   * Provides a matcher that matches if the object is an {@link DynamicNatRule} matched by the
+   * provided {@code subMatcher}.
+   */
+  public static IsDynamicNatRuleThat isDynamicNatRuleThat(
+      @Nonnull Matcher<? super DynamicNatRule> subMatcher) {
+    return new IsDynamicNatRuleThat(subMatcher);
+  }
 }
+

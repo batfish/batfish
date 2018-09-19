@@ -44,7 +44,6 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
    */
   private static Map<String, BiConsumer<Builder, Long>> flowBuilders =
       ImmutableMap.<String, BiConsumer<Builder, Long>>builder()
-          .put(Field.DST_IP.getName(), (flowBuilder, value) -> flowBuilder.setDstIp(new Ip(value)))
           .put(
               Field.SRC_PORT.getName(),
               (flowBuilder, value) -> flowBuilder.setSrcPort(value.intValue()))
@@ -69,6 +68,9 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
           .put(
               Field.ICMP_CODE.getName(),
               (flowBuilder, value) -> flowBuilder.setIcmpCode(value.intValue()))
+          .put(
+              Field.ORIG_DST_IP.getName(),
+              (flowBuilder, value) -> flowBuilder.setDstIp(new Ip(value)))
           .put(
               Field.ORIG_SRC_IP.getName(),
               (flowBuilder, value) -> flowBuilder.setSrcIp(new Ip(value)))

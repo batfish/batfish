@@ -376,6 +376,7 @@ import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -572,6 +573,8 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_destinationContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_insideContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_costContext;
@@ -643,8 +646,10 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_hostnameContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_nat_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_nat_poolContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_nat_pool_rangeContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_stanzaContext;
@@ -1061,7 +1066,9 @@ import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoSourceNat;
+import org.batfish.representation.cisco.CiscoDynamicNat;
+import org.batfish.representation.cisco.CiscoNat;
+import org.batfish.representation.cisco.CiscoStaticNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.CommunitySetElem;
@@ -1440,8 +1447,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private MacAccessList _currentMacAccessList;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
-
-  private NatPool _currentNatPool;
 
   private Long _currentOspfArea;
 
@@ -2363,15 +2368,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getStandardCommunityLists()
             .computeIfAbsent(name, StandardCommunityList::new);
     defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
-  }
-
-  @Override
-  public void enterIp_nat_pool(Ip_nat_poolContext ctx) {
-    String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
-    _currentNatPool = natPool;
-    defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
@@ -5639,14 +5635,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
+    // Arista syntax
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
   }
 
   @Override
+  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
+    Set<String> currentInterfaceSet = _currentInterfaces.stream()
+        .map(Interface::getName)
+        .collect(Collectors.toSet());
+
+    if (ctx.NO() == null) {
+      _configuration.getNatInside().addAll(currentInterfaceSet);
+    } else {
+      _configuration.getNatInside().removeAll(currentInterfaceSet);
+    }
+  }
+
+  @Override
+  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
+    Set<String> currentInterfaceSet = _currentInterfaces.stream()
+        .map(Interface::getName)
+        .collect(Collectors.toSet());
+
+    if (ctx.NO() == null) {
+      _configuration.getNatOutside().addAll(currentInterfaceSet);
+    } else {
+      _configuration.getNatOutside().removeAll(currentInterfaceSet);
+    }
+  }
+
+  @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-    CiscoSourceNat nat = new CiscoSourceNat();
+    // Arista syntax
+    CiscoDynamicNat nat = new CiscoDynamicNat();
+    nat.setAction(RuleAction.SOURCE_INSIDE);
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
@@ -5663,10 +5688,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     for (Interface iface : _currentInterfaces) {
-      if (iface.getSourceNats() == null) {
-        iface.setSourceNats(new ArrayList<>(1));
+      if (iface.getAristaNats() == null) {
+        iface.setAristaNats(new ArrayList<>(1));
       }
-      iface.getSourceNats().add(nat);
+      iface.getAristaNats().add(nat);
     }
   }
 
@@ -6324,15 +6349,100 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
-    _currentNatPool = null;
+    String name = ctx.name.getText();
+    NatPool natPool = new NatPool();
+    _configuration.getNatPools().put(name, natPool);
+    natPool.setFirst(toIp(ctx.first));
+    natPool.setLast(toIp(ctx.last));
+    // TODO: decide what to do about prefix/mask
+
+    defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
+    String name = ctx.name.getText();
+    NatPool natPool = new NatPool();
+    _configuration.getNatPools().put(name, natPool);
     Ip first = toIp(ctx.first);
-    _currentNatPool.setFirst(first);
+    natPool.setFirst(first);
     Ip last = toIp(ctx.last);
-    _currentNatPool.setLast(last);
+    natPool.setLast(last);
+    defineStructure(NAT_POOL, name, ctx);
+  }
+
+  @Override
+  public void exitIp_nat_destination(Ip_nat_destinationContext ctx) {
+    boolean add = ctx.NO() == null;
+    CiscoDynamicNat nat = new CiscoDynamicNat();
+    String acl = ctx.acl.getText();
+    int aclLine = ctx.acl.getStart().getLine();
+    nat.setAclName(acl);
+    nat.setAclNameLine(aclLine);
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
+    String pool = ctx.pool.getText();
+    int poolLine = ctx.pool.getStart().getLine();
+    nat.setNatPool(pool);
+    nat.setNatPoolLine(poolLine);
+    _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
+    nat.setAction(RuleAction.DESTINATION_INSIDE);
+    if (add) {
+      _configuration.getNats().add(nat);
+    } else {
+      _configuration.getNats().remove(nat);
+    }
+  }
+
+  @Override
+  public void exitIp_nat_source(Ip_nat_sourceContext ctx) {
+    boolean add = ctx.NO() == null;
+    CiscoNat nat;
+    if (ctx.STATIC() != null) {
+      nat = new CiscoStaticNat();
+      CiscoStaticNat staticNat = (CiscoStaticNat) nat;
+      Ip local = toIp(ctx.local);
+      Ip global = toIp(ctx.global);
+      if (ctx.OUTSIDE() != null) {
+        // local and global reversed for outside
+        Ip tmp = local;
+        local = global;
+        global = tmp;
+      }
+      int prefixLength = 32;
+      if (ctx.NETWORK() != null) {
+        if (ctx.mask != null) {
+          Ip mask = toIp(ctx.mask);
+          prefixLength = mask.numSubnetBits();
+        } else {
+          prefixLength = toInteger(ctx.prefix);
+        }
+      }
+      staticNat.setLocalNetwork(new Prefix(local, prefixLength));
+      staticNat.setGlobalNetwork(new Prefix(global, prefixLength));
+    } else {
+      nat = new CiscoDynamicNat();
+      CiscoDynamicNat dynamicNat = (CiscoDynamicNat) nat;
+      String acl = ctx.acl.getText();
+      int aclLine = ctx.acl.getStart().getLine();
+      dynamicNat.setAclName(acl);
+      dynamicNat.setAclNameLine(aclLine);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
+      String pool = ctx.pool.getText();
+      int poolLine = ctx.pool.getStart().getLine();
+      dynamicNat.setNatPool(pool);
+      dynamicNat.setNatPoolLine(poolLine);
+      _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
+    }
+    if (ctx.INSIDE() != null) {
+      nat.setAction(RuleAction.SOURCE_INSIDE);
+    } else {
+      nat.setAction(RuleAction.SOURCE_OUTSIDE);
+    }
+    if (add) {
+      _configuration.getNats().add(nat);
+    } else {
+      _configuration.getNats().remove(nat);
+    }
   }
 
   @Override
@@ -8544,7 +8654,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         SERVICE_POLICY_INTERFACE_POLICY,
         ctx.name.getStart().getLine());
-    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    String ifaceName = ctx.iface.getText();
+    if (ifaceName.equals("outside") || ifaceName.equals("inside")) {
+      todo(ctx);
+      return;
+    }
+    String iface = getCanonicalInterfaceName(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
@@ -10840,9 +10955,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .add(
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
-    } else {
+    }
+     else {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-    }
+     }
   }
 }

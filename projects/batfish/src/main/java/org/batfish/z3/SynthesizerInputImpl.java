@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.emptySet;
+import static java.util.Objects.requireNonNull;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
@@ -10,16 +11,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
@@ -43,15 +44,18 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TransformationList;
+import org.batfish.datamodel.TransformationList.Transformed;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.Transformation.Direction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.LitIntExpr;
-import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
+import org.batfish.z3.expr.visitors.TransformationExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -203,7 +207,19 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, String>> _incomingAcls;
 
-  private final @Nullable Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
+  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>
+      _egressSrcNats;
+
+  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>
+      _egressDstNats;
+
+  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>
+      _ingressSrcNats;
+
+  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>
+      _ingressDstNats;
+
+  private final @Nonnull Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
   private final @Nonnull IpAccessListToBDD _ipAccessListToBDD;
 
@@ -237,8 +253,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private final @Nonnull Field _sourceInterfaceField;
 
   private final @Nonnull Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
-
-  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
   private final @Nonnull Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
@@ -296,18 +310,25 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _edges = builder._topology.getEdges();
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
-      _sourceNats = computeSourceNats();
+      // after computeTopologyInterfaces
+      _egressSrcNats = computeNats(Direction.EGRESS, Transformed.SOURCE_ADDR);
+      _egressDstNats = computeNats(Direction.EGRESS, Transformed.DESTINATION_ADDR);
+      _ingressSrcNats = computeNats(Direction.INGRESS, Transformed.SOURCE_ADDR);
+      _ingressDstNats = computeNats(Direction.INGRESS, Transformed.DESTINATION_ADDR);
     } else {
       _arpTrueEdge = null;
       _neighborUnreachableOrExitsNetwork = null;
       _nullRoutedIps = null;
       _routableIps = null;
+      _egressSrcNats = null;
+      _egressDstNats = null;
+      _ingressSrcNats = null;
+      _ingressDstNats = null;
       _ipsByHostname = null;
       _ipsByNodeVrf = null;
       _edges = null;
       _enabledEdges = null;
       _topologyInterfaces = null;
-      _sourceNats = null;
     }
     _aclActions = computeAclActions();
     _nodeInterfaces = computeNodeInterfaces();
@@ -807,40 +828,39 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
+  private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeNats(
+      Direction direction, Transformed transformType) {
     return toImmutableMap(
-        _topologyInterfaces,
+        requireNonNull(_topologyInterfaces),
         Entry::getKey,
         topologyInterfacesEntryByHostname -> {
           String hostname = topologyInterfacesEntryByHostname.getKey();
           Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
           Configuration c = _configurations.get(hostname);
+          TransformationExprTransformer toNatExpr =
+              new TransformationExprTransformer(direction, hostname);
+          // Safe to remove filter when TransformationNatExprTransformer is fully implemented
           return toImmutableMap(
               ifaces,
               Function.identity(),
               ifaceName ->
-                  c.getAllInterfaces()
-                      .get(ifaceName)
-                      .getSourceNats()
+                  getInterfaceTransforms(c, ifaceName, direction, transformType)
                       .stream()
-                      .map(
-                          sourceNat -> {
-                            IpAccessList acl = sourceNat.getAcl();
-                            AclPermit preconditionPreTransformationState =
-                                acl == null ? null : new AclPermit(hostname, acl.getName());
-                            BooleanExpr transformationConstraint =
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(
-                                            sourceNat.getPoolIpFirst().asLong(),
-                                            sourceNat.getPoolIpLast().asLong())));
-                            return Maps.immutableEntry(
-                                preconditionPreTransformationState, transformationConstraint);
-                          })
+                      .map(nat -> nat.accept(toNatExpr))
+                      .filter(Objects::nonNull)
                       .collect(ImmutableList.toImmutableList()));
         });
+  }
+
+  private static List<Transformation> getInterfaceTransforms(
+      Configuration c, String ifaceName, Direction direction, Transformed transformType) {
+    Interface iface = c.getAllInterfaces().get(ifaceName);
+    TransformationList nats =
+        direction == Direction.EGRESS ? iface.getEgressNats() : iface.getIngressNats();
+    if (nats == null) {
+      return new ArrayList<>();
+    }
+    return nats.getTransforms(direction, transformType);
   }
 
   private Map<String, Set<String>> computeTopologyInterfaces() {
@@ -955,9 +975,28 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _simplify;
   }
 
+  @Nullable
   @Override
-  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
-    return _sourceNats;
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressSrcNats() {
+    return _egressSrcNats;
+  }
+
+  @Nullable
+  @Override
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressDstNats() {
+    return _egressDstNats;
+  }
+
+  @Nullable
+  @Override
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressSrcNats() {
+    return _ingressSrcNats;
+  }
+
+  @Nullable
+  @Override
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressDstNats() {
+    return _ingressDstNats;
   }
 
   @Override

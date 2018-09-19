@@ -53,7 +53,7 @@ public class IpAccessList extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setOwner(Configuration owner) {
+    public Builder setOwner(@Nullable Configuration owner) {
       _owner = owner;
       return this;
     }
@@ -136,7 +136,7 @@ public class IpAccessList extends ComparableStructure<String> {
 
   public FilterResult filter(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
     return filter(flow, srcInterface, availableAcls, namedIpSpaces, LineAction.DENY);
@@ -144,7 +144,7 @@ public class IpAccessList extends ComparableStructure<String> {
 
   public FilterResult filter(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces,
       LineAction defaultAction) {

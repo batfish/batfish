@@ -5,13 +5,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasArpTrueEdge;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEgressNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledEdges;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledInterfaces;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledNodes;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasSourceNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
@@ -45,9 +46,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
@@ -68,7 +70,7 @@ public class SynthesizerInputImplTest {
 
   private NetworkFactory _nf;
 
-  private SourceNat.Builder _snb;
+  private DynamicNatRule.Builder _dtb;
 
   private Vrf.Builder _vb;
 
@@ -80,7 +82,7 @@ public class SynthesizerInputImplTest {
     _ib = _nf.interfaceBuilder().setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
     _inputBuilder = SynthesizerInputImpl.builder();
-    _snb = SourceNat.builder();
+    _dtb = org.batfish.datamodel.transformation.DynamicNatRule.builder();
   }
 
   @Test
@@ -219,17 +221,20 @@ public class SynthesizerInputImplTest {
     Ip ip22 = new Ip("2.0.0.10");
     IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
     IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
+    _dtb.setAction(RuleAction.SOURCE_INSIDE);
+    DynamicNatRule sourceNat1 =
+        _dtb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
+    assertThat(sourceNat1, notNullValue());
+    DynamicNatRule sourceNat2 =
+        _dtb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
+    assertThat(sourceNat2, notNullValue());
     Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
+        _ib.setOwner(srcNode).setVrf(srcVrf).setEgressNats(ImmutableList.of()).build();
+    Interface srcInterfaceOneSourceNat = _ib.setEgressNats(ImmutableList.of(sourceNat1)).build();
     Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
+        _ib.setEgressNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
     Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setEgressNats(ImmutableList.of()).build();
     Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
     Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
     Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
@@ -540,17 +545,20 @@ public class SynthesizerInputImplTest {
     Ip ip22 = new Ip("2.0.0.10");
     IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
     IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
+    _dtb.setAction(RuleAction.SOURCE_INSIDE);
+    DynamicNatRule sourceNat1 =
+        _dtb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
+    assertThat(sourceNat1, notNullValue());
+    DynamicNatRule sourceNat2 =
+        _dtb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
+    assertThat(sourceNat2, notNullValue());
     Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
+        _ib.setOwner(srcNode).setVrf(srcVrf).setEgressNats(ImmutableList.of()).build();
+    Interface srcInterfaceOneSourceNat = _ib.setEgressNats(ImmutableList.of(sourceNat1)).build();
     Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
+        _ib.setEgressNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
     Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setEgressNats(ImmutableList.of()).build();
     Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
     Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
     Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
@@ -573,14 +581,14 @@ public class SynthesizerInputImplTest {
 
     assertThat(
         inputWithDataPlane,
-        hasSourceNats(
+        hasEgressNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
                     equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
     assertThat(
         inputWithDataPlane,
-        hasSourceNats(
+        hasEgressNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
@@ -596,7 +604,7 @@ public class SynthesizerInputImplTest {
                                         Range.closed(ip11.asLong(), ip12.asLong()))))))))));
     assertThat(
         inputWithDataPlane,
-        hasSourceNats(
+        hasEgressNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
@@ -616,7 +624,7 @@ public class SynthesizerInputImplTest {
                                     Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip21.asLong(), ip22.asLong()))))))))));
-    assertThat(inputWithoutDataPlane, hasSourceNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasEgressNats(nullValue()));
   }
 
   @Test
@@ -702,11 +710,13 @@ public class SynthesizerInputImplTest {
     Vrf nextHopVrf = _vb.setOwner(nextHop).build();
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("1.0.0.10");
-    SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
+    DynamicNatRule sourceNat =
+        _dtb.setAction(RuleAction.SOURCE_INSIDE).setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
+    assertThat(sourceNat, notNullValue());
     Interface srcInterfaceOneSourceNat =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();
+        _ib.setOwner(srcNode).setVrf(srcVrf).setEgressNats(ImmutableList.of(sourceNat)).build();
     Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setEgressNats(ImmutableList.of()).build();
     Edge forwardEdge = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
     Edge backEdge = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
     SynthesizerInput inputWithDataPlane =
@@ -720,7 +730,7 @@ public class SynthesizerInputImplTest {
     // Acl for the SourceNat is DefaultSourceNatAcl
     assertThat(
         inputWithDataPlane,
-        hasSourceNats(
+        hasEgressNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(

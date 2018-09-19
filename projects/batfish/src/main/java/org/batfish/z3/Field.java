@@ -13,6 +13,7 @@ public class Field {
   public static final Field ICMP_CODE = new Field("ICMP_CODE", 8);
   public static final Field ICMP_TYPE = new Field("ICMP_TYPE", 8);
   public static final Field IP_PROTOCOL = new Field("IP_PROTOCOL", 8);
+  public static final Field ORIG_DST_IP = new Field("ORIG_DST_IP", 32);
   public static final Field ORIG_SRC_IP = new Field("ORIG_SRC_IP", 32);
   public static final Field PACKET_LENGTH = new Field("PACKET_LENGTH", 16);
   public static final Field SRC_IP = new Field("SRC_IP", 32);
@@ -37,6 +38,7 @@ public class Field {
           ICMP_CODE,
           ICMP_TYPE,
           IP_PROTOCOL,
+          ORIG_DST_IP,
           ORIG_SRC_IP,
           PACKET_LENGTH,
           SRC_IP,

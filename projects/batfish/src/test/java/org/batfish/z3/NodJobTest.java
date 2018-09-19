@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import static java.util.Objects.requireNonNull;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.UNCONSTRAINED;
@@ -44,11 +45,12 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.SrcNattedConstraint;
@@ -113,7 +115,7 @@ public class NodJobTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
-    SourceNat.Builder snb = SourceNat.builder();
+    DynamicNatRule.Builder snb = DynamicNatRule.builder();
     Vrf.Builder vb = nf.vrfBuilder();
 
     _srcNode = cb.build();
@@ -135,20 +137,25 @@ public class NodJobTest {
             .setOwner(_srcNode)
             .build();
 
-    SourceNat sourceNat1 =
+    DynamicNatRule sourceNat1 =
         // TODO add a test with poolIp1 to poolIp2. That will exercise the range logic,
         // which is complex and inscrutable. Consider replacing that with bv_lte and bv_gte.
         // Would be easier to understand, and Nuno says it will likely be more efficient.
-        snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp1).setAcl(sourceNat1Acl).build();
+        requireNonNull(
+            snb.setAcl(sourceNat1Acl)
+                .setAction(RuleAction.SOURCE_INSIDE)
+                .setPoolIpFirst(poolIp1)
+                .setPoolIpLast(poolIp1)
+                .build());
     ib.setOwner(_srcNode)
         .setVrf(_srcVrf)
         .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of(sourceNat1))
+        .setEgressNats(ImmutableList.of(sourceNat1))
         .build();
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     // For the destination

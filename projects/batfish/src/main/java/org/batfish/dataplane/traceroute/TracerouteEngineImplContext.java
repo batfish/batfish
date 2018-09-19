@@ -405,7 +405,7 @@ public class TracerouteEngineImplContext {
       String currentNodeName,
       @Nullable String inputIfaceName,
       TransmissionContext oldTransmissionContext,
-      Flow currentFlow,
+      Flow ingressFlow,
       Stack<Breadcrumb> breadcrumbs) {
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
@@ -420,8 +420,6 @@ public class TracerouteEngineImplContext {
 
     TransmissionContext transmissionContext = oldTransmissionContext.branch();
 
-    Ip dstIp = currentFlow.getDstIp();
-
     // trace was received on a source interface of this hop
     if (inputIfaceName != null) {
       EnterInputIfaceStep enterIfaceStep =
@@ -429,7 +427,7 @@ public class TracerouteEngineImplContext {
               currentConfiguration,
               inputIfaceName,
               _ignoreFilters,
-              currentFlow,
+              ingressFlow,
               aclDefinitions,
               namedIpSpaces);
       steps.add(enterIfaceStep);
@@ -441,13 +439,13 @@ public class TracerouteEngineImplContext {
         transmissionContext._flowTraces.add(trace);
         return;
       }
-    } else if (currentFlow.getIngressVrf() != null) {
+    } else if (ingressFlow.getIngressVrf() != null) {
       // if inputIfaceName is not set for this hop, this is the originating step
       steps.add(
           OriginateStep.builder()
               .setDetail(
                   OriginateStepDetail.builder()
-                      .setOriginatingVrf(currentFlow.getIngressVrf())
+                      .setOriginatingVrf(ingressFlow.getIngressVrf())
                       .build())
               .setAction(StepAction.ORIGINATED)
               .build());
@@ -456,13 +454,13 @@ public class TracerouteEngineImplContext {
     // Figure out where the trace came from..
     String vrfName;
     if (inputIfaceName == null) {
-      vrfName = currentFlow.getIngressVrf();
+      vrfName = ingressFlow.getIngressVrf();
     } else {
       vrfName = currentConfiguration.getAllInterfaces().get(inputIfaceName).getVrfName();
     }
 
     // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
+    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, ingressFlow);
     if (breadcrumbs.contains(breadcrumb)) {
       Hop loopHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
       transmissionContext._hopsSoFar.add(loopHop);
@@ -477,7 +475,7 @@ public class TracerouteEngineImplContext {
       // Accept if the flow is destined for this vrf on this host.
       if (_dataPlane
           .getIpVrfOwners()
-          .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
+          .getOrDefault(ingressFlow.getDstIp(), ImmutableMap.of())
           .getOrDefault(currentConfiguration.getHostname(), ImmutableSet.of())
           .contains(vrfName)) {
         InboundStep inboundStep =
@@ -492,6 +490,20 @@ public class TracerouteEngineImplContext {
         transmissionContext._flowTraces.add(trace);
         return;
       }
+
+      // Apply ingress NATs
+      Flow currentFlow;
+      if (inputIfaceName != null) {
+        currentFlow =
+            applyIngressNats(
+                ingressFlow,
+                aclDefinitions,
+                namedIpSpaces,
+                currentConfiguration.getAllInterfaces().get(inputIfaceName).getIngressNats());
+      } else {
+        currentFlow = ingressFlow;
+      }
+      Ip dstIp = currentFlow.getDstIp();
 
       // .. and what the next hops are based on the FIB.
       Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
@@ -616,7 +628,7 @@ public class TracerouteEngineImplContext {
                           transmissionContext._flowTraces,
                           transmissionContext._hopsSoFar,
                           namedIpSpaces,
-                          currentFlow,
+                          ingressFlow,
                           newTransformedFlow);
                   if (edges == null || edges.isEmpty()) {
                     updateDeniedOrUnreachableTrace(

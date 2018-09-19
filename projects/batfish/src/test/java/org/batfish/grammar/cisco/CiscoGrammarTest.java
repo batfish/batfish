@@ -1034,7 +1034,7 @@ public class CiscoGrammarTest {
 
     // Confirm reference counts are correct for ACLs
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
-    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 2));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "10", 0));
     assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
@@ -1048,10 +1048,6 @@ public class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", IP_NAT_DESTINATION_ACCESS_LIST));
     assertThat(
         ccae,
         hasUndefinedReference(
@@ -1913,6 +1909,13 @@ public class CiscoGrammarTest {
      */
     assertThat(ccae, not(hasUndefinedReference(filename, IP_ACCESS_LIST, "acldefined")));
     assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "aclundefined"));
+  }
+
+  @Test
+  public void testParseIosNat() throws IOException {
+    parseConfig("ios-nat");
+    parseConfig("us_border");
+    parseConfig("cisco_ip_nat");
   }
 
   @Test
@@ -3663,6 +3666,24 @@ public class CiscoGrammarTest {
         hasInterface(
             "Ethernet1/1",
             hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
+  }
+
+  @Test
+  public void testAristaAclReferences() throws IOException {
+    String hostname = "aristaAcl";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference counts are correct for ACLs
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 1));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", IP_NAT_DESTINATION_ACCESS_LIST));
   }
 
   @Test

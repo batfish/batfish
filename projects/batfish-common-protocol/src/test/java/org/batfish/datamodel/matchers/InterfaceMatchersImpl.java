@@ -10,17 +10,19 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.transformation.Transformation;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class InterfaceMatchersImpl {
+
+  private InterfaceMatchersImpl() {}
 
   static final class HasAccessVlan extends FeatureMatcher<Interface, Integer> {
     HasAccessVlan(@Nonnull Matcher<? super Integer> subMatcher) {
@@ -249,14 +251,18 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasSourceNats extends FeatureMatcher<Interface, List<SourceNat>> {
-    HasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
-      super(subMatcher, "an Interface with sourceNats:", "sourceNats");
+  static final class HasEgressNats extends FeatureMatcher<Interface, List<Transformation>> {
+    HasEgressNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
+      super(subMatcher, "an Interface with egressNats:", "egressNats");
     }
 
+    @Nullable
     @Override
-    protected List<SourceNat> featureValueOf(Interface actual) {
-      return actual.getSourceNats();
+    protected List<Transformation> featureValueOf(Interface actual) {
+      if (actual.getEgressNats() == null) {
+        return null;
+      }
+      return actual.getEgressNats().getTransformations();
     }
   }
 
@@ -336,6 +342,4 @@ final class InterfaceMatchersImpl {
       return actual.getProxyArp();
     }
   }
-
-  private InterfaceMatchersImpl() {}
 }

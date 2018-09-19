@@ -1,12 +1,10 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-public class CiscoSourceNat implements Serializable {
+public class CiscoDynamicNat extends CiscoNat {
   private static final long serialVersionUID = 1L;
-
   private @Nullable String _aclName;
   private int _aclNameLine;
   private @Nullable String _natPool;
@@ -31,28 +29,29 @@ public class CiscoSourceNat implements Serializable {
   }
 
   public void setAclName(@Nullable String aclName) {
-    this._aclName = aclName;
+    _aclName = aclName;
   }
 
   public void setAclNameLine(int aclNameLine) {
-    this._aclNameLine = aclNameLine;
+    _aclNameLine = aclNameLine;
   }
 
   public void setNatPool(@Nullable String natPool) {
-    this._natPool = natPool;
+    _natPool = natPool;
   }
 
   public void setNatPoolLine(int natPoolLine) {
-    this._natPoolLine = natPoolLine;
+    _natPoolLine = natPoolLine;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof CiscoSourceNat)) {
+    if (!(o instanceof CiscoDynamicNat)) {
       return false;
     }
-    CiscoSourceNat other = (CiscoSourceNat) o;
+    CiscoDynamicNat other = (CiscoDynamicNat) o;
     return (_aclNameLine == other._aclNameLine)
+        && (_action == other._action)
         && (_natPoolLine == other._natPoolLine)
         && Objects.equals(_aclName, other._aclName)
         && Objects.equals(_natPool, other._natPool);
@@ -60,6 +59,6 @@ public class CiscoSourceNat implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, _aclNameLine, _natPool, _natPoolLine);
+    return Objects.hash(_aclName, _aclNameLine, _action, _natPool, _natPoolLine);
   }
 }

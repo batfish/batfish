@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -14,6 +15,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -213,14 +216,16 @@ public class ConfigurationTest {
     InterfaceAddress p3to4Physical = new InterfaceAddress(ip3to4Physical, 24);
     Interface i3to1 = ib.setOwner(c3).setVrf(v3).setAddress(p3to1Physical).build();
     ib.setAddress(p3to4Physical).build();
-    SourceNat snat3copy1 = new SourceNat();
-    snat3copy1.setPoolIpFirst(ip3to1Physical);
-    snat3copy1.setPoolIpLast(ip3to1Physical);
-    SourceNat snat3copy2 = new SourceNat();
-    snat3copy2.setPoolIpFirst(ip3to1Physical);
-    snat3copy2.setPoolIpLast(ip3to1Physical);
+    DynamicNatRule.Builder builder = org.batfish.datamodel.transformation.DynamicNatRule.builder()
+        .setAction(RuleAction.SOURCE_INSIDE)
+        .setPoolIpFirst(ip3to1Physical)
+        .setPoolIpLast(ip3to1Physical);
+    DynamicNatRule snat3copy1 = builder.build();
+    assertThat(snat3copy1, notNullValue());
+    DynamicNatRule snat3copy2 = builder.build();
+    assertThat(snat3copy2, notNullValue());
     /* Should not crash with two source-nats aliasing the same public IP */
-    i3to1.setSourceNats(ImmutableList.of(snat3copy1, snat3copy2));
+    i3to1.setEgressNats(new TransformationList(ImmutableList.of(snat3copy1, snat3copy2)));
 
     Configuration c4 = cb.build();
     Vrf v4 = vb.setOwner(c4).build();

@@ -26,8 +26,10 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pol
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -60,6 +62,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
@@ -108,9 +111,9 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.TransformationList;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -157,6 +160,11 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.StaticNatRule;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.Transformation.Direction;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -436,6 +444,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
 
+  private final Set<String> _natInside;
+
+  private final Set<String> _natOutside;
+
+  private final List<CiscoNat> _nats;
+
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObject> _networkObjects;
@@ -490,6 +504,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private Map<String, NamedCommunitySet> _communitySets;
 
+  private final Map<Pair<RuleAction, Direction>, Integer> _natCounts;
+
   // initialized when needed
   private Multimap<Integer, Interface> _interfacesBySecurityLevel;
 
@@ -518,6 +534,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
+    _natInside = new TreeSet<>();
+    _natOutside = new TreeSet<>();
+    _nats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -539,6 +558,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
+    _natCounts = new TreeMap<>();
   }
 
   private void applyVrrp(Configuration c) {
@@ -823,6 +843,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NatPool> getNatPools() {
     return _natPools;
+  }
+
+  public Set<String> getNatInside() {
+    return _natInside;
+  }
+
+  public Set<String> getNatOutside() {
+    return _natOutside;
+  }
+
+  public List<CiscoNat> getNats() {
+    return _nats;
   }
 
   public String getNtpSourceInterface() {
@@ -1922,54 +1954,192 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Processes a {@link CiscoSourceNat} rule. This function performs two actions:
+   * Processes a {@link CiscoNat} rule that was specified at the top level or directly on an
+   * interface (Arista-style).
    *
-   * <p>1. Record references to ACLs and NAT pools by the various parsed {@link CiscoSourceNat}
-   * objects.
-   *
-   * <p>2. Convert to vendor-independent {@link SourceNat} objects if valid, aka, no undefined ACL
-   * and valid output configuration.
-   *
-   * <p>Returns the vendor-independeng {@link SourceNat}, or {@code null} if the source NAT rule is
-   * invalid.
+   * @param c Configuration structure
+   * @param nat A vendor-dependent NAT rule.
+   * @param ipAccessLists Mapping of access list names to {@link IpAccessList}s
+   * @param insideInterfaces Set of interface names which are inside interfaces for this NAT rule,
+   *     or {@code null} for all interfaces.
+   * @param direction Transit direction for this NAT rule
+   * @return The vendor-independent {@link Transformation}, or {@code null} if the NAT rule is
+   *     invalid or unsupported
    */
   @Nullable
-  SourceNat processSourceNat(
-      CiscoSourceNat nat, Interface iface, Map<String, IpAccessList> ipAccessLists) {
-    String sourceNatAclName = nat.getAclName();
-    if (sourceNatAclName == null) {
-      // Source NAT rules must have an ACL; this rule is invalid.
+  @VisibleForTesting
+  Transformation processNat(
+      @Nullable Configuration c,
+      @Nonnull CiscoNat nat,
+      Map<String, IpAccessList> ipAccessLists,
+      @Nullable Set<String> insideInterfaces,
+      Direction direction) {
+
+    if (nat instanceof CiscoDynamicNat) {
+      return processDynamicNat(c, (CiscoDynamicNat) nat, ipAccessLists, insideInterfaces);
+    }
+    if (nat instanceof CiscoStaticNat) {
+      return processStaticNat(c, (CiscoStaticNat) nat, insideInterfaces, direction);
+    }
+
+    return null;
+  }
+
+  @Nullable
+  private Transformation processStaticNat(
+      @Nullable Configuration c,
+      CiscoStaticNat staticNat,
+      @Nullable Set<String> insideInterfaces,
+      Direction direction) {
+
+    StaticNatRule.Builder natBuilder =
+        StaticNatRule.builder()
+            .setAction(staticNat.getAction())
+            .setGlobalNetwork(staticNat.getGlobalNetwork())
+            .setLocalNetwork(staticNat.getLocalNetwork());
+
+    ImmutableList.Builder<AclLineMatchExpr> aclExpr = new Builder<>();
+    if (insideInterfaces != null && direction == Direction.EGRESS) {
+      aclExpr.add(new MatchSrcInterface(insideInterfaces));
+    }
+
+    /*
+     * No explicit ACL in rule, but need to match src/dest is global/local according
+     * to direction and rule type
+     */
+
+    if (staticNat.getAction() == RuleAction.SOURCE_INSIDE && direction == Direction.EGRESS) {
+      aclExpr.add(
+          new MatchHeaderSpace(
+              HeaderSpace.builder().setSrcIps(staticNat.getLocalNetwork().toIpSpace()).build()));
+    }
+    if (staticNat.getAction() == RuleAction.SOURCE_INSIDE && direction == Direction.INGRESS) {
+      aclExpr.add(
+          new MatchHeaderSpace(
+              HeaderSpace.builder().setDstIps(staticNat.getGlobalNetwork().toIpSpace()).build()));
+    }
+
+    if (staticNat.getAction() == RuleAction.SOURCE_OUTSIDE && direction == Direction.EGRESS) {
+      aclExpr.add(
+          new MatchHeaderSpace(
+              HeaderSpace.builder().setDstIps(staticNat.getLocalNetwork().toIpSpace()).build()));
+    }
+    if (staticNat.getAction() == RuleAction.SOURCE_OUTSIDE && direction == Direction.INGRESS) {
+      aclExpr.add(
+          new MatchHeaderSpace(
+              HeaderSpace.builder().setSrcIps(staticNat.getGlobalNetwork().toIpSpace()).build()));
+    }
+
+    int count =
+        _natCounts.merge(
+            new Pair<>(staticNat.getAction(), direction), 1, (oldValue, defValue) -> oldValue + 1);
+
+    String natAclName = computeStaticNatAclName(staticNat.getAction(), direction, count);
+    IpAccessList.Builder aclBuilder = IpAccessList.builder().setOwner(c).setName(natAclName);
+
+    String description =
+        String.format(
+            "Permit if match %s:%s%s",
+            staticNat.getAction(),
+            direction,
+            (insideInterfaces == null) ? "" : " and inside interfaces");
+    IpAccessList natAcl =
+        aclBuilder
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new AndMatchExpr(aclExpr.build(), description))
+                        .build()))
+            .build();
+
+    return natBuilder.setAcl(natAcl).build();
+  }
+
+  @Nullable
+  private Transformation processDynamicNat(
+      @Nullable Configuration c,
+      CiscoDynamicNat dynamicNat,
+      Map<String, IpAccessList> ipAccessLists,
+      @Nullable Set<String> insideInterfaces) {
+
+    RuleAction action = dynamicNat.getAction();
+    DynamicNatRule.Builder natBuilder = DynamicNatRule.builder().setAction(action);
+
+    String natAclName = dynamicNat.getAclName();
+    if (natAclName == null) {
+      // Parser rejects this case
       return null;
     }
 
-    SourceNat convertedNat = new SourceNat();
-
-    /* source nat acl */
-    IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
-    if (sourceNatAcl != null) {
-      convertedNat.setAcl(sourceNatAcl);
+    // only standard ACLs are allowed
+    StandardAccessList stdAcl = _standardAccessLists.get(natAclName);
+    if (stdAcl == null) {
+      // Configuration has an invalid reference
+      return null;
     }
-
-    /* source nat pool */
-    String sourceNatPoolName = nat.getNatPool();
-    if (sourceNatPoolName != null) {
-      NatPool sourceNatPool = _natPools.get(sourceNatPoolName);
-      if (sourceNatPool != null) {
-        Ip firstIp = sourceNatPool.getFirst();
-        if (firstIp != null) {
-          Ip lastIp = sourceNatPool.getLast();
-          convertedNat.setPoolIpFirst(firstIp);
-          convertedNat.setPoolIpLast(lastIp);
-        }
-      }
+    String natPoolName = dynamicNat.getNatPool();
+    if (natPoolName == null) {
+      // Parser allows this for Arista NAT (nat overload), but it is not supported
+      return null;
     }
+    NatPool natPool = _natPools.get(natPoolName);
+    if (natPool == null) {
+      // Configuration has an invalid reference
+      return null;
+    }
+    natBuilder.setPoolIpFirst(natPool.getFirst()).setPoolIpLast(natPool.getLast());
 
-    // The source NAT rule is valid iff it has an ACL and a pool of IPs to NAT into.
-    if (convertedNat.getAcl() != null && convertedNat.getPoolIpFirst() != null) {
-      return convertedNat;
+    IpAccessList natAcl;
+    if (action == RuleAction.DESTINATION_INSIDE) {
+      // translate acl to match destination address instead of source address
+      natAclName = computeDynamicDestinationNatAclName(natAclName);
+      ExtendedAccessList eaList = new ExtendedAccessList(natAclName);
+      eaList.setParent(stdAcl);
+      stdAcl
+          .getLines()
+          .stream()
+          .map(
+              line ->
+                  ExtendedAccessListLine.builder()
+                      .setAction(line.getAction())
+                      .setDstAddressSpecifier(line.getSrcAddressSpecifier())
+                      .setName("Destination match of: " + line.getName())
+                      .setServiceSpecifier(line.getServiceSpecifier())
+                      .setSrcAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
+                      .build())
+          .forEach(eaList::addLine);
+      natAcl = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
+      // place new ACL into config so it can be used by PermittedByAcl
+      ipAccessLists.put(natAclName, natAcl);
     } else {
-      return null;
+      natAcl = ipAccessLists.get(natAclName);
     }
+
+    if (insideInterfaces == null) {
+      return natBuilder.setAcl(natAcl).build();
+    }
+    String combinedAclName = computeDynamicNatAclName(natAclName);
+
+    // Create combined ACL which includes dynamic NAT ACL and insideInterface requirement
+    String description =
+        String.format("Permit if permitted by ACL '%s' and match inside interfaces", natAclName);
+    IpAccessList combinedAcl =
+        IpAccessList.builder()
+            .setOwner(c)
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl(natAclName),
+                                    new MatchSrcInterface(insideInterfaces)),
+                                description))
+                        .build()))
+            .build();
+
+    return natBuilder.setAcl(combinedAcl).build();
   }
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
@@ -2179,18 +2349,53 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
 
-    List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
-    if (origSourceNats != null) {
-      // Process each of the CiscoSourceNats:
-      //   1) Collect references to ACLs and NAT pools.
-      //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
-      newIface.setSourceNats(
-          origSourceNats
-              .stream()
-              .map(nat -> processSourceNat(nat, iface, ipAccessLists))
-              .filter(Objects::nonNull)
-              .collect(ImmutableList.toImmutableList()));
+    /*
+     * NAT rules are specified at the top level, but are applied as ingress transformations on the
+     * outside interface (outside-to-inside) and egress transformations on the inside interface
+     * (inside-to-outside)
+     *
+     * Currently, only static NATs are supported for ingress transformations.
+     */
+
+    List<CiscoNat> egressNats = new ArrayList<>();
+    List<CiscoNat> ingressNats = new ArrayList<>();
+
+    // Check if this is an outside interface
+    if (getNatOutside().contains(ifaceName)) {
+      ingressNats.addAll(getNats());
+      egressNats.addAll(getNats());
     }
+    // Add any arista NATs
+    if (iface.getAristaNats() != null) {
+      egressNats.addAll(iface.getAristaNats());
+    }
+
+    // Add egress NATs to interface
+    TransformationList egressList =
+        new TransformationList(
+            egressNats
+                .stream()
+                .map(nat -> processNat(c, nat, ipAccessLists, null, Direction.EGRESS))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
+    if (!egressList.getTransformations().isEmpty()) {
+      newIface.setEgressNats(egressList);
+    }
+
+    // Add ingress NATs to interface
+    // TODO: Remove dynamic NAT filtering ingress is supported
+    TransformationList ingressList =
+        new TransformationList(
+            ingressNats
+                .stream()
+                .filter(nat -> nat instanceof CiscoStaticNat)
+                .map(nat -> processNat(c, nat, ipAccessLists, getNatInside(), Direction.INGRESS))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
+    if (!ingressList.getTransformations().isEmpty()) {
+      newIface.setIngressNats(ingressList);
+    }
+
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
       newIface.setRoutingPolicy(routingPolicyName);
@@ -2241,6 +2446,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
     return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
+  }
+
+  @VisibleForTesting
+  static String computeDynamicNatAclName(@Nonnull String natAclName) {
+    return String.format("~DYNAMIC_NAT_INSIDE_ACL~%s~", natAclName);
+  }
+
+  @VisibleForTesting
+  static String computeDynamicDestinationNatAclName(@Nonnull String natAclName) {
+    return String.format("~DYNAMIC_DESTINATION_NAT_INSIDE_ACL~%s~", natAclName);
+  }
+
+  private static String computeStaticNatAclName(
+      @Nonnull RuleAction action, @Nonnull Direction direction, int count) {
+    return String.format(
+        "~STATIC_NAT_ACL~ACTION~%s~DIR~%s~%d~", action.name(), direction.name(), count);
   }
 
   // For testing.

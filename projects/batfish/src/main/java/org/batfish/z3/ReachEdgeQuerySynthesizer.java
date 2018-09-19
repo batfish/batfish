@@ -61,6 +61,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                         ImmutableList.of(
                             new EqExpr(
                                 new VarIntExpr(Field.ORIG_SRC_IP), new VarIntExpr(Field.SRC_IP)),
+                            new EqExpr(
+                                new VarIntExpr(Field.ORIG_DST_IP), new VarIntExpr(Field.DST_IP)),
                             _headerSpace == null
                                 ? TrueExpr.INSTANCE
                                 : AclLineMatchExprToBooleanExpr

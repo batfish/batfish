@@ -63,6 +63,7 @@ import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -855,7 +856,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setSourceNats(
+            .setEgressNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1285,42 +1286,42 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
   }
 
   @Test
@@ -1339,7 +1340,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setSourceNats(
+            .setEgressNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1886,7 +1887,7 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
-            .setSourceNats(
+            .setEgressNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(

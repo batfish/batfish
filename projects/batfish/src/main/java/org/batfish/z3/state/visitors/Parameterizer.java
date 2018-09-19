@@ -45,6 +45,7 @@ import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -283,6 +284,14 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
     return ImmutableList.of(
         new StateParameter(postInInterface.getHostname(), NODE),
         new StateParameter(postInInterface.getIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPostInInterfacePostNat(
+      PostInInterfacePostNat postInInterfacePostNat) {
+    return ImmutableList.of(
+        new StateParameter(postInInterfacePostNat.getHostname(), NODE),
+        new StateParameter(postInInterfacePostNat.getIface(), INTERFACE));
   }
 
   @Override

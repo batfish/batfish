@@ -109,7 +109,7 @@ public class NodJobChunkingTest {
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     Prefix p2 = Prefix.parse("2.0.0.0/31");
@@ -122,7 +122,7 @@ public class NodJobChunkingTest {
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p2.getEndIp(), p2.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     // For the destination

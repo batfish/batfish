@@ -330,6 +330,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
         HeaderSpaceMatchExpr::matchSrcOrDstProtocol);
 
     // ip
+    // TODO matchOrigDstIp
     if (headerSpace.getSrcIps() != null) {
       requireMatch(
           matchBuilder, headerSpace.getSrcIps(), orig ? this::matchOrigSrcIp : this::matchSrcIp);
@@ -413,7 +414,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
    */
   public BooleanExpr matchOrigSrcOrDstIp(IpSpace ipSpace) {
     return ipSpace.accept(
-        new IpSpaceBooleanExprTransformer(_namedIpSpaces, Field.ORIG_SRC_IP, Field.DST_IP));
+        new IpSpaceBooleanExprTransformer(_namedIpSpaces, Field.ORIG_SRC_IP, Field.ORIG_DST_IP));
   }
 
   @Override

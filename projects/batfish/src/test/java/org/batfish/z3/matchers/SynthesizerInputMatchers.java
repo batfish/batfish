@@ -12,13 +12,13 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasArpTrueEdge;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEgressNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasNeighborUnreachable;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasSourceNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
 import org.batfish.z3.state.AclPermit;
 import org.hamcrest.Matcher;
@@ -107,13 +107,13 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's source NATs.
+   * SynthesizerInput's egress NATs.
    */
-  public static HasSourceNats hasSourceNats(
+  public static HasEgressNats hasEgressNats(
       @Nonnull
           Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
               subMatcher) {
-    return new HasSourceNats(subMatcher);
+    return new HasEgressNats(subMatcher);
   }
 
   /**

@@ -8,6 +8,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -38,9 +40,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.TransformationList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -72,13 +76,22 @@ public class TracerouteEngineTest {
   public void testApplySourceNatSingleAclMatch() {
     Flow flow = makeFlow();
 
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    DynamicNatRule nat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("accept", LineAction.PERMIT))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpLast(new Ip("4.5.6.7"))
+            .build();
+    assertThat(nat, notNullValue());
 
     Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
+        TracerouteEngineImplContext.applyEgressNats(
+            flow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            new TransformationList(ImmutableList.of(nat)));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -86,13 +99,22 @@ public class TracerouteEngineTest {
   public void testApplySourceNatSingleAclNoMatch() {
     Flow flow = makeFlow();
 
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    DynamicNatRule nat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("reject", LineAction.DENY))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpLast(new Ip("4.5.6.7"))
+            .build();
+    assertThat(nat, notNullValue());
 
     Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
+        TracerouteEngineImplContext.applyEgressNats(
+            flow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            new TransformationList(ImmutableList.of(nat)));
     assertThat(transformed, is(flow));
   }
 
@@ -100,17 +122,31 @@ public class TracerouteEngineTest {
   public void testApplySourceNatFirstMatchWins() {
     Flow flow = makeFlow();
 
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    DynamicNatRule nat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("firstAccept", LineAction.PERMIT))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpLast(new Ip("4.5.6.7"))
+            .build();
+    assertThat(nat, notNullValue());
 
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
+    DynamicNatRule secondNat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("secondAccept", LineAction.PERMIT))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .setPoolIpLast(new Ip("4.5.6.8"))
+            .build();
+    assertThat(secondNat, notNullValue());
 
     Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+        TracerouteEngineImplContext.applyEgressNats(
+            flow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            new TransformationList(Lists.newArrayList(nat, secondNat)));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -118,31 +154,39 @@ public class TracerouteEngineTest {
   public void testApplySourceNatLateMatchWins() {
     Flow flow = makeFlow();
 
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    DynamicNatRule nat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("rejectAll", LineAction.DENY))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpLast(new Ip("4.5.6.7"))
+            .build();
+    assertThat(nat, notNullValue());
 
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
+    DynamicNatRule secondNat =
+        DynamicNatRule.builder()
+            .setAcl(makeAcl("acceptAnyway", LineAction.PERMIT))
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .setPoolIpLast(new Ip("4.5.6.8"))
+            .build();
+    assertThat(secondNat, notNullValue());
 
     Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+        TracerouteEngineImplContext.applyEgressNats(
+            flow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            new TransformationList(Lists.newArrayList(nat, secondNat)));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
   @Test
   public void testApplySourceNatInvalidAclThrows() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.PERMIT));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("missing NAT address or pool");
-    TracerouteEngineImplContext.applySourceNat(
-        flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
+    DynamicNatRule nat =
+        DynamicNatRule.builder().setAcl(makeAcl("matchAll", LineAction.PERMIT)).build();
+    assertThat(nat, nullValue());
   }
 
   /*

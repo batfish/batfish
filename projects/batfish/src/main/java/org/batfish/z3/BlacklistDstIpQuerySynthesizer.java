@@ -88,6 +88,7 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
 
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
+    // TODO confirm with upstream ORIG_DST_IP vs DST_IP
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
     for (Ip blacklistIp : _blacklistIps) {
       BooleanExpr blacklistIpCondition =
