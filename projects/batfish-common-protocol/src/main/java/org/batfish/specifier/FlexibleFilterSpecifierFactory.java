@@ -6,16 +6,15 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.FiltersSpecifier;
-import org.batfish.datamodel.questions.FiltersSpecifier.Type;
 
 /**
  * A {@link FilterSpecifierFactory} that accepts three types of inputs:
  *
  * <ul>
  *   <li>null, which returns {@link ShorthandFilterSpecifier} that matches everything
- *   <li>inFilterOf(foo), which returns {@link ShorthandInterfaceSpecifier} of type INPUTFILTERON
- *   <li>outFilterOf(foo), which returns {@link ShorthandInterfaceSpecifier} of type OUTPUTFILTERON
+ *   <li>inFilterOf(foo), which returns {@link InterfaceSpecifierFilterSpecifier} with foo being fed
+ *       to {@link FlexibleInterfaceSpecifierFactory}
+ *   <li>outFilterOf(foo), as above but for output filters
  *   <li>ref.filtergroup(foo, bar), which returns {@link ReferenceFilterGroupFilterSpecifier};
  *   <li>inputs accepted by {@link ShorthandFilterSpecifier}
  * </ul>
@@ -48,14 +47,18 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
 
     Matcher matcher = IN_FILTER_OF_PATTERN.matcher(str);
     if (matcher.find()) {
-      return new ShorthandFilterSpecifier(
-          new FiltersSpecifier(String.join(":", Type.INPUTFILTERON.toString(), matcher.group(1))));
+      InterfaceSpecifier specifier =
+          new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(matcher.group(1));
+      return new InterfaceSpecifierFilterSpecifier(
+          InterfaceSpecifierFilterSpecifier.Type.IN_FILTER, specifier);
     }
 
     matcher = OUT_FILTER_OF_PATTERN.matcher(str);
     if (matcher.find()) {
-      return new ShorthandFilterSpecifier(
-          new FiltersSpecifier(String.join(":", Type.OUTPUTFILTERON.toString(), matcher.group(1))));
+      InterfaceSpecifier specifier =
+          new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(matcher.group(1));
+      return new InterfaceSpecifierFilterSpecifier(
+          InterfaceSpecifierFilterSpecifier.Type.OUT_FILTER, specifier);
     }
 
     matcher = REF_PATTERN.matcher(str);

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.batfish.datamodel.questions.FiltersSpecifier;
+import org.batfish.specifier.InterfaceSpecifierFilterSpecifier.Type;
 import org.junit.Test;
 
 public class FlexibleFilterSpecifierFactoryTest {
@@ -19,7 +20,10 @@ public class FlexibleFilterSpecifierFactoryTest {
   public void testInFilterOf() {
     assertThat(
         new FlexibleFilterSpecifierFactory().buildFilterSpecifier("inFilterOf(a)"),
-        equalTo(new ShorthandFilterSpecifier(new FiltersSpecifier("INPUTFILTERON:a"))));
+        equalTo(
+            new InterfaceSpecifierFilterSpecifier(
+                Type.IN_FILTER,
+                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("a"))));
   }
 
   @Test
@@ -40,7 +44,10 @@ public class FlexibleFilterSpecifierFactoryTest {
   public void testOutFilterOf() {
     assertThat(
         new FlexibleFilterSpecifierFactory().buildFilterSpecifier("outFilterOf(a)"),
-        equalTo(new ShorthandFilterSpecifier(new FiltersSpecifier("OUTPUTFILTERON:a"))));
+        equalTo(
+            new InterfaceSpecifierFilterSpecifier(
+                Type.OUT_FILTER,
+                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("a"))));
   }
 
   @Test
