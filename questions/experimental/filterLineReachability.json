@@ -5,7 +5,7 @@
     "nodes": "${nodes}",
     "instance": {
         "description": "Identify ACLs/filters with unreachable lines",
-        "instanceName": "aclReachability",
+        "instanceName": "filterLineReachability",
         "longDescription": "This question finds all unreachable lines in the specified ACLs/filters.",
         "tags": [
             "acl",
