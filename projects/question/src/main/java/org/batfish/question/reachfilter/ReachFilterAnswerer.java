@@ -280,7 +280,6 @@ public final class ReachFilterAnswerer extends Answerer {
   }
 
   private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
-    // TODO was traceFilterRow
     if (base) {
       _batfish.pushBaseEnvironment();
     } else {
