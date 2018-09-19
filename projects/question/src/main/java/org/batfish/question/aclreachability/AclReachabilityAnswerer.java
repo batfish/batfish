@@ -451,7 +451,7 @@ public class AclReachabilityAnswerer extends Answerer {
           BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
       IpAccessListToBDD ipAccessListToBDD =
           IpAccessListToBDD.create(
-              bddPacket, aclSpec.acl.getDependencies(), ImmutableMap.of(), sourceMgr);
+              bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
       List<IpAccessListLine> lines = ipAcl.getLines();
@@ -464,7 +464,7 @@ public class AclReachabilityAnswerer extends Answerer {
       for (int lineNum = 0; lineNum < lines.size(); lineNum++) {
         IpAccessListLine line = lines.get(lineNum);
         AclLineMatchExpr matchExpr = line.getMatchCondition();
-        BDD lineBDD = matchExpr.accept(ipAccessListToBDD.getAclLineMatchExprToBDD());
+        BDD lineBDD = matchExpr.accept(ipAccessListToBDD);
         ipLineToBDDMap.add(lineBDD);
         if (lineBDD.isZero()) {
           // this line is unmatchable
