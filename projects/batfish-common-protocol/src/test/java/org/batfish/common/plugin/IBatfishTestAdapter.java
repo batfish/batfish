@@ -152,7 +152,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
-    return new MajorIssueConfig(majorIssue, null);
+    throw new UnsupportedOperationException();
   }
 
   @Override
