@@ -36,7 +36,7 @@ public class AnswerMetadataUtilTest {
   public void testComputeAnswerMetadata() throws IOException {
     String columnName = "col";
     String issueColumnName = "colIssue";
-    int value = 5;
+    long value = 5L;
     String major = "major";
     String minor = "minor";
     int severity = 1;
@@ -62,9 +62,9 @@ public class AnswerMetadataUtilTest {
                         .setAggregations(
                             ImmutableMap.of(
                                 columnName,
-                                ImmutableMap.of(Aggregation.MAX, value),
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value)),
                                 issueColumnName,
-                                ImmutableMap.of(Aggregation.MAX, severity)))
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(severity))))
                         .setMajorIssueConfigs(
                             ImmutableMap.of(
                                 major,
@@ -115,7 +115,7 @@ public class AnswerMetadataUtilTest {
   @Test
   public void testComputeColumnAggregationMax() {
     String columnName = "col";
-    int value = 5;
+    long value = 5L;
 
     TableAnswerElement table =
         new TableAnswerElement(
@@ -134,7 +134,7 @@ public class AnswerMetadataUtilTest {
   @Test
   public void testComputeColumnAggregations() {
     String columnName = "col";
-    int value = 5;
+    long value = 5L;
 
     TableAnswerElement table =
         new TableAnswerElement(
@@ -147,7 +147,9 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeColumnAggregations(table, aggregations, _logger),
-        equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value))));
+        equalTo(
+            ImmutableMap.of(
+                columnName, ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value)))));
   }
 
   @Test
@@ -198,7 +200,7 @@ public class AnswerMetadataUtilTest {
   @Test
   public void testComputeColumnMaxOneRowInteger() {
     String columnName = "col";
-    int value = 5;
+    long value = 5;
 
     TableAnswerElement table =
         new TableAnswerElement(
@@ -223,14 +225,15 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(severity));
+    assertThat(
+        AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo((long) severity));
   }
 
   @Test
   public void testComputeColumnMaxTwoRows() {
     String columnName = "col";
-    int value1 = 5;
-    int value2 = 10;
+    long value1 = 5L;
+    long value2 = 10L;
 
     TableAnswerElement table =
         new TableAnswerElement(

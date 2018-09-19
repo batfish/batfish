@@ -3,6 +3,7 @@ package org.batfish.datamodel.table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
@@ -13,9 +14,11 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row.RowBuilder;
 
 /** Holds tabular answers. */
 public final class TableAnswerElement extends AnswerElement {
@@ -165,7 +168,23 @@ public final class TableAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_EXCLUDED_ROWS)
   private void setExcludedRows(List<ExcludedRows> excludedRows) {
-    _excludedRows = excludedRows == null ? new LinkedList<>() : excludedRows;
+    _excludedRows =
+        excludedRows == null ? new LinkedList<>() : postProcessExcludedRowsList(excludedRows);
+  }
+
+  private List<ExcludedRows> postProcessExcludedRowsList(List<ExcludedRows> excludedRows) {
+    return hasIntegerColumn()
+        ? excludedRows
+            .stream()
+            .map(this::postProcessExcludedRows)
+            .collect(ImmutableList.toImmutableList())
+        : excludedRows;
+  }
+
+  private ExcludedRows postProcessExcludedRows(ExcludedRows excludedRows) {
+    ExcludedRows newExcludedRows = new ExcludedRows(excludedRows.getExclusionName());
+    postProcessRows(excludedRows.getRowsList()).forEach(newExcludedRows::addRow);
+    return newExcludedRows;
   }
 
   @JsonProperty(PROP_ROWS)
@@ -175,8 +194,38 @@ public final class TableAnswerElement extends AnswerElement {
       _rowsList = new LinkedList<>();
 
     } else {
-      _rowsList = rows;
+      _rowsList = postProcessRows(rows);
     }
     _rowsList.forEach(_rows::add);
+  }
+
+  private @Nonnull List<Row> postProcessRows(@Nonnull List<Row> rows) {
+    return hasIntegerColumn()
+        ? rows.stream().map(this::postProcessRow).collect(ImmutableList.toImmutableList())
+        : rows;
+  }
+
+  private boolean hasIntegerColumn() {
+    return _tableMetadata
+        .getColumnMetadata()
+        .stream()
+        .map(ColumnMetadata::getSchema)
+        .anyMatch(Predicates.equalTo(Schema.INTEGER));
+  }
+
+  private @Nonnull Row postProcessRow(@Nonnull Row row) {
+    RowBuilder builder = Row.builder(_tableMetadata.toColumnMap());
+    _tableMetadata
+        .getColumnMetadata()
+        .forEach(
+            columnMetadata -> {
+              String column = columnMetadata.getName();
+              if (columnMetadata.getSchema().equals(Schema.INTEGER)) {
+                builder.put(column, row.getLong(column));
+              } else {
+                builder.put(column, row.get(column));
+              }
+            });
+    return builder.build();
   }
 }

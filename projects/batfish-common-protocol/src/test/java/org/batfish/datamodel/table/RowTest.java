@@ -113,8 +113,8 @@ public class RowTest {
           Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")));
 
       // we should be able to put an Integer but not a string
-      Row row = builder.put("col", 2).build();
-      assertThat(row.get("col", Schema.INTEGER), Matchers.equalTo(2));
+      Row row = builder.put("col", 2L).build();
+      assertThat(row.get("col", Schema.INTEGER), Matchers.equalTo(2L));
 
       _thrown.expect(IllegalArgumentException.class);
       _thrown.expectMessage("Cannot convert");
@@ -129,9 +129,9 @@ public class RowTest {
                   "col", new ColumnMetadata("col", Schema.list(Schema.INTEGER), "desc")));
 
       // we should be able to put a list but not a base type
-      Row row = builder.put("col", ImmutableList.of(2)).build();
+      Row row = builder.put("col", ImmutableList.of(2L)).build();
       assertThat(
-          row.get("col", Schema.list(Schema.INTEGER)), Matchers.equalTo(ImmutableList.of(2)));
+          row.get("col", Schema.list(Schema.INTEGER)), Matchers.equalTo(ImmutableList.of(2L)));
 
       _thrown.expect(IllegalArgumentException.class);
       _thrown.expectMessage("Cannot convert");
@@ -171,7 +171,7 @@ public class RowTest {
   @Test
   public void get() {
     // check that non-list values are same after put and get
-    assertThat(Row.builder().put("col", 42).build().get("col", Schema.INTEGER), equalTo(42));
+    assertThat(Row.builder().put("col", 42L).build().get("col", Schema.INTEGER), equalTo(42L));
     assertThat(
         Row.builder().put("col", new Node("node")).build().get("col", Schema.NODE),
         equalTo(new Node("node")));
@@ -179,10 +179,10 @@ public class RowTest {
     // check the same for lists
     assertThat(
         Row.builder()
-            .put("col", ImmutableList.of(4, 2))
+            .put("col", ImmutableList.of(4L, 2L))
             .build()
             .get("col", Schema.list(Schema.INTEGER)),
-        equalTo(ImmutableList.of(4, 2)));
+        equalTo(ImmutableList.of(4L, 2L)));
     assertThat(
         Row.builder()
             .put("col", ImmutableList.of(new Node("n1"), new Node("n2")))

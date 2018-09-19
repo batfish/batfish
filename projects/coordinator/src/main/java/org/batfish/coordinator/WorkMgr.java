@@ -2095,7 +2095,7 @@ public class WorkMgr extends AbstractCoordinator {
     Schema schema = columnMetadata.getSchema();
     String column = columnMetadata.getName();
     if (schema.equals(Schema.INTEGER)) {
-      return Comparator.comparing(r -> r.getInteger(column));
+      return Comparator.comparing(r -> r.getLong(column));
     } else if (schema.equals(Schema.ISSUE)) {
       return Comparator.comparing(r -> r.getIssue(column).getSeverity());
     } else if (schema.equals(Schema.STRING)) {

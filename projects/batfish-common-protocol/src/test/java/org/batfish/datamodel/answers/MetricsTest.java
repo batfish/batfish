@@ -15,7 +15,8 @@ public final class MetricsTest {
     Metrics group1Elem2 = builder.build();
     Metrics group2Elem1 =
         builder
-            .setAggregations(ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, "A")))
+            .setAggregations(
+                ImmutableMap.of("a", ImmutableMap.of(Aggregation.MAX, AggregationResult.of("A"))))
             .build();
     Metrics group3Elem1 = builder.setEmptyColumns(ImmutableSet.of("b")).build();
     Metrics group4Elem1 =

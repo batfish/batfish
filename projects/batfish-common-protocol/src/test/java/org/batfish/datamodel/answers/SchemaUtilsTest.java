@@ -20,10 +20,10 @@ public class SchemaUtilsTest {
 
   @Test
   public void convertTypeCorrect() {
-    assertThat(SchemaUtils.convertType(toJson(2), Schema.INTEGER), equalTo(2));
+    assertThat(SchemaUtils.convertType(toJson(2), Schema.INTEGER), equalTo(2L));
     assertThat(
         SchemaUtils.convertType(toJson(ImmutableList.of(1, 2)), Schema.list(Schema.INTEGER)),
-        equalTo(ImmutableList.of(1, 2)));
+        equalTo(ImmutableList.of(1L, 2L)));
   }
 
   @Test

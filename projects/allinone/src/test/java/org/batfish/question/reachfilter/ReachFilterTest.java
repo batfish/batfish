@@ -357,16 +357,16 @@ public final class ReachFilterTest {
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
                         hasColumn(COL_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING),
-                        hasColumn(COL_LINE_NUMBER, oneOf(0, 3), Schema.INTEGER)),
+                        hasColumn(COL_LINE_NUMBER, oneOf(0L, 3L), Schema.INTEGER)),
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
                         hasColumn(
                             COL_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
-                        hasColumn(COL_LINE_NUMBER, equalTo(0), Schema.INTEGER)),
+                        hasColumn(COL_LINE_NUMBER, equalTo(0L), Schema.INTEGER)),
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
                         hasColumn(COL_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING),
-                        hasColumn(COL_LINE_NUMBER, oneOf(0, 1, 2), Schema.INTEGER))))));
+                        hasColumn(COL_LINE_NUMBER, oneOf(0L, 1L, 2L), Schema.INTEGER))))));
   }
 
   @Test

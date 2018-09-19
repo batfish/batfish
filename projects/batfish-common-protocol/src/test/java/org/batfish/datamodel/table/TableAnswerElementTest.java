@@ -3,11 +3,17 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Assertion.AssertionType;
 import org.junit.Rule;
@@ -71,5 +77,27 @@ public class TableAnswerElementTest {
     otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
+  }
+
+  @Test
+  public void testLongPreservation()
+      throws JsonParseException, JsonMappingException, JsonProcessingException, IOException {
+    String column = "col";
+    long val = 1L;
+    TableMetadata tableMetadata =
+        new TableMetadata(ImmutableList.of(new ColumnMetadata(column, Schema.INTEGER, "desc")));
+    TableAnswerElement table = new TableAnswerElement(tableMetadata);
+    Row row = Row.builder(tableMetadata.toColumnMap()).put(column, val).build();
+    table.addRow(row);
+    table.addExcludedRow(row, "foo");
+    TableAnswerElement deserializedTable =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                BatfishObjectMapper.writeString(table), new TypeReference<TableAnswerElement>() {});
+
+    assertThat(table.getRowsList(), equalTo(deserializedTable.getRowsList()));
+    assertThat(
+        table.getExcludedRows().iterator().next().getRowsList(),
+        equalTo(deserializedTable.getExcludedRows().iterator().next().getRowsList()));
   }
 }
