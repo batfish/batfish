@@ -18,7 +18,7 @@ import org.batfish.common.BfConsts;
 public class Metrics {
 
   public static class Builder {
-    private Map<String, Map<Aggregation, Object>> _aggregations;
+    private Map<String, Map<Aggregation, AggregationResult>> _aggregations;
 
     private Set<String> _emptyColumns;
 
@@ -38,7 +38,7 @@ public class Metrics {
     }
 
     public @Nonnull Builder setAggregations(
-        @Nonnull Map<String, Map<Aggregation, Object>> aggregations) {
+        @Nonnull Map<String, Map<Aggregation, AggregationResult>> aggregations) {
       _aggregations = ImmutableMap.copyOf(aggregations);
       return this;
     }
@@ -66,7 +66,8 @@ public class Metrics {
 
   @JsonCreator
   private static @Nonnull Metrics create(
-      @JsonProperty(BfConsts.PROP_AGGREGATIONS) Map<String, Map<Aggregation, Object>> aggregations,
+      @JsonProperty(BfConsts.PROP_AGGREGATIONS)
+          Map<String, Map<Aggregation, AggregationResult>> aggregations,
       @JsonProperty(BfConsts.PROP_EMPTY_COLUMNS) Set<String> emptyColumns,
       @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_CONFIGS)
           Map<String, MajorIssueConfig> majorIssueConfigs,
@@ -78,7 +79,7 @@ public class Metrics {
         numRows);
   }
 
-  private final Map<String, Map<Aggregation, Object>> _aggregations;
+  private final Map<String, Map<Aggregation, AggregationResult>> _aggregations;
 
   private final Set<String> _emptyColumns;
 
@@ -87,7 +88,7 @@ public class Metrics {
   private final int _numRows;
 
   private Metrics(
-      @Nonnull Map<String, Map<Aggregation, Object>> aggregations,
+      @Nonnull Map<String, Map<Aggregation, AggregationResult>> aggregations,
       @Nonnull Set<String> emptyColumns,
       @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
       int numRows) {
@@ -113,7 +114,7 @@ public class Metrics {
   }
 
   @JsonProperty(BfConsts.PROP_AGGREGATIONS)
-  public @Nonnull Map<String, Map<Aggregation, Object>> getAggregations() {
+  public @Nonnull Map<String, Map<Aggregation, AggregationResult>> getAggregations() {
     return _aggregations;
   }
 

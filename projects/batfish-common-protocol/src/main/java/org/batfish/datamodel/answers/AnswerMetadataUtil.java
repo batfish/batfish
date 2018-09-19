@@ -57,11 +57,11 @@ public final class AnswerMetadataUtil {
 
   @VisibleForTesting
   @Nonnull
-  static Map<String, Map<Aggregation, Object>> computeColumnAggregations(
+  static Map<String, Map<Aggregation, AggregationResult>> computeColumnAggregations(
       @Nonnull TableAnswerElement table,
       @Nonnull List<ColumnAggregation> aggregations,
       @Nonnull BatfishLogger logger) {
-    Map<String, Map<Aggregation, Object>> columnAggregations = new HashMap<>();
+    Map<String, Map<Aggregation, AggregationResult>> columnAggregations = new HashMap<>();
     aggregations
         .stream()
         .map(columnAggregation -> computeColumnAggregation(table, columnAggregation, logger))
@@ -175,7 +175,7 @@ public final class AnswerMetadataUtil {
                         aggregation ->
                             columnAggregationsBuilder.add(
                                 new ColumnAggregation(aggregation, column))));
-    Map<String, Map<Aggregation, Object>> columnAggregationResults =
+    Map<String, Map<Aggregation, AggregationResult>> columnAggregationResults =
         computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     Set<String> emptyColumns = computeEmptyColumns(table);
     Map<String, MajorIssueConfig> majorIssueTypes = computeMajorIssueConfigs(table);

@@ -6,33 +6,39 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 
+@ParametersAreNonnullByDefault
 public class ColumnAggregationResult {
 
   @JsonCreator
   private static @Nonnull ColumnAggregationResult create(
-      @JsonProperty(BfConsts.PROP_AGGREGATION) Aggregation aggregation,
-      @JsonProperty(BfConsts.PROP_COLUMN) String column,
-      @JsonProperty(BfConsts.PROP_VALUE) Optional<? extends Object> value) {
-    return new ColumnAggregationResult(
-        requireNonNull(aggregation), requireNonNull(column), requireNonNull(value));
+      @JsonProperty(BfConsts.PROP_AGGREGATION) @Nullable Aggregation aggregation,
+      @JsonProperty(BfConsts.PROP_COLUMN) @Nullable String column,
+      @JsonProperty(BfConsts.PROP_VALUE) @Nullable AggregationResult value) {
+    return new ColumnAggregationResult(requireNonNull(aggregation), requireNonNull(column), value);
   }
 
   private final Aggregation _aggregation;
 
   private final String _column;
 
-  private final Object _value;
+  private final AggregationResult _value;
 
   public ColumnAggregationResult(
-      @Nonnull Aggregation aggregation, @Nonnull String column, @Nonnull Object value) {
+      Aggregation aggregation, String column, @Nullable AggregationResult value) {
     _aggregation = aggregation;
     _column = column;
     _value = value;
+  }
+
+  public ColumnAggregationResult(Aggregation aggregation, String column, @Nullable Object value) {
+    _aggregation = aggregation;
+    _column = column;
+    _value = AggregationResult.of(value);
   }
 
   @Override
@@ -60,7 +66,7 @@ public class ColumnAggregationResult {
   }
 
   @JsonProperty(BfConsts.PROP_VALUE)
-  public @Nonnull Object getValue() {
+  public @Nullable AggregationResult getValue() {
     return _value;
   }
 
@@ -72,6 +78,7 @@ public class ColumnAggregationResult {
   @Override
   public String toString() {
     return toStringHelper(getClass())
+        .omitNullValues()
         .add(BfConsts.PROP_AGGREGATION, _aggregation)
         .add(BfConsts.PROP_COLUMN, _column)
         .add(BfConsts.PROP_VALUE, _value)

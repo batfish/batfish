@@ -1408,9 +1408,9 @@ public class WorkMgrTest {
     assertThat(returnVal, not(equalTo(oldAnswerMetadata)));
 
     // The answer metadata now on disk should be the same as that returned by the call
-    assertThat(
-        _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis),
-        equalTo(returnVal));
+    AnswerMetadata loadedAnswerMetadata =
+        _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
+    assertThat(loadedAnswerMetadata, equalTo(returnVal));
 
     Answer newAnswer =
         BatfishObjectMapper.mapper()

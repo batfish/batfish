@@ -62,9 +62,9 @@ public class AnswerMetadataUtilTest {
                         .setAggregations(
                             ImmutableMap.of(
                                 columnName,
-                                ImmutableMap.of(Aggregation.MAX, value),
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value)),
                                 issueColumnName,
-                                ImmutableMap.of(Aggregation.MAX, (long) severity)))
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(severity))))
                         .setMajorIssueConfigs(
                             ImmutableMap.of(
                                 major,

@@ -16,7 +16,8 @@ public final class GetAnalysisAnswerMetricsAnswerTest {
                     .setMetrics(
                         Metrics.builder()
                             .setAggregations(
-                                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)))
+                                ImmutableMap.of(
+                                    "A", ImmutableMap.of(Aggregation.MAX, AggregationResult.of(1))))
                             .setNumRows(2)
                             .build())
                     .setStatus(AnswerStatus.SUCCESS)
@@ -29,7 +30,8 @@ public final class GetAnalysisAnswerMetricsAnswerTest {
                     .setMetrics(
                         Metrics.builder()
                             .setAggregations(
-                                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)))
+                                ImmutableMap.of(
+                                    "A", ImmutableMap.of(Aggregation.MAX, AggregationResult.of(1))))
                             .setNumRows(2)
                             .build())
                     .setStatus(AnswerStatus.SUCCESS)
@@ -42,7 +44,8 @@ public final class GetAnalysisAnswerMetricsAnswerTest {
                     .setMetrics(
                         Metrics.builder()
                             .setAggregations(
-                                ImmutableMap.of("A", ImmutableMap.of(Aggregation.MAX, 1)))
+                                ImmutableMap.of(
+                                    "A", ImmutableMap.of(Aggregation.MAX, AggregationResult.of(1))))
                             .setNumRows(2)
                             .build())
                     .setStatus(AnswerStatus.SUCCESS)

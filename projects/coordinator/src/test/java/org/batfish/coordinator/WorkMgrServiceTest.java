@@ -36,6 +36,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Aggregation;
+import org.batfish.datamodel.answers.AggregationResult;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -690,7 +691,9 @@ public class WorkMgrServiceTest {
             .setMetrics(
                 Metrics.builder()
                     .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        ImmutableMap.of(
+                            columnName,
+                            ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value))))
                     .setNumRows(1)
                     .build())
             .setStatus(AnswerStatus.SUCCESS)
@@ -763,7 +766,9 @@ public class WorkMgrServiceTest {
                             Metrics.builder()
                                 .setAggregations(
                                     ImmutableMap.of(
-                                        columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                                        columnName,
+                                        ImmutableMap.of(
+                                            Aggregation.MAX, AggregationResult.of(value))))
                                 .setNumRows(1)
                                 .build())
                         .setStatus(AnswerStatus.SUCCESS)
@@ -791,7 +796,7 @@ public class WorkMgrServiceTest {
 
     initNetworkEnvironment();
 
-    int value = 5;
+    long value = 5;
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
         new TableAnswerElement(
@@ -882,7 +887,9 @@ public class WorkMgrServiceTest {
             .setMetrics(
                 Metrics.builder()
                     .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        ImmutableMap.of(
+                            columnName,
+                            ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value))))
                     .setNumRows(1)
                     .build())
             .setStatus(AnswerStatus.SUCCESS)
@@ -951,7 +958,9 @@ public class WorkMgrServiceTest {
                 .setMetrics(
                     Metrics.builder()
                         .setAggregations(
-                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                            ImmutableMap.of(
+                                columnName,
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value))))
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)
@@ -971,7 +980,9 @@ public class WorkMgrServiceTest {
             .setMetrics(
                 Metrics.builder()
                     .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                        ImmutableMap.of(
+                            columnName,
+                            ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value))))
                     .setNumRows(1)
                     .build())
             .setStatus(AnswerStatus.SUCCESS)
@@ -1009,7 +1020,9 @@ public class WorkMgrServiceTest {
                 .setMetrics(
                     Metrics.builder()
                         .setAggregations(
-                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
+                            ImmutableMap.of(
+                                columnName,
+                                ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value))))
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)
@@ -1034,7 +1047,7 @@ public class WorkMgrServiceTest {
 
     initNetworkEnvironment();
 
-    int value = 5;
+    long value = 5L;
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
         new TableAnswerElement(
@@ -1107,7 +1120,7 @@ public class WorkMgrServiceTest {
 
     initNetworkEnvironment();
 
-    int value = 5;
+    long value = 5;
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
         new TableAnswerElement(
