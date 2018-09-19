@@ -1010,7 +1010,6 @@ import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_group_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_permissiveContext;
-import org.batfish.grammar.cisco.CiscoParser.Variable_service_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
@@ -10726,7 +10725,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable
   private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
-      Variable_service_protocolContext protocol) {
+      Service_group_protocolContext protocol) {
     if (protocol == null) {
       return null;
     }
