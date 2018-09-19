@@ -12,7 +12,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
+import org.batfish.datamodel.pojo.Link.LinkType;
 
 public class Topology extends BfObject {
 
@@ -43,17 +45,30 @@ public class Topology extends BfObject {
       Node pojoNode = new Node(configuration.getHostname(), configuration.getDeviceType());
       pojoTopology.getNodes().add(pojoNode);
 
+      Map<String, org.batfish.datamodel.Interface> nodeInterfaces =
+          configuration.getAllInterfaces();
       // add interfaces and links
       for (Edge edge : topology.getNodeEdges().get(nodeName)) {
-        org.batfish.datamodel.pojo.Interface pojoInterface =
-            new org.batfish.datamodel.pojo.Interface(
-                pojoNode.getId(), edge.getInterface1().getInterface());
+        String interface1 = edge.getInt1();
+        String interface2 = edge.getInt2();
 
+        InterfaceType iface1type =
+            nodeInterfaces.containsKey(interface1)
+                ? nodeInterfaces.get(interface1).getInterfaceType()
+                : InterfaceType.UNKNOWN;
+        InterfaceType iface2type =
+            nodeInterfaces.containsKey(interface2)
+                ? nodeInterfaces.get(interface2).getInterfaceType()
+                : InterfaceType.UNKNOWN;
+
+        Interface pojoInterface = new Interface(pojoNode.getId(), interface1, iface1type);
+
+        LinkType linkType = Link.interfaceTypesToLinkType(iface1type, iface2type);
         Link pojoLink =
             new Link(
                 pojoInterface.getId(),
-                org.batfish.datamodel.pojo.Interface.getId(
-                    Node.makeId(edge.getNode2()), edge.getInt2()));
+                Interface.getId(Node.makeId(edge.getNode2()), interface2),
+                linkType);
 
         pojoTopology.getInterfaces().add(pojoInterface);
         pojoTopology.getLinks().add(pojoLink);

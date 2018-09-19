@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.pojo.Interface.InterfaceType;
+import org.batfish.datamodel.InterfaceType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
