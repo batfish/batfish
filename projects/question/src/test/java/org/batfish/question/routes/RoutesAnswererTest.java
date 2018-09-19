@@ -199,7 +199,7 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
-    assertThat(actual.iterator().next().get(COL_ADMIN_DISTANCE, Schema.INTEGER), equalTo(10));
+    assertThat(actual.iterator().next().get(COL_ADMIN_DISTANCE, Schema.INTEGER), equalTo(10L));
   }
 
   @Test
@@ -219,7 +219,7 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
-    assertThat(actual.iterator().next().get(COL_METRIC, Schema.INTEGER), equalTo(111));
+    assertThat(actual.iterator().next().get(COL_METRIC, Schema.INTEGER), equalTo(111L));
   }
 
   @Test

@@ -147,7 +147,9 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeColumnAggregations(table, aggregations, _logger),
-        equalTo(ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value))));
+        equalTo(
+            ImmutableMap.of(
+                columnName, ImmutableMap.of(Aggregation.MAX, AggregationResult.of(value)))));
   }
 
   @Test

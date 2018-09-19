@@ -100,22 +100,22 @@ public class IpOwnersAnswererTest {
             ImmutableList.of(
                 allOf(
                     hasColumn(COL_IP, equalTo(_uniqueIp), Schema.IP),
-                    hasColumn(COL_MASK, equalTo(MAX_PREFIX_LENGTH - 1), Schema.INTEGER),
+                    hasColumn(COL_MASK, equalTo((long) MAX_PREFIX_LENGTH - 1L), Schema.INTEGER),
                     hasColumn(COL_NODE, equalTo(new Node("n2")), Schema.NODE),
                     hasColumn(COL_INTERFACE_NAME, equalTo("Eth2/2"), Schema.STRING)),
                 allOf(
                     hasColumn(COL_IP, equalTo(_secondaryUniqueIp), Schema.IP),
-                    hasColumn(COL_MASK, equalTo(MAX_PREFIX_LENGTH - 1), Schema.INTEGER),
+                    hasColumn(COL_MASK, equalTo((long) MAX_PREFIX_LENGTH - 1L), Schema.INTEGER),
                     hasColumn(COL_NODE, equalTo(new Node("n2")), Schema.NODE),
                     hasColumn(COL_INTERFACE_NAME, equalTo("Eth2/2"), Schema.STRING)),
                 allOf(
                     hasColumn(COL_IP, equalTo(_duplicateIp), Schema.IP),
-                    hasColumn(COL_MASK, equalTo(MAX_PREFIX_LENGTH), Schema.INTEGER),
+                    hasColumn(COL_MASK, equalTo((long) MAX_PREFIX_LENGTH), Schema.INTEGER),
                     hasColumn(COL_NODE, equalTo(new Node("n1")), Schema.NODE),
                     hasColumn(COL_INTERFACE_NAME, equalTo("Eth1/1"), Schema.STRING)),
                 allOf(
                     hasColumn(COL_IP, equalTo(_duplicateIp), Schema.IP),
-                    hasColumn(COL_MASK, equalTo(MAX_PREFIX_LENGTH), Schema.INTEGER),
+                    hasColumn(COL_MASK, equalTo((long) MAX_PREFIX_LENGTH), Schema.INTEGER),
                     hasColumn(COL_NODE, equalTo(new Node("n2")), Schema.NODE),
                     hasColumn(COL_INTERFACE_NAME, equalTo("Eth2/1"), Schema.STRING)))));
   }
