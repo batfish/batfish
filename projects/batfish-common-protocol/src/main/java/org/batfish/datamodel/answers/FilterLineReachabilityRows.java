@@ -23,7 +23,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
-public class AclReachabilityRows {
+public class FilterLineReachabilityRows {
   public static final String COL_SOURCES = "ACL_Sources";
   public static final String COL_LINES = "Lines";
   public static final String COL_BLOCKED_LINE_ACTION = "Blocked_Line_Action";

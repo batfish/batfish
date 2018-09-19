@@ -1,7 +1,7 @@
-package org.batfish.question.aclreachability;
+package org.batfish.question.filterlinereachability;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.datamodel.answers.AclReachabilityRows.createMetadata;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.createMetadata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -38,24 +38,24 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
-import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.datamodel.answers.FilterLineReachabilityRows;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 @ParametersAreNonnullByDefault
-public class AclReachabilityAnswerer extends Answerer {
+public class FilterLineReachabilityAnswerer extends Answerer {
 
-  public AclReachabilityAnswerer(Question question, IBatfish batfish) {
+  public FilterLineReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
   public TableAnswerElement answer() {
-    AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
-    AclReachabilityRows answerRows = new AclReachabilityRows();
+    FilterLineReachabilityQuestion question = (FilterLineReachabilityQuestion) _question;
+    FilterLineReachabilityRows answerRows = new FilterLineReachabilityRows();
 
     SpecifierContext ctxt = _batfish.specifierContext();
     Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
@@ -351,7 +351,7 @@ public class AclReachabilityAnswerer extends Answerer {
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls,
-      AclReachabilityRows answer) {
+      FilterLineReachabilityRows answer) {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*
@@ -442,7 +442,7 @@ public class AclReachabilityAnswerer extends Answerer {
   }
 
   private static void answerAclReachability(
-      List<AclSpecs> aclSpecs, AclReachabilityRows answerRows) {
+      List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
 

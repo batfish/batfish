@@ -1,5 +1,5 @@
 {
-    "class": "org.batfish.question.aclreachability.AclReachabilityQuestion",
+    "class": "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
     "differential": false,
     "filters": "${filters}",
     "nodes": "${nodes}",

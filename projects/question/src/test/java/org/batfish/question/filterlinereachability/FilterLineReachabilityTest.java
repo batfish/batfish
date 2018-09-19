@@ -1,21 +1,21 @@
-package org.batfish.question.aclreachability;
+package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COLUMN_METADATA;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKED_LINE_ACTION;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKED_LINE_NUM;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKING_LINE_NUMS;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_DIFF_ACTION;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_LINES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_MESSAGE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_REASON;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_SOURCES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.BLOCKING_LINES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.CYCLICAL_REFERENCE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNDEFINED_REFERENCE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNMATCHABLE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COLUMN_METADATA;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_BLOCKED_LINE_ACTION;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_BLOCKED_LINE_NUM;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_BLOCKING_LINE_NUMS;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_DIFF_ACTION;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_LINES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_MESSAGE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_REASON;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_SOURCES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.BLOCKING_LINES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.CYCLICAL_REFERENCE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.UNDEFINED_REFERENCE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.UNMATCHABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -54,8 +54,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link AclReachabilityQuestion}. */
-public class AclReachabilityTest {
+/** End-to-end tests of {@link FilterLineReachabilityQuestion}. */
+public class FilterLineReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -99,7 +99,7 @@ public class AclReachabilityTest {
     _aclb.setLines(lines).setName("acl").build();
     List<String> lineNames = lines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. First line should block second.
     Multiset<Row> expected =
@@ -143,7 +143,7 @@ public class AclReachabilityTest {
     _aclb.setLines(lines).setName("acl").build();
     List<String> lineNames = lines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. First line should block second.
     Multiset<Row> expected =
@@ -185,7 +185,7 @@ public class AclReachabilityTest {
         .setName("acl2")
         .build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find only one cycle result.
     Multiset<Row> expected =
@@ -238,7 +238,7 @@ public class AclReachabilityTest {
         .setName("acl3")
         .build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find a single cycle result.
     Multiset<Row> expected =
@@ -264,7 +264,7 @@ public class AclReachabilityTest {
         IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
     _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find an undefined ACL result.
     Multiset<Row> expected =
@@ -316,9 +316,9 @@ public class AclReachabilityTest {
      2. Reachability specifically for main ACL (referenced ACL won't be encoded at all)
      Will test that both give the same result.
     */
-    TableAnswerElement generalAnswer = answer(new AclReachabilityQuestion());
+    TableAnswerElement generalAnswer = answer(new FilterLineReachabilityQuestion());
     TableAnswerElement specificAnswer =
-        answer(new AclReachabilityQuestion(null, acl.getName(), null, null));
+        answer(new FilterLineReachabilityQuestion(null, acl.getName(), null, null));
 
     // Construct the expected result. Should find line 1 to be blocked by line 0 in main ACL.
     Multiset<Row> expected =
@@ -362,7 +362,7 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     /*
      Construct the expected result. Line 2 should be blocked by both previous lines.
@@ -414,7 +414,7 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result
     Multiset<Row> expected =
@@ -487,7 +487,7 @@ public class AclReachabilityTest {
             .setName("acl")
             .build();
 
-    answer(new AclReachabilityQuestion());
+    answer(new FilterLineReachabilityQuestion());
 
     // ACL's lines should be the same as before
     assertThat(
@@ -520,7 +520,7 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     /* Construct the expected result. Line 1 should be blocked by line 0. */
     Multiset<Row> expected =
@@ -544,7 +544,7 @@ public class AclReachabilityTest {
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
 
-  private TableAnswerElement answer(AclReachabilityQuestion q) {
+  private TableAnswerElement answer(FilterLineReachabilityQuestion q) {
     IBatfish batfish =
         new IBatfishTestAdapter() {
           @Override
@@ -552,7 +552,7 @@ public class AclReachabilityTest {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
           }
         };
-    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(q, batfish);
+    FilterLineReachabilityAnswerer answerer = new FilterLineReachabilityAnswerer(q, batfish);
     return answerer.answer();
   }
 }

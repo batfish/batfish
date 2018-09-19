@@ -1,4 +1,4 @@
-package org.batfish.question.aclreachability;
+package org.batfish.question.filterlinereachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -15,10 +15,11 @@ import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
  * A question that returns unreachable lines of ACLs in a tabular format. {@link
- * AclReachabilityQuestion#_filterSpecifierInput} determines which ACLs are checked, and {@link
- * AclReachabilityQuestion#_nodeSpecifierInput} determines which nodes are checked for those ACLs.
+ * FilterLineReachabilityQuestion#_filterSpecifierInput} determines which ACLs are checked, and
+ * {@link FilterLineReachabilityQuestion#_nodeSpecifierInput} determines which nodes are checked for
+ * those ACLs.
  */
-public class AclReachabilityQuestion extends Question {
+public class FilterLineReachabilityQuestion extends Question {
   private static final String DEFAULT_FILTER_SPECIFIER_FACTORY =
       FlexibleFilterSpecifierFactory.NAME;
 
@@ -40,11 +41,11 @@ public class AclReachabilityQuestion extends Question {
 
   private String _nodeSpecifierInput;
 
-  public AclReachabilityQuestion() {
+  public FilterLineReachabilityQuestion() {
     this(null, null, null, null);
   }
 
-  public AclReachabilityQuestion(
+  public FilterLineReachabilityQuestion(
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY) String filterSpecifierFactory,
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) String filtersSpecifierInput,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) String nodeSpecifierFactory,
