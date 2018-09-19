@@ -125,16 +125,16 @@ public final class ReachFilterAnswerer extends Answerer {
             .getDecreasedFlow()
             .ifPresent(
                 flow -> {
-                  baseTable.addRow(testFiltersRow(true, node, baseAcl.get(), flow));
-                  deltaTable.addRow(testFiltersRow(false, node, deltaAcl.get(), flow));
+                  baseTable.addRow(testFiltersRow(true, node, baseAcl.get().getName(), flow));
+                  deltaTable.addRow(testFiltersRow(false, node, deltaAcl.get().getName(), flow));
                 });
 
         result
             .getIncreasedFlow()
             .ifPresent(
                 flow -> {
-                  baseTable.addRow(testFiltersRow(true, node, baseAcl.get(), flow));
-                  deltaTable.addRow(testFiltersRow(false, node, deltaAcl.get(), flow));
+                  baseTable.addRow(testFiltersRow(true, node, baseAcl.get().getName(), flow));
+                  deltaTable.addRow(testFiltersRow(false, node, deltaAcl.get().getName(), flow));
                 });
       }
     }
@@ -175,7 +175,7 @@ public final class ReachFilterAnswerer extends Answerer {
         _batfish.getLogger().warn(t.getMessage());
         continue;
       }
-      result.ifPresent(flow -> rows.add(TestFiltersAnswerer.getRow(acl, flow, node)));
+      result.ifPresent(flow -> rows.add(testFiltersRow(true, hostname, acl.getName(), flow)));
     }
 
     _tableAnswerElement =
@@ -279,14 +279,14 @@ public final class ReachFilterAnswerer extends Answerer {
     return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
   }
 
-  private Row testFiltersRow(boolean base, String hostname, IpAccessList acl, Flow flow) {
-    // TODO was traceFilterRow
+  private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
     if (base) {
       _batfish.pushBaseEnvironment();
     } else {
       _batfish.pushDeltaEnvironment();
     }
-    Row row = TestFiltersAnswerer.getRow(acl, flow, _batfish.loadConfigurations().get(hostname));
+    Configuration c = _batfish.loadConfigurations().get(hostname);
+    Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
     _batfish.popEnvironment();
     return row;
   }
