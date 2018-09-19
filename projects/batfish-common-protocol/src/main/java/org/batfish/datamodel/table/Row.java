@@ -313,6 +313,10 @@ public class Row implements Comparable<Row>, Serializable {
     return (Issue) get(column, Schema.ISSUE);
   }
 
+  public Long getLong(String column) {
+    return (Long) get(column, Schema.INTEGER);
+  }
+
   public Node getNode(String column) {
     return (Node) get(column, Schema.NODE);
   }

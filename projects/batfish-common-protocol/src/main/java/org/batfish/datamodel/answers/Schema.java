@@ -45,7 +45,7 @@ public class Schema {
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
-          .put("Integer", getClassString(Integer.class))
+          .put("Integer", getClassString(Long.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
           .put("Issue", getClassString(Issue.class))
@@ -151,7 +151,7 @@ public class Schema {
 
   /** Whether this Schema object is Integer-based (base, list, or set) */
   public boolean isIntBased() {
-    return _baseType.equals(Integer.class);
+    return _baseType.equals(Long.class);
   }
 
   @Override

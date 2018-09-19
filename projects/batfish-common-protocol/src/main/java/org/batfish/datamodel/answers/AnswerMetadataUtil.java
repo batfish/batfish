@@ -83,7 +83,7 @@ public final class AnswerMetadataUtil {
 
   @VisibleForTesting
   @Nullable
-  static Integer computeColumnMax(
+  static Long computeColumnMax(
       @Nonnull TableAnswerElement table, @Nonnull String column, @Nonnull BatfishLogger logger) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
     if (columnMetadata == null) {
@@ -92,11 +92,11 @@ public final class AnswerMetadataUtil {
       throw new IllegalArgumentException(message);
     }
     Schema schema = columnMetadata.getSchema();
-    Function<Row, Integer> rowToInteger;
+    Function<Row, Long> rowToLong;
     if (schema.equals(Schema.INTEGER)) {
-      rowToInteger = r -> r.getInteger(column);
+      rowToLong = r -> r.getLong(column);
     } else if (schema.equals(Schema.ISSUE)) {
-      rowToInteger = r -> r.getIssue(column).getSeverity();
+      rowToLong = r -> (long) r.getIssue(column).getSeverity();
     } else {
       // unsupported
       return null;
@@ -105,7 +105,7 @@ public final class AnswerMetadataUtil {
         .getRows()
         .getData()
         .stream()
-        .map(rowToInteger)
+        .map(rowToLong)
         .max(Comparator.naturalOrder())
         .orElse(null);
   }
