@@ -38,14 +38,14 @@ public class MajorIssueConfig {
   }
 
   public MajorIssueConfig(String majorIssue, List<MinorIssueConfig> minorIssueConfigs) {
-    ImmutableMap.Builder<String, MinorIssueConfig> minorIssueConfigsMap = ImmutableMap.builder();
+    Map<String, MinorIssueConfig> minorIssueConfigsMap = new HashMap<>();
     if (minorIssueConfigs != null) {
       minorIssueConfigs.forEach(
           minorIssueConfig ->
               minorIssueConfigsMap.put(minorIssueConfig.getMinor(), minorIssueConfig));
     }
     _majorIssue = majorIssue;
-    _minorIssueConfigs = minorIssueConfigsMap.build();
+    _minorIssueConfigs = ImmutableMap.copyOf(minorIssueConfigsMap);
   }
 
   public MajorIssueConfig(String majorIssue, Map<String, MinorIssueConfig> minorIssueConfigs) {
