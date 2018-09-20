@@ -43,7 +43,7 @@ test -raw tests/questions/experimental/prefixTracer.ref validate-template prefix
 test -raw tests/questions/experimental/reachability.ref validate-template reachability actions=["accept"], start="aaa", "finalNodes"="bbb", "transitNodes" = "ccc", avoidNodes="ddd", srcIps="sss", dstIps="ddd"
 
 # validate reachfilter
-test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"], generateExplanations=false
 
 # validate reducedReachability
 test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability
