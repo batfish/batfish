@@ -1,21 +1,20 @@
-package org.batfish.question.aclreachability;
+package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COLUMN_METADATA;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKED_LINE_ACTION;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKED_LINE_NUM;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_BLOCKING_LINE_NUMS;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_DIFF_ACTION;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_LINES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_MESSAGE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_REASON;
-import static org.batfish.datamodel.answers.AclReachabilityRows.COL_SOURCES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.BLOCKING_LINES;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.CYCLICAL_REFERENCE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNDEFINED_REFERENCE;
-import static org.batfish.datamodel.answers.AclReachabilityRows.Reason.UNMATCHABLE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COLUMN_METADATA;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_ADDITIONAL_INFO;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_BLOCKING_LINES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_DIFF_ACTION;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_REASON;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_SOURCES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_UNREACHABLE_LINE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.COL_UNREACHABLE_LINE_ACTION;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.BLOCKING_LINES;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.CYCLICAL_REFERENCE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.INDEPENDENTLY_UNMATCHABLE;
+import static org.batfish.datamodel.answers.FilterLineReachabilityRows.Reason.UNDEFINED_REFERENCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -54,8 +53,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link AclReachabilityQuestion}. */
-public class AclReachabilityTest {
+/** End-to-end tests of {@link FilterLineReachabilityQuestion}. */
+public class FilterLineReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -99,25 +98,18 @@ public class AclReachabilityTest {
     _aclb.setLines(lines).setName("acl").build();
     List<String> lineNames = lines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. First line should block second.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 1)
-                .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(1))
+                .put(COL_UNREACHABLE_LINE_ACTION, LineAction.PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
-                        + lineNames.get(1)
-                        + "\nBlocking line(s):\n  [index 0] "
-                        + lineNames.get(0))
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -143,25 +135,18 @@ public class AclReachabilityTest {
     _aclb.setLines(lines).setName("acl").build();
     List<String> lineNames = lines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. First line should block second.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 1)
-                .put(COL_BLOCKED_LINE_ACTION, LineAction.PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableSet.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(1))
+                .put(COL_UNREACHABLE_LINE_ACTION, LineAction.PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] "
-                        + lineNames.get(1)
-                        + "\nBlocking line(s):\n  [index 0] "
-                        + lineNames.get(0))
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -185,20 +170,19 @@ public class AclReachabilityTest {
         .setName("acl2")
         .build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find only one cycle result.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl1, acl2"))
-                .put(COL_LINES, null)
-                .put(COL_BLOCKED_LINE_NUM, null)
-                .put(COL_BLOCKED_LINE_ACTION, null)
-                .put(COL_BLOCKING_LINE_NUMS, null)
+                .put(COL_UNREACHABLE_LINE, null)
+                .put(COL_UNREACHABLE_LINE_ACTION, null)
+                .put(COL_BLOCKING_LINES, null)
                 .put(COL_DIFF_ACTION, null)
                 .put(COL_REASON, CYCLICAL_REFERENCE)
-                .put(COL_MESSAGE, "Cyclic ACL references in node 'c1': acl1 -> acl2 -> acl1")
+                .put(COL_ADDITIONAL_INFO, "Cyclic references in node 'c1': acl1 -> acl2 -> acl1")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -238,21 +222,21 @@ public class AclReachabilityTest {
         .setName("acl3")
         .build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find a single cycle result.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl0, acl1, acl2"))
-                .put(COL_LINES, null)
-                .put(COL_BLOCKED_LINE_NUM, null)
-                .put(COL_BLOCKED_LINE_ACTION, null)
-                .put(COL_BLOCKING_LINE_NUMS, null)
+                .put(COL_UNREACHABLE_LINE, null)
+                .put(COL_UNREACHABLE_LINE_ACTION, null)
+                .put(COL_BLOCKING_LINES, null)
                 .put(COL_DIFF_ACTION, null)
                 .put(COL_REASON, CYCLICAL_REFERENCE)
                 .put(
-                    COL_MESSAGE, "Cyclic ACL references in node 'c1': acl0 -> acl1 -> acl2 -> acl0")
+                    COL_ADDITIONAL_INFO,
+                    "Cyclic references in node 'c1': acl0 -> acl1 -> acl2 -> acl0")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -264,24 +248,18 @@ public class AclReachabilityTest {
         IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
     _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result. Should find an undefined ACL result.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": acl"))
-                .put(COL_LINES, ImmutableList.of(aclLine.toString()))
-                .put(COL_BLOCKED_LINE_NUM, 0)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_UNREACHABLE_LINE, aclLine.toString())
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, UNDEFINED_REFERENCE)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=PERMIT,"
-                        + " matchCondition=PermittedByAcl{aclName=???, defaultAccept=false}}"
-                        + "\nThis line references a structure that is not defined.")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -316,27 +294,20 @@ public class AclReachabilityTest {
      2. Reachability specifically for main ACL (referenced ACL won't be encoded at all)
      Will test that both give the same result.
     */
-    TableAnswerElement generalAnswer = answer(new AclReachabilityQuestion());
+    TableAnswerElement generalAnswer = answer(new FilterLineReachabilityQuestion());
     TableAnswerElement specificAnswer =
-        answer(new AclReachabilityQuestion(null, acl.getName(), null, null));
+        answer(new FilterLineReachabilityQuestion(null, acl.getName(), null, null));
 
     // Construct the expected result. Should find line 1 to be blocked by line 0 in main ACL.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 1)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(1))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl2 } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
-                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=PERMIT, "
-                        + "matchCondition=PermittedByAcl{aclName=acl1, defaultAccept=false}}")
                 .build());
 
     assertThat(generalAnswer.getRows().getData(), equalTo(expected));
@@ -362,7 +333,7 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     /*
      Construct the expected result. Line 2 should be blocked by both previous lines.
@@ -371,20 +342,11 @@ public class AclReachabilityTest {
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 2)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0, 1))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(2))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0), lineNames.get(1)))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 2] IpAccessListLine{action=PERMIT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}"
-                        + "\nBlocking line(s):\n  [index 0] "
-                        + lineNames.get(0)
-                        + "\n  [index 1] "
-                        + lineNames.get(1))
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -414,54 +376,34 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     // Construct the expected result
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 1)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(1))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, true)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
-                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=DENY, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build(),
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 2)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(COL_UNREACHABLE_LINE, lineNames.get(2))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of())
                 .put(COL_DIFF_ACTION, false)
-                .put(COL_REASON, UNMATCHABLE)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n"
-                        + "  [index 2] IpAccessListLine{action=PERMIT, matchCondition=FalseExpr{}}\n"
-                        + "This line will never match any packet, independent of preceding lines.")
+                .put(COL_REASON, INDEPENDENTLY_UNMATCHABLE)
                 .build(),
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 3)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(3))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, true)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 3] IpAccessListLine{action=PERMIT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}"
-                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=DENY, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -487,7 +429,7 @@ public class AclReachabilityTest {
             .setName("acl")
             .build();
 
-    answer(new AclReachabilityQuestion());
+    answer(new FilterLineReachabilityQuestion());
 
     // ACL's lines should be the same as before
     assertThat(
@@ -520,31 +462,24 @@ public class AclReachabilityTest {
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());
 
-    TableAnswerElement answer = answer(new AclReachabilityQuestion());
+    TableAnswerElement answer = answer(new FilterLineReachabilityQuestion());
 
     /* Construct the expected result. Line 1 should be blocked by line 0. */
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder(COLUMN_METADATA)
                 .put(COL_SOURCES, ImmutableList.of(_c1.getHostname() + ": " + acl.getName()))
-                .put(COL_LINES, lineNames)
-                .put(COL_BLOCKED_LINE_NUM, 1)
-                .put(COL_BLOCKED_LINE_ACTION, PERMIT)
-                .put(COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(COL_UNREACHABLE_LINE, lineNames.get(1))
+                .put(COL_UNREACHABLE_LINE_ACTION, PERMIT)
+                .put(COL_BLOCKING_LINES, ImmutableList.of(lineNames.get(0)))
                 .put(COL_DIFF_ACTION, false)
                 .put(COL_REASON, BLOCKING_LINES)
-                .put(
-                    COL_MESSAGE,
-                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=PERMIT,"
-                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface]}}\n"
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=PERMIT,"
-                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface, iface2]}}")
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
 
-  private TableAnswerElement answer(AclReachabilityQuestion q) {
+  private TableAnswerElement answer(FilterLineReachabilityQuestion q) {
     IBatfish batfish =
         new IBatfishTestAdapter() {
           @Override
@@ -552,7 +487,7 @@ public class AclReachabilityTest {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
           }
         };
-    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(q, batfish);
+    FilterLineReachabilityAnswerer answerer = new FilterLineReachabilityAnswerer(q, batfish);
     return answerer.answer();
   }
 }

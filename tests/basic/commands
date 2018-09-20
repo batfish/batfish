@@ -21,7 +21,7 @@ test -compareall tests/basic/init-candidate.ref init-delta-snapshot networks/exa
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
 # Everything below here is to be converted into regular unit tests in some form.
-test tests/basic/aclReachability.ref get aclReachability
+test tests/basic/filterLineReachability.ref get filterLineReachability
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
 test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*", includeEstablishedCount=true
 test tests/basic/compareSameName.ref get compareSameName

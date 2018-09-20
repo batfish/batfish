@@ -1,4 +1,4 @@
-package org.batfish.question.aclreachability;
+package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
@@ -37,14 +37,14 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclReachabilityRows;
 import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.datamodel.answers.FilterLineReachabilityRows;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class AclReachabilityAnswererTest {
+public class FilterLineReachabilityAnswererTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -601,6 +601,7 @@ public class AclReachabilityAnswererTest {
                 configNames.contains(entry.getKey())
                     ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().values())
                     : ImmutableSet.of());
-    return AclReachabilityAnswerer.getAclSpecs(configs, acls, new AclReachabilityRows());
+    return FilterLineReachabilityAnswerer.getAclSpecs(
+        configs, acls, new FilterLineReachabilityRows());
   }
 }
