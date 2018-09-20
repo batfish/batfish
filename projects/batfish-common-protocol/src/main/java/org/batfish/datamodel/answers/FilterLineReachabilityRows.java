@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -24,20 +24,19 @@ import org.batfish.datamodel.table.TableMetadata;
 /** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
 public class FilterLineReachabilityRows {
-  public static final String COL_SOURCES = "ACL_Sources";
-  public static final String COL_LINES = "Lines";
-  public static final String COL_BLOCKED_LINE_ACTION = "Blocked_Line_Action";
-  public static final String COL_BLOCKED_LINE_NUM = "Blocked_Line_Num";
-  public static final String COL_BLOCKING_LINE_NUMS = "Blocking_Line_Nums";
+  public static final String COL_SOURCES = "Sources";
+  public static final String COL_UNREACHABLE_LINE_ACTION = "Unreachable_Line_Action";
+  public static final String COL_UNREACHABLE_LINE = "Unreachable_Line";
+  public static final String COL_BLOCKING_LINES = "Blocking_Lines";
   public static final String COL_REASON = "Reason";
   public static final String COL_DIFF_ACTION = "Different_Action";
-  public static final String COL_MESSAGE = "Message";
+  public static final String COL_ADDITIONAL_INFO = "Additional_Info";
 
-  public static enum Reason {
+  public enum Reason {
     CYCLICAL_REFERENCE,
     BLOCKING_LINES,
     UNDEFINED_REFERENCE,
-    UNMATCHABLE
+    INDEPENDENTLY_UNMATCHABLE
   }
 
   public static final Map<String, ColumnMetadata> COLUMN_METADATA =
@@ -45,53 +44,53 @@ public class FilterLineReachabilityRows {
           .put(
               COL_SOURCES,
               new ColumnMetadata(
-                  COL_SOURCES, Schema.list(Schema.STRING), "ACL sources", true, false))
+                  COL_SOURCES, Schema.list(Schema.STRING), "Filter sources", true, false))
           .put(
-              COL_LINES,
-              new ColumnMetadata(COL_LINES, Schema.list(Schema.STRING), "ACL lines", false, false))
-          .put(
-              COL_BLOCKED_LINE_NUM,
+              COL_UNREACHABLE_LINE,
               new ColumnMetadata(
-                  COL_BLOCKED_LINE_NUM, Schema.INTEGER, "Blocked line number", true, false))
+                  COL_UNREACHABLE_LINE, Schema.STRING, "Unreachable line", true, false))
           .put(
-              COL_BLOCKED_LINE_ACTION,
+              COL_UNREACHABLE_LINE_ACTION,
               new ColumnMetadata(
-                  COL_BLOCKED_LINE_ACTION, Schema.STRING, "Blocked line action", true, false))
+                  COL_UNREACHABLE_LINE_ACTION,
+                  Schema.STRING,
+                  "Unreachable line action",
+                  true,
+                  false))
           .put(
-              COL_BLOCKING_LINE_NUMS,
+              COL_BLOCKING_LINES,
               new ColumnMetadata(
-                  COL_BLOCKING_LINE_NUMS,
-                  Schema.list(Schema.INTEGER),
-                  "Blocking line numbers",
-                  false,
-                  true))
+                  COL_BLOCKING_LINES, Schema.list(Schema.STRING), "Blocking lines", false, true))
           .put(
               COL_DIFF_ACTION,
               new ColumnMetadata(COL_DIFF_ACTION, Schema.BOOLEAN, "Different action", false, true))
           .put(
               COL_REASON,
               new ColumnMetadata(COL_REASON, Schema.STRING, "Reason unreachable", false, true))
-          .put(COL_MESSAGE, new ColumnMetadata(COL_MESSAGE, Schema.STRING, "Message", false, false))
+          .put(
+              COL_ADDITIONAL_INFO,
+              new ColumnMetadata(
+                  COL_ADDITIONAL_INFO, Schema.STRING, "Additional information", false, false))
           .build();
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
   public void addUnreachableLine(
-      AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
+      AclSpecs aclSpecs,
+      int lineNumber,
+      boolean unmatchable,
+      @Nonnull SortedSet<Integer> blockingLines) {
 
     if (aclSpecs.acl.inCycle(lineNumber)) {
       return;
     }
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
-    LineAction blockedLineAction = acl.getLines().get(lineNumber).getAction();
-    boolean diffAction = false;
-    for (int blockingLineIndex : blockingLines) {
-      if (!blockedLineAction.equals(acl.getLines().get(blockingLineIndex).getAction())) {
-        diffAction = true;
-        break;
-      }
-    }
+    IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
+    boolean diffAction =
+        blockingLines
+            .stream()
+            .anyMatch(i -> !acl.getLines().get(i).getAction().equals(blockedLine.getAction()));
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
@@ -106,29 +105,24 @@ public class FilterLineReachabilityRows {
     Reason reason =
         canonicalAcl.hasUndefinedRef(lineNumber)
             ? Reason.UNDEFINED_REFERENCE
-            : unmatchable ? Reason.UNMATCHABLE : Reason.BLOCKING_LINES;
+            : unmatchable ? Reason.INDEPENDENTLY_UNMATCHABLE : Reason.BLOCKING_LINES;
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
+            .put(COL_UNREACHABLE_LINE_ACTION, blockedLine.getAction())
+            .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
-                COL_LINES,
-                acl.getLines()
+                COL_BLOCKING_LINES,
+                blockingLines
                     .stream()
-                    .map(l -> firstNonNull(l.getName(), l.toString()))
-                    .collect(Collectors.toList()))
-            .put(COL_BLOCKED_LINE_ACTION, blockedLineAction)
-            .put(COL_BLOCKED_LINE_NUM, lineNumber)
-            .put(COL_BLOCKING_LINE_NUMS, blockingLines)
+                    .map(
+                        i -> {
+                          IpAccessListLine l = acl.getLines().get(i);
+                          return firstNonNull(l.getName(), l.toString());
+                        })
+                    .collect(ImmutableList.toImmutableList()))
             .put(COL_DIFF_ACTION, diffAction)
             .put(COL_REASON, reason)
-            .put(
-                COL_MESSAGE,
-                buildMessage(
-                    canonicalAcl.getOriginalAcl().getLines(),
-                    lineNumber,
-                    flatSources,
-                    blockingLines,
-                    reason))
             .build());
   }
 
@@ -142,7 +136,9 @@ public class FilterLineReachabilityRows {
     List<ColumnMetadata> columnMetadata =
         COLUMN_METADATA.values().stream().collect(ImmutableList.toImmutableList());
 
-    String textDesc = String.format("${%s}", COL_MESSAGE);
+    String textDesc =
+        String.format(
+            "Filters {%s} contain an unreachable line: ${%s}", COL_SOURCES, COL_UNREACHABLE_LINE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -154,60 +150,17 @@ public class FilterLineReachabilityRows {
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, ImmutableList.of(hostname + ": " + String.join(", ", aclsInCycle)))
-            .put(COL_LINES, null)
-            .put(COL_BLOCKED_LINE_NUM, null)
-            .put(COL_BLOCKED_LINE_ACTION, null)
-            .put(COL_BLOCKING_LINE_NUMS, null)
+            .put(COL_UNREACHABLE_LINE, null)
+            .put(COL_UNREACHABLE_LINE_ACTION, null)
+            .put(COL_BLOCKING_LINES, null)
             .put(COL_DIFF_ACTION, null)
             .put(COL_REASON, Reason.CYCLICAL_REFERENCE)
             .put(
-                COL_MESSAGE,
+                COL_ADDITIONAL_INFO,
                 String.format(
-                    "Cyclic ACL references in node '%s': %s -> %s",
+                    "Cyclic references in node '%s': %s -> %s",
                     hostname, String.join(" -> ", aclsInCycle), aclsInCycle.get(0)))
             .build());
-  }
-
-  private static String buildMessage(
-      List<IpAccessListLine> lines,
-      int blockedLineNum,
-      List<String> flatSources,
-      SortedSet<Integer> blockingLines,
-      Reason reason) {
-    String blockedLineName =
-        firstNonNull(lines.get(blockedLineNum).getName(), lines.get(blockedLineNum).toString());
-    StringBuilder sb =
-        new StringBuilder(
-            String.format(
-                "ACLs { %s } contain an unreachable line:\n  [index %d] %s\n",
-                String.join("; ", flatSources), blockedLineNum, blockedLineName));
-    switch (reason) {
-      case UNDEFINED_REFERENCE:
-        sb.append("This line references a structure that is not defined.");
-        break;
-      case UNMATCHABLE:
-        sb.append("This line will never match any packet, independent of preceding lines.");
-        break;
-      case BLOCKING_LINES:
-        sb.append(
-            String.format(
-                "Blocking line(s):\n%s",
-                String.join(
-                    "\n",
-                    blockingLines
-                        .stream()
-                        .map(
-                            i -> {
-                              String blockingLineName =
-                                  firstNonNull(lines.get(i).getName(), lines.get(i).toString());
-                              return String.format("  [index %d] %s", i, blockingLineName);
-                            })
-                        .collect(Collectors.toList()))));
-        break;
-      default:
-        throw new IllegalArgumentException(String.format("Unsupported reason: %s", reason));
-    }
-    return sb.toString();
   }
 
   public Multiset<Row> getRows() {
