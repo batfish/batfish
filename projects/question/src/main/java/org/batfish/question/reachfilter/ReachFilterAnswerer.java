@@ -181,7 +181,10 @@ public final class ReachFilterAnswerer extends Answerer {
   }
 
   private static Row toReachFilterRow(AclLineMatchExpr description, Row row) {
-    String jsonDescription = null;
+    /*
+     * Sending the explanation to the client as a JSON blob. TODO: do something better.
+     */
+    String jsonDescription;
     try {
       jsonDescription = BatfishObjectMapper.writeString(description);
     } catch (JsonProcessingException e) {
