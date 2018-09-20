@@ -312,6 +312,7 @@ public class AnswerMetadataUtilTest {
                 new TableMetadata(
                     ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
                     new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value))
             .addRow(Row.of(columnName, value));
 
     assertThat(
