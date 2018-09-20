@@ -173,7 +173,6 @@ public final class ReachFilterAnswerer extends Answerer {
         new ColumnMetadata(HEADERSPACE, Schema.STRING, "Description of HeaderSpace"));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_FLOW));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_ACTION));
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_LINE_NUMBER));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_LINE_CONTENT));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_TRACE));
 
