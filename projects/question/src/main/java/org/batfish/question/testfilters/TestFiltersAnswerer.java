@@ -60,7 +60,6 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_FILTER_NAME = "Filter_Name";
   public static final String COL_FLOW = "Flow";
   public static final String COL_ACTION = "Action";
-  public static final String COL_LINE_NUMBER = "Line_Number";
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
 
@@ -103,13 +102,12 @@ public class TestFiltersAnswerer extends Answerer {
             new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false),
             new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
             new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
-            new ColumnMetadata(COL_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
             new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
             new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
     String textDesc =
         String.format(
-            "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
-            COL_FILTER_NAME, COL_NODE, COL_ACTION, COL_FLOW, COL_LINE_NUMBER, COL_LINE_CONTENT);
+            "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s}",
+            COL_FILTER_NAME, COL_NODE, COL_ACTION, COL_FLOW, COL_LINE_CONTENT);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -200,7 +198,6 @@ public class TestFiltersAnswerer extends Answerer {
         .put(COL_FILTER_NAME, filter.getName())
         .put(COL_FLOW, flow)
         .put(COL_ACTION, result.getAction())
-        .put(COL_LINE_NUMBER, matchLine)
         .put(COL_LINE_CONTENT, lineDesc)
         .put(COL_TRACE, trace)
         .build();
