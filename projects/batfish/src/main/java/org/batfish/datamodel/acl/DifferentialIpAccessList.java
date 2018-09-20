@@ -27,6 +27,7 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * collisions.
  */
 public final class DifferentialIpAccessList {
+  @VisibleForTesting static final String DENY_ACL_NAME = " ~~ Deny ACL Name ~~ ";
   @VisibleForTesting static final String DIFFERENTIAL_ACL_NAME = " ~~ Differential ACL Name ~~ ";
 
   @VisibleForTesting
@@ -70,14 +71,13 @@ public final class DifferentialIpAccessList {
     /*
      * Create a new ACL for "matched by permitAcl but not by denyAcl"
      */
-    String denyAclName = RENAMER.apply(denyAcl.getName());
     IpAccessList differentialAcl =
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
                     // reject if permitted by denyAcl
-                    .add(rejecting(new PermittedByAcl(denyAclName)))
+                    .add(rejecting(new PermittedByAcl(DENY_ACL_NAME)))
                     .addAll(permitAcl.getLines())
                     .build())
             .build();
@@ -96,8 +96,8 @@ public final class DifferentialIpAccessList {
                             Maps.immutableEntry(
                                 RENAMER.apply(entry.getKey()), aclRenamer.apply(entry.getValue())))
                     .collect(Collectors.toList()))
-            // entry for the renamed denyAcl itself
-            .put(denyAclName, aclRenamer.apply(denyAcl))
+            // include denyAcl (with a special name to avoid collisions).
+            .put(DENY_ACL_NAME, aclRenamer.apply(denyAcl))
             // include all the permitNamedAcls (no need to rename).
             .putAll(permitNamedAcls)
             .build();
