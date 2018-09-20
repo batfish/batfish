@@ -11,6 +11,22 @@ import org.junit.Test;
 public class MajorIssueConfigTest {
 
   @Test
+  public void testConstructorMultipleMinorIssuesSameName() {
+    String minor = "minor";
+    int finalSeverity = 2;
+    assertThat(
+        new MajorIssueConfig(
+                "major",
+                ImmutableList.of(
+                    new MinorIssueConfig(minor, 1, null),
+                    new MinorIssueConfig(minor, finalSeverity, null)))
+            .getMinorIssueConfig(minor)
+            .get()
+            .getSeverity(),
+        equalTo(finalSeverity));
+  }
+
+  @Test
   public void testPut() {
     MajorIssueConfig majorConfig = new MajorIssueConfig("major", ImmutableList.of());
 
