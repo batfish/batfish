@@ -123,7 +123,7 @@ public final class AnswerMetadataUtil {
 
   @VisibleForTesting
   static @Nonnull Map<String, MajorIssueConfig> computeMajorIssueConfigs(TableAnswerElement table) {
-    Map<String, ImmutableList.Builder<MinorIssueConfig>> majorIssueConfigs = new HashMap<>();
+    Map<String, ImmutableSet.Builder<MinorIssueConfig>> majorIssueConfigs = new HashMap<>();
     // For every issue column of every row, extract the issue and use it to update the map
     table
         .getMetadata()
@@ -141,14 +141,14 @@ public final class AnswerMetadataUtil {
         .forEach(
             issue ->
                 majorIssueConfigs
-                    .computeIfAbsent(issue.getType().getMajor(), m -> ImmutableList.builder())
+                    .computeIfAbsent(issue.getType().getMajor(), m -> ImmutableSet.builder())
                     .add(
                         new MinorIssueConfig(
                             issue.getType().getMinor(), issue.getSeverity(), issue.getUrl())));
     return CommonUtil.toImmutableMap(
         majorIssueConfigs,
         Entry::getKey, // major issue type
-        e -> new MajorIssueConfig(e.getKey(), e.getValue().build()));
+        e -> new MajorIssueConfig(e.getKey(), e.getValue().build().asList()));
   }
 
   @VisibleForTesting
