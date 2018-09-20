@@ -10,6 +10,7 @@
     "http"
   ],
   "filters" : ".*",
+  "generateExplanations" : false,
   "ipProtocols" : [
     "TCP"
   ],
@@ -66,6 +67,12 @@
         "optional" : true,
         "type" : "javaRegex",
         "value" : ".*"
+      },
+      "generateExplanations" : {
+        "description" : "Include a description of the flow space matching the query.",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "ipProtocols" : {
         "description" : "Restrict space of returned headers to those with IP protocols in this set",

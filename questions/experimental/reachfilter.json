@@ -6,6 +6,7 @@
   "dstPorts": "${dstPorts}",
   "dstProtocols": "${dstProtocols}",
   "filters": "${filters}",
+  "generateExplanations": "${generateExplanations}",
   "ipProtocols": "${ipProtocols}",
   "nodes": "${nodes}",
   "start" : "${start}",
@@ -48,6 +49,11 @@
         "description": "Only evaluate filters that match this regex",
         "optional": true,
         "type": "javaRegex"
+      },
+      "generateExplanations": {
+        "description": "Include a description of the flow space matching the query.",
+        "optional": true,
+        "type": "boolean"
       },
       "ipProtocols": {
         "description": "Restrict space of returned headers to those with IP protocols in this set",

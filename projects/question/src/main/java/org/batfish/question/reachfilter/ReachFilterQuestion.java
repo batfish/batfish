@@ -56,6 +56,8 @@ public final class ReachFilterQuestion extends Question {
 
   private static final String PROP_DST_PROTOCOLS = "dstProtocols";
 
+  private static final String PROP_GENERATE_EXPLANATIONS = "generateExplanations";
+
   private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
   private static final String PROP_NODES = "nodes";
@@ -86,6 +88,8 @@ public final class ReachFilterQuestion extends Question {
   @Nullable private Integer _lineNumber;
 
   @Nullable private final String _filters;
+
+  private final boolean _generateExplanations;
 
   @Nonnull private final String _nodeSpecifierFactory;
 
@@ -121,6 +125,7 @@ public final class ReachFilterQuestion extends Question {
           String destinationIpSpaceSpecifierInput,
       @JsonProperty(PROP_DST_PORTS) @Nullable SortedSet<SubRange> dstPorts,
       @JsonProperty(PROP_DST_PROTOCOLS) @Nullable SortedSet<Protocol> dstProtocols,
+      @JsonProperty(PROP_GENERATE_EXPLANATIONS) boolean generateExplanations,
       @JsonProperty(PROP_IP_PROTOCOLS) @Nullable SortedSet<IpProtocol> ipProtocols,
       @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) @Nullable String nodeSpecifierFactory,
       @JsonProperty(PROP_NODES) @Nullable String nodes,
@@ -133,6 +138,7 @@ public final class ReachFilterQuestion extends Question {
       @JsonProperty(PROP_QUERY) @Nullable String type) {
     _complementHeaderSpace = complementHeaderSpace;
     _filters = filters;
+    _generateExplanations = generateExplanations;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, FlexibleNodeSpecifierFactory.NAME);
     _nodes = nodes;
     _destinationIpSpaceSpecifierFactory =
@@ -150,7 +156,8 @@ public final class ReachFilterQuestion extends Question {
   }
 
   ReachFilterQuestion() {
-    this(false, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(
+        false, null, null, null, null, null, false, null, null, null, null, null, null, null, null);
   }
 
   @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
@@ -178,6 +185,11 @@ public final class ReachFilterQuestion extends Question {
   @JsonProperty(PROP_FILTERS)
   private String getFilters() {
     return _filters;
+  }
+
+  @JsonProperty(PROP_GENERATE_EXPLANATIONS)
+  public boolean getGenerateExplanations() {
+    return _generateExplanations;
   }
 
   @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
@@ -304,10 +316,11 @@ public final class ReachFilterQuestion extends Question {
   @VisibleForTesting
   ReachFilterParameters toReachFilterParameters() {
     return ReachFilterParameters.builder()
+        .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
+        .setGenerateExplanations(_generateExplanations)
         .setHeaderSpace(getHeaderSpace())
         .setStartLocationSpecifier(getStartLocationSpecifier())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
-        .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .build();
   }
 
@@ -319,6 +332,7 @@ public final class ReachFilterQuestion extends Question {
   static final class Builder {
     private boolean _complementHeaderSpace;
     private String _filterSpecifierInput;
+    private boolean _generateExplanations;
     private String _nodeSpecifierFactory;
     private String _nodeSpecifierInput;
     private String _destinationIpSpaceSpecifierFactory;
@@ -341,6 +355,11 @@ public final class ReachFilterQuestion extends Question {
 
     public Builder setFilterSpecifierInput(String filterSpecifierInput) {
       this._filterSpecifierInput = filterSpecifierInput;
+      return this;
+    }
+
+    public Builder setGenerateExplanations(boolean generateExplanations) {
+      _generateExplanations = generateExplanations;
       return this;
     }
 
@@ -413,6 +432,7 @@ public final class ReachFilterQuestion extends Question {
           _destinationIpSpaceSpecifierInput,
           _dstPorts,
           _dstProtocols,
+          _generateExplanations,
           _ipProtocols,
           _nodeSpecifierFactory,
           _nodeSpecifierInput,
