@@ -18,6 +18,7 @@ import static org.batfish.question.reachfilter.ReachFilterAnswerer.toDenyAcl;
 import static org.batfish.question.reachfilter.ReachFilterAnswerer.toMatchLineAcl;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_LINE_NUMBER;
 import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -355,14 +356,17 @@ public final class ReachFilterTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
-                        hasColumn(COL_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING)),
+                        hasColumn(COL_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING),
+                        hasColumn(COL_LINE_NUMBER, oneOf(0, 3), Schema.INTEGER)),
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
                         hasColumn(
-                            COL_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING)),
+                            COL_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING),
+                        hasColumn(COL_LINE_NUMBER, equalTo(0), Schema.INTEGER)),
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
-                        hasColumn(COL_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING))))));
+                        hasColumn(COL_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING),
+                        hasColumn(COL_LINE_NUMBER, oneOf(0, 1, 2), Schema.INTEGER))))));
   }
 
   @Test
