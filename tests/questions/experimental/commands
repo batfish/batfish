@@ -1,7 +1,7 @@
 load-questions questions/experimental
 
-# validate aclReachability
-test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filters=".*", nodes=".*"
+# validate filterLineReachability
+test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", nodes=".*"
 
 # validate bgpProperties
 test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodes=".*", properties="multipath-.*"
