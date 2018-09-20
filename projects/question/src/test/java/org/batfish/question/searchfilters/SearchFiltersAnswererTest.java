@@ -1,7 +1,7 @@
-package org.batfish.question.reachfilter;
+package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstIp;
-import static org.batfish.question.reachfilter.ReachFilterAnswerer.toMatchLineAcl;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toMatchLineAcl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -10,7 +10,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Test;
 
-public class ReachFilterAnswererTest {
+public class SearchFiltersAnswererTest {
   IpAccessList _acl =
       IpAccessList.builder()
           .setName("foo")
@@ -61,6 +61,6 @@ public class ReachFilterAnswererTest {
                     IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.4")).build(),
                     IpAccessListLine.ACCEPT_ALL))
             .build();
-    assertThat(ReachFilterAnswerer.toDenyAcl(_acl), equalTo(denyAcl));
+    assertThat(SearchFiltersAnswerer.toDenyAcl(_acl), equalTo(denyAcl));
   }
 }

@@ -1,4 +1,4 @@
-package org.batfish.question.reachfilter;
+package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -34,8 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link ReachFilterQuestion} in differential mode. */
-public class ReachFilterDifferentialTest {
+/** End-to-end tests of {@link SearchFiltersQuestion} in differential mode. */
+public class SearchFilterDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
@@ -82,8 +82,8 @@ public class ReachFilterDifferentialTest {
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
     TableAnswerElement answer =
         (TableAnswerElement)
-            new ReachFilterAnswerer(
-                    ReachFilterQuestion.builder().setStart("enter(.*)").build(), batfish)
+            new SearchFiltersAnswerer(
+                    SearchFiltersQuestion.builder().setStartLocation("enter(.*)").build(), batfish)
                 .answerDiff();
     assertThat(
         answer,

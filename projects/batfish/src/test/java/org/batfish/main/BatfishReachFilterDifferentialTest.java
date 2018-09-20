@@ -22,8 +22,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.question.ReachFilterParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
+import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.searchfilters.DifferentialSearchFilterResult;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
@@ -44,7 +44,7 @@ public class BatfishReachFilterDifferentialTest {
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
   private IpAccessList.Builder _ab;
-  private ReachFilterParameters _params;
+  private SearchFilterParameters _params;
 
   @Before
   public void setup() {
@@ -56,7 +56,7 @@ public class BatfishReachFilterDifferentialTest {
     _ib = _nf.interfaceBuilder();
     _ab = _nf.aclBuilder();
     _params =
-        ReachFilterParameters.builder()
+        SearchFilterParameters.builder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setStartLocationSpecifier(ALL_LOCATIONS)
@@ -87,7 +87,7 @@ public class BatfishReachFilterDifferentialTest {
                         .build()))
             .build();
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
-    DifferentialReachFilterResult result =
+    DifferentialSearchFilterResult result =
         batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());
@@ -112,7 +112,7 @@ public class BatfishReachFilterDifferentialTest {
         _ab.setLines(ImmutableList.of(accepting().setMatchCondition(matchDst(IP)).build())).build();
     Batfish batfish = getBatfish(config, config);
 
-    DifferentialReachFilterResult result =
+    DifferentialSearchFilterResult result =
         batfish.differentialReachFilter(config, baseAcl, config, deltaAcl, _params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());
@@ -154,14 +154,14 @@ public class BatfishReachFilterDifferentialTest {
             .build();
 
     Batfish batfish = getBatfish(baseConfig, deltaConfig);
-    ReachFilterParameters params =
+    SearchFilterParameters params =
         _params
             .toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
 
     // can match line 1 because IFACE1 is specified
-    DifferentialReachFilterResult result =
+    DifferentialSearchFilterResult result =
         batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());

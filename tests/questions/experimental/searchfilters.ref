@@ -1,0 +1,87 @@
+{
+  "class" : "org.batfish.question.searchfilters.SearchFiltersQuestion",
+  "filters" : ".*",
+  "headers" : {
+    "dstIps" : "2.2.2.2",
+    "dstPorts" : [
+      "0-0"
+    ],
+    "ipProtocols" : [
+      "TCP"
+    ],
+    "srcIps" : "1.1.1.1",
+    "srcPorts" : [
+      "0-0"
+    ]
+  },
+  "invertSearch" : false,
+  "nodes" : ".*",
+  "startLocation" : "somenode",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Find flows for which a filter takes a particular behavior",
+    "instanceName" : "qname",
+    "longDescription" : "This question searches for flows for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the flow (permit), that it denies the flow (deny), or that the flow is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) flow will be found for each filter",
+    "tags" : [
+      "acl",
+      "dataPlane"
+    ],
+    "variables" : {
+      "action" : {
+        "description" : "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
+        "optional" : true,
+        "type" : "string",
+        "value" : "matchLine 0"
+      },
+      "explain" : {
+        "description" : "Include a description of the flow space matching the query.",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "filters" : {
+        "description" : "Only evaluate filters that match this regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "headers" : {
+        "description" : "Packet header constraints on the flows being searched",
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "dstIps" : "2.2.2.2",
+          "ipProtocols" : [
+            "tcp"
+          ],
+          "srcIps" : "1.1.1.1",
+          "srcPorts" : [
+            0
+          ],
+          "dstPorts" : [
+            0
+          ]
+        }
+      },
+      "invertSearch" : {
+        "description" : "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "nodes" : {
+        "description" : "Only evaluate filters present on nodes matching this regex",
+        "optional" : true,
+        "type" : "string",
+        "value" : ".*"
+      },
+      "startLocation" : {
+        "description" : "Only consider specified locations as possible sources",
+        "optional" : true,
+        "type" : "string",
+        "value" : "somenode"
+      }
+    }
+  }
+}
