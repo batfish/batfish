@@ -3,6 +3,8 @@ package org.batfish.datamodel.acl;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.acl.DifferentialIpAccessList.DENY_ACL_NAME;
+import static org.batfish.datamodel.acl.DifferentialIpAccessList.DIFFERENTIAL_ACL_NAME;
 import static org.batfish.datamodel.acl.DifferentialIpAccessList.RENAMER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -43,7 +45,6 @@ public class DifferentialIpAccessListTest {
     String denyAclReferenceName = "deny named acl";
     String denyIpSpace = "deny named ip space";
 
-    String renamedDenyAclName = RENAMER.apply(denyAclName);
     String renamedDenyAclReferenceName = RENAMER.apply(denyAclReferenceName);
     String renamedDenyIpSpace = RENAMER.apply(denyIpSpace);
 
@@ -82,10 +83,10 @@ public class DifferentialIpAccessListTest {
 
     IpAccessList differentialAcl =
         IpAccessList.builder()
-            .setName(DifferentialIpAccessList.DIFFERENTIAL_ACL_NAME)
+            .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
-                    .add(rejecting(permittedByAcl(renamedDenyAclName)))
+                    .add(rejecting(permittedByAcl(DENY_ACL_NAME)))
                     .addAll(permitAclLines)
                     .build())
             .build();
@@ -100,8 +101,8 @@ public class DifferentialIpAccessListTest {
     assertThat(
         differential.getNamedAcls(),
         hasEntry(
-            renamedDenyAclName,
-            createAcl(renamedDenyAclName, renamedDenyAclReferenceName, renamedDenyIpSpace)));
+            DENY_ACL_NAME,
+            createAcl(DENY_ACL_NAME, renamedDenyAclReferenceName, renamedDenyIpSpace)));
     // denyNamedAcls are present and renamed
     assertThat(
         differential.getNamedAcls(),
