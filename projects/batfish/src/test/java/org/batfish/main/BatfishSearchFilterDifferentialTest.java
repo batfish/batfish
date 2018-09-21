@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests of {@link Batfish#differentialReachFilter}. */
-public class BatfishReachFilterDifferentialTest {
+public class BatfishSearchFilterDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
