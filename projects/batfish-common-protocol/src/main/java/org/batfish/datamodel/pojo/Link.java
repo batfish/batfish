@@ -82,10 +82,22 @@ public class Link extends BfObject {
     switch (iface1type) {
       case PHYSICAL:
         return LinkType.PHYSICAL;
+
+      case AGGREGATED:
+      case REDUNDANT:
+      case TUNNEL:
+      case VLAN:
+      case VPN:
+        return LinkType.VIRTUAL;
+
+        // loopback and null shouldn't really happen; lets call it unknown
+      case LOOPBACK:
+      case NULL:
       case UNKNOWN:
         return LinkType.UNKNOWN;
+
       default:
-        return LinkType.VIRTUAL;
+        throw new IllegalArgumentException(String.format("Unknown InterfaceType: %s", iface1type));
     }
   }
 
