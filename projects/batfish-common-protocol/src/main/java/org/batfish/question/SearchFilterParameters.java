@@ -16,14 +16,14 @@ import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
-public final class ReachFilterParameters {
+public final class SearchFilterParameters {
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
   private final boolean _generateExplanations;
   private final @Nonnull HeaderSpace _headerSpace;
   private final @Nonnull LocationSpecifier _startLocationSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
-  private ReachFilterParameters(
+  private SearchFilterParameters(
       @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier,
       @Nonnull LocationSpecifier startLocationSpecifier,
       @Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier,
@@ -115,8 +115,8 @@ public final class ReachFilterParameters {
       return this;
     }
 
-    public ReachFilterParameters build() {
-      return new ReachFilterParameters(
+    public SearchFilterParameters build() {
+      return new SearchFilterParameters(
           requireNonNull(_destinationIpSpaceSpecifier),
           requireNonNull(_startLocationSpecifier),
           requireNonNull(_sourceIpSpaceSpecifier),

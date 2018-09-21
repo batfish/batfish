@@ -1,4 +1,4 @@
-package org.batfish.question.reachfilter;
+package org.batfish.question.searchfilters;
 
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -12,11 +12,11 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  * AclLineMatchExpr} and an example flow in the headerspace.
  */
 @ParametersAreNonnullByDefault
-public class ReachFilterResult {
+public class SearchFilterResult {
   private final @Nullable AclLineMatchExpr _headerSpaceDescription;
   private final Flow _exampleFlow;
 
-  public ReachFilterResult(Flow exampleFlow, @Nullable AclLineMatchExpr headerSpaceDescription) {
+  public SearchFilterResult(Flow exampleFlow, @Nullable AclLineMatchExpr headerSpaceDescription) {
     _headerSpaceDescription = headerSpaceDescription;
     _exampleFlow = exampleFlow;
   }

@@ -42,10 +42,10 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
-import org.batfish.question.reachfilter.ReachFilterResult;
+import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.searchfilters.DifferentialSearchFilterResult;
+import org.batfish.question.searchfilters.SearchFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -84,12 +84,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public DifferentialReachFilterResult differentialReachFilter(
+  public DifferentialSearchFilterResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      ReachFilterParameters reachFilterParameters) {
+      SearchFilterParameters searchFilterParameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -321,8 +321,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Optional<ReachFilterResult> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters params) {
+  public Optional<SearchFilterResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFilterParameters params) {
     throw new UnsupportedOperationException();
   }
 

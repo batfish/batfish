@@ -1,4 +1,4 @@
-package org.batfish.question.reachfilter;
+package org.batfish.question.searchfilters;
 
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
@@ -42,25 +42,24 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.ReachFilterParameters;
+import org.batfish.question.SearchFilterParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
-/** Answerer for ReachFilterQuestion */
-public final class ReachFilterAnswerer extends Answerer {
+/** Answerer for SearchFiltersQuestion */
+public final class SearchFiltersAnswerer extends Answerer {
   private static final String HEADERSPACE = "HeaderSpace";
-
   private TableAnswerElement _tableAnswerElement;
 
-  public ReachFilterAnswerer(Question question, IBatfish batfish) {
+  public SearchFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
   public AnswerElement answer() {
-    ReachFilterQuestion question = (ReachFilterQuestion) _question;
+    SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
     if (question.getDifferential()) {
       differentialAnswer(question);
     } else {
@@ -71,11 +70,11 @@ public final class ReachFilterAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
-    differentialAnswer((ReachFilterQuestion) _question);
+    differentialAnswer((SearchFiltersQuestion) _question);
     return _tableAnswerElement;
   }
 
-  private void differentialAnswer(ReachFilterQuestion question) {
+  private void differentialAnswer(SearchFiltersQuestion question) {
     _batfish.pushBaseEnvironment();
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
     Multimap<String, String> baseAcls = getSpecifiedAcls(question);
@@ -86,7 +85,7 @@ public final class ReachFilterAnswerer extends Answerer {
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
     _batfish.popEnvironment();
 
-    ReachFilterParameters parameters = question.toReachFilterParameters();
+    SearchFilterParameters parameters = question.toReachFilterParameters();
 
     TableAnswerElement baseTable =
         toReachFilterTable(
@@ -128,7 +127,7 @@ public final class ReachFilterAnswerer extends Answerer {
         }
 
         // present in both snapshot
-        DifferentialReachFilterResult results =
+        DifferentialSearchFilterResult results =
             _batfish.differentialReachFilter(
                 baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
 
@@ -198,7 +197,7 @@ public final class ReachFilterAnswerer extends Answerer {
         .build();
   }
 
-  private void nonDifferentialAnswer(ReachFilterQuestion question) {
+  private void nonDifferentialAnswer(SearchFiltersQuestion question) {
     List<Pair<String, IpAccessList>> acls = getQueryAcls(question);
     if (acls.isEmpty()) {
       throw new BatfishException("No matching filters");
@@ -214,7 +213,7 @@ public final class ReachFilterAnswerer extends Answerer {
       String hostname = pair.getFirst();
       Configuration node = configurations.get(hostname);
       IpAccessList acl = pair.getSecond();
-      Optional<ReachFilterResult> optionalResult;
+      Optional<SearchFilterResult> optionalResult;
       try {
         optionalResult = _batfish.reachFilter(node, acl, question.toReachFilterParameters());
       } catch (Throwable t) {
@@ -235,7 +234,7 @@ public final class ReachFilterAnswerer extends Answerer {
     _tableAnswerElement.postProcessAnswer(question, rows);
   }
 
-  private Multimap<String, String> getSpecifiedAcls(ReachFilterQuestion question) {
+  private Multimap<String, String> getSpecifiedAcls(SearchFiltersQuestion question) {
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
     SpecifierContext specifierContext = _batfish.specifierContext();
@@ -254,7 +253,7 @@ public final class ReachFilterAnswerer extends Answerer {
   }
 
   private Optional<IpAccessList> makeQueryAcl(IpAccessList originalAcl) {
-    ReachFilterQuestion question = (ReachFilterQuestion) _question;
+    SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
     switch (question.getType()) {
       case PERMIT:
         return Optional.of(originalAcl);
@@ -274,7 +273,7 @@ public final class ReachFilterAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  List<Pair<String, IpAccessList>> getQueryAcls(ReachFilterQuestion question) {
+  List<Pair<String, IpAccessList>> getQueryAcls(SearchFiltersQuestion question) {
     Map<String, Configuration> configs = _batfish.loadConfigurations();
     return getSpecifiedAcls(question)
         .entries()
