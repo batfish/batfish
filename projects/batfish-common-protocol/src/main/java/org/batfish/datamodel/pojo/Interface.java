@@ -5,14 +5,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.InterfaceType;
 
 public class Interface extends BfObject {
-
-  public enum InterfaceType {
-    PHYSICAL,
-    UNKNOWN,
-    VIRTUAL,
-  }
 
   private static final String PROP_NAME = "name";
 
