@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.searchfilters.SearchFiltersQuestion",
+  "explain" : false,
   "filters" : ".*",
   "headers" : {
     "dstIps" : "2.2.2.2",
