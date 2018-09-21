@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
@@ -50,7 +52,7 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
-  private static final String HEADERSPACE = "HeaderSpace";
+  private static final String COL_HEADER_SPACE = "Header_Space";
   private TableAnswerElement _tableAnswerElement;
 
   public SearchFiltersAnswerer(Question question, IBatfish batfish) {
@@ -60,11 +62,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
-    if (question.getDifferential()) {
-      differentialAnswer(question);
-    } else {
-      nonDifferentialAnswer(question);
-    }
+    nonDifferentialAnswer(question);
     return _tableAnswerElement;
   }
 
@@ -89,10 +87,12 @@ public final class SearchFiltersAnswerer extends Answerer {
 
     TableAnswerElement baseTable =
         toReachFilterTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)));
+            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
+            question.getGenerateExplanations());
     TableAnswerElement deltaTable =
         toReachFilterTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)));
+            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
+            question.getGenerateExplanations());
 
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
     for (String node : commonNodes) {
@@ -140,11 +140,14 @@ public final class SearchFiltersAnswerer extends Answerer {
                   AclLineMatchExpr description = result.getHeaderSpaceDescription().orElse(null);
                   baseTable.addRow(
                       toReachFilterRow(
-                          description, testFiltersRow(true, node, baseAcl.get().getName(), flow)));
+                          description,
+                          testFiltersRow(true, node, baseAcl.get().getName(), flow),
+                          question.getGenerateExplanations()));
                   deltaTable.addRow(
                       toReachFilterRow(
                           description,
-                          testFiltersRow(false, node, deltaAcl.get().getName(), flow)));
+                          testFiltersRow(false, node, deltaAcl.get().getName(), flow),
+                          question.getGenerateExplanations()));
                 });
       }
     }
@@ -162,14 +165,17 @@ public final class SearchFiltersAnswerer extends Answerer {
     _tableAnswerElement.postProcessAnswer(question, diffTable.getRows().getData());
   }
 
-  private static TableAnswerElement toReachFilterTable(TableAnswerElement tableAnswerElement) {
+  private static TableAnswerElement toReachFilterTable(
+      TableAnswerElement tableAnswerElement, boolean generateExplanation) {
     Map<String, ColumnMetadata> columnMap = tableAnswerElement.getMetadata().toColumnMap();
 
     List<ColumnMetadata> columnMetadata = new ArrayList<>();
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_NODE));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_FILTER_NAME));
-    columnMetadata.add(
-        new ColumnMetadata(HEADERSPACE, Schema.STRING, "Description of HeaderSpace"));
+    if (generateExplanation) {
+      columnMetadata.add(
+          new ColumnMetadata(COL_HEADER_SPACE, Schema.STRING, "Description of HeaderSpace"));
+    }
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_FLOW));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_ACTION));
     columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_LINE_CONTENT));
@@ -179,22 +185,27 @@ public final class SearchFiltersAnswerer extends Answerer {
     return new TableAnswerElement(metadata);
   }
 
-  private static Row toReachFilterRow(AclLineMatchExpr description, Row row) {
-    /*
-     * Sending the explanation to the client as a JSON blob. TODO: do something better.
-     */
-    String jsonDescription;
-    try {
-      jsonDescription = BatfishObjectMapper.writeString(description);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-      jsonDescription = e.getMessage();
+  private static Row toReachFilterRow(
+      @Nullable AclLineMatchExpr description, Row row, boolean generateExplanations) {
+
+    RowBuilder rowBuilder = Row.builder().putAll(row, row.getColumnNames());
+
+    if (generateExplanations) {
+      /*
+       * Sending the explanation to the client as a JSON blob. TODO: do something better.
+       */
+      String jsonDescription;
+      try {
+        jsonDescription = BatfishObjectMapper.writeString(description);
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
+        jsonDescription = e.getMessage();
+      }
+
+      rowBuilder.put(COL_HEADER_SPACE, jsonDescription);
     }
 
-    return Row.builder()
-        .putAll(row, row.getColumnNames())
-        .put(HEADERSPACE, jsonDescription)
-        .build();
+    return rowBuilder.build();
   }
 
   private void nonDifferentialAnswer(SearchFiltersQuestion question) {
@@ -225,12 +236,14 @@ public final class SearchFiltersAnswerer extends Answerer {
               rows.add(
                   toReachFilterRow(
                       result.getHeaderSpaceDescription().orElse(null),
-                      testFiltersRow(true, hostname, acl.getName(), result.getExampleFlow()))));
+                      testFiltersRow(true, hostname, acl.getName(), result.getExampleFlow()),
+                      question.getGenerateExplanations())));
     }
 
     _tableAnswerElement =
         toReachFilterTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)));
+            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
+            question.getGenerateExplanations());
     _tableAnswerElement.postProcessAnswer(question, rows);
   }
 
