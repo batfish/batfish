@@ -44,7 +44,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
@@ -83,7 +83,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
     _batfish.popEnvironment();
 
-    SearchFilterParameters parameters = question.toReachFilterParameters();
+    SearchFiltersParameters parameters = question.toReachFilterParameters();
 
     TableAnswerElement baseTable =
         toReachFilterTable(
@@ -127,7 +127,7 @@ public final class SearchFiltersAnswerer extends Answerer {
         }
 
         // present in both snapshot
-        DifferentialSearchFilterResult results =
+        DifferentialSearchFiltersResult results =
             _batfish.differentialReachFilter(
                 baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
 
@@ -224,7 +224,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       String hostname = pair.getFirst();
       Configuration node = configurations.get(hostname);
       IpAccessList acl = pair.getSecond();
-      Optional<SearchFilterResult> optionalResult;
+      Optional<SearchFiltersResult> optionalResult;
       try {
         optionalResult = _batfish.reachFilter(node, acl, question.toReachFilterParameters());
       } catch (Throwable t) {
