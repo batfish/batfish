@@ -82,8 +82,6 @@ public class BfConsts {
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
   public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
-  public static final String COMMAND_QUERY = "query";
-  public static final String COMMAND_REPORT = "report";
   public static final String COMMAND_VALIDATE_ENVIRONMENT = "venv";
 
   /*
