@@ -818,10 +818,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(BfConsts.ARG_RED_FLAG_SUPPRESS);
   }
 
-  public boolean getReport() {
-    return _config.getBoolean(BfConsts.COMMAND_REPORT);
-  }
-
   public RunMode getRunMode() {
     return RunMode.valueOf(_config.getString(ARG_RUN_MODE).toUpperCase());
   }
@@ -1060,7 +1056,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
-    setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
     setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
@@ -1323,8 +1318,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "serialize vendor configs");
 
-    addBooleanOption(BfConsts.COMMAND_REPORT, "generate report based on answered questions");
-
     addBooleanOption(
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
 
@@ -1410,7 +1403,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
-    getBooleanOptionValue(BfConsts.COMMAND_REPORT);
     getStringOptionValue(ARG_RUN_MODE);
     getBooleanOptionValue(ARG_SEQUENTIAL);
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
@@ -1530,10 +1522,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {
     _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
-  }
-
-  public void setReport(boolean report) {
-    _config.setProperty(BfConsts.COMMAND_REPORT, report);
   }
 
   public void setRunMode(RunMode runMode) {

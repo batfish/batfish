@@ -7,7 +7,6 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
@@ -46,8 +45,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -144,7 +141,6 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -757,11 +753,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public void checkDiffEnvironmentExists() {
-    checkDiffEnvironmentSpecified();
-    checkEnvironmentExists(_deltaTestrigSettings);
-  }
-
   private void checkDiffEnvironmentSpecified() {
     if (_settings.getDeltaEnvironmentName() == null) {
       throw new CleanBatfishException(
@@ -786,15 +777,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Environment not initialized: \""
               + testrigSettings.getEnvironmentSettings().getName()
               + "\"");
-    }
-  }
-
-  private void checkQuestionsDirExists() {
-    checkBaseDirExists();
-    Path questionsDir = _testrigSettings.getBasePath().resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!Files.exists(questionsDir)) {
-      throw new CleanBatfishException(
-          "questions dir does not exist: \"" + questionsDir.getFileName() + "\"");
     }
   }
 
@@ -3527,41 +3509,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeVendorConfigs(testRigPath, outputPath);
   }
 
-  private AnswerElement report() {
-    ReportAnswerElement answerElement = new ReportAnswerElement();
-    checkQuestionsDirExists();
-    Path questionsDir =
-        _settings.getActiveTestrigSettings().getBasePath().resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
-    try (DirectoryStream<Path> questions = Files.newDirectoryStream(questionsDir)) {
-      questions.forEach(
-          questionDirPath ->
-              answers.put(
-                  questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
-                  !questionDirPath.getFileName().startsWith(".")
-                          && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
-                      ? CommonUtil.readFile(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
-                      : ""));
-    } catch (IOException e1) {
-      throw new BatfishException(
-          "Could not create directory stream for '" + questionsDir + "'", e1);
-    }
-    ObjectMapper mapper = BatfishObjectMapper.mapper();
-    for (Entry<Path, String> entry : answers.entrySet()) {
-      Path answerPath = entry.getKey();
-      String answerText = entry.getValue();
-      if (!answerText.equals("")) {
-        try {
-          answerElement.getJsonAnswers().add(mapper.readTree(answerText));
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Error mapping JSON content of '" + answerPath + "' to object", e);
-        }
-      }
-    }
-    return answerElement;
-  }
-
   public Answer run() {
     newBatch("Begin job", 0);
     loadPlugins();
@@ -3570,11 +3517,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getPrintSymmetricEdgePairs()) {
       printSymmetricEdgePairs();
-      return answer;
-    }
-
-    if (_settings.getReport()) {
-      answer.addAnswerElement(report());
       return answer;
     }
 
