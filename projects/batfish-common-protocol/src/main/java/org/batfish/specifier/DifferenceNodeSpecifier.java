@@ -30,7 +30,8 @@ public final class DifferenceNodeSpecifier implements NodeSpecifier {
       return false;
     }
     DifferenceNodeSpecifier rhs = (DifferenceNodeSpecifier) obj;
-    return _nodeSpecifier1.equals(rhs._nodeSpecifier1) && _nodeSpecifier2.equals(_nodeSpecifier2);
+    return _nodeSpecifier1.equals(rhs._nodeSpecifier1)
+        && _nodeSpecifier2.equals(rhs._nodeSpecifier2);
   }
 
   @Override
