@@ -109,6 +109,11 @@ public final class SearchFiltersQuestion extends Question {
     return _complementHeaderSpace;
   }
 
+  @JsonProperty(PROP_GENERATE_EXPLANATIONS)
+  public boolean getGenerateExplanations() {
+    return _generateExplanations;
+  }
+
   @Nullable
   @JsonProperty(PROP_FILTERS)
   private String getFilters() {
