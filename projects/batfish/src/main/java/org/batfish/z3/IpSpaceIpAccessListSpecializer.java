@@ -4,6 +4,7 @@ import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.AclIpSpace.union;
 
 import java.util.Map;
+import java.util.Optional;
 import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
@@ -65,15 +66,17 @@ public final class IpSpaceIpAccessListSpecializer extends IpAccessListSpecialize
   }
 
   @Override
-  protected HeaderSpace specialize(HeaderSpace headerSpace) {
-    return headerSpace
-        .toBuilder()
-        .setDstIps(specializeWith(headerSpace.getDstIps(), _dstIpSpaceSpecializer))
-        .setNotDstIps(specializeWith(headerSpace.getNotDstIps(), _dstIpSpaceSpecializer))
-        .setNotSrcIps(specializeWith(headerSpace.getNotSrcIps(), _srcIpSpaceSpecializer))
-        .setSrcIps(specializeWith(headerSpace.getSrcIps(), _srcIpSpaceSpecializer))
-        .setSrcOrDstIps(specializeWith(headerSpace.getSrcOrDstIps(), _srcOrDstIpSpaceSpecializer))
-        .build();
+  protected Optional<HeaderSpace> specialize(HeaderSpace headerSpace) {
+    return Optional.of(
+        headerSpace
+            .toBuilder()
+            .setDstIps(specializeWith(headerSpace.getDstIps(), _dstIpSpaceSpecializer))
+            .setNotDstIps(specializeWith(headerSpace.getNotDstIps(), _dstIpSpaceSpecializer))
+            .setNotSrcIps(specializeWith(headerSpace.getNotSrcIps(), _srcIpSpaceSpecializer))
+            .setSrcIps(specializeWith(headerSpace.getSrcIps(), _srcIpSpaceSpecializer))
+            .setSrcOrDstIps(
+                specializeWith(headerSpace.getSrcOrDstIps(), _srcOrDstIpSpaceSpecializer))
+            .build());
   }
 
   @Override
