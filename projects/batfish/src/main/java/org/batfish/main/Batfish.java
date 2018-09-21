@@ -169,11 +169,11 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
-import org.batfish.question.reachfilter.ReachFilterResult;
+import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.searchfilters.DifferentialSearchFilterResult;
+import org.batfish.question.searchfilters.SearchFilterResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -4038,23 +4038,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @Override
-  public DifferentialReachFilterResult differentialReachFilter(
+  public DifferentialSearchFilterResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      ReachFilterParameters reachFilterParameters) {
+      SearchFilterParameters searchFilterParameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    HeaderSpace headerSpace = reachFilterParameters.resolveHeaderspace(specifierContext());
+    HeaderSpace headerSpace = searchFilterParameters.resolveHeaderspace(specifierContext());
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     // resolve specified source interfaces that exist in both configs.
     Set<String> commonSources =
         Sets.intersection(
-            resolveBaseSources(reachFilterParameters, baseConfig.getHostname()),
-            resolveDeltaSources(reachFilterParameters, deltaConfig.getHostname()));
+            resolveBaseSources(searchFilterParameters, baseConfig.getHostname()),
+            resolveDeltaSources(searchFilterParameters, deltaConfig.getHostname()));
 
     Set<String> inactiveInterfaces =
         Sets.union(
@@ -4092,16 +4092,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
     Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD);
 
-    boolean explain = reachFilterParameters.getGenerateExplanations();
+    boolean explain = searchFilterParameters.getGenerateExplanations();
 
     /*
      * Only generate an explanation if the differential headerspace is non-empty (i.e. we found a
      * flow).
      */
-    Optional<ReachFilterResult> increasedResult =
+    Optional<SearchFilterResult> increasedResult =
         increasedFlow.map(
             flow ->
-                new ReachFilterResult(
+                new SearchFilterResult(
                     flow,
                     !explain
                         ? null
@@ -4116,10 +4116,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             deltaConfig.getIpAccessLists(),
                             deltaConfig.getIpSpaces())));
 
-    Optional<ReachFilterResult> decreasedResult =
+    Optional<SearchFilterResult> decreasedResult =
         decreasedFlow.map(
             flow ->
-                new ReachFilterResult(
+                new SearchFilterResult(
                     flow,
                     !explain
                         ? null
@@ -4134,25 +4134,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             baseConfig.getIpAccessLists(),
                             baseConfig.getIpSpaces())));
 
-    return new DifferentialReachFilterResult(
+    return new DifferentialSearchFilterResult(
         increasedResult.orElse(null), decreasedResult.orElse(null));
   }
 
-  private Set<String> resolveDeltaSources(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveDeltaSources(SearchFilterParameters parameters, String node) {
     pushDeltaEnvironment();
     Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
     return sources;
   }
 
-  private Set<String> resolveBaseSources(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveBaseSources(SearchFilterParameters parameters, String node) {
     pushBaseEnvironment();
     Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
     return sources;
   }
 
-  private Set<String> resolveSources(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveSources(SearchFilterParameters parameters, String node) {
     LocationVisitor<String> locationToSource =
         new LocationVisitor<String>() {
           @Override
@@ -4190,8 +4190,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<ReachFilterResult> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
+  public Optional<SearchFilterResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFilterParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
     Set<String> inactiveInterfaces =
@@ -4214,7 +4214,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return getFlow(bddPacket, mgr, node.getHostname(), bdd)
         .map(
             flow ->
-                new ReachFilterResult(
+                new SearchFilterResult(
                     flow,
                     parameters.getGenerateExplanations()
                         ? AclExplainer.explain(
