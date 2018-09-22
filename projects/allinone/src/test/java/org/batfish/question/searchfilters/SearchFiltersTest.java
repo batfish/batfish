@@ -192,7 +192,7 @@ public final class SearchFiltersTest {
     _batfish = BatfishTestUtils.getBatfish(configurationMap, _tmp);
     _allLocationsParams =
         new SearchFiltersQuestion()
-            .toReachFilterParameters()
+            .toSearchFiltersParameters()
             .toBuilder()
             .setStartLocationSpecifier(ALL_LOCATIONS)
             .setGenerateExplanations(false)

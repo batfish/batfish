@@ -83,14 +83,14 @@ public final class SearchFiltersAnswerer extends Answerer {
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
     _batfish.popEnvironment();
 
-    SearchFiltersParameters parameters = question.toReachFilterParameters();
+    SearchFiltersParameters parameters = question.toSearchFiltersParameters();
 
     TableAnswerElement baseTable =
-        toReachFilterTable(
+        toSearchFiltersTable(
             TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
             question.getGenerateExplanations());
     TableAnswerElement deltaTable =
-        toReachFilterTable(
+        toSearchFiltersTable(
             TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
             question.getGenerateExplanations());
 
@@ -139,12 +139,12 @@ public final class SearchFiltersAnswerer extends Answerer {
                   Flow flow = result.getExampleFlow();
                   AclLineMatchExpr description = result.getHeaderSpaceDescription().orElse(null);
                   baseTable.addRow(
-                      toReachFilterRow(
+                      toSearchFiltersRow(
                           description,
                           testFiltersRow(true, node, baseAcl.get().getName(), flow),
                           question.getGenerateExplanations()));
                   deltaTable.addRow(
-                      toReachFilterRow(
+                      toSearchFiltersRow(
                           description,
                           testFiltersRow(false, node, deltaAcl.get().getName(), flow),
                           question.getGenerateExplanations()));
@@ -165,7 +165,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     _tableAnswerElement.postProcessAnswer(question, diffTable.getRows().getData());
   }
 
-  private static TableAnswerElement toReachFilterTable(
+  private static TableAnswerElement toSearchFiltersTable(
       TableAnswerElement tableAnswerElement, boolean generateExplanation) {
     Map<String, ColumnMetadata> columnMap = tableAnswerElement.getMetadata().toColumnMap();
 
@@ -185,7 +185,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     return new TableAnswerElement(metadata);
   }
 
-  private static Row toReachFilterRow(
+  private static Row toSearchFiltersRow(
       @Nullable AclLineMatchExpr description, Row row, boolean generateExplanations) {
 
     RowBuilder rowBuilder = Row.builder().putAll(row, row.getColumnNames());
@@ -226,7 +226,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       IpAccessList acl = pair.getSecond();
       Optional<SearchFiltersResult> optionalResult;
       try {
-        optionalResult = _batfish.reachFilter(node, acl, question.toReachFilterParameters());
+        optionalResult = _batfish.reachFilter(node, acl, question.toSearchFiltersParameters());
       } catch (Throwable t) {
         _batfish.getLogger().warn(t.getMessage());
         continue;
@@ -234,14 +234,14 @@ public final class SearchFiltersAnswerer extends Answerer {
       optionalResult.ifPresent(
           result ->
               rows.add(
-                  toReachFilterRow(
+                  toSearchFiltersRow(
                       result.getHeaderSpaceDescription().orElse(null),
                       testFiltersRow(true, hostname, acl.getName(), result.getExampleFlow()),
                       question.getGenerateExplanations())));
     }
 
     _tableAnswerElement =
-        toReachFilterTable(
+        toSearchFiltersTable(
             TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
             question.getGenerateExplanations());
     _tableAnswerElement.postProcessAnswer(question, rows);

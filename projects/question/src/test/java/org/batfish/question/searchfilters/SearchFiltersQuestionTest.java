@@ -45,7 +45,7 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getHeaderSpace().getDstIps(), nullValue());
     assertThat(q.getHeaderSpace().getSrcIps(), nullValue());
     // src/dst IPs are in specifiers at this stage
-    SearchFiltersParameters parameters = q.toReachFilterParameters();
+    SearchFiltersParameters parameters = q.toSearchFiltersParameters();
 
     for (IpSpaceSpecifier s :
         Arrays.asList(

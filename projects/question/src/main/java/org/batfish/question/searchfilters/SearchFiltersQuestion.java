@@ -191,7 +191,7 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   @VisibleForTesting
-  SearchFiltersParameters toReachFilterParameters() {
+  SearchFiltersParameters toSearchFiltersParameters() {
     return SearchFiltersParameters.builder()
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .setGenerateExplanations(_generateExplanations)
