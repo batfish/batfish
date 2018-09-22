@@ -15,7 +15,10 @@ public final class DifferenceNodeSpecifierTest {
         new DifferenceNodeSpecifier(AllNodesNodeSpecifier.INSTANCE, NoNodesNodeSpecifier.INSTANCE);
     DifferenceNodeSpecifier group3Elem1 =
         new DifferenceNodeSpecifier(NoNodesNodeSpecifier.INSTANCE, NoNodesNodeSpecifier.INSTANCE);
-    new EqualsTester().addEqualityGroup(group1Elem1,group1Elem2).addEqualityGroup(group2Elem1).addEqualityGroup(group3Elem1).testEquals();
-    
+    new EqualsTester()
+        .addEqualityGroup(group1Elem1, group1Elem2)
+        .addEqualityGroup(group2Elem1)
+        .addEqualityGroup(group3Elem1)
+        .testEquals();
   }
 }
