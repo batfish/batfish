@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link SearchFiltersQuestion} in differential mode. */
-public class SearchFilterDifferentialTest {
+public class SearchFiltersDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";

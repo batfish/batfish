@@ -16,7 +16,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
@@ -191,8 +191,8 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   @VisibleForTesting
-  SearchFilterParameters toReachFilterParameters() {
-    return SearchFilterParameters.builder()
+  SearchFiltersParameters toSearchFiltersParameters() {
+    return SearchFiltersParameters.builder()
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
         .setGenerateExplanations(_generateExplanations)
         .setHeaderSpace(getHeaderSpace())

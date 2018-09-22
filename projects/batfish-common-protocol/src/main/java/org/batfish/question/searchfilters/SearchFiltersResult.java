@@ -12,11 +12,11 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  * AclLineMatchExpr} and an example flow in the headerspace.
  */
 @ParametersAreNonnullByDefault
-public class SearchFilterResult {
+public class SearchFiltersResult {
   private final @Nullable AclLineMatchExpr _headerSpaceDescription;
   private final Flow _exampleFlow;
 
-  public SearchFilterResult(Flow exampleFlow, @Nullable AclLineMatchExpr headerSpaceDescription) {
+  public SearchFiltersResult(Flow exampleFlow, @Nullable AclLineMatchExpr headerSpaceDescription) {
     _headerSpaceDescription = headerSpaceDescription;
     _exampleFlow = exampleFlow;
   }
