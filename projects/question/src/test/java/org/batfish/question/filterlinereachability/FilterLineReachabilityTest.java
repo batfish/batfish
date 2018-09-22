@@ -48,6 +48,8 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierContextImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -485,6 +487,11 @@ public class FilterLineReachabilityTest {
           @Override
           public SortedMap<String, Configuration> loadConfigurations() {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
+          }
+
+          @Override
+          public SpecifierContext specifierContext() {
+            return new SpecifierContextImpl(this, this.loadConfigurations());
           }
         };
     FilterLineReachabilityAnswerer answerer = new FilterLineReachabilityAnswerer(q, batfish);
