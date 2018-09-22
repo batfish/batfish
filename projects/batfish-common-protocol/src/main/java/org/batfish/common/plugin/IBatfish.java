@@ -42,9 +42,9 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.SearchFilterParameters;
-import org.batfish.question.searchfilters.DifferentialSearchFilterResult;
-import org.batfish.question.searchfilters.SearchFilterResult;
+import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
+import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -62,12 +62,12 @@ public interface IBatfish extends IPluginConsumer {
 
   boolean debugFlagEnabled(String flag);
 
-  DifferentialSearchFilterResult differentialReachFilter(
+  DifferentialSearchFiltersResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      SearchFilterParameters searchFilterParameters);
+      SearchFiltersParameters searchFiltersParameters);
 
   ReferenceLibrary getReferenceLibraryData();
 
@@ -192,8 +192,8 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  Optional<SearchFilterResult> reachFilter(
-      Configuration node, IpAccessList acl, SearchFilterParameters parameters);
+  Optional<SearchFiltersResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFiltersParameters parameters);
 
   AnswerElement smtBlackhole(HeaderQuestion q);
 

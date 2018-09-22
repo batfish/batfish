@@ -115,10 +115,10 @@ junit_tests(
 )
 
 junit_tests(
-    name = "ReachFilterDifferentialTest",
+    name = "SearchFiltersDifferentialTest",
     size = "small",
     srcs = [
-        "src/test/java/org/batfish/question/reachfilter/ReachFilterDifferentialTest.java",
+        "src/test/java/org/batfish/question/searchfilters/SearchFiltersDifferentialTest.java",
     ],
     deps = [
         "//projects/batfish",
@@ -132,10 +132,10 @@ junit_tests(
 )
 
 junit_tests(
-    name = "ReachFilterTest",
+    name = "SearchFiltersTest",
     size = "small",
     srcs = [
-        "src/test/java/org/batfish/question/reachfilter/ReachFilterTest.java",
+        "src/test/java/org/batfish/question/searchfilters/SearchFiltersTest.java",
     ],
     deps = [
         "//projects/batfish",

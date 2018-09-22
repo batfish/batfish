@@ -17,7 +17,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.question.SearchFilterParameters;
+import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.SearchFiltersQuestion.Type;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -45,7 +45,7 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getHeaderSpace().getDstIps(), nullValue());
     assertThat(q.getHeaderSpace().getSrcIps(), nullValue());
     // src/dst IPs are in specifiers at this stage
-    SearchFilterParameters parameters = q.toReachFilterParameters();
+    SearchFiltersParameters parameters = q.toSearchFiltersParameters();
 
     for (IpSpaceSpecifier s :
         Arrays.asList(
