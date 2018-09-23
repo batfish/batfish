@@ -62,6 +62,14 @@ public class BatfishTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private static final Question TEST_QUESTION =
+      new TestQuestion() {
+        @Override
+        public String getName() {
+          return "blah";
+        }
+      };
+
   @Test
   public void testAnswerBadQuestion() throws IOException {
     // missing class field
@@ -413,13 +421,13 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionClass)
+              public String loadQuestionSettings(String network, String questionName)
                   throws IOException {
                 return questionSettings;
               }
             });
 
-    assertThat(batfish.loadQuestionSettings(TestQuestion.class), equalTo(questionSettings));
+    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), equalTo(questionSettings));
   }
 
   @Test
@@ -428,13 +436,13 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionClass)
+              public String loadQuestionSettings(String network, String questionName)
                   throws IOException {
                 return null;
               }
             });
 
-    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
+    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
 
   @Test
@@ -443,14 +451,14 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionClass)
+              public String loadQuestionSettings(String network, String questionName)
                   throws IOException {
                 throw new IOException("simulated error");
               }
             });
 
     _thrown.expect(BatfishException.class);
-    assertThat(batfish.loadQuestionSettings(TestQuestion.class), nullValue());
+    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
 
   @Test

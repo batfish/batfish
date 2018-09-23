@@ -44,17 +44,17 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     }
 
     @Override
-    public String loadQuestionSettings(String network, String className) throws IOException {
-      if (className.equals(BAD_QUESTION)) {
+    public String loadQuestionSettings(String network, String questionName) throws IOException {
+      if (questionName.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;
     }
 
     @Override
-    public void storeQuestionSettings(String settings, String network, String questionClass)
+    public void storeQuestionSettings(String settings, String network, String questionName)
         throws IOException {
-      if (questionClass.equals(BAD_QUESTION)) {
+      if (questionName.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       _questionSettings = settings;

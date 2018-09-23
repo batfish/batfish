@@ -4609,15 +4609,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
+    String name = question.getName();
     try {
-      return _storage.loadQuestionSettings(
-          _settings.getContainer(), questionClass.getCanonicalName());
+      return _storage.loadQuestionSettings(_settings.getContainer(), name);
     } catch (IOException e) {
       throw new BatfishException(
-          String.format(
-              "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
-          e);
+          String.format("Failed to read question settings for question: '%s'", name), e);
     }
   }
 
