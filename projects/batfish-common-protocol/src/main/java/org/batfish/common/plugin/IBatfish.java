@@ -226,5 +226,5 @@ public interface IBatfish extends IPluginConsumer {
   Set<Flow> bddMultipathConsistency();
 
   @Nullable
-  String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass);
+  String loadQuestionSettings(@Nonnull Question question);
 }

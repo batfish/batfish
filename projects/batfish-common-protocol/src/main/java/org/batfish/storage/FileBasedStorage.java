@@ -700,9 +700,9 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(String network, String questionClass)
+  public @Nullable String loadQuestionSettings(String network, String questionName)
       throws IOException {
-    Path questionSettingsPath = getQuestionSettingsPath(network, questionClass);
+    Path questionSettingsPath = getQuestionSettingsPath(network, questionName);
     if (!Files.exists(questionSettingsPath)) {
       return null;
     }

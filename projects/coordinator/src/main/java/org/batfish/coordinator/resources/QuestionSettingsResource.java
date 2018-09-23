@@ -29,11 +29,11 @@ public class QuestionSettingsResource {
 
   private final String _network;
 
-  private final String _questionClass;
+  private final String _questionName;
 
-  public QuestionSettingsResource(String network, String questionClass) {
+  public QuestionSettingsResource(String network, String questionName) {
     _network = network;
-    _questionClass = questionClass;
+    _questionName = questionName;
   }
 
   @GET
@@ -41,12 +41,13 @@ public class QuestionSettingsResource {
     String settings;
     try {
       settings =
-          Main.getWorkMgr().getQuestionSettings(_network, _questionClass, ImmutableList.of());
+          Main.getWorkMgr()
+              .getQuestionSettings(_network, _questionName.toLowerCase(), ImmutableList.of());
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
               "Failed to load question settings for network '%s', class '%s'",
-              _network, _questionClass),
+              _network, _questionName),
           e);
     }
     return settings != null
@@ -57,7 +58,7 @@ public class QuestionSettingsResource {
   @Path("/{" + PARAM_JSON_PATH + ":.*}")
   public QuestionSettingsJsonPathResource getQuestionSettingsJsonResource(
       @PathParam(PARAM_JSON_PATH) String jsonPath) {
-    return new QuestionSettingsJsonPathResource(_network, _questionClass, jsonPath);
+    return new QuestionSettingsJsonPathResource(_network, _questionName, jsonPath);
   }
 
   @PUT
@@ -65,12 +66,12 @@ public class QuestionSettingsResource {
   public Response putQuestionSettings(JsonNode settings) {
     try {
       Main.getWorkMgr()
-          .writeQuestionSettings(_network, _questionClass, ImmutableList.of(), settings);
+          .writeQuestionSettings(_network, _questionName, ImmutableList.of(), settings);
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
               "Failed to write question settings for network '%s', class '%s'",
-              _network, _questionClass),
+              _network, _questionName),
           e);
     }
     return Response.ok().build();

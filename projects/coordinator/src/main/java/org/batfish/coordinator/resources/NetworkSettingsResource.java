@@ -36,9 +36,9 @@ public class NetworkSettingsResource {
   }
 
   /** Relocate the request to QuestionSettingsResource. */
-  @Path(RSC_QUESTIONS + "/{classname}")
+  @Path(RSC_QUESTIONS + "/{questionname}")
   public QuestionSettingsResource getQuestionsSettingsResource(
-      @PathParam("classname") String className) {
-    return new QuestionSettingsResource(_network, className);
+      @PathParam("questionname") String questionName) {
+    return new QuestionSettingsResource(_network, questionName);
   }
 }

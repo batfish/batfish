@@ -40,8 +40,8 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     }
 
     @Override
-    public String loadQuestionSettings(String network, String className) throws IOException {
-      if (className.equals(BAD_QUESTION)) {
+    public String loadQuestionSettings(String network, String questionName) throws IOException {
+      if (questionName.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;

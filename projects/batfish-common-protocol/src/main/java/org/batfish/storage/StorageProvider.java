@@ -281,11 +281,12 @@ public interface StorageProvider {
    * or null if no custom settings exist.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionName The internal name of the question, i.e. the value of {@link
+   *     org.batfish.datamodel.questions.Question#getName}
    * @throws IOException if there is an error trying to read the settings
    */
   @Nullable
-  String loadQuestionSettings(String network, String questionClass) throws IOException;
+  String loadQuestionSettings(String network, String questionName) throws IOException;
 
   /** Returns {@code true} iff the specified network question exists. */
   boolean checkNetworkExists(String network);
