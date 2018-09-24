@@ -54,6 +54,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_POINT_TO_POINT = "OSPF_Point_To_Point";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
+  public static final String PRIMARY_NETWORK = "Primary_Network";
   public static final String PROXY_ARP = "Proxy_ARP";
   public static final String RIP_ENABLED = "Rip_Enabled";
   public static final String RIP_PASSIVE = "Rip_Passive";
@@ -123,6 +124,10 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(Interface::getOutgoingFilterName, Schema.STRING))
           // skip getOwner
           .put(PRIMARY_ADDRESS, new PropertyDescriptor<>(Interface::getAddress, Schema.STRING))
+          .put(
+              PRIMARY_NETWORK,
+              new PropertyDescriptor<>(
+                  i -> i.getAddress() != null ? i.getAddress().getPrefix() : null, Schema.STRING))
           .put(PROXY_ARP, new PropertyDescriptor<>(Interface::getProxyArp, Schema.BOOLEAN))
           .put(RIP_ENABLED, new PropertyDescriptor<>(Interface::getRipEnabled, Schema.BOOLEAN))
           .put(RIP_PASSIVE, new PropertyDescriptor<>(Interface::getRipPassive, Schema.BOOLEAN))
