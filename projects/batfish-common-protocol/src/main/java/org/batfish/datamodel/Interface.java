@@ -1076,6 +1076,11 @@ public final class Interface extends ComparableStructure<String> {
     return _address;
   }
 
+  @JsonIgnore
+  public @Nullable Prefix getPrimaryNetwork() {
+    return _address != null ? _address.getPrefix() : null;
+  }
+
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
   @JsonProperty(PROP_PROXY_ARP)
   public boolean getProxyArp() {
