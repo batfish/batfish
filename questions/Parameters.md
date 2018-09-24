@@ -1,6 +1,8 @@
 Batfish questions have the following parameter types, with linked descriptions:
 
 * [`answerElement`](#answerelement)
+
+<!--
 [comment]: # (* `bgpPropertySpec`)
 [comment]: # (* `boolean`)
 [comment]: # (* `comparator`)
@@ -9,27 +11,52 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `headerConstraint`)
 [comment]: # (* `integer`)
 [comment]: # (* `interfacePropertySpec`)
+-->
+
 * [`interfaceSpec`](#interface-specifier)
+
+<!--
 [comment]: # (* `ip`)
 [comment]: # (* `ipProtocol`)
+-->
+
 * [`ipSpec`](#ip-specifier)
+
+<!--
 [comment]: # (* `ipWildcard`)
+-->
+
 * [`javaRegex`](#java-regular-expression)
+
+<!--
 [comment]: # (* `jsonPath`)
 [comment]: # (* `jsonPathRegex`)
+-->
+
 * [`locationSpec`](#location-specifier)
+
+<!--
 [comment]: # (* `long`)
 [comment]: # (* `namedStructureSpec`)
 [comment]: # (* `nodePropertySpec`)
+-->
+
 * [`nodeSpec`](#node-specifier)
+
+<!--
 [comment]: # (* `ospfPropertySpec`)
 [comment]: # (* `prefix`)
 [comment]: # (* `prefixRange`)
 [comment]: # (* `protocol`)
+-->
+
 * [`roleSpec`](#role-specifier)
+
+<!--
 [comment]: # (* `question`)
 [comment]: # (* `string`)
 [comment]: # (* `subrange`)
+-->
 
 ## Answer Element
 
