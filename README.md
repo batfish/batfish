@@ -22,7 +22,7 @@ Batfish supports many types of correctness checks, including
   - Devices can only be accessed using SSHv2 and password is not null
   - Logging is on
 
-2. ##### Consistency of configuration across two or more devices, e.g.: 
+2. ##### Consistency of configuration across two or more devices, e.g.:
   - BGP sessions are compatibly configured across neighbors
   - IPSec/VPN tunnels compatibly configured with the same key
   - All interface IP addresses are unique
@@ -36,7 +36,7 @@ Batfish supports many types of correctness checks, including
   - Certain sensitive services can be reached only from specific subnets or devices
   - All pairs of top-of-rack switches can reach each other
 
-4. ##### Fault-tolerance, e.g.: 
+4. ##### Fault-tolerance, e.g.:
   - End-to-end reachability is not impacted for *any* flow after *any* single-link or -device failure
   - Traffic correctly fails over after a failure
 
@@ -49,11 +49,13 @@ These checks are performed by asking questions about configurations. See [here](
 
 ## How do I get started?
 
-If you are a DIYer, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki)
+For a quick start, checkout the pre-built [allinone Docker container](https://hub.docker.com/r/batfish/allinone/) (Batfish plus a Python client) or the [Batfish-only Docker container](https://hub.docker.com/r/batfish/batfish/), available on Docker Hub.
+
+If you are a DIYer, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki).
 
 Batfish is being maintained and released as a commercial product by [Intentionet](https://www.intentionet.com). If you'd like a hosted service, drop a line to [info@intentionet.com](mailto:info@intentionet.com).
 
-## What configuration formats does Batfish support? 
+## What configuration formats does Batfish support?
 
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
   - Arista
