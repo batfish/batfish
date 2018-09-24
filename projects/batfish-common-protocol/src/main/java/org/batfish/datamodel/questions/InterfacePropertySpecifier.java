@@ -126,8 +126,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(PRIMARY_ADDRESS, new PropertyDescriptor<>(Interface::getAddress, Schema.STRING))
           .put(
               PRIMARY_NETWORK,
-              new PropertyDescriptor<>(
-                  i -> i.getAddress() != null ? i.getAddress().getPrefix() : null, Schema.STRING))
+              new PropertyDescriptor<>(Interface::getPrimaryNetwork, Schema.STRING))
           .put(PROXY_ARP, new PropertyDescriptor<>(Interface::getProxyArp, Schema.BOOLEAN))
           .put(RIP_ENABLED, new PropertyDescriptor<>(Interface::getRipEnabled, Schema.BOOLEAN))
           .put(RIP_PASSIVE, new PropertyDescriptor<>(Interface::getRipPassive, Schema.BOOLEAN))
