@@ -35,6 +35,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -51,6 +52,8 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
+
+  AnswerElement aiRoutes(NodesSpecifier ns);
 
   Set<Flow> bddReducedReachability();
 

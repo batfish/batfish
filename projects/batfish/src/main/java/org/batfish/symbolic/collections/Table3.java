@@ -2,7 +2,9 @@ package org.batfish.symbolic.collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.symbolic.utils.QuadConsumer;
 
 public class Table3<K1, K2, K3, V> {
 
@@ -32,6 +34,21 @@ public class Table3<K1, K2, K3, V> {
       _map.put(key1, key2, inner);
     }
     inner.put(key3, val);
+  }
+
+
+  public void forEach(QuadConsumer<? super K1, ? super K2, ? super K3, ? super V> action) {
+    Objects.requireNonNull(action);
+    _map.forEach(
+        (key1, map) -> {
+          map.forEach(
+              (key2, map2) -> {
+                map2.forEach(
+                    (key3, v) -> {
+                      action.accept(key1, key2, key3, v);
+                    });
+              });
+        });
   }
 
   public void put(K1 key1, Map<K2, Map<K3, V>> val) {

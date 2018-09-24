@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -49,6 +51,7 @@ import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
@@ -57,6 +60,11 @@ import org.batfish.specifier.SpecifierContextImpl;
  * minimal methods needed.
  */
 public class IBatfishTestAdapter implements IBatfish {
+
+  @Override
+  public AnswerElement aiRoutes(NodesSpecifier ns) {
+    throw new BatfishException("not implemented");
+  }
 
   @Override
   public Set<Flow> bddReducedReachability() {

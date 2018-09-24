@@ -116,6 +116,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -194,9 +195,14 @@ import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
+import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.interpreter.ConcreteInterpreter;
+import org.batfish.symbolic.interpreter.ExactDomain;
+import org.batfish.symbolic.interpreter.IConcreteDomain;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -225,6 +231,21 @@ import org.codehaus.jettison.json.JSONObject;
 public class Batfish extends PluginConsumer implements IBatfish {
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
+
+
+  @Override
+
+  public AnswerElement aiRoutes(NodesSpecifier ns) {
+    Graph graph = new Graph(this);
+    IConcreteDomain<AbstractRoute> domain = new ExactDomain(graph);
+    ConcreteInterpreter interpreter = new ConcreteInterpreter(graph);
+    org.batfish.symbolic.interpreter.QueryAnswerer qa =
+        new org.batfish.symbolic.interpreter.QueryAnswerer(graph);
+    SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
+    AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
+    answer.setRoutes(routes);
+    return answer;
+  }
 
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(
