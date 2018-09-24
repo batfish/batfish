@@ -185,6 +185,9 @@ import org.batfish.symbolic.ainterpreter.AbstractInterpreter;
 import org.batfish.symbolic.ainterpreter.IAbstractDomain;
 import org.batfish.symbolic.ainterpreter.QueryAnswerer;
 import org.batfish.symbolic.answers.AiRoutesAnswerElement;
+import org.batfish.symbolic.cinterpreter.ConcreteInterpreter;
+import org.batfish.symbolic.cinterpreter.ExactDomain;
+import org.batfish.symbolic.cinterpreter.IConcreteDomain;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -754,13 +757,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement aiRoutes(NodesSpecifier ns, DomainType domainType) {
     Graph graph = new Graph(this);
-    IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
+    IConcreteDomain<AbstractRoute> domain = new ExactDomain(graph);
+    ConcreteInterpreter interpreter = new ConcreteInterpreter(graph);
+    org.batfish.symbolic.cinterpreter.QueryAnswerer qa =
+        new org.batfish.symbolic.cinterpreter.QueryAnswerer(graph);
+    SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
+    AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
+    answer.setRoutes(routes);
+    return answer;
+
+    /* IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
     QueryAnswerer qa = new QueryAnswerer(graph);
     SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
-    return answer;
+    return answer; */
   }
 
   @Override
