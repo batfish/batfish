@@ -5,12 +5,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 
 public final class Flow implements Comparable<Flow>, Serializable {
   public static class Builder {
@@ -105,14 +106,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _icmpCode = flow._icmpCode;
       _packetLength = flow._packetLength;
       _state = flow._state;
-      _tcpFlagsCwr = flow._tcpFlagsCwr;
-      _tcpFlagsEce = flow._tcpFlagsEce;
-      _tcpFlagsUrg = flow._tcpFlagsUrg;
-      _tcpFlagsAck = flow._tcpFlagsAck;
-      _tcpFlagsPsh = flow._tcpFlagsPsh;
-      _tcpFlagsRst = flow._tcpFlagsRst;
-      _tcpFlagsSyn = flow._tcpFlagsSyn;
-      _tcpFlagsFin = flow._tcpFlagsFin;
+      _tcpFlagsAck = flow.getTcpFlagsAck();
+      _tcpFlagsCwr = flow.getTcpFlagsCwr();
+      _tcpFlagsEce = flow.getTcpFlagsEce();
+      _tcpFlagsUrg = flow.getTcpFlagsUrg();
+      _tcpFlagsPsh = flow.getTcpFlagsPsh();
+      _tcpFlagsRst = flow.getTcpFlagsRst();
+      _tcpFlagsSyn = flow.getTcpFlagsSyn();
+      _tcpFlagsFin = flow.getTcpFlagsFin();
       _tag = flow._tag;
     }
 
@@ -465,21 +466,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private final @Nonnull String _tag;
 
-  private final int _tcpFlagsAck;
-
-  private final int _tcpFlagsCwr;
-
-  private final int _tcpFlagsEce;
-
-  private final int _tcpFlagsFin;
-
-  private final int _tcpFlagsPsh;
-
-  private final int _tcpFlagsRst;
-
-  private final int _tcpFlagsSyn;
-
-  private final int _tcpFlagsUrg;
+  private final @Nonnull TcpFlags _tcpFlags;
 
   private Flow(
       @Nonnull String ingressNode,
@@ -527,15 +514,18 @@ public final class Flow implements Comparable<Flow>, Serializable {
     _icmpCode = icmpCode;
     _packetLength = packetLength;
     _state = state;
-    _tcpFlagsCwr = tcpFlagsCwr;
-    _tcpFlagsEce = tcpFlagsEce;
-    _tcpFlagsUrg = tcpFlagsUrg;
-    _tcpFlagsAck = tcpFlagsAck;
-    _tcpFlagsPsh = tcpFlagsPsh;
-    _tcpFlagsRst = tcpFlagsRst;
-    _tcpFlagsSyn = tcpFlagsSyn;
-    _tcpFlagsFin = tcpFlagsFin;
     _tag = tag;
+    // this ugliness is for backwards compatibility (for now)
+    _tcpFlags =
+        new TcpFlags(
+            tcpFlagsAck != 0,
+            tcpFlagsCwr != 0,
+            tcpFlagsEce != 0,
+            tcpFlagsFin != 0,
+            tcpFlagsPsh != 0,
+            tcpFlagsRst != 0,
+            tcpFlagsSyn != 0,
+            tcpFlagsUrg != 0);
   }
 
   @JsonCreator
@@ -592,97 +582,24 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   @Override
-  public int compareTo(Flow rhs) {
-    int ret;
-    ret = _ingressNode.compareTo(rhs._ingressNode);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = CommonUtil.compareNullable(_ingressInterface, rhs._ingressInterface);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = CommonUtil.compareNullable(_ingressVrf, rhs._ingressVrf);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = _srcIp.compareTo(rhs._srcIp);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = _dstIp.compareTo(rhs._dstIp);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_ipProtocol.number(), rhs._ipProtocol.number());
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_srcPort, rhs._srcPort);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_dstPort, rhs._dstPort);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_dscp, rhs._dscp);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_ecn, rhs._ecn);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_fragmentOffset, rhs._fragmentOffset);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_icmpType, rhs._icmpType);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_icmpCode, rhs._icmpCode);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_packetLength, rhs._packetLength);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = _state.compareTo(rhs._state);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsCwr, rhs._tcpFlagsCwr);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsEce, rhs._tcpFlagsEce);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsUrg, rhs._tcpFlagsUrg);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsAck, rhs._tcpFlagsAck);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsPsh, rhs._tcpFlagsPsh);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsRst, rhs._tcpFlagsRst);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Integer.compare(_tcpFlagsSyn, rhs._tcpFlagsSyn);
-    if (ret != 0) {
-      return ret;
-    }
-    return Integer.compare(_tcpFlagsFin, rhs._tcpFlagsFin);
+  public int compareTo(@Nonnull Flow rhs) {
+    return Comparator.comparing(Flow::getIngressNode)
+        .thenComparing(Flow::getIngressInterface, Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(Flow::getIngressVrf, Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(Flow::getSrcIp)
+        .thenComparing(Flow::getDstIp)
+        .thenComparing((flow) -> flow.getIpProtocol().number())
+        .thenComparing(Flow::getSrcPort)
+        .thenComparing(Flow::getDstPort)
+        .thenComparing(Flow::getDscp)
+        .thenComparing(Flow::getEcn)
+        .thenComparing(Flow::getFragmentOffset)
+        .thenComparing(Flow::getIcmpType)
+        .thenComparing(Flow::getIcmpCode)
+        .thenComparing(Flow::getPacketLength)
+        .thenComparing(Flow::getState)
+        .thenComparing(Flow::getTcpFlags)
+        .compare(this, rhs);
   }
 
   @Override
@@ -710,14 +627,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         && _srcPort == other._srcPort
         && _state.equals(other._state)
         && _tag.equals(other._tag)
-        && _tcpFlagsAck == other._tcpFlagsAck
-        && _tcpFlagsCwr == other._tcpFlagsCwr
-        && _tcpFlagsEce == other._tcpFlagsEce
-        && _tcpFlagsFin == other._tcpFlagsFin
-        && _tcpFlagsPsh == other._tcpFlagsPsh
-        && _tcpFlagsRst == other._tcpFlagsRst
-        && _tcpFlagsSyn == other._tcpFlagsSyn
-        && _tcpFlagsUrg == other._tcpFlagsUrg;
+        && _tcpFlags.equals(other._tcpFlags);
   }
 
   @JsonProperty(PROP_DSCP)
@@ -800,44 +710,52 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _tag;
   }
 
+  // Again, backwards-compatibility tcp-flag ugliness below
+
   @JsonProperty(PROP_TCP_FLAGS_ACK)
   public int getTcpFlagsAck() {
-    return _tcpFlagsAck;
+    return _tcpFlags.getAck() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_CWR)
   public int getTcpFlagsCwr() {
-    return _tcpFlagsCwr;
+    return _tcpFlags.getCwr() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_ECE)
   public int getTcpFlagsEce() {
-    return _tcpFlagsEce;
+    return _tcpFlags.getEce() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_FIN)
   public int getTcpFlagsFin() {
-    return _tcpFlagsFin;
+    return _tcpFlags.getFin() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_PSH)
   public int getTcpFlagsPsh() {
-    return _tcpFlagsPsh;
+    return _tcpFlags.getPsh() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_RST)
   public int getTcpFlagsRst() {
-    return _tcpFlagsRst;
+    return _tcpFlags.getRst() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_SYN)
   public int getTcpFlagsSyn() {
-    return _tcpFlagsSyn;
+    return _tcpFlags.getSyn() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_URG)
   public int getTcpFlagsUrg() {
-    return _tcpFlagsUrg;
+    return _tcpFlags.getUrg() ? 1 : 0;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public TcpFlags getTcpFlags() {
+    return _tcpFlags;
   }
 
   @Override
@@ -859,14 +777,20 @@ public final class Flow implements Comparable<Flow>, Serializable {
         _srcPort,
         _state,
         _tag,
-        _tcpFlagsAck,
-        _tcpFlagsCwr,
-        _tcpFlagsEce,
-        _tcpFlagsFin,
-        _tcpFlagsPsh,
-        _tcpFlagsRst,
-        _tcpFlagsSyn,
-        _tcpFlagsUrg);
+        _tcpFlags);
+  }
+
+  private String tcpFlagsStr() {
+    return String.format(
+        " tcpFlags:%d%d%d%d%d%d%d%d",
+        getTcpFlagsAck(),
+        getTcpFlagsEce(),
+        getTcpFlagsUrg(),
+        getTcpFlagsAck(),
+        getTcpFlagsPsh(),
+        getTcpFlagsRst(),
+        getTcpFlagsSyn(),
+        getTcpFlagsFin());
   }
 
   public String prettyPrint(String prefixString) {
@@ -883,17 +807,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       dstPortStr = " dport:" + NamedPort.nameFromNumber(_dstPort);
     }
     if (tcp) {
-      tcpFlagsStr =
-          String.format(
-              " tcpFlags:%d%d%d%d%d%d%d%d",
-              _tcpFlagsCwr,
-              _tcpFlagsEce,
-              _tcpFlagsUrg,
-              _tcpFlagsAck,
-              _tcpFlagsPsh,
-              _tcpFlagsRst,
-              _tcpFlagsSyn,
-              _tcpFlagsFin);
+      tcpFlagsStr = tcpFlagsStr();
     }
     if (icmp) {
       icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
@@ -945,17 +859,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       dstPortStr = " dstPort:" + NamedPort.nameFromNumber(_dstPort);
     }
     if (tcp) {
-      tcpFlagsStr =
-          String.format(
-              " tcpFlags:%d%d%d%d%d%d%d%d",
-              _tcpFlagsCwr,
-              _tcpFlagsEce,
-              _tcpFlagsUrg,
-              _tcpFlagsAck,
-              _tcpFlagsPsh,
-              _tcpFlagsRst,
-              _tcpFlagsSyn,
-              _tcpFlagsFin);
+      tcpFlagsStr = tcpFlagsStr();
     }
     if (icmp) {
       icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
