@@ -100,7 +100,6 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
-import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -901,10 +900,8 @@ public class WorkMgr extends AbstractCoordinator {
     newTable.postProcessAnswer(questionObj, allRows.getData());
     Answer newAnswer = new Answer();
 
-    // Copy status from old answer and table
-    newAnswer.setStatus(AnswerStatus.SUCCESS);
-
     // Apply new info to answer
+    newAnswer.setStatus(AnswerStatus.SUCCESS);
     newAnswer.setQuestion(questionObj);
     newAnswer.setSummary(newTable.getSummary());
     newAnswer.setAnswerElements(ImmutableList.of(newTable));
