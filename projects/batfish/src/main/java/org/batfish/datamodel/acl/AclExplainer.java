@@ -23,8 +23,8 @@ public final class AclExplainer {
   private AclExplainer() {}
 
   /**
-   * Explain the flow space permitted by one {@link IpAccessList} ({@param permitAcl}) but denied by
-   * another ({@param denyAcl}). The {@param invariantExp} allows scoping the explanation to a space
+   * Explain the flow space permitted by one {@link IpAccessList} ({@code permitAcl}) but denied by
+   * another ({@code denyAcl}). The {@code invariantExp} allows scoping the explanation to a space
    * of interest (use {@link TrueExpr} to explain the entire difference).
    */
   public static AclLineMatchExpr explainDifferential(
@@ -61,7 +61,7 @@ public final class AclExplainer {
   }
 
   /**
-   * Explain the flow space permitted by an {@link IpAccessList}. The {@param invariantExp} allows
+   * Explain the flow space permitted by an {@link IpAccessList}. The {@code invariantExp} allows
    * scoping the explanation to a space of interest (use {@link TrueExpr} to explain the entire
    * space).
    */
@@ -95,7 +95,7 @@ public final class AclExplainer {
 
   /**
    * Scope the headerspace permitted by an {@link IpAccessList} to those flows that also match
-   * {@param invariantExpr}.
+   * {@code invariantExpr}.
    */
   private static IpAccessList scopedAcl(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return IpAccessList.builder()

@@ -51,13 +51,12 @@ public final class DifferentialIpAccessList {
    * IpAccessList IpAccessLists}.
    *
    * @param denyAcl The {@link IpAccessList} subtracted in the difference.
-   * @param denyNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
-   *     denyAcl}.
-   * @param denyNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param denyAcl}.
+   * @param denyNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@code denyAcl}.
+   * @param denyNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@code denyAcl}.
    * @param permitAcl The {@link IpAccessList} that is subtracted from in the difference.
-   * @param permitNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
+   * @param permitNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@code
    *     permitAcl}.
-   * @param permitNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param permitAcl}.
+   * @param permitNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@code permitAcl}.
    */
   public static DifferentialIpAccessList create(
       IpAccessList denyAcl,
