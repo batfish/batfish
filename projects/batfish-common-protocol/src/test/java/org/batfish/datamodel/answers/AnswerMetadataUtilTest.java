@@ -37,6 +37,7 @@ public class AnswerMetadataUtilTest {
     String columnName = "col";
     String issueColumnName = "colIssue";
     int value = 5;
+    int excludedValue = 6;
     String major = "major";
     String minor = "minor";
     int severity = 1;
@@ -50,7 +51,8 @@ public class AnswerMetadataUtilTest {
                         new ColumnMetadata(columnName, Schema.INTEGER, "foobar"),
                         new ColumnMetadata(issueColumnName, Schema.ISSUE, "barfoo")),
                     new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value, issueColumnName, issueValue)));
+            .addRow(Row.of(columnName, value, issueColumnName, issueValue))
+            .addExcludedRow(Row.of(columnName, excludedValue, issueColumnName, issueValue), "foo"));
     testAnswer.setStatus(AnswerStatus.SUCCESS);
 
     assertThat(
@@ -72,6 +74,7 @@ public class AnswerMetadataUtilTest {
                                     major,
                                     ImmutableMap.of(
                                         minor, new MinorIssueConfig(minor, severity, null)))))
+                        .setNumExcludedRows(1)
                         .setNumRows(1)
                         .build())
                 .setStatus(AnswerStatus.SUCCESS)

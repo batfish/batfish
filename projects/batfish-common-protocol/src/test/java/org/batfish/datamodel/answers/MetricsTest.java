@@ -10,7 +10,7 @@ public final class MetricsTest {
 
   @Test
   public void testEquals() {
-    Metrics.Builder builder = Metrics.builder().setNumRows(5);
+    Metrics.Builder builder = Metrics.builder();
     Metrics group1Elem1 = builder.build();
     Metrics group1Elem2 = builder.build();
     Metrics group2Elem1 =
@@ -23,7 +23,8 @@ public final class MetricsTest {
             .setMajorIssueConfigs(
                 ImmutableMap.of("c", new MajorIssueConfig("m", ImmutableList.of())))
             .build();
-    Metrics group5Elem1 = builder.setNumRows(3).build();
+    Metrics group5Elem1 = builder.setNumExcludedRows(5).build();
+    Metrics group6Elem1 = builder.setNumRows(3).build();
 
     new EqualsTester()
         .addEqualityGroup(group1Elem1, group1Elem2)
@@ -31,6 +32,7 @@ public final class MetricsTest {
         .addEqualityGroup(group3Elem1)
         .addEqualityGroup(group4Elem1)
         .addEqualityGroup(group5Elem1)
+        .addEqualityGroup(group6Elem1)
         .testEquals();
   }
 }

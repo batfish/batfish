@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
@@ -60,6 +61,9 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -1340,6 +1344,8 @@ public class WorkMgrTest {
     AnswerMetadata oldAnswerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
     _manager.initContainer(network, null);
+    _storage.storeQuestion(
+        BatfishObjectMapper.writePrettyString(new TestQuestion()), network, question, analysis);
     _storage.storeAnswer(
         BatfishObjectMapper.writeString(oldAnswer),
         network,
@@ -1384,6 +1390,16 @@ public class WorkMgrTest {
     AnswerMetadata oldAnswerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
     _manager.initContainer(network, null);
+    Question testQuestion = new TestQuestion();
+    testQuestion.setExclusions(
+        ImmutableList.of(
+            new Exclusion(
+                "exc",
+                BatfishObjectMapper.mapper()
+                    .valueToTree(
+                        Row.of(col, new Issue("blorp", 1, new Issue.Type(major, minor)))))));
+    _storage.storeQuestion(
+        BatfishObjectMapper.writePrettyString(testQuestion), network, question, analysis);
     _storage.storeAnswer(
         BatfishObjectMapper.writeString(oldAnswer),
         network,
@@ -1422,10 +1438,8 @@ public class WorkMgrTest {
     // The answer's rows should have changed.
     assertThat(newTable.getRowsList(), not(equalTo(oldTable.getRowsList())));
 
-    // The answer's excluded rows should have changed.
-    assertThat(
-        newTable.getExcludedRows().get(0).getRowsList(),
-        not(equalTo(oldTable.getExcludedRows().get(0).getRowsList())));
+    // The answer should no longer have excluded rows.
+    assertThat(newTable.getExcludedRows(), emptyIterable());
   }
 
   @Test

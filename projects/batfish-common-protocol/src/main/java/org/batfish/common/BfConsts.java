@@ -115,6 +115,7 @@ public class BfConsts {
   public static final String PROP_METRICS = "metrics";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NUM_EXCLUDED_ROWS = "numExcludedRows";
   public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_QUESTION = "question";
