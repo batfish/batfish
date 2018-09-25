@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.specifier.LocationSpecifier;
 
 /**
  * A question to perform a traceroute.
@@ -47,7 +46,7 @@ public final class TracerouteQuestion extends Question {
    * Create a new traceroute question.
    *
    * @param sourceLocationStr string representation of location that results in a {@link
-   *     LocationSpecifier}
+   *     org.batfish.specifier.LocationSpecifier}
    * @param headerConstraints {@link PacketHeaderConstraints} specifying what flow to construct when
    * @param ignoreAcls whether or not to evaluate ACLs on interfaces when performing a traceroute
    */
