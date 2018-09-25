@@ -84,7 +84,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Infer a regex that identifies a role from a node name.
    *
    * <p>Uses heuristics to identify a part of a node's name that represents its role.

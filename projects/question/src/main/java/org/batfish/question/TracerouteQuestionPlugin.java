@@ -140,8 +140,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Perform a traceroute.
    *
    * <p>This question performs a virtual traceroute in the network from a starting node. The

@@ -94,7 +94,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Checks a role-based consistency policy requiring that all nodes of the same role have the same
    * value for some particular configuration property (e.g., DnsServers).
    *

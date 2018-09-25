@@ -468,8 +468,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs the configuration of nodes in the network.
    *
    * <p>This question may be used to extract the configuration of the node in the Batfish datamodel
