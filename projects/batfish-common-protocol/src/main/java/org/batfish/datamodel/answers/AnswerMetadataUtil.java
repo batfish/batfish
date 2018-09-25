@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 
@@ -162,6 +163,14 @@ public final class AnswerMetadataUtil {
     }
     TableAnswerElement table = (TableAnswerElement) ae;
     int numRows = table.getRowsList().size();
+    int numExcludedRows =
+        (int)
+            table
+                .getExcludedRows()
+                .stream()
+                .map(ExcludedRows::getRowsList)
+                .mapToInt(List::size)
+                .sum();
     ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
     table
         .getMetadata()
@@ -183,6 +192,7 @@ public final class AnswerMetadataUtil {
         .setAggregations(columnAggregationResults)
         .setEmptyColumns(emptyColumns)
         .setMajorIssueConfigs(majorIssueTypes)
+        .setNumExcludedRows(numExcludedRows)
         .setNumRows(numRows)
         .build();
   }

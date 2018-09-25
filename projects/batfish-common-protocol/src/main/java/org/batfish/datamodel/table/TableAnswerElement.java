@@ -47,7 +47,7 @@ public final class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public TableAnswerElement addRow(Row row) {
+  public @Nonnull TableAnswerElement addRow(Row row) {
     _rows.add(row);
     _rowsList.add(row);
     return this;
@@ -58,17 +58,18 @@ public final class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addExcludedRow(Row row, String exclusionName) {
+  public @Nonnull TableAnswerElement addExcludedRow(Row row, String exclusionName) {
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
-        return;
+        return this;
       }
     }
     // no matching exclusionName found; create a new one
     ExcludedRows rows = new ExcludedRows(exclusionName);
     rows.addRow(row);
     _excludedRows.add(rows);
+    return this;
   }
 
   /** Computes the summary of this table, given the assertion */
