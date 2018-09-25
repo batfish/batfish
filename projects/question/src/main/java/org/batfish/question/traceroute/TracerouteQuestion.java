@@ -38,31 +38,30 @@ public final class TracerouteQuestion extends Question {
       @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints) {
     return new TracerouteQuestion(
-        ignoreAcls,
         sourceLocationStr,
-        firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()));
+        firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
+        ignoreAcls);
   }
 
   /**
    * Create a new traceroute question.
    *
-   * @param ignoreAcls whether or not to ACLs on interfaces when performing a traceroute
-   * @param sourceLocationStr string representaition of location that results in a {@link
+   * @param sourceLocationStr string representation of location that results in a {@link
    *     LocationSpecifier}
    * @param headerConstraints {@link PacketHeaderConstraints} specifying what flow to construct when
-   *     performing a traceroute
+   * @param ignoreAcls whether or not to evaluate ACLs on interfaces when performing a traceroute
    */
   public TracerouteQuestion(
-      boolean ignoreAcls,
       @Nullable String sourceLocationStr,
-      @Nonnull PacketHeaderConstraints headerConstraints) {
+      @Nonnull PacketHeaderConstraints headerConstraints,
+      boolean ignoreAcls) {
     _ignoreAcls = ignoreAcls;
     _sourceLocationStr = sourceLocationStr;
     _headerConstraints = headerConstraints;
   }
 
   TracerouteQuestion() {
-    this(false, null, PacketHeaderConstraints.unconstrained());
+    this(null, PacketHeaderConstraints.unconstrained(), false);
   }
 
   @Override

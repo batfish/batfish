@@ -85,7 +85,7 @@ public class TracerouteTest {
   public void testGetFlows_interfaceSource() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false, "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -116,7 +116,7 @@ public class TracerouteTest {
   public void testGetFlows_interfaceLinkSourceNoSourceIp() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false, "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     thrown.expect(IllegalArgumentException.class);
@@ -127,9 +127,9 @@ public class TracerouteTest {
   public void testGetFlows_interfaceLinkSource() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false,
             "enter(node1)",
-            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build());
+            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
+            false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -162,9 +162,9 @@ public class TracerouteTest {
   public void testGetFlows_dst() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false,
             String.format("%s[%s]", NODE1, LOOPBACK),
-            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build());
+            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
+            false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -210,7 +210,7 @@ public class TracerouteTest {
     batfish.computeDataPlane(false);
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
-    TracerouteQuestion question = new TracerouteQuestion(false, ".*", header);
+    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
 
     // without ignoreAcls we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -225,7 +225,7 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question = new TracerouteQuestion(true, ".*", header);
+    question = new TracerouteQuestion(".*", header, true);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
