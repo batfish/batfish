@@ -83,11 +83,34 @@ where:
 
 ## IP Specifier
 
-TODO
+A specification for IPv4 addresses in a variety of different ways. An `ipSpec` is a string with the following syntax:
+
+```
+ipSpec =
+    ref.addressbook(<group=string>,<book=string>)
+    | ofLocation(<locationSpec>)
+    | <ipv4spec>
+    | <ipv4spec> - <ipv4spec>
+
+<ipv4spec> =
+    <IPv4 address in A.B.C.D form>
+    | <IPv4 prefix in A.B.C.D/L form>
+    | <IPv4 wildcard in A.B.C.D:M.N.O.P form>
+```
+
+where:
+
+* `ref.addressbook` looks in the configured address books for a group and book of the given string names.
+
+* `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
+
+* and if none of the above are matched, the default behavior is to parse the supplied string as an IPv4 address, IPv4 prefix, or IPv4 wildcard. For example, `1.2.3.4` is an IPv4 address, `1.2.3.4/30` is an IPv4 prefix, and `1.2.3.4:0.0.0.3` is an IPv4 wildcard equivalent to `1.2.3.4/30`.
+
+    A difference of IPv4 literals is also supported. For example, `1.2.3.4/30 - 1.2.3.4` specifies every IPv4 address in that prefix except `1.2.3.4`, aka, `1.2.3.5`, `1.2.3.6`, and `1.2.3.7`.
 
 ## Java Regular Expression
 
-TODO
+A Java regular expression. For information on the syntax of these strings, see the [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum) for the `Pattern` class.
 
 ## Location Specifier
 
