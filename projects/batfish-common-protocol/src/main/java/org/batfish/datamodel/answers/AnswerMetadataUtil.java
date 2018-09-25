@@ -164,13 +164,7 @@ public final class AnswerMetadataUtil {
     TableAnswerElement table = (TableAnswerElement) ae;
     int numRows = table.getRowsList().size();
     int numExcludedRows =
-        (int)
-            table
-                .getExcludedRows()
-                .stream()
-                .map(ExcludedRows::getRowsList)
-                .mapToInt(List::size)
-                .sum();
+        table.getExcludedRows().stream().map(ExcludedRows::getRowsList).mapToInt(List::size).sum();
     ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
     table
         .getMetadata()
