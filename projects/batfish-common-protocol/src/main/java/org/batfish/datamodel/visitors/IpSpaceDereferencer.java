@@ -36,10 +36,10 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
    * @param headerSpace The header space whose IpSpaces to dereference
    * @param namedIpSpaces Named IP spaces in the context of the given header space.
    * @return A version of the given header space with all {@link IpSpace} fields dereferenced.
-   * @throws {@link CircularReferenceException} if any {@link IpSpace} in the header space points to
-   *     a cyclical reference.
-   * @throws {@link UndefinedReferenceException} if any {@link IpSpace} in the header space points
-   *     to an undefined reference.
+   * @throws CircularReferenceException if any {@link IpSpace} in the header space points to a
+   *     cyclical reference.
+   * @throws UndefinedReferenceException if any {@link IpSpace} in the header space points to an
+   *     undefined reference.
    */
   public static HeaderSpace dereferenceHeaderSpace(
       HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces)
@@ -77,10 +77,10 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
    * @param aclIpSpace The {@link AclIpSpace} to dereference
    * @return An {@link AclIpSpace} identical to the original but with all uses of {@link
    *     IpSpaceReference} replaced with the dereferenced {@link IpSpace} they represent
-   * @throws {@link CircularReferenceException} if original {@link AclIpSpace} points to a cyclical
+   * @throws CircularReferenceException if original {@link AclIpSpace} points to a cyclical
    *     reference.
-   * @throws {@link UndefinedReferenceException} if original {@link AclIpSpace} points to an
-   *     undefined reference.
+   * @throws UndefinedReferenceException if original {@link AclIpSpace} points to an undefined
+   *     reference.
    */
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace)
@@ -107,9 +107,9 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
   /**
    * @param ipSpaceReference {@link IpSpaceReference} to dereference
    * @return The dereferenced {@link IpSpace} referenced by the given {@link IpSpaceReference}
-   * @throws {@link CircularReferenceException} if the given {@link IpSpaceReference} points to a
-   *     cyclical reference.
-   * @throws {@link UndefinedReferenceException} if the given {@link IpSpaceReference} points to an
+   * @throws CircularReferenceException if the given {@link IpSpaceReference} points to a cyclical
+   *     reference.
+   * @throws UndefinedReferenceException if the given {@link IpSpaceReference} points to an
    *     undefined reference.
    */
   @Override
