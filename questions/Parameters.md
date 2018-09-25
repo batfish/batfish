@@ -1,5 +1,7 @@
 Batfish questions have the following parameter types, with linked descriptions:
 
+* [`answerElement`](#answerelement)
+
 <!--
 [comment]: # (* `bgpPropertySpec`)
 [comment]: # (* `boolean`)
@@ -10,8 +12,6 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `integer`)
 [comment]: # (* `interfacePropertySpec`)
 -->
-
-* [`filterSpec`](#filter-specifier)
 
 * [`interfaceSpec`](#interface-specifier)
 
@@ -58,34 +58,18 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `subrange`)
 -->
 
-## Filter Specifier
+## Answer Element
 
-A specification for filters (ACLs or firewall rules) in the network.
-
-```
-filterSpec =
-    inFilterOf(<interfaceSpec>)
-    | outFilterOf(<interfaceSpec>)
-    | <javaRegex>
-```
-
-where:
-
-* `inFilterOf` indicates filters that get applied when packets enter the interfaces denoted by the `interfaceSpec`. For example, `inFilterOf(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
-
-* `outFilterOf` is similar to above except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. For example, `outFilterOf(Ethernet0/0)` includes all filters for outgoing packets on interfaces named `Ethernet0/0`.
-
-* and if none of the above are matched, the default behavior is to include filters with names that match the supplied `<javaRegex>`. For example, `acl-.*` includes all filters whose names begin with `acl-`.
+A JSON-encoded Batfish Java [`AnswerElement`](https://www.batfish.org/docs/org/batfish/datamodel/answers/AnswerElement.html).
 
 ## Interface Specifier
 
-A specification for interfaces in the network.
+A specification for a filter on Batfish [`Interface`](https://www.batfish.org/docs/org/batfish/datamodel/Interface.html) objects.
 
 ```
 interfaceSpec =
     hasSubnet(<ipSpec>)
     | vrf(<javaRegex>)
-    | zone(<javaRegex>)
     | <javaRegex>
 ```
 
@@ -95,13 +79,11 @@ where:
 
 * `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
 
-* `zone` indicates all interfaces configured to be in the (firewall) zone with name matching the given `<javaRegex>`. For example, `zone(admin)` includes interfaces in the zone named admin.
-
 * and if none of the above are matched, the default behavior is to include interfaces with names that match the supplied `<javaRegex>`. For example, `ae-.*` includes all Juniper aggregated ethernet interfaces.
 
 ## IP Specifier
 
-A specification for IPv4 addresses. An `ipSpec` is a string with the following syntax:
+A specification for IPv4 addresses in a variety of different ways. An `ipSpec` is a string with the following syntax:
 
 ```
 ipSpec =
@@ -118,7 +100,7 @@ ipSpec =
 
 where:
 
-* `ref.addressbook` looks in the configured reference books for an address group and book of the given string names.
+* `ref.addressbook` looks in the configured address books for a group and book of the given string names.
 
 * `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
 
@@ -132,19 +114,15 @@ A Java regular expression. For information on the syntax of these strings, see t
 
 ## Location Specifier
 
-A precise specification for locations of packets. 
+A specification for a Batfish [`Location`](https://www.batfish.org/docs/org/batfish/specifier/Location.html), which indicates specific places in the network.
 
 There are two types of `Location`:
-* `Interface Location` - at the interface, used to model packets that originate or terminate at the interface.
-* `InterfaceLinkLocation` - on the link connected to the interface, used to model packets before they enter the interface or after they exit.
+* [`InterfaceLinkLocation`](https://www.batfish.org/docs/org/batfish/specifier/InterfaceLinkLocation.html) - on the link connected to the interface, usually used to model a source or destination of a flow entering or exiting the specified interface.
+* [`InterfaceLocation`](https://www.batfish.org/docs/org/batfish/specifier/InterfaceLocation.html)  - on the interface or the device itself.
 
 A `locationSpec` is a string that indicates `Location` using the following syntax
 
 ```
-locationSpec =
-    <interfaceLocationSpec>
-    | <interfaceLinkLocationSpec>
-
 interfaceLocationSpec =
     [<interfaceSpec>]
     | <nodeSpec>[<interfaceSpec>]
@@ -152,13 +130,17 @@ interfaceLocationSpec =
 interfaceLinkSpec =
     enter(<interfaceLocationSpec>)
     | exit(<interfaceLocationSpec>)
+
+locationSpec =
+    <interfaceLocationSpec>
+    | <interfaceLinkLocationSpec>
 ```
 
 Some examples:
 
 * `as1border1[Ethernet0/0]` -- specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
 
-* `as1border1` -- specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
+* `as1border1` -- specifies the `InterfaceLocation` for any interface on node `as1border1`. It is interpreted as `as1border1[.*]`.
 
 * `[Ethernet0/0]` -- specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
 
@@ -166,17 +148,20 @@ Some examples:
 
 ## Node Specifier
 
-A specification for nodes in the network.
+A specification for a filter on Batfish [`Configuration`](https://www.batfish.org/docs/org/batfish/datamodel/Configuration.html) objects, which correspond to nodes in the network.
 
 ```
 nodeSpec =
-    ref.noderole(<roleRegex=javaRegex>,<dimension=string>)
+    ref.noderole(<roleSpec>)
     | <javaRegex>
 ```
 
 where:
 
-* `ref.noderole` finds all nodes with the role whose name matches `roleRegex` in node role dimension `dimension`.
+* `ref.noderole` finds all nodes with the specified roles.
 
 * and if none of the above are matched, the default behavior is to include nodes with hostnames that match the supplied `<javaRegex>`. For example, `as1.*` includes all devices in AS 1 in the example network.
 
+## Role Specifier
+
+TODO
