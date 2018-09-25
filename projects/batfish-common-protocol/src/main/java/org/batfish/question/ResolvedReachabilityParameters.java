@@ -133,8 +133,7 @@ public final class ResolvedReachabilityParameters {
 
   private final boolean _useCompression;
 
-  private ResolvedReachabilityParameters(Builder builder)
-      throws InvalidReachabilityParametersException {
+  private ResolvedReachabilityParameters(Builder builder) {
     _actions = builder._actions;
     _configurations = builder._configurations;
     _dataPlane = builder._dataPlane;

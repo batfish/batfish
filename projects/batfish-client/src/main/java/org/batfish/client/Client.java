@@ -461,6 +461,12 @@ public class Client extends AbstractClient implements IClient {
         }
         new OspfPropertySpecifier(value.textValue());
         break;
+      case PATH_CONSTRAINT:
+        if (!(value.isObject()) && !value.isNull()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON object or null", expectedType.getName()));
+        }
+        break;
       case PREFIX:
         if (!value.isTextual()) {
           throw new BatfishException(
