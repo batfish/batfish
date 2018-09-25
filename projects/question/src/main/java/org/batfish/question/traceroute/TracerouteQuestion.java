@@ -32,17 +32,35 @@ public final class TracerouteQuestion extends Question {
   private final PacketHeaderConstraints _headerConstraints;
 
   @JsonCreator
-  TracerouteQuestion(
+  private static TracerouteQuestion create(
       @JsonProperty(PROP_IGNORE_ACLS) boolean ignoreAcls,
       @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints) {
+    return new TracerouteQuestion(
+        sourceLocationStr,
+        firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
+        ignoreAcls);
+  }
+
+  /**
+   * Create a new traceroute question.
+   *
+   * @param sourceLocationStr string representation of location that results in a {@link
+   *     org.batfish.specifier.LocationSpecifier}
+   * @param headerConstraints {@link PacketHeaderConstraints} specifying what flow to construct when
+   * @param ignoreAcls whether or not to evaluate ACLs on interfaces when performing a traceroute
+   */
+  public TracerouteQuestion(
+      @Nullable String sourceLocationStr,
+      @Nonnull PacketHeaderConstraints headerConstraints,
+      boolean ignoreAcls) {
     _ignoreAcls = ignoreAcls;
     _sourceLocationStr = sourceLocationStr;
-    _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
+    _headerConstraints = headerConstraints;
   }
 
   TracerouteQuestion() {
-    this(false, null, null);
+    this(null, PacketHeaderConstraints.unconstrained(), false);
   }
 
   @Override
