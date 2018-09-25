@@ -10,21 +10,17 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.smt.EdgeType;
@@ -147,19 +143,50 @@ public class ExactDomain implements IConcreteDomain<AbstractRoute> {
   public @Nullable AbstractRoute transform(AbstractRoute input, EdgeTransformer t) {
     Protocol proto = Protocol.fromRoutingProtocol(t.getProtocol());
     assert (proto != null);
-    if (t.getEdgeType() == EdgeType.IMPORT) {
-      RoutingPolicy pol =
-          (t.getEdgeType() == EdgeType.IMPORT)
-              ? _graph.findImportRoutingPolicy(t.getEdge().getRouter(), proto, t.getEdge())
-              : _graph.findExportRoutingPolicy(t.getEdge().getRouter(), proto, t.getEdge());
 
-      if (pol == null) {
-        return null;
+    if (t.getProtocol() == RoutingProtocol.OSPF) {
+      if (t.getEdgeType() == EdgeType.EXPORT) {
+        return input;
+      } else {
+        int i = (t.getCost() == null) ? 1 : t.getCost();
+        return create(
+            t.getEdge().getPeer(),
+            input.getNetwork(),
+            t.getProtocol(),
+            t.getEdge().getStart().getAddress().getIp(),
+            input.getAdministrativeCost(),
+            input.getMetric() + i);
       }
+    }
 
-      AbstractRouteBuilder<?,?> builder;
+    if (t.getProtocol() == RoutingProtocol.BGP) {
+      return null;
+    }
+
+    return null;
+
+
+
+    /* RoutingPolicy pol =
+        (t.getEdgeType() == EdgeType.IMPORT)
+            ? _graph.findImportRoutingPolicy(t.getEdge().getRouter(), proto, t.getEdge())
+            : _graph.findExportRoutingPolicy(t.getEdge().getRouter(), proto, t.getEdge());
+
+    AbstractRoute result;
+
+    if (pol == null) {
+      result = input;
+    } else {
+      AbstractRouteBuilder<?, ?> builder;
       if (t.getProtocol() == RoutingProtocol.OSPF) {
         builder = new OspfInternalRoute.Builder();
+        builder.setAdmin(input.getAdministrativeCost());
+        ((Builder) builder).setArea(0L);
+        builder.setMetric(input.getMetric());
+        builder.setNextHopIp(t.getNextHopIp());
+        ((Builder) builder).setProtocol(t.getProtocol());
+        builder.setTag(0);
+        builder.setNetwork(input.getNetwork());
       } else if (t.getProtocol() == RoutingProtocol.BGP) {
         builder = new BgpRoute.Builder();
       } else {
@@ -170,16 +197,19 @@ public class ExactDomain implements IConcreteDomain<AbstractRoute> {
 
       boolean accepted = pol.process(input, builder, null, "default", dir);
       if (!accepted) {
+        System.out.println("  Not accepted");
         return null;
       }
-      return builder.build();
+
+      result = builder.build();
     }
-    return null;
+    return result; */
+
   }
 
   @Override
   public AbstractRoute merge(AbstractRoute x, AbstractRoute y) {
-    int cmp = x.routeCompare(y);
+    int cmp = x.compareTo(y);
     if (cmp >= 0) {
       return x;
     } else {
@@ -202,7 +232,18 @@ public class ExactDomain implements IConcreteDomain<AbstractRoute> {
     for (Entry<Prefix, AbstractRoute> entry : routes.entrySet()) {
       Prefix pfx = entry.getKey();
       AbstractRoute route = entry.getValue();
-      Route r = new Route(route.getNode(), "default", pfx, null, null, null, route.getAdministrativeCost(), route.getMetric(), route.getProtocol(), 0);
+      Route r =
+          new Route(
+              route.getNode(),
+              "default",
+              pfx,
+              null,
+              null,
+              null,
+              route.getAdministrativeCost(),
+              route.getMetric(),
+              route.getProtocol(),
+              0);
       rs.add(r);
     }
     return rs;

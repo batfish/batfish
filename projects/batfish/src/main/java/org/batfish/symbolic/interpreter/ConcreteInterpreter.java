@@ -64,12 +64,10 @@ public class ConcreteInterpreter {
       if (vrf.getStaticRoutes() != null) {
 
         for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-          if (sr.getNetwork() != null) {
-            Map<String, Set<Prefix>> map =
-                originatedStatic.computeIfAbsent(router, k -> new HashMap<>());
-            Set<Prefix> pfxs = map.computeIfAbsent(sr.getNextHop(), k -> new HashSet<>());
-            pfxs.add(sr.getNetwork());
-          }
+          Map<String, Set<Prefix>> map =
+              originatedStatic.computeIfAbsent(router, k -> new HashMap<>());
+          Set<Prefix> pfxs = map.computeIfAbsent(sr.getNextHop(), k -> new HashSet<>());
+          pfxs.add(sr.getNetwork());
         }
       }
 
@@ -103,9 +101,12 @@ public class ConcreteInterpreter {
       String router = route.getNode();
       Configuration conf = _graph.getConfigurations().get(router);
 
+      System.out.println("Looking at: " + route + " at " + router);
+
       ConcreteRib<T> r = state.getPerRouterRoutes().get(router);
 
       for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+        System.out.println("  Edge: " + ge);
         GraphEdge rev = _graph.getOtherEnd().get(ge);
         if (ge.getPeer() != null && rev != null) {
           String neighbor = ge.getPeer();
@@ -127,30 +128,62 @@ public class ConcreteInterpreter {
             Integer cost = rev.getStart().getOspfCost();
             Ip nextHop = ge.getStart().getAddress().getIp();
 
-            EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, ospf, null, null);
+            T transformedRoute;
+
+            EdgeTransformer exp =
+                new EdgeTransformer(
+                    ge, EdgeType.EXPORT, ospf, null, ge.getStart().getAddress().getIp());
             tempTime = System.currentTimeMillis();
-            route = domain.transform(route, exp);
+            transformedRoute = domain.transform(route, exp);
             totalTimeTransfer += (System.currentTimeMillis() - tempTime);
+
+            if (transformedRoute == null) {
+              continue;
+            }
 
             EdgeTransformer imp = new EdgeTransformer(rev, EdgeType.IMPORT, ospf, cost, nextHop);
             tempTime = System.currentTimeMillis();
-            route = domain.transform(route, imp);
+            transformedRoute = domain.transform(transformedRoute, imp);
             totalTimeTransfer += (System.currentTimeMillis() - tempTime);
 
-            Prefix network = route.getNetwork();
+            if (transformedRoute == null) {
+              continue;
+            }
+
+            T bestRoute = null;
+
+            Prefix network = transformedRoute.getNetwork();
             T existingRoute = neighborOspf.get(network);
             if (existingRoute == null) {
-              neighborOspf.put(network, route);
+              neighborOspf.put(network, transformedRoute);
+              System.out.println("  added: " + transformedRoute + " at " + neighbor);
+              pq.add(transformedRoute);
+              bestRoute = transformedRoute;
+
             } else {
-              T merged = domain.merge(existingRoute, route);
-              neighborOspf.put(network, merged);
+              T merged = domain.merge(existingRoute, transformedRoute);
               if (!merged.equals(existingRoute)) {
-                T newRoute =
-                    domain.create(
-                        neighbor, network, RoutingProtocol.OSPF, null, 110, route.getMetric());
-                // AbstractRoute newRoute =
-                //  new OspfIntraAreaRoute(network, null, 110, route.getMetric(), 0);
-                pq.add(newRoute);
+                neighborOspf.put(network, merged);
+                System.out.println("  added: " + merged + " at " + neighbor);
+                pq.add(merged);
+                bestRoute = merged;
+              }
+            }
+
+            // update main rib
+            if (bestRoute != null) {
+              existingRoute = neighborMainRib.get(network);
+              if (existingRoute == null) {
+                neighborMainRib.put(network, transformedRoute);
+                //System.out.println("  added: " + transformedRoute + " at " + neighbor);
+                //pq.add(transformedRoute);
+              } else {
+                T merged = domain.merge(existingRoute, transformedRoute);
+                if (!merged.equals(existingRoute)) {
+                  neighborMainRib.put(network, merged);
+                  //System.out.println("  added: " + merged + " at " + neighbor);
+                  //pq.add(merged);
+                }
               }
             }
 
@@ -373,7 +406,10 @@ public class ConcreteInterpreter {
 
     ConcreteState<T> state = new ConcreteState<T>(reachable, perNeighbor);
 
-    System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
+    for (T route : initialRoutes) {
+      System.out.println("Initial route: " + route);
+    }
+
     computeFixedPoint(domain, state, initialRoutes);
     return state;
   }

@@ -1,6 +1,7 @@
 package org.batfish.symbolic.interpreter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -85,10 +86,13 @@ public class QueryAnswerer {
               });
 
       // build new rib to match Batfish output
-      Map<Prefix,T> rib = reachable.get(router).getMainRib();
-      SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
+      Map<Prefix, T> rib = reachable.get(router).getMainRib();
+      List<Route> entries = domain.toRoutes(rib);
       for (Route r : entries) {
-        Ip nhopIp = (r.getNextHopIp().asLong() == 0 ? new Ip(-1) : r.getNextHopIp());
+        Ip nhopIp =
+            (r.getNextHopIp() == null || r.getNextHopIp().asLong() == 0
+                ? new Ip(-1)
+                : r.getNextHopIp());
         String nhint = "dynamic";
         if (r.getProtocol() == RoutingProtocol.LOCAL) {
           nhint = nhipMap.get(r.getNetwork().getStartIp());
