@@ -112,6 +112,7 @@
       <properties>
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
         <pmd.skip>true</pmd.skip>
         <skipTests>true</skipTests>
@@ -194,7 +195,7 @@
           <version>${maven-javadoc-plugin.version}</version>
           <configuration>
             <doclint>all,-missing</doclint>
-            <failOnError>false</failOnError>
+            <failOnError>true</failOnError>
             <failOnWarnings>false</failOnWarnings>
             <quiet>true</quiet>
             <notimestamp>true</notimestamp>
@@ -553,6 +554,19 @@
             <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
             </goals>
           </execution>
         </executions>
