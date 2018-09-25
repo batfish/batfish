@@ -137,7 +137,7 @@ public abstract class PropertySpecifier {
 
   /**
    * Uses {@code propertyDescriptor} to extract the property value from {@code object} and insert
-   * into {@row} at {@code columnName}.
+   * into {@code row} at {@code columnName}.
    *
    * @throws ClassCastException if the recovered property value is not compatible with the specified
    *     {@link Schema} in the {@code propertyDescriptor}.

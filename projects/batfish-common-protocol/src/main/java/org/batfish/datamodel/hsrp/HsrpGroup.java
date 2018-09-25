@@ -245,8 +245,9 @@ public final class HsrpGroup implements Serializable {
   }
 
   /**
-   * Mapping: trackingGroupID -> trackAction<br>
-   * When a tracking group identified by a key is down, the action in the corresponding value is
+   * Mapping: trackingGroupID -&gt; trackAction
+   *
+   * <p>When a tracking group identified by a key is down, the action in the corresponding value is
    * taken.
    */
   @JsonProperty(PROP_TRACK_ACTIONS)

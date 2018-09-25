@@ -55,7 +55,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 
-/** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
+/** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
   private final Path _baseDir;
