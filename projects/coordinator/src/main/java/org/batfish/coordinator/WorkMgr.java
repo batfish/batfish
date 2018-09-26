@@ -2018,6 +2018,9 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       Answer rawAnswer =
           BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      if (rawAnswer.getStatus() != AnswerStatus.SUCCESS) {
+        return rawAnswer;
+      }
       TableAnswerElement rawTable = (TableAnswerElement) rawAnswer.getAnswerElements().get(0);
       Answer answer = new Answer();
       answer.setStatus(rawAnswer.getStatus());
