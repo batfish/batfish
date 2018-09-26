@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
@@ -18,8 +17,7 @@ public class PathConstraints {
   private NodeSpecifier _transitLocations;
   private NodeSpecifier _forbiddenLocations;
 
-  @JsonCreator
-  public PathConstraints(
+  private PathConstraints(
       LocationSpecifier startLocation,
       NodeSpecifier endLocation,
       NodeSpecifier transitLocations,

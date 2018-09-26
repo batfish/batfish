@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Iterator;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -95,14 +94,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return true;
   }
 
-  /**
-   * Coerce iterators to iterables. **NOTE** this will allow iteration only once, but this is fine,
-   * since it's only used once in the HeaderSpace builder.
-   */
-  private static <T> Iterable<T> iteratorToIterable(Iterator<T> iterator) {
-    return () -> iterator;
-  }
-
   public static HeaderSpace toHeaderSpace(PacketHeaderConstraints headerConstraints) {
     // Note: headerspace builder does not accept nulls, so we have to convert nulls to empty sets
     HeaderSpace.Builder builder =
@@ -118,12 +109,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
     if (headerConstraints.getDscps() != null) {
       builder.setDscps(
-          iteratorToIterable(
+          ImmutableSortedSet.copyOf(
               headerConstraints.getDscps().stream().flatMapToInt(SubRange::asStream).iterator()));
     }
     if (headerConstraints.getEcns() != null) {
       builder.setEcns(
-          iteratorToIterable(
+          ImmutableSortedSet.copyOf(
               headerConstraints.getEcns().stream().flatMapToInt(SubRange::asStream).iterator()));
     }
     return builder.build();
