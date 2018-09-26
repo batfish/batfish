@@ -889,6 +889,27 @@ public class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerRowsStale() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
+    Answer badInput = new Answer();
+    badInput.setStatus(AnswerStatus.STALE);
+    String rawAnswerStr = BatfishObjectMapper.writePrettyString(badInput);
+    Answer processedAnswer = _manager.processAnswerRows(rawAnswerStr, options);
+
+    assertThat(processedAnswer.getStatus(), equalTo(AnswerStatus.STALE));
+  }
+
+  @Test
   public void testProcessAnswerTableSorting() {
     String columnName = "val";
     TableAnswerElement table =
