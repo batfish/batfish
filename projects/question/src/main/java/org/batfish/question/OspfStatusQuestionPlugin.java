@@ -218,8 +218,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists the OSPF status of interfaces.
    *
    * <p>When running OSPF, it is a good practice to announce loopbacks interface IPs into OSPF. This

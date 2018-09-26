@@ -176,8 +176,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists BGP adverstisements in the network.
    *
    * <p>It can output all eBGP/iBGP advertisements that are exchanged in the network.

@@ -7,7 +7,8 @@ import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
-/**
+// <question_page_comment>
+/*
  * Lists neighbor relationships in the network as edges.
  *
  * @param edgeType The type(s) of edges to focus. Default is Layer 3.

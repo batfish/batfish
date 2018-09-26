@@ -10,8 +10,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ipsecvpnstatus.IpsecVpnInfo.Problem;
 
 // <question_page_comment>
-
-/**
+/*
  * Checks if IPSec VPNs are correctly configured.
  *
  * <p>Details coming on what it means to be correctly configured.

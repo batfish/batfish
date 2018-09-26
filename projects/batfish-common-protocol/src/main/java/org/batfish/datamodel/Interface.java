@@ -901,7 +901,7 @@ public final class Interface extends ComparableStructure<String> {
     return _eigrp;
   }
 
-  /** Mapping: hsrpGroupID -> HsrpGroup */
+  /** Mapping: hsrpGroupID -&gt; HsrpGroup */
   @JsonProperty(PROP_HSRP_GROUPS)
   public Map<Integer, HsrpGroup> getHsrpGroups() {
     return _hsrpGroups;

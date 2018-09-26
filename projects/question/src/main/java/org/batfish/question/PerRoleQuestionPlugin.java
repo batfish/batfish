@@ -126,7 +126,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Answers a given question separately on each "role" within the specified dimension.
    *
    * <p>It is common for the nodes in a network to be partitioned into roles that each have a

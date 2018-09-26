@@ -372,8 +372,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Runs JsonPath <a href=https://github.com/jayway/JsonPath></a> queries on the JSON data model
    * that is the output of the 'Nodes' question.
    *

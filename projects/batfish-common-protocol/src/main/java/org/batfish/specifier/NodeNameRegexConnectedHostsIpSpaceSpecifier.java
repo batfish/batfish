@@ -13,7 +13,7 @@ import org.batfish.datamodel.IpSpace;
 
 /**
  * An {@link IpSpaceSpecifier} that represents the {@link IpSpace} of host subnets (prefixes of
- * length less than or equal to {@length HOST_SUBNET_MAX_PREFIX_LENGTH 29} bits) connected to nodes
+ * length less than or equal to {@code HOST_SUBNET_MAX_PREFIX_LENGTH 29} bits) connected to nodes
  * with names matching an input {@link Pattern regex}.
  */
 public final class NodeNameRegexConnectedHostsIpSpaceSpecifier implements IpSpaceSpecifier {

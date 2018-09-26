@@ -710,7 +710,7 @@ public final class Configuration implements Serializable {
     return _tacacsSourceInterface;
   }
 
-  /** Mapping: trackingGroupID -> trackMethod */
+  /** Mapping: trackingGroupID -&gt; trackMethod */
   @JsonProperty(PROP_TRACKING_GROUPS)
   public @Nonnull NavigableMap<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;

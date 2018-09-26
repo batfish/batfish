@@ -19,8 +19,8 @@ import org.batfish.datamodel.answers.Schema;
  * <p>Example specifiers:
  *
  * <ul>
- *   <li>multipath-ebgp —> gets the process's corresponding value
- *   <li>multipath-.* --> gets all properties that start with 'max-metric-'
+ *   <li>multipath-ebgp —&gt; gets the process's corresponding value
+ *   <li>multipath-.* --&gt; gets all properties that start with 'max-metric-'
  * </ul>
  */
 public class BgpPropertySpecifier extends PropertySpecifier {
