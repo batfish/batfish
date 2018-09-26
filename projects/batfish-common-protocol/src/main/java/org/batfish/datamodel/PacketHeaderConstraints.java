@@ -198,20 +198,20 @@ public class PacketHeaderConstraints {
 
   @Nullable
   @JsonProperty(PROP_APPLICATIONS)
-  public Set<Protocol> getDstProtocols() {
+  public Set<Protocol> getApplications() {
     return _applications;
   }
 
   /** Return the set of allowed IP protocols */
   @Nullable
   public Set<IpProtocol> resolveIpProtocols() {
-    return resolveIpProtocols(getIpProtocols(), getSrcPorts(), getDstPorts(), getDstProtocols());
+    return resolveIpProtocols(getIpProtocols(), getSrcPorts(), getDstPorts(), getApplications());
   }
 
   /** Return the set of allowed destination port values */
   @Nullable
   public Set<SubRange> resolveDstPorts() {
-    return resolvePorts(getDstPorts(), getDstProtocols());
+    return resolvePorts(getDstPorts(), getApplications());
   }
 
   /** Check that constraints contain valid values and do not conflict with each other. */
@@ -233,7 +233,7 @@ public class PacketHeaderConstraints {
     }
     try {
       areProtocolsAndPortsCompatible(
-          ipProtocols, headerConstraints.getDstPorts(), headerConstraints.getDstProtocols());
+          ipProtocols, headerConstraints.getDstPorts(), headerConstraints.getApplications());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Destination ports/protocols are incompatible: %s", e.getMessage()));

@@ -29,6 +29,7 @@ public final class IntersectHeaderSpaces {
         || ipSpace.equals(new IpWildcardIpSpace(IpWildcard.ANY));
   }
 
+  @Nullable
   private static IpSpace intersection(IpSpace ipSpace1, IpSpace ipSpace2) {
     if (isUniverse(ipSpace1)) {
       return ipSpace2;
