@@ -114,8 +114,7 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists cases where the same prefix is originated by multiple BGP speakers.
    *
    * <p>Except in cases of anycast or a multihoming arrangement, a prefix be originated by only one

@@ -23,10 +23,11 @@ public abstract class CommunitySetExpr implements Serializable {
 
   /**
    * Returns the set of all literal communities represented by this {@link CommunitySetExpr}.<br>
-   * {@code environment} is used to resolve references to named {@link CommunityList}s.
+   * {@code environment} is used to resolve references to named {@link
+   * org.batfish.datamodel.CommunityList}s.
    *
-   * @throws {@link UnsupportedOperationException} if this {@link CommunitySetExpr} does not
-   *     represent a set of literal communities.
+   * @throws UnsupportedOperationException if this {@link CommunitySetExpr} does not represent a set
+   *     of literal communities.
    */
   public abstract @Nonnull SortedSet<Long> asLiteralCommunities(@Nonnull Environment environment);
 

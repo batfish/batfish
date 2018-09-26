@@ -291,7 +291,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Uses a form of clustering to partition nodes into equivalence classes.
    *
    * <p>Clusters nodes based on how similar their configurations are, based on the results of

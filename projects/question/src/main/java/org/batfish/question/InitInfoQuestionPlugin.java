@@ -41,8 +41,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs results of test-rig initialization.
    *
    * @type InitInfo onefile

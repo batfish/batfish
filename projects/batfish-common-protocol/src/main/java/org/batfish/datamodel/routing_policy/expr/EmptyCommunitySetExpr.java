@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
-/** A {@CommunitySetExpr} matching all community-sets. */
+/** A {@link CommunitySetExpr} matching all community-sets. */
 public class EmptyCommunitySetExpr extends CommunitySetExpr {
 
   public static final EmptyCommunitySetExpr INSTANCE = new EmptyCommunitySetExpr();

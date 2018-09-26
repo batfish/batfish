@@ -40,7 +40,7 @@ public class BatfishLexerRecoveryStrategy {
   private final Set<Integer> _separatorChars;
 
   /**
-   * Construct a {@link BatfishLexerRecoveryStrategy} for given {@link lexer} using {@link
+   * Construct a {@link BatfishLexerRecoveryStrategy} for given {@code lexer} using {@code
    * separatorChars} to mark end of invalid chars to be consumed and discarded.
    *
    * @param lexer The {@link BatfishLexer} using this strategy
