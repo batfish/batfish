@@ -48,11 +48,6 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `prefix`)
 [comment]: # (* `prefixRange`)
 [comment]: # (* `protocol`)
--->
-
-* [`roleSpec`](#role-specifier)
-
-<!--
 [comment]: # (* `question`)
 [comment]: # (* `string`)
 [comment]: # (* `subrange`)
@@ -62,6 +57,14 @@ Batfish questions have the following parameter types, with linked descriptions:
 
 A specification for filters (ACLs or firewall rules) in the network.
 
+* `inFilterOf` indicates filters that get applied when packets enter the interfaces denoted by the `interfaceSpec`. For example, `inFilterOf(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
+
+* `outFilterOf` is similar to above except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. For example, `outFilterOf(Ethernet0/0)` includes all filters for outgoing packets on interfaces named `Ethernet0/0`.
+
+* and if none of the above are matched, the default behavior is to include filters with names that match the supplied `<javaRegex>`. For example, `acl-.*` includes all filters whose names begin with `acl-`.
+
+#### Filter Specifier Grammar
+
 ```
 filterSpec =
     inFilterOf(<interfaceSpec>)
@@ -69,17 +72,19 @@ filterSpec =
     | <javaRegex>
 ```
 
-where:
-
-* `inFilterOf` indicates filters that get applied when packets enter the interfaces denoted by the `interfaceSpec`. For example, `inFilterOf(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
-
-* `outFilterOf` is similar to above except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. For example, `outFilterOf(Ethernet0/0)` includes all filters for outgoing packets on interfaces named `Ethernet0/0`.
-
-* and if none of the above are matched, the default behavior is to include filters with names that match the supplied `<javaRegex>`. For example, `acl-.*` includes all filters whose names begin with `acl-`.
-
 ## Interface Specifier
 
 A specification for interfaces in the network.
+
+* `hasSubnet` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `hasSubnet(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
+
+* `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
+
+* `zone` indicates all interfaces configured to be in the (firewall) zone with name matching the given `<javaRegex>`. For example, `zone(admin)` includes interfaces in the zone named admin.
+
+* and if none of the above are matched, the default behavior is to include interfaces with names that match the supplied `<javaRegex>`. For example, `ae-.*` includes all Juniper aggregated ethernet interfaces.
+
+#### Interface Specifier Grammar
 
 ```
 interfaceSpec =
@@ -89,19 +94,19 @@ interfaceSpec =
     | <javaRegex>
 ```
 
-where:
-
-* `hasSubnet` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `haSubnet(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
-
-* `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
-
-* `zone` indicates all interfaces configured to be in the (firewall) zone with name matching the given `<javaRegex>`. For example, `zone(admin)` includes interfaces in the zone named admin.
-
-* and if none of the above are matched, the default behavior is to include interfaces with names that match the supplied `<javaRegex>`. For example, `ae-.*` includes all Juniper aggregated ethernet interfaces.
-
 ## IP Specifier
 
 A specification for IPv4 addresses. An `ipSpec` is a string with the following syntax:
+
+* `ref.addressbook` looks in the configured reference books for an address group and book of the given string names.
+
+* `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
+
+* and if none of the above are matched, the default behavior is to parse the supplied string as an IPv4 address, IPv4 prefix, or IPv4 wildcard. For example, `1.2.3.4` is an IPv4 address, `1.2.3.4/30` is an IPv4 prefix, and `1.2.3.4:0.0.0.3` is an IPv4 wildcard equivalent to `1.2.3.4/30`.
+
+    A difference of IPv4 literals is also supported. For example, `1.2.3.4/30 - 1.2.3.4` specifies every IPv4 address in that prefix except `1.2.3.4`, aka, `1.2.3.5`, `1.2.3.6`, and `1.2.3.7`.
+
+#### IP Specifier Grammar
 
 ```
 ipSpec =
@@ -116,29 +121,29 @@ ipSpec =
     | <IPv4 wildcard in A.B.C.D:M.N.O.P form>
 ```
 
-where:
-
-* `ref.addressbook` looks in the configured reference books for an address group and book of the given string names.
-
-* `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
-
-* and if none of the above are matched, the default behavior is to parse the supplied string as an IPv4 address, IPv4 prefix, or IPv4 wildcard. For example, `1.2.3.4` is an IPv4 address, `1.2.3.4/30` is an IPv4 prefix, and `1.2.3.4:0.0.0.3` is an IPv4 wildcard equivalent to `1.2.3.4/30`.
-
-    A difference of IPv4 literals is also supported. For example, `1.2.3.4/30 - 1.2.3.4` specifies every IPv4 address in that prefix except `1.2.3.4`, aka, `1.2.3.5`, `1.2.3.6`, and `1.2.3.7`.
-
 ## Java Regular Expression
 
 A Java regular expression. For information on the syntax of these strings, see the [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum) for the `Pattern` class.
 
 ## Location Specifier
 
-A precise specification for locations of packets. 
+A precise specification for locations of packets.
 
 There are two types of `Location`:
 * `Interface Location` - at the interface, used to model packets that originate or terminate at the interface.
 * `InterfaceLinkLocation` - on the link connected to the interface, used to model packets before they enter the interface or after they exit.
 
-A `locationSpec` is a string that indicates `Location` using the following syntax
+Some examples:
+
+* `as1border1[Ethernet0/0]` -- specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
+
+* `as1border1` -- specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
+
+* `[Ethernet0/0]` -- specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
+
+* `enter([Ethernet0/0])` -- specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
+
+#### Location Specifier Grammar
 
 ```
 locationSpec =
@@ -154,29 +159,18 @@ interfaceLinkSpec =
     | exit(<interfaceLocationSpec>)
 ```
 
-Some examples:
-
-* `as1border1[Ethernet0/0]` -- specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
-
-* `as1border1` -- specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
-
-* `[Ethernet0/0]` -- specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
-
-* `enter([Ethernet0/0])` -- specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
-
 ## Node Specifier
 
 A specification for nodes in the network.
+
+* `ref.noderole` finds all nodes with the role whose name matches `roleRegex` in node role dimension `dimension`.
+
+* and if none of the above are matched, the default behavior is to include nodes with hostnames that match the supplied `<javaRegex>`. For example, `as1.*` includes all devices in AS 1 in the example network.
+
+#### Node Specifier Grammar
 
 ```
 nodeSpec =
     ref.noderole(<roleRegex=javaRegex>,<dimension=string>)
     | <javaRegex>
 ```
-
-where:
-
-* `ref.noderole` finds all nodes with the role whose name matches `roleRegex` in node role dimension `dimension`.
-
-* and if none of the above are matched, the default behavior is to include nodes with hostnames that match the supplied `<javaRegex>`. For example, `as1.*` includes all devices in AS 1 in the example network.
-
