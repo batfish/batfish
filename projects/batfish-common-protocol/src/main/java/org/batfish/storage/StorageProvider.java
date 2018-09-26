@@ -296,7 +296,8 @@ public interface StorageProvider {
    * Write the JSON-serialized settings for the specified question class for the specified network.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionName The internal name of the question, i.e. the value of {@link
+   *     org.batfish.datamodel.questions.Question#getName}
    * @param settings The settings to write
    * @throws IOException if there is an error writing the settings
    */
@@ -314,4 +315,18 @@ public interface StorageProvider {
    */
   @Nonnull
   Map<String, MajorIssueConfig> loadMajorIssueConfigs(String network, Set<String> majorIssueTypes);
+
+  /**
+   * Returns the last-modified time of the settings for the specified question. Returns {@code null}
+   * if the question does not exist, the question cannot be read, or the question settings do not
+   * exist.
+   *
+   * @param network The name of the network
+   * @param question The name of the question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  @Nullable
+  FileTime getQuestionSettingsLastModifiedTime(
+      String network, String question, @Nullable String analysis);
 }

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -22,6 +23,13 @@ public final class WorkMgrTestUtils {
   private WorkMgrTestUtils() {}
 
   public static void initWorkManager(TemporaryFolder folder) throws Exception {
+    initWorkManager(folder, FileBasedStorage::new);
+  }
+
+  public static void initWorkManager(
+      TemporaryFolder folder,
+      BiFunction<Path, BatfishLogger, FileBasedStorage> fileBasedStorageConstructor)
+      throws Exception {
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
@@ -30,7 +38,7 @@ public final class WorkMgrTestUtils {
         new WorkMgr(
             Main.getSettings(),
             logger,
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
+            fileBasedStorageConstructor.apply(Main.getSettings().getContainersLocation(), logger)));
   }
 
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)

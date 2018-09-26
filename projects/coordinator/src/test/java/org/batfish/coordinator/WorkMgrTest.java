@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -37,8 +38,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
@@ -68,6 +71,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1539,5 +1543,213 @@ public class WorkMgrTest {
     assertThat(
         _manager.answerIssueConfigMatchesConfiguredIssues(answerIssueConfig, configuredMajorIssues),
         equalTo(false));
+  }
+
+  private static final class TestQuestionWithName extends TestQuestion {
+    private static final String TEST_QUESTION_NAME = "testquestion";
+
+    @Override
+    public String getName() {
+      return TEST_QUESTION_NAME;
+    }
+  }
+
+  private static class FileBasedStorageWithFixedModifiedTimes extends FileBasedStorage {
+
+    private final FileTime _questionSettingsTime;
+    private final FileTime _questionTime;
+    private final FileTime _answerTime;
+
+    public FileBasedStorageWithFixedModifiedTimes(
+        Path baseDir,
+        BatfishLogger logger,
+        FileTime answerTime,
+        FileTime questionTime,
+        FileTime questionSettingsTime) {
+      super(baseDir, logger);
+      _answerTime = answerTime;
+      _questionTime = questionTime;
+      _questionSettingsTime = questionSettingsTime;
+    }
+
+    private static BiFunction<Path, BatfishLogger, FileBasedStorage> builder(
+        FileTime answerTime, FileTime questionTime, FileTime questionSettingsTime) {
+      return (basePath, logger) ->
+          new FileBasedStorageWithFixedModifiedTimes(
+              basePath, logger, answerTime, questionTime, questionSettingsTime);
+    }
+
+    @Override
+    public FileTime getAnswerLastModifiedTime(
+        String network,
+        String snapshot,
+        String question,
+        String referenceSnapshot,
+        String analysis) {
+      FileTime actualTime =
+          super.getAnswerLastModifiedTime(network, snapshot, question, referenceSnapshot, analysis);
+      return actualTime == null ? null : _answerTime;
+    }
+
+    @Override
+    public FileTime getQuestionLastModifiedTime(String network, String question, String analysis) {
+      FileTime actualTime = super.getQuestionLastModifiedTime(network, question, analysis);
+      return actualTime == null ? null : _questionTime;
+    }
+
+    @Override
+    public FileTime getQuestionSettingsLastModifiedTime(
+        String network, String question, String analysis) {
+      FileTime actualTime = super.getQuestionSettingsLastModifiedTime(network, question, analysis);
+      return actualTime == null ? null : _questionSettingsTime;
+    }
+  }
+
+  @Test
+  public void testGetAnswerAdHocNewQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = null;
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    WorkMgrTestUtils.initWorkManager(
+        _folder,
+        FileBasedStorageWithFixedModifiedTimes.builder(
+            FileTime.from(Instant.now()),
+            FileTime.from(Instant.EPOCH),
+            FileTime.from(Instant.MAX)));
+    _manager = Main.getWorkMgr();
+
+    _manager.initContainer(network, null);
+    _storage.storeQuestion(questionContent, network, question, analysis);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.STALE));
+  }
+
+  @Test
+  public void testGetAnswerAnalysisNewQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = "analysis1";
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    WorkMgrTestUtils.initWorkManager(
+        _folder,
+        FileBasedStorageWithFixedModifiedTimes.builder(
+            FileTime.from(Instant.now()),
+            FileTime.from(Instant.EPOCH),
+            FileTime.from(Instant.MAX)));
+    _manager = Main.getWorkMgr();
+
+    _manager.initContainer(network, null);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.STALE));
+  }
+
+  @Test
+  public void testGetAnswerAdHocOldQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = null;
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    WorkMgrTestUtils.initWorkManager(
+        _folder,
+        FileBasedStorageWithFixedModifiedTimes.builder(
+            FileTime.from(Instant.now()),
+            FileTime.from(Instant.EPOCH),
+            FileTime.from(Instant.EPOCH)));
+    _manager = Main.getWorkMgr();
+
+    _manager.initContainer(network, null);
+    _storage.storeQuestion(questionContent, network, question, analysis);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.SUCCESS));
+  }
+
+  @Test
+  public void testGetAnswerAnalysisOldQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = "analysis1";
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    WorkMgrTestUtils.initWorkManager(
+        _folder,
+        FileBasedStorageWithFixedModifiedTimes.builder(
+            FileTime.from(Instant.now()),
+            FileTime.from(Instant.EPOCH),
+            FileTime.from(Instant.EPOCH)));
+    _manager = Main.getWorkMgr();
+
+    _manager.initContainer(network, null);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.SUCCESS));
   }
 }

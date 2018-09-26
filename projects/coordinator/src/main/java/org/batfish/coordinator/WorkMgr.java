@@ -701,12 +701,18 @@ public class WorkMgr extends AbstractCoordinator {
     String answer = "unknown";
     try {
       answer = _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(
-                  _storage.getAnswerLastModifiedTime(
-                      network, snapshot, question, referenceSnapshot, analysis))
-          > 0) {
+      FileTime answerLastModifiedTime =
+          _storage.getAnswerLastModifiedTime(
+              network, snapshot, question, referenceSnapshot, analysis);
+      FileTime questionLastModifiedTime =
+          _storage.getQuestionLastModifiedTime(network, question, analysis);
+      FileTime questionSettingsLastModifiedTime =
+          _storage.getQuestionSettingsLastModifiedTime(network, question, analysis);
+
+      // If either question or question settings are newer than answer, answer is STALE.
+      if (questionLastModifiedTime.compareTo(answerLastModifiedTime) > 0
+          || (questionSettingsLastModifiedTime != null
+              && questionSettingsLastModifiedTime.compareTo(answerLastModifiedTime) > 0)) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
         answer = BatfishObjectMapper.writePrettyString(ans);
