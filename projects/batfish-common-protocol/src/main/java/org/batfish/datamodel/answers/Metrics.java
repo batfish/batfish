@@ -140,6 +140,11 @@ public class Metrics {
     return _majorIssueConfigs;
   }
 
+  @JsonProperty(BfConsts.PROP_NUM_EXCLUDED_ROWS)
+  public int getNumExcludedRows() {
+    return _numExcludedRows;
+  }
+
   @JsonProperty(BfConsts.PROP_NUM_ROWS)
   public int getNumRows() {
     return _numRows;
