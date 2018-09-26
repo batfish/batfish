@@ -68,6 +68,7 @@ public abstract class Question implements IQuestion {
         NODE_PROPERTY_SPEC("nodePropertySpec", true),
         NODE_SPEC("nodeSpec", true),
         OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
+        PATH_CONSTRAINT("pathConstraint", true),
         PREFIX("prefix", true),
         PREFIX_RANGE("prefixRange", true),
         PROTOCOL("protocol", true),

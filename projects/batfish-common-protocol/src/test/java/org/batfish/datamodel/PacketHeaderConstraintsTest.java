@@ -183,7 +183,7 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getDstProtocols(), nullValue());
+    assertThat(constraints.getApplications(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }
@@ -204,7 +204,7 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getDstProtocols(), nullValue());
+    assertThat(constraints.getApplications(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }
