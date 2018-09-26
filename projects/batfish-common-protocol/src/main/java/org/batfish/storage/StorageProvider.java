@@ -67,7 +67,7 @@ public interface StorageProvider {
   /**
    * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
    * exists, will return a valid {@link MajorIssueConfig} with an empty list of {@link
-   * MinorIssueConfig}s
+   * org.batfish.datamodel.answers.MinorIssueConfig}s
    */
   @Nonnull
   MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
@@ -79,7 +79,7 @@ public interface StorageProvider {
    * @param network The name of the network
    * @param majorIssueType The type of the {@link MajorIssueConfig}
    * @param majorIssueConfig The {@link MajorIssueConfig} to be stored
-   * @throws {@link IOException} if there is an error writing writing the config
+   * @throws IOException if there is an error writing writing the config
    */
   void storeMajorIssueConfig(
       String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException;
@@ -182,8 +182,8 @@ public interface StorageProvider {
    *     question, or {@code null} for a non-differential question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
-   * @throws {@link FileNotFoundException} if answer does not exist; {@link IOException} if there is
-   *     an error reading the answer.
+   * @throws FileNotFoundException if answer does not exist; {@link IOException} if there is an
+   *     error reading the answer.
    */
   @Nonnull
   String loadAnswer(
@@ -204,8 +204,8 @@ public interface StorageProvider {
    *     question, or {@code null} for a non-differential question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
-   * @throws {@link FileNotFoundException} if answer metadata does not exist; {@link IOException} if
-   *     there is an error reading the answer metadata.
+   * @throws FileNotFoundException if answer metadata does not exist; {@link IOException} if there
+   *     is an error reading the answer metadata.
    */
   @Nonnull
   AnswerMetadata loadAnswerMetadata(
@@ -270,8 +270,9 @@ public interface StorageProvider {
    *
    * @param questionStr The JSON-serialized text of the question
    * @param network The name of the network
-   * @param snapshot The name of the base snapshot
    * @param question The name of the question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
    */
   void storeQuestion(
       String questionStr, String network, String question, @Nullable String analysis);
@@ -305,7 +306,8 @@ public interface StorageProvider {
   /**
    * Returns the {@link MajorIssueConfig}s for the given network and majorIssueTypes, keyed by major
    * issue type. If no config exists for a given major issue type, will return a mapping whose value
-   * is a {@link MajorIssueConfig} with an empty list of {@link MinorIssueConfig}s
+   * is a {@link MajorIssueConfig} with an empty list of {@link
+   * org.batfish.datamodel.answers.MinorIssueConfig}s
    *
    * @param network The name of the network
    * @param majorIssueTypes The types of the major issues whose configurations are to be loaded

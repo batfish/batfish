@@ -99,7 +99,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
 
-  /**
+  /*
    * Lists ASNs that are being used by multiple nodes
    *
    * <p>In eBGP-based data centers, it is often desired that each router have its own ASN.

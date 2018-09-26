@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -108,6 +109,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -879,27 +881,29 @@ public class WorkMgr extends AbstractCoordinator {
             .filter(cm -> cm.getSchema().equals(Schema.ISSUE))
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
-    TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
+    // apply issue configuration to all rows and excluded rows, then collect them
+    Rows allRows = new Rows();
     applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, majorIssueConfigs)
-        .forEach(newTable::addRow);
+        .forEach(allRows::add);
     applyIssuesConfigurationToAllExcludedRows(
             oldTable.getExcludedRows(), issueColumns, majorIssueConfigs)
-        .forEach(
-            excludedRows -> {
-              String exclusionName = excludedRows.getExclusionName();
-              excludedRows
-                  .getRowsList()
-                  .forEach(excludedRow -> newTable.addExcludedRow(excludedRow, exclusionName));
-            });
+        .map(ExcludedRows::getRowsList)
+        .flatMap(Collection::stream)
+        .forEach(allRows::add);
+
+    // grab the question for its exclusions
+    String questionStr = _storage.loadQuestion(network, question, analysis);
+    Question questionObj = Question.parseQuestion(questionStr);
+
+    // postprocess using question exclusions, collected rows
+    TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
+    newTable.postProcessAnswer(questionObj, allRows.getData());
     Answer newAnswer = new Answer();
 
-    // Copy relevant portions from old answer and table
-    newAnswer.setQuestion(oldAnswer.getQuestion());
+    // Apply new info to answer
     newAnswer.setStatus(AnswerStatus.SUCCESS);
-    newAnswer.setSummary(oldAnswer.getSummary());
-    newTable.setSummary(oldTable.getSummary());
-
-    // Use new rows
+    newAnswer.setQuestion(questionObj);
+    newAnswer.setSummary(newTable.getSummary());
     newAnswer.setAnswerElements(ImmutableList.of(newTable));
 
     // Compute and store new answer and answer metdata

@@ -386,7 +386,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Detects and ranks outliers based on a comparison of nodes' configurations.
    *
    * <p>If many nodes have a structure of a given name and a few do not, this may indicate an error.

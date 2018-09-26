@@ -12,8 +12,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
- * An {@link AclLineMatchExprToBDD} that memoizes its {@link AclLineMatchExprToBDD#visit} method
- * using an {@link IdentityHashMap}.
+ * An {@link IpAccessListToBDD} that memoizes its {@link IpAccessListToBDD#visit} method using an
+ * {@link IdentityHashMap}.
  */
 public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
   private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();

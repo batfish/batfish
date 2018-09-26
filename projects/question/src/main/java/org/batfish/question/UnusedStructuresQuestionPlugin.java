@@ -135,8 +135,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs cases where structures (e.g., ACL, routemaps) are defined but not used.
    *
    * <p>Such occurrences could be configuration errors or leftover cruft.
