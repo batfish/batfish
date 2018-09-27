@@ -301,7 +301,7 @@ public interface StorageProvider {
    * @param settings The settings to write
    * @throws IOException if there is an error writing the settings
    */
-  void storeQuestionSettings(String settings, String network, String questionClass)
+  void storeQuestionSettings(String settings, String network, String questionName)
       throws IOException;
 
   /**
