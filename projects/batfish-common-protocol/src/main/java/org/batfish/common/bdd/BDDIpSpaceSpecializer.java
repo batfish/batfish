@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -21,28 +20,14 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
   private final IpSpaceToBDD _ipSpaceToBDD;
   private final boolean _simplifyToUniverse;
 
-  public BDDIpSpaceSpecializer(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces) {
-    super(namedIpSpaces);
-
-    BDDFactory factory = BDDUtils.bddFactory(32);
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
-    _ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd, namedIpSpaces);
-    _bdd = _ipSpaceToBDD.visit(ipSpace);
-    _simplifyToUniverse = true;
-  }
-
   /**
-   * If you provide the specialization IpSpace as a BDD, you must also provide the IpSpaceToBDD
-   * object (which contains a BDDFactory, because we have to keep using the same BDDFactory that
-   * created the input BDD.
-   *
-   * @param bdd The IpSpace to specialize to.
-   * @param namedIpSpaces The named IpSpaces currently in scope.
-   * @param ipSpaceToBDD Converts IpSpaces to BDDs
+   * @param headerSpaceBdd The header space to specialize to.
+   * @param namedIpSpaces The named {@link IpSpace IpSpaces} currently in scope.
+   * @param ipSpaceToBDD Converts {@link IpSpace IpSpaces} to {@link BDD BDDs}.
    */
   public BDDIpSpaceSpecializer(
-      BDD bdd, Map<String, IpSpace> namedIpSpaces, IpSpaceToBDD ipSpaceToBDD) {
-    this(bdd, namedIpSpaces, ipSpaceToBDD, true);
+      BDD headerSpaceBdd, Map<String, IpSpace> namedIpSpaces, IpSpaceToBDD ipSpaceToBDD) {
+    this(headerSpaceBdd, namedIpSpaces, ipSpaceToBDD, true);
   }
 
   public BDDIpSpaceSpecializer(
@@ -56,11 +41,26 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
     _simplifyToUniverse = simplifyToUniverse;
   }
 
-  public BDDIpSpaceSpecializer(BDDPacket pkt, BDD headerSpaceBdd, Map<String, IpSpace> ipSpaces) {
-    super(ipSpaces);
-    _bdd = headerSpaceBdd;
-    _ipSpaceToBDD = new IpSpaceToBDD(pkt.getFactory(), pkt.getDstIp());
-    _simplifyToUniverse = true;
+  /**
+   * Create a {@link BDDIpSpaceSpecializer} that specializes {@link IpSpace IpSpaces} to the destIp
+   * of a headerspace {@link BDD}.
+   *
+   * @param pkt The {@link BDDPacket} used to create the {@param headerSpaceBdd}.
+   * @param headerSpaceBdd The headerspace {@link BDD}.
+   * @param namedIpSpaces The named {@link IpSpace IpSpaces} currently in scope.
+   * @param simplifyToUniverse Whether to simplify {@link IpSpace IpSpaces} that contain {@param
+   *     headerSpaceBdd} to {@link UniverseIpSpace#INSTANCE}.
+   */
+  public static BDDIpSpaceSpecializer specializeByDstIp(
+      BDDPacket pkt,
+      BDD headerSpaceBdd,
+      Map<String, IpSpace> namedIpSpaces,
+      boolean simplifyToUniverse) {
+    return new BDDIpSpaceSpecializer(
+        headerSpaceBdd,
+        namedIpSpaces,
+        new IpSpaceToBDD(pkt.getFactory(), pkt.getDstIp()),
+        simplifyToUniverse);
   }
 
   @Override

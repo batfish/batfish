@@ -203,13 +203,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, String>> _incomingAcls;
 
-  private final @Nonnull Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
+  private final @Nullable Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
   private final @Nullable Map<String, Set<Ip>> _ipsByHostname;
 
   private final @Nullable Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
 
-  private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
+  private final @Nullable Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
   private final boolean _dataPlane;
 
@@ -267,8 +267,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _ipAccessListSpecializers =
           computeIpAccessListSpecializers(pkt, headerSpaceBdd, _configurations);
     } else {
-      _ipSpaceSpecializers = ImmutableMap.of();
-      _ipAccessListSpecializers = ImmutableMap.of();
+      _ipSpaceSpecializers = null;
+      _ipAccessListSpecializers = null;
     }
     _disabledInterfaces = ImmutableMap.copyOf(builder._disabledInterfaces);
     _disabledNodes = ImmutableSet.copyOf(builder._disabledNodes);
@@ -326,7 +326,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         configs,
         Entry::getKey,
         configEntry ->
-            new BDDIpSpaceSpecializer(pkt, headerSpaceBdd, configEntry.getValue().getIpSpaces()));
+            BDDIpSpaceSpecializer.specializeByDstIp(
+                pkt, headerSpaceBdd, configEntry.getValue().getIpSpaces(), true));
   }
 
   private static Map<String, IpAccessListSpecializer> computeIpAccessListSpecializers(
@@ -457,9 +458,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private IpSpace specialize(String hostname, IpSpace ipSpace) {
-    return _ipSpaceSpecializers.containsKey(hostname)
-        ? _ipSpaceSpecializers.get(hostname).specialize(ipSpace)
-        : ipSpace;
+    return _ipSpaceSpecializers == null
+        ? ipSpace
+        : _ipSpaceSpecializers.get(hostname).specialize(ipSpace);
   }
 
   private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
@@ -525,7 +526,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 e -> {
                   String h = e.getKey();
                   IpAccessListSpecializer ipAccessListSpecializer =
-                      _ipAccessListSpecializers.get(h);
+                      _ipAccessListSpecializers == null ? null : _ipAccessListSpecializers.get(h);
                   return e.getValue()
                       .getIpAccessLists()
                       .entrySet()
