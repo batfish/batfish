@@ -2024,6 +2024,11 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       Answer rawAnswer =
           BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      // If the AnswerStatus is not SUCCESS, the answer cannot have any AnswerElements related to
+      // actual answers (but, e.g., it might have a BatfishStackTrace). Return that as-is.
+      if (rawAnswer.getStatus() != AnswerStatus.SUCCESS) {
+        return rawAnswer;
+      }
       TableAnswerElement rawTable = (TableAnswerElement) rawAnswer.getAnswerElements().get(0);
       Answer answer = new Answer();
       answer.setStatus(rawAnswer.getStatus());
