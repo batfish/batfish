@@ -56,6 +56,13 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
     _simplifyToUniverse = simplifyToUniverse;
   }
 
+  public BDDIpSpaceSpecializer(BDDPacket pkt, BDD headerSpaceBdd, Map<String, IpSpace> ipSpaces) {
+    super(ipSpaces);
+    _bdd = headerSpaceBdd;
+    _ipSpaceToBDD = new IpSpaceToBDD(pkt.getFactory(), pkt.getDstIp());
+    _simplifyToUniverse = true;
+  }
+
   @Override
   protected Optional<IpSpaceSpecializer> restrictSpecializerToBlacklist(Set<IpWildcard> blacklist) {
     BDD refinedBDD =
