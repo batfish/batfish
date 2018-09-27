@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -14,7 +13,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.FileBasedStorageWithCounterBasedModifiedTimes;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
@@ -23,13 +22,6 @@ public final class WorkMgrTestUtils {
   private WorkMgrTestUtils() {}
 
   public static void initWorkManager(TemporaryFolder folder) throws Exception {
-    initWorkManager(folder, FileBasedStorage::new);
-  }
-
-  public static void initWorkManager(
-      TemporaryFolder folder,
-      BiFunction<Path, BatfishLogger, FileBasedStorage> fileBasedStorageConstructor)
-      throws Exception {
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
@@ -38,7 +30,8 @@ public final class WorkMgrTestUtils {
         new WorkMgr(
             Main.getSettings(),
             logger,
-            fileBasedStorageConstructor.apply(Main.getSettings().getContainersLocation(), logger)));
+            new FileBasedStorageWithCounterBasedModifiedTimes(
+                Main.getSettings().getContainersLocation(), logger)));
   }
 
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)

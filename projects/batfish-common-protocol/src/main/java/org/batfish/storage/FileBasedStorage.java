@@ -22,7 +22,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -661,13 +661,13 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public FileTime getQuestionLastModifiedTime(
+  public Instant getQuestionLastModifiedTime(
       String network, String question, @Nullable String analysis) {
     return CommonUtil.getLastModifiedTime(getQuestionPath(network, question, analysis));
   }
 
   @Override
-  public FileTime getAnswerLastModifiedTime(
+  public Instant getAnswerLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -678,7 +678,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public FileTime getAnswerMetadataLastModifiedTime(
+  public Instant getAnswerMetadataLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -733,23 +733,23 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable FileTime getQuestionSettingsLastModifiedTime(
+  public @Nonnull Instant getQuestionSettingsLastModifiedTime(
       String network, String question, @Nullable String analysis) {
     Path questionPath = getQuestionPath(network, question, analysis);
     if (!Files.exists(questionPath)) {
-      return null;
+      return Instant.MIN;
     }
     Question questionObj;
     try {
       questionObj =
           Question.parseQuestion(CommonUtil.readFile(getQuestionPath(network, question, analysis)));
     } catch (BatfishException e) {
-      return null;
+      return Instant.MIN;
     }
     String questionName = questionObj.getName();
     Path questionSettingsPath = getQuestionSettingsPath(network, questionName);
     return Files.exists(questionSettingsPath)
         ? CommonUtil.getLastModifiedTime(questionSettingsPath)
-        : null;
+        : Instant.MIN;
   }
 }

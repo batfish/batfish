@@ -41,9 +41,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -897,9 +897,9 @@ public class CommonUtil {
     return null;
   }
 
-  public static FileTime getLastModifiedTime(Path path) {
+  public static Instant getLastModifiedTime(Path path) {
     try {
-      return Files.getLastModifiedTime(path);
+      return Files.getLastModifiedTime(path).toInstant();
     } catch (IOException e) {
       throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
     }
