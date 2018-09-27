@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.TestNetwork.POST_SOURCE_NAT_ACL_DEST_P
 import static org.batfish.bddreachability.TestNetwork.SOURCE_NAT_ACL_IP;
 import static org.batfish.common.bdd.BDDMatchers.intersects;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -186,7 +187,15 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private BDD bddTransition(StateExpr preState, StateExpr postState) {
-    return _graphFactory.getBDDTransitions().get(preState).get(postState);
+    return _graphFactory
+        .getEdges()
+        .get(preState)
+        .get(postState)
+        .traverseForward(PKT.getFactory().one());
+  }
+
+  private Edge edge(StateExpr preState, StateExpr postState) {
+    return _graphFactory.getEdges().get(preState).get(postState);
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -259,7 +268,7 @@ public final class BDDReachabilityAnalysisTest {
   public void testBDDTransitions_PreInInterface_NodeDropAclIn() {
     NodeDropAclIn dstDropAclIn = new NodeDropAclIn(_dstName);
     assertThat(bddTransition(_dstPreInInterface1, dstDropAclIn), equalTo(dstIpBDD(_dstIface2Ip)));
-    assertThat(bddTransition(_dstPreInInterface2, dstDropAclIn), nullValue());
+    assertThat(edge(_dstPreInInterface2, dstDropAclIn), nullValue());
   }
 
   @Test
@@ -284,7 +293,7 @@ public final class BDDReachabilityAnalysisTest {
     BDD preOutEdge2 = bddTransition(_srcPreOutVrf, _srcPreOutEdge2);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
 
-    assertThat(nodeDropNullRoute, nullValue());
+    assertThat(nodeDropNullRoute, isZero());
 
     assertThat(nodeInterfaceNeighborUnreachable1, equalTo(_link1SrcIpBDD));
     assertThat(nodeInterfaceNeighborUnreachable2, equalTo(_link2SrcIpBDD.and(postNatAclBDD)));
@@ -336,9 +345,9 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PreOutEdgePostNat_NodeDropAclOut() {
-    assertThat(bddTransition(_dstPreOutEdgePostNat1, new NodeDropAclOut(_dstName)), nullValue());
-    assertThat(bddTransition(_dstPreOutEdgePostNat2, new NodeDropAclOut(_dstName)), nullValue());
-    assertThat(bddTransition(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
+    assertThat(edge(_dstPreOutEdgePostNat1, new NodeDropAclOut(_dstName)), nullValue());
+    assertThat(edge(_dstPreOutEdgePostNat2, new NodeDropAclOut(_dstName)), nullValue());
+    assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, new NodeDropAclOut(_srcName)),
         equalTo(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT).not()));

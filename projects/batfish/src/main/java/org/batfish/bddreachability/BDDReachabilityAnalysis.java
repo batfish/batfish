@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -76,9 +75,6 @@ public class BDDReachabilityAnalysis {
   // state --> final state --> predicate
   private final Supplier<Map<StateExpr, Map<StateExpr, BDD>>> _reverseReachableStates;
 
-  // for NAT
-  private final BDD _srcIpVars;
-
   private Set<StateExpr> _leafStates;
 
   BDDReachabilityAnalysis(
@@ -91,7 +87,6 @@ public class BDDReachabilityAnalysis {
     _graphRoots = ImmutableMap.copyOf(graphRoots);
     _reverseReachableStates = Suppliers.memoize(this::computeReverseReachableStates);
     _leafStates = computeTerminalStates();
-    _srcIpVars = new BDDOps(_bddPacket.getFactory()).and(_bddPacket.getSrcIp().getBitvec());
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(
@@ -172,31 +167,9 @@ public class BDDReachabilityAnalysis {
             BDD postStateBDD = reverseReachableStates.get(postState).get(leaf);
             postStateInEdges.forEach(
                 (preState, edge) -> {
-                  BDD constraint = edge.getConstraint();
-                  BDD result = constraint == null ? postStateBDD : postStateBDD.and(constraint);
+                  BDD result = edge.traverseBackward(postStateBDD);
                   if (result.isZero()) {
                     return;
-                  }
-
-                  // apply source nat backward
-                  List<BDDSourceNat> sourceNats = edge.getSourceNats();
-                  if (sourceNats != null) {
-                    BDD orig = result;
-                    BDD origExistSrcIp = orig.exist(_srcIpVars);
-                    // non-natted case: srcIp unchanged, none of the lines match
-                    result =
-                        sourceNats
-                            .stream()
-                            .map(srcNat -> srcNat._condition.not())
-                            .reduce(orig, BDD::and);
-                    // natted cases
-                    for (BDDSourceNat sourceNat : sourceNats) {
-                      if (!orig.and(sourceNat._updateSrcIp).isZero()) {
-                        // this could be the NAT rule that was applied
-                        result = result.or(origExistSrcIp.and(sourceNat._condition));
-                      }
-                    }
-                    assert !result.isZero();
                   }
 
                   // update preState BDD reverse-reachable from leaf
