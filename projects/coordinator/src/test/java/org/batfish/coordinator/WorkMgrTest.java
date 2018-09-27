@@ -460,46 +460,12 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
 
-    Path answer1Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer2Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question2Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(answer1Path, answer1);
-    CommonUtil.writeFile(answer2Path, answer2);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer1, containerName, testrigName, question1Name, null, analysisName);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer2, containerName, testrigName, question2Name, null, analysisName);
 
     Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
@@ -1560,5 +1526,130 @@ public class WorkMgrTest {
     assertThat(
         _manager.answerIssueConfigMatchesConfiguredIssues(answerIssueConfig, configuredMajorIssues),
         equalTo(false));
+  }
+
+  private static final class TestQuestionWithName extends TestQuestion {
+    private static final String TEST_QUESTION_NAME = "testquestion";
+
+    @Override
+    public String getName() {
+      return TEST_QUESTION_NAME;
+    }
+  }
+
+  @Test
+  public void testGetAnswerAdHocNewQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = null;
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    _manager.initContainer(network, null);
+    _storage.storeQuestion(questionContent, network, question, analysis);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.STALE));
+  }
+
+  @Test
+  public void testGetAnswerAnalysisNewQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = "analysis1";
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    _manager.initContainer(network, null);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.STALE));
+  }
+
+  @Test
+  public void testGetAnswerAdHocOldQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = null;
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    _manager.initContainer(network, null);
+    _storage.storeQuestion(questionContent, network, question, analysis);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.SUCCESS));
+  }
+
+  @Test
+  public void testGetAnswerAnalysisOldQuestionSettings() throws Exception {
+    String network = "network";
+    String snapshot = "snapshot";
+    String analysis = "analysis1";
+    String referenceSnapshot = null;
+    String question = "question1";
+    Question questionObj = new TestQuestionWithName();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+
+    _manager.initContainer(network, null);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, questionContent),
+        ImmutableList.of(),
+        null);
+    _storage.storeQuestionSettings("{}", network, questionObj.getName());
+    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
+
+    String answerOutput =
+        _manager.getAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    Answer deserializedAnswer =
+        BatfishObjectMapper.mapper().readValue(answerOutput, new TypeReference<Answer>() {});
+
+    assertThat(deserializedAnswer.getStatus(), equalTo(AnswerStatus.SUCCESS));
   }
 }

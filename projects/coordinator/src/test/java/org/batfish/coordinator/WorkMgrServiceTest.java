@@ -49,7 +49,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.FileBasedStorageWithCounterBasedModifiedTimes;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -83,7 +83,8 @@ public class WorkMgrServiceTest {
         new WorkMgr(
             settings,
             logger,
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+            new FileBasedStorageWithCounterBasedModifiedTimes(
+                Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
     manager.initContainer(_networkName, null);
     _service = new WorkMgrService();
@@ -212,25 +213,9 @@ public class WorkMgrServiceTest {
         "",
         null);
 
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, questionName, null, analysisName);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -539,25 +524,9 @@ public class WorkMgrServiceTest {
         "",
         null);
 
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, questionName, null, analysisName);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -818,25 +787,9 @@ public class WorkMgrServiceTest {
         "",
         null);
 
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswer(answer, _networkName, _snapshotName, questionName, null, analysisName);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersRows(

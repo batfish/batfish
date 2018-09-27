@@ -2,7 +2,7 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -225,7 +225,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
-  FileTime getQuestionLastModifiedTime(String network, String question, @Nullable String analysis);
+  Instant getQuestionLastModifiedTime(String network, String question, @Nullable String analysis);
 
   /**
    * Returns the last-modified time of answer to the specified question.
@@ -239,7 +239,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
-  FileTime getAnswerLastModifiedTime(
+  Instant getAnswerLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -258,7 +258,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
-  FileTime getAnswerMetadataLastModifiedTime(
+  Instant getAnswerMetadataLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -296,11 +296,12 @@ public interface StorageProvider {
    * Write the JSON-serialized settings for the specified question class for the specified network.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionName The internal name of the question, i.e. the value of {@link
+   *     org.batfish.datamodel.questions.Question#getName}
    * @param settings The settings to write
    * @throws IOException if there is an error writing the settings
    */
-  void storeQuestionSettings(String settings, String network, String questionClass)
+  void storeQuestionSettings(String settings, String network, String questionName)
       throws IOException;
 
   /**
@@ -314,4 +315,18 @@ public interface StorageProvider {
    */
   @Nonnull
   Map<String, MajorIssueConfig> loadMajorIssueConfigs(String network, Set<String> majorIssueTypes);
+
+  /**
+   * Returns the last-modified time of the settings for the specified question. Returns {@link
+   * Instant#MIN} if the question does not exist, the question cannot be read, or the question
+   * settings do not exist.
+   *
+   * @param network The name of the network
+   * @param question The name of the question
+   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
+   *     for an ad-hoc question
+   */
+  @Nonnull
+  Instant getQuestionSettingsLastModifiedTime(
+      String network, String question, @Nullable String analysis);
 }
