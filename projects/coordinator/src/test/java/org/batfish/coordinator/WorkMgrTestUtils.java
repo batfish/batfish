@@ -13,7 +13,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.storage.FileBasedStorage;
+import org.batfish.storage.FileBasedStorageWithCounterBasedModifiedTimes;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
@@ -30,7 +30,8 @@ public final class WorkMgrTestUtils {
         new WorkMgr(
             Main.getSettings(),
             logger,
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
+            new FileBasedStorageWithCounterBasedModifiedTimes(
+                Main.getSettings().getContainersLocation(), logger)));
   }
 
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)

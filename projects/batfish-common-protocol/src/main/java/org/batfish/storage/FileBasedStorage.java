@@ -22,7 +22,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,10 +54,11 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.questions.Question;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
-public final class FileBasedStorage implements StorageProvider {
+public class FileBasedStorage implements StorageProvider {
   private final Path _baseDir;
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -249,10 +250,10 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
   }
 
-  private @Nonnull Path getQuestionSettingsPath(String network, String questionClass) {
+  private @Nonnull Path getQuestionSettingsPath(String network, String questionName) {
     return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(String.format("%s.json", questionClass));
+        .resolve(String.format("%s.json", questionName));
   }
 
   /**
@@ -660,13 +661,13 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public FileTime getQuestionLastModifiedTime(
+  public Instant getQuestionLastModifiedTime(
       String network, String question, @Nullable String analysis) {
     return CommonUtil.getLastModifiedTime(getQuestionPath(network, question, analysis));
   }
 
   @Override
-  public FileTime getAnswerLastModifiedTime(
+  public Instant getAnswerLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -677,7 +678,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public FileTime getAnswerMetadataLastModifiedTime(
+  public Instant getAnswerMetadataLastModifiedTime(
       String network,
       String snapshot,
       String question,
@@ -715,9 +716,9 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeQuestionSettings(String settings, String network, String questionClass)
+  public void storeQuestionSettings(String settings, String network, String questionName)
       throws IOException {
-    FileUtils.writeStringToFile(getQuestionSettingsPath(network, questionClass).toFile(), settings);
+    FileUtils.writeStringToFile(getQuestionSettingsPath(network, questionName).toFile(), settings);
   }
 
   @Override
@@ -729,5 +730,26 @@ public final class FileBasedStorage implements StorageProvider {
             ImmutableMap.toImmutableMap(
                 Function.identity(),
                 majorIssueType -> loadMajorIssueConfig(network, majorIssueType)));
+  }
+
+  @Override
+  public @Nonnull Instant getQuestionSettingsLastModifiedTime(
+      String network, String question, @Nullable String analysis) {
+    Path questionPath = getQuestionPath(network, question, analysis);
+    if (!Files.exists(questionPath)) {
+      return Instant.MIN;
+    }
+    Question questionObj;
+    try {
+      questionObj =
+          Question.parseQuestion(CommonUtil.readFile(getQuestionPath(network, question, analysis)));
+    } catch (BatfishException e) {
+      return Instant.MIN;
+    }
+    String questionName = questionObj.getName();
+    Path questionSettingsPath = getQuestionSettingsPath(network, questionName);
+    return Files.exists(questionSettingsPath)
+        ? CommonUtil.getLastModifiedTime(questionSettingsPath)
+        : Instant.MIN;
   }
 }

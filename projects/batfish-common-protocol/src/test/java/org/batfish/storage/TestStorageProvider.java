@@ -2,12 +2,13 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -138,20 +139,20 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public FileTime getQuestionLastModifiedTime(String network, String question, String analysis) {
+  public Instant getQuestionLastModifiedTime(String network, String question, String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public FileTime getAnswerLastModifiedTime(
+  public Instant getAnswerLastModifiedTime(
       String network, String snapshot, String question, String referenceSnapshot, String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public FileTime getAnswerMetadataLastModifiedTime(
+  public Instant getAnswerMetadataLastModifiedTime(
       String network, String snapshot, String question, String referenceSnapshot, String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -176,7 +177,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeQuestionSettings(String settings, String network, String questionClass)
+  public void storeQuestionSettings(String settings, String network, String questionName)
       throws IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -185,6 +186,13 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public @Nonnull Map<String, MajorIssueConfig> loadMajorIssueConfigs(
       String network, Set<String> majorIssueTypes) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public @Nullable Instant getQuestionSettingsLastModifiedTime(
+      String network, String question, @Nullable String analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

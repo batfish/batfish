@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -61,6 +60,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.ObjectUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -701,12 +701,18 @@ public class WorkMgr extends AbstractCoordinator {
     String answer = "unknown";
     try {
       answer = _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(
-                  _storage.getAnswerLastModifiedTime(
-                      network, snapshot, question, referenceSnapshot, analysis))
-          > 0) {
+      Instant answerLastModifiedTime =
+          _storage.getAnswerLastModifiedTime(
+              network, snapshot, question, referenceSnapshot, analysis);
+      Instant questionLastModifiedTime =
+          _storage.getQuestionLastModifiedTime(network, question, analysis);
+      Instant questionSettingsLastModifiedTime =
+          _storage.getQuestionSettingsLastModifiedTime(network, question, analysis);
+
+      // If either question or question settings are newer than answer, answer is STALE.
+      if (answerLastModifiedTime.compareTo(
+              ObjectUtils.max(questionLastModifiedTime, questionSettingsLastModifiedTime))
+          <= 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
         answer = BatfishObjectMapper.writePrettyString(ans);
@@ -787,7 +793,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       AnswerMetadata answerMetadata =
           _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-      FileTime answerMetadataLastModifiedTime =
+      Instant answerMetadataLastModifiedTime =
           _storage.getAnswerMetadataLastModifiedTime(
               network, snapshot, question, referenceSnapshot, analysis);
       if (_storage
