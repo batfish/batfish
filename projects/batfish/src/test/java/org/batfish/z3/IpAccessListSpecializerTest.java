@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.batfish.datamodel.EmptyIpSpace;
+import java.util.Optional;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -20,7 +20,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -28,7 +27,10 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Test;
 
 public final class IpAccessListSpecializerTest {
-  private static final IpAccessListSpecializer CONSTANT_SPECIALIZER =
+  /*
+   * A specializer that specializes headerspace to the empty headerspace.
+   */
+  private static final IpAccessListSpecializer EMPTY_HEADERSPACE_SPECIALIZER =
       new IpAccessListSpecializer() {
         @Override
         boolean canSpecialize() {
@@ -36,8 +38,9 @@ public final class IpAccessListSpecializerTest {
         }
 
         @Override
-        HeaderSpace specialize(HeaderSpace headerSpace) {
-          return HeaderSpace.builder().build();
+        Optional<HeaderSpace> specialize(HeaderSpace headerSpace) {
+          // empty denotes nothing left after specialization
+          return Optional.empty();
         }
 
         @Override
@@ -60,8 +63,8 @@ public final class IpAccessListSpecializerTest {
         }
 
         @Override
-        protected HeaderSpace specialize(HeaderSpace headerSpace) {
-          return headerSpace;
+        protected Optional<HeaderSpace> specialize(HeaderSpace headerSpace) {
+          return Optional.of(headerSpace);
         }
 
         @Override
@@ -76,8 +79,8 @@ public final class IpAccessListSpecializerTest {
         }
       };
 
-  private static AclLineMatchExpr constantSpecialize(AclLineMatchExpr expr) {
-    return CONSTANT_SPECIALIZER.visit(expr);
+  private static AclLineMatchExpr emptyHeaderSpaceSpecialize(AclLineMatchExpr expr) {
+    return EMPTY_HEADERSPACE_SPECIALIZER.visit(expr);
   }
 
   private static AclLineMatchExpr identitySpecialize(AclLineMatchExpr expr) {
@@ -97,24 +100,7 @@ public final class IpAccessListSpecializerTest {
   }
 
   @Test
-  public void visitMatchHeaderSpace_EmptyIpSpace() {
-    HeaderSpace dstEmpty = HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build();
-    HeaderSpace notDstUniverse =
-        HeaderSpace.builder().setNotDstIps(UniverseIpSpace.INSTANCE).build();
-    HeaderSpace srcEmpty = HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build();
-    HeaderSpace notSrcUniverse =
-        HeaderSpace.builder().setNotSrcIps(UniverseIpSpace.INSTANCE).build();
-    HeaderSpace srcOrDstEmpty = HeaderSpace.builder().setSrcOrDstIps(EmptyIpSpace.INSTANCE).build();
-
-    assertThat(identitySpecialize(match(dstEmpty)), equalTo(FALSE));
-    assertThat(identitySpecialize(match(notDstUniverse)), equalTo(FALSE));
-    assertThat(identitySpecialize(match(srcEmpty)), equalTo(FALSE));
-    assertThat(identitySpecialize(match(notSrcUniverse)), equalTo(FALSE));
-    assertThat(identitySpecialize(match(srcOrDstEmpty)), equalTo(FALSE));
-  }
-
-  @Test
-  public void visitMatchHeaderSpace_EmptyDisjunction() {
+  public void visitMatchHeaderSpace_EmptyHeaderSpace() {
     List<Integer> integerList = ImmutableList.of(0);
     List<IpProtocol> ipProtocolList = ImmutableList.of(IpProtocol.ICMP);
     List<Protocol> protocolList = ImmutableList.of(Protocol.HTTP);
@@ -126,43 +112,45 @@ public final class IpAccessListSpecializerTest {
      * the entire match expression is FALSE.
      */
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setDscps(integerList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setDscps(integerList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setEcns(integerList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setEcns(integerList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setDstPorts(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setDstPorts(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setFragmentOffsets(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(
+            match(HeaderSpace.builder().setFragmentOffsets(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setIcmpCodes(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setIcmpCodes(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setIcmpTypes(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setIcmpTypes(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setIpProtocols(ipProtocolList).build())),
+        emptyHeaderSpaceSpecialize(
+            match(HeaderSpace.builder().setIpProtocols(ipProtocolList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setSrcPorts(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setSrcPorts(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setSrcOrDstPorts(subRangeList).build())),
+        emptyHeaderSpaceSpecialize(
+            match(HeaderSpace.builder().setSrcOrDstPorts(subRangeList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setSrcOrDstProtocols(protocolList).build())),
+        emptyHeaderSpaceSpecialize(
+            match(HeaderSpace.builder().setSrcOrDstProtocols(protocolList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setStates(stateList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setStates(stateList).build())),
         equalTo(FALSE));
     assertThat(
-        constantSpecialize(match(HeaderSpace.builder().setTcpFlags(tcpFlagsList).build())),
+        emptyHeaderSpaceSpecialize(match(HeaderSpace.builder().setTcpFlags(tcpFlagsList).build())),
         equalTo(FALSE));
-    // if we started with empty disjunctions, they are interpreted as "unconstrained", i.e. TRUE
-    assertThat(constantSpecialize(match(HeaderSpace.builder().build())), equalTo(TRUE));
   }
 
   @Test

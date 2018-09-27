@@ -4,12 +4,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
@@ -17,9 +20,11 @@ import org.batfish.common.bdd.BDDIpSpaceSpecializer;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
@@ -52,9 +57,11 @@ import org.batfish.datamodel.acl.TrueExpr;
  * </ol>
  */
 public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
+  private final BDDOps _bddOps;
   private final BDDSourceManager _bddSrcManager;
   private final BDDIpSpaceSpecializer _dstIpSpaceSpecializer;
   private final BDD _flowBDD;
+  private final HeaderSpaceToBDD _headerSpaceToBDD;
   private final BDDPacket _pkt;
   private final BDDIpSpaceSpecializer _srcIpSpaceSpecializer;
   private final boolean _simplifyToTrue;
@@ -101,11 +108,13 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
       IpSpaceToBDD dstIpSpaceToBdd,
       IpSpaceToBDD srcIpSpaceToBdd,
       boolean simplifyToTrue) {
+    _bddOps = new BDDOps(pkt.getFactory());
     _bddSrcManager = bddSrcManager;
     _dstIpSpaceSpecializer =
         new BDDIpSpaceSpecializer(flowBDD, namedIpSpaces, dstIpSpaceToBdd, simplifyToTrue);
     _pkt = pkt;
     _flowBDD = flowBDD;
+    _headerSpaceToBDD = new HeaderSpaceToBDD(pkt, namedIpSpaces, dstIpSpaceToBdd, srcIpSpaceToBdd);
     _simplifyToTrue = simplifyToTrue;
     _srcIpSpaceSpecializer =
         new BDDIpSpaceSpecializer(flowBDD, namedIpSpaces, srcIpSpaceToBdd, simplifyToTrue);
@@ -124,29 +133,51 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
   }
 
   @Override
-  public HeaderSpace specialize(HeaderSpace headerSpace) {
-    return headerSpace
-        .toBuilder()
-        // combine dstIps and notDstIps into dstIps
-        .setDstIps(specializeIpSpace(headerSpace.getDstIps(), _dstIpSpaceSpecializer))
-        .setNotDstIps(specializeIpSpace(headerSpace.getNotDstIps(), _dstIpSpaceSpecializer))
-        .setDstPorts(specializeSubRange(headerSpace.getDstPorts(), _pkt.getDstPort()))
-        .setNotDstPorts(specializeSubRange(headerSpace.getNotDstPorts(), _pkt.getDstPort()))
-        .setIpProtocols(specializeIpProtocols(headerSpace.getIpProtocols()))
-        .setIcmpCodes(specializeSubRange(headerSpace.getIcmpCodes(), _pkt.getIcmpCode()))
-        .setIcmpTypes(specializeSubRange(headerSpace.getIcmpTypes(), _pkt.getIcmpType()))
-        .setSrcOrDstIps(
-            specializeIpSpace(
-                headerSpace.getSrcOrDstIps(), _dstIpSpaceSpecializer, _srcIpSpaceSpecializer))
-        .setSrcOrDstPorts(
-            specializeSubRange(
-                headerSpace.getSrcOrDstPorts(), _pkt.getSrcPort(), _pkt.getDstPort()))
-        .setSrcPorts(specializeSubRange(headerSpace.getSrcPorts(), _pkt.getSrcPort()))
-        .setNotSrcPorts(specializeSubRange(headerSpace.getNotSrcPorts(), _pkt.getSrcPort()))
-        .setSrcIps(specializeIpSpace(headerSpace.getSrcIps(), _srcIpSpaceSpecializer))
-        .setNotSrcIps(specializeIpSpace(headerSpace.getNotSrcIps(), _srcIpSpaceSpecializer))
-        .setTcpFlags(specializeTcpFlags(headerSpace.getTcpFlags()))
-        .build();
+  public Optional<HeaderSpace> specialize(HeaderSpace headerSpace) {
+    BDD flowAndHeaderSpaceBDD = _headerSpaceToBDD.toBDD(headerSpace).and(_flowBDD);
+
+    if (flowAndHeaderSpaceBDD.isZero()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        headerSpace
+            .toBuilder()
+            // combine dstIps and notDstIps into dstIps
+            .setDstIps(specializeIpSpace(headerSpace.getDstIps(), _dstIpSpaceSpecializer))
+            .setNotDstIps(specializeIpSpace(headerSpace.getNotDstIps(), _dstIpSpaceSpecializer))
+            .setDstPorts(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getDstPorts(), _pkt.getDstPort()))
+            .setNotDstPorts(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getNotDstPorts(), _pkt.getDstPort()))
+            .setIpProtocols(specializeIpProtocols(headerSpace.getIpProtocols()))
+            .setIcmpCodes(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getIcmpCodes(), _pkt.getIcmpCode()))
+            .setIcmpTypes(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getIcmpTypes(), _pkt.getIcmpType()))
+            .setSrcOrDstIps(
+                specializeIpSpace(
+                    headerSpace.getSrcOrDstIps(), _dstIpSpaceSpecializer, _srcIpSpaceSpecializer))
+            .setSrcOrDstPorts(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD,
+                    headerSpace.getSrcOrDstPorts(),
+                    _pkt.getSrcPort(),
+                    _pkt.getDstPort()))
+            .setSrcPorts(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getSrcPorts(), _pkt.getSrcPort()))
+            .setNotSrcPorts(
+                specializeSubRange(
+                    flowAndHeaderSpaceBDD, headerSpace.getNotSrcPorts(), _pkt.getSrcPort()))
+            .setSrcIps(specializeIpSpace(headerSpace.getSrcIps(), _srcIpSpaceSpecializer))
+            .setNotSrcIps(specializeIpSpace(headerSpace.getNotSrcIps(), _srcIpSpaceSpecializer))
+            .setTcpFlags(specializeTcpFlags(headerSpace.getTcpFlags()))
+            .build());
   }
 
   @Override
@@ -199,18 +230,30 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
 
   private @Nullable SortedSet<IpProtocol> specializeIpProtocols(
       @Nullable SortedSet<IpProtocol> ipProtocols) {
-    return ipProtocols == null
-        ? null
-        : ipProtocols
+    if (ipProtocols == null) {
+      return null;
+    }
+
+    List<IpProtocol> values = new ArrayList<>(ipProtocols);
+
+    List<BDD> valueBdds =
+        values
             .stream()
-            .filter(
-                ipProtocol ->
-                    !_flowBDD.and(_pkt.getIpProtocol().value(ipProtocol.number())).isZero())
-            .collect(ImmutableSortedSet.toImmutableSortedSet(ipProtocols.comparator()));
+            .map(ipProtocol -> _pkt.getIpProtocol().value(ipProtocol.number()))
+            .collect(Collectors.toList());
+
+    if (_simplifyToTrue && _flowBDD.imp(_bddOps.or(valueBdds)).isOne()) {
+      return null;
+    }
+
+    return IntStream.range(0, values.size())
+        .filter(idx -> !_flowBDD.and(valueBdds.get(idx)).isZero())
+        .mapToObj(values::get)
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
   private @Nullable SortedSet<SubRange> specializeSubRange(
-      @Nullable SortedSet<SubRange> subRanges, BDDInteger... vars) {
+      BDD flowAndHeaderSpaceBDD, @Nullable SortedSet<SubRange> subRanges, BDDInteger... vars) {
     List<BDDInteger> varList = Arrays.asList(vars);
     return subRanges == null
         ? null
@@ -221,7 +264,9 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
                     /*
                      * If none of the vars can match this subRange, remove it.
                      */
-                    varList.stream().anyMatch(var -> !_flowBDD.and(toBDD(subRange, var)).isZero()))
+                    varList
+                        .stream()
+                        .anyMatch(var -> !flowAndHeaderSpaceBDD.and(toBDD(subRange, var)).isZero()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(subRanges.comparator()));
   }
 

@@ -141,7 +141,8 @@ public class BDDIpAccessListSpecializerTest {
 
   private static void specializeSubRangeField(
       BDDInteger field, HeaderSpaceSetter<SubRange> setter) {
-    BDD headerSpaceBDD = field.geq(100).and(field.leq(200));
+    BDD headerSpaceBDD =
+        DST_IP_SPACE_TO_BDD.toBDD(new Ip("1.1.1.1")).and(field.geq(100).and(field.leq(200)));
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     HeaderSpace original =
@@ -178,9 +179,54 @@ public class BDDIpAccessListSpecializerTest {
     assertThat(specializer.specialize(acceptingHeaderSpace(original)), equalTo(Optional.empty()));
   }
 
+  private static void specializeSubRangeFieldNegatedSpace(
+      BDDInteger field, HeaderSpaceSetter<SubRange> setter) {
+    Ip dstIp = new Ip("1.1.1.1");
+    BDD headerSpaceBDD =
+        DST_IP_SPACE_TO_BDD.toBDD(dstIp).and(field.geq(100).and(field.leq(150))).not();
+    BDDIpAccessListSpecializer specializer =
+        new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
+    HeaderSpace original =
+        setter
+            .set(
+                HeaderSpace.builder().setDstIps(dstIp.toIpSpace()),
+                ImmutableList.of(
+                    new SubRange(0, 10),
+                    new SubRange(50, 100),
+                    new SubRange(120, 150),
+                    new SubRange(180, 200)))
+            .build();
+    HeaderSpace specialized =
+        setter
+            .set(
+                HeaderSpace.builder().setDstIps(dstIp.toIpSpace()),
+                ImmutableList.of(
+                    new SubRange(0, 10), new SubRange(50, 100), new SubRange(180, 200)))
+            .build();
+    assertThat(specializer.specialize(original), equalTo(specialized));
+
+    original =
+        setter
+            .set(
+                HeaderSpace.builder().setDstIps(dstIp.toIpSpace()),
+                ImmutableList.of(new SubRange(100, 110), new SubRange(140, 150)))
+            .build();
+    // all subranges removed
+    assertThat(
+        specializer.specialize(original),
+        equalTo(HeaderSpace.builder().setDstIps(dstIp.toIpSpace()).build()));
+
+    /*
+     * Since none of the choices from the original headerspace is matchable, the line itself is
+     * unmatchable and can be removed.
+     */
+    assertThat(specializer.specialize(acceptingHeaderSpace(original)), equalTo(Optional.empty()));
+  }
+
   @Test
   public void specializeDstPorts() {
     specializeSubRangeField(PKT.getDstPort(), HeaderSpace.Builder::setDstPorts);
+    specializeSubRangeFieldNegatedSpace(PKT.getDstPort(), HeaderSpace.Builder::setDstPorts);
   }
 
   @Test
@@ -214,6 +260,7 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void specializeIcmpCodes() {
     specializeSubRangeField(PKT.getIcmpCode(), HeaderSpace.Builder::setIcmpCodes);
+    specializeSubRangeFieldNegatedSpace(PKT.getIcmpCode(), HeaderSpace.Builder::setIcmpCodes);
   }
 
   @Test

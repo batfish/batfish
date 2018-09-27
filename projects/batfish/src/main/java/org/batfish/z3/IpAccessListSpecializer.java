@@ -51,7 +51,10 @@ public abstract class IpAccessListSpecializer
 
   abstract boolean canSpecialize();
 
-  abstract HeaderSpace specialize(HeaderSpace headerSpace);
+  /*
+   * Optional.none() indicates that the headerspace is disjoint from the specialization space.
+   */
+  abstract Optional<HeaderSpace> specialize(HeaderSpace headerSpace);
 
   /**
    * Returns a specialized version of the given {@link IpAccessList}.
@@ -127,48 +130,19 @@ public abstract class IpAccessListSpecializer
   @Override
   public final AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     HeaderSpace originalHeaderSpace = matchHeaderSpace.getHeaderspace();
-    HeaderSpace headerSpace = specialize(originalHeaderSpace);
+    Optional<HeaderSpace> specializeResult = specialize(originalHeaderSpace);
+
+    if (!specializeResult.isPresent()) {
+      return FALSE;
+    }
+
+    HeaderSpace headerSpace = specializeResult.get();
+
     IpSpace dstIps = headerSpace.getDstIps();
     IpSpace notDstIps = headerSpace.getNotDstIps();
     IpSpace notSrcIps = headerSpace.getNotSrcIps();
     IpSpace srcIps = headerSpace.getSrcIps();
     IpSpace srcOrDstIps = headerSpace.getSrcOrDstIps();
-
-    boolean emptyIpSpace =
-        dstIps == EmptyIpSpace.INSTANCE
-            || srcIps == EmptyIpSpace.INSTANCE
-            || srcOrDstIps == EmptyIpSpace.INSTANCE
-            || notDstIps == UniverseIpSpace.INSTANCE
-            || notSrcIps == UniverseIpSpace.INSTANCE;
-
-    if (emptyIpSpace) {
-      return FALSE;
-    }
-
-    /*
-     * if any field has an empty list of required values (i.e. it must be one of zero choices), then
-     * false. Exclude empty lists of forbidden values (that part of the constraint has become true).
-     */
-    boolean emptyDisjunction =
-        emptyDisjuction(originalHeaderSpace.getDscps(), headerSpace.getDscps())
-            || emptyDisjuction(originalHeaderSpace.getEcns(), headerSpace.getEcns())
-            || emptyDisjuction(originalHeaderSpace.getDstPorts(), headerSpace.getDstPorts())
-            || emptyDisjuction(
-                originalHeaderSpace.getFragmentOffsets(), headerSpace.getFragmentOffsets())
-            || emptyDisjuction(originalHeaderSpace.getIcmpCodes(), headerSpace.getIcmpCodes())
-            || emptyDisjuction(originalHeaderSpace.getIcmpTypes(), headerSpace.getIcmpTypes())
-            || emptyDisjuction(originalHeaderSpace.getIpProtocols(), headerSpace.getIpProtocols())
-            || emptyDisjuction(originalHeaderSpace.getSrcPorts(), headerSpace.getSrcPorts())
-            || emptyDisjuction(
-                originalHeaderSpace.getSrcOrDstPorts(), headerSpace.getSrcOrDstPorts())
-            || emptyDisjuction(
-                originalHeaderSpace.getSrcOrDstProtocols(), headerSpace.getSrcOrDstProtocols())
-            || emptyDisjuction(originalHeaderSpace.getStates(), headerSpace.getStates())
-            || emptyDisjuction(originalHeaderSpace.getTcpFlags(), headerSpace.getTcpFlags());
-
-    if (emptyDisjunction) {
-      return FALSE;
-    }
 
     HeaderSpace simplifiedHeaderSpace =
         headerSpace
