@@ -74,16 +74,15 @@ public class BDDSourceManagerTest {
     ib.setName(IFACE4).setActive(false).build();
 
     // an ACL that can only match with an IFACE2 or iface3
-    IpAccessList acl =
-        IpAccessList.builder()
-            .setName("acl")
-            .setOwner(config)
-            .setLines(
-                ImmutableList.of(
-                    accepting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
-                    rejecting().setMatchCondition(matchSrcInterface(IFACE4)).build(),
-                    ACCEPT_ALL))
-            .build();
+    IpAccessList.builder()
+        .setName("acl")
+        .setOwner(config)
+        .setLines(
+            ImmutableList.of(
+                accepting().setMatchCondition(matchSrcInterface(IFACE1)).build(),
+                rejecting().setMatchCondition(matchSrcInterface(IFACE4)).build(),
+                ACCEPT_ALL))
+        .build();
     return config;
   }
 
