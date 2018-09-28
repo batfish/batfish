@@ -712,7 +712,7 @@ public class WorkMgr extends AbstractCoordinator {
       // If either question or question settings are newer than answer, answer is STALE.
       if (answerLastModifiedTime.compareTo(
               ObjectUtils.max(questionLastModifiedTime, questionSettingsLastModifiedTime))
-          <= 0) {
+          < 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
         answer = BatfishObjectMapper.writePrettyString(ans);
