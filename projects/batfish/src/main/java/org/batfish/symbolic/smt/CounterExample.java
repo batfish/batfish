@@ -296,6 +296,7 @@ class CounterExample {
   /*
    * Build flow information for a given hop along a path
    */
+  // TODO: Can we simply use processFlows in TraceRouteImplContext?
   Tuple<Flow, FlowTrace> buildFlowTrace(Encoder encoder, String routerName) {
     EncoderSlice slice = encoder.getMainSlice();
     SymbolicPacket pkt = slice.getSymbolicPacket();
@@ -321,17 +322,21 @@ class CounterExample {
       boolean found = false;
       for (Entry<GraphEdge, BoolExpr> entry : dfwd.entrySet()) {
         GraphEdge graphEdge = entry.getKey();
-        BoolExpr dexpr = entry.getValue();
-        BoolExpr cexpr = cfwd.get(graphEdge);
-        BoolExpr aexpr = across.get(graphEdge);
+        BoolExpr dataForwardingExpr = entry.getValue();
+        BoolExpr controlExpr = cfwd.get(graphEdge);
+        BoolExpr aclExpr = across.get(graphEdge);
         String route = buildRoute(pfx, proto, graphEdge);
-        if (isTrue(dexpr)) {
+        // forwarded to the next router
+        if (isTrue(dataForwardingExpr)) {
           hops.add(buildFlowTraceHop(graphEdge, route));
+          // if visited the router before, then a loop detected
           if (graphEdge.getPeer() != null && visitedRouters.contains(graphEdge.getPeer())) {
             FlowTrace flowTrace = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
             return new Tuple<>(flow, flowTrace);
           }
-          if (isFalse(aexpr)) {
+
+          // if acl denies the flow, DENY_IN detected
+          if (isFalse(aclExpr)) {
             Interface interf = graphEdge.getEnd();
             IpAccessList acl = interf.getIncomingFilter();
             FilterResult filterResult =
@@ -344,6 +349,7 @@ class CounterExample {
             FlowTrace flowTrace = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
             return new Tuple<>(flow, flowTrace);
           }
+
           boolean isLoopback = slice.getGraph().isLoopback(graphEdge);
           if (isLoopback) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
@@ -355,6 +361,7 @@ class CounterExample {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
               return new Tuple<>(flow, ft);
             } else {
+              // the peer is not a BGP peer
               FlowTrace flowTrace =
                   new FlowTrace(
                       FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
@@ -372,7 +379,8 @@ class CounterExample {
           found = true;
           break;
 
-        } else if (isTrue(cexpr)) {
+        } else if (isTrue(controlExpr)) {
+          // dataForwardingExpr is False but controlExpr is True
           hops.add(buildFlowTraceHop(graphEdge, route));
           Interface interf = graphEdge.getStart();
           IpAccessList acl = interf.getOutgoingFilter();
@@ -383,13 +391,14 @@ class CounterExample {
           return new Tuple<>(flow, flowTrace);
         }
       }
+      // if not found the next hop router
       if (!found) {
         BoolExpr permitted = symbolicRoute.getPermitted();
         if (boolVal(permitted)) {
           // Check if there is an accepting interface
           for (GraphEdge graphEdge : slice.getGraph().getEdgeMap().get(currentRouterName)) {
-            Interface i = graphEdge.getStart();
-            Ip ip = i.getAddress().getIp();
+            Interface interf = graphEdge.getStart();
+            Ip ip = interf.getAddress().getIp();
             if (ip.equals(flow.getDstIp())) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
               return new Tuple<>(flow, ft);
