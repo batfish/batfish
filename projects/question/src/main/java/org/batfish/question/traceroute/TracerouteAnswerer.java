@@ -61,6 +61,7 @@ public final class TracerouteAnswerer extends Answerer {
   public static final String COL_FLOW = "Flow";
   public static final String COL_TRACES = "Traces";
   private static final int TRACEROUTE_PORT = 33434;
+  static final int PACKET_LENGTH = 512;
 
   private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
@@ -269,6 +270,8 @@ public final class TracerouteAnswerer extends Answerer {
     setDscpValue(constraints, builder);
 
     // TODO: ECN value, fragments, etc
+    setPacketLength(constraints, builder);
+
     return builder;
   }
 
@@ -445,6 +448,22 @@ public final class TracerouteAnswerer extends Answerer {
             return null;
           }
         });
+  }
+
+  @VisibleForTesting
+  static void setPacketLength(PacketHeaderConstraints constraints, Builder builder) {
+    Set<SubRange> packetLengths = constraints.getPacketLengths();
+    checkArgument(
+        packetLengths == null || packetLengths.size() == 1,
+        "Cannot perform traceroute with multiple packet lengths");
+    if (packetLengths != null) {
+      SubRange packetLength = packetLengths.iterator().next();
+      checkArgument(
+          packetLength.isSingleValue(), "Cannot perform traceroute with multiple packet lengths");
+      builder.setPacketLength(packetLength.getStart());
+    } else {
+      builder.setPacketLength(PACKET_LENGTH);
+    }
   }
 
   private String interfaceVrf(String node, String iface) {

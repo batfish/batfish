@@ -2,9 +2,11 @@ package org.batfish.question.traceroute;
 
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
+import static org.batfish.question.traceroute.TracerouteAnswerer.PACKET_LENGTH;
 import static org.batfish.question.traceroute.TracerouteAnswerer.setDscpValue;
 import static org.batfish.question.traceroute.TracerouteAnswerer.setDstPort;
 import static org.batfish.question.traceroute.TracerouteAnswerer.setIcmpValue;
+import static org.batfish.question.traceroute.TracerouteAnswerer.setPacketLength;
 import static org.batfish.question.traceroute.TracerouteAnswerer.setSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -197,5 +199,25 @@ public class TracerouteAnswererTest {
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setDstPort(phc, builder);
+  }
+
+  @Test
+  public void testSetMultiplePacketLengths() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setPacketLengths(ImmutableSet.of(new SubRange(1, 10)))
+            .build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setPacketLength(phc, builder);
+  }
+
+  @Test
+  public void testDefaultPacketLength() {
+    Builder builder =
+        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
+    setPacketLength(phc, builder);
+    assertThat(builder.build().getPacketLength(), equalTo(PACKET_LENGTH));
   }
 }
