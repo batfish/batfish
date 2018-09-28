@@ -45,11 +45,11 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
    * Create a {@link BDDIpSpaceSpecializer} that specializes {@link IpSpace IpSpaces} to the destIp
    * of a headerspace {@link BDD}.
    *
-   * @param pkt The {@link BDDPacket} used to create the {@param headerSpaceBdd}.
+   * @param pkt The {@link BDDPacket} used to create the headerSpaceBdd.
    * @param headerSpaceBdd The headerspace {@link BDD}.
    * @param namedIpSpaces The named {@link IpSpace IpSpaces} currently in scope.
-   * @param simplifyToUniverse Whether to simplify {@link IpSpace IpSpaces} that contain {@param
-   *     headerSpaceBdd} to {@link UniverseIpSpace#INSTANCE}.
+   * @param simplifyToUniverse Whether to simplify {@link IpSpace IpSpaces} that contain
+   *     headerSpaceBdd to {@link UniverseIpSpace#INSTANCE}.
    */
   public static BDDIpSpaceSpecializer specializeByDstIp(
       BDDPacket pkt,
