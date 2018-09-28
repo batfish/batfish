@@ -56487,16 +56487,16 @@
         "cisco_acl" : {
           "Parse warnings" : [
             {
-              "Comment" : "matching ttl in extended access list",
+              "Comment" : "clause in extended access list",
               "Line" : 10,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-              "Text" : "60 permit tcp any any eq mlag ttl eq 255"
+              "Text" : "ttl eq 255"
             },
             {
-              "Comment" : "matching ttl in extended access list",
+              "Comment" : "clause in extended access list",
               "Line" : 11,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-              "Text" : "70 permit udp any any eq mlag ttl eq 255"
+              "Text" : "ttl eq 255"
             }
           ]
         },
