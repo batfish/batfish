@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 
@@ -11,11 +12,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -23,6 +28,17 @@ import org.batfish.datamodel.IpAccessList;
 /**
  * Manages BDD variables to track a packet's source: which interface it entered the node through, if
  * any. If it didn't enter through any node, it originated from the device itself.
+ *
+ * <p>To minize to the number of BDD variables used, we consider which sources are active and which
+ * are referenced by ACLs on the node. If a source is active and referenced, then we assign it a
+ * unique identifier. All sources that are referenced by inactive are assigned the same identifier.
+ * If a source is inactive, we assign it the constant {@link BDDFactory#zero()}. We allocate enough
+ * BDD variables to distinguish between the unique identifiers.
+ *
+ * <p>We need these identifiers in two contexts: to record the source of a packet as it enters a
+ * node, and to check the source of a packet when an ACL includes a {@link
+ * org.batfish.datamodel.acl.MatchSrcInterface} or {@link
+ * org.batfish.datamodel.acl.OriginatingFromDevice} expression.
  */
 public final class BDDSourceManager {
   private static final String VAR_NAME = "PacketSource";
@@ -33,29 +49,53 @@ public final class BDDSourceManager {
 
   private final Map<String, BDD> _sourceBDDs;
 
-  /**
-   * Create a {@link BDDSourceManager} for a specified set of possible sources. To include the
-   * device as a source, use {@link
-   * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}.
-   */
-  @VisibleForTesting
-  BDDSourceManager(BDDPacket pkt, Set<String> sources) {
-    ImmutableMap.Builder<String, BDD> sourceBDDs = ImmutableMap.builder();
+  private final BDD _sourceVarBits;
 
-    // add sourceBDD entries for active sources and initialize _isSane constraint
-    if (!sources.isEmpty()) {
-      int bitsRequired = LongMath.log2(sources.size(), RoundingMode.CEILING);
-      BDDInteger var = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
-      sourceBDDs.putAll(computeMatchSourceBDDs(var, sources));
-      // _isSane constrains var to be one of the values assigned to sources.
-      _isSane = var.leq(sources.size() - 1);
-    } else {
-      // no source var, so don't need a sane constraint
-      _isSane = pkt.getFactory().one();
+  private BDDSourceManager(BDD isSane, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
+    _isSane = isSane;
+    _sourceBDDs = ImmutableMap.copyOf(sourceBDDs);
+    _sourceVarBits = sourceVarBits;
+    _falseBDD = isSane.getFactory().zero();
+  }
+
+  private static BDDSourceManager forNoReferencedSources(
+      BDDPacket pkt, Set<String> activeButNotReferenced) {
+    return new BDDSourceManager(
+        pkt.getFactory().one(),
+        toImmutableMap(activeButNotReferenced, Function.identity(), src -> pkt.getFactory().one()),
+        pkt.getFactory().zero());
+  }
+
+  /** Allocates a variable for the sources and initializes SANE. */
+  private static BDDSourceManager forSourcesInternal(
+      BDDPacket pkt, Set<String> activeAndReferenced, Set<String> activeButNotReferenced) {
+    if (activeAndReferenced.isEmpty()) {
+      return forNoReferencedSources(pkt, activeButNotReferenced);
     }
 
-    _sourceBDDs = sourceBDDs.build();
-    _falseBDD = pkt.getFactory().zero();
+    int bitsRequired =
+        LongMath.log2(
+            valuesRequired(activeAndReferenced, activeButNotReferenced), RoundingMode.CEILING);
+    BDDInteger sourceVar = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
+
+    return forSourcesInternal(pkt, sourceVar, activeAndReferenced, activeButNotReferenced);
+  }
+
+  private static BDDSourceManager forSourcesInternal(
+      BDDPacket pkt,
+      BDDInteger sourceVar,
+      Set<String> activeAndReferenced,
+      Set<String> activeButNotReferenced) {
+
+    Map<String, BDD> sourceBDDs =
+        computeMatchSourceBDDs(sourceVar, activeAndReferenced, activeButNotReferenced);
+
+    BDD isSane = sourceVar.leq(valuesRequired(activeAndReferenced, activeButNotReferenced) - 1);
+
+    BDD sourceVarBits =
+        Arrays.stream(sourceVar.getBitvec()).reduce(pkt.getFactory().one(), BDD::and);
+
+    return new BDDSourceManager(isSane, sourceBDDs, sourceVarBits);
   }
 
   /**
@@ -63,12 +103,12 @@ public final class BDDSourceManager {
    * device itself.
    */
   public static BDDSourceManager forInterfaces(BDDPacket pkt, Set<String> interfaces) {
-    return new BDDSourceManager(
-        pkt,
+    Set<String> sources =
         ImmutableSet.<String>builder()
             .addAll(interfaces)
             .add(SOURCE_ORIGINATING_FROM_DEVICE)
-            .build());
+            .build();
+    return forSourcesInternal(pkt, sources, ImmutableSet.of());
   }
 
   public static BDDSourceManager forIpAccessList(
@@ -82,28 +122,83 @@ public final class BDDSourceManager {
 
   public static BDDSourceManager forSources(
       BDDPacket pkt, Set<String> activeSources, Set<String> referencedSources) {
-    if (referencedSources.isEmpty()) {
-      return new BDDSourceManager(pkt, ImmutableSet.of());
+    return forSourcesInternal(
+        pkt,
+        Sets.intersection(activeSources, referencedSources),
+        Sets.difference(activeSources, referencedSources));
+  }
+
+  /**
+   * Initialize a {@link BDDSourceManager} for each {@link Configuration} in a network. A single
+   * variable is shared by all of them.
+   */
+  public static Map<String, BDDSourceManager> forNetwork(
+      BDDPacket pkt, Map<String, Configuration> configs) {
+    Map<String, Set<String>> activeSources =
+        toImmutableMap(
+            configs.entrySet(),
+            Entry::getKey,
+            entry ->
+                ImmutableSet.<String>builder()
+                    .add(SOURCE_ORIGINATING_FROM_DEVICE)
+                    .addAll(entry.getValue().activeInterfaces())
+                    .build());
+
+    Map<String, Set<String>> referencedSources =
+        toImmutableMap(
+            configs.entrySet(),
+            Entry::getKey,
+            entry -> {
+              Configuration config = entry.getValue();
+              Set<String> active = activeSources.get(config.getHostname());
+              Set<String> sources = new HashSet<>();
+              for (IpAccessList acl : config.getIpAccessLists().values()) {
+                referencedSources(config.getIpAccessLists(), acl)
+                    .stream()
+                    .filter(active::contains)
+                    .forEach(sources::add);
+              }
+              return sources;
+            });
+
+    Map<String, Set<String>> activeAndReferenced =
+        toImmutableMap(
+            activeSources,
+            Entry::getKey,
+            activeEntry ->
+                Sets.intersection(
+                    activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
+
+    Map<String, Set<String>> activeButNotReferenced =
+        toImmutableMap(
+            activeSources,
+            Entry::getKey,
+            activeEntry ->
+                Sets.difference(
+                    activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
+
+    // Number of values needed to track sources in any node
+    int valuesNeeded = activeAndReferenced.values().stream().mapToInt(Set::size).max().getAsInt();
+
+    if (valuesNeeded == 0) {
+      return toImmutableMap(
+          configs.keySet(),
+          Function.identity(),
+          hostname -> forNoReferencedSources(pkt, activeButNotReferenced.get(hostname)));
     }
 
-    // discard any referenced interfaces that are inactive
-    Set<String> referencedActiveSources = Sets.intersection(referencedSources, activeSources);
+    int bits = LongMath.log2(valuesNeeded, RoundingMode.CEILING);
+    BDDInteger sourceVar = pkt.allocateBDDInteger(VAR_NAME, bits, false);
 
-    /*
-     * If only some interfaces are referenced, we only need to track the referenced ones, plus one
-     * more (as a representative of the set of unreferenced interfaces). This is in case the
-     * BDD is true only when the source is not the device itself or any referenced interface.
-     */
-    Set<String> unReferencedInterfaces = Sets.difference(activeSources, referencedActiveSources);
-    Set<String> sources =
-        unReferencedInterfaces.isEmpty()
-            ? ImmutableSet.copyOf(activeSources)
-            : ImmutableSet.<String>builder()
-                .addAll(referencedActiveSources)
-                .add(unReferencedInterfaces.iterator().next())
-                .build();
-
-    return new BDDSourceManager(pkt, sources);
+    return toImmutableMap(
+        configs.keySet(),
+        Function.identity(),
+        hostname ->
+            forSourcesInternal(
+                pkt,
+                sourceVar,
+                activeAndReferenced.get(hostname),
+                activeButNotReferenced.get(hostname)));
   }
 
   /**
@@ -119,30 +214,49 @@ public final class BDDSourceManager {
     return forSources(pkt, activeInterfaces, referencedSources);
   }
 
+  /*
+   * If there are activeButUnreference sources, we need to allocate an extra value that is shared
+   * by all of them.
+   */
+  private static int valuesRequired(
+      Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
+    return activeButUnreferenced.isEmpty()
+        ? activeAndReferenced.size()
+        : activeAndReferenced.size() + 1;
+  }
+
   /**
    * A packet can enter a router from at most 1 interface, possibly none (if the packet originated
-   * at the router). So for N srcInterfaces, we need N+1 distinct values: one for each interface,
-   * and one for "none of them". We use 0 for "none of them".
+   * at the router). So for N srcInterfaces, we need N+1 distinct values (0 through N): one for each
+   * interface, and one for "none of them". We use the last value (N) for "none of them".
    */
   private static Map<String, BDD> computeMatchSourceBDDs(
-      BDDInteger srcInterfaceVar, Set<String> srcInterfaces) {
-    ImmutableMap.Builder<String, BDD> matchSrcInterfaceBDDs = ImmutableMap.builder();
+      BDDInteger sourceVar, Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
+    int bitsRequired =
+        LongMath.log2(
+            valuesRequired(activeAndReferenced, activeButUnreferenced), RoundingMode.CEILING);
+    checkArgument(
+        sourceVar.getBitvec().length <= bitsRequired,
+        "sourceVar not big enough to track active and referenced sources");
+
+    ImmutableMap.Builder<String, BDD> matchSrcBDDs = ImmutableMap.builder();
     CommonUtil.forEachWithIndex(
-        srcInterfaces,
-        (idx, iface) -> matchSrcInterfaceBDDs.put(iface, srcInterfaceVar.value(idx)));
-    return matchSrcInterfaceBDDs.build();
+        activeAndReferenced, (idx, src) -> matchSrcBDDs.put(src, sourceVar.value(idx)));
+
+    // Get the next unused identifier. This is used for all activeButUnreferenced sources
+    int unreferencedSourceValue = activeAndReferenced.size();
+    activeButUnreferenced.forEach(
+        src -> matchSrcBDDs.put(src, sourceVar.value(unreferencedSourceValue)));
+
+    return matchSrcBDDs.build();
   }
 
   public BDD getOriginatingFromDeviceBDD() {
-    return getSourceBDD(SOURCE_ORIGINATING_FROM_DEVICE);
+    return _sourceBDDs.getOrDefault(SOURCE_ORIGINATING_FROM_DEVICE, _falseBDD);
   }
 
   public BDD getSourceInterfaceBDD(String iface) {
-    return getSourceBDD(iface);
-  }
-
-  private BDD getSourceBDD(String source) {
-    return _sourceBDDs.getOrDefault(source, _falseBDD);
+    return _sourceBDDs.getOrDefault(iface, _falseBDD);
   }
 
   @VisibleForTesting
@@ -181,5 +295,10 @@ public final class BDDSourceManager {
    */
   public BDD isSane() {
     return _isSane;
+  }
+
+  /** Existentially quantify the source variable. */
+  public BDD existsSource(BDD bdd) {
+    return bdd.exist(_sourceVarBits);
   }
 }
