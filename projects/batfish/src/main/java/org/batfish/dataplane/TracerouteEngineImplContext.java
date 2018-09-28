@@ -192,8 +192,7 @@ class TracerouteEngineImplContext {
 
   private TreeMultimap<Ip, AbstractRoute> getResolvedNextHopWithRoutes(
       String nextHopInterfaceName,
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute
-  ) {
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
     TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
 
     // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
