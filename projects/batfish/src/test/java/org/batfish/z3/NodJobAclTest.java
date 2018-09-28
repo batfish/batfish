@@ -1,7 +1,7 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasInt2;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
@@ -74,6 +74,7 @@ public class NodJobAclTest {
     IpAccessList.Builder aclb = nf.aclBuilder();
     Vrf.Builder vb = nf.vrfBuilder();
 
+    // create names for two interfaces of dstNode
     String iface1 = "iface1";
     String iface2 = "iface2";
 
@@ -196,11 +197,11 @@ public class NodJobAclTest {
         containsInAnyOrder(
             ImmutableList.of(
                 /* One trace should enter dstNode through iface1 and then pass the outgoing filter,
-                 * resulting in the NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition.
+                 * resulting in the DELIVERED_TO_SUBNET disposition.
                  * Specifically, the first hop should have an edge with int2=iface1.
                  */
                 allOf(
-                    hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+                    hasDisposition(DELIVERED_TO_SUBNET),
                     hasHop(0, hasEdge(hasInt2(iface1)))),
                 /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
                  * filter, resulting in the DENIED_OUT disposition. The first hop should have an
@@ -336,10 +337,10 @@ public class NodJobAclTest {
         flowTraces,
         contains(
             /* The trace should originate at iface1 and then pass the outgoing filter,
-             * resulting in the NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition.
+             * resulting in the DELIVERED_TO_SUBNET disposition.
              */
             allOf(
-                hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+                hasDisposition(DELIVERED_TO_SUBNET),
                 hasHop(0, hasEdge(hasInt2(iface1))))));
   }
 
