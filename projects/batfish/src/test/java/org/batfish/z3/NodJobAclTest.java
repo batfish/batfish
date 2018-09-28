@@ -200,9 +200,7 @@ public class NodJobAclTest {
                  * resulting in the DELIVERED_TO_SUBNET disposition.
                  * Specifically, the first hop should have an edge with int2=iface1.
                  */
-                allOf(
-                    hasDisposition(DELIVERED_TO_SUBNET),
-                    hasHop(0, hasEdge(hasInt2(iface1)))),
+                allOf(hasDisposition(DELIVERED_TO_SUBNET), hasHop(0, hasEdge(hasInt2(iface1)))),
                 /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
                  * filter, resulting in the DENIED_OUT disposition. The first hop should have an
                  * edge with int2=iface2.
@@ -339,9 +337,7 @@ public class NodJobAclTest {
             /* The trace should originate at iface1 and then pass the outgoing filter,
              * resulting in the DELIVERED_TO_SUBNET disposition.
              */
-            allOf(
-                hasDisposition(DELIVERED_TO_SUBNET),
-                hasHop(0, hasEdge(hasInt2(iface1))))));
+            allOf(hasDisposition(DELIVERED_TO_SUBNET), hasHop(0, hasEdge(hasInt2(iface1))))));
   }
 
   @Test
