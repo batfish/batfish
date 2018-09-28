@@ -311,7 +311,8 @@ class CounterExample {
       // Get the forwarding variables
       Map<GraphEdge, BoolExpr> dfwd = decisions.getDataForwarding().get(currentRouterName);
       Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(currentRouterName);
-      Map<GraphEdge, BoolExpr> across = encoder.getMainSlice().getForwardsAcross().get(currentRouterName);
+      Map<GraphEdge, BoolExpr> across =
+          encoder.getMainSlice().getForwardsAcross().get(currentRouterName);
       // Find the route used
       SymbolicRoute symbolicRoute = decisions.getBestNeighbor().get(currentRouterName);
       Protocol proto = buildProcotol(symbolicRoute, slice, currentRouterName);
@@ -333,7 +334,8 @@ class CounterExample {
           if (isFalse(aexpr)) {
             Interface interf = graphEdge.getEnd();
             IpAccessList acl = interf.getIncomingFilter();
-            FilterResult filterResult = acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
+            FilterResult filterResult =
+                acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
             String line = "default deny";
             if (filterResult.getMatchLine() != null) {
               line = acl.getLines().get(filterResult.getMatchLine()).getName();
