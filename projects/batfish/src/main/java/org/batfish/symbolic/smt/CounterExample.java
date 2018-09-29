@@ -296,7 +296,6 @@ class CounterExample {
   /*
    * Build flow information for a given hop along a path
    */
-  // TODO: Can we simply use processFlows in TraceRouteImplContext?
   Tuple<Flow, FlowTrace> buildFlowTrace(Encoder encoder, String routerName) {
     EncoderSlice slice = encoder.getMainSlice();
     SymbolicPacket pkt = slice.getSymbolicPacket();
