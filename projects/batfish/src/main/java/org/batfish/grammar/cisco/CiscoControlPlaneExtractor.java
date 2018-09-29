@@ -5031,31 +5031,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
-        }
-        if (feature.DSCP() != null) {
+        } else if (feature.CWR() != null) {
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setCwr(true).build())
+                  .setUseCwr(true)
+                  .build());
+        } else if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
-        }
-        if (feature.ECE() != null) {
+        } else if (feature.ECE() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setEce(true).build())
                   .setUseEce(true)
                   .build());
-        }
-        if (feature.ECHO_REPLY() != null) {
+        } else if (feature.ECHO_REPLY() != null) {
           icmpType = IcmpType.ECHO_REPLY;
           icmpCode = 0; /* Forced to 0 by RFC-792. */
-        }
-        if (feature.ECHO() != null) {
+        } else if (feature.ECHO() != null) {
           icmpType = IcmpType.ECHO_REQUEST;
           icmpCode = 0; /* Forced to 0 by RFC-792. */
-        }
-        if (feature.ECN() != null) {
+        } else if (feature.ECN() != null) {
           int ecn = toInteger(feature.ecn);
           ecns.add(ecn);
-        }
-        if (feature.ESTABLISHED() != null) {
+        } else if (feature.ESTABLISHED() != null) {
           // must contain ACK or RST
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -5067,95 +5067,71 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setRst(true).build())
                   .setUseRst(true)
                   .build());
-        }
-        if (feature.FIN() != null) {
+        } else if (feature.FIN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setFin(true).build())
                   .setUseFin(true)
                   .build());
-        }
-        if (feature.FRAGMENTS() != null) {
-          _w.addWarning(
-              ctx, getFullText(ctx), _parser, "matching fragments in extended access list");
-          return UnimplementedAccessListServiceSpecifier.INSTANCE;
-        }
-        if (feature.HOST_UNKNOWN() != null) {
+        } else if (feature.HOST_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
-        }
-        if (feature.HOST_UNREACHABLE() != null) {
+        } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
-        }
-        if (feature.NETWORK_UNKNOWN() != null) {
+        } else if (feature.NETWORK_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
-        }
-        if (feature.NET_UNREACHABLE() != null) {
+        } else if (feature.NET_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.NETWORK_UNREACHABLE;
-        }
-        if (feature.PARAMETER_PROBLEM() != null) {
+        } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
-        }
-        if (feature.PORT_UNREACHABLE() != null) {
+        } else if (feature.PORT_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.PORT_UNREACHABLE;
-        }
-        if (feature.PSH() != null) {
+        } else if (feature.PSH() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setPsh(true).build())
                   .setUsePsh(true)
                   .build());
-        }
-        if (feature.REDIRECT() != null) {
+        } else if (feature.REDIRECT() != null) {
           icmpType = IcmpType.REDIRECT_MESSAGE;
-        }
-        if (feature.RST() != null) {
+        } else if (feature.RST() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setRst(true).build())
                   .setUseRst(true)
                   .build());
-        }
-        if (feature.SOURCE_QUENCH() != null) {
+        } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
           icmpCode = 0; /* Forced to 0 by RFC 792. */
-        }
-        if (feature.SYN() != null) {
+        } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setSyn(true).build())
                   .setUseSyn(true)
                   .build());
-        }
-        if (feature.TIME_EXCEEDED() != null) {
+        } else if (feature.TIME_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
-        }
-        if (feature.TTL() != null) {
-          _w.addWarning(ctx, getFullText(ctx), _parser, "matching ttl in extended access list");
-          return UnimplementedAccessListServiceSpecifier.INSTANCE;
-        }
-        if (feature.TTL_EXCEEDED() != null) {
+        } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
-        }
-        if (feature.TRACEROUTE() != null) {
+        } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
-        }
-        if (feature.TRACKED() != null) {
+        } else if (feature.TRACKED() != null) {
           states.add(FlowState.ESTABLISHED);
-        }
-        if (feature.UNREACHABLE() != null) {
+        } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        }
-        if (feature.URG() != null) {
+        } else if (feature.URG() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setUrg(true).build())
                   .setUseUrg(true)
                   .build());
+        } else {
+          _w.addWarning(ctx, getFullText(feature), _parser, "clause in extended access list");
+          return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
       return SimpleExtendedAccessListServiceSpecifier.builder()
