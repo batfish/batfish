@@ -33,7 +33,7 @@
           "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "UDP",
-          "packetLength" : 0,
+          "packetLength" : 512,
           "srcIp" : "2.128.1.101",
           "srcPort" : 49152,
           "state" : "NEW",
