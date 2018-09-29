@@ -47,6 +47,9 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -77,7 +80,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestion(String network, String analysis, String question) {
+              public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question) {
                 return "{"
                     + "\"differential\": false,"
                     + "\"instance\": {"
@@ -421,7 +424,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionName)
+              public String loadQuestionSettings(NetworkId network, String questionClassId)
                   throws IOException {
                 return questionSettings;
               }
@@ -436,7 +439,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionName)
+              public String loadQuestionSettings(NetworkId network, String questionClassId)
                   throws IOException {
                 return null;
               }
@@ -451,7 +454,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(String network, String questionName)
+              public String loadQuestionSettings(NetworkId network, String questionClassId)
                   throws IOException {
                 throw new IOException("simulated error");
               }

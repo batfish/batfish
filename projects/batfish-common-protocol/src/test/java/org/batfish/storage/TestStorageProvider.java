@@ -14,57 +14,62 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.SnapshotId;
 
 public class TestStorageProvider implements StorageProvider {
 
   @Override
   public SortedMap<String, Configuration> loadCompressedConfigurations(
-      String network, String snapshot) {
+      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public SortedMap<String, Configuration> loadConfigurations(String network, String snapshot) {
+  public SortedMap<String, Configuration> loadConfigurations(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
-      String network, String snapshot) {
+      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public Topology loadLegacyTopology(String network, String snapshot) {
+  public Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public Layer1Topology loadLayer1Topology(String network, String snapshot) {
+  public Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType) {
+  public MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
   public void storeMajorIssueConfig(
-      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) {
+      NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
   public void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, String network, String snapshot) {
+      Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -73,8 +78,8 @@ public class TestStorageProvider implements StorageProvider {
   public void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
-      String network,
-      String snapshot) {
+      NetworkId network,
+      SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -82,11 +87,11 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeAnswer(
       String answerStr,
-      String network,
-      String baseSnapshotName,
-      String deltaSnapshotName,
-      String analysisName,
-      String questionName) {
+      NetworkId network,
+      SnapshotId baseSnapshotName,
+      QuestionId deltaSnapshotName,
+      SnapshotId analysisName,
+      AnalysisId questionName) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -94,36 +99,36 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeAnswerMetadata(
       AnswerMetadata answerMetrics,
-      String network,
-      String analysisName,
-      String baseSnapshotName,
-      String deltaSnapshotName,
-      String questionName) {
+      NetworkId network,
+      SnapshotId analysisName,
+      QuestionId baseSnapshotName,
+      SnapshotId deltaSnapshotName,
+      AnalysisId questionName) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public String loadQuestion(String network, String analysis, String question) {
+  public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public List<String> listAnalysisQuestions(String network, String analysis) {
+  public List<String> listAnalysisQuestions(NetworkId network, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public boolean checkQuestionExists(String network, String question, String analysis) {
+  public boolean checkQuestionExists(NetworkId network, QuestionId question, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
   public String loadAnswer(
-      String network, String snapshot, String question, String referenceSnapshot, String analysis)
+      NetworkId network, SnapshotId snapshot, QuestionId question, SnapshotId referenceSnapshot, AnalysisId analysis)
       throws FileNotFoundException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -131,7 +136,7 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public AnswerMetadata loadAnswerMetadata(
-      String network, String snapshot, String question, String referenceSnapshot, String analysis)
+      NetworkId network, SnapshotId snapshot, QuestionId question, SnapshotId referenceSnapshot, AnalysisId analysis)
       throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -158,25 +163,25 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeQuestion(String questionStr, String network, String question, String analysis) {
+  public void storeQuestion(String questionStr, NetworkId network, QuestionId question, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public String loadQuestionSettings(String network, String questionName) throws IOException {
+  public String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public boolean checkNetworkExists(String network) {
+  public boolean checkNetworkExists(NetworkId network) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void storeQuestionSettings(String settings, String network, String questionClass)
+  public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
       throws IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -184,7 +189,7 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public @Nonnull Map<String, MajorIssueConfig> loadMajorIssueConfigs(
-      String network, Set<String> majorIssueTypes) {
+      NetworkId network, Set<String> majorIssueTypes) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

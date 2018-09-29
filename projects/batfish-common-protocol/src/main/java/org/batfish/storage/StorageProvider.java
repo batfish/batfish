@@ -16,6 +16,11 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.SnapshotId;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -26,14 +31,15 @@ public interface StorageProvider {
    * these configurations is not already present, then this function returns {@code null}.
    */
   @Nullable
-  SortedMap<String, Configuration> loadCompressedConfigurations(String network, String snapshot);
+  SortedMap<String, Configuration> loadCompressedConfigurations(
+      NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the configuration files for the given snapshot. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
   @Nullable
-  SortedMap<String, Configuration> loadConfigurations(String network, String snapshot);
+  SortedMap<String, Configuration> loadConfigurations(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the {@link ConvertConfigurationAnswerElement} that is the result of the phase that
@@ -44,7 +50,7 @@ public interface StorageProvider {
    */
   @Nullable
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
-      String network, String snapshot);
+      NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot
@@ -53,7 +59,7 @@ public interface StorageProvider {
    * @param snapshot The name of the snapshot
    */
   @Nullable
-  Topology loadLegacyTopology(String network, String snapshot);
+  Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the layer-1 topology of the network provided in the given snapshot
@@ -62,7 +68,7 @@ public interface StorageProvider {
    * @param snapshot The name of the snapshot
    */
   @Nullable
-  Layer1Topology loadLayer1Topology(String network, String snapshot);
+  Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
@@ -70,7 +76,7 @@ public interface StorageProvider {
    * org.batfish.datamodel.answers.MinorIssueConfig}s
    */
   @Nonnull
-  MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
+  MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
 
   /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
@@ -82,14 +88,15 @@ public interface StorageProvider {
    * @throws IOException if there is an error writing writing the config
    */
   void storeMajorIssueConfig(
-      String network, String majorIssueType, MajorIssueConfig majorIssueConfig) throws IOException;
+      NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
+      throws IOException;
 
   /**
    * Stores the configurations into the compressed config path for the given snapshot. Will replace
    * any previously-stored compressed configurations.
    */
   void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, String network, String snapshot);
+      Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot);
 
   /**
    * Stores the configuration information into the given snapshot. Will replace any
@@ -98,8 +105,8 @@ public interface StorageProvider {
   void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
-      String network,
-      String snapshot);
+      NetworkId network,
+      SnapshotId snapshot);
 
   /**
    * Store the answer to an ad-hoc or analysis question.
@@ -115,11 +122,11 @@ public interface StorageProvider {
    */
   void storeAnswer(
       String answerStr,
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis);
+      NetworkId network,
+      SnapshotId snapshot,
+      QuestionId question,
+      @Nullable SnapshotId referenceSnapshot,
+      @Nullable AnalysisId analysis);
 
   /**
    * Store the metadata for the answer to an ad-hoc or analysis question.
@@ -135,11 +142,11 @@ public interface StorageProvider {
    */
   void storeAnswerMetadata(
       AnswerMetadata answerMetadata,
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis);
+      NetworkId network,
+      SnapshotId snapshot,
+      QuestionId question,
+      @Nullable SnapshotId referenceSnapshot,
+      @Nullable AnalysisId analysis);
 
   /**
    * Load the text of a JSON-serialized ad-hoc or analysis question
@@ -150,7 +157,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
-  String loadQuestion(String network, String question, @Nullable String analysis);
+  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
 
   /**
    * Return a list of the names of the questions associated with the given analysis of the given
@@ -160,7 +167,7 @@ public interface StorageProvider {
    * @param analysis The name of the analysis
    */
   @Nonnull
-  List<String> listAnalysisQuestions(String network, String analysis);
+  List<String> listAnalysisQuestions(NetworkId network, AnalysisId analysis);
 
   /**
    * Returns {@code true} iff the specified question exists.
@@ -170,7 +177,8 @@ public interface StorageProvider {
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
    */
-  boolean checkQuestionExists(String network, String question, @Nullable String analysis);
+  boolean checkQuestionExists(
+      NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
 
   /**
    * Load the JSON-serialized answer to an ad-hoc or analysis question.
@@ -187,11 +195,11 @@ public interface StorageProvider {
    */
   @Nonnull
   String loadAnswer(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      NetworkId network,
+      SnapshotId snapshot,
+      QuestionId question,
+      @Nullable SnapshotId referenceSnapshot,
+      @Nullable AnalysisId analysis)
       throws FileNotFoundException, IOException;
 
   /**
@@ -209,11 +217,11 @@ public interface StorageProvider {
    */
   @Nonnull
   AnswerMetadata loadAnswerMetadata(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      NetworkId network,
+      SnapshotId snapshot,
+      QuestionId question,
+      @Nullable SnapshotId referenceSnapshot,
+      @Nullable AnalysisId analysis)
       throws FileNotFoundException, IOException;
 
   /**
@@ -225,6 +233,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
+  @Deprecated
   FileTime getQuestionLastModifiedTime(String network, String question, @Nullable String analysis);
 
   /**
@@ -239,6 +248,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
+  @Deprecated
   FileTime getAnswerLastModifiedTime(
       String network,
       String snapshot,
@@ -258,6 +268,7 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   @Nonnull
+  @Deprecated
   FileTime getAnswerMetadataLastModifiedTime(
       String network,
       String snapshot,
@@ -275,32 +286,32 @@ public interface StorageProvider {
    *     for an ad-hoc question
    */
   void storeQuestion(
-      String questionStr, String network, String question, @Nullable String analysis);
+      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
 
   /**
    * Return the JSON-serialized settings for the specified question class for the specified network,
    * or null if no custom settings exist.
    *
    * @param network The name of the network
-   * @param questionName The internal name of the question, i.e. the value of {@link
+   * @param questionClassId The internal name of the question, i.e. the value of {@link
    *     org.batfish.datamodel.questions.Question#getName}
    * @throws IOException if there is an error trying to read the settings
    */
   @Nullable
-  String loadQuestionSettings(String network, String questionName) throws IOException;
+  String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException;
 
   /** Returns {@code true} iff the specified network question exists. */
-  boolean checkNetworkExists(String network);
+  boolean checkNetworkExists(NetworkId network);
 
   /**
    * Write the JSON-serialized settings for the specified question class for the specified network.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionClassId The fully-qualified class name of the question
    * @param settings The settings to write
    * @throws IOException if there is an error writing the settings
    */
-  void storeQuestionSettings(String settings, String network, String questionClass)
+  void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
       throws IOException;
 
   /**
@@ -313,5 +324,5 @@ public interface StorageProvider {
    * @param majorIssueTypes The types of the major issues whose configurations are to be loaded
    */
   @Nonnull
-  Map<String, MajorIssueConfig> loadMajorIssueConfigs(String network, Set<String> majorIssueTypes);
+  Map<String, MajorIssueConfig> loadMajorIssueConfigs(NetworkId network, Set<String> majorIssueTypes);
 }

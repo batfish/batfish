@@ -22,6 +22,7 @@ import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.identifiers.NetworkId;
 import org.batfish.storage.TestStorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,22 +36,22 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     private String _questionSettings;
 
     @Override
-    public boolean checkNetworkExists(String network) {
+    public boolean checkNetworkExists(NetworkId network) {
       return true;
     }
 
     @Override
-    public String loadQuestionSettings(String network, String questionName) throws IOException {
-      if (questionName.equals(BAD_QUESTION)) {
+    public String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException {
+      if (questionClassId.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;
     }
 
     @Override
-    public void storeQuestionSettings(String settings, String network, String questionClass)
+    public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
         throws IOException {
-      if (questionClass.equals(BAD_QUESTION)) {
+      if (questionClassId.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       _questionSettings = settings;
