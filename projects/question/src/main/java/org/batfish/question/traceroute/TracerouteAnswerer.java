@@ -61,7 +61,7 @@ public final class TracerouteAnswerer extends Answerer {
   public static final String COL_FLOW = "Flow";
   public static final String COL_TRACES = "Traces";
   private static final int TRACEROUTE_PORT = 33434;
-  static final int PACKET_LENGTH = 512;
+  @VisibleForTesting static final int PACKET_LENGTH = 512;
 
   private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
