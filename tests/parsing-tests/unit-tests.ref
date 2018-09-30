@@ -13048,6 +13048,8 @@
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        dstipr = (access_list_ip_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          PACKET_TOO_BIG:'packet-too-big'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_access_list_tail",
             "        num = DEC:'20'  <== mode:DEFAULT_MODE",

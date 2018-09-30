@@ -5085,6 +5085,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.NET_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+        } else if (feature.PACKET_TOO_BIG() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
         } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
         } else if (feature.PORT_UNREACHABLE() != null) {

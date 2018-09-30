@@ -2,7 +2,7 @@
 hostname cisco_acl
 !
 ip access-list BLAH-BLAH
-   10 permit icmp any any
+   10 permit icmp any any packet-too-big
    20 permit ip any any tracked
    30 permit ospf any any
    40 permit tcp any any eq bgp
