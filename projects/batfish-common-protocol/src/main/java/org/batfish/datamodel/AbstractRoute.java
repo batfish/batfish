@@ -182,34 +182,4 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
         + ">";
   }
 
-  public Route toSummaryRoute(String hostname, String vrfName, Map<Ip, String> ipOwners) {
-    RouteBuilder rb = new RouteBuilder();
-    rb.setNode(hostname);
-    rb.setNetwork(getNetwork());
-    Ip nextHopIp = getNextHopIp();
-    if (getProtocol() == RoutingProtocol.CONNECTED
-        || getProtocol() == RoutingProtocol.LOCAL
-        || (getProtocol() == RoutingProtocol.STATIC
-            && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
-        || Interface.NULL_INTERFACE_NAME.equals(getNextHopInterface())) {
-      rb.setNextHop(Configuration.NODE_NONE_NAME);
-    }
-    if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-      rb.setNextHopIp(nextHopIp);
-      String nextHop = ipOwners.get(nextHopIp);
-      if (nextHop != null) {
-        rb.setNextHop(nextHop);
-      }
-    }
-    String nextHopInterface = getNextHopInterface();
-    if (!nextHopInterface.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
-      rb.setNextHopInterface(nextHopInterface);
-    }
-    rb.setAdministrativeCost(getAdministrativeCost());
-    rb.setCost(getMetric());
-    rb.setProtocol(getProtocol());
-    rb.setTag(getTag());
-    rb.setVrf(vrfName);
-    return rb.build();
-  }
 }
