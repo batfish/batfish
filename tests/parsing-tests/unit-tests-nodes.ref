@@ -4435,6 +4435,12 @@
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
+                    "icmpCodes" : [
+                      "4-4"
+                    ],
+                    "icmpTypes" : [
+                      "3-3"
+                    ],
                     "ipProtocols" : [
                       "ICMP"
                     ],
@@ -4445,7 +4451,7 @@
                     }
                   }
                 },
-                "name" : "10 permit icmp any any"
+                "name" : "10 permit icmp any any packet-too-big"
               },
               {
                 "action" : "PERMIT",
