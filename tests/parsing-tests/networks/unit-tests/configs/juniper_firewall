@@ -4,6 +4,7 @@ set system host-name juniper_firewall
 set firewall family ethernet-switching filter f1 term t1 from source-mac-address 00:11:22:33:44:55/48
 set firewall family inet filter blah term blorp from destination-address 1.2.3.4
 set firewall family inet filter blah term blorp from destination-address 1.2.3.5/32
+set firewall family inet filter blah term blorp from ip-destination-address 1.2.3.8/30
 set firewall family inet filter blah term blorp from icmp-type destination-unreachable
 set firewall family inet filter blah term blorp from icmp-type echo-reply
 set firewall family inet filter blah term blorp from icmp-type echo-request
@@ -22,4 +23,6 @@ set firewall family inet filter blah term blorp from icmp-type timestamp-reply
 set firewall family inet filter blah term blorp from icmp-type unreachable
 set firewall family inet filter blah term blorp from packet-length 70-12000
 set firewall family inet filter blah term blorp from protocol pim
+set firewall family inet filter blah term blorp from source-address 2.4.6.8/30
+set firewall family inet filter blah term blorp from ip-source-address 2.4.6.9/32
 #
