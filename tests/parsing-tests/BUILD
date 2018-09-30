@@ -6,5 +6,5 @@ ref_tests(
     extra_deps = glob([
         "*.ref",
         "networks/**",
-    ]) + ["//networks:example_juniper"],
+    ]),
 )
