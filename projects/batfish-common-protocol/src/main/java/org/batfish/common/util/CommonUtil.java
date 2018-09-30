@@ -3,13 +3,11 @@ package org.batfish.common.util;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -1594,13 +1592,6 @@ public class CommonUtil {
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
-  }
-
-  public static <K, V1, V2> Multimap<K, V2> toImmutableMultimap(
-      Multimap<K, V1> multimap, Function<Collection<V1>, Set<V2>> valuesFunction) {
-    ImmutableMultimap.Builder<K, V2> builder = ImmutableMultimap.builder();
-    multimap.asMap().forEach((k, vs) -> builder.putAll(k, valuesFunction.apply(vs)));
-    return builder.build();
   }
 
   public static <K1, K2 extends Comparable<? super K2>, V1, V2>
