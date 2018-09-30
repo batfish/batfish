@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -71,29 +70,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   @Override
   public abstract boolean equals(Object o);
-
-  public final String fullString() {
-    String nhnode = _nextHop;
-    if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(getNextHopInterface())
-        && Route.UNSET_ROUTE_NEXT_HOP_IP.equals(getNextHopIp())) {
-      // static interface with no next hop ip
-      nhnode = "N/A";
-    }
-
-    return String.format(
-        "%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s %s",
-        _node,
-        _vrf,
-        _network,
-        getNextHopIp(),
-        getNextHopInterface(),
-        nhnode,
-        getAdministrativeCost(),
-        getMetric(),
-        getTag() == Route.UNSET_ROUTE_TAG ? "none" : getTag(),
-        getProtocol(),
-        protocolRouteString());
-  }
 
   @JsonIgnore
   public abstract int getAdministrativeCost();
@@ -181,5 +157,4 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
         + getNextHopInterface()
         + ">";
   }
-
 }
