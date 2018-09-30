@@ -6,5 +6,8 @@ ref_tests(
     extra_deps = glob([
         "*.ref",
         "networks/**",
-    ]) + ["//networks"],
+    ]) + [
+        "//networks:example",
+        "//networks:iptables-firewall",
+    ],
 )
