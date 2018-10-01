@@ -43,17 +43,17 @@ public final class BDDSourceManager {
 
   private final BDD _falseBDD;
 
-  private final BDD _validValues;
+  private final BDD _isValidValue;
 
   private final Map<String, BDD> _sourceBDDs;
 
   private final BDD _sourceVarBits;
 
-  private BDDSourceManager(BDD validValues, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
-    _validValues = validValues;
+  private BDDSourceManager(BDD isValidValue, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
+    _isValidValue = isValidValue;
     _sourceBDDs = ImmutableMap.copyOf(sourceBDDs);
     _sourceVarBits = sourceVarBits;
-    _falseBDD = validValues.getFactory().zero();
+    _falseBDD = isValidValue.getFactory().zero();
   }
 
   private static BDDSourceManager forNoReferencedSources(
@@ -269,7 +269,7 @@ public final class BDDSourceManager {
    */
   public Optional<String> getSourceFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
-    checkArgument(bdd.imp(_validValues).isOne());
+    checkArgument(bdd.imp(_isValidValue).isOne());
 
     // not tracking any sources, so we can the arbitrarily choose the device
     if (_sourceBDDs.isEmpty()) {
@@ -291,8 +291,8 @@ public final class BDDSourceManager {
    * @return A constraint that the source variable is assigned one of the valid values for this
    *     device.
    */
-  public BDD validValues() {
-    return _validValues;
+  public BDD isValidValue() {
+    return _isValidValue;
   }
 
   /** Existentially quantify the source variable. */

@@ -54,7 +54,7 @@ public class BDDSourceManagerTest {
                 mgr.getSourceInterfaceBDD(IFACE1),
                 mgr.getSourceInterfaceBDD(IFACE2))
             .not();
-    MatcherAssert.assertThat(mgr.validValues().and(noSource), BDDMatchers.isZero());
+    MatcherAssert.assertThat(mgr.isValidValue().and(noSource), BDDMatchers.isZero());
   }
 
   @Test
