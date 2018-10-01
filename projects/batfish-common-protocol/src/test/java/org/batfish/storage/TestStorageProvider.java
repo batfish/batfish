@@ -143,26 +143,6 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public FileTime getQuestionLastModifiedTime(String network, String question, String analysis) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public FileTime getAnswerLastModifiedTime(
-      String network, String snapshot, String question, String referenceSnapshot, String analysis) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public FileTime getAnswerMetadataLastModifiedTime(
-      String network, String snapshot, String question, String referenceSnapshot, String analysis) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public void storeQuestion(String questionStr, NetworkId network, QuestionId question, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -183,13 +163,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
       throws IOException {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public @Nonnull Map<String, MajorIssueConfig> loadMajorIssueConfigs(
-      NetworkId network, Set<String> majorIssueTypes) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

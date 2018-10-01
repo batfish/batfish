@@ -27,6 +27,8 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
@@ -65,7 +67,9 @@ public class BatfishTestUtils {
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
       testrigs.put(
-          new NetworkSnapshot("tempContainer", new Snapshot("tempTestrig", "tempEnvironment")),
+          new NetworkSnapshot(
+              new NetworkId("tempContainer"),
+              new Snapshot(new SnapshotId("tempTestrig"), "tempEnvironment")),
           configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
@@ -105,17 +109,20 @@ public class BatfishTestUtils {
     if (!baseConfigs.isEmpty()) {
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
-      settings.setDeltaTestrig("tempDeltaTestrig");
+      settings.setDeltaTestrig(new SnapshotId("tempDeltaTestrig"));
       settings.setDeltaEnvironmentName("tempDeltaEnvironment");
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
       settings.getDeltaTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
       testrigs.put(
-          new NetworkSnapshot("tempContainer", new Snapshot("tempTestrig", "tempEnvironment")),
+          new NetworkSnapshot(
+              new NetworkId("tempContainer"),
+              new Snapshot(new SnapshotId("tempTestrig"), "tempEnvironment")),
           baseConfigs);
       testrigs.put(
           new NetworkSnapshot(
-              "tempContainer", new Snapshot("tempDeltaTestrig", "tempDeltaEnvironment")),
+              new NetworkId("tempContainer"),
+              new Snapshot(new SnapshotId("tempDeltaTestrig"), "tempDeltaEnvironment")),
           deltaConfigs);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }

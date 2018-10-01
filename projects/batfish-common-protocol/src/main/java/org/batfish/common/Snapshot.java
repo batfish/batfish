@@ -3,16 +3,17 @@ package org.batfish.common;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.identifiers.SnapshotId;
 
 /** A {@link Snapshot} represents a combination of a testrig and an environment. */
 public class Snapshot {
   /** Returns a new {@link Snapshot} corresponding to the given {@code testrig} and {@code env}. */
-  public Snapshot(@Nonnull String testrig, @Nonnull String env) {
+  public Snapshot(@Nonnull SnapshotId testrig, @Nonnull String env) {
     _testrig = testrig;
     _env = env;
   }
 
-  public String getTestrig() {
+  public SnapshotId getTestrig() {
     return _testrig;
   }
 
@@ -44,6 +45,6 @@ public class Snapshot {
         .toString();
   }
 
-  private final String _testrig;
+  private final SnapshotId _testrig;
   private final String _env;
 }

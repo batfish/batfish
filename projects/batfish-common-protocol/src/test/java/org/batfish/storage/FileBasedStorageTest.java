@@ -21,6 +21,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,8 +49,8 @@ public class FileBasedStorageTest {
 
   @Test
   public void roundTripConfigurationsSucceeds() {
-    String network = "network";
-    String snapshot = "snapshot";
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
 
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
@@ -61,7 +64,9 @@ public class FileBasedStorageTest {
 
   @Test
   public void loadMissingConfigurationsReturnsNull() {
-    assertThat(_storage.loadConfigurations("nonexistent", "nonexistent"), nullValue());
+    assertThat(
+        _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
+        nullValue());
   }
 
   @Test
@@ -73,8 +78,8 @@ public class FileBasedStorageTest {
         Version.isCompatibleVersion("current", "old test", oldConvertAnswer.getVersion()),
         equalTo(false));
 
-    String network = "network";
-    String snapshot = "snapshot";
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
     _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
@@ -85,27 +90,26 @@ public class FileBasedStorageTest {
   @Test
   public void testMajorIssueConfigRoundTrip() throws IOException {
     String majorIssue = "majorIssue";
-    String network = "network";
+    IssueSettingsId issueSettingsId = new IssueSettingsId("issueSettingsId");
+    NetworkId network = new NetworkId("network");
     MinorIssueConfig minorIssueConfig = new MinorIssueConfig("minorIssue", 100, "www.google.com");
     MajorIssueConfig majorIssueConfig =
         new MajorIssueConfig(majorIssue, ImmutableList.of(minorIssueConfig));
 
-    _storage.storeMajorIssueConfig(network, majorIssue, majorIssueConfig);
-    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), equalTo(majorIssueConfig));
+    _storage.storeMajorIssueConfig(network, issueSettingsId, majorIssueConfig);
+    assertThat(_storage.loadMajorIssueConfig(network, issueSettingsId), equalTo(majorIssueConfig));
   }
 
   @Test
   public void testLoadMissingMajorIssueConfig() {
-    String majorIssue = "majorIssue";
-    String network = "network";
-    assertThat(
-        _storage.loadMajorIssueConfig(network, majorIssue),
-        equalTo(new MajorIssueConfig(majorIssue, ImmutableMap.of())));
+    IssueSettingsId majorIssue = new IssueSettingsId("majorIssue");
+    NetworkId network = new NetworkId("network");
+    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), nullValue());
   }
 
   @Test
   public void testStoreQuestionSettingsThenLoad() throws IOException {
-    String network = "network";
+    NetworkId network = new NetworkId("network");
     String questionClass = "q1";
     String settings = "{}";
     _storage.storeQuestionSettings(settings, network, questionClass);
@@ -115,7 +119,7 @@ public class FileBasedStorageTest {
 
   @Test
   public void testLoadQuestionSettingsMissing() throws IOException {
-    String network = "network";
+    NetworkId network = new NetworkId("network");
     String questionClass = "q1";
 
     assertThat(_storage.loadQuestionSettings(network, questionClass), nullValue());
@@ -123,15 +127,15 @@ public class FileBasedStorageTest {
 
   @Test
   public void testCheckNetworkExistsTrue() {
-    String network = "network";
-    _storage.getNetworkDir(network).toFile().mkdirs();
+    NetworkId network = new NetworkId("network");
+    _storage.getDirectoryProvider().getNetworkDir(network).toFile().mkdirs();
 
     assertThat(_storage.checkNetworkExists(network), equalTo(true));
   }
 
   @Test
   public void testCheckNetworkExistsFalse() {
-    String network = "network";
+    NetworkId network = new NetworkId("network");
 
     assertThat(_storage.checkNetworkExists(network), equalTo(false));
   }

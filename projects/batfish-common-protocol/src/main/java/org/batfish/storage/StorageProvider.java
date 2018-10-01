@@ -2,7 +2,6 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,11 +70,10 @@ public interface StorageProvider {
   Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot);
 
   /**
-   * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. If no config
-   * exists, will return a valid {@link MajorIssueConfig} with an empty list of {@link
-   * org.batfish.datamodel.answers.MinorIssueConfig}s
+   * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. Returns {@code
+   * null} if none exists.
    */
-  @Nonnull
+  @Nullable
   MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
 
   /**
@@ -225,58 +223,6 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
-   * Returns the last-modified time of the specified question.
-   *
-   * @param network The name of the network
-   * @param question The name of the question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
-   */
-  @Nonnull
-  @Deprecated
-  FileTime getQuestionLastModifiedTime(String network, String question, @Nullable String analysis);
-
-  /**
-   * Returns the last-modified time of answer to the specified question.
-   *
-   * @param network The name of the network
-   * @param snapshot The name of the base snapshot
-   * @param question The name of the question
-   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
-   *     question, or {@code null} for a non-differential question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
-   */
-  @Nonnull
-  @Deprecated
-  FileTime getAnswerLastModifiedTime(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis);
-
-  /**
-   * Returns the last-modified time of metadata of the answer to the specified question.
-   *
-   * @param network The name of the network
-   * @param snapshot The name of the base snapshot
-   * @param question The name of the question
-   * @param referenceSnapshot (optional) The name of the reference snapshot for a differential
-   *     question, or {@code null} for a non-differential question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
-   */
-  @Nonnull
-  @Deprecated
-  FileTime getAnswerMetadataLastModifiedTime(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis);
-
-  /**
    * Stores a question with the specified name and text.
    *
    * @param questionStr The JSON-serialized text of the question
@@ -313,16 +259,4 @@ public interface StorageProvider {
    */
   void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
       throws IOException;
-
-  /**
-   * Returns the {@link MajorIssueConfig}s for the given network and majorIssueTypes, keyed by major
-   * issue type. If no config exists for a given major issue type, will return a mapping whose value
-   * is a {@link MajorIssueConfig} with an empty list of {@link
-   * org.batfish.datamodel.answers.MinorIssueConfig}s
-   *
-   * @param network The name of the network
-   * @param majorIssueTypes The types of the major issues whose configurations are to be loaded
-   */
-  @Nonnull
-  Map<String, MajorIssueConfig> loadMajorIssueConfigs(NetworkId network, Set<String> majorIssueTypes);
 }

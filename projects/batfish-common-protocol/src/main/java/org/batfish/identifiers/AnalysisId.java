@@ -1,17 +1,11 @@
 package org.batfish.identifiers;
 
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public class AnalysisId extends Id {
 
-  private final String _name;
-
-  public AnalysisId(String id, @Nullable String name) {
+  public AnalysisId(String id) {
     super(id);
-    _name = name;
-  }
-
-  public @Nullable String getName() {
-    return _name;
   }
 }

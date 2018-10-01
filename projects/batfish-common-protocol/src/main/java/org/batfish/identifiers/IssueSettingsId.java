@@ -1,17 +1,11 @@
 package org.batfish.identifiers;
 
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public class IssueSettingsId extends Id {
 
-  private final String _majorIssue;
-
-  public IssueSettingsId(String id, @Nullable String majorIssue) {
+  public IssueSettingsId(String id) {
     super(id);
-    _majorIssue = majorIssue;
-  }
-
-  public @Nullable String getMajorIssue() {
-    return _majorIssue;
   }
 }

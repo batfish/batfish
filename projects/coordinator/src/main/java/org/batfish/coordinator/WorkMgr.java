@@ -56,6 +56,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -83,6 +85,7 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
@@ -112,6 +115,12 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.BaseAnswerId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
@@ -152,6 +161,8 @@ public class WorkMgr extends AbstractCoordinator {
     return envFilenames;
   }
 
+  private final IdManager _idManager;
+
   private final BatfishLogger _logger;
 
   private final Settings _settings;
@@ -160,9 +171,14 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final StorageProvider _storage;
 
-  public WorkMgr(Settings settings, BatfishLogger logger, @Nonnull StorageProvider storage) {
+  public WorkMgr(
+      Settings settings,
+      BatfishLogger logger,
+      @Nonnull IdManager idManager,
+      @Nonnull StorageProvider storage) {
     super(false);
     _settings = settings;
+    _idManager = idManager;
     _storage = storage;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger);
@@ -778,32 +794,59 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
       throws JsonProcessingException, FileNotFoundException {
-    if (!_storage.checkQuestionExists(network, question, analysis)) {
-      throw new FileNotFoundException(
-          String.format(
-              "Question file not found for question named '%s' in network:%s; snapshot:%s; referenceSnapshot:%s; analysis:%s",
-              question, network, snapshot, referenceSnapshot, analysis));
-    }
     try {
+      NetworkId networkId = _idManager.getNetworkId(network);
+      AnalysisId analysisId = analysis != null ? _idManager.getAnalysisId(analysis, network) : null;
+      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
+      QuestionSettingsId questionSettingsId =
+          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+      // TODO: continue implementation here
+      if (!_idManager.hasBaseAnswerId(
+          networkId, snapshotId, questionId, questionSettingsId, referenceSnapshotId, analysisId)) {
+        return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
+      }
       AnswerMetadata answerMetadata =
-          _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-      FileTime answerMetadataLastModifiedTime =
-          _storage.getAnswerMetadataLastModifiedTime(
-              network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(answerMetadataLastModifiedTime)
-          > 0) {
+          _storage.loadAnswerMetadata(
+              networkId, snapshotId, questionId, referenceSnapshotId, analysisId);
+      if (!_idManager.hasFinalAnswerId(networkId, snapshotId, questionId, questionSettingsId, issueSettingsIds, referenceSnapshotId, analysisId)) {
         return AnswerMetadata.forStatus(AnswerStatus.STALE);
       }
+      BaseAnswerId baseAnswerId = _idManager.getBaseAnswerId(
+          networkId, snapshotId, questionId, questionSettingsId, referenceSnapshotId, analysisId);
+      if (!_storage.load)
+      
+      AnswerMetadata answerMetadata =
+          _storage.loadAnswerMetadata(
+              networkId, snapshotId, questionId, referenceSnapshotId, analysisId);
       return applyPendingIssuesSettingsChanges(
           answerMetadata, network, snapshot, question, referenceSnapshot, analysis);
+
+    } catch (IllegalArgumentException e) {
+      throw new InternalServerErrorException(
+          String.format(
+              "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s",
+              network, snapshot, question, referenceSnapshot, analysis),
+          e);
     } catch (FileNotFoundException e) {
       return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
     } catch (IOException e) {
       _logger.errorf(
           "Failed to read answer metadata file:\n%s", Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
+    }
+  }
+
+  private QuestionSettingsId getOrCreateQuestionSettingsId(
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+    QuestionSettingsId questionSettingsId;
+    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      questionSettingsId = _idManager.generateQuestionSettingsId();
+      _storage.storeQuestionSettings("{}", networkId, questionClassId);
+      _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
     }
   }
 
@@ -1930,11 +1973,16 @@ public class WorkMgr extends AbstractCoordinator {
             String.format("Invalid question %s/%s: %s", network, question, e.getMessage()), e);
       }
     }
-    if (_storage.checkQuestionExists(network, question, null)) {
-      throw new BatfishException(
-          "Question: '" + question + "' already exists in container '" + network + "'");
+    NetworkId networkId;
+    try {
+      networkId = _idManager.getNetworkId(network);
+    } catch (IllegalArgumentException e) {
+      throw new InternalServerErrorException(
+          String.format("Error uploading question: network=%s, question=%s", network, question), e);
     }
-    _storage.storeQuestion(questionJson, network, question, null);
+    QuestionId questionId = _idManager.generateQuestionId();
+    _storage.storeQuestion(questionJson, networkId, questionId, null);
+    _idManager.assignQuestion(question, networkId, questionId, null);
   }
 
   private static final DateTimeFormatter FORMATTER =
@@ -1990,7 +2038,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean checkContainerExists(String containerName) {
-    return _storage.checkNetworkExists(containerName);
+    NetworkId id = _idManager.getNetworkId(containerName);
+    return id != null && _storage.checkNetworkExists(id);
   }
 
   /**

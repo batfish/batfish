@@ -64,6 +64,8 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -571,8 +573,8 @@ public class Driver {
                         .startActive()) {
                   assert runBatfishSpan != null;
                   Answer answer = null;
-                  String containerName = settings.getContainer();
-                  String testrigName = settings.getTestrig();
+                  NetworkId containerName = settings.getContainer();
+                  SnapshotId testrigName = settings.getTestrig();
                   try {
                     answer = batfish.run();
                     if (answer.getStatus() == null) {
