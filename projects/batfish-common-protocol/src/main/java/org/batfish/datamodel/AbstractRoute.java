@@ -42,6 +42,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull protected final Prefix _network;
   @Nullable private String _nextHop;
   private boolean _nonRouting;
+  private boolean _nonForwarding;
 
   @JsonCreator
   protected AbstractRoute(@Nullable @JsonProperty(PROP_NETWORK) Prefix network) {
@@ -105,6 +106,15 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     return _nonRouting;
   }
 
+  /**
+   * Returns {@code true} if this route is non-forwarding, i.e., it can be installed in the main RIB
+   * but not the FIB.
+   */
+  @JsonIgnore
+  public final boolean getNonForwarding() {
+    return _nonForwarding;
+  }
+
   @JsonIgnore
   public abstract RoutingProtocol getProtocol();
 
@@ -136,6 +146,11 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public final void setNonRouting(boolean nonRouting) {
     _nonRouting = nonRouting;
+  }
+
+  @JsonIgnore
+  public final void setNonForwarding(boolean nonForwarding) {
+    _nonForwarding = nonForwarding;
   }
 
   @Override
