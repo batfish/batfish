@@ -130,7 +130,7 @@ fftf_address
 
 fftf_destination_address
 :
-   DESTINATION_ADDRESS
+   (DESTINATION_ADDRESS | IP_DESTINATION_ADDRESS)
    (
       fftfa_address_mask_prefix
       | IPV6_ADDRESS
@@ -277,7 +277,7 @@ fftf_protocol
 
 fftf_source_address
 :
-   SOURCE_ADDRESS
+   (SOURCE_ADDRESS | IP_SOURCE_ADDRESS)
    (
       fftfa_address_mask_prefix
       | IPV6_ADDRESS

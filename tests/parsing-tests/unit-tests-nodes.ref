@@ -15327,15 +15327,30 @@
                         {
                           "action" : "PERMIT",
                           "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.4"
+                            "class" : "org.batfish.datamodel.AclIpSpace",
+                            "lines" : [
+                              {
+                                "action" : "PERMIT",
+                                "ipSpace" : {
+                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                  "ipWildcard" : "1.2.3.4"
+                                }
+                              },
+                              {
+                                "action" : "PERMIT",
+                                "ipSpace" : {
+                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                  "ipWildcard" : "1.2.3.5"
+                                }
+                              }
+                            ]
                           }
                         },
                         {
                           "action" : "PERMIT",
                           "ipSpace" : {
                             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.5"
+                            "ipWildcard" : "1.2.3.8/30"
                           }
                         }
                       ]
@@ -15361,7 +15376,26 @@
                     "negate" : false,
                     "packetLengths" : [
                       "70-12000"
-                    ]
+                    ],
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.AclIpSpace",
+                      "lines" : [
+                        {
+                          "action" : "PERMIT",
+                          "ipSpace" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "2.4.6.8/30"
+                          }
+                        },
+                        {
+                          "action" : "PERMIT",
+                          "ipSpace" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "2.4.6.9"
+                          }
+                        }
+                      ]
+                    }
                   }
                 },
                 "name" : "blorp"
