@@ -7,8 +7,7 @@ import javax.annotation.Nonnull;
 
 public interface Fib extends Serializable {
 
-  /** Mapping: route -&gt; nexthopinterface -&gt; nextHopIp -&gt; interfaceRoutes */
-  // TODO: add comments to the function
+  /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
   @Nonnull
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces();
 
@@ -16,7 +15,7 @@ public interface Fib extends Serializable {
   @Nonnull
   Set<String> getNextHopInterfaces(Ip ip);
 
-  // TODO: put some meaning comments
+  /** Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes */
   @Nonnull
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
       Ip dstIp);

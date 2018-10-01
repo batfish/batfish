@@ -199,18 +199,19 @@ class TracerouteEngineImplContext {
     // interfaces.
     for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
         nextHopInterfacesByRoute.entrySet()) {
+      // finalNextHops: final resolved next hop IP -> interface routes
       Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
       if (finalNextHops == null || finalNextHops.isEmpty()) {
         continue;
       }
 
-      AbstractRoute routeCandidate = e.getKey();
-      Ip nextHopIp = routeCandidate.getNextHopIp();
+      AbstractRoute matchingRoute = e.getKey();
+      Ip nextHopIp = matchingRoute.getNextHopIp();
       if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
+        resolvedNextHopWithRoutes.put(nextHopIp, matchingRoute);
       } else {
         for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
-          resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
+          resolvedNextHopWithRoutes.put(resolvedNextHopIp, matchingRoute);
         }
       }
     }
@@ -271,7 +272,7 @@ class TracerouteEngineImplContext {
       return;
     }
 
-    // TODO: add comments to this block
+    // nextHopInterfacesByRoute: matching route -> next hop interface -> next hop IP -> interface routes
     Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
         currentFib.getNextHopInterfacesByRoute(dstIp);
     Map<String, IpAccessList> aclDefinitions = currentConfiguration.getIpAccessLists();
@@ -287,14 +288,14 @@ class TracerouteEngineImplContext {
       resolvedNextHopWithRoutes
           .asMap()
           .forEach(
-              (resolvedNextHopIp, routeCandidates) -> {
+              (resolvedNextHopIp, matchingRoutes) -> {
                 // Later parts of the stack expect null instead of unset to trigger proxy arp, etc.
                 Ip finalNextHopIp =
                     Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
                         ? null
                         : resolvedNextHopIp;
                 SortedSet<String> routesForThisNextHopInterface =
-                    routeCandidates
+                    matchingRoutes
                         .stream()
                         .map(rc -> rc + "_fnhip:" + finalNextHopIp)
                         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
