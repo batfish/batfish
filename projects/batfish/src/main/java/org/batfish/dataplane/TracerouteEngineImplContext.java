@@ -272,7 +272,8 @@ class TracerouteEngineImplContext {
       return;
     }
 
-    // nextHopInterfacesByRoute: matching route -> next hop interface -> next hop IP -> interface routes
+    // nextHopInterfacesByRoute: matching route -> next hop interface -> next hop IP -> interface
+    // routes
     Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
         currentFib.getNextHopInterfacesByRoute(dstIp);
     Map<String, IpAccessList> aclDefinitions = currentConfiguration.getIpAccessLists();

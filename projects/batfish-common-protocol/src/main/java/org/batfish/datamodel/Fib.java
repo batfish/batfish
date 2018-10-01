@@ -15,7 +15,9 @@ public interface Fib extends Serializable {
   @Nonnull
   Set<String> getNextHopInterfaces(Ip ip);
 
-  /** Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes */
+  /**
+   * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
+   */
   @Nonnull
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
       Ip dstIp);
