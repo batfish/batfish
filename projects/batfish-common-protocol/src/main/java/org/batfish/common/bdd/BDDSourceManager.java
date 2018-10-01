@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -31,9 +30,8 @@ import org.batfish.datamodel.IpAccessList;
  *
  * <p>To minize to the number of BDD variables used, we consider which sources are active and which
  * are referenced by ACLs on the node. If a source is active and referenced, then we assign it a
- * unique identifier. All sources that are referenced by inactive are assigned the same identifier.
- * If a source is inactive, we assign it the constant {@link BDDFactory#zero()}. We allocate enough
- * BDD variables to distinguish between the unique identifiers.
+ * unique identifier. All inactive interface sources are assigned the same identifier. We allocate
+ * enough BDD variables to distinguish between the unique identifiers.
  *
  * <p>We need these identifiers in two contexts: to record the source of a packet as it enters a
  * node, and to check the source of a packet when an ACL includes a {@link
@@ -45,17 +43,17 @@ public final class BDDSourceManager {
 
   private final BDD _falseBDD;
 
-  private final BDD _isSane;
+  private final BDD _validValues;
 
   private final Map<String, BDD> _sourceBDDs;
 
   private final BDD _sourceVarBits;
 
-  private BDDSourceManager(BDD isSane, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
-    _isSane = isSane;
+  private BDDSourceManager(BDD validValues, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
+    _validValues = validValues;
     _sourceBDDs = ImmutableMap.copyOf(sourceBDDs);
     _sourceVarBits = sourceVarBits;
-    _falseBDD = isSane.getFactory().zero();
+    _falseBDD = validValues.getFactory().zero();
   }
 
   private static BDDSourceManager forNoReferencedSources(
@@ -178,7 +176,7 @@ public final class BDDSourceManager {
                     activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
 
     // Number of values needed to track sources in any node
-    int valuesNeeded = activeAndReferenced.values().stream().mapToInt(Set::size).max().getAsInt();
+    int valuesNeeded = activeAndReferenced.values().stream().mapToInt(Set::size).max().orElse(0);
 
     if (valuesNeeded == 0) {
       return toImmutableMap(
@@ -271,7 +269,7 @@ public final class BDDSourceManager {
    */
   public Optional<String> getSourceFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
-    checkArgument(bdd.imp(_isSane).isOne());
+    checkArgument(bdd.imp(_validValues).isOne());
 
     // not tracking any sources, so we can the arbitrarily choose the device
     if (_sourceBDDs.isEmpty()) {
@@ -290,11 +288,11 @@ public final class BDDSourceManager {
   }
 
   /**
-   * @return A sanity constraint that the packet source must be a valid value (originating from
-   *     device, or one of the source interfaces).
+   * @return A constraint that the source variable is assigned one of the valid values for this
+   *     device.
    */
-  public BDD isSane() {
-    return _isSane;
+  public BDD validValues() {
+    return _validValues;
   }
 
   /** Existentially quantify the source variable. */
