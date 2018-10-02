@@ -39,7 +39,7 @@ public class AnalysisMetadataMgr {
    * Returns suggested property of given analysis's metadata, or false if no metadata exists.
    *
    * @param networkId Container in which to find analysis
-   * @param analysis Analysis whose suggested property to return
+   * @param analysisId Analysis whose suggested property to return
    * @return suggested property of given analysis's metadata, or false if no metadata exists
    */
   public static boolean getAnalysisSuggestedOrFalse(NetworkId networkId, AnalysisId analysisId) {
