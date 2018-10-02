@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.identifiers.NetworkId;
@@ -45,7 +46,8 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     }
 
     @Override
-    public String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException {
+    public String loadQuestionSettings(NetworkId network, String questionClassId)
+        throws IOException {
       if (questionClassId.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
@@ -77,7 +79,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   private LocalIdManager _idManager;
 
   private LocalStorageProvider _storage;
-  
+
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Builder getQuestionSettingsJsonPathTarget(String questionClass, String jsonPath) {
@@ -98,6 +100,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
     WorkMgrTestUtils.initWorkManager(_idManager, _storage);
+    Main.getWorkMgr().initContainer(NETWORK, null);
   }
 
   @Test

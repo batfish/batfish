@@ -548,11 +548,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       AnalysisId analysisName = _settings.getAnalysisName();
       NetworkId containerName = _settings.getContainer();
       RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-      _storage
-          .listAnalysisQuestions(containerName, analysisName)
+      _idResolver
+          .listQuestions(containerName, analysisName)
           .forEach(
               questionName -> {
-                _settings.setQuestionName(questionName);
+                QuestionId questionId =
+                    _idResolver.getQuestionId(questionName, containerName, analysisName);
+                _settings.setQuestionName(questionId);
                 Answer currentAnswer;
                 try (ActiveSpan analysisQuestionSpan =
                     GlobalTracer.get()

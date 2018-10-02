@@ -722,7 +722,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
-        answer = BatfishObjectMapper.writePrettyString(ans);
+        return BatfishObjectMapper.writePrettyString(ans);
       }
       AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
       AnswerId finalAnswerId =
@@ -735,7 +735,7 @@ public class WorkMgr extends AbstractCoordinator {
               referenceSnapshotId,
               analysisId);
       return _storage.loadAnswer(finalAnswerId);
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (IOException e) {
       String message =
           String.format(
               "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
@@ -934,7 +934,7 @@ public class WorkMgr extends AbstractCoordinator {
               referenceSnapshotId,
               analysisId);
       return _storage.loadAnswerMetadata(finalAnswerId);
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (IOException e) {
       _logger.errorf(
           "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
           network,
@@ -1097,6 +1097,10 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
+    if (!_idManager.hasNetworkId(containerName)) {
+      throw new IllegalArgumentException(
+          String.format("Network '%s' does not exist", containerName));
+    }
     NetworkId networkId = _idManager.getNetworkId(containerName);
     SortedSet<String> testrigs = ImmutableSortedSet.copyOf(_idManager.listSnapshots(networkId));
     return Container.of(containerName, testrigs);
@@ -1335,6 +1339,9 @@ public class WorkMgr extends AbstractCoordinator {
   public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     String newContainerName =
         isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
+    if (_idManager.hasNetworkId(newContainerName)) {
+      throw new BatfishException(String.format("Container '%s' already exists!", newContainerName));
+    }
     NetworkId networkId = _idManager.generateNetworkId();
     _storage.initNetwork(networkId);
     _idManager.assignNetwork(newContainerName, networkId);
@@ -1625,7 +1632,7 @@ public class WorkMgr extends AbstractCoordinator {
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
     NetworkId networkId = _idManager.getNetworkId(containerName);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    return ImmutableSortedSet.copyOf(_storage.listAnalysisQuestions(networkId, analysisId));
+    return ImmutableSortedSet.copyOf(_idManager.listQuestions(networkId, analysisId));
   }
 
   public SortedSet<String> listContainers(String apiKey) {
@@ -1667,20 +1674,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public SortedSet<String> listQuestions(String containerName, boolean verbose) {
-    Path containerDir = getdirNetwork(containerName);
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!Files.exists(questionsDir)) {
-      return new TreeSet<>();
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    Set<String> questions = _idManager.listQuestions(networkId, null);
+    if (!verbose) {
+      questions =
+          questions
+              .stream()
+              .filter(name -> !name.startsWith("__"))
+              .collect(ImmutableSet.toImmutableSet());
     }
-    SortedSet<String> questions =
-        CommonUtil.getSubdirectories(questionsDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            // Question dirs starting with __ are internal questions
-            // and should not show up in listQuestions
-            .filter(dir -> verbose || !dir.startsWith("__"))
-            .collect(toCollection(TreeSet::new));
-    return questions;
+    return ImmutableSortedSet.copyOf(questions);
   }
 
   public List<String> listTestrigs(String containerName) {

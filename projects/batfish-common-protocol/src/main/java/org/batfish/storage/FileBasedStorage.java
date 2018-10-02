@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,7 +20,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -29,7 +27,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -468,21 +465,6 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull List<String> listAnalysisQuestions(NetworkId network, AnalysisId analysis) {
-    Path analysisQuestionsDir = _d.getAnalysisQuestionsDir(network, analysis);
-    if (!Files.exists(analysisQuestionsDir)) {
-      throw new BatfishException(
-          String.format("Analysis questions dir does not exist: '%s'", analysisQuestionsDir));
-    }
-    try (Stream<Path> analysisQuestions = CommonUtil.list(analysisQuestionsDir)) {
-      return analysisQuestions
-          .map(Path::getFileName)
-          .map(Object::toString)
-          .collect(ImmutableList.toImmutableList());
-    }
-  }
-
-  @Override
   public boolean checkQuestionExists(
       NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
     return Files.exists(getQuestionPath(network, question, analysis));
@@ -634,5 +616,10 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void initNetwork(NetworkId networkId) {
     _d.getNetworkDir(networkId).toFile().mkdirs();
+  }
+
+  @Override
+  public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
+    Files.delete(getAnswerMetadataPath(answerId));
   }
 }

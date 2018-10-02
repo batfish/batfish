@@ -43,8 +43,8 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -701,7 +701,7 @@ public class WorkMgrServiceTest {
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName + "_settings_id");
     idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);

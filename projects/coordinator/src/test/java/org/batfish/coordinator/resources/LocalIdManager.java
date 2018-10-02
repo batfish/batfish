@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -42,11 +43,8 @@ public final class LocalIdManager implements IdManager {
   private final Map<NetworkId, Map<String, AnalysisId>> _analysisIds;
   private final Map<NetworkId, Map<String, IssueSettingsId>> _issueSettingsIds;
   private final Map<String, NetworkId> _networkIds;
-
   private final Map<NetworkId, Map<Optional<AnalysisId>, Map<String, QuestionId>>> _questionIds;
-
   private final Map<NetworkId, Map<String, QuestionSettingsId>> _questionSettingsIds;
-
   private final Map<NetworkId, Map<String, SnapshotId>> _snapshotIds;
 
   public LocalIdManager() {
@@ -236,6 +234,11 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
+  public boolean hasSnapshotId(String snapshot, NetworkId networkId) {
+    return _snapshotIds.get(networkId).containsKey(snapshot);
+  }
+
+  @Override
   public Set<String> listAnalyses(NetworkId networkId) {
     return _analysisIds.get(networkId).keySet();
   }
@@ -243,6 +246,11 @@ public final class LocalIdManager implements IdManager {
   @Override
   public Set<String> listNetworks() {
     return _networkIds.keySet();
+  }
+
+  @Override
+  public Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
+    return _questionIds.get(networkId).get(ofNullable(analysisId)).keySet();
   }
 
   @Override

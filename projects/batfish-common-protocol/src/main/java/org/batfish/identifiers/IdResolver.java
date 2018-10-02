@@ -102,6 +102,12 @@ public interface IdResolver {
    */
   boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId);
 
+  /**
+   * Return {@code true} iff some {@link SnapshotId} is assigned to {@code snapshot} under {@code
+   * networkId}.
+   */
+  boolean hasSnapshotId(String snapshot, NetworkId networkId);
+
   /** Returns the names of analyses under {@code networkId} */
   @Nonnull
   Set<String> listAnalyses(NetworkId networkId);
@@ -109,6 +115,12 @@ public interface IdResolver {
   /** Returns the names of available networks */
   @Nonnull
   Set<String> listNetworks();
+
+  /**
+   * Returns the names of questions under {@code networkId} and {@code analysisId}. If {@code
+   * analysisId} is {@code null}, returns the names of ad-hoc questions in the network.
+   */
+  Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId);
 
   /** Returns the names of snapshots under {@code networkId} */
   @Nonnull

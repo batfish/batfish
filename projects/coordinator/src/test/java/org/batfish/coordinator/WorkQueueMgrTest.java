@@ -6,6 +6,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -16,7 +17,6 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.queues.WorkQueue.Type;
@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkQueueMgr}. */
 public class WorkQueueMgrTest {
@@ -122,12 +123,15 @@ public class WorkQueueMgrTest {
     return null;
   }
 
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
   @Before
-  public void init() {
+  public void init() throws Exception {
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
-    Main.getSettings().setContainersLocation(CommonUtil.createTempDirectory("wqmt"));
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
+    WorkMgrTestUtils.initWorkManager(_folder);
+    Main.getWorkMgr().initContainer(CONTAINER, null);
   }
 
   private void initTestrigMetadata(String testrig, String environment, ProcessingStatus status)
@@ -138,6 +142,7 @@ public class WorkQueueMgrTest {
   private void initTestrigMetadata(
       String container, String testrig, String environment, ProcessingStatus status)
       throws IOException {
+    WorkMgrTestUtils.initTestrigWithTopology(CONTAINER, testrig, ImmutableSet.of());
     TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
     envMetadata.updateStatus(status, null);
@@ -265,6 +270,8 @@ public class WorkQueueMgrTest {
   @Test
   public void listIncompleteWork() throws Exception {
     initTestrigMetadata("testrig", "env", ProcessingStatus.UNINITIALIZED);
+    Main.getWorkMgr().initContainer("other", null);
+    WorkMgrTestUtils.initTestrigWithTopology("other", "testrig", ImmutableSet.of());
     initTestrigMetadata("other", "testrig", "env", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         new QueuedWork(

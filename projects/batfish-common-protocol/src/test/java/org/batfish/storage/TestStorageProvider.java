@@ -2,7 +2,6 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.common.topology.Layer1Topology;
@@ -31,7 +30,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public SortedMap<String, Configuration> loadConfigurations(NetworkId network, SnapshotId snapshot) {
+  public SortedMap<String, Configuration> loadConfigurations(
+      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -92,19 +92,14 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public List<String> listAnalysisQuestions(NetworkId network, AnalysisId analysis) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public boolean checkQuestionExists(NetworkId network, QuestionId question, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void storeQuestion(String questionStr, NetworkId network, QuestionId question, AnalysisId analysis) {
+  public void storeQuestion(
+      String questionStr, NetworkId network, QuestionId question, AnalysisId analysis) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -220,7 +215,11 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void initNetwork(NetworkId networkId) {
-    
+  public void initNetwork(NetworkId networkId) {}
+
+  @Override
+  public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

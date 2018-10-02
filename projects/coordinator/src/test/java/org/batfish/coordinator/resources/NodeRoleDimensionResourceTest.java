@@ -63,7 +63,10 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
     // response should be OK dimension1 should have disappeared from NodeRolesData
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        Main.getWorkMgr().getNodeRolesData(container).getNodeRoleDimension("dimension1").isPresent(),
+        Main.getWorkMgr()
+            .getNodeRolesData(container)
+            .getNodeRoleDimension("dimension1")
+            .isPresent(),
         equalTo(false));
 
     // deleting again should fail

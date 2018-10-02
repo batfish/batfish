@@ -39,7 +39,6 @@ public final class WorkMgrTestUtils {
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
-    Main.getWorkMgr().initContainer(container, null);
     NetworkId networkId = idManager.getNetworkId(container);
     SnapshotId snapshotId = idManager.generateSnapshotId();
     idManager.assignSnapshot(testrig, networkId, snapshotId);

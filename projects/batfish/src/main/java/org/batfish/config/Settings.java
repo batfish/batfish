@@ -1603,7 +1603,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_DATAPLANE_ENGINE_NAME, name);
   }
 
-  public void setQuestionName(String questionName) {
-    _config.setProperty(BfConsts.ARG_QUESTION_NAME, questionName);
+  public void setQuestionName(QuestionId questionName) {
+    _config.setProperty(
+        BfConsts.ARG_QUESTION_NAME, questionName != null ? questionName.getId() : null);
   }
 }

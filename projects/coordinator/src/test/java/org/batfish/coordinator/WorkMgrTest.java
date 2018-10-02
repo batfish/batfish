@@ -3,6 +3,8 @@ package org.batfish.coordinator;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
@@ -21,9 +23,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -54,9 +53,9 @@ import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
@@ -101,11 +100,9 @@ public class WorkMgrTest {
   }
 
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
-    Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
     NetworkId networkId = _idManager.getNetworkId(container);
-    SnapshotId snapshotId = _idManager.getSnapshotId(testrig, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
   }
@@ -150,16 +147,16 @@ public class WorkMgrTest {
     // Leading __ means this question is an internal question
     // And should be hidden from listQuestions when verbose is false
     String internalQuestionName = "__internalquestion";
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    // Make sure the question directories are created
-    assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
-    assertThat(questionsDir.resolve(internalQuestionName).toFile().mkdirs(), is(true));
+    String network = "container";
+    _manager.initContainer(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    // Make sure the questions are assigned
+    _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
+    _idManager.assignQuestion(
+        internalQuestionName, networkId, _idManager.generateQuestionId(), null);
 
-    SortedSet<String> questionsNotVerbose = _manager.listQuestions("container", false);
-    SortedSet<String> questionsVerbose = _manager.listQuestions("container", true);
+    SortedSet<String> questionsNotVerbose = _manager.listQuestions(network, false);
+    SortedSet<String> questionsVerbose = _manager.listQuestions(network, true);
 
     // Only the public question should show up when verbose is false
     assertThat(questionsNotVerbose, equalTo(Sets.newHashSet(questionName)));
@@ -170,22 +167,21 @@ public class WorkMgrTest {
 
   @Test
   public void listQuestionWithNonExistContainer() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
+    _thrown.expect(IllegalArgumentException.class);
     _manager.listQuestions("container", false);
   }
 
   @Test
   public void listSortedQuestionNames() {
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    assertTrue(questionsDir.resolve("nodes").toFile().mkdirs());
-    assertTrue(questionsDir.resolve("access").toFile().mkdirs());
-    assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
-    SortedSet<String> questions = _manager.listQuestions("container", false);
-    assertThat(questions, equalTo(Sets.newHashSet("access", "initinfo", "nodes")));
+    String network = "container";
+    _manager.initContainer(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.assignQuestion("nodes", networkId, _idManager.generateQuestionId(), null);
+    _idManager.assignQuestion("access", networkId, _idManager.generateQuestionId(), null);
+    _idManager.assignQuestion("initinfo", networkId, _idManager.generateQuestionId(), null);
+    SortedSet<String> questions = _manager.listQuestions(network, false);
+
+    assertThat(questions, equalTo(ImmutableSet.of("access", "initinfo", "nodes")));
   }
 
   @Test
@@ -231,21 +227,21 @@ public class WorkMgrTest {
 
   @Test
   public void getNonEmptyContainer() {
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
-    Container container = _manager.getContainer("container");
+    String network = "container";
+    String snapshot = "testrig";
+    _manager.initContainer(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.assignSnapshot(snapshot, networkId, _idManager.generateSnapshotId());
+    Container container = _manager.getContainer(network);
     assertThat(
         container,
-        equalTo(Container.of("container", Sets.newTreeSet(Collections.singleton("testrig")))));
+        equalTo(Container.of(network, Sets.newTreeSet(Collections.singleton(snapshot)))));
   }
 
   @Test
   public void getNonExistContainer() {
     _thrown.expect(Exception.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
+    _thrown.expectMessage(equalTo("Network 'container' does not exist"));
     _manager.getContainer("container");
   }
 
@@ -277,54 +273,43 @@ public class WorkMgrTest {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);
     // test init and add questions to analysis
-    Map<String, String> questionsToAdd =
-        Maps.newHashMap(Collections.singletonMap("question1", "question1Content"));
+    Map<String, String> questionsToAdd = ImmutableMap.of("question1", "question1Content");
+    String analysisName = "analysis";
     _manager.configureAnalysis(
-        containerName, true, "analysis", questionsToAdd, Lists.newArrayList(), null);
-    questionsToAdd = Maps.newHashMap(Collections.singletonMap("question2", "question2Content"));
-    questionsToAdd.put("question3", "question3Content");
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    questionsToAdd =
+        ImmutableMap.of("question2", "question2Content", "question3", "question3Content");
     _manager.configureAnalysis(
-        containerName, false, "analysis", questionsToAdd, Lists.newArrayList(), null);
-    Path questionPath =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    "analysis",
-                    BfConsts.RELPATH_QUESTIONS_DIR));
-    Path qFile = questionPath.resolve(Paths.get("question1", BfConsts.RELPATH_QUESTION_FILE));
-    Path otherQFile = questionPath.resolve(Paths.get("question2", BfConsts.RELPATH_QUESTION_FILE));
-    try {
-      String actual = new String(Files.readAllBytes(qFile));
-      assertThat(actual, equalTo("question1Content"));
-      actual = new String(Files.readAllBytes(otherQFile));
-      assertThat(actual, equalTo("question2Content"));
-    } catch (IOException e) {
-      throw new BatfishException("Failed to read question content", e);
-    }
+        containerName, false, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    QuestionId q1Id = _idManager.getQuestionId("question1", networkId, analysisId);
+    QuestionId q2Id = _idManager.getQuestionId("question2", networkId, analysisId);
+    String actual = _storage.loadQuestion(networkId, q1Id, analysisId);
+    assertThat(actual, equalTo("question1Content"));
+    actual = _storage.loadQuestion(networkId, q2Id, analysisId);
+    assertThat(actual, equalTo("question2Content"));
 
     // test delete questions
-    List<String> questionsToDelete = Lists.newArrayList();
+    List<String> questionsToDelete = ImmutableList.of();
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
+        containerName, false, analysisName, ImmutableMap.of(), questionsToDelete, null);
+
     assertTrue(
-        Files.exists(questionPath.resolve("question1"))
-            && Files.exists(questionPath.resolve("question2"))
-            && Files.exists(questionPath.resolve("question3")));
-    questionsToDelete = Lists.newArrayList("question1", "question2");
+        _idManager.hasQuestionId("question1", networkId, analysisId)
+            && _idManager.hasQuestionId("question2", networkId, analysisId)
+            && _idManager.hasQuestionId("question3", networkId, analysisId));
+    questionsToDelete = ImmutableList.of("question1", "question2");
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
-    assertFalse(Files.exists(questionPath.resolve("question1")));
-    assertFalse(Files.exists(questionPath.resolve("question2")));
-    assertTrue(Files.exists(questionPath.resolve("question3")));
+        containerName, false, analysisName, ImmutableMap.of(), questionsToDelete, null);
+    assertFalse(_idManager.hasQuestionId("question1", networkId, analysisId));
+    assertFalse(_idManager.hasQuestionId("question2", networkId, analysisId));
+    assertTrue(_idManager.hasQuestionId("question3", networkId, analysisId));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Question 'question1' does not exist for analysis 'analysis'"));
-    questionsToDelete = Lists.newArrayList("question1");
+    questionsToDelete = ImmutableList.of("question1");
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
+        containerName, false, analysisName, ImmutableMap.of(), questionsToDelete, null);
   }
 
   @Test
@@ -364,49 +349,90 @@ public class WorkMgrTest {
     assertTrue(getMetadataSuggested(containerName, "analysis3"));
   }
 
-  //  @Test
-  //  public void testGetAnalysisAnswer() throws JsonProcessingException, FileNotFoundException {
-  //    String containerName = "container1";
-  //    String testrigName = "testrig1";
-  //    String analysisName = "analysis1";
-  //    String question1Name = "question1";
-  //    String question1Content = "question1Content";
-  //    String question2Name = "question2Name";
-  //    String question2Content = "question2Content";
-  //    String question3Name = "question3";
-  //    String question3Content = "question3Content";
-  //    String answer1 = "answer1";
-  //    String answer2 = "answer2";
-  //
-  //    _manager.initContainer(containerName, null);
-  //    Map<String, String> questionsToAdd =
-  //        Maps.newHashMap(Collections.singletonMap(question1Name, question1Content));
-  //    questionsToAdd.put(question2Name, question2Content);
-  //    questionsToAdd.put(question3Name, question3Content);
-  //
-  //    _manager.configureAnalysis(
-  //        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
-  //
-  //    _storage.storeAnswer(answer1, containerName, testrigName, question1Name, null,
-  // analysisName);
-  //    _storage.storeAnswer(answer2, containerName, testrigName, question2Name, null,
-  // analysisName);
-  //
-  //    String answer1Output =
-  //        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
-  //    String answer2Output =
-  //        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
-  //    String answer3Output =
-  //        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
-  //
-  //    Answer failedAnswer = Answer.failureAnswer("Not answered", null);
-  //    failedAnswer.setStatus(AnswerStatus.NOTFOUND);
-  //    String failedAnswerString = BatfishObjectMapper.writePrettyString(failedAnswer);
-  //
-  //    assertThat(answer1Output, equalTo(answer1));
-  //    assertThat(answer2Output, equalTo(answer2));
-  //    assertThat(answer3Output, equalTo(failedAnswerString));
-  //  }
+  @Test
+  public void testGetAnswerAnalysis() throws IOException {
+    String containerName = "container1";
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+    String question1Name = "question1";
+    Question question = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(question);
+    String question2Name = "question2Name";
+    String question3Name = "question3";
+
+    _manager.initContainer(containerName, null);
+    Map<String, String> questionsToAdd =
+        ImmutableMap.of(
+            question1Name,
+            questionContent,
+            question2Name,
+            questionContent,
+            question3Name,
+            questionContent);
+
+    _manager.configureAnalysis(
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(testrigName, networkId, snapshotId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
+    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+
+    AnswerId baseAnswerId1 =
+        _idManager.getBaseAnswerId(
+            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+    AnswerId baseAnswerId2 =
+        _idManager.getBaseAnswerId(
+            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+    Answer answer1 = new Answer();
+    Answer answer2 = new Answer();
+    String answer1Text = "foo1";
+    String answer2Text = "foo2";
+    answer1.addAnswerElement(new StringAnswerElement(answer1Text));
+    answer2.addAnswerElement(new StringAnswerElement(answer2Text));
+    String answer1Str = BatfishObjectMapper.writeString(answer1);
+    String answer2Str = BatfishObjectMapper.writeString(answer2);
+    AnswerMetadata answerMetadata1 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    AnswerMetadata answerMetadata2 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    _storage.storeAnswer(answer1Str, baseAnswerId1);
+    _storage.storeAnswer(answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
+
+    String answer1Output =
+        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
+    String answer2Output =
+        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
+    String answer3Output =
+        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
+
+    Answer failedAnswer = Answer.failureAnswer("Not answered", null);
+    failedAnswer.setStatus(AnswerStatus.NOTFOUND);
+    String failedAnswerString = BatfishObjectMapper.writePrettyString(failedAnswer);
+
+    assertThat(
+        ((StringAnswerElement)
+                BatfishObjectMapper.mapper()
+                    .readValue(answer1Output, Answer.class)
+                    .getAnswerElements()
+                    .get(0))
+            .getAnswer(),
+        equalTo(answer1Text));
+    assertThat(
+        ((StringAnswerElement)
+                BatfishObjectMapper.mapper()
+                    .readValue(answer2Output, Answer.class)
+                    .getAnswerElements()
+                    .get(0))
+            .getAnswer(),
+        equalTo(answer2Text));
+    assertThat(answer3Output, equalTo(failedAnswerString));
+  }
 
   @Test
   public void testGetAnalysisAnswers() throws JsonProcessingException, FileNotFoundException {
@@ -414,60 +440,47 @@ public class WorkMgrTest {
     String testrigName = "testrig1";
     String analysisName = "analysis1";
     String question1Name = "question1";
-    String question1Content = "question1Content";
+    Question question = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(question);
     String question2Name = "question2Name";
-    String question2Content = "question2Content";
-    String answer1 = "answer1";
-    String answer2 = "answer2";
 
     _manager.initContainer(containerName, null);
     Map<String, String> questionsToAdd =
-        Maps.newHashMap(Collections.singletonMap(question1Name, question1Content));
-    questionsToAdd.put(question2Name, question2Content);
+        ImmutableMap.of(question1Name, questionContent, question2Name, questionContent);
 
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(testrigName, networkId, snapshotId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
+    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
 
-    Path answer1Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question1Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer2Dir =
-        _folder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    containerName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    testrigName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    question2Name,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answer1Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path answer2Path = answer2Dir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-
-    answer1Dir.toFile().mkdirs();
-    answer2Dir.toFile().mkdirs();
-
-    CommonUtil.writeFile(answer1Path, answer1);
-    CommonUtil.writeFile(answer2Path, answer2);
+    AnswerId baseAnswerId1 =
+        _idManager.getBaseAnswerId(
+            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+    AnswerId baseAnswerId2 =
+        _idManager.getBaseAnswerId(
+            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+    Answer answer1 = new Answer();
+    Answer answer2 = new Answer();
+    String answer1Text = "foo1";
+    String answer2Text = "foo2";
+    answer1.addAnswerElement(new StringAnswerElement(answer1Text));
+    answer2.addAnswerElement(new StringAnswerElement(answer2Text));
+    String answer1Str = BatfishObjectMapper.writeString(answer1);
+    String answer2Str = BatfishObjectMapper.writeString(answer2);
+    AnswerMetadata answerMetadata1 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    AnswerMetadata answerMetadata2 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    _storage.storeAnswer(answer1Str, baseAnswerId1);
+    _storage.storeAnswer(answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
 
     Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
@@ -497,9 +510,9 @@ public class WorkMgrTest {
             analysisName,
             ImmutableSet.of());
 
-    assertThat(answers1, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
-    assertThat(answers2, equalTo(ImmutableMap.of(question1Name, answer1)));
-    assertThat(answers3, equalTo(ImmutableMap.of(question1Name, answer1, question2Name, answer2)));
+    assertThat(answers1.keySet(), containsInAnyOrder(question1Name, question2Name));
+    assertThat(answers2.keySet(), containsInAnyOrder(question1Name));
+    assertThat(answers3.keySet(), containsInAnyOrder(question1Name, question2Name));
   }
 
   @Test
@@ -548,11 +561,6 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question1Name";
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(Metrics.builder().setNumRows(1).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
     _manager.initContainer(networkName, null);
     _manager.configureAnalysis(
         networkName,
@@ -562,17 +570,22 @@ public class WorkMgrTest {
         ImmutableList.of(),
         null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
+    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     Answer answer = new Answer();
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     String answerStr = BatfishObjectMapper.writeString(answer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     AnswerMetadata answerResult =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
 
@@ -587,32 +600,22 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     Question question = new TestQuestion();
     String questionName = "question1";
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(Metrics.builder().setNumRows(1).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
     _manager.initContainer(networkName, null);
     _manager.configureAnalysis(
         networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
 
-    _thrown.expect(FileNotFoundException.class);
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(containsString(questionName));
     _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisMissingAnswerMetadata()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAnalysisMissingAnswerMetadata() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -628,20 +631,28 @@ public class WorkMgrTest {
         ImmutableList.of(),
         null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
     Answer answer = new Answer();
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
     _storage.storeAnswer(answerStr, baseAnswerId);
-    AnswerMetadata answerResult =
-        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
+    // remove answer metadata
+    _storage.deleteAnswerMetadata(baseAnswerId);
 
-    assertThat(answerResult, equalTo(AnswerMetadata.forStatus(AnswerStatus.NOTFOUND)));
+    assertThat(
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName),
+        equalTo(AnswerMetadata.forStatus(AnswerStatus.NOTFOUND)));
   }
 
   @Test
@@ -652,28 +663,16 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     Question question = new TestQuestion();
     String questionName = "question1";
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(Metrics.builder().setNumRows(1).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
     _manager.initContainer(networkName, null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     // the analysis id is not assigned, so the analysis is effectively missing
-    QuestionId questionId =
-        _idManager.getQuestionId(questionName, networkId, new AnalysisId(analysisName));
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
-    AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
-    Answer answer = new Answer();
-    String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
 
-    _thrown.expect(Exception.class);
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(containsString(analysisName));
     _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
   }
 
@@ -685,33 +684,65 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question2Name";
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(Metrics.builder().setNumRows(2).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
     _manager.initContainer(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId, snapshotId, questionId, questionSettingsId, null, null);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     Answer answer = new Answer();
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
     _storage.storeAnswer(answerStr, baseAnswerId);
     AnswerMetadata answer2Result =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
-    
+
     assertThat(answer2Result, equalTo(answerMetadata));
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocMissingAnswerMetadata()
+  public void testGetAnswerMetadataAdHocMissingAnswerMetadata() throws IOException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    Question question = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(question);
+    String questionName = "question2Name";
+    _manager.initContainer(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
+    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
+    AnswerId baseAnswerId =
+        _idManager.getBaseAnswerId(
+            networkId, snapshotId, questionId, questionSettingsId, null, null);
+    Answer answer = new Answer();
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+    _storage.storeAnswer(answerStr, baseAnswerId);
+    // remove answer metadata
+    _storage.deleteAnswerMetadata(baseAnswerId);
+
+    assertThat(
+        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null),
+        equalTo(AnswerMetadata.forStatus(AnswerStatus.NOTFOUND)));
+  }
+
+  @Test
+  public void testGetAnswerMetadataAdHocMissingQuestion()
       throws JsonProcessingException, FileNotFoundException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
@@ -721,7 +752,8 @@ public class WorkMgrTest {
     _manager.initContainer(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
@@ -729,38 +761,17 @@ public class WorkMgrTest {
         _idManager.getBaseAnswerId(
             networkId, snapshotId, questionId, questionSettingsId, null, null);
     Answer answer = new Answer();
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
     _storage.storeAnswer(answerStr, baseAnswerId);
-    AnswerMetadata answer2Result =
-        _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
+    // remove question
+    _idManager.deleteQuestion(questionName, networkId, null);
 
-    assertThat(answer2Result, equalTo(AnswerMetadata.forStatus(AnswerStatus.NOTFOUND)));
-  }
-
-  @Test
-  public void testGetAnswerMetadataAdHocMissingQuestion()
-      throws JsonProcessingException, FileNotFoundException {
-    String networkName = "network1";
-    String snapshotName = "snapshot1";
-    AnswerMetadata answerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(Metrics.builder().setNumRows(2).build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
-    Question question = new TestQuestion();
-    String questionName = "question2Name";
-    _manager.initContainer(networkName, null);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
-    AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
-
-    _thrown.expect(Exception.class);
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(containsString(questionName));
     _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
   }
 

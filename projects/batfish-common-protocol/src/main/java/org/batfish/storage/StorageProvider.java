@@ -2,7 +2,6 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -135,16 +134,6 @@ public interface StorageProvider {
    */
   @Nonnull
   String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
-
-  /**
-   * Return a list of the names of the questions associated with the given analysis of the given
-   * network
-   *
-   * @param network The name of the network
-   * @param analysis The name of the analysis
-   */
-  @Nonnull
-  List<String> listAnalysisQuestions(NetworkId network, AnalysisId analysis);
 
   /**
    * Returns {@code true} iff the specified question exists.
@@ -309,4 +298,7 @@ public interface StorageProvider {
 
   /** Initialize an empty network */
   void initNetwork(NetworkId networkId);
+
+  /** Delete answer metadata for given ID */
+  void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
 }

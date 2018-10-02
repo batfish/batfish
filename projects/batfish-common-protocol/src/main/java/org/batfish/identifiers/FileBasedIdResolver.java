@@ -62,6 +62,10 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull AnalysisId getAnalysisId(String analysis, NetworkId networkId) {
+    if (!hasAnalysisId(analysis, networkId)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-existent analysis %s", analysis));
+    }
     return new AnalysisId(CommonUtil.readFile(getAnalysisIdPath(analysis, networkId)));
   }
 
@@ -107,6 +111,10 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId) {
+    if (!hasIssueSettingsId(majorIssueType, networkId)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-configured majorIssueType %s", majorIssueType));
+    }
     return new IssueSettingsId(
         CommonUtil.readFile(getIssueSettingsIdPath(majorIssueType, networkId)));
   }
@@ -122,6 +130,10 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull NetworkId getNetworkId(String network) {
+    if (!hasNetworkId(network)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-existent network %s", network));
+    }
     return new NetworkId(CommonUtil.readFile(getNetworkIdPath(network)));
   }
 
@@ -136,6 +148,10 @@ public class FileBasedIdResolver implements IdResolver {
   @Override
   public @Nonnull QuestionId getQuestionId(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
+    if (!hasQuestionId(question, networkId, analysisId)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-existent question '%s'", question));
+    }
     return new QuestionId(CommonUtil.readFile(getQuestionIdPath(question, networkId, analysisId)));
   }
 
@@ -158,6 +174,10 @@ public class FileBasedIdResolver implements IdResolver {
   @Override
   public @Nonnull QuestionSettingsId getQuestionSettingsId(
       String questionClassId, NetworkId networkId) {
+    if (!hasQuestionSettingsId(questionClassId, networkId)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-configured questionClassId '%s'", questionClassId));
+    }
     return new QuestionSettingsId(
         CommonUtil.readFile(getQuestionSettingsIdPath(questionClassId, networkId)));
   }
@@ -173,6 +193,10 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull SnapshotId getSnapshotId(String snapshot, NetworkId networkId) {
+    if (!hasSnapshotId(snapshot, networkId)) {
+      throw new IllegalArgumentException(
+          String.format("No ID assigned to non-existent snapshot '%s'", snapshot));
+    }
     return new SnapshotId(CommonUtil.readFile(getSnapshotIdPath(snapshot, networkId)));
   }
 
@@ -210,6 +234,11 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
+  public boolean hasSnapshotId(String snapshot, NetworkId networkId) {
+    return Files.exists(getSnapshotIdPath(snapshot, networkId));
+  }
+
+  @Override
   public Set<String> listAnalyses(NetworkId networkId) {
     return listResolvableNames(getAnalysisIdsDir(networkId));
   }
@@ -217,6 +246,11 @@ public class FileBasedIdResolver implements IdResolver {
   @Override
   public Set<String> listNetworks() {
     return listResolvableNames(getNetworkIdsDir());
+  }
+
+  @Override
+  public Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
+    return listResolvableNames(getQuestionIdsDir(networkId, analysisId));
   }
 
   @Override

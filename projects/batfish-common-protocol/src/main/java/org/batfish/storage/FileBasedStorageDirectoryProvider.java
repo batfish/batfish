@@ -23,7 +23,7 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   public @Nonnull Path getAdHocQuestionDir(NetworkId network, QuestionId question) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question.getId());
+    return getAdHocQuestionsDir(network).resolve(question.getId());
   }
 
   public @Nonnull Path getAnalysisQuestionDir(
@@ -137,5 +137,9 @@ public class FileBasedStorageDirectoryProvider {
 
   public @Nonnull Path getStorageBase() {
     return _baseDir;
+  }
+
+  public @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 }

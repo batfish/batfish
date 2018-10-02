@@ -80,7 +80,8 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question) {
+              public String loadQuestion(
+                  NetworkId network, QuestionId analysis, AnalysisId question) {
                 return "{"
                     + "\"differential\": false,"
                     + "\"instance\": {"
