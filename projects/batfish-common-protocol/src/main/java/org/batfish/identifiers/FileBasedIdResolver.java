@@ -14,7 +14,7 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull AnalysisId getAnalysisId(String analysis, String network) {
+  public @Nonnull AnalysisId getAnalysisId(String analysis, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -33,13 +33,8 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull AnswerId getFinalAnswerId(
-      NetworkId networkId,
-      SnapshotId snapshotId,
-      QuestionId questionId,
-      QuestionSettingsId questionSettingsId,
-      Set<IssueSettingsId> issueSettingsIds,
-      SnapshotId referenceSnapshotId,
-      AnalysisId analysisId) {
+      AnswerId baseAnswerId,
+      Set<IssueSettingsId> issueSettingsIds) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

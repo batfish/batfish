@@ -64,6 +64,8 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
 
   private static final String QUESTION = "qclass1";
 
+  private LocalIdManager _idManager;
+
   private LocalStorageProvider _storage;
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -82,8 +84,9 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
 
   @Before
   public void initContainerEnvironment() throws Exception {
+    _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
-    WorkMgrTestUtils.initWorkManager(_storage);
+    WorkMgrTestUtils.initWorkManager(_idManager, _storage);
   }
 
   @Test

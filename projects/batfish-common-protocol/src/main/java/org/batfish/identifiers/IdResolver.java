@@ -15,7 +15,7 @@ public interface IdResolver {
    * @throws {@link IllegalArgumentException} if none assigned
    */
   @Nonnull
-  AnalysisId getAnalysisId(String analysis, String network);
+  AnalysisId getAnalysisId(String analysis, NetworkId networkId);
 
   /** Retrieve the {@link AnswerId} corresponding to the provided input IDs. */
   @Nonnull
@@ -30,13 +30,8 @@ public interface IdResolver {
   /** Retrieve the {@link FinalAnswerId} corresponding to the provided input IDs. */
   @Nonnull
   AnswerId getFinalAnswerId(
-      NetworkId networkId,
-      SnapshotId snapshotId,
-      QuestionId questionId,
-      QuestionSettingsId questionSettingsId,
-      Set<IssueSettingsId> issueSettingsIds,
-      @Nullable SnapshotId referenceSnapshotId,
-      @Nullable AnalysisId analysisId);
+      AnswerId baseAnswerId,
+      Set<IssueSettingsId> issueSettingsIds);
 
   /**
    * Retrieve the {@link IssueSettingsId} assigned to {@code majorIssueType} under {@code

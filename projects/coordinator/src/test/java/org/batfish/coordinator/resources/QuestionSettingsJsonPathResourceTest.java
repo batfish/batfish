@@ -74,8 +74,10 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   private static final int VAL = 5;
 
-  private LocalStorageProvider _storage;
+  private LocalIdManager _idManager;
 
+  private LocalStorageProvider _storage;
+  
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Builder getQuestionSettingsJsonPathTarget(String questionClass, String jsonPath) {
@@ -93,8 +95,9 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   @Before
   public void initContainerEnvironment() throws Exception {
+    _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
-    WorkMgrTestUtils.initWorkManager(_storage);
+    WorkMgrTestUtils.initWorkManager(_idManager, _storage);
   }
 
   @Test

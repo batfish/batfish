@@ -1,0 +1,204 @@
+package org.batfish.coordinator.resources;
+
+import static java.util.Optional.ofNullable;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.hash.Hashing;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.batfish.coordinator.id.IdManager;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
+
+public final class LocalIdManager implements IdManager {
+
+  private static String hash(String input) {
+    return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
+  }
+
+  private static String uuid() {
+    return UUID.randomUUID().toString();
+  }
+
+  private final Map<NetworkId, Map<String, AnalysisId>> _analysisIds;
+  private final Map<NetworkId, Map<String, IssueSettingsId>> _issueSettingsIds;
+  private final Map<String, NetworkId> _networkIds;
+  private final Map<NetworkId, Map<Optional<AnalysisId>, Map<String, QuestionId>>> _questionIds;
+
+  private final Map<NetworkId, Map<String, QuestionSettingsId>> _questionSettingsIds;
+
+  private final Map<NetworkId, Map<String, SnapshotId>> _snapshotIds;
+
+  public LocalIdManager() {
+    _analysisIds = new HashMap<>();
+    _issueSettingsIds = new HashMap<>();
+    _networkIds = new HashMap<>();
+    _questionIds = new HashMap<>();
+    _questionSettingsIds = new HashMap<>();
+    _snapshotIds = new HashMap<>();
+  }
+
+  @Override
+  public void assignIssueSettingsId(
+      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
+    _issueSettingsIds
+        .computeIfAbsent(networkId, n -> new HashMap<>())
+        .put(majorIssueType, issueSettingsId);
+  }
+
+  @Override
+  public void assignNetwork(String network, NetworkId networkId) {
+    _networkIds.put(network, networkId);
+  }
+
+  @Override
+  public void assignQuestion(
+      String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+    _questionIds
+        .computeIfAbsent(networkId, n -> new HashMap<>())
+        .computeIfAbsent(ofNullable(analysisId), a -> new HashMap<>())
+        .put(question, questionId);
+  }
+
+  @Override
+  public void assignQuestionSettingsId(
+      String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
+    _questionSettingsIds
+        .computeIfAbsent(networkId, n -> new HashMap<>())
+        .put(questionClassId, questionSettingsId);
+  }
+
+  @Override
+  public void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId) {
+    _snapshotIds.computeIfAbsent(networkId, n -> new HashMap<>()).put(snapshot, snapshotId);
+  }
+
+  @Override
+  public void deleteNetwork(String network) {
+    _networkIds.remove(network);
+  }
+
+  @Override
+  public void deleteQuestion(String question, NetworkId networkId, AnalysisId analysisId) {
+    _questionIds.get(networkId).get(ofNullable(analysisId)).remove(question);
+  }
+
+  @Override
+  public void deleteSnapshot(String snapshot, NetworkId networkId) {
+    _snapshotIds.get(networkId).remove(snapshot);
+  }
+
+  @Override
+  public IssueSettingsId generateIssueSettingsId() {
+    return new IssueSettingsId(uuid());
+  }
+
+  @Override
+  public NetworkId generateNetworkId() {
+    return new NetworkId(uuid());
+  }
+
+  @Override
+  public QuestionId generateQuestionId() {
+    return new QuestionId(uuid());
+  }
+
+  @Override
+  public QuestionSettingsId generateQuestionSettingsId() {
+    return new QuestionSettingsId(uuid());
+  }
+
+  @Override
+  public SnapshotId generateSnapshotId() {
+    return new SnapshotId(uuid());
+  }
+
+  @Override
+  public AnalysisId getAnalysisId(String analysis, NetworkId networkId) {
+    return illegalIfNull(_analysisIds.get(networkId).get(analysis));
+  }
+
+  @Override
+  public AnswerId getBaseAnswerId(
+      NetworkId networkId,
+      SnapshotId snapshotId,
+      QuestionId questionId,
+      QuestionSettingsId questionSettingsId,
+      SnapshotId referenceSnapshotId,
+      AnalysisId analysisId) {
+    return new AnswerId(
+        hash(
+            ImmutableList.of(
+                    networkId,
+                    snapshotId,
+                    questionId,
+                    questionSettingsId,
+                    ofNullable(referenceSnapshotId),
+                    ofNullable(analysisId))
+                .toString()));
+  }
+
+  @Override
+  public AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds) {
+    return new AnswerId(
+        hash(
+            ImmutableList.of(
+                    baseAnswerId,
+                    ImmutableSortedSet.copyOf(
+                        Comparator.comparing(IssueSettingsId::getId), issueSettingsIds))
+                .toString()));
+  }
+
+  @Override
+  public IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId) {
+    return illegalIfNull(_issueSettingsIds.get(networkId).get(majorIssueType));
+  }
+
+  @Override
+  public NetworkId getNetworkId(String network) {
+    return illegalIfNull(_networkIds.get(network));
+  }
+
+  @Override
+  public QuestionId getQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
+    return illegalIfNull(_questionIds.get(networkId).get(ofNullable(analysisId)).get(question));
+  }
+
+  @Override
+  public QuestionSettingsId getQuestionSettingsId(String questionClassId, NetworkId networkId) {
+    return illegalIfNull(_questionSettingsIds.get(networkId).get(questionClassId));
+  }
+
+  @Override
+  public SnapshotId getSnapshotId(String snapshot, NetworkId networkId) {
+    return illegalIfNull(_snapshotIds.get(networkId).get(snapshot));
+  }
+
+  @Override
+  public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
+    return illegalIfNull(_issueSettingsIds.get(networkId).containsKey(majorIssueType));
+  }
+
+  @Override
+  public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+    return illegalIfNull(_questionSettingsIds.get(networkId).containsKey(questionClassId));
+  }
+
+  private <T> T illegalIfNull(T t) {
+    if (t == null) {
+      throw new IllegalArgumentException("Invalid ID");
+    }
+    return t;
+  }
+}

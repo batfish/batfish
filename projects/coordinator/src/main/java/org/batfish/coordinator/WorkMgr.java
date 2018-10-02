@@ -29,13 +29,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -57,7 +57,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -97,6 +96,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -715,7 +715,8 @@ public class WorkMgr extends AbstractCoordinator {
     String answer = "unknown";
     try {
       NetworkId networkId = _idManager.getNetworkId(network);
-      AnalysisId analysisId = analysis != null ? _idManager.getAnalysisId(analysis, network) : null;
+      AnalysisId analysisId =
+          analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
       QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
       SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
       SnapshotId referenceSnapshotId =
@@ -736,7 +737,15 @@ public class WorkMgr extends AbstractCoordinator {
         answer = BatfishObjectMapper.writePrettyString(ans);
       }
       AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
-      AnswerId finalAnswerId = computeFinalAnswerAndId(baseAnswerMetadata, baseAnswerId);
+      AnswerId finalAnswerId =
+          computeFinalAnswerAndId(
+              baseAnswerMetadata,
+              networkId,
+              snapshotId,
+              questionId,
+              baseAnswerId,
+              referenceSnapshotId,
+              analysisId);
       return _storage.loadAnswer(finalAnswerId);
     } catch (IOException | IllegalArgumentException e) {
       String message =
@@ -753,6 +762,106 @@ public class WorkMgr extends AbstractCoordinator {
       answer = BatfishObjectMapper.writePrettyString(ans);
       return answer;
     }
+  }
+
+  private @Nonnull AnswerId computeFinalAnswerAndId(
+      @Nonnull AnswerMetadata baseAnswerMetadata,
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
+      throws IOException {
+    Set<IssueSettingsId> issueSettingsIds =
+        getOrCreateIssueSettingsIds(networkId, baseAnswerMetadata);
+    AnswerId finalAnswerId = _idManager.getFinalAnswerId(baseAnswerId, issueSettingsIds);
+    if (!_storage.hasAnswerMetadata(finalAnswerId)) {
+      rebuildFinalAnswerAndMetadata(
+          baseAnswerMetadata.getMetrics().getMajorIssueConfigs(),
+          networkId,
+          snapshotId,
+          questionId,
+          baseAnswerId,
+          finalAnswerId,
+          issueSettingsIds,
+          referenceSnapshotId,
+          analysisId);
+    }
+    return finalAnswerId;
+  }
+
+  private void rebuildFinalAnswerAndMetadata(
+      @Nonnull Map<String, MajorIssueConfig> baseAnswerMajorIssueConfigs,
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nonnull AnswerId finalAnswerId,
+      @Nonnull Set<IssueSettingsId> issueSettingsIds,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
+      throws IOException {
+    Map<String, MajorIssueConfig> combinedMajorIssueConfigs = new HashMap<>(baseAnswerMajorIssueConfigs);
+    for (IssueSettingsId issueSettingsId : issueSettingsIds) {
+      MajorIssueConfig networkMajorIssueConfig = 
+      _storage.loadMajorIssueConfig(networkId, issueSettingsId);
+      String majorIssueType = networkMajorIssueConfig.getMajorIssue();
+      MajorIssueConfig combinedMajorIssueConfig =
+          overlayMajorIssueConfig(
+              baseAnswerMajorIssueConfigs.get(majorIssueType), networkMajorIssueConfig);
+      combinedMajorIssueConfigs.put(majorIssueType, combinedMajorIssueConfig);
+    }
+    applyIssuesConfiguration(
+        combinedMajorIssueConfigs,
+        networkId,
+        snapshotId,
+        questionId,
+        baseAnswerId,
+        finalAnswerId,
+        referenceSnapshotId,
+        analysisId);
+  }
+
+  private MajorIssueConfig overlayMajorIssueConfig(
+      MajorIssueConfig baseMajorIssueConfig, MajorIssueConfig networkMajorIssueConfig) {
+    Map<String, MinorIssueConfig> networkMinorIssues =
+        networkMajorIssueConfig.getMinorIssueConfigsMap();
+    ImmutableList.Builder<MinorIssueConfig> combinedMinorIssues = ImmutableList.builder();
+    // note there is no need to address minor issues not mentioned in base answer
+    baseMajorIssueConfig
+        .getMinorIssueConfigsMap()
+        .forEach(
+            (minorIssueType, baseMinorIssueConfig) -> {
+              MinorIssueConfig networkMinorIssueConfig = networkMinorIssues.get(minorIssueType);
+              if (networkMinorIssueConfig == null) {
+                combinedMinorIssues.add(baseMinorIssueConfig);
+                return;
+              }
+              Integer networkSeverity = networkMinorIssueConfig.getSeverity();
+              Integer severity =
+                  networkSeverity != null ? networkSeverity : baseMinorIssueConfig.getSeverity();
+              String networkUrl = networkMinorIssueConfig.getUrl();
+              String url =
+                  networkUrl != null && !networkUrl.isEmpty()
+                      ? networkUrl
+                      : baseMinorIssueConfig.getUrl();
+              combinedMinorIssues.add(new MinorIssueConfig(minorIssueType, severity, url));
+            });
+    return new MajorIssueConfig(baseMajorIssueConfig.getMajorIssue(), combinedMinorIssues.build());
+  }
+
+  private Set<IssueSettingsId> getOrCreateIssueSettingsIds(
+      NetworkId networkId, AnswerMetadata baseAnswerMetadata) throws IOException {
+    Metrics metrics = baseAnswerMetadata.getMetrics();
+    if (metrics == null) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<IssueSettingsId> ids = ImmutableSet.builder();
+    for (String majorIssueType : metrics.getMajorIssueConfigs().keySet()) {
+      ids.add(getOrCreateIssueSettingsId(networkId, majorIssueType));
+    }
+    return ids.build();
   }
 
   public @Nonnull Map<String, String> getAnalysisAnswers(
@@ -809,7 +918,8 @@ public class WorkMgr extends AbstractCoordinator {
       throws JsonProcessingException, FileNotFoundException {
     try {
       NetworkId networkId = _idManager.getNetworkId(network);
-      AnalysisId analysisId = analysis != null ? _idManager.getAnalysisId(analysis, network) : null;
+      AnalysisId analysisId =
+          analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
       QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
       SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
       SnapshotId referenceSnapshotId =
@@ -828,7 +938,15 @@ public class WorkMgr extends AbstractCoordinator {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
       AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
-      AnswerId finalAnswerId = computeFinalAnswerAndId(baseAnswerMetadata, baseAnswerId);
+      AnswerId finalAnswerId =
+          computeFinalAnswerAndId(
+              baseAnswerMetadata,
+              networkId,
+              snapshotId,
+              questionId,
+              baseAnswerId,
+              referenceSnapshotId,
+              analysisId);
       return _storage.loadAnswerMetadata(finalAnswerId);
     } catch (IOException | IllegalArgumentException e) {
       _logger.errorf(
@@ -857,43 +975,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @VisibleForTesting
-  @Nonnull
-  AnswerMetadata applyPendingIssuesSettingsChanges(
-      @Nonnull AnswerMetadata currentAnswerMetadata,
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nonnull String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
-      throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
-    if (currentAnswerMetadata.getMetrics() == null) {
-      // issues configuration not applicable to this answer, so nothing to do.
-      return currentAnswerMetadata;
-    }
-    Map<String, MajorIssueConfig> answerMajorIssueConfigs =
-        currentAnswerMetadata.getMetrics().getMajorIssueConfigs();
-    Map<String, MajorIssueConfig> latestMajorIssueConfigs =
-        _storage.loadMajorIssueConfigs(network, answerMajorIssueConfigs.keySet());
-    if (answerIssueConfigsMatchConfiguredIssues(currentAnswerMetadata, latestMajorIssueConfigs)) {
-      return currentAnswerMetadata;
-    }
-    return applyIssuesConfiguration(
-        latestMajorIssueConfigs, network, snapshot, question, referenceSnapshot, analysis);
-  }
-
-  private boolean answerIssueConfigsMatchConfiguredIssues(
-      AnswerMetadata answerMetadata, Map<String, MajorIssueConfig> configuredMajorIssues) {
-    return answerMetadata
-        .getMetrics()
-        .getMajorIssueConfigs()
-        .values()
-        .stream()
-        .allMatch(
-            answerMajor ->
-                answerIssueConfigMatchesConfiguredIssues(answerMajor, configuredMajorIssues));
-  }
-
-  @VisibleForTesting
   boolean answerIssueConfigMatchesConfiguredIssues(
       MajorIssueConfig answerIssueConfig, Map<String, MajorIssueConfig> configuredMajorIssues) {
     MajorIssueConfig configuredMajorIssue =
@@ -907,20 +988,19 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @VisibleForTesting
-  @Nonnull
-  AnswerMetadata applyIssuesConfiguration(
+  void applyIssuesConfiguration(
       @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nonnull String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nonnull AnswerId finalAnswerId,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
       throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
     Answer oldAnswer =
         BatfishObjectMapper.mapper()
-            .readValue(
-                _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis),
-                new TypeReference<Answer>() {});
+            .readValue(_storage.loadAnswer(baseAnswerId), new TypeReference<Answer>() {});
     TableAnswerElement oldTable = (TableAnswerElement) oldAnswer.getAnswerElements().get(0);
     TableMetadata tableMetadata = oldTable.getMetadata();
     Set<String> issueColumns =
@@ -941,7 +1021,7 @@ public class WorkMgr extends AbstractCoordinator {
         .forEach(allRows::add);
 
     // grab the question for its exclusions
-    String questionStr = _storage.loadQuestion(network, question, analysis);
+    String questionStr = _storage.loadQuestion(networkId, questionId, analysisId);
     Question questionObj = Question.parseQuestion(questionStr);
 
     // postprocess using question exclusions, collected rows
@@ -958,11 +1038,8 @@ public class WorkMgr extends AbstractCoordinator {
     // Compute and store new answer and answer metdata
     AnswerMetadata newAnswerMetadata = AnswerMetadataUtil.computeAnswerMetadata(newAnswer, _logger);
     String answerStr = BatfishObjectMapper.writePrettyString(newAnswer);
-    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
-    _storage.storeAnswerMetadata(
-        newAnswerMetadata, network, snapshot, question, referenceSnapshot, analysis);
-
-    return newAnswerMetadata;
+    _storage.storeAnswer(answerStr, finalAnswerId);
+    _storage.storeAnswerMetadata(newAnswerMetadata, finalAnswerId);
   }
 
   private Stream<ExcludedRows> applyIssuesConfigurationToAllExcludedRows(
@@ -2258,5 +2335,10 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.getNetworkId(network);
     return _storage.loadMajorIssueConfig(
         networkId, getOrCreateIssueSettingsId(networkId, majorIssueType));
+  }
+
+  @VisibleForTesting
+  IdManager getIdManager() {
+    return _idManager;
   }
 }

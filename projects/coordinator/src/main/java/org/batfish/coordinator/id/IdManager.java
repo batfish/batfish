@@ -27,7 +27,7 @@ public interface IdManager extends IdResolver {
    * {@code analysisId} is {@code null}, the mapping is for an ad-hoc question.
    */
   void assignQuestion(
-      String question, NetworkId networkId, QuestionId questionId, @Nullable AnalysisId analyisId);
+      String question, NetworkId networkId, QuestionId questionId, @Nullable AnalysisId analysisId);
 
   /** Assign {@code questionClassId} under {@code networkId} to {@code questionSettingsId}). */
   void assignQuestionSettingsId(
@@ -39,8 +39,11 @@ public interface IdManager extends IdResolver {
   /** Delete any mapping for {@code network} */
   void deleteNetwork(String network);
 
-  /** Delete any mapping for {@code question} under {@code networkId} */
-  void deleteQuestion(String question, NetworkId networkId);
+  /**
+   * Delete any mapping for {@code question} under {@code networkId}, {@code analysisId}. If {@code
+   * analysisId} is {@code null}, the mapping to remove is for an ad-hoc question.
+   */
+  void deleteQuestion(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
 
   /** Delete any mapping for {@code snapshot} under {@code networkId} */
   void deleteSnapshot(String snapshot, NetworkId networkId);

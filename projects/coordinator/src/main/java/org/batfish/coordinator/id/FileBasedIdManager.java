@@ -2,6 +2,7 @@ package org.batfish.coordinator.id;
 
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.FileBasedIdResolver;
@@ -58,7 +59,8 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
   }
 
   @Override
-  public void deleteQuestion(String question, NetworkId networkId) {
+  public void deleteQuestion(
+      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

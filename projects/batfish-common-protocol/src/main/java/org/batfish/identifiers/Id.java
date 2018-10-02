@@ -34,4 +34,9 @@ public abstract class Id {
   public final int hashCode() {
     return Objects.hash(_id);
   }
+
+  @Override
+  public String toString() {
+    return _id;
+  }
 }

@@ -36,6 +36,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.FileBasedIdManager;
+import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -45,11 +46,18 @@ import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -65,8 +73,17 @@ public class WorkMgrServiceTest {
 
   private WorkMgrService _service;
 
-  private String _networkName = "myNetwork";
-  private String _snapshotName = "mySnapshot";
+  private String _networkName;
+  private String _snapshotName;
+  private SnapshotId _snapshotId;
+  private NetworkId _networkId;
+
+  private WorkMgrServiceTest() {
+    _networkName = "myNetwork";
+    _networkId = new NetworkId(_networkName);
+    _snapshotName = "mySnapshot";
+    _snapshotId = new SnapshotId(_snapshotName);
+  }
 
   private void initNetworkEnvironment() throws Exception {
     Settings settings = new Settings(new String[] {});
@@ -962,8 +979,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAdHoc() throws Exception {
-    String questionName = "question1";
-    String questionContent = "questionContent";
+    String question = "question1";
+    QuestionId questionId = new QuestionId(question);
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     initNetworkEnvironment();
 
@@ -979,11 +1000,11 @@ public class WorkMgrServiceTest {
             .setStatus(AnswerStatus.SUCCESS)
             .build();
 
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(
-            testAnswerMetadata, _networkName, _snapshotName, questionName, null, null);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
+    idm().assignQuestion(question, new NetworkId(_networkName), questionId, null);
+    AnswerId answerId =
+        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(testAnswerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(
@@ -994,7 +1015,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
-            questionName,
+            question,
             null);
 
     assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
@@ -1022,7 +1043,10 @@ public class WorkMgrServiceTest {
   public void testGetAnswerRowsAnalysis() throws Exception {
     String analysis = "analysis1";
     String question = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -1062,10 +1086,14 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
 
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswer(answer, _networkName, _snapshotName, question, null, analysis);
+    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
@@ -1092,10 +1120,18 @@ public class WorkMgrServiceTest {
     assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
   }
 
+  private static IdManager idm() {
+    return Main.getWorkMgr().getIdManager();
+  }
+  
   @Test
   public void testGetAnswerRowsAdHoc() throws Exception {
     String question = "question1";
-    String questionContent = "questionContent";
+    QuestionId questionId = new QuestionId(question);
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -1120,10 +1156,11 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, question, null);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswer(answer, _networkName, _snapshotName, question, null, null);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
+    idm().assignQuestion(question, new NetworkId(_networkName), questionId, null);
+    AnswerId answerId =
+        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
