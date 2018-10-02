@@ -296,7 +296,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPathIn.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
       envSettings.setEdgeBlacklistPath(envPathIn.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setDeltaConfigurationsDir(envPathIn.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+      envSettings.setDeltaConfigurationsDir(
+          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
           envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
