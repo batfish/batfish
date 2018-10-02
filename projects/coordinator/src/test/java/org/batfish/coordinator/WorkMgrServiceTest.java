@@ -301,7 +301,11 @@ public class WorkMgrServiceTest {
     Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
     Path snapshotPath =
         networkDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
+            Paths.get(
+                BfConsts.RELPATH_TESTRIGS_DIR,
+                _snapshotName,
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR));
     assertTrue(snapshotPath.toFile().mkdirs());
     Response response =
         _service.getConfiguration(
@@ -329,6 +333,7 @@ public class WorkMgrServiceTest {
             Paths.get(
                 BfConsts.RELPATH_TESTRIGS_DIR,
                 _snapshotName,
+                BfConsts.RELPATH_INPUT,
                 BfConsts.RELPATH_TEST_RIG_DIR,
                 BfConsts.RELPATH_CONFIGURATIONS_DIR));
     assertTrue(configPath.toFile().mkdirs());
@@ -628,7 +633,11 @@ public class WorkMgrServiceTest {
     Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
     Path snapshotPath =
         networkDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
+            Paths.get(
+                BfConsts.RELPATH_TESTRIGS_DIR,
+                _snapshotName,
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR));
     assertTrue(snapshotPath.toFile().mkdirs());
     Response response =
         _service.getConfiguration(
@@ -656,6 +665,7 @@ public class WorkMgrServiceTest {
             Paths.get(
                 BfConsts.RELPATH_TESTRIGS_DIR,
                 _snapshotName,
+                BfConsts.RELPATH_INPUT,
                 BfConsts.RELPATH_TEST_RIG_DIR,
                 BfConsts.RELPATH_CONFIGURATIONS_DIR));
     assertTrue(configPath.toFile().mkdirs());

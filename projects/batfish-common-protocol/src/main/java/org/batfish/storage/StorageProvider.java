@@ -7,15 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -47,6 +50,24 @@ public interface StorageProvider {
       String network, String snapshot);
 
   /**
+   * Returns the edge blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<Edge> loadEdgeBlacklist(String network, String snapshot);
+
+  /**
+   * Returns the interface blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<NodeInterfacePair> loadInterfaceBlacklist(String network, String snapshot);
+
+  /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot
    *
    * @param network The name of the network
@@ -71,6 +92,15 @@ public interface StorageProvider {
    */
   @Nonnull
   MajorIssueConfig loadMajorIssueConfig(String network, String majorIssueType);
+
+  /**
+   * Returns the node blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<String> loadNodeBlacklist(String network, String snapshot);
 
   /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored

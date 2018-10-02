@@ -7,13 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class TestStorageProvider implements StorageProvider {
 
@@ -26,6 +30,27 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations(String network, String snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<Edge> loadEdgeBlacklist(String network, String snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(String network, String snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<String> loadNodeBlacklist(String network, String snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

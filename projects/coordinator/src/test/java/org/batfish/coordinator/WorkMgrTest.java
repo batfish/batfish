@@ -97,7 +97,9 @@ public class WorkMgrTest {
       throws IOException {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
-    Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
+    Files.createDirectories(
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig, BfConsts.RELPATH_OUTPUT)));
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), container, testrig);
   }
@@ -214,7 +216,8 @@ public class WorkMgrTest {
     CommonUtil.writeFile(
         _manager
             .getdirTestrig("container", "testrig1")
-            .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
     // should get the nodes of the topology when we ask for it
@@ -255,7 +258,11 @@ public class WorkMgrTest {
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path testrigPath =
         containerDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
+            Paths.get(
+                BfConsts.RELPATH_TESTRIGS_DIR,
+                "testrig",
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR));
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     _thrown.expect(Exception.class);
     _thrown.expectMessage(
@@ -275,6 +282,7 @@ public class WorkMgrTest {
             Paths.get(
                 BfConsts.RELPATH_TESTRIGS_DIR,
                 "testrig",
+                BfConsts.RELPATH_INPUT,
                 BfConsts.RELPATH_TEST_RIG_DIR,
                 BfConsts.RELPATH_CONFIGURATIONS_DIR));
     assertTrue(configPath.toFile().mkdirs());

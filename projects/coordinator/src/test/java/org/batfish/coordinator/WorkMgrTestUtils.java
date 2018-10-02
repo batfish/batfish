@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,7 +38,9 @@ public final class WorkMgrTestUtils {
       throws IOException {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
-    Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
+    Files.createDirectories(
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig, BfConsts.RELPATH_OUTPUT)));
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), container, testrig);
     Topology topology = new Topology(testrig);
@@ -45,7 +48,8 @@ public final class WorkMgrTestUtils {
     CommonUtil.writeFile(
         Main.getWorkMgr()
             .getdirTestrig(container, testrig)
-            .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
   }
 

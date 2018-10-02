@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -50,10 +51,12 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
@@ -91,9 +94,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nullable
   public SortedMap<String, Configuration> loadCompressedConfigurations(
       String network, String snapshot) {
-    Path testrigDir = getSnapshotDir(network, snapshot);
-    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
-    return loadConfigurations(network, snapshot, indepDir);
+    return loadConfigurations(network, snapshot, getCompressedConfigDir(network, snapshot));
   }
 
   /**
@@ -104,7 +105,9 @@ public final class FileBasedStorage implements StorageProvider {
   @Nullable
   public SortedMap<String, Configuration> loadConfigurations(String network, String snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
-    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    Path indepDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
     return loadConfigurations(network, snapshot, indepDir);
   }
 
@@ -145,7 +148,9 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       String network, String snapshot) {
-    Path ccaePath = getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+    Path ccaePath =
+        getSnapshotDir(network, snapshot)
+            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -160,12 +165,63 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  public @Nullable SortedSet<Edge> loadEdgeBlacklist(String network, String snapshot) {
+    Path path =
+        getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<Edge>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading edge blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
+      String network, String snapshot) {
+    Path path =
+        getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
   public @Nullable Topology loadLegacyTopology(String network, String snapshot) {
     Path path =
         getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }
@@ -189,7 +245,9 @@ public final class FileBasedStorage implements StorageProvider {
         getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }
@@ -224,6 +282,30 @@ public final class FileBasedStorage implements StorageProvider {
           "ERROR: Could not cast file for major issue %s in network %s to MajorIssueConfig: %s",
           majorIssueType, network, Throwables.getStackTraceAsString(e));
       return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
+    }
+  }
+
+  @Override
+  public @Nullable SortedSet<String> loadNodeBlacklist(String network, String snapshot) {
+    Path path =
+        getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<String>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
     }
   }
 
@@ -279,7 +361,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private Path getCompressedConfigDir(String network, String snapshot) {
-    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+    return getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
   }
 
   /**
@@ -300,6 +383,10 @@ public final class FileBasedStorage implements StorageProvider {
 
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
+    if (!ccaePath.toFile().exists() && !ccaePath.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create snapshot directory '%s'", ccaePath));
+    }
     CommonUtil.deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);
 
@@ -315,11 +402,13 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getVendorIndependentConfigDir(String network, String snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+        .resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
   }
 
   private @Nonnull Path getConvertAnswerPath(String network, String snapshot) {
-    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+    return getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
   }
 
   private void storeConfigurations(
@@ -568,7 +657,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getVendorSpecificConfigDir(String network, String snapshot) {
-    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+    return getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
   }
 
   @Override
