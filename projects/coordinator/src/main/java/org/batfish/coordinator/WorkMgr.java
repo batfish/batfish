@@ -1357,7 +1357,7 @@ public class WorkMgr extends AbstractCoordinator {
         isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
     Path containerDir = Main.getSettings().getContainersLocation().resolve(newContainerName);
     if (Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + newContainerName + "' already exists!");
+      throw new BatfishException("Network '" + newContainerName + "' already exists!");
     }
     if (!containerDir.toFile().mkdirs()) {
       throw new BatfishException("failed to create directory '" + containerDir + "'");

@@ -1452,7 +1452,7 @@ public class CommonUtil {
    */
   public static <T> void mergeWithSerializedList(Path serializedObjectPath, Collection<T> addition)
       throws IOException {
-    if (addition == null || addition.size() == 0) {
+    if (addition == null || addition.isEmpty()) {
       return;
     }
 
@@ -1467,7 +1467,7 @@ public class CommonUtil {
     }
 
     baseList.addAll(addition);
-    if (baseList.size() > 0) {
+    if (!baseList.isEmpty()) {
       CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
     }
   }

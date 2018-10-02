@@ -139,7 +139,7 @@ public class WorkMgrTest {
   @Test
   public void initExistingContainer() {
     _manager.initContainer("container", null);
-    String expectedMessage = "Container 'container' already exists!";
+    String expectedMessage = "Network 'container' already exists!";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo(expectedMessage));
     _manager.initContainer("container", null);
@@ -179,7 +179,7 @@ public class WorkMgrTest {
   @Test
   public void listQuestionWithNonExistContainer() {
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
+    _thrown.expectMessage(equalTo("Network 'container' does not exist"));
     _manager.listQuestions("container", false);
   }
 
@@ -254,14 +254,14 @@ public class WorkMgrTest {
   @Test
   public void getNonExistContainer() {
     _thrown.expect(Exception.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
+    _thrown.expectMessage(equalTo("Network 'container' does not exist"));
     _manager.getContainer("container");
   }
 
   @Test
   public void getConfigNonExistContainer() {
     _thrown.expect(Exception.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
+    _thrown.expectMessage(equalTo("Network 'container' does not exist"));
     _manager.getConfiguration("container", "testrig", "config.cfg");
   }
 
