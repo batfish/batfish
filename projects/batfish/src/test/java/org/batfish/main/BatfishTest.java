@@ -50,6 +50,7 @@ import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.TestIdResolver;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -100,7 +101,8 @@ public class BatfishTest {
                     + "\"nodeRegex\": \"${nodeRegex}\""
                     + "}";
               }
-            });
+            },
+            new TestIdResolver());
     Answer answer = batfish.answer();
     assertThat(answer.getQuestion(), is(nullValue()));
     assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
@@ -429,7 +431,8 @@ public class BatfishTest {
                   throws IOException {
                 return questionSettings;
               }
-            });
+            },
+            new TestIdResolver());
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), equalTo(questionSettings));
   }
@@ -444,7 +447,8 @@ public class BatfishTest {
                   throws IOException {
                 return null;
               }
-            });
+            },
+            new TestIdResolver());
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
@@ -459,7 +463,8 @@ public class BatfishTest {
                   throws IOException {
                 throw new IOException("simulated error");
               }
-            });
+            },
+            new TestIdResolver());
 
     _thrown.expect(BatfishException.class);
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
@@ -467,7 +472,7 @@ public class BatfishTest {
 
   @Test
   public void testCreateAnswerer() {
-    Batfish batfish = BatfishTestUtils.getBatfish(new TestStorageProvider());
+    Batfish batfish = BatfishTestUtils.getBatfish(new TestStorageProvider(), new TestIdResolver());
     Question testQuestion =
         new TestQuestion() {
           @Override

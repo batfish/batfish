@@ -32,6 +32,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -515,7 +516,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
       Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
-      @Nullable StorageProvider alternateStorageProvider) {
+      @Nullable StorageProvider alternateStorageProvider,
+      @Nullable IdResolver alternateIdResolver) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -538,7 +540,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateStorageProvider != null
             ? alternateStorageProvider
             : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
-    _idResolver = new FileBasedIdResolver(_settings.getStorageBase());
+    _idResolver =
+        alternateIdResolver != null
+            ? alternateIdResolver
+            : new FileBasedIdResolver(_settings.getStorageBase());
   }
 
   private Answer analyze() {
@@ -1693,6 +1698,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRolesData getNodeRolesWrapped(NetworkId networkId) {
+    if (!_storage.hasNodeRoles(networkId)) {
+      return new NodeRolesData(null, new Date().toInstant(), null);
+    }
     try {
       return BatfishObjectMapper.mapper()
           .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);

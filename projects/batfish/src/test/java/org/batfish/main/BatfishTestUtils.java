@@ -27,6 +27,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
+import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
@@ -82,6 +83,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
+            null,
             null);
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
@@ -135,6 +137,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
+            null,
             null);
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
@@ -222,6 +225,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
+            null,
             null);
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -258,8 +262,9 @@ public class BatfishTestUtils {
     return initBatfish(configurations, tempFolder);
   }
 
-  /** Get a new Batfish instance with given storage provider */
-  public static Batfish getBatfish(@Nonnull StorageProvider storageProvider) {
+  /** Get a new Batfish instance with given storage provider and id resolver */
+  public static Batfish getBatfish(
+      @Nonnull StorageProvider storageProvider, @Nonnull IdResolver idResolver) {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
@@ -276,7 +281,8 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
-            storageProvider);
+            storageProvider,
+            idResolver);
     registerDataPlanePlugins(batfish);
     return batfish;
   }
