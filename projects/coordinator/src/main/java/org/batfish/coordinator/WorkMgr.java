@@ -1083,7 +1083,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     if (errIfNotEixst && !Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + containerName + "' does not exist");
+      throw new BatfishException("Network '" + containerName + "' does not exist");
     }
     return containerDir;
   }
@@ -1510,16 +1510,9 @@ public class WorkMgr extends AbstractCoordinator {
    * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
    */
   public void forkSnapshot(
-      String apiKey, String networkName, String snapshotName, ForkSnapshotBean forkSnapshotBean)
+      String networkName, String snapshotName, ForkSnapshotBean forkSnapshotBean)
       throws IOException {
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
-
-    Optional<Container> networks =
-        getContainers(apiKey).stream().filter(c -> c.getName().equals(networkName)).findFirst();
-    if (!networks.isPresent()) {
-      throw new BatfishException(
-          "Network named: '" + networkName + "' does not exist or is not accessible.");
-    }
 
     Path networkDir = getdirNetwork(networkName);
     Path testrigsDir = networkDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
@@ -1555,6 +1548,12 @@ public class WorkMgr extends AbstractCoordinator {
         unzipDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
+    }
+    if (!baseSnapshotInputsDir.toFile().exists()) {
+      throw new FileNotFoundException(
+          String.format(
+              "Base snapshot '%s' is missing source files and cannot be forked.  Try re-uploading the base snapshot first.",
+              baseSnapshotName));
     }
     CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
     _logger.infof(

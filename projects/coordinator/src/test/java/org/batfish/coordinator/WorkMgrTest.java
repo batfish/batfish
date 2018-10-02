@@ -48,6 +48,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -91,6 +92,19 @@ public class WorkMgrTest {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
     _storage = _manager.getStorage();
+  }
+
+  private static void createForkableSnapshot(String network, String snapshot) throws IOException {
+    createTestrigWithMetadata(network, snapshot);
+    Path containerDir =
+        Main.getSettings().getContainersLocation().resolve(network).toAbsolutePath();
+    Files.createDirectories(
+        containerDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_TESTRIGS_DIR,
+                snapshot,
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR)));
   }
 
   private static void createTestrigWithMetadata(String container, String testrig)
@@ -404,6 +418,79 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), true);
     assertTrue(getMetadataSuggested(containerName, "analysis3"));
+  }
+
+  @Test
+  public void forkSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    _manager.initContainer(networkName, null);
+    createForkableSnapshot(networkName, snapshotBaseName);
+
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+  }
+
+  @Test
+  public void forkSnapshotIncomptibleSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    _manager.initContainer(networkName, null);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
+
+    // Confirm snapshot missing input dir cannot be forked
+    _thrown.expect(FileNotFoundException.class);
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotBaseSnapshotSpecifiedDoesNotExist() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    _manager.initContainer(networkName, null);
+
+    // Fork should fail because base snapshot does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotDuplicateName() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    _manager.initContainer(networkName, null);
+    createForkableSnapshot(networkName, snapshotBaseName);
+    createForkableSnapshot(networkName, snapshotNewName);
+
+    // Fork should fail due to duplicate/conflicting new snapshot name
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotNoNetwork() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
   @Test

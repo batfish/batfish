@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
+import java.util.Optional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
@@ -47,7 +49,7 @@ public class WorkMgrServiceV2 {
   /** Information on the URI of a request, injected by the server framework at runtime. */
   @Context private UriInfo _uriInfo;
 
-  private static void checkStringParam(String paramStr, String parameterName) {
+  private static void assertStringParamProvided(String paramStr, String parameterName) {
     if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
@@ -77,15 +79,11 @@ public class WorkMgrServiceV2 {
     try {
       _logger.infof("WMS2:forkSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
 
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-
-      // TODO determine if we need these as well
-      // checkApiKeyValidity(apiKey);
-      // checkClientVersion(clientVersion);
-      // checkNetworkAccessibility(apiKey, networkName);
+      assertStringParamProvided(apiKey, "API key");
+      assertStringParamProvided(clientVersion, "Client version");
+      assertStringParamProvided(networkName, "Network name");
+      assertStringParamProvided(snapshotName, "Snapshot name");
+      assertNetworkAccessibility(apiKey, networkName);
 
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
@@ -94,7 +92,7 @@ public class WorkMgrServiceV2 {
             .setTag("snapshot-name", snapshotName);
       }
 
-      Main.getWorkMgr().forkSnapshot(apiKey, networkName, snapshotName, forkSnapshotBean);
+      Main.getWorkMgr().forkSnapshot(networkName, snapshotName, forkSnapshotBean);
       _logger.infof(
           "Created snapshot:%s forked from snapshot: %s for network:%s using api-key:%s\n",
           snapshotName, forkSnapshotBean.baseSnapshot, networkName, apiKey);
@@ -105,6 +103,19 @@ public class WorkMgrServiceV2 {
           "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
           apiKey, networkName, snapshotName, stackTrace);
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    }
+  }
+
+  private static void assertNetworkAccessibility(String apiKey, String networkName) {
+    Optional<Container> networks =
+        Main.getWorkMgr()
+            .getContainers(apiKey)
+            .stream()
+            .filter(c -> c.getName().equals(networkName))
+            .findFirst();
+    if (!networks.isPresent()) {
+      throw new BatfishException(
+          "Network named: '" + networkName + "' does not exist or is not accessible.");
     }
   }
 
