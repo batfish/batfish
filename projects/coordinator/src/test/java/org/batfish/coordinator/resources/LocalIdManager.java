@@ -241,6 +241,11 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
+  public Set<String> listNetworks() {
+    return _networkIds.keySet();
+  }
+
+  @Override
   public Set<String> listSnapshots(NetworkId networkId) {
     return _snapshotIds.get(networkId).keySet();
   }

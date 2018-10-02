@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.identifiers.NetworkId;
@@ -87,6 +88,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
     WorkMgrTestUtils.initWorkManager(_idManager, _storage);
+    Main.getWorkMgr().initContainer(NETWORK, null);
   }
 
   @Test

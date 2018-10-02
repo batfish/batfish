@@ -630,4 +630,9 @@ public final class FileBasedStorage implements StorageProvider {
   public boolean hasNodeRoles(NetworkId networkId) {
     return Files.exists(getNodeRolesPath(networkId));
   }
+
+  @Override
+  public void initNetwork(NetworkId networkId) {
+    _d.getNetworkDir(networkId).toFile().mkdirs();
+  }
 }

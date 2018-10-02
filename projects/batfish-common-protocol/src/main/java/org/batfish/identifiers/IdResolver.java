@@ -1,6 +1,7 @@
 package org.batfish.identifiers;
 
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -105,6 +106,10 @@ public interface IdResolver {
   /** Returns the names of analyses under {@code networkId} */
   @Nonnull
   Set<String> listAnalyses(NetworkId networkId);
+
+  /** Returns the names of available networks */
+  @Nonnull
+  Set<String> listNetworks();
 
   /** Returns the names of snapshots under {@code networkId} */
   @Nonnull

@@ -78,7 +78,7 @@ public class WorkMgrServiceTest {
   private SnapshotId _snapshotId;
   private NetworkId _networkId;
 
-  private WorkMgrServiceTest() {
+  public WorkMgrServiceTest() {
     _networkName = "myNetwork";
     _networkId = new NetworkId(_networkName);
     _snapshotName = "mySnapshot";
@@ -469,8 +469,8 @@ public class WorkMgrServiceTest {
     Path snapshotPath = networkPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(_snapshotName);
     assertThat(snapshotPath.toFile().mkdirs(), is(true));
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
-    Container network =
-        BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
+    String entityStr = response.getEntity().toString();
+    Container network = BatfishObjectMapper.mapper().readValue(entityStr, Container.class);
     Container expected =
         Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
     assertThat(network, equalTo(expected));

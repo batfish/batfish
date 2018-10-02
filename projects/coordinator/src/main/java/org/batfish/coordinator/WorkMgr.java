@@ -1134,18 +1134,9 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
-    return getContainer(getdirNetwork(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SortedSet<String> testrigs = ImmutableSortedSet.copyOf(_idManager.listSnapshots(networkId));
+    return Container.of(containerName, testrigs);
   }
 
   @Override
@@ -1381,7 +1372,9 @@ public class WorkMgr extends AbstractCoordinator {
   public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     String newContainerName =
         isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
-    _idManager.assignNetwork(newContainerName, _idManager.generateNetworkId());
+    NetworkId networkId = _idManager.generateNetworkId();
+    _storage.initNetwork(networkId);
+    _idManager.assignNetwork(newContainerName, networkId);
     return newContainerName;
   }
 
@@ -1678,9 +1671,9 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> authorizedContainers =
-        CommonUtil.getSubdirectories(containersDir)
+        _idManager
+            .listNetworks()
             .stream()
-            .map(dir -> dir.getFileName().toString())
             .filter(
                 container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
             .collect(toCollection(TreeSet::new));
@@ -2020,8 +2013,11 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean checkContainerExists(String containerName) {
+    if (!_idManager.hasNetworkId(containerName)) {
+      return false;
+    }
     NetworkId id = _idManager.getNetworkId(containerName);
-    return id != null && _storage.checkNetworkExists(id);
+    return _storage.checkNetworkExists(id);
   }
 
   /**

@@ -37,6 +37,23 @@ public class FileBasedIdResolver implements IdResolver {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
   }
 
+  private static Set<String> listResolvableNames(Path idsDir) {
+    if (!Files.exists(idsDir)) {
+      return ImmutableSet.of();
+    }
+    try (Stream<Path> files = CommonUtil.list(idsDir)) {
+      return files
+          .filter(path -> path.toString().endsWith(ID_EXTENSION))
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .map(
+              nameWithExtension ->
+                  nameWithExtension.substring(
+                      0, nameWithExtension.length() - ID_EXTENSION.length()))
+          .collect(ImmutableSet.toImmutableSet());
+    }
+  }
+
   protected final FileBasedStorageDirectoryProvider _d;
 
   public FileBasedIdResolver(Path storageBase) {
@@ -194,39 +211,16 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public Set<String> listAnalyses(NetworkId networkId) {
-    Path analysisIdsDir = getAnalysisIdsDir(networkId);
-    if (!Files.exists(analysisIdsDir)) {
-      return ImmutableSet.of();
-    }
-    try (Stream<Path> files = CommonUtil.list(analysisIdsDir)) {
-      return files
-          .filter(path -> path.endsWith(ID_EXTENSION))
-          .map(Path::getFileName)
-          .map(Path::toString)
-          .map(
-              nameWithExtension ->
-                  nameWithExtension.substring(
-                      0, nameWithExtension.length() - ID_EXTENSION.length()))
-          .collect(ImmutableSet.toImmutableSet());
-    }
+    return listResolvableNames(getAnalysisIdsDir(networkId));
+  }
+
+  @Override
+  public Set<String> listNetworks() {
+    return listResolvableNames(getNetworkIdsDir());
   }
 
   @Override
   public Set<String> listSnapshots(NetworkId networkId) {
-    Path snapshotIdsDir = getSnapshotIdsDir(networkId);
-    if (!Files.exists(snapshotIdsDir)) {
-      return ImmutableSet.of();
-    }
-    try (Stream<Path> files = CommonUtil.list(snapshotIdsDir)) {
-      return files
-          .filter(path -> path.endsWith(ID_EXTENSION))
-          .map(Path::getFileName)
-          .map(Path::toString)
-          .map(
-              nameWithExtension ->
-                  nameWithExtension.substring(
-                      0, nameWithExtension.length() - ID_EXTENSION.length()))
-          .collect(ImmutableSet.toImmutableSet());
-    }
+    return listResolvableNames(getSnapshotIdsDir(networkId));
   }
 }

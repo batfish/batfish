@@ -300,4 +300,7 @@ public interface StorageProvider {
 
   /** Returns true iff the network with the specified ID has node roles */
   boolean hasNodeRoles(NetworkId networkId);
+
+  /** Initialize an empty network */
+  void initNetwork(NetworkId networkId);
 }

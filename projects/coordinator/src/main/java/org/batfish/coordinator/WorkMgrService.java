@@ -1373,9 +1373,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      java.nio.file.Path networkDir =
-          Main.getSettings().getContainersLocation().resolve(networkNameParam).toAbsolutePath();
-      if (networkDir == null || !Files.exists(networkDir)) {
+      if (!Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
         return Response.status(Response.Status.NOT_FOUND)
             .entity("Network '" + networkNameParam + "' not found")
             .type(MediaType.TEXT_PLAIN)
@@ -1384,7 +1382,7 @@ public class WorkMgrService {
 
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Container network = Main.getWorkMgr().getContainer(networkDir);
+      Container network = Main.getWorkMgr().getContainer(networkName);
       String networkString = BatfishObjectMapper.writeString(network);
 
       return Response.ok(networkString).build();

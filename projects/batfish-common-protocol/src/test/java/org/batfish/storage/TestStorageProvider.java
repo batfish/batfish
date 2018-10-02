@@ -218,4 +218,9 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
+
+  @Override
+  public void initNetwork(NetworkId networkId) {
+    
+  }
 }
