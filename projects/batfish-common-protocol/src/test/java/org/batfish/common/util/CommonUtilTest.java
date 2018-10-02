@@ -7,15 +7,26 @@ import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.longToCommunity;
+import static org.batfish.common.util.CommonUtil.mergeWithSerializedList;
+import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
@@ -26,9 +37,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class CommonUtilTest {
 
@@ -219,5 +233,117 @@ public class CommonUtilTest {
   public void testLongToCommunity() {
     assertThat(longToCommunity(0L), equalTo("0:0"));
     assertThat(longToCommunity(4294967295L), equalTo("65535:65535"));
+  }
+
+  @Test
+  public void testMergeWithSerializedList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    mergeWithSerializedList(serializedListPath, ImmutableList.of(additionalInterface));
+
+    // Confirm the additional and original interfaces show up in the merged list
+    assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface, additionalInterface));
+  }
+
+  @Test
+  public void testMergeWithSerializedListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    mergeWithSerializedList(serializedListPath, ImmutableList.of());
+
+    // Confirm original interface shows up in the merged list, even if there are no additions
+    assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testMergeWithSerializedListNullAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    mergeWithSerializedList(serializedListPath, null);
+
+    // Confirm original interface shows up in the merged list, even if addition is null
+    assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testMergeWithSerializedListNoList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    mergeWithSerializedList(serializedListPath, ImmutableList.of(additionalInterface));
+
+    // Confirm the additional interface shows up in the serialized list, even if the serialized list
+    // didn't exist in the first place
+    assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(additionalInterface));
+  }
+
+  @Test
+  public void testMergeWithSerializedListNoListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    mergeWithSerializedList(serializedListPath, ImmutableList.of());
+
+    // Confirm no file was created (since there was no list to begin with and nothing was added)
+    assertThat(serializedList, not(FileMatchers.anExistingFile()));
   }
 }
