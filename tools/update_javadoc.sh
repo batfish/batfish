@@ -30,8 +30,11 @@ function die() {
 
 [ $# -eq 0 ] || { usage; exit 1; }
 
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )" || die "Could not determine directory"
+cd ${dir}/..
+
 git fetch -q origin master &&
-    git diff origin/master --exit-code || die "Build branch is not clean"
+    git diff origin/master --exit-code -- projects/ || die "Build branch is not clean"
 sha=$(git rev-parse --verify HEAD)
 branch="update-javadoc-${sha}"
 
@@ -47,6 +50,6 @@ pushd ${output_dir} &&
     git rm -r docs/ &&
     unzip ${javadoc_zip} -d docs/ &&
     git add docs/ &&
-    git commit -m "Update javadoc at ${sha}"
+    git commit -m "Update javadoc at ${sha}" || die "Could not update javadoc"
 
-echo "Prepared commit to update javadoc at ${output_dir} in branch ${branch}"
+echo "Prepared commit to update javadoc at ${output_dir}"
