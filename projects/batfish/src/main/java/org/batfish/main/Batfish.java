@@ -4138,13 +4138,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
+            .and(mgr.isValidValue());
     BDD deltaAclBDD =
         BDDAcl.create(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
+            .and(mgr.isValidValue());
 
     String hostname = baseConfig.getHostname();
 
@@ -4271,7 +4271,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
+            .and(mgr.isValidValue());
 
     return getFlow(bddPacket, mgr, node.getHostname(), bdd)
         .map(

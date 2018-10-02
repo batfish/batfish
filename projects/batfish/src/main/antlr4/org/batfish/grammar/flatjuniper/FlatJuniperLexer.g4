@@ -1884,6 +1884,11 @@ IP
    'ip'
 ;
 
+IP_DESTINATION_ADDRESS
+:
+   'ip-destination-address'
+;
+
 IP_HEADER_BAD
 :
    'ip-header-bad'
@@ -1897,6 +1902,11 @@ IP_OPTIONS
 IP_PROTOCOL
 :
    'ip-protocol'
+;
+
+IP_SOURCE_ADDRESS
+:
+   'ip-source-address'
 ;
 
 IPIP

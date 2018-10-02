@@ -60,14 +60,14 @@ init-snapshot tests/basic/networks/dc-as-reuse basic-dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
 
 # iptables
-test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/example-iptables
+test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/iptables-firewall
 test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
 test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes="z1-firewall", actions=["ACCEPT"]
 test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPT"]
 
 # z3 timeout - 1 millisecond
 add-batfish-option z3timeout 1
-init-snapshot networks/fattree-examples/fattree2
+init-snapshot tests/basic/networks/fattree2
 test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
 
 # data-plane related diff tests

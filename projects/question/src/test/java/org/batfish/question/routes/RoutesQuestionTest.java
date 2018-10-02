@@ -14,7 +14,7 @@ public class RoutesQuestionTest {
     RoutesQuestion question = new RoutesQuestion();
 
     assertThat(question.getDataPlane(), equalTo(true));
-    assertThat(question.getName(), equalTo("routes2"));
+    assertThat(question.getName(), equalTo("routes"));
 
     assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getVrfs(), equalTo(".*"));
