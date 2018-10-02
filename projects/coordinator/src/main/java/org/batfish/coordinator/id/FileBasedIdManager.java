@@ -17,7 +17,7 @@ import org.batfish.identifiers.SnapshotId;
 /**
  * Filesystem based {@link IdManager} capable of writing mappings used by {@link
  * FileBasedIdResolver}, from which it inherits. Intended to be used together with {@link
- * FileBasedStorage}.
+ * org.batfish.storage.FileBasedStorage}.
  */
 @ParametersAreNonnullByDefault
 public class FileBasedIdManager extends FileBasedIdResolver implements IdManager {

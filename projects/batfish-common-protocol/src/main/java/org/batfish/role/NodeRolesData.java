@@ -3,7 +3,6 @@ package org.batfish.role;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -68,9 +67,8 @@ public class NodeRolesData {
 
   /**
    * Get the {@link NodeRoleDimension} object for the specified dimension. If dimension is null,
-   * returns {@link #getNodeRoleDimension(Path)}.
+   * returns {@link #getNodeRoleDimension(Supplier)}.
    *
-   * @param dataPath Path from where to read {@link NodeRolesData}
    * @param dimension The name of the dimension to fetch
    * @return The {@link NodeRoleDimension} object if one exists or throws {@link
    *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
@@ -131,7 +129,8 @@ public class NodeRolesData {
    * data sources, the new data wins. If defaultDimension is non-null, it is deemed as the default
    * dimension. Optionally, delete all dimensions of type AUTO before adding new data.
    *
-   * @param dataPath Location of the old data
+   * @param read Supplier of the old data
+   * @param write Writer of the new data
    * @param newDimensions The new role data. Null values are treated as if the map were empty.
    * @param defaultDimension Dimension to deem as default after merger
    * @param deleteAutoFirst If dimensions of type AUTO should be deleted first

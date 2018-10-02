@@ -12,7 +12,7 @@ public interface IdResolver {
   /**
    * Retrieve the {@link AnalysisId} assigned to {@code analysis} under {@code networkId}.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   AnalysisId getAnalysisId(String analysis, NetworkId networkId);
@@ -27,7 +27,7 @@ public interface IdResolver {
       @Nullable SnapshotId referenceSnapshotId,
       @Nullable AnalysisId analysisId);
 
-  /** Retrieve the {@link FinalAnswerId} corresponding to the provided input IDs. */
+  /** Retrieve the {@link AnswerId} of the final answer corresponding to the provided input IDs. */
   @Nonnull
   AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds);
 
@@ -35,7 +35,7 @@ public interface IdResolver {
    * Retrieve the {@link IssueSettingsId} assigned to {@code majorIssueType} under {@code
    * networkId}.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId);
@@ -43,7 +43,7 @@ public interface IdResolver {
   /**
    * Retrieve the {@link NetworkId} assigned to {@code network}.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   NetworkId getNetworkId(String network);
@@ -52,7 +52,7 @@ public interface IdResolver {
    * Retrieve the {@link QuestionId} assigned to {@code question} under {@code networkId} and {@code
    * analysisId}. If {@code analysisId} is {@code null}, returns the mapping for an ad-hoc question.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   QuestionId getQuestionId(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
@@ -61,7 +61,7 @@ public interface IdResolver {
    * Retrieve the {@link QuestionSettingsId} assigned to {@code questionClassId} under {@code
    * networkId}.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   QuestionSettingsId getQuestionSettingsId(String questionClassId, NetworkId networkId);
@@ -69,7 +69,7 @@ public interface IdResolver {
   /**
    * Retrieve the {@link SnapshotId} assigned to {@code snapshot} under {@code networkId}.
    *
-   * @throws {@link IllegalArgumentException} if none assigned
+   * @throws IllegalArgumentException if none assigned
    */
   @Nonnull
   SnapshotId getSnapshotId(String snapshot, NetworkId networkId);

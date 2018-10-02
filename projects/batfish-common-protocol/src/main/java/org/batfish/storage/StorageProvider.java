@@ -215,8 +215,8 @@ public interface StorageProvider {
   /**
    * Retrieve the question class ID associated with the given question.
    *
-   * @throws {@link FileNotFoundException} if question does not exist; {@link IOException} if there
-   *     is an error reading the question class ID.
+   * @throws FileNotFoundException if question does not exist
+   * @throws IOException if there is an error reading the question class ID
    */
   @Nonnull
   String loadQuestionClassId(NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
@@ -246,8 +246,8 @@ public interface StorageProvider {
    *
    * @param networkId The ID of the network
    * @param analysisId The ID of the analysis
-   * @throws {@link FileNotFoundException} if metadata does not exist; {@link IOException} if there
-   *     is an error reading the metadata.
+   * @throws FileNotFoundException if metadata does not exist
+   * @throws IOException if there is an error reading the metadata.
    */
   @Nonnull
   String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
@@ -259,7 +259,7 @@ public interface StorageProvider {
    * @param snapshotMetadata The metadata to write
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
-   * @throws {@link IOException} if there is an error
+   * @throws IOException if there is an error
    */
   void storeSnapshotMetadata(
       TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
@@ -270,8 +270,8 @@ public interface StorageProvider {
    *
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
-   * @throws {@link FileNotFoundException} if metadata does not exist; {@link IOException} if there
-   *     is an error reading the metadata.
+   * @throws FileNotFoundException if metadata does not exist.
+   * @throws IOException if there is an error reading the metadata.
    */
   @Nonnull
   String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
@@ -280,15 +280,15 @@ public interface StorageProvider {
   /**
    * Write the node roles data for the network with the given ID.
    *
-   * @throws {@link IOException} if there is an error
+   * @throws IOException if there is an error
    */
   void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException;
 
   /**
    * Read the node roles data for the network with the given ID.
    *
-   * @throws {@link FileNotFoundException} if the roles do not exist; {@link IOException} if there
-   *     is an error reading the roles.
+   * @throws FileNotFoundException if the roles do not exist
+   * @throws IOException} if there is an error reading the roles.
    */
   @Nonnull
   String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException;

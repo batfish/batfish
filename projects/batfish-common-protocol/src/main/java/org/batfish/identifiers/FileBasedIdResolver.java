@@ -19,7 +19,8 @@ import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
 /**
  * Filesystem-based {@link IdResolver} that reads IDs from directories compatible with {@link
- * FileBasedStorageDirectoryProvider}. Intended to be used together with {@link FileBasedStorage}.
+ * FileBasedStorageDirectoryProvider}. Intended to be used together with {@link
+ * org.batfish.storage.FileBasedStorage}.
  */
 public class FileBasedIdResolver implements IdResolver {
 
