@@ -1,5 +1,6 @@
 package org.batfish.coordinator.id;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -27,15 +28,17 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
 
   @Override
   public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    Path idFile = getAnalysisIdPath(analysis, networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, analysisId.getId());
   }
 
   @Override
   public void assignIssueSettingsId(
       String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    Path idFile = getIssueSettingsIdPath(majorIssueType, networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, issueSettingsId.getId());
   }
 
   @Override
@@ -47,47 +50,46 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
 
   @Override
   public void assignQuestion(
-      String question, NetworkId networkId, QuestionId questionId, AnalysisId analyisId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+      String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+    Path idFile = getQuestionIdPath(question, networkId, analysisId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, questionId.getId());
   }
 
   @Override
   public void assignQuestionSettingsId(
       String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    Path idFile = getQuestionSettingsIdPath(questionClassId, networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, questionSettingsId.getId());
   }
 
   @Override
   public void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    Path idFile = getSnapshotIdPath(snapshot, networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, snapshotId.getId());
   }
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    CommonUtil.delete(getAnalysisIdPath(analysis, networkId));
   }
 
   @Override
   public void deleteNetwork(String network) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    CommonUtil.delete(getNetworkIdPath(network));
   }
 
   @Override
   public void deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    CommonUtil.delete(getQuestionIdPath(question, networkId, analysisId));
   }
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    CommonUtil.delete(getSnapshotIdPath(snapshot, networkId));
   }
 
   @Override

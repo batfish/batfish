@@ -558,8 +558,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public boolean hasAnswerMetadata(AnswerId answerId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return Files.exists(getAnswerMetadataPath(answerId));
   }
 
   @Override
@@ -571,37 +570,45 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return Files.exists(getAnalysisMetadataPath(networkId, analysisId));
+  }
+
+  private @Nonnull Path getAnalysisMetadataPath(NetworkId networkId, AnalysisId analysisId) {
+    return _d.getNetworkAnalysisDir(networkId, analysisId).resolve(BfConsts.RELPATH_METADATA_FILE);
+  }
+
+  private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
   @Override
   public void storeAnalysisMetadata(
       AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
       throws IOException {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    FileUtils.writeStringToFile(
+        getAnalysisMetadataPath(networkId, analysisId).toFile(),
+        BatfishObjectMapper.writePrettyString(analysisMetadata));
   }
 
   @Override
   public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return FileUtils.readFileToString(getAnalysisMetadataPath(networkId, analysisId).toFile());
   }
 
   @Override
   public void storeSnapshotMetadata(
-      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    FileUtils.writeStringToFile(
+        getSnapshotMetadataPath(networkId, snapshotId).toFile(),
+        BatfishObjectMapper.writePrettyString(snapshotMetadata));
   }
 
   @Override
   public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws FileNotFoundException, IOException {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return FileUtils.readFileToString(getSnapshotMetadataPath(networkId, snapshotId).toFile());
   }
 
   @Override

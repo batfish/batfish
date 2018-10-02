@@ -1273,28 +1273,6 @@ public class WorkMgr extends AbstractCoordinator {
     return warnings;
   }
 
-  // this function should build on others but some overrides are getting in the way
-  // TODO: cleanup later
-  private static Path ggetpathAnalysisMetadata(String container, String analysis) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_ANALYSES_DIR)
-        .resolve(analysis)
-        .resolve(BfConsts.RELPATH_METADATA_FILE);
-  }
-
-  // this function should build on others but some overrides are getting in the way
-  // TODO: cleanup later
-  private static Path ggetpathTestrigMetadata(String container, String testrig) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-        .resolve(testrig)
-        .resolve(BfConsts.RELPATH_METADATA_FILE);
-  }
-
   /**
    * Gets the {@link ReferenceLibrary} for the {@code container}.
    *

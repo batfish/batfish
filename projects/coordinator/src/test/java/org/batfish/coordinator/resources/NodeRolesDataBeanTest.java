@@ -29,10 +29,11 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void create() throws IOException {
     String container = "someContainer";
+    String snapshot = "testrig";
     Main.getWorkMgr().initContainer(container, null);
 
     // create a testrig with a topology file
-    WorkMgrTestUtils.initTestrigWithTopology(container, "testrig", ImmutableSet.of("a", "b"));
+    WorkMgrTestUtils.initTestrigWithTopology(container, snapshot, ImmutableSet.of("a", "b"));
 
     // write node roles data to in the right place
     NodeRolesData data =
@@ -49,8 +50,8 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
 
     // we should get OK and the expected bean
     assertThat(
-        NodeRolesDataBean.create("someContainer"),
-        equalTo(new NodeRolesDataBean(data, "testrig", ImmutableSet.of("a", "b"))));
+        NodeRolesDataBean.create(container),
+        equalTo(new NodeRolesDataBean(data, snapshot, ImmutableSet.of("a", "b"))));
   }
 
   @Test

@@ -61,15 +61,14 @@ public class TestrigMetadataMgr {
   }
 
   public static void writeMetadata(TestrigMetadata metadata, String network, String snapshot)
-      throws JsonProcessingException {
+      throws IOException {
     NetworkId networkId = idm().getNetworkId(network);
     SnapshotId snapshotId = idm().getSnapshotId(snapshot, networkId);
     writeMetadata(metadata, networkId, snapshotId);
   }
 
   public static synchronized void writeMetadata(
-      TestrigMetadata metadata, NetworkId networkId, SnapshotId snapshotId)
-      throws JsonProcessingException {
+      TestrigMetadata metadata, NetworkId networkId, SnapshotId snapshotId) throws IOException {
     storage().storeSnapshotMetadata(metadata, networkId, snapshotId);
   }
 

@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -90,5 +92,15 @@ public class NodeRoleDimensionBean {
                 .map(NodeRoleBean::toNodeRole)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(NodeRole::compareTo));
     return new NodeRoleDimension(name, nodeRoles, type, null);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("name", name)
+        .add("roles", roles)
+        .add("snapshot", snapshot)
+        .add("type", type)
+        .toString();
   }
 }

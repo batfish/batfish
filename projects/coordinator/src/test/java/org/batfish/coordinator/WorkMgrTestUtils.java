@@ -1,8 +1,6 @@
 package org.batfish.coordinator;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,12 +38,11 @@ public final class WorkMgrTestUtils {
 
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)
       throws IOException {
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
-    Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
     IdManager idManager = Main.getWorkMgr().getIdManager();
+    Main.getWorkMgr().initContainer(container, null);
     NetworkId networkId = idManager.getNetworkId(container);
-    SnapshotId snapshotId = idManager.getSnapshotId(testrig, networkId);
+    SnapshotId snapshotId = idManager.generateSnapshotId();
+    idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
     Topology topology = new Topology(testrig);

@@ -264,9 +264,11 @@ public interface StorageProvider {
    * @param snapshotMetadata The metadata to write
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
+   * @throws {@link IOException} if there is an error
    */
   void storeSnapshotMetadata(
-      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId);
+      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
 
   /**
    * Loads metadata for the snapshot in the given network.

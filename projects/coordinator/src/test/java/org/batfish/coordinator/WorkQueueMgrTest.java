@@ -7,6 +7,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -131,13 +132,13 @@ public class WorkQueueMgrTest {
   }
 
   private void initTestrigMetadata(String testrig, String environment, ProcessingStatus status)
-      throws JsonProcessingException {
+      throws IOException {
     initTestrigMetadata(CONTAINER, testrig, environment, status);
   }
 
   private void initTestrigMetadata(
       String container, String testrig, String environment, ProcessingStatus status)
-      throws JsonProcessingException {
+      throws IOException {
     TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
     envMetadata.updateStatus(status, null);

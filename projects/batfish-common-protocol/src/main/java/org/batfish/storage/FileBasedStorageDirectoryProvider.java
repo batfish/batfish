@@ -16,8 +16,6 @@ import org.batfish.identifiers.SnapshotId;
 @ParametersAreNonnullByDefault
 public class FileBasedStorageDirectoryProvider {
 
-  private static final String RELPATH_IDS = "ids";
-
   private Path _baseDir;
 
   public FileBasedStorageDirectoryProvider(Path baseDir) {
@@ -91,10 +89,6 @@ public class FileBasedStorageDirectoryProvider {
     return _baseDir.resolve(network.getId());
   }
 
-  public Path getNetworkIdsDir() {
-    return _baseDir.resolve(RELPATH_IDS);
-  }
-
   @Nonnull
   public Path getNetworkSettingsDir(NetworkId network) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
@@ -141,7 +135,7 @@ public class FileBasedStorageDirectoryProvider {
     return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
   }
 
-  public @Nonnull Path getSnapshotIdsDir(NetworkId networkId) {
-    return getNetworkDir(networkId).resolve(RELPATH_IDS);
+  public @Nonnull Path getStorageBase() {
+    return _baseDir;
   }
 }
