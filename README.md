@@ -13,9 +13,9 @@ The developers of Batfish include folks from [Intentionet](https://www.intention
 
 ## How do I get started?
 
-For a quick start, checkout instructions for using the pre-built [allinone Docker container](https://github.com/batfish/docker/blob/master/allinone.md) (Batfish plus a Python client) or the [Batfish-only Docker container](https://github.com/batfish/docker/blob/master/batfish.md), available on Docker Hub.
+For a quick start, check out instructions for using the pre-built [allinone Docker container](https://github.com/batfish/docker/blob/master/allinone.md) (Batfish plus a Python client) or the [Batfish-only Docker container](https://github.com/batfish/docker/blob/master/batfish.md), available on Docker Hub.
 
-If you are a DIYer, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki).
+If you are interested in developing or building Batfish yourself, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki).
 
 Batfish is being maintained and released as a commercial product by [Intentionet](https://www.intentionet.com). If you'd like a hosted service, drop a line to [info@intentionet.com](mailto:info@intentionet.com).
 
