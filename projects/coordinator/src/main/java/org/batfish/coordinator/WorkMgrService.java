@@ -1795,7 +1795,7 @@ public class WorkMgrService {
         for (String questionName :
             Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName)) {
           String questionText =
-              Main.getWorkMgr().getAnalysisQuestion(networkNameParam, analysisName, questionName);
+              Main.getWorkMgr().getQuestion(networkNameParam, questionName, analysisName);
 
           analysisJson.put(questionName, new JSONObject(questionText));
         }
@@ -2013,7 +2013,7 @@ public class WorkMgrService {
       JSONObject retObject = new JSONObject();
 
       for (String questionName : Main.getWorkMgr().listQuestions(networkNameParam, verbose)) {
-        String questionText = Main.getWorkMgr().getQuestion(networkNameParam, questionName);
+        String questionText = Main.getWorkMgr().getQuestion(networkNameParam, questionName, null);
 
         retObject.put(questionName, new JSONObject(questionText));
       }
@@ -2087,7 +2087,6 @@ public class WorkMgrService {
       JSONArray retArray = new JSONArray();
 
       List<String> snapshotList = Main.getWorkMgr().listTestrigs(networkName);
-
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);

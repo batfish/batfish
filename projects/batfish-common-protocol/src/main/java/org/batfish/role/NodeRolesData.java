@@ -2,9 +2,7 @@ package org.batfish.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Comparator;
@@ -13,11 +11,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.role.NodeRoleDimension.Type;
 
 /** Class that captures the node roles */
@@ -78,12 +76,12 @@ public class NodeRolesData {
    *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
-  public static Optional<NodeRoleDimension> getNodeRoleDimension(Path dataPath, String dimension)
-      throws IOException {
+  public static Optional<NodeRoleDimension> getNodeRoleDimension(
+      Supplier<NodeRolesData> read, String dimension) throws IOException {
     if (dimension == null) {
-      return getNodeRoleDimension(dataPath);
+      return getNodeRoleDimension(read);
     }
-    NodeRolesData data = read(dataPath);
+    NodeRolesData data = read.get();
     return data.getNodeRoleDimension(dimension);
   }
 
@@ -96,9 +94,9 @@ public class NodeRolesData {
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
   @Nullable
-  private static Optional<NodeRoleDimension> getNodeRoleDimension(Path dataPath)
+  private static Optional<NodeRoleDimension> getNodeRoleDimension(Supplier<NodeRolesData> read)
       throws IOException {
-    NodeRolesData data = read(dataPath);
+    NodeRolesData data = read.get();
     // check default
     if (data.getDefaultDimension() != null) {
       Optional<NodeRoleDimension> opt = data.getNodeRoleDimension(data.getDefaultDimension());
@@ -139,13 +137,14 @@ public class NodeRolesData {
    * @param deleteAutoFirst If dimensions of type AUTO should be deleted first
    */
   public static synchronized void mergeNodeRoleDimensions(
-      Path dataPath,
+      Supplier<NodeRolesData> read,
+      Consumer<NodeRolesData> write,
       SortedSet<NodeRoleDimension> newDimensions,
       String defaultDimension,
       boolean deleteAutoFirst)
       throws IOException {
 
-    NodeRolesData oldRolesData = read(dataPath);
+    NodeRolesData oldRolesData = read.get();
 
     final SortedSet<NodeRoleDimension> finalNewDimensions =
         newDimensions == null ? new TreeSet<>() : newDimensions;
@@ -167,33 +166,10 @@ public class NodeRolesData {
     // add the new dimensions
     newRoles.addAll(finalNewDimensions);
 
-    write(
+    write.accept(
         new NodeRolesData(
             defaultDimension == null ? oldRolesData.getDefaultDimension() : defaultDimension,
             new Date().toInstant(),
-            newRoles),
-        dataPath);
-  }
-
-  /**
-   * Reads the {@link NodeRolesData} object from the provided Path. If the path does not exist,
-   * initializes a new object.
-   *
-   * @param dataPath The Path to read from
-   * @return The read data
-   * @throws IOException If file exists but its contents could not be cast to {@link NodeRolesData}
-   */
-  public static NodeRolesData read(Path dataPath) throws IOException {
-    if (Files.exists(dataPath)) {
-      String jsonStr = CommonUtil.readFile(dataPath);
-      return BatfishObjectMapper.mapper().readValue(jsonStr, NodeRolesData.class);
-    } else {
-      return new NodeRolesData(null, new Date().toInstant(), null);
-    }
-  }
-
-  public static synchronized void write(NodeRolesData data, Path dataPath)
-      throws JsonProcessingException {
-    CommonUtil.writeFile(dataPath, BatfishObjectMapper.writePrettyString(data));
+            newRoles));
   }
 }

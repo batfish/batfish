@@ -15,6 +15,8 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
@@ -41,8 +43,11 @@ public final class WorkMgrTestUtils {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
     Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idManager.getNetworkId(container);
+    SnapshotId snapshotId = idManager.getSnapshotId(testrig, networkId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), container, testrig);
+        new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
     Topology topology = new Topology(testrig);
     topology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
     CommonUtil.writeFile(

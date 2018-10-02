@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -27,13 +28,21 @@ public final class LocalIdManager implements IdManager {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
   }
 
-  private static String uuid() {
+  private static <T> T illegalIfNull(T t) {
+    if (t == null) {
+      throw new IllegalArgumentException("Invalid ID");
+    }
+    return t;
+  }
+
+  private static @Nonnull String uuid() {
     return UUID.randomUUID().toString();
   }
 
   private final Map<NetworkId, Map<String, AnalysisId>> _analysisIds;
   private final Map<NetworkId, Map<String, IssueSettingsId>> _issueSettingsIds;
   private final Map<String, NetworkId> _networkIds;
+
   private final Map<NetworkId, Map<Optional<AnalysisId>, Map<String, QuestionId>>> _questionIds;
 
   private final Map<NetworkId, Map<String, QuestionSettingsId>> _questionSettingsIds;
@@ -47,6 +56,11 @@ public final class LocalIdManager implements IdManager {
     _questionIds = new HashMap<>();
     _questionSettingsIds = new HashMap<>();
     _snapshotIds = new HashMap<>();
+  }
+
+  @Override
+  public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
+    _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).put(analysis, analysisId);
   }
 
   @Override
@@ -85,6 +99,12 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
+  public void deleteAnalysis(String analysis, NetworkId networkId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
   public void deleteNetwork(String network) {
     _networkIds.remove(network);
   }
@@ -100,27 +120,32 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
-  public IssueSettingsId generateIssueSettingsId() {
+  public @Nonnull AnalysisId generateAnalysisId() {
+    return new AnalysisId(uuid());
+  }
+
+  @Override
+  public @Nonnull IssueSettingsId generateIssueSettingsId() {
     return new IssueSettingsId(uuid());
   }
 
   @Override
-  public NetworkId generateNetworkId() {
+  public @Nonnull NetworkId generateNetworkId() {
     return new NetworkId(uuid());
   }
 
   @Override
-  public QuestionId generateQuestionId() {
+  public @Nonnull QuestionId generateQuestionId() {
     return new QuestionId(uuid());
   }
 
   @Override
-  public QuestionSettingsId generateQuestionSettingsId() {
+  public @Nonnull QuestionSettingsId generateQuestionSettingsId() {
     return new QuestionSettingsId(uuid());
   }
 
   @Override
-  public SnapshotId generateSnapshotId() {
+  public @Nonnull SnapshotId generateSnapshotId() {
     return new SnapshotId(uuid());
   }
 
@@ -186,19 +211,37 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
+  public boolean hasAnalysisId(String analysis, NetworkId networkId) {
+    return _analysisIds.get(networkId).containsKey(analysis);
+  }
+
+  @Override
   public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    return illegalIfNull(_issueSettingsIds.get(networkId).containsKey(majorIssueType));
+    return _issueSettingsIds.get(networkId).containsKey(majorIssueType);
+  }
+
+  @Override
+  public boolean hasNetworkId(String network) {
+    return _networkIds.containsKey(network);
+  }
+
+  @Override
+  public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
+    return _questionIds.get(networkId).get(ofNullable(analysisId)).containsKey(question);
   }
 
   @Override
   public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-    return illegalIfNull(_questionSettingsIds.get(networkId).containsKey(questionClassId));
+    return _questionSettingsIds.get(networkId).containsKey(questionClassId);
   }
 
-  private <T> T illegalIfNull(T t) {
-    if (t == null) {
-      throw new IllegalArgumentException("Invalid ID");
-    }
-    return t;
+  @Override
+  public Set<String> listAnalyses(NetworkId networkId) {
+    return _analysisIds.get(networkId).keySet();
+  }
+
+  @Override
+  public Set<String> listSnapshots(NetworkId networkId) {
+    return _snapshotIds.get(networkId).keySet();
   }
 }

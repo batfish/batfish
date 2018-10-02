@@ -1,12 +1,19 @@
 package org.batfish.identifiers;
 
+import com.google.common.collect.ImmutableSet;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.apache.commons.io.FileUtils;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
 public class FileBasedIdResolver implements IdResolver {
 
+  private static final String ID_EXTENSION = ".id";
+  
   protected final FileBasedStorageDirectoryProvider _d;
 
   public FileBasedIdResolver(Path storageBase) {
@@ -33,8 +40,7 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull AnswerId getFinalAnswerId(
-      AnswerId baseAnswerId,
-      Set<IssueSettingsId> issueSettingsIds) {
+      AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -47,8 +53,7 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public @Nonnull NetworkId getNetworkId(String network) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new NetworkId(CommonUtil.readFile(getNetworkIdPath(network)));
   }
 
   @Override
@@ -72,14 +77,60 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
+  public boolean hasAnalysisId(String analysis, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public @Nonnull boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+  public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean hasNetworkId(String network) {
+    return Files.exists(getNetworkIdPath(network));
+  }
+
+  protected @Nonnull Path getNetworkIdPath(String network) {
+    return _d.getNetworkIdsDir().resolve(String.format("%s%s", network,ID_EXTENSION));
+  }
+
+  @Override
+  public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public Set<String> listAnalyses(NetworkId networkId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public Set<String> listSnapshots(NetworkId networkId) {
+    Path snapshotIdsDir = _d.getSnapshotIdsDir(networkId);
+    if (!Files.exists(snapshotIdsDir)) {
+      return ImmutableSet.of();
+    }
+    try (Stream<Path> files = CommonUtil.list((snapshotIdsDir))) {
+      return files
+          .filter(path -> path.endsWith(ID_EXTENSION))
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .map(
+              nameWithExtension ->
+                  nameWithExtension.substring(
+                      0, nameWithExtension.length() - ID_EXTENSION.length()))
+          .collect(ImmutableSet.toImmutableSet());
+    }
   }
 }

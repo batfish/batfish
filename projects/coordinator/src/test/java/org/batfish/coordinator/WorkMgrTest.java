@@ -29,7 +29,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,13 +100,14 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private static void createTestrigWithMetadata(String container, String testrig)
-      throws IOException {
+  private void createTestrigWithMetadata(String container, String testrig) throws IOException {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
     Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig));
+    NetworkId networkId = _idManager.getNetworkId(container);
+    SnapshotId snapshotId = _idManager.getSnapshotId(testrig, networkId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), container, testrig);
+        new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
   }
 
   @Test
@@ -844,8 +844,10 @@ public class WorkMgrTest {
   }
 
   private boolean getMetadataSuggested(String containerName, String analysisName) {
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
     try {
-      return AnalysisMetadataMgr.readMetadata(containerName, analysisName).getSuggested();
+      return AnalysisMetadataMgr.readMetadata(networkId, analysisId).getSuggested();
     } catch (IOException e) {
       throw new BatfishException("Failed to read metadata", e);
     }
@@ -1309,52 +1311,6 @@ public class WorkMgrTest {
 
     _thrown.expect(UnsupportedOperationException.class);
     _manager.columnComparator(columnObject);
-  }
-
-  @Test
-  public void testGetQuestionPath() {
-    String networkName = "networkName";
-    String qName = "question";
-    String qContent = "content";
-    String snapshotName = "snapshot";
-    String envName = "env";
-    String analysisName = "analysis";
-
-    Map<String, String> analysisQuestions = new HashMap<>();
-    analysisQuestions.put(qName, qContent);
-
-    _manager.initContainer(networkName, null);
-    _manager.uploadQuestion(networkName, qName, qContent, false);
-
-    _manager.configureAnalysis(
-        networkName, true, analysisName, analysisQuestions, Lists.newArrayList(), false);
-
-    WorkItem adhocWorkItem =
-        WorkItemBuilder.getWorkItemAnswerQuestion(
-            qName, networkName, snapshotName, envName, null, null, false, false);
-    WorkItem analysisWorkItem =
-        WorkItemBuilder.getWorkItemAnswerQuestion(
-            qName, networkName, snapshotName, envName, null, null, analysisName, false, false);
-
-    Path adhocDir =
-        Main.getSettings()
-            .getContainersLocation()
-            .resolve(networkName)
-            .toAbsolutePath()
-            .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-            .resolve(qName)
-            .resolve(BfConsts.RELPATH_QUESTION_FILE);
-    Path analysisQDir =
-        Main.getSettings()
-            .getContainersLocation()
-            .resolve(networkName)
-            .toAbsolutePath()
-            .resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName))
-            .resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName))
-            .resolve(BfConsts.RELPATH_QUESTION_FILE);
-
-    assertThat(_manager.getQuestionPath(adhocWorkItem), equalTo(adhocDir));
-    assertThat(_manager.getQuestionPath(analysisWorkItem), equalTo(analysisQDir));
   }
 
   @Test

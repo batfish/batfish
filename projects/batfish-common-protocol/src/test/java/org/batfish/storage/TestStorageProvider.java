@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -17,6 +19,7 @@ import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 
 public class TestStorageProvider implements StorageProvider {
 
@@ -151,7 +154,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public boolean hasAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
+  public boolean hasAnswerMetadata(AnswerId answerId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -159,6 +162,59 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public String loadQuestionClassId(
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeAnalysisMetadata(
+      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
+      throws IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeSnapshotMetadata(
+      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean hasNodeRoles(NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

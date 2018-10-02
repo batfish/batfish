@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -20,6 +22,7 @@ import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -178,11 +181,9 @@ public interface StorageProvider {
    * Returns {@code true} iff the answer metadata for the specified ID exists.
    *
    * @param answerId The ID of the answer
-   * @throws FileNotFoundException if answer metadata does not exist; {@link IOException} if there
-   *     is an error reading the answer metadata.
    */
   @Nonnull
-  boolean hasAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+  boolean hasAnswerMetadata(AnswerId answerId);
 
   /**
    * Stores a question with the specified name and text.
@@ -225,4 +226,76 @@ public interface StorageProvider {
   /** Retrieve the question class ID associated with the given question. */
   @Nonnull
   String loadQuestionClassId(NetworkId networkId, QuestionId questionId, AnalysisId analysisId);
+
+  /**
+   * Returns {@code true} iff metadata for the analysis with specified ID exists.
+   *
+   * @param networkId The ID of the network
+   * @param analysisId The ID of the analysis
+   */
+  boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId);
+
+  /**
+   * Stores metadata for the analysis in the given network.
+   *
+   * @param analysisMetadata The metadata to write
+   * @param networkId The ID of the network
+   * @param analysisId The ID of the analysis
+   */
+  void storeAnalysisMetadata(
+      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
+      throws IOException;
+
+  /**
+   * Loads metadata for the analysis in the given network.
+   *
+   * @param networkId The ID of the network
+   * @param analysisId The ID of the analysis
+   * @throws {@link FileNotFoundException} if metadata does not exist; {@link IOException} if there
+   *     is an error reading the metadata.
+   */
+  @Nonnull
+  String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Stores metadata for the snapshot in the given network.
+   *
+   * @param snapshotMetadata The metadata to write
+   * @param networkId The ID of the network
+   * @param snapshotId The ID of the snapshot
+   */
+  void storeSnapshotMetadata(
+      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId);
+
+  /**
+   * Loads metadata for the snapshot in the given network.
+   *
+   * @param networkId The ID of the network
+   * @param snapshotId The ID of the snapshot
+   * @throws {@link FileNotFoundException} if metadata does not exist; {@link IOException} if there
+   *     is an error reading the metadata.
+   */
+  @Nonnull
+  String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Write the node roles data for the network with the given ID.
+   *
+   * @throws {@link IOException} if there is an error
+   */
+  void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException;
+
+  /**
+   * Read the node roles data for the network with the given ID.
+   *
+   * @throws {@link FileNotFoundException} if the roles do not exist; {@link IOException} if there
+   *     is an error reading the roles.
+   */
+  @Nonnull
+  String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException;
+
+  /** Returns true iff the network with the specified ID has node roles */
+  boolean hasNodeRoles(NetworkId networkId);
 }

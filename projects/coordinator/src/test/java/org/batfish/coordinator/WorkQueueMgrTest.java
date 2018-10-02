@@ -7,7 +7,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -139,12 +138,10 @@ public class WorkQueueMgrTest {
   private void initTestrigMetadata(
       String container, String testrig, String environment, ProcessingStatus status)
       throws JsonProcessingException {
-    Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);
-    metadataPath.getParent().toFile().mkdirs();
     TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
     envMetadata.updateStatus(status, null);
-    TestrigMetadataMgr.writeMetadata(trMetadata, metadataPath);
+    TestrigMetadataMgr.writeMetadata(trMetadata, container, testrig);
   }
 
   private void queueWork(String testrig, String environment, WorkType wType) throws Exception {

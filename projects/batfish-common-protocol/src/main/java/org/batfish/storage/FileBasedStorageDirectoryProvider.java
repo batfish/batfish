@@ -16,36 +16,38 @@ import org.batfish.identifiers.SnapshotId;
 @ParametersAreNonnullByDefault
 public class FileBasedStorageDirectoryProvider {
 
+  private static final String RELPATH_IDS = "ids";
+
   private Path _baseDir;
 
   public FileBasedStorageDirectoryProvider(Path baseDir) {
     _baseDir = baseDir;
   }
 
-  private @Nonnull Path getAdHocQuestionDir(NetworkId network, QuestionId question) {
+  public @Nonnull Path getAdHocQuestionDir(NetworkId network, QuestionId question) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(question.getId());
   }
 
-  private @Nonnull Path getAnalysisQuestionDir(
+  public @Nonnull Path getAnalysisQuestionDir(
       NetworkId network, QuestionId question, AnalysisId analysis) {
     return getAnalysisQuestionsDir(network, analysis).resolve(question.getId());
   }
 
   @Nonnull
-  Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
+  public Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
     return getNetworkAnalysisDir(network, analysis).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 
   @Nonnull
-  Path getAnswerDir(AnswerId answerId) {
+  public Path getAnswerDir(AnswerId answerId) {
     return _baseDir.resolve(BfConsts.RELPATH_ANSWERS_DIR).resolve(answerId.getId());
   }
 
-  Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
+  public Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
   }
 
-  private @Nonnull Path getDeltaAnswerDir(
+  public @Nonnull Path getDeltaAnswerDir(
       NetworkId network,
       SnapshotId snapshot,
       QuestionId question,
@@ -73,40 +75,45 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   @Nonnull
-  Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
+  public Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
     return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
         .resolve(majorIssueType + ".json");
   }
 
-  private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
+  public @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
   @VisibleForTesting
   @Nonnull
-  Path getNetworkDir(NetworkId network) {
+  public Path getNetworkDir(NetworkId network) {
     return _baseDir.resolve(network.getId());
   }
 
+  public Path getNetworkIdsDir() {
+    return _baseDir.resolve(RELPATH_IDS);
+  }
+
   @Nonnull
-  Path getNetworkSettingsDir(NetworkId network) {
+  public Path getNetworkSettingsDir(NetworkId network) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
   }
 
   @Nonnull
-  Path getQuestionDir(NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
+  public Path getQuestionDir(
+      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
     return analysis != null
         ? getAnalysisQuestionDir(network, question, analysis)
         : getAdHocQuestionDir(network, question);
   }
 
   @Nonnull
-  Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
+  public Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot.getId());
   }
 
-  private @Nonnull Path getStandardAnswerDir(
+  public @Nonnull Path getStandardAnswerDir(
       NetworkId network, SnapshotId snapshot, QuestionId question, @Nullable AnalysisId analysis) {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
@@ -125,12 +132,16 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   @Nonnull
-  Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
+  public Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
         .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
   }
 
-  private @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
+  public @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+  }
+
+  public @Nonnull Path getSnapshotIdsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_IDS);
   }
 }

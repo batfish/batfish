@@ -1658,15 +1658,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public NodeRolesData getNodeRolesData() {
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer().getId())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.read(nodeRoleDataPath);
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(_settings.getContainer()), NodeRolesData.class);
     } catch (IOException e) {
-      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      _logger.errorf("Could not read roles data: %s", e);
       return null;
     }
   }
@@ -1686,10 +1682,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
+      return NodeRolesData.getNodeRoleDimension(
+          () -> getNodeRolesWrapped(_settings.getContainer()), dimension);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
       return Optional.empty();
+    }
+  }
+
+  private NodeRolesData getNodeRolesWrapped(NetworkId networkId) {
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);
+    } catch (IOException e) {
+      throw new BatfishException("Error reading node roles", e);
+    }
+  }
+
+  private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, NetworkId networkId) {
+    try {
+      _storage.storeNodeRoles(nodeRolesData, networkId);
+    } catch (IOException e) {
+      throw new BatfishException("Error writing node roles", e);
     }
   }
 
@@ -1700,8 +1714,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    IssueSettingsId id =
-        _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
+    IssueSettingsId id = _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
     if (id == null) {
       return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
     }
@@ -3840,7 +3853,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
+      NetworkId networkId = _settings.getContainer();
+      NodeRolesData.mergeNodeRoleDimensions(
+          () -> getNodeRolesWrapped(networkId),
+          nodeRolesData -> writeNodeRolesWrapped(nodeRolesData, networkId),
+          autoRoles,
+          null,
+          true);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
     }
@@ -4583,9 +4602,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             questionSettingsId,
             deltaSnapshot,
             analysisId);
-    _storage.storeAnswer(
-        structuredAnswerString,
-        baseAnswerId);
+    _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {

@@ -45,7 +45,9 @@ import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -56,6 +58,7 @@ import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
@@ -554,7 +557,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public boolean hasAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
+  public boolean hasAnswerMetadata(AnswerId answerId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -564,5 +567,60 @@ public final class FileBasedStorage implements StorageProvider {
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeAnalysisMetadata(
+      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
+      throws IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeSnapshotMetadata(
+      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException {
+    FileUtils.write(
+        getNodeRolesPath(networkId).toFile(), BatfishObjectMapper.writePrettyString(nodeRolesData));
+  }
+
+  private @Nonnull Path getNodeRolesPath(NetworkId networkId) {
+    return _d.getNetworkDir(networkId).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+  }
+
+  @Override
+  public String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException {
+    return FileUtils.readFileToString(getNodeRolesPath(networkId).toFile());
+  }
+
+  @Override
+  public boolean hasNodeRoles(NetworkId networkId) {
+    return Files.exists(getNodeRolesPath(networkId));
   }
 }

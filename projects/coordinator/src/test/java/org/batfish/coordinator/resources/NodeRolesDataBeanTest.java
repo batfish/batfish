@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import org.batfish.common.BfConsts;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
@@ -46,8 +45,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
                     ImmutableSortedSet.of(new NodeRole("someRole", "a.*")),
                     null,
                     null)));
-    NodeRolesData.write(
-        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Main.getWorkMgr().writeNodeRoles(data, container);
 
     // we should get OK and the expected bean
     assertThat(

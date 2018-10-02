@@ -29,9 +29,7 @@ public interface IdResolver {
 
   /** Retrieve the {@link FinalAnswerId} corresponding to the provided input IDs. */
   @Nonnull
-  AnswerId getFinalAnswerId(
-      AnswerId baseAnswerId,
-      Set<IssueSettingsId> issueSettingsIds);
+  AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds);
 
   /**
    * Retrieve the {@link IssueSettingsId} assigned to {@code majorIssueType} under {@code
@@ -77,14 +75,38 @@ public interface IdResolver {
   SnapshotId getSnapshotId(String snapshot, NetworkId networkId);
 
   /**
+   * Return {@code true} iff some {@link AnalysisId} is assigned to {@code analysis} under {@code
+   * networkId}.
+   */
+  boolean hasAnalysisId(String analysis, NetworkId networkId);
+
+  /**
    * Return {@code true} iff some {@link IssueSettingsId} is assigned to {@code majorIssueType}
    * under {@code networkId}.
    */
   boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId);
+
+  /** Return {@code true} iff some {@link NetworkId} is assigned to {@code network}. */
+  boolean hasNetworkId(String network);
+
+  /**
+   * Return {@code true} iff some {@link QuestionId} is assigned to {@code question} under {@code
+   * networkId}, {@code analysisId}. If {@code analysisId} is {@code null}, checks for an ad-hoc
+   * question.
+   */
+  boolean hasQuestionId(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
 
   /**
    * Return {@code true} iff some {@link QuestionSettingsId} is assigned to {@code questionClassId}
    * under {@code networkId}.
    */
   boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId);
+
+  /** Returns the names of analyses under {@code networkId} */
+  @Nonnull
+  Set<String> listAnalyses(NetworkId networkId);
+
+  /** Returns the names of snapshots under {@code networkId} */
+  @Nonnull
+  Set<String> listSnapshots(NetworkId networkId);
 }
