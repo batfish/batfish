@@ -1,9 +1,16 @@
 package org.batfish.coordinator;
 
+import static org.batfish.common.CoordConstsV2.KEY_RESULT;
+
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import io.opentracing.util.GlobalTracer;
 import java.util.List;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,6 +24,8 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.ContainerResource;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -37,6 +46,67 @@ public class WorkMgrServiceV2 {
 
   /** Information on the URI of a request, injected by the server framework at runtime. */
   @Context private UriInfo _uriInfo;
+
+  private static void checkStringParam(String paramStr, String parameterName) {
+    if (Strings.isNullOrEmpty(paramStr)) {
+      throw new IllegalArgumentException(parameterName + " is missing or empty");
+    }
+  }
+
+  /**
+   * Fork the specified snapshot and make changes to the new snapshot
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param networkName The name of the network under which to fork the snapshot
+   * @param snapshotName The name of the new snapshot to create
+   * @param forkSnapshotBean The {@link ForkSnapshotBean} containing parameters used to create the
+   *     fork
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConstsV2.RSC_NETWORKS + "/{network}/" + CoordConstsV2.RSC_SNAPSHOTS + "/{snapshot}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response forkSnapshot(
+      @PathParam("network") String networkName,
+      @PathParam("snapshot") String snapshotName,
+      @HeaderParam(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY) String apiKey,
+      @HeaderParam(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION) String clientVersion,
+      ForkSnapshotBean forkSnapshotBean) {
+    try {
+      _logger.infof("WMS2:forkSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Snapshot name");
+
+      // TODO determine if we need these as well
+      // checkApiKeyValidity(apiKey);
+      // checkClientVersion(clientVersion);
+      // checkNetworkAccessibility(apiKey, networkName);
+
+      if (GlobalTracer.get().activeSpan() != null) {
+        GlobalTracer.get()
+            .activeSpan()
+            .setTag("network-name", networkName)
+            .setTag("snapshot-name", snapshotName);
+      }
+
+      Main.getWorkMgr().forkSnapshot(apiKey, networkName, snapshotName, forkSnapshotBean);
+      _logger.infof(
+          "Created snapshot:%s forked from snapshot: %s for network:%s using api-key:%s\n",
+          snapshotName, forkSnapshotBean.baseSnapshot, networkName, apiKey);
+      return Response.ok(new JSONObject().put(KEY_RESULT, "Successfully forked snapshot")).build();
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
+          apiKey, networkName, snapshotName, stackTrace);
+      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    }
+  }
 
   /**
    * Returns the list of {@link Container containers} that the given API key may access. Deprecated

@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.TestrigMetadata.PROP_CREATIONTIMESTAMP;
+import static org.batfish.datamodel.TestrigMetadata.PROP_ENVIRONMENTS;
+import static org.batfish.datamodel.TestrigMetadata.PROP_PARENTSNAPSHOT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -18,12 +21,15 @@ public class TestrigMetadataTest {
   public void serialization() {
     TestrigMetadata metadata =
         new TestrigMetadata(
-            Instant.ofEpochMilli(758949005001L), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+            Instant.ofEpochMilli(758949005001L),
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            "parent");
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(metadata);
-    assertThat(jsonNode.get("creationTimestamp").asText(), equalTo("1994-01-19T03:10:05.001Z"));
+    assertThat(jsonNode.get(PROP_CREATIONTIMESTAMP).asText(), equalTo("1994-01-19T03:10:05.001Z"));
+    assertThat(jsonNode.get(PROP_PARENTSNAPSHOT).asText(), equalTo("parent"));
     assertThat(
         jsonNode
-            .get("environments")
+            .get(PROP_ENVIRONMENTS)
             .get(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
             .get("currentStatus")
             .asText(),

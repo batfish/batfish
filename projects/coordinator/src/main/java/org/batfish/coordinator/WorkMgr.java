@@ -83,7 +83,9 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -97,6 +99,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -1377,6 +1380,15 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public void initSnapshot(
       String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
+    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, null);
+  }
+
+  public void initSnapshot(
+      String networkName,
+      String snapshotName,
+      Path srcDir,
+      boolean autoAnalyze,
+      String parentSnapshot) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1400,7 +1412,8 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          new TestrigMetadata(
+              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshot),
           testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_METADATA_FILE)));
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
@@ -1487,6 +1500,109 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     }
+  }
+
+  /**
+   * Copy a snapshot and make modifications to the copy.
+   *
+   * @param networkName Name of the network containing the original snapshot
+   * @param snapshotName Name of the new snapshot
+   * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
+   */
+  public void forkSnapshot(
+      String apiKey, String networkName, String snapshotName, ForkSnapshotBean forkSnapshotBean)
+      throws IOException {
+    String baseSnapshotName = forkSnapshotBean.baseSnapshot;
+
+    Optional<Container> networks =
+        getContainers(apiKey).stream().filter(c -> c.getName().equals(networkName)).findFirst();
+    if (!networks.isPresent()) {
+      throw new BatfishException(
+          "Network named: '" + networkName + "' does not exist or is not accessible.");
+    }
+
+    Path networkDir = getdirNetwork(networkName);
+    Path testrigsDir = networkDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
+
+    // Fail early if the new snapshot already exists or the base snapshot does not
+    if (Files.exists(testrigsDir.resolve(snapshotName))) {
+      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
+    }
+    if (!Files.exists(testrigsDir.resolve(baseSnapshotName))) {
+      throw new BatfishException(
+          "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
+    }
+
+    // Save user input for troubleshooting
+    Path originalDir =
+        networkDir
+            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
+            .resolve(generateFileDateString(snapshotName));
+    if (!originalDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    }
+    CommonUtil.writeFile(
+        originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
+        BatfishObjectMapper.writePrettyString(forkSnapshotBean));
+
+    // Copy baseSnapshot into unzipDir so initSnapshot will see a properly formatted
+    Path unzipDir = CommonUtil.createTempDirectory("files_to_add");
+    Path baseSnapshotInputsDir =
+        testrigsDir
+            .resolve(baseSnapshotName)
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path newSnapshotInputsDir =
+        unzipDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    if (!newSnapshotInputsDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
+    }
+    CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+    _logger.infof(
+        "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
+        baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
+
+    // Add user-specified failures
+    deactivateSnapshotObjects(
+        newSnapshotInputsDir,
+        forkSnapshotBean.deactivateInterfaces,
+        forkSnapshotBean.deactivateLinks,
+        forkSnapshotBean.deactivateNodes);
+
+    // Use initSnapshot to handle creating metadata, etc.
+    initSnapshot(
+        networkName,
+        snapshotName,
+        unzipDir.resolve(BfConsts.RELPATH_INPUT),
+        false,
+        baseSnapshotName);
+  }
+
+  /** Handle deactivating (failing) interfaces, links, and nodes for the specified snapshot */
+  static void deactivateSnapshotObjects(
+      Path blacklistDirPath,
+      Collection<NodeInterfacePair> deactivateInterfaces,
+      Collection<Edge> deactivateLinks,
+      Collection<String> deactivateNodes)
+      throws IOException {
+
+    CommonUtil.mergeWithSerializedList(
+        blacklistDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE), deactivateInterfaces);
+    //    List<NodeInterfacePair> baseDeactivatedInterfaces =
+    //        BatfishObjectMapper.mapper()
+    //            .readValue(
+    //
+    // CommonUtil.readFile(envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE)),
+    //                new TypeReference<List<NodeInterfacePair>>() {});
+    //    baseDeactivatedInterfaces.addAll(deactivateInterfaces);
+    //    CommonUtil.writeFile(
+    //        envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+    //        BatfishObjectMapper.writePrettyString(baseDeactivatedInterfaces));
+
+    CommonUtil.mergeWithSerializedList(
+        blacklistDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE), deactivateLinks);
+
+    CommonUtil.mergeWithSerializedList(
+        blacklistDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE), deactivateNodes);
   }
 
   List<WorkItem> getAutoWorkQueue(String containerName, String testrigName) {

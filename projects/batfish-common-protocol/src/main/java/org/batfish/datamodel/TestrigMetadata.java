@@ -6,28 +6,36 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 
 public final class TestrigMetadata {
 
-  private static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
-  private static final String PROP_ENVIRONMENTS = "environments";
+  static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
+  static final String PROP_ENVIRONMENTS = "environments";
+  static final String PROP_PARENTSNAPSHOT = "parentSnapshot";
 
   private Instant _creationTimestamp;
 
   private Map<String, EnvironmentMetadata> _environments;
 
+  private String _parentSnapshot;
+
   @JsonCreator
   public TestrigMetadata(
       @JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp,
-      @JsonProperty(PROP_ENVIRONMENTS) Map<String, EnvironmentMetadata> environments) {
+      @JsonProperty(PROP_ENVIRONMENTS) Map<String, EnvironmentMetadata> environments,
+      @JsonProperty(PROP_PARENTSNAPSHOT) String parentSnapshot) {
     _creationTimestamp = creationTimestamp;
     _environments = environments;
+    _parentSnapshot = parentSnapshot;
   }
 
-  public TestrigMetadata(Instant creationTimestamp, String environment) {
+  public TestrigMetadata(
+      Instant creationTimestamp, String environment, @Nullable String parentSnapshot) {
     _creationTimestamp = creationTimestamp;
     _environments = new HashMap<>();
+    _parentSnapshot = parentSnapshot;
     initializeEnvironment(environment);
   }
 
@@ -45,5 +53,10 @@ public final class TestrigMetadata {
   @JsonProperty(PROP_ENVIRONMENTS)
   public Map<String, EnvironmentMetadata> getEnvironments() {
     return _environments;
+  }
+
+  @JsonProperty(PROP_PARENTSNAPSHOT)
+  public String getParentSnapshot() {
+    return _parentSnapshot;
   }
 }

@@ -141,7 +141,7 @@ public class WorkQueueMgrTest {
       throws JsonProcessingException {
     Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);
     metadataPath.getParent().toFile().mkdirs();
-    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
+    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment, null);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
     envMetadata.updateStatus(status, null);
     TestrigMetadataMgr.writeMetadata(trMetadata, metadataPath);

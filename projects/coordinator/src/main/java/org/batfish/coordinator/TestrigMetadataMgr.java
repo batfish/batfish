@@ -30,6 +30,10 @@ public class TestrigMetadataMgr {
     }
   }
 
+  public static String getParentSnapshot(String container, String testrig) throws IOException {
+    return readMetadata(container, testrig).getParentSnapshot();
+  }
+
   public static synchronized void initializeEnvironment(
       String container, String testrig, String envName) throws IOException {
     Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);

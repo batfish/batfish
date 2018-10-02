@@ -42,7 +42,7 @@ public final class WorkMgrTestUtils {
         containerDir.resolve(
             Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig, BfConsts.RELPATH_OUTPUT)));
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), container, testrig);
+        new TestrigMetadata(new Date().toInstant(), "env", null), container, testrig);
     Topology topology = new Topology(testrig);
     topology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
     CommonUtil.writeFile(

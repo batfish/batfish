@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +43,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1442,6 +1444,32 @@ public class CommonUtil {
     long upper = l >> 16;
     long lower = l & 0xFFFF;
     return upper + ":" + lower;
+  }
+
+  /**
+   * Merge the specified collection with the serialized list at the specified path. Creates a
+   * serialized list if it does not exist and is added to.
+   */
+  public static <T> void mergeWithSerializedList(Path serializedObjectPath, Collection<T> addition)
+      throws IOException {
+    if (addition == null || addition.size() == 0) {
+      return;
+    }
+
+    List<T> baseList;
+    if (serializedObjectPath.toFile().exists()) {
+      baseList =
+          BatfishObjectMapper.mapper()
+              .readValue(
+                  CommonUtil.readFile(serializedObjectPath), new TypeReference<List<T>>() {});
+    } else {
+      baseList = new ArrayList<>();
+    }
+
+    baseList.addAll(addition);
+    if (baseList.size() > 0) {
+      CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+    }
   }
 
   public static void moveByCopy(Path srcPath, Path dstPath) {
