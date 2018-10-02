@@ -1251,77 +1251,6 @@ public class WorkMgrService {
   }
 
   /**
-   * Get content of the configuration file
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network in which the question was asked
-   * @param snapshotName The name of the snapshot in which the question was asked
-   * @param configName The name of the configuration file in which the question was asked
-   * @return A {@link Response Response} with an entity consists either a string of the file content
-   *     of the configuration file {@code configName} or an error message if: the configuration file
-   *     {@code configName} does not exist or the {@code apiKey} has no access to the network {@code
-   *     networkName}
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_GET_CONFIGURATION)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getConfiguration(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_CONFIGURATION_NAME) String configName) {
-    String networkNameParam = networkName == null ? containerName : networkName;
-    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    try {
-      _logger.infof("WMS:getConfiguration %s\n", networkNameParam);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkNameParam, "Network name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-
-      java.nio.file.Path networkDir =
-          Main.getSettings().getContainersLocation().resolve(networkNameParam).toAbsolutePath();
-      if (networkDir == null || !Files.exists(networkDir)) {
-        return Response.status(Response.Status.NOT_FOUND)
-            .entity("Network '" + networkNameParam + "' not found")
-            .type(MediaType.TEXT_PLAIN)
-            .build();
-      }
-
-      checkNetworkAccessibility(apiKey, networkNameParam);
-
-      String configContent =
-          Main.getWorkMgr().getConfiguration(networkNameParam, snapshotNameParam, configName);
-
-      return Response.ok(configContent).build();
-    } catch (AccessControlException e) {
-      return Response.status(Status.FORBIDDEN)
-          .entity(e.getMessage())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    } catch (BatfishException e) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(e.getMessage())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:getConfiguration exception: %s", stackTrace);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-          .entity(e.getCause())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    }
-  }
-
-  /**
    * Get information of the network
    *
    * @param apiKey The API key of the client
@@ -1373,7 +1302,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      if (!Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
+      if (!Main.getWorkMgr().getIdManager().hasNetworkId(networkNameParam)) {
         return Response.status(Response.Status.NOT_FOUND)
             .entity("Network '" + networkNameParam + "' not found")
             .type(MediaType.TEXT_PLAIN)
@@ -1382,7 +1311,7 @@ public class WorkMgrService {
 
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Container network = Main.getWorkMgr().getContainer(networkName);
+      Container network = Main.getWorkMgr().getContainer(networkNameParam);
       String networkString = BatfishObjectMapper.writeString(network);
 
       return Response.ok(networkString).build();

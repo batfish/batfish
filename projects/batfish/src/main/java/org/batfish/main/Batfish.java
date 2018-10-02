@@ -2537,9 +2537,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
     NetworkId networkId = _settings.getContainer();
     AnalysisId analysisId = _settings.getAnalysisName();
-    QuestionSettingsId questionSettingsId =
-        _idResolver.getQuestionSettingsId(
-            _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    QuestionSettingsId questionSettingsId;
+    try {
+      questionSettingsId =
+          _idResolver.getQuestionSettingsId(
+              _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
@@ -4591,9 +4596,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = _settings.getContainer();
     QuestionId questionId = _settings.getQuestionName();
     AnalysisId analysisId = _settings.getAnalysisName();
-    QuestionSettingsId questionSettingsId =
-        _idResolver.getQuestionSettingsId(
-            _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    QuestionSettingsId questionSettingsId;
+    try {
+      questionSettingsId =
+          _idResolver.getQuestionSettingsId(
+              _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,

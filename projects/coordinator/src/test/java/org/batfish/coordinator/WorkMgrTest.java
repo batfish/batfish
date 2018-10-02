@@ -250,48 +250,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void getConfigNonExistContainer() {
-    _thrown.expect(Exception.class);
-    _thrown.expectMessage(equalTo("Container 'container' does not exist"));
-    _manager.getConfiguration("container", "testrig", "config.cfg");
-  }
-
-  @Test
-  public void getNonExistConfig() {
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath =
-        containerDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
-    _thrown.expect(Exception.class);
-    _thrown.expectMessage(
-        equalTo(
-            "Configuration file config.cfg does not exist in snapshot testrig "
-                + "for network container"));
-    _manager.getConfiguration("container", "testrig", "config.cfg");
-  }
-
-  @Test
-  public void getConfigContent() {
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path configPath =
-        containerDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_TESTRIGS_DIR,
-                "testrig",
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    assertTrue(configPath.toFile().mkdirs());
-    CommonUtil.writeFile(configPath.resolve("config.cfg"), "config content");
-    String result = _manager.getConfiguration("container", "testrig", "config.cfg");
-    assertThat(result, equalTo("config content"));
-  }
-
-  @Test
   public void testListAnalysesSuggested() {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);

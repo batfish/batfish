@@ -1,6 +1,5 @@
 package org.batfish.coordinator.id;
 
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;

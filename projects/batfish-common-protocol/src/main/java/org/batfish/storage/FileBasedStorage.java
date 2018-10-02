@@ -52,6 +52,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -563,9 +564,8 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
+    return Question.parseQuestion(loadQuestion(networkId, questionId, analysisId)).getName();
   }
 
   @Override

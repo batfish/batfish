@@ -765,16 +765,22 @@ public class WorkMgr extends AbstractCoordinator {
         getOrCreateIssueSettingsIds(networkId, baseAnswerMetadata);
     AnswerId finalAnswerId = _idManager.getFinalAnswerId(baseAnswerId, issueSettingsIds);
     if (!_storage.hasAnswerMetadata(finalAnswerId)) {
-      rebuildFinalAnswerAndMetadata(
-          baseAnswerMetadata.getMetrics().getMajorIssueConfigs(),
-          networkId,
-          snapshotId,
-          questionId,
-          baseAnswerId,
-          finalAnswerId,
-          issueSettingsIds,
-          referenceSnapshotId,
-          analysisId);
+      Metrics metrics = baseAnswerMetadata.getMetrics();
+      if (metrics == null) {
+        _storage.storeAnswer(_storage.loadAnswer(baseAnswerId), finalAnswerId);
+        _storage.storeAnswerMetadata(baseAnswerMetadata, finalAnswerId);
+      } else {
+        rebuildFinalAnswerAndMetadata(
+            metrics.getMajorIssueConfigs(),
+            networkId,
+            snapshotId,
+            questionId,
+            baseAnswerId,
+            finalAnswerId,
+            issueSettingsIds,
+            referenceSnapshotId,
+            analysisId);
+      }
     }
     return finalAnswerId;
   }
@@ -1087,49 +1093,6 @@ public class WorkMgr extends AbstractCoordinator {
               builder.put(column, newIssue);
             });
     return builder.build();
-  }
-
-  /**
-   * Returns a string representation of the content of configuration file {@code configName}.
-   *
-   * @throws BatfishException if the configuration file {@code configName} does not exist, or there
-   *     are more than one file with name {@code configName}, or failed to read content from the
-   *     file.
-   */
-  public String getConfiguration(String containerName, String testrigName, String configName) {
-    Path testrigPath = getdirTestrig(containerName, testrigName);
-    try (Stream<Path> paths = Files.walk(testrigPath.resolve(BfConsts.RELPATH_TEST_RIG_DIR))) {
-      List<Path> configPaths =
-          paths
-              .filter(x -> x.getFileName().toString().equals(configName))
-              .collect(Collectors.toList());
-      if (configPaths.isEmpty()) {
-        throw new BatfishException(
-            String.format(
-                "Configuration file %s does not exist in snapshot %s for network %s",
-                configName, testrigName, containerName));
-      } else if (configPaths.size() > 1) {
-        throw new BatfishException(
-            String.format(
-                "More than one configuration file with name %s in snapshot %s for network %s",
-                configName, testrigName, containerName));
-      }
-      String configContent = "";
-      try {
-        configContent = new String(Files.readAllBytes(configPaths.get(0)));
-      } catch (IOException e) {
-        throw new BatfishException(
-            String.format(
-                "Failed to read configuration file %s in snapshot %s for network %s",
-                configName, testrigName, containerName),
-            e);
-      }
-      return configContent;
-    } catch (IOException e) {
-      throw new BatfishException(
-          String.format(
-              "Failed to list directory %s", testrigPath.resolve(BfConsts.RELPATH_TEST_RIG_DIR)));
-    }
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */

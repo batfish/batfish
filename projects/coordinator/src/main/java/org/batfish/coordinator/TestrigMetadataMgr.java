@@ -4,7 +4,6 @@ package org.batfish.coordinator;
 // otherwise, we risk a deadlock, since WorkQueueMgr calls into this class
 // currently, this invariant is ensured by never calling out anywhere
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.time.Instant;
 import org.batfish.common.util.BatfishObjectMapper;
