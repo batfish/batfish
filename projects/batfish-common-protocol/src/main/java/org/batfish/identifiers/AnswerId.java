@@ -3,9 +3,9 @@ package org.batfish.identifiers;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class FinalAnswerId extends Id {
+public class AnswerId extends Id {
 
-  private FinalAnswerId(String id) {
+  private AnswerId(String id) {
     super(id);
   }
   

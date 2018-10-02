@@ -116,7 +116,8 @@ import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.identifiers.AnalysisId;
-import org.batfish.identifiers.BaseAnswerId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -711,35 +712,47 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
       throws JsonProcessingException, FileNotFoundException {
-    // Side effect: ensures metadata and answer are up to date
-    getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-
     String answer = "unknown";
     try {
-      answer = _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(
-                  _storage.getAnswerLastModifiedTime(
-                      network, snapshot, question, referenceSnapshot, analysis))
-          > 0) {
-        Answer ans = Answer.failureAnswer("Not fresh", null);
-        ans.setStatus(AnswerStatus.STALE);
+      NetworkId networkId = _idManager.getNetworkId(network);
+      AnalysisId analysisId = analysis != null ? _idManager.getAnalysisId(analysis, network) : null;
+      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
+      QuestionSettingsId questionSettingsId =
+          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+      AnswerId baseAnswerId =
+          _idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              questionSettingsId,
+              referenceSnapshotId,
+              analysisId);
+      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+        Answer ans = Answer.failureAnswer("Not answered", null);
+        ans.setStatus(AnswerStatus.NOTFOUND);
         answer = BatfishObjectMapper.writePrettyString(ans);
       }
-    } catch (FileNotFoundException e) {
-      Answer ans = Answer.failureAnswer("Not answered", null);
-      ans.setStatus(AnswerStatus.NOTFOUND);
-      answer = BatfishObjectMapper.writePrettyString(ans);
-    } catch (IOException e) {
+      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
+      AnswerId finalAnswerId = computeFinalAnswerAndId(baseAnswerMetadata, baseAnswerId);
+      return _storage.loadAnswer(finalAnswerId);
+    } catch (IOException | IllegalArgumentException e) {
       String message =
-          String.format("Failed to read answer file:\n%s", Throwables.getStackTraceAsString(e));
-      _logger.error(message);
+          String.format(
+              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+              network,
+              snapshot,
+              question,
+              referenceSnapshot,
+              analysis,
+              Throwables.getStackTraceAsString(e));
       Answer ans = Answer.failureAnswer(message, null);
       ans.setStatus(AnswerStatus.FAILURE);
       answer = BatfishObjectMapper.writePrettyString(ans);
+      return answer;
     }
-    return answer;
   }
 
   public @Nonnull Map<String, String> getAnalysisAnswers(
@@ -803,50 +816,43 @@ public class WorkMgr extends AbstractCoordinator {
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
           getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
-      // TODO: continue implementation here
-      if (!_idManager.hasBaseAnswerId(
-          networkId, snapshotId, questionId, questionSettingsId, referenceSnapshotId, analysisId)) {
+      AnswerId baseAnswerId =
+          _idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              questionSettingsId,
+              referenceSnapshotId,
+              analysisId);
+      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
-      AnswerMetadata answerMetadata =
-          _storage.loadAnswerMetadata(
-              networkId, snapshotId, questionId, referenceSnapshotId, analysisId);
-      if (!_idManager.hasFinalAnswerId(networkId, snapshotId, questionId, questionSettingsId, issueSettingsIds, referenceSnapshotId, analysisId)) {
-        return AnswerMetadata.forStatus(AnswerStatus.STALE);
-      }
-      BaseAnswerId baseAnswerId = _idManager.getBaseAnswerId(
-          networkId, snapshotId, questionId, questionSettingsId, referenceSnapshotId, analysisId);
-      if (!_storage.load)
-      
-      AnswerMetadata answerMetadata =
-          _storage.loadAnswerMetadata(
-              networkId, snapshotId, questionId, referenceSnapshotId, analysisId);
-      return applyPendingIssuesSettingsChanges(
-          answerMetadata, network, snapshot, question, referenceSnapshot, analysis);
-
-    } catch (IllegalArgumentException e) {
-      throw new InternalServerErrorException(
-          String.format(
-              "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s",
-              network, snapshot, question, referenceSnapshot, analysis),
-          e);
-    } catch (FileNotFoundException e) {
-      return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
-    } catch (IOException e) {
+      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
+      AnswerId finalAnswerId = computeFinalAnswerAndId(baseAnswerMetadata, baseAnswerId);
+      return _storage.loadAnswerMetadata(finalAnswerId);
+    } catch (IOException | IllegalArgumentException e) {
       _logger.errorf(
-          "Failed to read answer metadata file:\n%s", Throwables.getStackTraceAsString(e));
+          "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+          network,
+          snapshot,
+          question,
+          referenceSnapshot,
+          analysis,
+          Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
   }
 
   private QuestionSettingsId getOrCreateQuestionSettingsId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
     String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-    QuestionSettingsId questionSettingsId;
     if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      questionSettingsId = _idManager.generateQuestionSettingsId();
+      QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
       _storage.storeQuestionSettings("{}", networkId, questionClassId);
       _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
+      return questionSettingsId;
+    } else {
+      return _idManager.getQuestionSettingsId(questionClassId, networkId);
     }
   }
 
@@ -1169,9 +1175,17 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
-  /** Fetches the {@code MajorIssueConfig} for the given network and major issue type. */
-  public MajorIssueConfig getMajorIssueConfig(String networkName, String majorIssueType) {
-    return _storage.loadMajorIssueConfig(networkName, majorIssueType);
+  private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
+      throws IOException {
+    if (!_idManager.hasIssueSettingsId(majorIssueType, networkId)) {
+      IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
+      _storage.storeMajorIssueConfig(
+          networkId, issueSettingsId, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
+      _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
+      return issueSettingsId;
+    } else {
+      return _idManager.getIssueSettingsId(majorIssueType, networkId);
+    }
   }
 
   /**
@@ -1771,9 +1785,11 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
-  public void putMajorIssueConfig(
-      String networkName, String majorIssueType, MajorIssueConfig config) throws IOException {
-    _storage.storeMajorIssueConfig(networkName, majorIssueType, config);
+  public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    IssueSettingsId issueSettingsId = getOrCreateIssueSettingsId(networkId, majorIssueType);
+    _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
   }
 
   public void putObject(
@@ -2171,15 +2187,16 @@ public class WorkMgr extends AbstractCoordinator {
    * the path produced from the sepcified components.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionClassId The ID of the class of questions whose settings are to be returned
    * @param components The components to traverse from the root of the question settings to reach
    *     the desired section or value
    * @throws IOException if there is an error reading the settings
    */
   public @Nullable String getQuestionSettings(
-      String network, String questionClass, List<String> components) throws IOException {
+      String network, String questionClassId, List<String> components) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionClassId);
     if (questionSettings == null) {
       return null;
     }
@@ -2211,8 +2228,9 @@ public class WorkMgr extends AbstractCoordinator {
   public synchronized void writeQuestionSettings(
       String network, String questionClass, List<String> components, JsonNode value)
       throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionClass);
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     JsonNode root;
     if (!components.isEmpty()) {
@@ -2232,6 +2250,13 @@ public class WorkMgr extends AbstractCoordinator {
       root = value;
     }
     _storage.storeQuestionSettings(
-        BatfishObjectMapper.writePrettyString(root), network, questionClass);
+        BatfishObjectMapper.writePrettyString(root), networkId, questionClass);
+  }
+
+  public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    return _storage.loadMajorIssueConfig(
+        networkId, getOrCreateIssueSettingsId(networkId, majorIssueType));
   }
 }

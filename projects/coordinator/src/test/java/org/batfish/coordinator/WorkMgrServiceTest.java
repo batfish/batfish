@@ -35,6 +35,7 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.datamodel.answers.Aggregation;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -83,6 +84,7 @@ public class WorkMgrServiceTest {
         new WorkMgr(
             settings,
             logger,
+            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
     manager.initContainer(_networkName, null);

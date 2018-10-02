@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.IdResolver;
+import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -13,6 +14,10 @@ import org.batfish.identifiers.SnapshotId;
 /** Reader and writer for persistent mappings between object names and their IDs. */
 @ParametersAreNonnullByDefault
 public interface IdManager extends IdResolver {
+
+  /** Assign {@code majorIssueType} to {@code issueSettingsId} under {@code networkId}. */
+  void assignIssueSettingsId(
+      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId);
 
   /** Assign {@code network} to {@code networkId}. */
   void assignNetwork(String network, NetworkId networkId);
@@ -39,6 +44,10 @@ public interface IdManager extends IdResolver {
 
   /** Delete any mapping for {@code snapshot} under {@code networkId} */
   void deleteSnapshot(String snapshot, NetworkId networkId);
+
+  /** Generate a new {@link IssueSettingsId} suitable for assignment */
+  @Nonnull
+  IssueSettingsId generateIssueSettingsId();
 
   /** Generate a new {@link NetworkId} suitable for assignment */
   @Nonnull

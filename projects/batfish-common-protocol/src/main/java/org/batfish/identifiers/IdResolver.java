@@ -17,9 +17,9 @@ public interface IdResolver {
   @Nonnull
   AnalysisId getAnalysisId(String analysis, String network);
 
-  /** Retrieve the {@link BaseAnswerId} corresponding to the provided input IDs. */
+  /** Retrieve the {@link AnswerId} corresponding to the provided input IDs. */
   @Nonnull
-  BaseAnswerId getBaseAnswerId(
+  AnswerId getBaseAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
@@ -29,7 +29,7 @@ public interface IdResolver {
 
   /** Retrieve the {@link FinalAnswerId} corresponding to the provided input IDs. */
   @Nonnull
-  FinalAnswerId getFinalAnswerId(
+  AnswerId getFinalAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
@@ -45,7 +45,7 @@ public interface IdResolver {
    * @throws {@link IllegalArgumentException} if none assigned
    */
   @Nonnull
-  IssueSettingsId getMajorIssueConfigId(String majorIssueType, NetworkId networkId);
+  IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId);
 
   /**
    * Retrieve the {@link NetworkId} assigned to {@code network}.
@@ -82,9 +82,14 @@ public interface IdResolver {
   SnapshotId getSnapshotId(String snapshot, NetworkId networkId);
 
   /**
+   * Return {@code true} iff some {@link IssueSettingsId} is assigned to {@code majorIssueType}
+   * under {@code networkId}.
+   */
+  boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId);
+
+  /**
    * Return {@code true} iff some {@link QuestionSettingsId} is assigned to {@code questionClassId}
    * under {@code networkId}.
    */
-  @Nonnull
   boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId);
 }

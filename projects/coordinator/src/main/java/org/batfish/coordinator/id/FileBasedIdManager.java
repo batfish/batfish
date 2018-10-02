@@ -1,9 +1,11 @@
 package org.batfish.coordinator.id;
 
 import java.nio.file.Path;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.FileBasedIdResolver;
+import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -14,6 +16,13 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
 
   public FileBasedIdManager(Path baseDir) {
     super(baseDir);
+  }
+
+  @Override
+  public void assignIssueSettingsId(
+      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
@@ -61,25 +70,31 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
   }
 
   @Override
-  public NetworkId generateNetworkId() {
+  public @Nonnull IssueSettingsId generateIssueSettingsId() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public QuestionId generateQuestionId() {
+  public @Nonnull NetworkId generateNetworkId() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public QuestionSettingsId generateQuestionSettingsId() {
+  public @Nonnull QuestionId generateQuestionId() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public SnapshotId generateSnapshotId() {
+  public @Nonnull QuestionSettingsId generateQuestionSettingsId() {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public @Nonnull SnapshotId generateSnapshotId() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -36,15 +37,8 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   @Nonnull
-  Path getAnswerDir(
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis) {
-    return referenceSnapshot != null
-        ? getDeltaAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
-        : getStandardAnswerDir(network, snapshot, question, analysis);
+  Path getAnswerDir(AnswerId answerId) {
+    return _baseDir.resolve(BfConsts.RELPATH_ANSWERS_DIR).resolve(answerId.getId());
   }
 
   Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {

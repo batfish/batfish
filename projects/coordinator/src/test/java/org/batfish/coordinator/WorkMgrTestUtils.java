@@ -10,6 +10,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.id.FileBasedIdManager;
+import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
@@ -30,6 +32,7 @@ public final class WorkMgrTestUtils {
         new WorkMgr(
             Main.getSettings(),
             logger,
+            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
   }
 
@@ -49,11 +52,11 @@ public final class WorkMgrTestUtils {
         BatfishObjectMapper.mapper().writeValueAsString(topology));
   }
 
-  public static void initWorkManager(StorageProvider storage) {
+  public static void initWorkManager(IdManager idManager, StorageProvider storage) {
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    Main.setWorkMgr(new WorkMgr(Main.getSettings(), logger, storage));
+    Main.setWorkMgr(new WorkMgr(Main.getSettings(), logger, idManager, storage));
   }
 }

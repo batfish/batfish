@@ -55,6 +55,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -340,15 +341,9 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeAnswer(
-      String answerStr,
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis) {
-    Path answerPath = getAnswerPath(network, snapshot, question, referenceSnapshot, analysis);
-    Path answerDir = _d.getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
+  public void storeAnswer(String answerStr, AnswerId answerId) {
+    Path answerPath = getAnswerPath(answerId);
+    Path answerDir = _d.getAnswerDir(answerId);
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create answer directory '%s'", answerDir));
@@ -357,20 +352,14 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeAnswerMetadata(
-      AnswerMetadata answerMetadata,
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis) {
+  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) {
     String metricsStr;
     try {
       metricsStr = BatfishObjectMapper.writePrettyString(answerMetadata);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
-    Path answerDir = _d.getAnswerDir(network, snapshot, question, referenceSnapshot, analysis);
+    Path answerDir = _d.getAnswerDir(answerId);
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create answer metadata directory '%s'", answerDir));
@@ -505,62 +494,33 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadAnswer(
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis)
-      throws FileNotFoundException, IOException {
-    Path answerPath = getAnswerPath(network, snapshot, question, referenceSnapshot, analysis);
+  public @Nonnull String loadAnswer(AnswerId answerId) throws FileNotFoundException, IOException {
+    Path answerPath = getAnswerPath(answerId);
     if (!Files.exists(answerPath)) {
-      throw new FileNotFoundException(
-          String.format(
-              "Could not find answer for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
-              question, network, snapshot, referenceSnapshot, analysis));
+      throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
     }
     return FileUtils.readFileToString(answerPath.toFile());
   }
 
   @Override
-  public @Nonnull AnswerMetadata loadAnswerMetadata(
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis)
+  public @Nonnull AnswerMetadata loadAnswerMetadata(AnswerId answerId)
       throws FileNotFoundException, IOException {
-    Path answerMetadataPath =
-        getAnswerMetadataPath(network, snapshot, question, referenceSnapshot, analysis);
+    Path answerMetadataPath = getAnswerMetadataPath(answerId);
     if (!Files.exists(answerMetadataPath)) {
       throw new FileNotFoundException(
-          String.format(
-              "Could not find answer metadata for question:'%s' in network:'%s'; snapshot:'%s'; referenceSnapshot:'%s'; analysis:'%s'",
-              question, network, snapshot, referenceSnapshot, analysis));
+          String.format("Could not find answer metadata for ID: %s", answerId));
     }
     String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile());
     return BatfishObjectMapper.mapper()
         .readValue(answerMetadataStr, new TypeReference<AnswerMetadata>() {});
   }
 
-  private @Nonnull Path getAnswerPath(
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis) {
-    return _d.getAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
-        .resolve(BfConsts.RELPATH_ANSWER_JSON);
+  private @Nonnull Path getAnswerPath(AnswerId answerId) {
+    return _d.getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_JSON);
   }
 
-  private @Nonnull Path getAnswerMetadataPath(
-      NetworkId network,
-      SnapshotId snapshot,
-      QuestionId question,
-      @Nullable SnapshotId referenceSnapshot,
-      @Nullable AnalysisId analysis) {
-    return _d.getAnswerDir(network, snapshot, question, referenceSnapshot, analysis)
-        .resolve(BfConsts.RELPATH_ANSWER_METADATA);
+  private @Nonnull Path getAnswerMetadataPath(AnswerId answerId) {
+    return _d.getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_METADATA);
   }
 
   @Override
@@ -595,5 +555,18 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getQuestionSettingsPath(network, questionClassId).toFile(), settings);
+  }
+
+  @Override
+  public boolean hasAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public String loadQuestionClassId(
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

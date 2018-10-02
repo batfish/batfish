@@ -164,11 +164,13 @@ import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
@@ -1699,7 +1701,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
     IssueSettingsId id =
-        _idResolver.getMajorIssueConfigId(majorIssueType, _settings.getContainer());
+        _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
     if (id == null) {
       return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
     }
@@ -2515,18 +2517,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
-    QuestionId question = _settings.getQuestionName();
-    if (question == null) {
+    QuestionId questionId = _settings.getQuestionName();
+    if (questionId == null) {
       return;
     }
     SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId =
+        _idResolver.getQuestionSettingsId(
+            _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            deltaSnapshot,
+            analysisId);
+
     _storage.storeAnswerMetadata(
-        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        question,
-        deltaSnapshot,
-        _settings.getAnalysisName());
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -4558,13 +4569,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void writeJsonAnswer(String structuredAnswerString) {
     SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    QuestionId questionId = _settings.getQuestionName();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId =
+        _idResolver.getQuestionSettingsId(
+            _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            deltaSnapshot,
+            analysisId);
     _storage.storeAnswer(
         structuredAnswerString,
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        deltaSnapshot,
-        _settings.getAnalysisName());
+        baseAnswerId);
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {

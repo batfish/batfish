@@ -20,7 +20,7 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull BaseAnswerId getBaseAnswerId(
+  public @Nonnull AnswerId getBaseAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
@@ -32,7 +32,7 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull FinalAnswerId getFinalAnswerId(
+  public @Nonnull AnswerId getFinalAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
@@ -45,8 +45,7 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull IssueSettingsId getMajorIssueConfigId(
-      String majorIssueType, NetworkId networkId) {
+  public @Nonnull IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -78,7 +77,13 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+  public @Nonnull boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public @Nonnull boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
