@@ -17,6 +17,10 @@ import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
+/**
+ * Filesystem-based {@link IdResolver} that reads IDs from directories compatible with {@link
+ * FileBasedStorageDirectoryProvider}. Intended to be used together with {@link FileBasedStorage}.
+ */
 public class FileBasedIdResolver implements IdResolver {
 
   private static final String ID_EXTENSION = ".id";
@@ -33,11 +37,11 @@ public class FileBasedIdResolver implements IdResolver {
 
   private static final String RELPATH_SNAPSHOT_IDS = "snapshot_ids";
 
-  private static String hash(String input) {
+  private static @Nonnull String hash(String input) {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
   }
 
-  private static Set<String> listResolvableNames(Path idsDir) {
+  private static @Nonnull Set<String> listResolvableNames(Path idsDir) {
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
@@ -239,22 +243,22 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public Set<String> listAnalyses(NetworkId networkId) {
+  public @Nonnull Set<String> listAnalyses(NetworkId networkId) {
     return listResolvableNames(getAnalysisIdsDir(networkId));
   }
 
   @Override
-  public Set<String> listNetworks() {
+  public @Nonnull Set<String> listNetworks() {
     return listResolvableNames(getNetworkIdsDir());
   }
 
   @Override
-  public Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
+  public @Nonnull Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
     return listResolvableNames(getQuestionIdsDir(networkId, analysisId));
   }
 
   @Override
-  public Set<String> listSnapshots(NetworkId networkId) {
+  public @Nonnull Set<String> listSnapshots(NetworkId networkId) {
     return listResolvableNames(getSnapshotIdsDir(networkId));
   }
 }

@@ -1,6 +1,5 @@
 package org.batfish.storage;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,7 +15,7 @@ import org.batfish.identifiers.SnapshotId;
 @ParametersAreNonnullByDefault
 public class FileBasedStorageDirectoryProvider {
 
-  private Path _baseDir;
+  private final Path _baseDir;
 
   public FileBasedStorageDirectoryProvider(Path baseDir) {
     _baseDir = baseDir;
@@ -26,22 +25,24 @@ public class FileBasedStorageDirectoryProvider {
     return getAdHocQuestionsDir(network).resolve(question.getId());
   }
 
+  public @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+  }
+
   public @Nonnull Path getAnalysisQuestionDir(
       NetworkId network, QuestionId question, AnalysisId analysis) {
     return getAnalysisQuestionsDir(network, analysis).resolve(question.getId());
   }
 
-  @Nonnull
-  public Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
+  public @Nonnull Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
     return getNetworkAnalysisDir(network, analysis).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 
-  @Nonnull
-  public Path getAnswerDir(AnswerId answerId) {
+  public @Nonnull Path getAnswerDir(AnswerId answerId) {
     return _baseDir.resolve(BfConsts.RELPATH_ANSWERS_DIR).resolve(answerId.getId());
   }
 
-  public Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
+  public @Nonnull Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
   }
 
@@ -72,8 +73,7 @@ public class FileBasedStorageDirectoryProvider {
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
   }
 
-  @Nonnull
-  public Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
+  public @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
     return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
         .resolve(majorIssueType + ".json");
@@ -83,27 +83,22 @@ public class FileBasedStorageDirectoryProvider {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
-  @VisibleForTesting
-  @Nonnull
-  public Path getNetworkDir(NetworkId network) {
+  public @Nonnull Path getNetworkDir(NetworkId network) {
     return _baseDir.resolve(network.getId());
   }
 
-  @Nonnull
-  public Path getNetworkSettingsDir(NetworkId network) {
+  public @Nonnull Path getNetworkSettingsDir(NetworkId network) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
   }
 
-  @Nonnull
-  public Path getQuestionDir(
+  public @Nonnull Path getQuestionDir(
       NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
     return analysis != null
         ? getAnalysisQuestionDir(network, question, analysis)
         : getAdHocQuestionDir(network, question);
   }
 
-  @Nonnull
-  public Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
+  public @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot.getId());
   }
 
@@ -125,21 +120,16 @@ public class FileBasedStorageDirectoryProvider {
             .resolve(BfConsts.RELPATH_STANDARD_DIR);
   }
 
-  @Nonnull
-  public Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
+  public @Nonnull Path getStorageBase() {
+    return _baseDir;
+  }
+
+  public @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
         .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
   }
 
   public @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
-  }
-
-  public @Nonnull Path getStorageBase() {
-    return _baseDir;
-  }
-
-  public @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
-    return getNetworkDir(networkId).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 }

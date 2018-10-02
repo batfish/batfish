@@ -14,6 +14,11 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 
+/**
+ * Filesystem based {@link IdManager} capable of writing mappings used by {@link
+ * FileBasedIdResolver}, from which it inherits. Intended to be used together with {@link
+ * FileBasedStorage}.
+ */
 @ParametersAreNonnullByDefault
 public class FileBasedIdManager extends FileBasedIdResolver implements IdManager {
 

@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -23,13 +24,17 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 
+/**
+ * Memory-based {@link IdManager} suitable for testing. Compatible with any {@link StorageProvider}.
+ */
+@ParametersAreNonnullByDefault
 public final class LocalIdManager implements IdManager {
 
-  private static String hash(String input) {
+  private static @Nonnull String hash(String input) {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
   }
 
-  private static <T> T illegalIfNull(T t) {
+  private static @Nonnull <T> T illegalIfNull(@Nullable T t) {
     if (t == null) {
       throw new IllegalArgumentException("Invalid ID");
     }
@@ -76,7 +81,10 @@ public final class LocalIdManager implements IdManager {
 
   @Override
   public void assignQuestion(
-      String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+      String question,
+      NetworkId networkId,
+      QuestionId questionId,
+      @Nullable AnalysisId analysisId) {
     _questionIds
         .computeIfAbsent(networkId, n -> new HashMap<>())
         .computeIfAbsent(ofNullable(analysisId), a -> new HashMap<>())
@@ -98,8 +106,7 @@ public final class LocalIdManager implements IdManager {
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    _analysisIds.get(networkId).remove(analysis);
   }
 
   @Override
@@ -108,7 +115,8 @@ public final class LocalIdManager implements IdManager {
   }
 
   @Override
-  public void deleteQuestion(String question, NetworkId networkId, AnalysisId analysisId) {
+  public void deleteQuestion(
+      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
     _questionIds.get(networkId).get(ofNullable(analysisId)).remove(question);
   }
 
