@@ -11,7 +11,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -108,8 +108,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    */
   public static class ReachabilityQuestion extends Question implements IReachabilityQuestion {
 
-    private static final SortedSet<ForwardingAction> DEFAULT_ACTIONS =
-        ImmutableSortedSet.of(ForwardingAction.ACCEPT);
+    private static final SortedSet<FlowDisposition> DEFAULT_ACTIONS =
+        ImmutableSortedSet.of(FlowDisposition.ACCEPTED);
 
     private static final NodesSpecifier DEFAULT_FINAL_NODES = NodesSpecifier.ALL;
 
@@ -231,7 +231,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_ACTIONS)
-    public SortedSet<ForwardingAction> getActions() {
+    public SortedSet<FlowDisposition> getActions() {
       return _reachabilitySettings.getActions();
     }
 
@@ -551,7 +551,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @Override
     @JsonProperty(PROP_ACTIONS)
-    public void setActions(SortedSet<ForwardingAction> actionSet) {
+    public void setActions(SortedSet<FlowDisposition> actionSet) {
       _reachabilitySettings.setActions(ImmutableSortedSet.copyOf(actionSet));
     }
 

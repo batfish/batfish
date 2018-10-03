@@ -102,9 +102,9 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
@@ -3947,7 +3947,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return e.getInvalidParametersAnswer();
     }
 
-    Set<ForwardingAction> actions = reachabilityParameters.getActions();
+    Set<FlowDisposition> actions = reachabilityParameters.getActions();
 
     Map<String, Configuration> configurations = parameters.getConfigurations();
     DataPlane dataPlane = parameters.getDataPlane();

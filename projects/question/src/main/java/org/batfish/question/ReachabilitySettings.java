@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.SortedSet;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -25,7 +25,7 @@ public final class ReachabilitySettings {
 
   public static final class Builder {
 
-    private SortedSet<ForwardingAction> _actions;
+    private SortedSet<FlowDisposition> _actions;
 
     private NodesSpecifier _finalNodes;
 
@@ -55,7 +55,7 @@ public final class ReachabilitySettings {
       return new ReachabilitySettings(this);
     }
 
-    public SortedSet<ForwardingAction> getActions() {
+    public SortedSet<FlowDisposition> getActions() {
       return _actions;
     }
 
@@ -103,7 +103,7 @@ public final class ReachabilitySettings {
       return _useCompression;
     }
 
-    public Builder setActions(Iterable<ForwardingAction> actions) {
+    public Builder setActions(Iterable<FlowDisposition> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
       return this;
     }
@@ -173,7 +173,7 @@ public final class ReachabilitySettings {
     return new Builder();
   }
 
-  private final SortedSet<ForwardingAction> _actions;
+  private final SortedSet<FlowDisposition> _actions;
 
   private final NodesSpecifier _finalNodes;
 
@@ -237,7 +237,7 @@ public final class ReachabilitySettings {
         && _useCompression == other._useCompression;
   }
 
-  public SortedSet<ForwardingAction> getActions() {
+  public SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 

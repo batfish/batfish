@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
@@ -102,7 +102,7 @@ public class PathDiffTest {
     AnswerElement answer =
         batfish.pathDiff(
             ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(ForwardingAction.ACCEPT))
+                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
                 .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
                 .build());
     assertThat(answer, Matchers.instanceOf(FlowHistory.class));
