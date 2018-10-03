@@ -1561,7 +1561,8 @@ public class WorkMgrTest {
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, "content");
     ZipUtility.zipFiles(tmpSnapshotSrcDir.getParent(), tmpSnapshotZip);
-    InputStream inputStream = Files.newInputStream(tmpSnapshotZip);
-    _manager.uploadSnapshot(network, snapshot, inputStream, false);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      _manager.uploadSnapshot(network, snapshot, inputStream, false);
+    }
   }
 }
