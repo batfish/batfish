@@ -24,6 +24,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -45,6 +48,7 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
+import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.TestrigMetadata;
@@ -1475,7 +1479,7 @@ public class WorkMgrTest {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    uploadTestSnapshot(network, snapshot);
 
     // snapshot should exist
     assertThat(_manager.listSnapshots(network), contains(snapshot));
@@ -1520,5 +1524,44 @@ public class WorkMgrTest {
 
     // should contain initialized network
     assertThat(_manager.getNetworkNames(), contains(network));
+  }
+
+  @Test
+  public void testUploadSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+
+    // snapshot should exist
+    assertThat(_manager.listSnapshots(network), contains(snapshot));
+
+    // should be able to delete and recreate
+    _manager.delSnapshot(network, snapshot);
+    uploadTestSnapshot(network, snapshot);
+
+    // snapshot should exist again
+    assertThat(_manager.listSnapshots(network), contains(snapshot));
+
+    // should not be able to upload again with same name
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(containsString(snapshot));
+    uploadTestSnapshot(network, snapshot);
+  }
+
+  private void uploadTestSnapshot(String network, String snapshot) throws IOException {
+    Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
+    // intentional duplication of snapshot to provide subdir
+    Path tmpSnapshotConfig =
+        tmpSnapshotSrcDir
+            .resolve(snapshot)
+            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
+            .resolve("c1");
+    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
+    tmpSnapshotConfig.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(tmpSnapshotConfig, "content");
+    ZipUtility.zipFiles(tmpSnapshotSrcDir.getParent(), tmpSnapshotZip);
+    InputStream inputStream = Files.newInputStream(tmpSnapshotZip);
+    _manager.uploadSnapshot(network, snapshot, inputStream, false);
   }
 }
