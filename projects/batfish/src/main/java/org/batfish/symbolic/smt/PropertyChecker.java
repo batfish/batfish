@@ -566,7 +566,7 @@ public class PropertyChecker {
           } else {
             FlowHistory fh;
             CounterExample ce = new CounterExample(vp.getModel());
-            String testrigName = _batfish.getTestrigName().getId();
+            String testrigName = _batfish.getEnvironment().getTestrigName();
             if (q.getDiffType() != null) {
               fh =
                   ce.buildFlowHistoryDiff(

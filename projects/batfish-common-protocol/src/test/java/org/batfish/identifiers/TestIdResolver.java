@@ -59,6 +59,12 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
+  public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub

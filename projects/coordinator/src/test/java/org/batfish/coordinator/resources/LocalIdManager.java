@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -214,6 +215,18 @@ public final class LocalIdManager implements IdManager {
   @Override
   public SnapshotId getSnapshotId(String snapshot, NetworkId networkId) {
     return illegalIfNull(_snapshotIds.get(networkId).get(snapshot));
+  }
+
+  @Override
+  public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
+    return _snapshotIds
+        .get(networkId)
+        .entrySet()
+        .stream()
+        .filter(e -> e.getValue().equals(snapshotId))
+        .map(Entry::getKey)
+        .findFirst()
+        .get();
   }
 
   @Override

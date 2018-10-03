@@ -73,6 +73,9 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
     Path idFile = getSnapshotIdPath(snapshot, networkId);
     idFile.getParent().toFile().mkdirs();
     CommonUtil.writeFile(idFile, snapshotId.getId());
+    Path nameFile = getSnapshotNamePath(networkId, snapshotId);
+    nameFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(nameFile, snapshot);
   }
 
   @Override
@@ -93,6 +96,7 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
+    CommonUtil.delete(getSnapshotNamePath(networkId, getSnapshotId(snapshot, networkId)));
     CommonUtil.delete(getSnapshotIdPath(snapshot, networkId));
   }
 

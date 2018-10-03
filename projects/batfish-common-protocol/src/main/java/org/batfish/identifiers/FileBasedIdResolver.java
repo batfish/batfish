@@ -26,6 +26,8 @@ public class FileBasedIdResolver implements IdResolver {
 
   private static final String ID_EXTENSION = ".id";
 
+  private static final String NAME_EXTENSION = ".name";
+
   private static final String RELPATH_ANALYSIS_IDS = "analysis_ids";
 
   private static final String RELPATH_ISSUE_SETTINGS_IDS = "analysis_ids";
@@ -37,6 +39,8 @@ public class FileBasedIdResolver implements IdResolver {
   private static final String RELPATH_QUESTION_SETTINGS_IDS = "question_settings_ids";
 
   private static final String RELPATH_SNAPSHOT_IDS = "snapshot_ids";
+
+  private static final String RELPATH_SNAPSHOT_NAMES = "snapshot_names";
 
   private static @Nonnull String hash(String input) {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
@@ -211,6 +215,20 @@ public class FileBasedIdResolver implements IdResolver {
 
   protected @Nonnull Path getSnapshotIdsDir(NetworkId networkId) {
     return _d.getNetworkDir(networkId).resolve(RELPATH_SNAPSHOT_IDS);
+  }
+
+  @Override
+  public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
+    return CommonUtil.readFile(getSnapshotNamePath(networkId, snapshotId));
+  }
+
+  protected @Nonnull Path getSnapshotNamePath(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotNamesDir(networkId)
+        .resolve(String.format("%s%s", snapshotId.getId(), NAME_EXTENSION));
+  }
+
+  protected @Nonnull Path getSnapshotNamesDir(NetworkId networkId) {
+    return _d.getNetworkDir(networkId).resolve(RELPATH_SNAPSHOT_NAMES);
   }
 
   @Override

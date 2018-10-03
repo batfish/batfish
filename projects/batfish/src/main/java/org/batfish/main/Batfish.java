@@ -1532,7 +1532,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: add bgp tables and external announcements as well
     return new Environment(
         getEnvironmentName(),
-        getTestrigName().getId(),
+        _idResolver.getSnapshotName(_settings.getContainer(), getTestrigName()),
         edgeBlackList,
         interfaceBlackList,
         nodeBlackList,
@@ -3852,7 +3852,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _testrigSettings.getName().getId(), configurations, testrigTopology);
+            _idResolver.getSnapshotName(_settings.getContainer(), _testrigSettings.getName()),
+            configurations,
+            testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());

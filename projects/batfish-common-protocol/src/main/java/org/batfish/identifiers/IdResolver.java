@@ -74,6 +74,10 @@ public interface IdResolver {
   @Nonnull
   SnapshotId getSnapshotId(String snapshot, NetworkId networkId);
 
+  /** Retrieve the name of the snapshot with the given ID */
+  @Nonnull
+  String getSnapshotName(NetworkId networkId, SnapshotId snapshotId);
+
   /**
    * Return {@code true} iff some {@link AnalysisId} is assigned to {@code analysis} under {@code
    * networkId}.
