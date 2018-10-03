@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
@@ -57,7 +59,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -102,10 +103,10 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -119,6 +120,7 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -4334,27 +4336,61 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Set<Flow> bddMultipathConsistency() {
-    BDDReachabilityAnalysis bddReachabilityAnalysis = getBddReachabilityAnalysis(new BDDPacket());
-    return bddReachabilityAnalysis.multipathInconsistencies(getFlowTag());
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<FlowDisposition> dropDispositions =
+        ImmutableSet.of(
+            FlowDisposition.DENIED_IN,
+            FlowDisposition.DENIED_OUT,
+            FlowDisposition.NO_ROUTE,
+            FlowDisposition.NULL_ROUTED);
+    Map<IngressLocation, BDD> acceptedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(FlowDisposition.ACCEPTED))
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> droppedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, dropDispositions)
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> neighborUnreachableBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .getIngressLocationReachableBDDs();
+
+    String flowTag = getFlowTag();
+    return Streams.concat(
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, droppedBDDs).stream(),
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
+                .stream(),
+            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
+                .stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
-  private BDDReachabilityAnalysis getBddReachabilityAnalysis(BDDPacket pkt) {
-    Map<String, Configuration> configurations = loadConfigurations();
-    DataPlane dataPlane = loadDataPlane();
-    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, configurations);
+  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, loadConfigurations());
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
                 AllInterfaceLinksLocationSpecifier.INSTANCE)
             .resolve(specifierContext);
-    IpSpaceAssignment sourceIpAssignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+    return InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+  }
 
-    BDDReachabilityAnalysisFactory analysisFactory =
-        new BDDReachabilityAnalysisFactory(pkt, configurations, forwardingAnalysis);
-    return analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+  @Nonnull
+  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(BDDPacket pkt) {
+    return new BDDReachabilityAnalysisFactory(
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis());
   }
 
   /**
@@ -4364,17 +4400,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Set<Flow> bddReducedReachability() {
     BDDPacket pkt = new BDDPacket();
+    Set<FlowDisposition> dispositions = ImmutableSet.of(FlowDisposition.ACCEPTED);
 
     pushBaseEnvironment();
-    BDDReachabilityAnalysis baseReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
     Map<IngressLocation, BDD> baseAcceptBDDs =
-        baseReachabilityAnalysis.getIngressLocationAcceptBDDs();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                getAllSourcesInferFromLocationIpSpaceAssignment(),
+                UniverseIpSpace.INSTANCE,
+                dispositions)
+            .getIngressLocationReachableBDDs();
     popEnvironment();
 
     pushDeltaEnvironment();
-    BDDReachabilityAnalysis deltaReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
     Map<IngressLocation, BDD> deltaAcceptBDDs =
-        deltaReachabilityAnalysis.getIngressLocationAcceptBDDs();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                getAllSourcesInferFromLocationIpSpaceAssignment(),
+                UniverseIpSpace.INSTANCE,
+                dispositions)
+            .getIngressLocationReachableBDDs();
     popEnvironment();
 
     Set<IngressLocation> commonSources =

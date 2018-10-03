@@ -1,21 +1,17 @@
 package org.batfish.bddreachability;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 import net.sf.javabdd.BDD;
-import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.IngressLocation;
 
 /*
  * Internal class representing a multipath inconsistency.
  */
 class MultipathInconsistency {
   private final BDD _bdd;
-  private final StateExpr _originateState;
-  private final Set<StateExpr> _finalStates;
+  private final IngressLocation _ingressLocation;
 
-  MultipathInconsistency(StateExpr originateState, Set<StateExpr> finalStates, BDD bdd) {
-    this._originateState = originateState;
-    this._finalStates = ImmutableSet.copyOf(finalStates);
+  MultipathInconsistency(IngressLocation ingressLocation, BDD bdd) {
+    this._ingressLocation = ingressLocation;
     this._bdd = bdd;
   }
 
@@ -23,11 +19,7 @@ class MultipathInconsistency {
     return _bdd;
   }
 
-  public StateExpr getOriginateState() {
-    return _originateState;
-  }
-
-  public Set<StateExpr> getFinalStates() {
-    return _finalStates;
+  public IngressLocation getIngressLocation() {
+    return _ingressLocation;
   }
 }
