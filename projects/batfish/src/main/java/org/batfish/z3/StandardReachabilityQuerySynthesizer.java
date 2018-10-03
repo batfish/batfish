@@ -173,7 +173,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           }
           break;
         default:
-          throw new BatfishException("Unimplemented action: " + action.toString());
+          throw new BatfishException("Unimplemented disposition: " + action.toString());
       }
     }
     return finalActionsBuilder.build();
