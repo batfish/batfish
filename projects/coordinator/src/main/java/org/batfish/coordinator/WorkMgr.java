@@ -1117,16 +1117,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public Set<String> getNetworkNames() {
-    Path containersDir = Main.getSettings().getContainersLocation();
-    if (!Files.exists(containersDir)) {
-      containersDir.toFile().mkdirs();
-    }
-    SortedSet<String> containers =
-        CommonUtil.getSubdirectories(containersDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-    return containers;
+    return _idManager.listNetworks();
   }
 
   private static Path getdirContainer(String containerName, boolean errIfNotExist) {
