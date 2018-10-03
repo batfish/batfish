@@ -1007,8 +1007,7 @@ public class WorkQueueMgrTest {
     // work2 should be left with terminatedqueuefail status and the testrig in parsing_fail state
     assertThat(work2.getStatus(), equalTo(WorkStatusCode.REQUEUEFAILURE));
     assertThat(
-        TestrigMetadataMgr.getEnvironmentMetadata(CONTAINER, "other", "other")
-            .getProcessingStatus(),
+        WorkQueueMgr.getEnvironmentMetadata(CONTAINER, "other", "other").getProcessingStatus(),
         equalTo(ProcessingStatus.PARSING_FAIL));
   }
 

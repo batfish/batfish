@@ -26,13 +26,6 @@ public class TestrigMetadataMgr {
   }
 
   public static EnvironmentMetadata getEnvironmentMetadata(
-      String network, String snapshot, String envName) throws IOException {
-    NetworkId networkId = idm().getNetworkId(network);
-    SnapshotId snapshotId = idm().getSnapshotId(snapshot, networkId);
-    return getEnvironmentMetadata(networkId, snapshotId, envName);
-  }
-
-  public static EnvironmentMetadata getEnvironmentMetadata(
       NetworkId networkId, SnapshotId snapshotId, String envName) throws IOException {
     TestrigMetadata trMetadata = readMetadata(networkId, snapshotId);
     return trMetadata.getEnvironments().get(envName);
@@ -69,14 +62,6 @@ public class TestrigMetadataMgr {
   public static synchronized void writeMetadata(
       TestrigMetadata metadata, NetworkId networkId, SnapshotId snapshotId) throws IOException {
     storage().storeSnapshotMetadata(metadata, networkId, snapshotId);
-  }
-
-  public static void updateEnvironmentStatus(
-      String network, String snapshot, String envName, ProcessingStatus status, String errMessage)
-      throws IOException {
-    NetworkId networkId = idm().getNetworkId(network);
-    SnapshotId snapshotId = idm().getSnapshotId(snapshot, networkId);
-    updateEnvironmentStatus(networkId, snapshotId, envName, status, errMessage);
   }
 
   public static synchronized void updateEnvironmentStatus(

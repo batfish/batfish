@@ -236,6 +236,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
+  private static final String DEFAULT_QUESTION_SETTINGS_ID = "<NONE>";
+
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
@@ -2549,9 +2551,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnalysisId analysisId = _settings.getAnalysisName();
     QuestionSettingsId questionSettingsId;
     try {
-      questionSettingsId =
-          _idResolver.getQuestionSettingsId(
-              _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+      }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
@@ -4607,13 +4612,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     QuestionId questionId = _settings.getQuestionName();
     AnalysisId analysisId = _settings.getAnalysisName();
     QuestionSettingsId questionSettingsId;
+
     try {
-      questionSettingsId =
-          _idResolver.getQuestionSettingsId(
-              _storage.loadQuestionClassId(networkId, questionId, analysisId), networkId);
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+      }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
+
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,

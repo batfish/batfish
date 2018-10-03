@@ -1361,18 +1361,19 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of snapshot. There should be just one top-level folder");
     }
 
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
     Path containerDir = getdirNetwork(networkName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName));
+    Path testrigDir =
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
     }
-
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.generateSnapshotId();
 
     // Now that the directory exists, we must also create the metadata.
     try {
@@ -1763,7 +1764,17 @@ public class WorkMgr extends AbstractCoordinator {
                 "Snapshot/environment metadata not found for %s/%s",
                 workDetails.deltaTestrig, workDetails.deltaEnv));
       }
-      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
+      WorkItem resolvedWorkItem = resolveIds(workItem);
+      WorkDetails resolvedWorkDetails =
+          new WorkDetails(
+              resolvedWorkItem.getTestrigName(),
+              workDetails.baseEnv,
+              resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
+              workDetails.deltaEnv,
+              workDetails.isDifferential,
+              workDetails.workType);
+      success =
+          _workQueueMgr.queueUnassignedWork(new QueuedWork(resolvedWorkItem, resolvedWorkDetails));
     } catch (Exception e) {
       throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
@@ -1773,6 +1784,50 @@ public class WorkMgr extends AbstractCoordinator {
       thread.start();
     }
     return success;
+  }
+
+  private @Nonnull WorkItem resolveIds(WorkItem workItem) {
+    Map<String, String> params = new HashMap<>(workItem.getRequestParams());
+
+    // network
+    String network = workItem.getContainerName();
+    if (network == null) {
+      return workItem;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    params.put(BfConsts.ARG_CONTAINER, networkId.getId());
+
+    // snapshot
+    String snapshot = workItem.getTestrigName();
+    if (snapshot == null) {
+      return workItem;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
+
+    // referenceSnapshot
+    String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
+    if (referenceSnapshot != null) {
+      SnapshotId referenceSnapshotId = _idManager.getSnapshotId(referenceSnapshot, networkId);
+      params.put(BfConsts.ARG_DELTA_TESTRIG, referenceSnapshotId.getId());
+    }
+
+    // analysis
+    AnalysisId analysisId = null;
+    String analysis = params.get(BfConsts.ARG_ANALYSIS_NAME);
+    if (analysis != null) {
+      analysisId = _idManager.getAnalysisId(analysis, networkId);
+      params.put(BfConsts.ARG_ANALYSIS_NAME, analysisId.getId());
+    }
+
+    // question
+    String question = params.get(BfConsts.ARG_QUESTION_NAME);
+    if (question != null) {
+      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      params.put(BfConsts.ARG_QUESTION_NAME, questionId.getId());
+    }
+
+    return new WorkItem(workItem.getId(), networkId.getId(), snapshotId.getId(), params);
   }
 
   public void startWorkManager() {
@@ -1950,9 +2005,10 @@ public class WorkMgr extends AbstractCoordinator {
   public void uploadSnapshot(
       String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
     Path networkDir = getdirNetwork(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
 
     // Fail early if the snapshot already exists
-    if (Files.exists(networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName)))) {
+    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
       throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
 
