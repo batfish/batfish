@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import org.batfish.common.BfConsts;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
@@ -31,7 +30,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void create() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // create a testrig with a topology file
     WorkMgrTestUtils.initTestrigWithTopology(container, "testrig", ImmutableSet.of("a", "b"));
@@ -42,9 +41,10 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
     NodeRoleDimension dimension2 =
         new NodeRoleDimension(
             "dimension2", ImmutableSortedSet.of(new NodeRole("role2", "a.*")), null, null);
-    NodeRolesData.write(
-        new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1, dimension2)),
-        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Main.getWorkMgr()
+        .writeNodeRoles(
+            new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1, dimension2)),
+            container);
 
     // we should the expected bean for dimension2
     assertThat(

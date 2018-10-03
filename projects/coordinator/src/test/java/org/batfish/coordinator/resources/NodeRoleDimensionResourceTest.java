@@ -6,13 +6,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
-import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Version;
@@ -49,7 +47,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void delNodeRoleDimension() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write node roles data to in the right place
     NodeRolesData data =
@@ -58,8 +56,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
             null,
             ImmutableSortedSet.of(
                 new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null)));
-    NodeRolesData.write(
-        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Main.getWorkMgr().writeNodeRoles(data, container);
 
     Response response = getNodeRoleDimensionTarget(container, "dimension1").delete();
 
@@ -78,16 +75,16 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void getNodeRoleDimension() throws JsonProcessingException {
+  public void getNodeRoleDimension() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write node roles data to in the right place
     NodeRoleDimension dimension1 =
         new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null);
-    NodeRolesData.write(
-        new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1)),
-        Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Main.getWorkMgr()
+        .writeNodeRoles(
+            new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1)), container);
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on NodeRolesDataBean to have created the object with the right content

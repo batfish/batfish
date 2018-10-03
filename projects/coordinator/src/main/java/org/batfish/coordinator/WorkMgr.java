@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -29,13 +30,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -56,6 +57,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -83,6 +85,7 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
@@ -94,6 +97,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -109,11 +113,18 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -152,6 +163,8 @@ public class WorkMgr extends AbstractCoordinator {
     return envFilenames;
   }
 
+  private final IdManager _idManager;
+
   private final BatfishLogger _logger;
 
   private final Settings _settings;
@@ -160,13 +173,17 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final StorageProvider _storage;
 
-  public WorkMgr(Settings settings, BatfishLogger logger, @Nonnull StorageProvider storage) {
+  public WorkMgr(
+      Settings settings,
+      BatfishLogger logger,
+      @Nonnull IdManager idManager,
+      @Nonnull StorageProvider storage) {
     super(false);
     _settings = settings;
+    _idManager = idManager;
     _storage = storage;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger);
-    loadPlugins();
   }
 
   @VisibleForTesting
@@ -463,23 +480,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  @VisibleForTesting
-  Path getQuestionPath(WorkItem workItem) {
-    String qName = WorkItemBuilder.getQuestionName(workItem);
-    if (qName == null) {
-      throw new BatfishException("Question name not provided for ANSWER work");
-    }
-    String aName = WorkItemBuilder.getAnalysisName(workItem);
-    if (aName == null) {
-      // answering ad-hoc question
-      return getpathContainerQuestion(workItem.getContainerName(), qName);
-    } else {
-      // answering question in policy
-      return getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
-    }
-  }
-
-  private WorkDetails computeWorkDetails(WorkItem workItem) {
+  WorkDetails computeWorkDetails(WorkItem workItem) {
 
     WorkType workType = WorkType.UNKNOWN;
 
@@ -498,8 +499,10 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
-      Path qFile = getQuestionPath(workItem);
-      Question question = Question.parseQuestion(qFile);
+      Question question =
+          Question.parseQuestion(
+              getQuestion(
+                  workItem.getContainerName(), WorkItemBuilder.getQuestionName(workItem), null));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
@@ -520,8 +523,8 @@ public class WorkMgr extends AbstractCoordinator {
       // compute the strongest dependency among the embedded questions
       workType = WorkType.INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
-        Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
-        Question question = Question.parseQuestion(qFile);
+        Question question =
+            Question.parseQuestion(getQuestion(workItem.getContainerName(), qName, aName));
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
           break;
@@ -565,27 +568,24 @@ public class WorkMgr extends AbstractCoordinator {
       Map<String, String> questionsToAdd,
       List<String> questionsToDelete,
       @Nullable Boolean suggested) {
-    Path containerDir = getdirNetwork(containerName);
-    Path aDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(aName);
-
+    NetworkId networkId = _idManager.getNetworkId(containerName);
     this.configureAnalysisValidityCheck(
-        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
-
-    if (newAnalysis) {
-      aDir.toFile().mkdirs();
-    }
+        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete);
+    AnalysisId analysisId =
+        newAnalysis ? _idManager.generateAnalysisId() : _idManager.getAnalysisId(aName, networkId);
 
     // Create metadata if it's a new analysis, or update it if suggested is not null
     if (newAnalysis || suggested != null) {
       AnalysisMetadata metadata;
       if (newAnalysis) {
         metadata = new AnalysisMetadata(Instant.now(), (suggested != null) && suggested);
-      } else if (!Files.exists(getpathAnalysisMetadata(containerName, aName))) {
+      } else if (!_storage.hasAnalysisMetadata(
+          networkId, _idManager.getAnalysisId(aName, networkId))) {
         // Configuring an old analysis with no metadata file; create one. Know suggested != null
         metadata = new AnalysisMetadata(Instant.MIN, suggested);
       } else {
         try {
-          metadata = AnalysisMetadataMgr.readMetadata(containerName, aName);
+          metadata = AnalysisMetadataMgr.readMetadata(networkId, analysisId);
           metadata.setSuggested(suggested);
         } catch (IOException e) {
           throw new BatfishException(
@@ -594,21 +594,25 @@ public class WorkMgr extends AbstractCoordinator {
       }
       // Write metadata to file
       try {
-        AnalysisMetadataMgr.writeMetadata(metadata, containerName, aName);
-      } catch (JsonProcessingException e) {
+        AnalysisMetadataMgr.writeMetadata(metadata, networkId, analysisId);
+      } catch (IOException e) {
         throw new BatfishException("Could not write analysisMetadata", e);
       }
     }
 
     /* Delete questionsToDelete and add questionsToAdd */
-    Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (String qName : questionsToDelete) {
-      CommonUtil.deleteDirectory(questionsDir.resolve(qName));
+      _idManager.deleteQuestion(qName, networkId, analysisId);
     }
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
-      questionsDir.resolve(entry.getKey()).toFile().mkdirs();
-      Path qFile = questionsDir.resolve(Paths.get(entry.getKey(), BfConsts.RELPATH_QUESTION_FILE));
-      CommonUtil.writeFile(qFile, entry.getValue());
+      String qName = entry.getKey();
+      String qText = entry.getValue();
+      QuestionId questionId = _idManager.generateQuestionId();
+      _storage.storeQuestion(qText, networkId, questionId, analysisId);
+      _idManager.assignQuestion(qName, networkId, questionId, analysisId);
+    }
+    if (newAnalysis) {
+      _idManager.assignAnalysis(aName, networkId, analysisId);
     }
   }
 
@@ -617,13 +621,13 @@ public class WorkMgr extends AbstractCoordinator {
       boolean newAnalysis,
       String analysisName,
       Map<String, String> questionsToAdd,
-      List<String> questionsToDelete,
-      Path aDir) {
+      List<String> questionsToDelete) {
+    NetworkId networkId = _idManager.getNetworkId(containerName);
     // Reasons to throw error for a new analysis:
     // 1. Analysis with same name already exists
     // 2. questionsToDelete is not empty
     if (newAnalysis) {
-      if (Files.exists(aDir)) {
+      if (_idManager.hasAnalysisId(analysisName, networkId)) {
         throw new BatfishException(
             String.format(
                 "Analysis '%s' already exists for container '%s'", analysisName, containerName));
@@ -635,22 +639,22 @@ public class WorkMgr extends AbstractCoordinator {
       // 1. Analysis directory does not exist
       // 2. questionsToDelete includes a question that doesn't exist in the analysis
       // 3. questionsToAdd includes a question that already exists and won't be deleted
-      if (!Files.exists(aDir)) {
+      if (!_idManager.hasAnalysisId(analysisName, networkId)) {
         throw new BatfishException(
             String.format(
                 "Analysis '%s' does not exist for container '%s'", analysisName, containerName));
       }
-      Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
       for (String qName : questionsToDelete) {
-        Path qDir = questionsDir.resolve(qName);
-        if (!Files.exists(qDir)) {
+        if (!_idManager.hasQuestionId(qName, networkId, analysisId)) {
           throw new BatfishException(
               String.format("Question '%s' does not exist for analysis '%s'", qName, analysisName));
         }
       }
       for (Entry<String, String> entry : questionsToAdd.entrySet()) {
-        if (!questionsToDelete.contains(entry.getKey())
-            && Files.exists(questionsDir.resolve(entry.getKey()))) {
+        String qName = entry.getKey();
+        if (!questionsToDelete.contains(qName)
+            && _idManager.hasQuestionId(qName, networkId, analysisId)) {
           throw new BatfishException(
               String.format(
                   "Question '%s' already exists for analysis '%s'", entry.getKey(), analysisName));
@@ -659,33 +663,32 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  public void delAnalysis(String containerName, String aName) {
-    Path aDir = getdirContainerAnalysis(containerName, aName);
-    CommonUtil.deleteDirectory(aDir);
+  public void delAnalysis(String network, String aName) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.deleteAnalysis(aName, networkId);
   }
 
-  public boolean delContainer(String containerName) {
-    Path containerDir = getdirContainer(containerName, false);
-    if (Files.exists(containerDir)) {
-      CommonUtil.deleteDirectory(containerDir);
-      return true;
+  public boolean delNetwork(String network) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
     }
-    return false;
+    _idManager.deleteNetwork(network);
+    return true;
   }
 
-  public void delEnvironment(String containerName, String testrigName, String envName) {
-    Path envDir = getdirEnvironment(containerName, testrigName, envName);
+  public void delEnvironment(String network, String snapshot, String envName) {
+    Path envDir = getdirEnvironment(network, snapshot, envName);
     CommonUtil.deleteDirectory(envDir);
   }
 
-  public void delTestrig(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    CommonUtil.deleteDirectory(testrigDir);
+  public void delSnapshot(String network, String snapshot) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.deleteSnapshot(snapshot, networkId);
   }
 
-  public void delQuestion(String containerName, String qName) {
-    Path qDir = getdirContainerQuestion(containerName, qName);
-    CommonUtil.deleteDirectory(qDir);
+  public void delQuestion(String network, String qName) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.deleteQuestion(qName, networkId, null);
   }
 
   public String getAnswer(
@@ -695,35 +698,163 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
       throws JsonProcessingException, FileNotFoundException {
-    // Side effect: ensures metadata and answer are up to date
-    getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-
     String answer = "unknown";
     try {
-      answer = _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(
-                  _storage.getAnswerLastModifiedTime(
-                      network, snapshot, question, referenceSnapshot, analysis))
-          > 0) {
-        Answer ans = Answer.failureAnswer("Not fresh", null);
-        ans.setStatus(AnswerStatus.STALE);
-        answer = BatfishObjectMapper.writePrettyString(ans);
+      NetworkId networkId = _idManager.getNetworkId(network);
+      AnalysisId analysisId =
+          analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
+      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
+      QuestionSettingsId questionSettingsId =
+          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+      AnswerId baseAnswerId =
+          _idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              questionSettingsId,
+              referenceSnapshotId,
+              analysisId);
+      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+        Answer ans = Answer.failureAnswer("Not answered", null);
+        ans.setStatus(AnswerStatus.NOTFOUND);
+        return BatfishObjectMapper.writePrettyString(ans);
       }
-    } catch (FileNotFoundException e) {
-      Answer ans = Answer.failureAnswer("Not answered", null);
-      ans.setStatus(AnswerStatus.NOTFOUND);
-      answer = BatfishObjectMapper.writePrettyString(ans);
+      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
+      AnswerId finalAnswerId =
+          computeFinalAnswerAndId(
+              baseAnswerMetadata,
+              networkId,
+              snapshotId,
+              questionId,
+              baseAnswerId,
+              referenceSnapshotId,
+              analysisId);
+      return _storage.loadAnswer(finalAnswerId);
     } catch (IOException e) {
       String message =
-          String.format("Failed to read answer file:\n%s", Throwables.getStackTraceAsString(e));
-      _logger.error(message);
+          String.format(
+              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+              network,
+              snapshot,
+              question,
+              referenceSnapshot,
+              analysis,
+              Throwables.getStackTraceAsString(e));
       Answer ans = Answer.failureAnswer(message, null);
       ans.setStatus(AnswerStatus.FAILURE);
       answer = BatfishObjectMapper.writePrettyString(ans);
+      return answer;
     }
-    return answer;
+  }
+
+  private @Nonnull AnswerId computeFinalAnswerAndId(
+      @Nonnull AnswerMetadata baseAnswerMetadata,
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
+      throws IOException {
+    Set<IssueSettingsId> issueSettingsIds =
+        getOrCreateIssueSettingsIds(networkId, baseAnswerMetadata);
+    AnswerId finalAnswerId = _idManager.getFinalAnswerId(baseAnswerId, issueSettingsIds);
+    if (!_storage.hasAnswerMetadata(finalAnswerId)) {
+      Metrics metrics = baseAnswerMetadata.getMetrics();
+      if (metrics == null) {
+        _storage.storeAnswer(_storage.loadAnswer(baseAnswerId), finalAnswerId);
+        _storage.storeAnswerMetadata(baseAnswerMetadata, finalAnswerId);
+      } else {
+        rebuildFinalAnswerAndMetadata(
+            metrics.getMajorIssueConfigs(),
+            networkId,
+            snapshotId,
+            questionId,
+            baseAnswerId,
+            finalAnswerId,
+            issueSettingsIds,
+            referenceSnapshotId,
+            analysisId);
+      }
+    }
+    return finalAnswerId;
+  }
+
+  private void rebuildFinalAnswerAndMetadata(
+      @Nonnull Map<String, MajorIssueConfig> baseAnswerMajorIssueConfigs,
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nonnull AnswerId finalAnswerId,
+      @Nonnull Set<IssueSettingsId> issueSettingsIds,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
+      throws IOException {
+    Map<String, MajorIssueConfig> combinedMajorIssueConfigs =
+        new HashMap<>(baseAnswerMajorIssueConfigs);
+    for (IssueSettingsId issueSettingsId : issueSettingsIds) {
+      MajorIssueConfig networkMajorIssueConfig =
+          _storage.loadMajorIssueConfig(networkId, issueSettingsId);
+      String majorIssueType = networkMajorIssueConfig.getMajorIssue();
+      MajorIssueConfig combinedMajorIssueConfig =
+          overlayMajorIssueConfig(
+              baseAnswerMajorIssueConfigs.get(majorIssueType), networkMajorIssueConfig);
+      combinedMajorIssueConfigs.put(majorIssueType, combinedMajorIssueConfig);
+    }
+    applyIssuesConfiguration(
+        combinedMajorIssueConfigs,
+        networkId,
+        snapshotId,
+        questionId,
+        baseAnswerId,
+        finalAnswerId,
+        referenceSnapshotId,
+        analysisId);
+  }
+
+  private MajorIssueConfig overlayMajorIssueConfig(
+      MajorIssueConfig baseMajorIssueConfig, MajorIssueConfig networkMajorIssueConfig) {
+    Map<String, MinorIssueConfig> networkMinorIssues =
+        networkMajorIssueConfig.getMinorIssueConfigsMap();
+    ImmutableList.Builder<MinorIssueConfig> combinedMinorIssues = ImmutableList.builder();
+    // note there is no need to address minor issues not mentioned in base answer
+    baseMajorIssueConfig
+        .getMinorIssueConfigsMap()
+        .forEach(
+            (minorIssueType, baseMinorIssueConfig) -> {
+              MinorIssueConfig networkMinorIssueConfig = networkMinorIssues.get(minorIssueType);
+              if (networkMinorIssueConfig == null) {
+                combinedMinorIssues.add(baseMinorIssueConfig);
+                return;
+              }
+              Integer networkSeverity = networkMinorIssueConfig.getSeverity();
+              Integer severity =
+                  networkSeverity != null ? networkSeverity : baseMinorIssueConfig.getSeverity();
+              String networkUrl = networkMinorIssueConfig.getUrl();
+              String url =
+                  networkUrl != null && !networkUrl.isEmpty()
+                      ? networkUrl
+                      : baseMinorIssueConfig.getUrl();
+              combinedMinorIssues.add(new MinorIssueConfig(minorIssueType, severity, url));
+            });
+    return new MajorIssueConfig(baseMajorIssueConfig.getMajorIssue(), combinedMinorIssues.build());
+  }
+
+  private Set<IssueSettingsId> getOrCreateIssueSettingsIds(
+      NetworkId networkId, AnswerMetadata baseAnswerMetadata) throws IOException {
+    Metrics metrics = baseAnswerMetadata.getMetrics();
+    if (metrics == null) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<IssueSettingsId> ids = ImmutableSet.builder();
+    for (String majorIssueType : metrics.getMajorIssueConfigs().keySet()) {
+      ids.add(getOrCreateIssueSettingsId(networkId, majorIssueType));
+    }
+    return ids.build();
   }
 
   public @Nonnull Map<String, String> getAnalysisAnswers(
@@ -762,15 +893,6 @@ public class WorkMgr extends AbstractCoordinator {
     return result.build();
   }
 
-  public String getAnalysisQuestion(
-      String containerName, String analysisName, String questionName) {
-    Path qFile = getpathAnalysisQuestion(containerName, analysisName, questionName);
-    if (!Files.exists(qFile)) {
-      throw new BatfishException("Question file not found for " + questionName);
-    }
-    return CommonUtil.readFile(qFile);
-  }
-
   public @Nonnull AnswerMetadata getAnswerMetadata(
       @Nonnull String network,
       @Nonnull String snapshot,
@@ -778,70 +900,62 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
       throws JsonProcessingException, FileNotFoundException {
-    if (!_storage.checkQuestionExists(network, question, analysis)) {
-      throw new FileNotFoundException(
-          String.format(
-              "Question file not found for question named '%s' in network:%s; snapshot:%s; referenceSnapshot:%s; analysis:%s",
-              question, network, snapshot, referenceSnapshot, analysis));
-    }
     try {
-      AnswerMetadata answerMetadata =
-          _storage.loadAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis);
-      FileTime answerMetadataLastModifiedTime =
-          _storage.getAnswerMetadataLastModifiedTime(
-              network, snapshot, question, referenceSnapshot, analysis);
-      if (_storage
-              .getQuestionLastModifiedTime(network, question, analysis)
-              .compareTo(answerMetadataLastModifiedTime)
-          > 0) {
-        return AnswerMetadata.forStatus(AnswerStatus.STALE);
+      NetworkId networkId = _idManager.getNetworkId(network);
+      AnalysisId analysisId =
+          analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
+      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
+      QuestionSettingsId questionSettingsId =
+          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+      AnswerId baseAnswerId =
+          _idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              questionSettingsId,
+              referenceSnapshotId,
+              analysisId);
+      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+        return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
-      return applyPendingIssuesSettingsChanges(
-          answerMetadata, network, snapshot, question, referenceSnapshot, analysis);
-    } catch (FileNotFoundException e) {
-      return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
+      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
+      AnswerId finalAnswerId =
+          computeFinalAnswerAndId(
+              baseAnswerMetadata,
+              networkId,
+              snapshotId,
+              questionId,
+              baseAnswerId,
+              referenceSnapshotId,
+              analysisId);
+      return _storage.loadAnswerMetadata(finalAnswerId);
     } catch (IOException e) {
       _logger.errorf(
-          "Failed to read answer metadata file:\n%s", Throwables.getStackTraceAsString(e));
+          "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+          network,
+          snapshot,
+          question,
+          referenceSnapshot,
+          analysis,
+          Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
   }
 
-  @VisibleForTesting
-  @Nonnull
-  AnswerMetadata applyPendingIssuesSettingsChanges(
-      @Nonnull AnswerMetadata currentAnswerMetadata,
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nonnull String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
-      throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
-    if (currentAnswerMetadata.getMetrics() == null) {
-      // issues configuration not applicable to this answer, so nothing to do.
-      return currentAnswerMetadata;
+  private QuestionSettingsId getOrCreateQuestionSettingsId(
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
+    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
+      _storage.storeQuestionSettings("{}", networkId, questionClassId);
+      _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
+      return questionSettingsId;
+    } else {
+      return _idManager.getQuestionSettingsId(questionClassId, networkId);
     }
-    Map<String, MajorIssueConfig> answerMajorIssueConfigs =
-        currentAnswerMetadata.getMetrics().getMajorIssueConfigs();
-    Map<String, MajorIssueConfig> latestMajorIssueConfigs =
-        _storage.loadMajorIssueConfigs(network, answerMajorIssueConfigs.keySet());
-    if (answerIssueConfigsMatchConfiguredIssues(currentAnswerMetadata, latestMajorIssueConfigs)) {
-      return currentAnswerMetadata;
-    }
-    return applyIssuesConfiguration(
-        latestMajorIssueConfigs, network, snapshot, question, referenceSnapshot, analysis);
-  }
-
-  private boolean answerIssueConfigsMatchConfiguredIssues(
-      AnswerMetadata answerMetadata, Map<String, MajorIssueConfig> configuredMajorIssues) {
-    return answerMetadata
-        .getMetrics()
-        .getMajorIssueConfigs()
-        .values()
-        .stream()
-        .allMatch(
-            answerMajor ->
-                answerIssueConfigMatchesConfiguredIssues(answerMajor, configuredMajorIssues));
   }
 
   @VisibleForTesting
@@ -858,20 +972,19 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @VisibleForTesting
-  @Nonnull
-  AnswerMetadata applyIssuesConfiguration(
+  void applyIssuesConfiguration(
       @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
-      @Nonnull String network,
-      @Nonnull String snapshot,
-      @Nonnull String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      @Nonnull NetworkId networkId,
+      @Nonnull SnapshotId snapshotId,
+      @Nonnull QuestionId questionId,
+      @Nonnull AnswerId baseAnswerId,
+      @Nonnull AnswerId finalAnswerId,
+      @Nullable SnapshotId referenceSnapshotId,
+      @Nullable AnalysisId analysisId)
       throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
     Answer oldAnswer =
         BatfishObjectMapper.mapper()
-            .readValue(
-                _storage.loadAnswer(network, snapshot, question, referenceSnapshot, analysis),
-                new TypeReference<Answer>() {});
+            .readValue(_storage.loadAnswer(baseAnswerId), new TypeReference<Answer>() {});
     TableAnswerElement oldTable = (TableAnswerElement) oldAnswer.getAnswerElements().get(0);
     TableMetadata tableMetadata = oldTable.getMetadata();
     Set<String> issueColumns =
@@ -882,7 +995,7 @@ public class WorkMgr extends AbstractCoordinator {
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
     // apply issue configuration to all rows and excluded rows, then collect them
-    Rows allRows = new Rows();
+    ImmutableList.Builder<Row> allRows = ImmutableList.builder();
     applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, majorIssueConfigs)
         .forEach(allRows::add);
     applyIssuesConfigurationToAllExcludedRows(
@@ -892,12 +1005,12 @@ public class WorkMgr extends AbstractCoordinator {
         .forEach(allRows::add);
 
     // grab the question for its exclusions
-    String questionStr = _storage.loadQuestion(network, question, analysis);
+    String questionStr = _storage.loadQuestion(networkId, questionId, analysisId);
     Question questionObj = Question.parseQuestion(questionStr);
 
     // postprocess using question exclusions, collected rows
     TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
-    newTable.postProcessAnswer(questionObj, allRows.getData());
+    newTable.postProcessAnswer(questionObj, allRows.build());
     Answer newAnswer = new Answer();
 
     // Apply new info to answer
@@ -909,11 +1022,8 @@ public class WorkMgr extends AbstractCoordinator {
     // Compute and store new answer and answer metdata
     AnswerMetadata newAnswerMetadata = AnswerMetadataUtil.computeAnswerMetadata(newAnswer, _logger);
     String answerStr = BatfishObjectMapper.writePrettyString(newAnswer);
-    _storage.storeAnswer(answerStr, network, snapshot, question, referenceSnapshot, analysis);
-    _storage.storeAnswerMetadata(
-        newAnswerMetadata, network, snapshot, question, referenceSnapshot, analysis);
-
-    return newAnswerMetadata;
+    _storage.storeAnswer(answerStr, finalAnswerId);
+    _storage.storeAnswerMetadata(newAnswerMetadata, finalAnswerId);
   }
 
   private Stream<ExcludedRows> applyIssuesConfigurationToAllExcludedRows(
@@ -983,78 +1093,20 @@ public class WorkMgr extends AbstractCoordinator {
     return builder.build();
   }
 
-  /**
-   * Returns a string representation of the content of configuration file {@code configName}.
-   *
-   * @throws BatfishException if the configuration file {@code configName} does not exist, or there
-   *     are more than one file with name {@code configName}, or failed to read content from the
-   *     file.
-   */
-  public String getConfiguration(String containerName, String testrigName, String configName) {
-    Path testrigPath = getdirTestrig(containerName, testrigName);
-    try (Stream<Path> paths = Files.walk(testrigPath.resolve(BfConsts.RELPATH_TEST_RIG_DIR))) {
-      List<Path> configPaths =
-          paths
-              .filter(x -> x.getFileName().toString().equals(configName))
-              .collect(Collectors.toList());
-      if (configPaths.isEmpty()) {
-        throw new BatfishException(
-            String.format(
-                "Configuration file %s does not exist in snapshot %s for network %s",
-                configName, testrigName, containerName));
-      } else if (configPaths.size() > 1) {
-        throw new BatfishException(
-            String.format(
-                "More than one configuration file with name %s in snapshot %s for network %s",
-                configName, testrigName, containerName));
-      }
-      String configContent = "";
-      try {
-        configContent = new String(Files.readAllBytes(configPaths.get(0)));
-      } catch (IOException e) {
-        throw new BatfishException(
-            String.format(
-                "Failed to read configuration file %s in snapshot %s for network %s",
-                configName, testrigName, containerName),
-            e);
-      }
-      return configContent;
-    } catch (IOException e) {
-      throw new BatfishException(
-          String.format(
-              "Failed to list directory %s", testrigPath.resolve(BfConsts.RELPATH_TEST_RIG_DIR)));
-    }
-  }
-
   /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
-    return getContainer(getdirNetwork(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
-  }
-
-  private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path qDir = analysisDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
-    if (!Files.exists(qDir)) {
-      throw new BatfishException(
-          "Question '" + qName + "' does not exist in analysis '" + analysisName + "'");
+    if (!_idManager.hasNetworkId(containerName)) {
+      throw new IllegalArgumentException(
+          String.format("Network '%s' does not exist", containerName));
     }
-    return qDir;
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SortedSet<String> testrigs = ImmutableSortedSet.copyOf(_idManager.listSnapshots(networkId));
+    return Container.of(containerName, testrigs);
   }
 
   @Override
   public Path getdirNetwork(String networkName) {
-    return getdirContainer(networkName, true);
+    return getdirNetwork(networkName, true);
   }
 
   @Override
@@ -1064,48 +1116,21 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public Set<String> getNetworkNames() {
-    Path containersDir = Main.getSettings().getContainersLocation();
-    if (!Files.exists(containersDir)) {
-      containersDir.toFile().mkdirs();
-    }
-    SortedSet<String> containers =
-        CommonUtil.getSubdirectories(containersDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-    return containers;
+    return _idManager.listNetworks();
   }
 
-  private static Path getdirContainer(String containerName, boolean errIfNotEixst) {
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
-    if (errIfNotEixst && !Files.exists(containerDir)) {
+  private static Path getdirNetwork(String containerName, boolean errIfNotExist) {
+    FileBasedStorageDirectoryProvider dirProvider =
+        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
+    if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(containerName)) {
       throw new BatfishException("Container '" + containerName + "' does not exist");
     }
-    return containerDir;
-  }
-
-  private Path getdirContainerAnalysis(String containerName, String analysisName) {
-    Path containerDir = getdirNetwork(containerName);
-    Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
-    if (!Files.exists(aDir)) {
-      throw new BatfishException(
-          "Analysis '" + analysisName + "' does not exists for container '" + containerName + "'");
-    }
-    return aDir;
-  }
-
-  private Path getdirContainerQuestion(String containerName, String qName) {
-    Path containerDir = getdirNetwork(containerName);
-    Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
-    if (!Files.exists(qDir)) {
-      throw new BatfishException("Question '" + qName + "' does not exist");
-    }
-    return qDir;
+    NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
+    return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
   private Path getdirEnvironment(String containerName, String testrigName, String envName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path envDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
     if (!Files.exists(envDir)) {
       throw new BatfishException("Environment '" + envName + "' does not exist");
@@ -1113,10 +1138,14 @@ public class WorkMgr extends AbstractCoordinator {
     return envDir;
   }
 
-  public Path getdirTestrig(String containerName, String testrigName) {
-    Path snapshotDir = getdirSnapshots(containerName).resolve(Paths.get(testrigName));
+  public Path getdirSnapshot(String network, String snapshot) {
+    FileBasedStorageDirectoryProvider dirProvider =
+        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    Path snapshotDir = dirProvider.getSnapshotDir(networkId, snapshotId).toAbsolutePath();
     if (!Files.exists(snapshotDir)) {
-      throw new BatfishException("Snapshot '" + testrigName + "' does not exist");
+      throw new BatfishException("Snapshot '" + snapshot + "' does not exist");
     }
     return snapshotDir;
   }
@@ -1126,9 +1155,17 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
-  /** Fetches the {@code MajorIssueConfig} for the given network and major issue type. */
-  public MajorIssueConfig getMajorIssueConfig(String networkName, String majorIssueType) {
-    return _storage.loadMajorIssueConfig(networkName, majorIssueType);
+  private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
+      throws IOException {
+    if (!_idManager.hasIssueSettingsId(majorIssueType, networkId)) {
+      IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
+      _storage.storeMajorIssueConfig(
+          networkId, issueSettingsId, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
+      _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
+      return issueSettingsId;
+    } else {
+      return _idManager.getIssueSettingsId(majorIssueType, networkId);
+    }
   }
 
   /**
@@ -1137,30 +1174,16 @@ public class WorkMgr extends AbstractCoordinator {
    * @return An {@link Optional} object with the latest testrig or empty if no testrigs exist
    */
   public Optional<String> getLatestTestrig(String container) {
+    NetworkId networkId = _idManager.getNetworkId(container);
     Function<String, Instant> toTestrigTimestamp =
-        t -> TestrigMetadataMgr.getTestrigCreationTimeOrMin(container, t);
-    return listTestrigs(container)
+        t ->
+            TestrigMetadataMgr.getTestrigCreationTimeOrMin(
+                networkId, _idManager.getSnapshotId(t, networkId));
+    return listSnapshots(container)
         .stream()
         .max(
             Comparator.comparing(
                 toTestrigTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
-  }
-
-  /**
-   * Gets the {@link NodeRolesData} for the {@code container}.
-   *
-   * @param container The container for which we should fetch the node roles
-   * @return The node roles
-   * @throws IOException The contents of node roles file cannot be converted to {@link
-   *     NodeRolesData}
-   */
-  public NodeRolesData getNodeRolesData(String container) throws IOException {
-    return NodeRolesData.read(getNodeRolesPath(container));
-  }
-
-  /** Gets the path of the node roles file */
-  public Path getNodeRolesPath(String container) {
-    return getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   /**
@@ -1175,7 +1198,7 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public Set<String> getNodes(String container, String testrig) throws IOException {
     Path pojoTopologyPath =
-        getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+        getdirSnapshot(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
     Topology topology =
         BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
@@ -1186,7 +1209,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     ParseVendorConfigurationAnswerElement pvcae =
         deserializeObject(
-            getdirTestrig(containerName, testrigName).resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH),
+            getdirSnapshot(containerName, testrigName).resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH),
             ParseVendorConfigurationAnswerElement.class);
     JSONObject warnings = new JSONObject();
     SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
@@ -1195,39 +1218,6 @@ public class WorkMgr extends AbstractCoordinator {
       warnings.put(s, writer.writeValueAsString(warningsMap.get(s)));
     }
     return warnings;
-  }
-
-  public Path getpathAnalysisQuestion(
-      String containerName, String analysisName, String questionName) {
-    Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
-    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-  }
-
-  public Path getpathContainerQuestion(String containerName, String questionName) {
-    Path questionDir = getdirContainerQuestion(containerName, questionName);
-    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-  }
-
-  // this function should build on others but some overrides are getting in the way
-  // TODO: cleanup later
-  public static Path getpathAnalysisMetadata(String container, String analysis) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_ANALYSES_DIR)
-        .resolve(analysis)
-        .resolve(BfConsts.RELPATH_METADATA_FILE);
-  }
-
-  // this function should build on others but some overrides are getting in the way
-  // TODO: cleanup later
-  public static Path getpathTestrigMetadata(String container, String testrig) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-        .resolve(testrig)
-        .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
   /**
@@ -1250,7 +1240,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public String getTestrigInfo(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path submittedTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
     if (!Files.exists(submittedTestrigDir)) {
       return "Missing folder '"
@@ -1290,14 +1280,9 @@ public class WorkMgr extends AbstractCoordinator {
     return retStringBuilder.toString();
   }
 
-  public TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
-      throws IOException {
-    return TestrigMetadataMgr.readMetadata(getpathTestrigMetadata(containerName, testrigName));
-  }
-
   @Nullable
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path file = testrigDir.resolve(objectName);
     /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
@@ -1323,15 +1308,12 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
-  public String getQuestion(String containerName, String questionName) {
-    Path containerDir = getdirContainer(containerName, true);
-    Path questionDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName));
-    Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    if (!Files.exists(qFile)) {
-      throw new BatfishException("Question file not found for " + questionName);
-    }
-    return CommonUtil.readFile(qFile);
+  public String getQuestion(String network, String questionName, @Nullable String analysisName) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId =
+        analysisName != null ? _idManager.getAnalysisId(analysisName, networkId) : null;
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    return _storage.loadQuestion(networkId, questionId, analysisId);
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
@@ -1342,29 +1324,16 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    String newContainerName =
-        isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
-    Path containerDir = Main.getSettings().getContainersLocation().resolve(newContainerName);
-    if (Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + newContainerName + "' already exists!");
+  public String initNetwork(@Nullable String network, @Nullable String networkPrefix) {
+    String newNetworkName =
+        isNullOrEmpty(network) ? networkPrefix + "_" + UUID.randomUUID() : network;
+    if (_idManager.hasNetworkId(newNetworkName)) {
+      throw new BatfishException(String.format("Network '%s' already exists!", newNetworkName));
     }
-    if (!containerDir.toFile().mkdirs()) {
-      throw new BatfishException("failed to create directory '" + containerDir + "'");
-    }
-    Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
-    if (!testrigsDir.toFile().mkdir()) {
-      throw new BatfishException("failed to create directory '" + testrigsDir + "'");
-    }
-    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
-    if (!analysesDir.toFile().mkdir()) {
-      throw new BatfishException("failed to create directory '" + analysesDir + "'");
-    }
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!questionsDir.toFile().mkdir()) {
-      throw new BatfishException("failed to create directory '" + questionsDir + "'");
-    }
-    return newContainerName;
+    NetworkId networkId = _idManager.generateNetworkId();
+    _storage.initNetwork(networkId);
+    _idManager.assignNetwork(newNetworkName, networkId);
+    return newNetworkName;
   }
 
   @Override
@@ -1380,11 +1349,15 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of snapshot. There should be just one top-level folder");
     }
 
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
     Path containerDir = getdirNetwork(networkName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName));
+    Path testrigDir =
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
@@ -1394,7 +1367,8 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       TestrigMetadataMgr.writeMetadata(
           new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
-          testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
+          networkId,
+          snapshotId);
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
       try {
@@ -1437,10 +1411,12 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
           roleData = true;
           try {
-            NodeRolesData testrigData = NodeRolesData.read(subFile);
-            Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+            NodeRolesData testrigData =
+                BatfishObjectMapper.mapper()
+                    .readValue(CommonUtil.readFile(subFile), NodeRolesData.class);
             NodeRolesData.mergeNodeRoleDimensions(
-                nodeRolesPath,
+                () -> getNodeRolesDataWrapped(networkName),
+                nodeRolesData -> writeNodeRolesWrapped(nodeRolesData, networkName),
                 testrigData.getNodeRoleDimensions(),
                 testrigData.getDefaultDimension(),
                 false);
@@ -1470,7 +1446,7 @@ public class WorkMgr extends AbstractCoordinator {
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
         snapshotName, bgpTables, routingTables, roleData, referenceLibraryData);
-
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     if (autoAnalyze) {
       for (WorkItem workItem : getAutoWorkQueue(networkName, snapshotName)) {
         boolean queued = queueWork(workItem);
@@ -1478,6 +1454,14 @@ public class WorkMgr extends AbstractCoordinator {
           _logger.errorf("Unable to queue work while auto processing: %s", workItem);
         }
       }
+    }
+  }
+
+  private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {
+    try {
+      writeNodeRoles(nodeRolesData, networkName);
+    } catch (IOException e) {
+      throw new BatfishException("error writing node roles", e);
     }
   }
 
@@ -1606,48 +1590,38 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Returns the Analysis names which exist in the container and match the {@link AnalysisType}
    *
-   * @param containerName Container name
+   * @param network Container name
    * @param analysisType {@link AnalysisType} requested
    * @return {@link Set} of container names
    */
-  public SortedSet<String> listAnalyses(String containerName, AnalysisType analysisType) {
-    Path containerDir = getdirNetwork(containerName);
-    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
-    if (!Files.exists(analysesDir)) {
-      return ImmutableSortedSet.of();
-    }
+  public SortedSet<String> listAnalyses(String network, AnalysisType analysisType) {
+    NetworkId networkId = _idManager.getNetworkId(network);
     SortedSet<String> analyses =
-        CommonUtil.getSubdirectories(analysesDir)
+        _idManager
+            .listAnalyses(networkId)
             .stream()
-            .map(subdir -> subdir.getFileName().toString())
-            .filter(aName -> selectAnalysis(aName, analysisType, containerName))
+            .filter(
+                aName ->
+                    selectAnalysis(
+                        _idManager.getAnalysisId(aName, networkId), analysisType, networkId))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     return analyses;
   }
 
-  private boolean selectAnalysis(String aName, AnalysisType analysisType, String containerName) {
+  private boolean selectAnalysis(
+      AnalysisId analysisId, AnalysisType analysisType, NetworkId networkId) {
     if (analysisType == AnalysisType.ALL) {
       return true;
     }
-    boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
+    boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(networkId, analysisId);
     return (analysisType == AnalysisType.SUGGESTED && suggested
         || analysisType == AnalysisType.USER && !suggested);
   }
 
-  public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
-    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
-    Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!Files.exists(questionsDir)) {
-      /* TODO: Something better than returning empty set? */
-      return new TreeSet<>();
-    }
-    SortedSet<Path> subdirectories = CommonUtil.getSubdirectories(questionsDir);
-    SortedSet<String> subdirectoryNames =
-        subdirectories
-            .stream()
-            .map(path -> path.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-    return subdirectoryNames;
+  public SortedSet<String> listAnalysisQuestions(String network, String analysisName) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    return ImmutableSortedSet.copyOf(_idManager.listQuestions(networkId, analysisId));
   }
 
   public SortedSet<String> listContainers(String apiKey) {
@@ -1656,9 +1630,9 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> authorizedContainers =
-        CommonUtil.getSubdirectories(containersDir)
+        _idManager
+            .listNetworks()
             .stream()
-            .map(dir -> dir.getFileName().toString())
             .filter(
                 container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
             .collect(toCollection(TreeSet::new));
@@ -1670,7 +1644,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
     if (!Files.exists(environmentsDir)) {
       return new TreeSet<>();
@@ -1688,39 +1662,33 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
   }
 
-  public SortedSet<String> listQuestions(String containerName, boolean verbose) {
-    Path containerDir = getdirNetwork(containerName);
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!Files.exists(questionsDir)) {
-      return new TreeSet<>();
+  public SortedSet<String> listQuestions(String network, boolean verbose) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    Set<String> questions = _idManager.listQuestions(networkId, null);
+    if (!verbose) {
+      questions =
+          questions
+              .stream()
+              .filter(name -> !name.startsWith("__"))
+              .collect(ImmutableSet.toImmutableSet());
     }
-    SortedSet<String> questions =
-        CommonUtil.getSubdirectories(questionsDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            // Question dirs starting with __ are internal questions
-            // and should not show up in listQuestions
-            .filter(dir -> verbose || !dir.startsWith("__"))
-            .collect(toCollection(TreeSet::new));
-    return questions;
+    return ImmutableSortedSet.copyOf(questions);
   }
 
-  public List<String> listTestrigs(String containerName) {
-    Path containerDir = getdirNetwork(containerName);
-    Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
-    if (!Files.exists(testrigsDir)) {
-      return new ArrayList<>();
-    }
+  public List<String> listSnapshots(String network) {
+    NetworkId networkId = _idManager.getNetworkId(network);
     List<String> testrigs =
-        CommonUtil.getSubdirectories(testrigsDir)
+        _idManager
+            .listSnapshots(networkId)
             .stream()
-            .map(dir -> dir.getFileName().toString())
             .sorted(
                 (t1, t2) -> { // reverse sorting by creation-time, name
+                  SnapshotId snapshotId1 = _idManager.getSnapshotId(t1, networkId);
+                  SnapshotId snapshotId2 = _idManager.getSnapshotId(t2, networkId);
                   String key1 =
-                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t1) + t1;
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(networkId, snapshotId1) + t1;
                   String key2 =
-                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t2) + t2;
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(networkId, snapshotId2) + t2;
                   return key2.compareTo(key1);
                 })
             .collect(Collectors.toList());
@@ -1728,14 +1696,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
-  public void putMajorIssueConfig(
-      String networkName, String majorIssueType, MajorIssueConfig config) throws IOException {
-    _storage.storeMajorIssueConfig(networkName, majorIssueType, config);
+  public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    IssueSettingsId issueSettingsId = getOrCreateIssueSettingsId(networkId, majorIssueType);
+    _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
   }
 
   public void putObject(
       String containerName, String testrigName, String objectName, InputStream fileStream) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path file = testrigDir.resolve(objectName);
     // check if we got an object name outside of the testrig folder,
     // perhaps because of ".." in the name; disallow it
@@ -1756,16 +1726,15 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
-    if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
-      throw new BatfishException("Non-existent snapshot: '" + testrigDir.getFileName() + "'");
-    }
+    NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getContainerName()));
     boolean success;
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
       if (TestrigMetadataMgr.getEnvironmentMetadata(
-              workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
+              networkId,
+              _idManager.getSnapshotId(workDetails.baseTestrig, networkId),
+              workDetails.baseEnv)
           == null) {
         throw new BatfishException(
             String.format(
@@ -1774,14 +1743,16 @@ public class WorkMgr extends AbstractCoordinator {
       }
       if (workDetails.isDifferential
           && TestrigMetadataMgr.getEnvironmentMetadata(
-                  workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
+                  networkId,
+                  _idManager.getSnapshotId(workDetails.deltaTestrig, networkId),
+                  workDetails.deltaEnv)
               == null) {
         throw new BatfishException(
             String.format(
                 "Snapshot/environment metadata not found for %s/%s",
                 workDetails.deltaTestrig, workDetails.deltaEnv));
       }
-      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
+      success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
@@ -1791,6 +1762,68 @@ public class WorkMgr extends AbstractCoordinator {
       thread.start();
     }
     return success;
+  }
+
+  private static @Nonnull QueuedWork resolvedQueuedWork(
+      WorkItem workItem, WorkDetails workDetails) {
+    WorkItem resolvedWorkItem = resolveIds(workItem);
+    return new QueuedWork(resolvedWorkItem, resolveIds(resolvedWorkItem, workDetails));
+  }
+
+  private static @Nonnull WorkDetails resolveIds(
+      WorkItem resolvedWorkItem, WorkDetails workDetails) {
+    return new WorkDetails(
+        resolvedWorkItem.getTestrigName(),
+        workDetails.baseEnv,
+        resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
+        workDetails.deltaEnv,
+        workDetails.isDifferential,
+        workDetails.workType);
+  }
+
+  static @Nonnull WorkItem resolveIds(WorkItem workItem) {
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    Map<String, String> params = new HashMap<>(workItem.getRequestParams());
+
+    // network
+    String network = workItem.getContainerName();
+    if (network == null) {
+      return workItem;
+    }
+    NetworkId networkId = idManager.getNetworkId(network);
+    params.put(BfConsts.ARG_CONTAINER, networkId.getId());
+
+    // snapshot
+    String snapshot = workItem.getTestrigName();
+    if (snapshot == null) {
+      return workItem;
+    }
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
+
+    // referenceSnapshot
+    String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
+    if (referenceSnapshot != null) {
+      SnapshotId referenceSnapshotId = idManager.getSnapshotId(referenceSnapshot, networkId);
+      params.put(BfConsts.ARG_DELTA_TESTRIG, referenceSnapshotId.getId());
+    }
+
+    // analysis
+    AnalysisId analysisId = null;
+    String analysis = params.get(BfConsts.ARG_ANALYSIS_NAME);
+    if (analysis != null) {
+      analysisId = idManager.getAnalysisId(analysis, networkId);
+      params.put(BfConsts.ARG_ANALYSIS_NAME, analysisId.getId());
+    }
+
+    // question
+    String question = params.get(BfConsts.ARG_QUESTION_NAME);
+    if (question != null) {
+      QuestionId questionId = idManager.getQuestionId(question, networkId, analysisId);
+      params.put(BfConsts.ARG_QUESTION_NAME, questionId.getId());
+    }
+
+    return new WorkItem(workItem.getId(), networkId.getId(), snapshotId.getId(), params);
   }
 
   public void startWorkManager() {
@@ -1803,6 +1836,8 @@ public class WorkMgr extends AbstractCoordinator {
     // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
     // Main.getSettings().getPeriodCheckWorkMs(),
     // TimeUnit.MILLISECONDS);
+
+    loadPlugins();
 
     Executors.newScheduledThreadPool(1)
         .scheduleAtFixedRate(
@@ -1847,7 +1882,7 @@ public class WorkMgr extends AbstractCoordinator {
       String baseEnvName,
       String newEnvName,
       InputStream fileStream) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
     Path newEnvDir = environmentsDir.resolve(newEnvName);
     Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
@@ -1905,7 +1940,9 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     try {
-      TestrigMetadataMgr.initializeEnvironment(containerName, testrigName, newEnvName);
+      NetworkId networkId = _idManager.getNetworkId(containerName);
+      SnapshotId snapshotId = _idManager.getSnapshotId(testrigName, networkId);
+      TestrigMetadataMgr.initializeEnvironment(networkId, snapshotId, newEnvName);
     } catch (IOException e) {
       throw new BatfishException("Could not initialize environmentMetadata", e);
     }
@@ -1930,11 +1967,16 @@ public class WorkMgr extends AbstractCoordinator {
             String.format("Invalid question %s/%s: %s", network, question, e.getMessage()), e);
       }
     }
-    if (_storage.checkQuestionExists(network, question, null)) {
-      throw new BatfishException(
-          "Question: '" + question + "' already exists in container '" + network + "'");
+    NetworkId networkId;
+    try {
+      networkId = _idManager.getNetworkId(network);
+    } catch (IllegalArgumentException e) {
+      throw new InternalServerErrorException(
+          String.format("Error uploading question: network=%s, question=%s", network, question), e);
     }
-    _storage.storeQuestion(questionJson, network, question, null);
+    QuestionId questionId = _idManager.generateQuestionId();
+    _storage.storeQuestion(questionJson, networkId, questionId, null);
+    _idManager.assignQuestion(question, networkId, questionId, null);
   }
 
   private static final DateTimeFormatter FORMATTER =
@@ -1961,9 +2003,10 @@ public class WorkMgr extends AbstractCoordinator {
   public void uploadSnapshot(
       String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
     Path networkDir = getdirNetwork(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
 
     // Fail early if the snapshot already exists
-    if (Files.exists(networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotName)))) {
+    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
       throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
 
@@ -1990,7 +2033,11 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean checkContainerExists(String containerName) {
-    return _storage.checkNetworkExists(containerName);
+    if (!_idManager.hasNetworkId(containerName)) {
+      return false;
+    }
+    NetworkId id = _idManager.getNetworkId(containerName);
+    return _storage.checkNetworkExists(id);
   }
 
   /**
@@ -2122,15 +2169,16 @@ public class WorkMgr extends AbstractCoordinator {
    * the path produced from the sepcified components.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionClassId The ID of the class of questions whose settings are to be returned
    * @param components The components to traverse from the root of the question settings to reach
    *     the desired section or value
    * @throws IOException if there is an error reading the settings
    */
   public @Nullable String getQuestionSettings(
-      String network, String questionClass, List<String> components) throws IOException {
+      String network, String questionClassId, List<String> components) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionClassId);
     if (questionSettings == null) {
       return null;
     }
@@ -2162,8 +2210,9 @@ public class WorkMgr extends AbstractCoordinator {
   public synchronized void writeQuestionSettings(
       String network, String questionClass, List<String> components, JsonNode value)
       throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(network, questionClass);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionClass);
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     JsonNode root;
     if (!components.isEmpty()) {
@@ -2183,6 +2232,56 @@ public class WorkMgr extends AbstractCoordinator {
       root = value;
     }
     _storage.storeQuestionSettings(
-        BatfishObjectMapper.writePrettyString(root), network, questionClass);
+        BatfishObjectMapper.writePrettyString(root), networkId, questionClass);
+  }
+
+  public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    return _storage.loadMajorIssueConfig(
+        networkId, getOrCreateIssueSettingsId(networkId, majorIssueType));
+  }
+
+  @VisibleForTesting
+  public IdManager getIdManager() {
+    return _idManager;
+  }
+
+  public TestrigMetadata getTestrigMetadata(String networkName, String snapshot)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return TestrigMetadataMgr.readMetadata(networkId, snapshotId);
+  }
+
+  public void writeNodeRoles(NodeRolesData nodeRolesData, String network) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _storage.storeNodeRoles(nodeRolesData, networkId);
+  }
+
+  /**
+   * Reads the {@link NodeRolesData} object for the provided network. If none exists, initializes a
+   * new object.
+   *
+   * @param network The name of the network
+   * @return The read data
+   * @throws IOException If there is an error
+   */
+  public NodeRolesData getNodeRolesData(String network) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (_storage.hasNodeRoles(networkId)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);
+    } else {
+      return new NodeRolesData(null, new Date().toInstant(), null);
+    }
+  }
+
+  private NodeRolesData getNodeRolesDataWrapped(String network) {
+    try {
+      return getNodeRolesData(network);
+    } catch (IOException e) {
+      throw new BatfishException("error reading node roles", e);
+    }
   }
 }

@@ -33,27 +33,31 @@ public class IssueConfigResource {
   /** Deletes this network's major and minor config */
   @DELETE
   public Response delIssueConfig() {
-    MajorIssueConfig majorConfig = Main.getWorkMgr().getMajorIssueConfig(_network, _major);
-    Optional<MinorIssueConfig> minorConfig = majorConfig.getMinorIssueConfig(_minor);
-    if (!minorConfig.isPresent()) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
-    MajorIssueConfig result = majorConfig.delMinorIssueConfig(_minor);
     try {
+      MajorIssueConfig majorConfig = Main.getWorkMgr().getMajorIssueConfig(_network, _major);
+      Optional<MinorIssueConfig> minorConfig = majorConfig.getMinorIssueConfig(_minor);
+      if (!minorConfig.isPresent()) {
+        return Response.status(Status.NOT_FOUND).build();
+      }
+      MajorIssueConfig result = majorConfig.delMinorIssueConfig(_minor);
       Main.getWorkMgr().putMajorIssueConfig(_network, _major, result);
       return Response.ok().build();
     } catch (IOException e) {
-      throw new InternalServerErrorException("Could not delete the issue config");
+      throw new InternalServerErrorException("Could not delete the issue config", e);
     }
   }
 
   /** Gets {@link IssueConfigBean} for this network's major and minor config */
   @GET
   public Response getIssueConfig() {
-    MajorIssueConfig majorConfig = Main.getWorkMgr().getMajorIssueConfig(_network, _major);
-    Optional<MinorIssueConfig> minorConfig = majorConfig.getMinorIssueConfig(_minor);
-    return minorConfig.isPresent()
-        ? Response.ok(new IssueConfigBean(_major, minorConfig.get())).build()
-        : Response.status(Status.NOT_FOUND).build();
+    try {
+      MajorIssueConfig majorConfig = Main.getWorkMgr().getMajorIssueConfig(_network, _major);
+      Optional<MinorIssueConfig> minorConfig = majorConfig.getMinorIssueConfig(_minor);
+      return minorConfig.isPresent()
+          ? Response.ok(new IssueConfigBean(_major, minorConfig.get())).build()
+          : Response.status(Status.NOT_FOUND).build();
+    } catch (IOException e) {
+      throw new InternalServerErrorException("Could not get issue config", e);
+    }
   }
 }
