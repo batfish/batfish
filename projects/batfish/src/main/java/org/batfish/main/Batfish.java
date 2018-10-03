@@ -32,6 +32,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,7 +135,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
-import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
@@ -163,6 +163,15 @@ import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.FileBasedIdResolver;
+import org.batfish.identifiers.IdResolver;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
@@ -206,7 +215,6 @@ import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
-import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodSatJob;
 import org.batfish.z3.QuerySynthesizer;
@@ -226,10 +234,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
+  private static final String DEFAULT_QUESTION_SETTINGS_ID = "<NONE>";
+
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(
-      TestrigSettings settings, Path containerDir, String testrig, String envName) {
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig));
+      TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
+    Path testrigDir =
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -376,12 +387,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static void initTestrigSettings(Settings settings) {
-    String testrig = settings.getTestrig();
+    SnapshotId testrig = settings.getTestrig();
     String envName = settings.getEnvironmentName();
-    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
     if (testrig != null) {
       applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig, envName);
-      String deltaTestrig = settings.getDeltaTestrig();
+      SnapshotId deltaTestrig = settings.getDeltaTestrig();
       String deltaEnvName = settings.getDeltaEnvironmentName();
       TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
       if (deltaTestrig != null && deltaEnvName == null) {
@@ -500,6 +511,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
 
+  private IdResolver _idResolver;
+
   private BatfishLogger _logger;
 
   private Settings _settings;
@@ -524,7 +537,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
       Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
-      @Nullable StorageProvider alternateStorageProvider) {
+      @Nullable StorageProvider alternateStorageProvider,
+      @Nullable IdResolver alternateIdResolver) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -547,27 +561,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateStorageProvider != null
             ? alternateStorageProvider
             : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
+    _idResolver =
+        alternateIdResolver != null
+            ? alternateIdResolver
+            : new FileBasedIdResolver(_settings.getStorageBase());
   }
 
   private Answer analyze() {
     try {
       Answer answer = new Answer();
       AnswerSummary summary = new AnswerSummary();
-      String analysisName = _settings.getAnalysisName();
-      String containerName = _settings.getContainer();
+      AnalysisId analysisName = _settings.getAnalysisName();
+      NetworkId containerName = _settings.getContainer();
       RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-      _storage
-          .listAnalysisQuestions(containerName, analysisName)
+      _idResolver
+          .listQuestions(containerName, analysisName)
           .forEach(
               questionName -> {
-                _settings.setQuestionName(questionName);
+                QuestionId questionId =
+                    _idResolver.getQuestionId(questionName, containerName, analysisName);
+                _settings.setQuestionName(questionId);
                 Answer currentAnswer;
                 try (ActiveSpan analysisQuestionSpan =
                     GlobalTracer.get()
                         .buildSpan("Getting answer to analysis question")
                         .startActive()) {
                   assert analysisQuestionSpan != null; // make span not show up as unused
-                  analysisQuestionSpan.setTag("analysis-name", analysisName);
+                  analysisQuestionSpan.setTag("analysis-name", analysisName.getId());
                   currentAnswer = answer();
                 }
                 // Ensuring that question was parsed successfully
@@ -649,8 +669,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (GlobalTracer.get().activeSpan() != null) {
       ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
       activeSpan
-          .setTag("container-name", getContainerName())
-          .setTag("testrig_name", getTestrigName());
+          .setTag("container-name", getContainerName().getId())
+          .setTag("testrig_name", getTestrigName().getId());
       if (question.getInstance() != null) {
         activeSpan.setTag("question-name", question.getInstance().getInstanceName());
       }
@@ -930,21 +950,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
     _logger.printElapsedTime();
     return topology;
-  }
-
-  public <KeyT, ResultT> void computeNodFirstUnsatOutput(
-      List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
-    _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
-    _logger.resetTimer();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings,
-        _logger,
-        jobs,
-        output,
-        new NodFirstUnsatAnswerElement(),
-        true,
-        "NOD First-UNSAT");
-    _logger.printElapsedTime();
   }
 
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
@@ -1487,7 +1492,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getContainerName() {
+  public NetworkId getContainerName() {
     return _settings.getContainer();
   }
 
@@ -1531,7 +1536,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: add bgp tables and external announcements as well
     return new Environment(
         getEnvironmentName(),
-        getTestrigName(),
+        _idResolver.getSnapshotName(_settings.getContainer(), getTestrigName()),
         edgeBlackList,
         interfaceBlackList,
         nodeBlackList,
@@ -1665,15 +1670,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public NodeRolesData getNodeRolesData() {
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.read(nodeRoleDataPath);
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(_settings.getContainer()), NodeRolesData.class);
     } catch (IOException e) {
-      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      _logger.errorf("Could not read roles data: %s", e);
       return null;
     }
   }
@@ -1690,13 +1691,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path nodeRoleDataPath =
         _settings
             .getStorageBase()
-            .resolve(_settings.getContainer())
+            .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
+      return NodeRolesData.getNodeRoleDimension(
+          () -> getNodeRolesWrapped(_settings.getContainer()), dimension);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
       return Optional.empty();
+    }
+  }
+
+  private NodeRolesData getNodeRolesWrapped(NetworkId networkId) {
+    if (!_storage.hasNodeRoles(networkId)) {
+      return new NodeRolesData(null, new Date().toInstant(), null);
+    }
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);
+    } catch (IOException e) {
+      throw new BatfishException("Error reading node roles", e);
+    }
+  }
+
+  private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, NetworkId networkId) {
+    try {
+      _storage.storeNodeRoles(nodeRolesData, networkId);
+    } catch (IOException e) {
+      throw new BatfishException("Error writing node roles", e);
     }
   }
 
@@ -1707,7 +1729,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    return _storage.loadMajorIssueConfig(_settings.getContainer(), majorIssueType);
+    IssueSettingsId id = _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
+    if (id == null) {
+      return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
+    }
+    MajorIssueConfig loaded = _storage.loadMajorIssueConfig(_settings.getContainer(), id);
+    return loaded != null ? loaded : new MajorIssueConfig(majorIssueType, ImmutableMap.of());
   }
 
   @Override
@@ -1753,7 +1780,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path libraryPath =
         _settings
             .getStorageBase()
-            .resolve(_settings.getContainer())
+            .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
     try {
       return ReferenceLibrary.read(libraryPath);
@@ -1815,7 +1842,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getTestrigName() {
+  public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
   }
 
@@ -2518,18 +2545,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
-    String question = _settings.getQuestionName();
-    if (question == null) {
+    QuestionId questionId = _settings.getQuestionName();
+    if (questionId == null) {
       return;
     }
-    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId;
+    try {
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            deltaSnapshot,
+            analysisId);
+
     _storage.storeAnswerMetadata(
-        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        question,
-        deltaSnapshot,
-        _settings.getAnalysisName());
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -3811,7 +3855,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _testrigSettings.getName(), configurations, testrigTopology);
+            _idResolver.getSnapshotName(_settings.getContainer(), _testrigSettings.getName()),
+            configurations,
+            testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
@@ -3829,10 +3875,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path nodeRoleDataPath =
         _settings
             .getStorageBase()
-            .resolve(_settings.getContainer())
+            .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
+      NetworkId networkId = _settings.getContainer();
+      NodeRolesData.mergeNodeRoleDimensions(
+          () -> getNodeRolesWrapped(networkId),
+          nodeRolesData -> writeNodeRolesWrapped(nodeRolesData, networkId),
+          autoRoles,
+          null,
+          true);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
     }
@@ -4560,14 +4612,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
-    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
-    _storage.storeAnswer(
-        structuredAnswerString,
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        deltaSnapshot,
-        _settings.getAnalysisName());
+    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    QuestionId questionId = _settings.getQuestionName();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId;
+
+    try {
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
+
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            deltaSnapshot,
+            analysisId);
+    _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
@@ -4576,9 +4646,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path jsonPath =
           _settings
               .getStorageBase()
-              .resolve(_settings.getContainer())
+              .resolve(_settings.getContainer().getId())
               .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-              .resolve(_settings.getTestrig())
+              .resolve(_settings.getTestrig().getId())
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);
     }
