@@ -18,7 +18,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -175,7 +175,7 @@ public class NodJobChunkingTest {
             TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+            .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
             .setHeaderSpace(new HeaderSpace())
             .setSrcIpConstraints(srcIpConstraints)
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))

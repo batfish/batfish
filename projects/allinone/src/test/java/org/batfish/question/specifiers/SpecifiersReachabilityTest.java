@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -86,19 +86,19 @@ public class SpecifiersReachabilityTest {
   }
 
   /**
-   * Test that we get a result with DROP disposition from each interface. With the default source
-   * IpSpace specifier, the srcIp should be that of the source interface. The dstIp should not be
-   * one of those configured in the network.
+   * Test that we get a result with NO_ROUTE disposition from each interface. With the default
+   * source IpSpace specifier, the srcIp should be that of the source interface. The dstIp should
+   * not be one of those configured in the network.
    */
   @Test
-  public void testDrop() {
+  public void testNoRoute() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
                     .setStartLocation(String.format("%s[%s]", NODE1, LOOPBACK))
                     .build())
-            .setActions(ImmutableSortedSet.of(ForwardingAction.DROP))
+            .setActions(ImmutableSortedSet.of(FlowDisposition.NO_ROUTE))
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(TableAnswerElement.class));
