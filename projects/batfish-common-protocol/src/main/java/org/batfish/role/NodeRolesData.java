@@ -69,6 +69,7 @@ public class NodeRolesData {
    * Get the {@link NodeRoleDimension} object for the specified dimension. If dimension is null,
    * returns {@link #getNodeRoleDimension(Supplier)}.
    *
+   * @param read Supplier of the full role data
    * @param dimension The name of the dimension to fetch
    * @return The {@link NodeRoleDimension} object if one exists or throws {@link
    *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
