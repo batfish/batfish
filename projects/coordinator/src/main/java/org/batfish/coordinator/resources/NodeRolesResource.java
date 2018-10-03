@@ -54,7 +54,7 @@ public class NodeRolesResource {
         throw new BadRequestException("Duplicate dimension specified: " + dimBean.name);
       }
       nodeRolesData.getNodeRoleDimensions().add(dimBean.toNodeRoleDimension());
-      NodeRolesData.write(nodeRolesData, Main.getWorkMgr().getNodeRolesPath(_container));
+      Main.getWorkMgr().writeNodeRoles(nodeRolesData, _container);
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Node roles resource is corrupted");

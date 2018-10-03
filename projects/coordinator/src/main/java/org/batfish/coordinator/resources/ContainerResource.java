@@ -66,7 +66,7 @@ public class ContainerResource {
   @DELETE
   public Response deleteContainer() {
     _logger.infof("WMS2: delNetwork '%s'\n", _name);
-    if (Main.getWorkMgr().delContainer(_name)) {
+    if (Main.getWorkMgr().delNetwork(_name)) {
       return Response.noContent().build();
     } else {
       return Response.serverError().build();

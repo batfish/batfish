@@ -46,7 +46,7 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void addReferenceBook() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // add book1
     ReferenceBookBean book =
@@ -69,7 +69,7 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void getReferenceLibrary() {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceLibraryBean to have created the object with the right content
