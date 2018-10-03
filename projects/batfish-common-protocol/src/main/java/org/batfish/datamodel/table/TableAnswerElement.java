@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +148,7 @@ public final class TableAnswerElement extends AnswerElement {
    * @param question The question that generated the initial set of rows
    * @param initialSet The initial set of rows
    */
-  public void postProcessAnswer(Question question, Multiset<Row> initialSet) {
+  public void postProcessAnswer(Question question, Iterable<Row> initialSet) {
     initialSet.forEach(
         initialRow -> {
           // exclude or not?

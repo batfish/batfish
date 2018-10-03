@@ -113,7 +113,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.identifiers.AnalysisId;
@@ -997,7 +996,7 @@ public class WorkMgr extends AbstractCoordinator {
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
     // apply issue configuration to all rows and excluded rows, then collect them
-    Rows allRows = new Rows();
+    ImmutableList.Builder<Row> allRows = ImmutableList.builder();
     applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, majorIssueConfigs)
         .forEach(allRows::add);
     applyIssuesConfigurationToAllExcludedRows(
@@ -1012,7 +1011,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     // postprocess using question exclusions, collected rows
     TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
-    newTable.postProcessAnswer(questionObj, allRows.getData());
+    newTable.postProcessAnswer(questionObj, allRows.build());
     Answer newAnswer = new Answer();
 
     // Apply new info to answer
