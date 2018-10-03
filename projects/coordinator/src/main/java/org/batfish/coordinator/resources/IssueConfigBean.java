@@ -2,22 +2,24 @@ package org.batfish.coordinator.resources;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 
 @ParametersAreNonnullByDefault
 public class IssueConfigBean {
   /** The major type of the issue */
-  public String major;
+  public @Nonnull String major;
 
   /** The minor type of the issue */
-  public String minor;
+  public @Nonnull String minor;
 
   /** The severity of the issue */
-  public int severity;
+  public @Nullable Integer severity;
 
   /** The URL of the issue */
-  public String url;
+  public @Nullable String url;
 
   @JsonCreator
   private IssueConfigBean() {}
@@ -30,13 +32,16 @@ public class IssueConfigBean {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof IssueConfigBean)) {
       return false;
     }
     IssueConfigBean other = (IssueConfigBean) o;
-    return Objects.equals(major, other.major)
-        && Objects.equals(minor, other.minor)
+    return major.equals(other.major)
+        && minor.equals(other.minor)
         && Objects.equals(severity, other.severity)
         && Objects.equals(url, other.url);
   }
