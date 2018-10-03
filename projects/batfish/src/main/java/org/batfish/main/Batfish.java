@@ -102,6 +102,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
@@ -4360,9 +4361,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
+   *
+   * @param actions
    */
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> actions) {
     BDDPacket pkt = new BDDPacket();
 
     pushBaseEnvironment();

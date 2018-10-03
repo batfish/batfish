@@ -21,6 +21,7 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -59,7 +60,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> actions) {
     throw new UnsupportedOperationException();
   }
 
