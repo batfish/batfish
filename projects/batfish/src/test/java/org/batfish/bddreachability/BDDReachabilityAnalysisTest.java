@@ -187,15 +187,11 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private BDD bddTransition(StateExpr preState, StateExpr postState) {
-    return _graphFactory
-        .getEdges()
-        .get(preState)
-        .get(postState)
-        .traverseForward(PKT.getFactory().one());
+    return _graph.getEdges().get(preState).get(postState).traverseForward(PKT.getFactory().one());
   }
 
   private Edge edge(StateExpr preState, StateExpr postState) {
-    return _graphFactory.getEdges().get(preState).get(postState);
+    return _graph.getEdges().get(preState).get(postState);
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -430,7 +426,8 @@ public final class BDDReachabilityAnalysisTest {
   @Test
   public void testDefaultAcceptBDD() {
     BDDPacket pkt = new BDDPacket();
-    OriginateVrf originateVrf = new OriginateVrf("host", "vrf");
+    String hostname = "host";
+    OriginateVrf originateVrf = new OriginateVrf(hostname, "vrf");
     BDD one = pkt.getFactory().one();
     BDDReachabilityAnalysis graph =
         new BDDReachabilityAnalysis(

@@ -176,7 +176,15 @@ public final class BDDSourceManager {
                     activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
 
     // Number of values needed to track sources in any node
-    int valuesNeeded = activeAndReferenced.values().stream().mapToInt(Set::size).max().orElse(0);
+    int valuesNeeded =
+        activeAndReferenced
+            .keySet()
+            .stream()
+            .mapToInt(
+                node ->
+                    valuesRequired(activeAndReferenced.get(node), activeButNotReferenced.get(node)))
+            .max()
+            .orElse(0);
 
     if (valuesNeeded == 0) {
       return toImmutableMap(
@@ -234,7 +242,7 @@ public final class BDDSourceManager {
         LongMath.log2(
             valuesRequired(activeAndReferenced, activeButUnreferenced), RoundingMode.CEILING);
     checkArgument(
-        sourceVar.getBitvec().length <= bitsRequired,
+        bitsRequired <= sourceVar.getBitvec().length,
         "sourceVar not big enough to track active and referenced sources");
 
     ImmutableMap.Builder<String, BDD> matchSrcBDDs = ImmutableMap.builder();
