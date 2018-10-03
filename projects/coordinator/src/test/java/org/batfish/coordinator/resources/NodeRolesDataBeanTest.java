@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import org.batfish.common.BfConsts;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
@@ -30,10 +29,11 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void create() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    String snapshot = "testrig";
+    Main.getWorkMgr().initNetwork(container, null);
 
     // create a testrig with a topology file
-    WorkMgrTestUtils.initTestrigWithTopology(container, "testrig", ImmutableSet.of("a", "b"));
+    WorkMgrTestUtils.initTestrigWithTopology(container, snapshot, ImmutableSet.of("a", "b"));
 
     // write node roles data to in the right place
     NodeRolesData data =
@@ -46,19 +46,18 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
                     ImmutableSortedSet.of(new NodeRole("someRole", "a.*")),
                     null,
                     null)));
-    NodeRolesData.write(
-        data, Main.getWorkMgr().getdirNetwork(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Main.getWorkMgr().writeNodeRoles(data, container);
 
     // we should get OK and the expected bean
     assertThat(
-        NodeRolesDataBean.create("someContainer"),
-        equalTo(new NodeRolesDataBean(data, "testrig", ImmutableSet.of("a", "b"))));
+        NodeRolesDataBean.create(container),
+        equalTo(new NodeRolesDataBean(data, snapshot, ImmutableSet.of("a", "b"))));
   }
 
   @Test
   public void createEmptyContainer() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     assertThat(
         NodeRolesDataBean.create("someContainer"),

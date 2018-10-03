@@ -15,6 +15,10 @@ import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
@@ -262,7 +266,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _inferredNodeRolesPath;
 
-    private String _name;
+    private SnapshotId _name;
 
     private Path _nodeRolesPath;
 
@@ -310,7 +314,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _inferredNodeRolesPath;
     }
 
-    public String getName() {
+    public SnapshotId getName() {
       return _name;
     }
 
@@ -373,7 +377,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _inferredNodeRolesPath = inferredNodeRolesPath;
     }
 
-    public void setName(String name) {
+    public void setName(SnapshotId name) {
       _name = name;
     }
 
@@ -599,8 +603,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _activeTestrigSettings;
   }
 
-  public String getAnalysisName() {
-    return _config.getString(BfConsts.ARG_ANALYSIS_NAME);
+  public @Nullable AnalysisId getAnalysisName() {
+    String id = _config.getString(BfConsts.ARG_ANALYSIS_NAME);
+    return id != null ? new AnalysisId(id) : null;
   }
 
   public boolean getAnalyze() {
@@ -623,8 +628,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
-  public String getContainer() {
-    return _config.getString(BfConsts.ARG_CONTAINER);
+  public NetworkId getContainer() {
+    String id = _config.getString(BfConsts.ARG_CONTAINER);
+    return id != null ? new NetworkId(id) : null;
   }
 
   public String getCoordinatorHost() {
@@ -651,8 +657,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
   }
 
-  public String getDeltaTestrig() {
-    return _config.getString(BfConsts.ARG_DELTA_TESTRIG);
+  public SnapshotId getDeltaTestrig() {
+    String name = _config.getString(BfConsts.ARG_DELTA_TESTRIG);
+    return name != null ? new SnapshotId(name) : null;
   }
 
   public TestrigSettings getDeltaTestrigSettings() {
@@ -737,12 +744,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     if (getTaskId() == null) {
       return null;
     }
-    String tr = getTestrig();
+    String tr = getTestrig().getId();
     if (getDeltaTestrig() != null && !getDifferential()) {
-      tr = getDeltaTestrig();
+      tr = getDeltaTestrig().getId();
     }
     return getStorageBase()
-        .resolve(getContainer())
+        .resolve(getContainer().getId())
         .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
         .resolve(tr)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
@@ -810,8 +817,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
   }
 
-  public String getQuestionName() {
-    return _config.getString(BfConsts.ARG_QUESTION_NAME);
+  public @Nullable QuestionId getQuestionName() {
+    String name = _config.getString(BfConsts.ARG_QUESTION_NAME);
+    return name != null ? new QuestionId(name) : null;
   }
 
   public boolean getRedFlagRecord() {
@@ -904,8 +912,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_TASK_PLUGIN);
   }
 
-  public String getTestrig() {
-    return _config.getString(BfConsts.ARG_TESTRIG);
+  public SnapshotId getTestrig() {
+    String name = _config.getString(BfConsts.ARG_TESTRIG);
+    return name != null ? new SnapshotId(name) : null;
   }
 
   @Override
@@ -1457,8 +1466,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
   }
 
-  public void setDeltaTestrig(String deltaTestrig) {
-    _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+  public void setDeltaTestrig(SnapshotId testrig) {
+    _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, testrig != null ? testrig.getId() : null);
   }
 
   public void setDiffActive(boolean diffActive) {
@@ -1594,7 +1603,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_DATAPLANE_ENGINE_NAME, name);
   }
 
-  public void setQuestionName(String questionName) {
-    _config.setProperty(BfConsts.ARG_QUESTION_NAME, questionName);
+  public void setQuestionName(QuestionId questionName) {
+    _config.setProperty(
+        BfConsts.ARG_QUESTION_NAME, questionName != null ? questionName.getId() : null);
   }
 }
