@@ -1786,7 +1786,8 @@ public class WorkMgr extends AbstractCoordinator {
     return success;
   }
 
-  private @Nonnull WorkItem resolveIds(WorkItem workItem) {
+  public static @Nonnull WorkItem resolveIds(WorkItem workItem) {
+    IdManager idManager = Main.getWorkMgr().getIdManager();
     Map<String, String> params = new HashMap<>(workItem.getRequestParams());
 
     // network
@@ -1794,7 +1795,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (network == null) {
       return workItem;
     }
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = idManager.getNetworkId(network);
     params.put(BfConsts.ARG_CONTAINER, networkId.getId());
 
     // snapshot
@@ -1802,13 +1803,13 @@ public class WorkMgr extends AbstractCoordinator {
     if (snapshot == null) {
       return workItem;
     }
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
     params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
 
     // referenceSnapshot
     String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
     if (referenceSnapshot != null) {
-      SnapshotId referenceSnapshotId = _idManager.getSnapshotId(referenceSnapshot, networkId);
+      SnapshotId referenceSnapshotId = idManager.getSnapshotId(referenceSnapshot, networkId);
       params.put(BfConsts.ARG_DELTA_TESTRIG, referenceSnapshotId.getId());
     }
 
@@ -1816,14 +1817,14 @@ public class WorkMgr extends AbstractCoordinator {
     AnalysisId analysisId = null;
     String analysis = params.get(BfConsts.ARG_ANALYSIS_NAME);
     if (analysis != null) {
-      analysisId = _idManager.getAnalysisId(analysis, networkId);
+      analysisId = idManager.getAnalysisId(analysis, networkId);
       params.put(BfConsts.ARG_ANALYSIS_NAME, analysisId.getId());
     }
 
     // question
     String question = params.get(BfConsts.ARG_QUESTION_NAME);
     if (question != null) {
-      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+      QuestionId questionId = idManager.getQuestionId(question, networkId, analysisId);
       params.put(BfConsts.ARG_QUESTION_NAME, questionId.getId());
     }
 
