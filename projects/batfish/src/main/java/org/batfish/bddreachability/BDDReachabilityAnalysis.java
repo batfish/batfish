@@ -32,8 +32,6 @@ import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 /**
@@ -80,40 +78,13 @@ public class BDDReachabilityAnalysis {
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Map<StateExpr, BDD> graphRoots,
-      Map<StateExpr, Map<StateExpr, Edge>> transitions) {
+      Map<StateExpr, Map<StateExpr, Edge>> edges) {
     _bddPacket = packet;
-    _edges = computeEdges(graphRoots, transitions);
+    _edges = edges;
     _reverseEdges = computeReverseEdges(_edges);
     _graphRoots = ImmutableMap.copyOf(graphRoots);
     _reverseReachableStates = Suppliers.memoize(this::computeReverseReachableStates);
     _leafStates = computeTerminalStates();
-  }
-
-  private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(
-      Map<StateExpr, BDD> graphRoots, Map<StateExpr, Map<StateExpr, Edge>> transitions) {
-    Map<StateExpr, Map<StateExpr, Edge>> edges = new HashMap<>();
-    // add root transitions
-    graphRoots.forEach(
-        (root, predicate) -> {
-          if (root instanceof OriginateVrf) {
-            OriginateVrf originateVrf = (OriginateVrf) root;
-            PostInVrf postInVrf = new PostInVrf(originateVrf.getHostname(), originateVrf.getVrf());
-            Edge edge = new Edge(root, postInVrf, predicate);
-            edges.put(originateVrf, ImmutableMap.of(postInVrf, edge));
-          } else if (root instanceof OriginateInterfaceLink) {
-            OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) root;
-            PreInInterface preInInterface =
-                new PreInInterface(
-                    originateInterfaceLink.getHostname(), originateInterfaceLink.getIface());
-            Edge edge = new Edge(root, preInInterface, predicate);
-            edges.put(originateInterfaceLink, ImmutableMap.of(preInInterface, edge));
-          } else {
-            throw new BatfishException("unexpected graph root: " + root);
-          }
-        });
-    // add all other transitions
-    transitions.forEach(edges::put);
-    return ImmutableMap.copyOf(edges);
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeReverseEdges(
@@ -313,5 +284,10 @@ public class BDDReachabilityAnalysis {
           "Unexpected originateState type: " + originateState.getClass().getSimpleName());
     }
     return fb.build();
+  }
+
+  @VisibleForTesting
+  Map<StateExpr, Map<StateExpr, Edge>> getEdges() {
+    return _edges;
   }
 }
