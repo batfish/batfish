@@ -340,7 +340,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void storeAnswer(String answerStr, AnswerId answerId) {
     Path answerPath = getAnswerPath(answerId);
-    Path answerDir = _d.getAnswerDir(answerId);
+    Path answerDir = answerPath.getParent();
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create answer directory '%s'", answerDir));
@@ -356,13 +356,13 @@ public final class FileBasedStorage implements StorageProvider {
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
-    Path answerDir = _d.getAnswerDir(answerId);
+    Path answerMetadataPath = getAnswerMetadataPath(answerId);
+    Path answerDir = answerMetadataPath.getParent();
     if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create answer metadata directory '%s'", answerDir));
     }
-    Path answerMetricsPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    CommonUtil.writeFile(answerMetricsPath, metricsStr);
+    CommonUtil.writeFile(answerMetadataPath, metricsStr);
   }
 
   /**

@@ -12,6 +12,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 
+/** Provides consistent directory structure for client classes that provide file-based storage. */
 @ParametersAreNonnullByDefault
 public class FileBasedStorageDirectoryProvider {
 

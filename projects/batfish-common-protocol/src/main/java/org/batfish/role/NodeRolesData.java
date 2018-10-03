@@ -88,7 +88,7 @@ public class NodeRolesData {
    * default dimension if set and exists, the auto-inferred primary dimension if it exists, the
    * dimension that is lexicographically first, and null if no dimensions exist.
    *
-   * @param dataPath Path from where to read {@link NodeRolesData}
+   * @param read Supplier of the full role data
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
   @Nullable
