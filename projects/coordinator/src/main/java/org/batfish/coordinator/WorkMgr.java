@@ -1308,8 +1308,7 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
-  public String getQuestion(
-      String network, String questionName, @Nullable String analysisName) {
+  public String getQuestion(String network, String questionName, @Nullable String analysisName) {
     NetworkId networkId = _idManager.getNetworkId(network);
     AnalysisId analysisId =
         analysisName != null ? _idManager.getAnalysisId(analysisName, networkId) : null;
