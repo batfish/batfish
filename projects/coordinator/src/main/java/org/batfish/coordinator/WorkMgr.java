@@ -184,7 +184,6 @@ public class WorkMgr extends AbstractCoordinator {
     _storage = storage;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger);
-    loadPlugins();
   }
 
   @VisibleForTesting
@@ -1838,6 +1837,8 @@ public class WorkMgr extends AbstractCoordinator {
     // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
     // Main.getSettings().getPeriodCheckWorkMs(),
     // TimeUnit.MILLISECONDS);
+
+    loadPlugins();
 
     Executors.newScheduledThreadPool(1)
         .scheduleAtFixedRate(
