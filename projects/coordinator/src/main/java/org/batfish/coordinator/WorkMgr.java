@@ -683,8 +683,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public void delTestrig(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    CommonUtil.deleteDirectory(testrigDir);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    _idManager.deleteSnapshot(testrigName, networkId);
   }
 
   public void delQuestion(String containerName, String qName) {
