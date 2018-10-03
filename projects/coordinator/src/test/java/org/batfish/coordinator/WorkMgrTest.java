@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
@@ -1455,5 +1456,46 @@ public class WorkMgrTest {
     assertThat(
         _manager.answerIssueConfigMatchesConfiguredIssues(answerIssueConfig, configuredMajorIssues),
         equalTo(false));
+  }
+
+  @Test
+  public void testDeleteSnapshotAbsent() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initContainer(network, null);
+
+    // should not be able to delete non-existent snapshot
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(containsString(snapshot));
+    _manager.delTestrig(network, snapshot);
+  }
+
+  @Test
+  public void testDeleteSnapshotPresent() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initContainer(network, null);
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+
+    // snapshot should exist
+    assertThat(_manager.listTestrigs(network), contains(snapshot));
+
+    _manager.delTestrig(network, snapshot);
+
+    // snapshot should no longer exist
+    assertThat(_manager.listTestrigs(network), emptyIterable());
+  }
+
+  @Test
+  public void testGetNetworkNames() {
+    String network = "network1";
+
+    // should start out empty
+    assertThat(_manager.getNetworkNames(), emptyIterable());
+
+    _manager.initContainer(network, null);
+
+    // should contain initialized network
+    assertThat(_manager.getNetworkNames(), contains(network));
   }
 }
