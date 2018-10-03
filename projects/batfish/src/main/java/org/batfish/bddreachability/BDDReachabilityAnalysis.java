@@ -17,9 +17,6 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.Query;
@@ -32,7 +29,9 @@ import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
  * particular, the graph nodes are {@link StateExpr StateExprs} and the edges are mostly the same as
  * the NOD program rules/transitions. {@link BDD BDDs} label the nodes and edges of the graph. A
  * node label represent the set of packets that can reach that node, and an edge label represents
- * the set of packets that can traverse the edge.
+ * the set of packets that can traverse the edge. There is a single designated {@link Query}
+ * StateExpr that we compute reachability sets (i.e. sets of packets that reach the query state).
+ * The query state never has any out-edges, and has in-edges from the dispositions of interest.
  *
  * <p>The two main departures from the NOD program are: 1) ACLs are encoded as a single BDD that
  * labels an edge (rather than a series of states/transitions in NOD programs). 2) Source NAT is
@@ -43,12 +42,8 @@ import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
  * <p>We currently implement backward all-pairs reachability. Forward reachability is useful for
  * questions with a tight source constraint, e.g. "find me packets send from node A that get
  * dropped". When reasoning about many sources simultaneously, we have to somehow remember the
- * source, which is very expensive for a large number of sources. Something like multipath
- * consistency -- "find me a packet and a node such that when the node sends the packet, it can be
- * either accepted and dropped" -- for which there are many sources but only a few sinks ({@link
- * Accept}, {@link Drop}, and {@link NeighborUnreachable}), backward reachability is much more
- * efficient. We still have to remember the sinks, but there's only ever 3 of those, no matter how
- * many sources there are.
+ * source, which is very expensive for a large number of sources. For queries that have to consider
+ * all packets that can reach the query state, backward reachability is much more efficient.
  */
 public class BDDReachabilityAnalysis {
   private final BDDPacket _bddPacket;
