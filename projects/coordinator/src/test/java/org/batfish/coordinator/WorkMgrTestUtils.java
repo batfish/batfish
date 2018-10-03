@@ -40,7 +40,10 @@ public final class WorkMgrTestUtils {
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
     NetworkId networkId = idManager.getNetworkId(container);
-    SnapshotId snapshotId = idManager.generateSnapshotId();
+    SnapshotId snapshotId =
+        idManager.hasSnapshotId(testrig, networkId)
+            ? idManager.getSnapshotId(testrig, networkId)
+            : idManager.generateSnapshotId();
     idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);

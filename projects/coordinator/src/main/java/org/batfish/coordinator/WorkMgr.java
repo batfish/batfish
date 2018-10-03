@@ -482,7 +482,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private WorkDetails computeWorkDetails(WorkItem workItem) {
+  WorkDetails computeWorkDetails(WorkItem workItem) {
 
     WorkType workType = WorkType.UNKNOWN;
 
@@ -1764,17 +1764,7 @@ public class WorkMgr extends AbstractCoordinator {
                 "Snapshot/environment metadata not found for %s/%s",
                 workDetails.deltaTestrig, workDetails.deltaEnv));
       }
-      WorkItem resolvedWorkItem = resolveIds(workItem);
-      WorkDetails resolvedWorkDetails =
-          new WorkDetails(
-              resolvedWorkItem.getTestrigName(),
-              workDetails.baseEnv,
-              resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-              workDetails.deltaEnv,
-              workDetails.isDifferential,
-              workDetails.workType);
-      success =
-          _workQueueMgr.queueUnassignedWork(new QueuedWork(resolvedWorkItem, resolvedWorkDetails));
+      success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
@@ -1786,7 +1776,24 @@ public class WorkMgr extends AbstractCoordinator {
     return success;
   }
 
-  public static @Nonnull WorkItem resolveIds(WorkItem workItem) {
+  private static @Nonnull QueuedWork resolvedQueuedWork(
+      WorkItem workItem, WorkDetails workDetails) {
+    WorkItem resolvedWorkItem = resolveIds(workItem);
+    return new QueuedWork(resolvedWorkItem, resolveIds(resolvedWorkItem, workDetails));
+  }
+
+  private static @Nonnull WorkDetails resolveIds(
+      WorkItem resolvedWorkItem, WorkDetails workDetails) {
+    return new WorkDetails(
+        resolvedWorkItem.getTestrigName(),
+        workDetails.baseEnv,
+        resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
+        workDetails.deltaEnv,
+        workDetails.isDifferential,
+        workDetails.workType);
+  }
+
+  static @Nonnull WorkItem resolveIds(WorkItem workItem) {
     IdManager idManager = Main.getWorkMgr().getIdManager();
     Map<String, String> params = new HashMap<>(workItem.getRequestParams());
 
