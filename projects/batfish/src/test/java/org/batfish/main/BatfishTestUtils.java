@@ -27,6 +27,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
+import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -34,6 +35,18 @@ import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
+
+  private static class TestFileBasedIdResolver extends FileBasedIdResolver {
+
+    public TestFileBasedIdResolver(Path storageBase) {
+      super(storageBase);
+    }
+
+    @Override
+    public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
+      return snapshotId.getId();
+    }
+  }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> makeTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(5).build();
@@ -84,7 +97,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeEnvRouteCache(),
             null,
-            null);
+            new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
@@ -138,7 +151,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeEnvRouteCache(),
             null,
-            null);
+            new TestFileBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       Batfish.serializeAsJson(
@@ -226,7 +239,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeEnvRouteCache(),
             null,
-            null);
+            new TestFileBasedIdResolver(settings.getStorageBase()));
     registerDataPlanePlugins(batfish);
     return batfish;
   }
