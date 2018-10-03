@@ -30,7 +30,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void create() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // create a testrig with a topology file
     WorkMgrTestUtils.initTestrigWithTopology(container, "testrig", ImmutableSet.of("a", "b"));

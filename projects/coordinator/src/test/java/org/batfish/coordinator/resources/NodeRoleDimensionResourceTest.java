@@ -47,7 +47,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void delNodeRoleDimension() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write node roles data to in the right place
     NodeRolesData data =
@@ -77,7 +77,7 @@ public class NodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void getNodeRoleDimension() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write node roles data to in the right place
     NodeRoleDimension dimension1 =

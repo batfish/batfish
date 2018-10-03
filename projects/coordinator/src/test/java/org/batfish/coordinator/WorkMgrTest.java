@@ -110,34 +110,34 @@ public class WorkMgrTest {
 
   @Test
   public void initContainerWithContainerName() {
-    String initResult = _manager.initContainer("container", null);
+    String initResult = _manager.initNetwork("container", null);
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
   public void initContainerWithContainerPrefix() {
-    String initResult = _manager.initContainer(null, "containerPrefix");
+    String initResult = _manager.initNetwork(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
   public void initContainerWithNullInput() {
-    String initResult = _manager.initContainer(null, null);
+    String initResult = _manager.initNetwork(null, null);
     assertThat(initResult, startsWith("null_"));
   }
 
   @Test
   public void initExistingContainer() {
-    _manager.initContainer("container", null);
-    String expectedMessage = "Container 'container' already exists!";
+    _manager.initNetwork("container", null);
+    String expectedMessage = "Network 'container' already exists!";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initContainer("container", null);
+    _manager.initNetwork("container", null);
   }
 
   @Test
   public void listEmptyQuestion() {
-    _manager.initContainer("container", null);
+    _manager.initNetwork("container", null);
     SortedSet<String> questions = _manager.listQuestions("container", false);
     assertThat(questions.isEmpty(), is(true));
   }
@@ -149,7 +149,7 @@ public class WorkMgrTest {
     // And should be hidden from listQuestions when verbose is false
     String internalQuestionName = "__internalquestion";
     String network = "container";
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
     NetworkId networkId = _idManager.getNetworkId(network);
     // Make sure the questions are assigned
     _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
@@ -175,7 +175,7 @@ public class WorkMgrTest {
   @Test
   public void listSortedQuestionNames() {
     String network = "container";
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.assignQuestion("nodes", networkId, _idManager.generateQuestionId(), null);
     _idManager.assignQuestion("access", networkId, _idManager.generateQuestionId(), null);
@@ -187,14 +187,14 @@ public class WorkMgrTest {
 
   @Test
   public void getEmptyContainer() {
-    _manager.initContainer("container", null);
+    _manager.initNetwork("container", null);
     Container container = _manager.getContainer("container");
     assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
   }
 
   @Test
   public void getLatestTestrig() throws IOException {
-    _manager.initContainer("container", null);
+    _manager.initNetwork("container", null);
 
     // empty should be returned if no testrigs exist
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.empty()));
@@ -210,7 +210,7 @@ public class WorkMgrTest {
 
   @Test
   public void getNodes() throws IOException {
-    _manager.initContainer("container", null);
+    _manager.initNetwork("container", null);
 
     // create a testrig and write a topology object for it
     createTestrigWithMetadata("container", "testrig1");
@@ -218,7 +218,7 @@ public class WorkMgrTest {
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
     CommonUtil.writeFile(
         _manager
-            .getdirTestrig("container", "testrig1")
+            .getdirSnapshot("container", "testrig1")
             .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
@@ -230,7 +230,7 @@ public class WorkMgrTest {
   public void getNonEmptyContainer() {
     String network = "container";
     String snapshot = "testrig";
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.assignSnapshot(snapshot, networkId, _idManager.generateSnapshotId());
     Container container = _manager.getContainer(network);
@@ -249,7 +249,7 @@ public class WorkMgrTest {
   @Test
   public void testListAnalysesSuggested() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
 
     // Create analysis1 (user analysis) and analysis2 (suggested analysis)
     _manager.configureAnalysis(
@@ -272,7 +272,7 @@ public class WorkMgrTest {
   @Test
   public void testConfigureAnalysis() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
     // test init and add questions to analysis
     Map<String, String> questionsToAdd = ImmutableMap.of("question1", "question1Content");
     String analysisName = "analysis";
@@ -316,7 +316,7 @@ public class WorkMgrTest {
   @Test
   public void testConfigureAnalysisSuggested() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
 
     // Analysis initialized with suggested = null should not be marked as suggested
     _manager.configureAnalysis(
@@ -361,7 +361,7 @@ public class WorkMgrTest {
     String question2Name = "question2Name";
     String question3Name = "question3";
 
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
     Map<String, String> questionsToAdd =
         ImmutableMap.of(
             question1Name,
@@ -445,7 +445,7 @@ public class WorkMgrTest {
     String questionContent = BatfishObjectMapper.writeString(question);
     String question2Name = "question2Name";
 
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
     Map<String, String> questionsToAdd =
         ImmutableMap.of(question1Name, questionContent, question2Name, questionContent);
 
@@ -520,7 +520,7 @@ public class WorkMgrTest {
   public void testGetAutoWorkQueueUserAnalysis() {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
 
     // user policy
     _manager.configureAnalysis(
@@ -562,7 +562,7 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question1Name";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.configureAnalysis(
         networkName,
         true,
@@ -601,7 +601,7 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     Question question = new TestQuestion();
     String questionName = "question1";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.configureAnalysis(
         networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
@@ -623,7 +623,7 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question2Name";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.configureAnalysis(
         networkName,
         true,
@@ -664,7 +664,7 @@ public class WorkMgrTest {
     String analysisName = "analysis1";
     Question question = new TestQuestion();
     String questionName = "question1";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
@@ -685,7 +685,7 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question2Name";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
@@ -716,7 +716,7 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question2Name";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
@@ -750,7 +750,7 @@ public class WorkMgrTest {
     Question question = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(question);
     String questionName = "question2Name";
-    _manager.initContainer(networkName, null);
+    _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
@@ -780,7 +780,7 @@ public class WorkMgrTest {
   public void testGetAutoWorkQueueSuggestedAnalysis() {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
-    _manager.initContainer(containerName, null);
+    _manager.initNetwork(containerName, null);
 
     // user policy
     _manager.configureAnalysis(
@@ -1307,7 +1307,7 @@ public class WorkMgrTest {
     oldAnswer.setAnswerElements(ImmutableList.of(oldTable));
     AnswerMetadata oldAnswerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
     Question testQuestion = new TestQuestion();
     testQuestion.setExclusions(
         ImmutableList.of(
@@ -1462,28 +1462,51 @@ public class WorkMgrTest {
   public void testDeleteSnapshotAbsent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
 
     // should not be able to delete non-existent snapshot
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(containsString(snapshot));
-    _manager.delTestrig(network, snapshot);
+    _manager.delSnapshot(network, snapshot);
   }
 
   @Test
   public void testDeleteSnapshotPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
     WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
 
     // snapshot should exist
-    assertThat(_manager.listTestrigs(network), contains(snapshot));
+    assertThat(_manager.listSnapshots(network), contains(snapshot));
 
-    _manager.delTestrig(network, snapshot);
+    _manager.delSnapshot(network, snapshot);
 
     // snapshot should no longer exist
-    assertThat(_manager.listTestrigs(network), emptyIterable());
+    assertThat(_manager.listSnapshots(network), emptyIterable());
+  }
+
+  @Test
+  public void testDeleteNetworkAbsent() throws IOException {
+    String network = "network1";
+
+    // deletion should do no work
+    assertFalse(_manager.delNetwork(network));
+  }
+
+  @Test
+  public void testDeleteNetworkPresent() throws IOException {
+    String network = "network1";
+    _manager.initNetwork(network, null);
+
+    // network should exist
+    assertThat(_manager.getNetworkNames(), contains(network));
+
+    // deletion should be successful
+    assertTrue(_manager.delNetwork(network));
+
+    // network  should not exist
+    assertThat(_manager.getNetworkNames(), emptyIterable());
   }
 
   @Test
@@ -1493,7 +1516,7 @@ public class WorkMgrTest {
     // should start out empty
     assertThat(_manager.getNetworkNames(), emptyIterable());
 
-    _manager.initContainer(network, null);
+    _manager.initNetwork(network, null);
 
     // should contain initialized network
     assertThat(_manager.getNetworkNames(), contains(network));

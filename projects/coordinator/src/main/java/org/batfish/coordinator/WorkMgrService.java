@@ -408,7 +408,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      boolean status = Main.getWorkMgr().delContainer(networkNameParam);
+      boolean status = Main.getWorkMgr().delNetwork(networkNameParam);
 
       return successResponse(new JSONObject().put("result", status));
 
@@ -575,7 +575,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delTestrig(networkNameParam, snapshotNameParam);
+      Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -1613,7 +1613,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      String outputNetworkName = Main.getWorkMgr().initContainer(networkName, networkPrefix);
+      String outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
       _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputNetworkName);
@@ -2013,7 +2013,7 @@ public class WorkMgrService {
 
       JSONArray retArray = new JSONArray();
 
-      List<String> snapshotList = Main.getWorkMgr().listTestrigs(networkName);
+      List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);

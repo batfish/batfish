@@ -51,7 +51,7 @@ public final class WorkMgrTestUtils {
     topology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
     CommonUtil.writeFile(
         Main.getWorkMgr()
-            .getdirTestrig(container, testrig)
+            .getdirSnapshot(container, testrig)
             .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
   }

@@ -30,7 +30,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   public void create() throws IOException {
     String container = "someContainer";
     String snapshot = "testrig";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // create a testrig with a topology file
     WorkMgrTestUtils.initTestrigWithTopology(container, snapshot, ImmutableSet.of("a", "b"));
@@ -57,7 +57,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void createEmptyContainer() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     assertThat(
         NodeRolesDataBean.create("someContainer"),

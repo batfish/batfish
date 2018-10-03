@@ -136,7 +136,7 @@ public class WorkQueueMgrTest {
     Main.setLogger(new BatfishLogger("debug", false));
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
     WorkMgrTestUtils.initWorkManager(_folder);
-    Main.getWorkMgr().initContainer(CONTAINER, null);
+    Main.getWorkMgr().initNetwork(CONTAINER, null);
     _networkId = Main.getWorkMgr().getIdManager().getNetworkId(CONTAINER);
   }
 
@@ -278,7 +278,7 @@ public class WorkQueueMgrTest {
   @Test
   public void listIncompleteWork() throws Exception {
     initTestrigMetadata("testrig", "env", ProcessingStatus.UNINITIALIZED);
-    Main.getWorkMgr().initContainer("other", null);
+    Main.getWorkMgr().initNetwork("other", null);
     WorkMgrTestUtils.initTestrigWithTopology("other", "testrig", ImmutableSet.of());
     initTestrigMetadata("other", "testrig", "env", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =

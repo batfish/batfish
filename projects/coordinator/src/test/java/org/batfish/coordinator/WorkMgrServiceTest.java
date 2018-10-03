@@ -101,7 +101,7 @@ public class WorkMgrServiceTest {
             new FileBasedIdManager(Main.getSettings().getContainersLocation()),
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
-    manager.initContainer(_networkName, null);
+    manager.initNetwork(_networkName, null);
     manager.getIdManager().assignNetwork(_networkName, _networkId);
     _service = new WorkMgrService();
   }

@@ -100,7 +100,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
     WorkMgrTestUtils.initWorkManager(_idManager, _storage);
-    Main.getWorkMgr().initContainer(NETWORK, null);
+    Main.getWorkMgr().initNetwork(NETWORK, null);
   }
 
   @Test

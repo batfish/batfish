@@ -52,7 +52,7 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
   public void addMinorIssueConfig() throws IOException {
     String network = "myNetwork";
     String major = "major";
-    Main.getWorkMgr().initContainer(network, null);
+    Main.getWorkMgr().initNetwork(network, null);
 
     // add a minor issue
     MinorIssueConfig minor1Config = new MinorIssueConfig("minor1", 100, "www.cnn.com");
