@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -121,7 +121,7 @@ public class ReducedReachabilityTest {
     AnswerElement answer =
         batfish.reducedReachability(
             ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(ForwardingAction.ACCEPT))
+                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
                 .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
                 .setHeaderSpace(
                     HeaderSpace.builder().setDstIps(NODE2_ALTERNATE_IP.toIpSpace()).build())
