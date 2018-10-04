@@ -1368,11 +1368,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    // snapshotId may exist from calling function
-    SnapshotId snapshotId =
-        _idManager.hasSnapshotId(snapshotName, networkId)
-            ? _idManager.getSnapshotId(snapshotName, networkId)
-            : _idManager.generateSnapshotId();
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
