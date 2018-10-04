@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.IOException;
 import java.time.Instant;
@@ -62,5 +64,14 @@ public class NodeRolesDataBean {
   public int hashCode() {
     // ignore lastModifiedTime
     return Objects.hash(defaultDimension, roleDimensions);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("defaultDimension", defaultDimension)
+        .add("lastModifiedTime", lastModifiedTime)
+        .add("roleDimensions", roleDimensions)
+        .toString();
   }
 }

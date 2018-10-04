@@ -1,14 +1,14 @@
 package org.batfish.coordinator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AnalysisMetadata;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.storage.StorageProvider;
 
 public class AnalysisMetadataMgr {
   /** Analyses that can be requested for listing */
@@ -23,50 +23,47 @@ public class AnalysisMetadataMgr {
     ALL
   }
 
-  public static Instant getAnalysisCreationTimeOrMin(String container, String analysis) {
+  public static Instant getAnalysisCreationTimeOrMin(NetworkId networkId, AnalysisId analysisId) {
     try {
-      return readMetadata(container, analysis).getCreationTimestamp();
+      return readMetadata(networkId, analysisId).getCreationTimestamp();
     } catch (IOException e) {
       return Instant.MIN;
     }
   }
 
+  private static StorageProvider storage() {
+    return Main.getWorkMgr().getStorage();
+  }
+
   /**
    * Returns suggested property of given analysis's metadata, or false if no metadata exists.
    *
-   * @param container Container in which to find analysis
-   * @param analysis Analysis whose suggested property to return
+   * @param networkId Container in which to find analysis
+   * @param analysisId Analysis whose suggested property to return
    * @return suggested property of given analysis's metadata, or false if no metadata exists
    */
-  public static boolean getAnalysisSuggestedOrFalse(String container, String analysis) {
+  public static boolean getAnalysisSuggestedOrFalse(NetworkId networkId, AnalysisId analysisId) {
     // If metadata file doesn't exist, assume analysis is not suggested
-    if (!Files.exists(WorkMgr.getpathAnalysisMetadata(container, analysis))) {
+    if (!storage().hasAnalysisMetadata(networkId, analysisId)) {
       return false;
     }
     try {
-      return readMetadata(container, analysis).getSuggested();
+      return readMetadata(networkId, analysisId).getSuggested();
     } catch (IOException e) {
-      throw new BatfishException("Unable to read metadata for analysis '" + analysis + "'", e);
+      throw new BatfishException("Unable to read metadata for analysis '" + analysisId + "'", e);
     }
   }
 
-  public static AnalysisMetadata readMetadata(String container, String analysis)
+  public static AnalysisMetadata readMetadata(NetworkId networkId, AnalysisId analysisId)
       throws IOException {
-    return readMetadata(WorkMgr.getpathAnalysisMetadata(container, analysis));
+    return BatfishObjectMapper.mapper()
+        .readValue(
+            storage().loadAnalysisMetadata(networkId, analysisId),
+            new TypeReference<AnalysisMetadata>() {});
   }
 
-  public static AnalysisMetadata readMetadata(Path metadataPath) throws IOException {
-    String jsonStr = CommonUtil.readFile(metadataPath);
-    return BatfishObjectMapper.mapper().readValue(jsonStr, AnalysisMetadata.class);
-  }
-
-  public static void writeMetadata(AnalysisMetadata metadata, String container, String analysis)
-      throws JsonProcessingException {
-    writeMetadata(metadata, WorkMgr.getpathAnalysisMetadata(container, analysis));
-  }
-
-  public static synchronized void writeMetadata(AnalysisMetadata metadata, Path metadataPath)
-      throws JsonProcessingException {
-    CommonUtil.writeFile(metadataPath, BatfishObjectMapper.writePrettyString(metadata));
+  public static synchronized void writeMetadata(
+      AnalysisMetadata metadata, NetworkId networkId, AnalysisId analysisId) throws IOException {
+    storage().storeAnalysisMetadata(metadata, networkId, analysisId);
   }
 }

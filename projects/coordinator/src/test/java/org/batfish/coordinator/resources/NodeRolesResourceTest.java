@@ -45,7 +45,7 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void addNodeRoleDimension() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean("dimension1", null, null, null);
     Response response =
@@ -63,7 +63,7 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void getNodeRoles() {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on NodeRolesDataBean to have created the object with the right content

@@ -50,7 +50,7 @@ public class NodeRoleDimensionResource {
       nodeRolesData
           .getNodeRoleDimensions()
           .removeIf(dim -> dim.getName().equalsIgnoreCase(dimension.get().getName()));
-      NodeRolesData.write(nodeRolesData, Main.getWorkMgr().getNodeRolesPath(_container));
+      Main.getWorkMgr().writeNodeRoles(nodeRolesData, _container);
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Node roles resource is corrupted");

@@ -24,8 +24,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.identifiers.NetworkId;
 import org.batfish.storage.TestStorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,20 +41,21 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     private String _questionSettings;
 
     @Override
-    public boolean checkNetworkExists(String network) {
+    public boolean checkNetworkExists(NetworkId network) {
       return true;
     }
 
     @Override
-    public String loadQuestionSettings(String network, String questionName) throws IOException {
-      if (questionName.equals(BAD_QUESTION)) {
+    public String loadQuestionSettings(NetworkId network, String questionClassId)
+        throws IOException {
+      if (questionClassId.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;
     }
 
     @Override
-    public void storeQuestionSettings(String settings, String network, String questionName)
+    public void storeQuestionSettings(String settings, NetworkId network, String questionName)
         throws IOException {
       if (questionName.equals(BAD_QUESTION)) {
         throw new IOException("simulated exception");
@@ -73,6 +76,8 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   private static final int VAL = 5;
 
+  private LocalIdManager _idManager;
+
   private LocalStorageProvider _storage;
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -92,8 +97,10 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   @Before
   public void initContainerEnvironment() throws Exception {
+    _idManager = new LocalIdManager();
     _storage = new LocalStorageProvider();
-    WorkMgrTestUtils.initWorkManager(_storage);
+    WorkMgrTestUtils.initWorkManager(_idManager, _storage);
+    Main.getWorkMgr().initNetwork(NETWORK, null);
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
 import org.batfish.datamodel.EnvironmentMetadata;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -76,14 +79,14 @@ public class WorkQueueMgr {
   private void cleanUpEnvMetaDataIfNeeded(String container, String testrig, String environment)
       throws IOException {
     EnvironmentMetadata envMetadata =
-        TestrigMetadataMgr.getEnvironmentMetadata(container, testrig, environment);
+        WorkQueueMgr.getEnvironmentMetadata(container, testrig, environment);
     if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING
         && getIncompleteWork(container, testrig, environment, WorkType.PARSING) == null) {
-      TestrigMetadataMgr.updateEnvironmentStatus(
+      WorkQueueMgr.updateEnvironmentStatus(
           container, testrig, environment, ProcessingStatus.PARSING_FAIL, null);
     } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
         && getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
-      TestrigMetadataMgr.updateEnvironmentStatus(
+      WorkQueueMgr.updateEnvironmentStatus(
           container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL, null);
     }
   }
@@ -112,7 +115,7 @@ public class WorkQueueMgr {
             wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, WorkType.PARSING);
 
     EnvironmentMetadata envMetadata =
-        TestrigMetadataMgr.getEnvironmentMetadata(
+        WorkQueueMgr.getEnvironmentMetadata(
             wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
 
     switch (envMetadata.getProcessingStatus()) {
@@ -155,7 +158,7 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
 
     EnvironmentMetadata envMetadata =
-        TestrigMetadataMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
+        WorkQueueMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
 
     QueuedWork parsingWork =
         getIncompleteWork(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
@@ -213,7 +216,7 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
 
     EnvironmentMetadata envMetadata =
-        TestrigMetadataMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
+        WorkQueueMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
 
     QueuedWork parsingWork =
         getIncompleteWork(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
@@ -387,14 +390,14 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
     if (wDetails.workType == WorkType.PARSING) {
-      TestrigMetadataMgr.updateEnvironmentStatus(
+      WorkQueueMgr.updateEnvironmentStatus(
           wItem.getContainerName(),
           wDetails.baseTestrig,
           wDetails.baseEnv,
           ProcessingStatus.PARSING,
           null);
     } else if (wDetails.workType == WorkType.DATAPLANING) {
-      TestrigMetadataMgr.updateEnvironmentStatus(
+      WorkQueueMgr.updateEnvironmentStatus(
           wItem.getContainerName(),
           wDetails.baseTestrig,
           wDetails.baseEnv,
@@ -433,7 +436,7 @@ public class WorkQueueMgr {
                 (task.getStatus() == TaskStatus.TerminatedNormally)
                     ? ProcessingStatus.PARSED
                     : ProcessingStatus.PARSING_FAIL;
-            TestrigMetadataMgr.updateEnvironmentStatus(
+            WorkQueueMgr.updateEnvironmentStatus(
                 wItem.getContainerName(),
                 wDetails.baseTestrig,
                 wDetails.baseEnv,
@@ -443,14 +446,14 @@ public class WorkQueueMgr {
             // no change in status needed if task.getStatus() is RequeueFailure
             if (task.getStatus() == TaskStatus.TerminatedAbnormally
                 || task.getStatus() == TaskStatus.TerminatedByUser) {
-              TestrigMetadataMgr.updateEnvironmentStatus(
+              WorkQueueMgr.updateEnvironmentStatus(
                   wItem.getContainerName(),
                   wDetails.baseTestrig,
                   wDetails.baseEnv,
                   ProcessingStatus.DATAPLANING_FAIL,
                   task.getErrMessage());
             } else if (task.getStatus() == TaskStatus.TerminatedNormally) {
-              TestrigMetadataMgr.updateEnvironmentStatus(
+              WorkQueueMgr.updateEnvironmentStatus(
                   wItem.getContainerName(),
                   wDetails.baseTestrig,
                   wDetails.baseEnv,
@@ -513,7 +516,7 @@ public class WorkQueueMgr {
             if (wDetails.workType == WorkType.PARSING
                 || wDetails.workType == WorkType.DATAPLANING) {
               EnvironmentMetadata envMetadata =
-                  TestrigMetadataMgr.getEnvironmentMetadata(
+                  WorkQueueMgr.getEnvironmentMetadata(
                       wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
               if (wDetails.workType == WorkType.PARSING) {
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.PARSING) {
@@ -521,7 +524,7 @@ public class WorkQueueMgr {
                       "Unexpected status %s when parsing failed for %s / %s",
                       envMetadata.getProcessingStatus(), wDetails.baseTestrig, wDetails.baseEnv);
                 } else {
-                  TestrigMetadataMgr.updateEnvironmentStatus(
+                  WorkQueueMgr.updateEnvironmentStatus(
                       wItem.getContainerName(),
                       wDetails.baseTestrig,
                       wDetails.baseEnv,
@@ -534,7 +537,7 @@ public class WorkQueueMgr {
                       "Unexpected status %s when dataplaning failed for %s / %s",
                       envMetadata.getProcessingStatus(), wDetails.baseTestrig, wDetails.baseEnv);
                 } else {
-                  TestrigMetadataMgr.updateEnvironmentStatus(
+                  WorkQueueMgr.updateEnvironmentStatus(
                       wItem.getContainerName(),
                       wDetails.baseTestrig,
                       wDetails.baseEnv,
@@ -630,7 +633,7 @@ public class WorkQueueMgr {
       throw new BatfishException("Cannot queue parsing work while other work is incomplete");
     } else {
       EnvironmentMetadata envMetadata =
-          TestrigMetadataMgr.getEnvironmentMetadata(
+          WorkQueueMgr.getEnvironmentMetadata(
               wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
       if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING) {
         throw new BatfishException(
@@ -679,5 +682,21 @@ public class WorkQueueMgr {
       default:
         throw new BatfishException("Unknown WorkType " + work.getDetails().workType);
     }
+  }
+
+  private static void updateEnvironmentStatus(
+      String network, String snapshot, String envName, ProcessingStatus status, String errMessage)
+      throws IOException {
+    // already resolved
+    TestrigMetadataMgr.updateEnvironmentStatus(
+        new NetworkId(network), new SnapshotId(snapshot), envName, status, errMessage);
+  }
+
+  @VisibleForTesting
+  static EnvironmentMetadata getEnvironmentMetadata(String network, String snapshot, String envName)
+      throws IOException {
+    // already resolved
+    return TestrigMetadataMgr.getEnvironmentMetadata(
+        new NetworkId(network), new SnapshotId(snapshot), envName);
   }
 }

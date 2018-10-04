@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
@@ -40,7 +40,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
       NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
-  @Nonnull private final SortedSet<ForwardingAction> _actions;
+  @Nonnull private final SortedSet<FlowDisposition> _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
@@ -48,7 +48,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
    * Create a new reachability question. {@code null} values result in default parameter values.
    *
    * @param actions set of actions/flow dispositions to search for (default is {@link
-   *     ForwardingAction#ACCEPT}
+   *     FlowDisposition#ACCEPTED}
    * @param headerConstraints header constraints that constrain the search space of valid flows.
    *     Default is unconstrained.
    * @param pathConstraints path constraints dictating where a flow can originate/terminate/transit.
@@ -56,24 +56,24 @@ public final class SpecifiersReachabilityQuestion extends Question {
    */
   @JsonCreator
   public SpecifiersReachabilityQuestion(
-      @Nullable @JsonProperty(PROP_ACTIONS) SortedSet<ForwardingAction> actions,
+      @Nullable @JsonProperty(PROP_ACTIONS) SortedSet<FlowDisposition> actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
-    _actions = firstNonNull(actions, ImmutableSortedSet.of(ForwardingAction.ACCEPT));
+    _actions = firstNonNull(actions, ImmutableSortedSet.of(FlowDisposition.ACCEPTED));
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   SpecifiersReachabilityQuestion() {
     this(
-        ImmutableSortedSet.of(ForwardingAction.ACCEPT),
+        ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
         PacketHeaderConstraints.unconstrained(),
         PathConstraintsInput.unconstrained());
   }
 
   @Nonnull
   @JsonProperty(PROP_ACTIONS)
-  public SortedSet<ForwardingAction> getActions() {
+  public SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 
@@ -187,13 +187,13 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   static final class Builder {
-    private SortedSet<ForwardingAction> _actions;
+    private SortedSet<FlowDisposition> _actions;
     private PacketHeaderConstraints _headerConstraints;
     private PathConstraintsInput _pathConstraints;
 
     private Builder() {}
 
-    public Builder setActions(SortedSet<ForwardingAction> actions) {
+    public Builder setActions(SortedSet<FlowDisposition> actions) {
       _actions = actions;
       return this;
     }

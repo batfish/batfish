@@ -75,7 +75,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
     String network = "myNetwork";
     String major = "major";
     String minor = "minor";
-    Main.getWorkMgr().initContainer(network, null);
+    Main.getWorkMgr().initNetwork(network, null);
 
     Response response = getIssueConfigTarget(network, major, minor).delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -91,7 +91,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
     String network = "myNetwork";
     String major = "major";
     String minor = "minor";
-    Main.getWorkMgr().initContainer(network, null);
+    Main.getWorkMgr().initNetwork(network, null);
 
     Response response = getIssueConfigTarget(network, major, minor).get();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
