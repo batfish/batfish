@@ -88,7 +88,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public AnswerElement answer() {
     BgpPeerConfigurationQuestion question = (BgpPeerConfigurationQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

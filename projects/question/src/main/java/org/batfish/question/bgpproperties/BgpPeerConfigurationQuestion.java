@@ -1,11 +1,13 @@
 package org.batfish.question.bgpproperties;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.questions.NodesSpecifier;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
  * A question that returns properties of BGP routing processes. {@link #_nodes} determines which
@@ -15,10 +17,11 @@ public class BgpPeerConfigurationQuestion extends Question {
 
   private static final String PROP_NODES = "nodes";
 
-  @Nonnull private NodesSpecifier _nodes;
+  @Nullable private String _nodes;
 
-  public BgpPeerConfigurationQuestion(@JsonProperty(PROP_NODES) NodesSpecifier nodes) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+  @JsonCreator
+  public BgpPeerConfigurationQuestion(@JsonProperty(PROP_NODES) @Nullable String nodes) {
+    _nodes = nodes;
   }
 
   @Override
@@ -32,7 +35,13 @@ public class BgpPeerConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  @Nullable
+  public String getNodes() {
     return _nodes;
+  }
+
+  @Nonnull
+  NodeSpecifier getNodesSpecifier() {
+    return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME).buildNodeSpecifier(_nodes);
   }
 }
