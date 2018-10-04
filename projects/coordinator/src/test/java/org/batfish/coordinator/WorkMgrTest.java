@@ -443,6 +443,7 @@ public class WorkMgrTest {
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
+  @Test
   public void testGetAnswerAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
