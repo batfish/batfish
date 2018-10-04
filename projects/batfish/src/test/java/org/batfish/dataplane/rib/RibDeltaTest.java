@@ -41,12 +41,33 @@ public class RibDeltaTest {
   @Test
   public void testBuilderAddRoute() {
     StaticRoute route1 =
-        new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("1.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
-        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("2.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     StaticRoute route3 =
-        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("2.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     _builder.add(route1);
     _builder.add(route2);
 
@@ -66,12 +87,33 @@ public class RibDeltaTest {
   @Test
   public void testBuilderRemoveRoute() {
     StaticRoute route1 =
-        new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("1.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
-        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("2.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     StaticRoute route3 =
-        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+        StaticRoute.builder()
+            .setNetwork(new Prefix(new Ip("2.1.1.0"), 24))
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1)
+            .build();
     _builder.remove(route1, Reason.WITHDRAW);
     _builder.remove(route2, Reason.WITHDRAW);
 

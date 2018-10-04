@@ -24,7 +24,11 @@ public class RibTest {
   public void testNonRoutingIsNotInstalled() {
     Rib rib = new Rib();
     AbstractRoute route =
-        StaticRoute.builder().setNextHopInterface("foo").setNetwork(Prefix.ZERO).build();
+        StaticRoute.builder()
+            .setNextHopInterface("foo")
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
     route.setNonRouting(true);
 
     assertThat(rib.mergeRouteGetDelta(route), is(nullValue()));

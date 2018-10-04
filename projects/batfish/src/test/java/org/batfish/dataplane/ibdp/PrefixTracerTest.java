@@ -104,6 +104,7 @@ public class PrefixTracerTest {
             StaticRoute.builder()
                 .setNextHopInterface(i1.getName())
                 .setNetwork(_staticRoutePrefix)
+                .setAdministrativeCost(1)
                 .build()));
     BgpProcess bp = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(neighbor1Ip).build();
     nf.bgpNeighborBuilder()

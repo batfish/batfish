@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,16 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
@@ -31,10 +35,12 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.Drop;
+import org.batfish.z3.state.DropAclIn;
+import org.batfish.z3.state.DropAclOut;
+import org.batfish.z3.state.DropNoRoute;
+import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
@@ -47,6 +53,7 @@ import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.PreOutVrf;
+import org.batfish.z3.state.Query;
 
 /**
  * Constructs a the reachability graph for {@link BDDReachabilityAnalysis}. The graph is very
@@ -107,6 +114,8 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private final Map<String, Map<String, Map<String, BDD>>> _neighborUnreachableBDDs;
 
+  private final BDD _one;
+
   // node --> vrf --> set of packets routable by the vrf
   private final Map<String, Map<String, BDD>> _routableBDDs;
 
@@ -123,6 +132,7 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysisFactory(
       BDDPacket packet, Map<String, Configuration> configs, ForwardingAnalysis forwardingAnalysis) {
     _bddPacket = packet;
+    _one = packet.getFactory().one();
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
@@ -138,9 +148,7 @@ public final class BDDReachabilityAnalysisFactory {
     _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
     _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
 
-    _sourceIpVars =
-        Arrays.stream(_bddPacket.getSrcIp().getBitvec())
-            .reduce(_bddPacket.getFactory().one(), BDD::and);
+    _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
   }
 
   private static Map<String, Map<String, BDD>> computeAclBDDs(
@@ -257,6 +265,32 @@ public final class BDDReachabilityAnalysisFactory {
         generateRootEdges_OriginateVrf_PostInVrf(rootBdds));
   }
 
+  private Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
+    return actions
+        .stream()
+        .map(
+            action -> {
+              switch (action) {
+                case ACCEPTED:
+                  return new Edge(Accept.INSTANCE, Query.INSTANCE, _one);
+                case DENIED_IN:
+                  return new Edge(DropAclIn.INSTANCE, Query.INSTANCE, _one);
+                case DENIED_OUT:
+                  return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
+                case LOOP:
+                  throw new BatfishException("FlowDisposition LOOP is unsupported");
+                case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
+                  return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
+                case NO_ROUTE:
+                  return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
+                case NULL_ROUTED:
+                  return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE, _one);
+                default:
+                  throw new BatfishException("Unknown FlowDisposition " + action.toString());
+              }
+            });
+  }
+
   private Stream<Edge> generateRootEdges_OriginateInterfaceLink_PreInInterface(
       Map<StateExpr, BDD> rootBdds) {
     return rootBdds
@@ -308,11 +342,10 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateEdges() {
     return Streams.concat(
         generateRules_NodeAccept_Accept(),
-        generateRules_NodeDropAclIn_NodeDrop(),
-        generateRules_NodeDropNoRoute_NodeDrop(),
-        generateRules_NodeDropNullRoute_NodeDrop(),
-        generateRules_NodeDropAclOut_NodeDrop(),
-        generateRules_NodeDrop_Drop(),
+        generateRules_NodeDropAclIn_DropAclIn(),
+        generateRules_NodeDropNoRoute_DropNoRoute(),
+        generateRules_NodeDropNullRoute_DropNullRoute(),
+        generateRules_NodeDropAclOut_DropAclOut(),
         generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(),
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_PostInVrf(),
@@ -331,57 +364,35 @@ public final class BDDReachabilityAnalysisFactory {
     return _configs
         .keySet()
         .stream()
-        .map(
-            node -> new Edge(new NodeAccept(node), Accept.INSTANCE, _bddPacket.getFactory().one()));
+        .map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropAclIn_NodeDrop() {
+  private Stream<Edge> generateRules_NodeDropAclIn_DropAclIn() {
     return _configs
         .keySet()
         .stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeDropAclIn(node), new NodeDrop(node), _bddPacket.getFactory().one()));
+        .map(node -> new Edge(new NodeDropAclIn(node), DropAclIn.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropAclOut_NodeDrop() {
+  private Stream<Edge> generateRules_NodeDropAclOut_DropAclOut() {
     return _configs
         .keySet()
         .stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeDropAclOut(node), new NodeDrop(node), _bddPacket.getFactory().one()));
+        .map(node -> new Edge(new NodeDropAclOut(node), DropAclOut.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropNoRoute_NodeDrop() {
+  private Stream<Edge> generateRules_NodeDropNoRoute_DropNoRoute() {
     return _configs
         .keySet()
         .stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeDropNoRoute(node), new NodeDrop(node), _bddPacket.getFactory().one()));
+        .map(node -> new Edge(new NodeDropNoRoute(node), DropNoRoute.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropNullRoute_NodeDrop() {
+  private Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute() {
     return _configs
         .keySet()
         .stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeDropNullRoute(node),
-                    new NodeDrop(node),
-                    _bddPacket.getFactory().one()));
-  }
-
-  private Stream<Edge> generateRules_NodeDrop_Drop() {
-    return _configs
-        .keySet()
-        .stream()
-        .map(node -> new Edge(new NodeDrop(node), Drop.INSTANCE, _bddPacket.getFactory().one()));
+        .map(node -> new Edge(new NodeDropNullRoute(node), DropNullRoute.INSTANCE, _one));
   }
 
   private Stream<Edge> generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable() {
@@ -396,7 +407,7 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   new NodeInterfaceNeighborUnreachable(nodeNode, ifaceName),
                   NeighborUnreachable.INSTANCE,
-                  _bddPacket.getFactory().one());
+                  _one);
             });
   }
 
@@ -510,10 +521,7 @@ public final class BDDReachabilityAnalysisFactory {
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
 
-              BDD inAclBDD =
-                  aclName == null
-                      ? _bddPacket.getFactory().one()
-                      : _aclPermitBDDs.get(nodeName).get(aclName);
+              BDD inAclBDD = aclName == null ? _one : _aclPermitBDDs.get(nodeName).get(aclName);
               return new Edge(
                   new PreInInterface(nodeName, ifaceName),
                   new PostInVrf(nodeName, vrfName),
@@ -541,7 +549,7 @@ public final class BDDReachabilityAnalysisFactory {
                   _configs.get(node1).getAllInterfaces().get(iface1).getSourceNats();
 
               if (sourceNats == null) {
-                return new Edge(preOutEdge, preOutEdgePostNat, _bddPacket.getFactory().one());
+                return new Edge(preOutEdge, preOutEdgePostNat, _one);
               }
 
               List<BDDSourceNat> bddSourceNats =
@@ -612,10 +620,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               String aclName =
                   _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
-              BDD aclPermitBDD =
-                  aclName == null
-                      ? _bddPacket.getFactory().one()
-                      : _aclPermitBDDs.get(node1).get(aclName);
+              BDD aclPermitBDD = aclName == null ? _one : _aclPermitBDDs.get(node1).get(aclName);
               assert aclPermitBDD != null;
 
               return new Edge(
@@ -679,9 +684,7 @@ public final class BDDReachabilityAnalysisFactory {
                                           .get(iface)
                                           .getOutgoingFilterName();
                                   BDD outAclBDD =
-                                      outAcl == null
-                                          ? _bddPacket.getFactory().one()
-                                          : _aclPermitBDDs.get(node).get(outAcl);
+                                      outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclBDD);
                                   return new Edge(
                                       new PreOutVrf(node, vrf),
@@ -740,11 +743,12 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
-    return bddReachabilityAnalysis(srcIpSpaceAssignment, UniverseIpSpace.INSTANCE);
+    return bddReachabilityAnalysis(
+        srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
-      IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace) {
+      IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace, Set<FlowDisposition> actions) {
     Map<StateExpr, BDD> roots = new HashMap<>();
     IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
     IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
@@ -760,7 +764,8 @@ public final class BDDReachabilityAnalysisFactory {
     }
 
     Map<StateExpr, Map<StateExpr, Edge>> edges =
-        computeEdges(Stream.concat(generateEdges(), generateRootEdges(roots)));
+        computeEdges(
+            Streams.concat(generateEdges(), generateRootEdges(roots), generateQueryEdges(actions)));
 
     return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges);
   }

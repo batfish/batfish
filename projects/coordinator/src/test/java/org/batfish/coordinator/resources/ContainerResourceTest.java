@@ -42,7 +42,7 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testGetContainer() {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName, null);
+    Main.getWorkMgr().initNetwork(containerName, null);
     Response response = getContainerTarget(containerName).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
@@ -52,7 +52,7 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testDeleteContainer() {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName, null);
+    Main.getWorkMgr().initNetwork(containerName, null);
     Response response = getContainerTarget(containerName).delete();
     assertThat(response.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }

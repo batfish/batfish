@@ -42,6 +42,8 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -78,7 +80,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   Answerer createAnswerer(@Nonnull Question question);
 
-  String getContainerName();
+  NetworkId getContainerName();
 
   DataPlanePlugin getDataPlanePlugin();
 
@@ -122,7 +124,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Directory getTestrigFileTree();
 
-  String getTestrigName();
+  SnapshotId getTestrigName();
 
   void initBgpAdvertisements(Map<String, Configuration> configurations);
 

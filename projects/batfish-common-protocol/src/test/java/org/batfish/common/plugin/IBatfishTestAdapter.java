@@ -43,6 +43,8 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -106,7 +108,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getContainerName() {
+  public NetworkId getContainerName() {
     throw new UnsupportedOperationException();
   }
 
@@ -204,7 +206,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getTestrigName() {
+  public SnapshotId getTestrigName() {
     throw new UnsupportedOperationException();
   }
 

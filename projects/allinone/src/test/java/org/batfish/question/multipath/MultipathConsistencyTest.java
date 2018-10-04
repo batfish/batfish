@@ -2,6 +2,7 @@ package org.batfish.question.multipath;
 
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -62,6 +63,8 @@ public class MultipathConsistencyTest {
             .setIcmpCode(0)
             .setIcmpType(0)
             .build();
+
+    assertThat(ae.getRows(), hasSize(1));
 
     assertThat(
         ae.getRows().getData().iterator().next(),

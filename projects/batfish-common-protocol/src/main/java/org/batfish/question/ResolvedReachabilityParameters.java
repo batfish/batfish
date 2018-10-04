@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -20,7 +20,7 @@ import org.batfish.specifier.IpSpaceAssignment;
 public final class ResolvedReachabilityParameters {
 
   public static class Builder {
-    private SortedSet<ForwardingAction> _actions;
+    private SortedSet<FlowDisposition> _actions;
 
     private Map<String, Configuration> _configurations;
 
@@ -48,7 +48,7 @@ public final class ResolvedReachabilityParameters {
       return new ResolvedReachabilityParameters(this);
     }
 
-    public Builder setActions(SortedSet<ForwardingAction> actions) {
+    public Builder setActions(SortedSet<FlowDisposition> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
       return this;
     }
@@ -109,7 +109,7 @@ public final class ResolvedReachabilityParameters {
     }
   }
 
-  private final SortedSet<ForwardingAction> _actions;
+  private final SortedSet<FlowDisposition> _actions;
 
   private final Map<String, Configuration> _configurations;
 
@@ -152,7 +152,7 @@ public final class ResolvedReachabilityParameters {
     return new Builder();
   }
 
-  public SortedSet<ForwardingAction> getActions() {
+  public SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 

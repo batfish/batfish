@@ -46,7 +46,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void delAddressBook() throws IOException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write a library to the right place
     ReferenceLibrary.write(
@@ -70,7 +70,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void getAddressBook() throws JsonProcessingException {
     String container = "someContainer";
-    Main.getWorkMgr().initContainer(container, null);
+    Main.getWorkMgr().initNetwork(container, null);
 
     // write a library to the right place
     ReferenceLibrary.write(

@@ -3,6 +3,9 @@ load-questions questions/experimental
 # validate filterLineReachability
 test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", nodes=".*"
 
+# validate bgpPeerConfiguration
+test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*"
+
 # validate bgpProcessConfiguration
 test -raw tests/questions/experimental/bgpProcessConfiguration.ref validate-template bgpProcessConfiguration nodes=".*", properties="multipath-.*"
 
@@ -40,7 +43,7 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachability
-test -raw tests/questions/experimental/reachability.ref validate-template reachability actions=["accept"], pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions=["accepted"], pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate reducedReachability
 test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability

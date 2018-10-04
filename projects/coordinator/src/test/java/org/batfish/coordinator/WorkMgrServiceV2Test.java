@@ -51,7 +51,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("someContainer", null);
+    Main.getWorkMgr().initNetwork("someContainer", null);
     response =
         getContainersTarget()
             .request()
@@ -88,7 +88,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     Main.setAuthorizer(auth);
     auth.authorizeContainer(myKey, containerName);
     auth.authorizeContainer(otherKey, otherContainerName);
-    Main.getWorkMgr().initContainer(containerName, null);
+    Main.getWorkMgr().initNetwork(containerName, null);
 
     // Test that subsequent calls return 200 with correct API key
     Response resp =
