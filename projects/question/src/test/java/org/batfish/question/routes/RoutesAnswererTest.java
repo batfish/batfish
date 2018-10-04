@@ -95,10 +95,12 @@ public class RoutesAnswererTest {
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
+                            .setAdministrativeCost(1)
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("2.2.2.0/24"))
                             .setNextHopInterface("Null")
+                            .setAdministrativeCost(1)
                             .build()))));
 
     Multiset<Row> actual =
@@ -120,6 +122,7 @@ public class RoutesAnswererTest {
                 new MockRib<>(
                     ImmutableSet.of(
                         StaticRoute.builder()
+                            .setAdministrativeCost(1)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
                             .build()))));
@@ -142,6 +145,7 @@ public class RoutesAnswererTest {
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
+                            .setAdministrativeCost(1)
                             .build(),
                         new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
 
@@ -163,6 +167,7 @@ public class RoutesAnswererTest {
                 new MockRib<>(
                     ImmutableSet.of(
                         StaticRoute.builder()
+                            .setAdministrativeCost(1)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
                             .build())),
@@ -172,6 +177,7 @@ public class RoutesAnswererTest {
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("2.2.2.0/24"))
                             .setNextHopInterface("Null")
+                            .setAdministrativeCost(1)
                             .build()))));
 
     Multiset<Row> actual =
@@ -215,6 +221,7 @@ public class RoutesAnswererTest {
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
                             .setMetric(111)
+                            .setAdministrativeCost(1)
                             .build()))));
 
     Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
@@ -341,6 +348,7 @@ public class RoutesAnswererTest {
                 new MockRib<>(
                     ImmutableSet.of(
                         StaticRoute.builder()
+                            .setAdministrativeCost(1)
                             .setNetwork(Prefix.parse("1.1.1.1/32"))
                             .setNextHopInterface("Null")
                             .build()))));

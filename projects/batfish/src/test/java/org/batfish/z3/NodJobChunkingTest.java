@@ -131,7 +131,7 @@ public class NodJobChunkingTest {
         .setAddress(new InterfaceAddress(pDest.getEndIp(), pDest.getPrefixLength()))
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
     _srcVrf1.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
     _srcVrf2.getStaticRoutes().add(bld.setNextHopIp(p2.getEndIp()).build());
 

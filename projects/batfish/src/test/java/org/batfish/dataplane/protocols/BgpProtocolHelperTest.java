@@ -37,7 +37,11 @@ public final class BgpProtocolHelperTest {
     assertNotNull(fromVrf.getBgpProcess());
     Vrf toVrf = nf.vrfBuilder().build();
     AbstractRoute route =
-        StaticRoute.builder().setNetwork(Prefix.parse("1.0.0.0/8")).setTag(12345).build();
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.0.0.0/8"))
+            .setTag(12345)
+            .setAdministrativeCost(1)
+            .build();
     BgpRoute.Builder transformedRoute =
         BgpProtocolHelper.transformBgpRouteOnExport(
             fromNeighbor, toNeighbor, sessionProperties, fromVrf, toVrf, route);

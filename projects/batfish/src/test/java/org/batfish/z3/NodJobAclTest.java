@@ -122,7 +122,7 @@ public class NodJobAclTest {
         .setOutgoingFilter(matchSrcInterfaceAcl)
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
     srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("1.0.0.1")).build());
     srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("2.0.0.1")).build());
 

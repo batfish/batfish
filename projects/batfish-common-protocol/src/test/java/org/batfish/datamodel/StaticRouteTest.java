@@ -36,25 +36,40 @@ public class StaticRouteTest {
 
   @Test
   public void checkNullNextHop() {
-    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setNextHopIp(null).build();
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .setNextHopIp(null)
+            .build();
     assertThat(sr.getNextHopIp(), is(Route.UNSET_ROUTE_NEXT_HOP_IP));
   }
 
   @Test
   public void checkNullNextHopInterface() {
     StaticRoute sr =
-        StaticRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface(null).build();
+        StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .setNextHopInterface(null)
+            .build();
     assertThat(sr.getNextHopInterface(), is(Route.UNSET_NEXT_HOP_INTERFACE));
   }
 
   @Test
   public void checkDefaults() {
-    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).build();
+    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
     assertThat(sr.getNextHopInterface(), is(Route.UNSET_NEXT_HOP_INTERFACE));
     assertThat(sr.getNextHopIp(), is(Route.UNSET_ROUTE_NEXT_HOP_IP));
-    assertThat(sr.getAdministrativeCost(), is(Route.UNSET_ROUTE_ADMIN));
+    assertThat(sr.getAdministrativeCost(), is(1));
     assertThat(sr.getTag(), is(Route.UNSET_ROUTE_TAG));
     assertThat(sr.getMetric(), is(StaticRoute.DEFAULT_STATIC_ROUTE_METRIC));
+  }
+
+  @Test
+  public void checkThrowsWithoutAdmin() {
+    _thrown.expect(IllegalArgumentException.class);
+    StaticRoute.builder().setNetwork(Prefix.ZERO).build();
   }
 
   @Test
