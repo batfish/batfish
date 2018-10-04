@@ -53,7 +53,7 @@ public final class WorkMgrTestUtils {
     Path outputDir =
         Main.getWorkMgr().getdirSnapshot(container, testrig).resolve(BfConsts.RELPATH_OUTPUT);
     if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {
-      throw new IOException(String.format("Unable to make directory %s", outputDir));
+      throw new IOException(String.format("Unable to create directory %s", outputDir));
     }
     CommonUtil.writeFile(
         outputDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
