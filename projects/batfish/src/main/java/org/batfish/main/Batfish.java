@@ -108,7 +108,6 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
