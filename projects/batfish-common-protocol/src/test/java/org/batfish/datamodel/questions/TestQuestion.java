@@ -2,14 +2,25 @@ package org.batfish.datamodel.questions;
 
 public class TestQuestion extends Question {
 
+  private final boolean _dataPlane;
+  private final String _name;
+
+  public TestQuestion() {
+    this("____test_question____", false);
+  }
+
+  public TestQuestion(String name, boolean dataPlane) {
+    _name = name;
+    _dataPlane = dataPlane;
+  }
+
   @Override
   public boolean getDataPlane() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return _dataPlane;
   }
 
   @Override
   public String getName() {
-    return "____test_question____";
+    return _name;
   }
 }
