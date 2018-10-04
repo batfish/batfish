@@ -75,7 +75,7 @@ public class PathDiffTest {
 
     if (connected) {
       // add a static route from A to pB
-      StaticRoute.Builder rb = StaticRoute.builder();
+      StaticRoute.Builder rb = StaticRoute.builder().setAdministrativeCost(1);
       vA.getStaticRoutes().add(rb.setNetwork(pB).setNextHopIp(pAB.getEndIp()).build());
       // add a static route from B to pA
       vB.getStaticRoutes().add(rb.setNetwork(pA).setNextHopIp(pAB.getStartIp()).build());

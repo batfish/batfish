@@ -71,6 +71,7 @@ public class ReducedReachabilityTest {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
               StaticRoute.builder()
+                  .setAdministrativeCost(1)
                   .setNetwork(Prefix.parse("2.2.2.2/32"))
                   .setNextHopInterface(PHYSICAL)
                   .build()));
@@ -87,6 +88,7 @@ public class ReducedReachabilityTest {
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                 .setNextHopInterface(PHYSICAL)
+                .setAdministrativeCost(1)
                 .build()));
 
     return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
