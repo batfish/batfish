@@ -409,7 +409,11 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(
             edge,
             ImmutableSet.of(
-                StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build()));
+                StaticRoute.builder()
+                    .setNetwork(P1)
+                    .setNextHopIp(P2.getStartIp())
+                    .setAdministrativeCost(1)
+                    .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, IpSpace> result =
         forwardingAnalysisImpl.computeArpTrueEdgeNextHopIp(configurations, ribs);
@@ -494,6 +498,7 @@ public class ForwardingAnalysisImplTest {
         StaticRoute.builder()
             .setNetwork(P2)
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .setAdministrativeCost(1)
             .build();
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
@@ -642,7 +647,12 @@ public class ForwardingAnalysisImplTest {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
-    AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute r1 =
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
     _routesWithNextHop =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     _routesWithNextHopIpArpFalse =
@@ -694,6 +704,7 @@ public class ForwardingAnalysisImplTest {
         StaticRoute.builder()
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setNetwork(P1)
+            .setAdministrativeCost(1)
             .build();
     AbstractRoute otherRoute = new ConnectedRoute(P2, i1);
     Map<String, Map<String, Fib>> fibs =
@@ -740,6 +751,7 @@ public class ForwardingAnalysisImplTest {
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.0.0.0/8"))
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .setAdministrativeCost(1)
             .build();
     IpSpace ipSpace = IpWildcardSetIpSpace.builder().including(new IpWildcard("1.0.0.0/8")).build();
     v.setStaticRoutes(ImmutableSortedSet.of(nullRoute));
@@ -815,7 +827,12 @@ public class ForwardingAnalysisImplTest {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
-    AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute r1 =
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
     _routesWithNextHop =
         ImmutableMap.of(
@@ -911,7 +928,12 @@ public class ForwardingAnalysisImplTest {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
-    AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute r1 =
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
     _routesWithNextHop =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
@@ -944,9 +966,17 @@ public class ForwardingAnalysisImplTest {
     String hostname = "c1";
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
     AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getEndIp())
+            .setAdministrativeCost(1)
+            .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
         Maps.immutableEntry(
@@ -990,9 +1020,17 @@ public class ForwardingAnalysisImplTest {
     String hostname = "c1";
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
     AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getEndIp())
+            .setAdministrativeCost(1)
+            .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
         Maps.immutableEntry(
@@ -1041,8 +1079,18 @@ public class ForwardingAnalysisImplTest {
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     String v1 = "v1";
-    AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
-    AbstractRoute r2 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+    AbstractRoute r1 =
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getStartIp())
+            .setAdministrativeCost(1)
+            .build();
+    AbstractRoute r2 =
+        StaticRoute.builder()
+            .setNetwork(P1)
+            .setNextHopIp(P2.getEndIp())
+            .setAdministrativeCost(1)
+            .build();
     _routesWithNextHop =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, r2))));
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
