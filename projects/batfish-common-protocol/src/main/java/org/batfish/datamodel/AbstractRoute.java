@@ -42,6 +42,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull protected final Prefix _network;
   @Nullable private String _nextHop;
   private boolean _nonRouting;
+  private boolean _nonForwarding;
 
   @JsonCreator
   protected AbstractRoute(@Nullable @JsonProperty(PROP_NETWORK) Prefix network) {
@@ -99,6 +100,15 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull
   public abstract Ip getNextHopIp();
 
+  /**
+   * Returns {@code true} if this route is non-forwarding, i.e., it can be installed in the main RIB
+   * but not the FIB.
+   */
+  @JsonIgnore
+  public final boolean getNonForwarding() {
+    return _nonForwarding;
+  }
+
   /** Check if this route is "non-routing", i.e., should not be installed in the main RIB. */
   @JsonIgnore
   public final boolean getNonRouting() {
@@ -131,6 +141,11 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonProperty(PROP_NEXT_HOP)
   public void setNextHop(String nextHop) {
     _nextHop = nextHop;
+  }
+
+  @JsonIgnore
+  public final void setNonForwarding(boolean nonForwarding) {
+    _nonForwarding = nonForwarding;
   }
 
   @JsonIgnore
