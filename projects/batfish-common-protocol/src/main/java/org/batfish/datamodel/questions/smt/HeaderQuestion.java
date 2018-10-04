@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -81,7 +81,7 @@ public class HeaderQuestion extends Question {
 
   private static final String PROP_BENCHMARK = "benchmark";
 
-  private Set<ForwardingAction> _actions;
+  private Set<FlowDisposition> _actions;
 
   private HeaderSpace _headerSpace;
 
@@ -114,7 +114,7 @@ public class HeaderQuestion extends Question {
   private boolean _benchmark;
 
   public HeaderQuestion() {
-    _actions = EnumSet.of(ForwardingAction.ACCEPT);
+    _actions = EnumSet.of(FlowDisposition.ACCEPTED);
     _headerSpace = new HeaderSpace();
     _failures = 0;
     _nodeFailures = 0;
