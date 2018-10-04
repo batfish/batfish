@@ -123,6 +123,13 @@ public class WorkMgrTest {
     NetworkId networkId = _idManager.getNetworkId(container);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
+    Path outputDir =
+        _manager
+            .getdirNetwork(container)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
+    outputDir.toFile().mkdirs();
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
   }
