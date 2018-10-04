@@ -248,7 +248,8 @@ public class WorkQueueMgrTest {
     _workQueueMgr.queueUnassignedWork(work2);
 
     // should be null again
-    QueuedWork matchingWorkAgain = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
+    QueuedWork matchingWorkAgain =
+        _workQueueMgr.getMatchingWork(WorkMgr.resolveIds(wItem), QueueType.INCOMPLETE);
     assertThat(matchingWorkAgain, equalTo(null));
   }
 
