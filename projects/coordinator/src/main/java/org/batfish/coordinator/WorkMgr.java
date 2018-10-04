@@ -502,7 +502,9 @@ public class WorkMgr extends AbstractCoordinator {
       Question question =
           Question.parseQuestion(
               getQuestion(
-                  workItem.getContainerName(), WorkItemBuilder.getQuestionName(workItem), null));
+                  workItem.getContainerName(),
+                  WorkItemBuilder.getQuestionName(workItem),
+                  WorkItemBuilder.getAnalysisName(workItem)));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
