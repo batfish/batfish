@@ -108,15 +108,15 @@ public class WorkMgrTest {
 
   private void createForkableSnapshot(String network, String snapshot) throws IOException {
     createTestrigWithMetadata(network, snapshot);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve(network).toAbsolutePath();
+    NetworkId networkId = _idManager.getNetworkId(network);
     Files.createDirectories(
-        containerDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_TESTRIGS_DIR,
-                snapshot,
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR)));
+        _manager
+            .getdirNetwork(network)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    _idManager.getSnapshotId(snapshot, networkId).getId()))
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
   }
 
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
@@ -235,11 +235,11 @@ public class WorkMgrTest {
     createTestrigWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
+    Path outputDir =
+        _manager.getdirSnapshot("container", "testrig1").resolve(BfConsts.RELPATH_OUTPUT);
+    outputDir.toFile().mkdir();
     CommonUtil.writeFile(
-        _manager
-            .getdirSnapshot("container", "testrig1")
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
+        outputDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
     // should get the nodes of the topology when we ask for it

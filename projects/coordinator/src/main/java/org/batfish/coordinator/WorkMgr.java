@@ -1126,7 +1126,7 @@ public class WorkMgr extends AbstractCoordinator {
     FileBasedStorageDirectoryProvider dirProvider =
         new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
     if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(containerName)) {
-      throw new BatfishException("Container '" + containerName + "' does not exist");
+      throw new BatfishException("Network '" + containerName + "' does not exist");
     }
     NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
@@ -1368,7 +1368,11 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    // snapshotId may exist from calling function
+    SnapshotId snapshotId =
+        _idManager.hasSnapshotId(snapshotName, networkId)
+            ? _idManager.getSnapshotId(snapshotName, networkId)
+            : _idManager.generateSnapshotId();
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
@@ -1487,19 +1491,23 @@ public class WorkMgr extends AbstractCoordinator {
   public void forkSnapshot(
       String networkName, String snapshotName, ForkSnapshotBean forkSnapshotBean)
       throws IOException {
+    Path networkDir = getdirNetwork(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
 
-    Path networkDir = getdirNetwork(networkName);
-    Path testrigsDir = networkDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
-
     // Fail early if the new snapshot already exists or the base snapshot does not
-    if (Files.exists(testrigsDir.resolve(snapshotName))) {
+    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
       throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
     }
-    if (!Files.exists(testrigsDir.resolve(baseSnapshotName))) {
+    if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new BatfishException(
           "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
     }
+
+    SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
+    Path baseSnapshotDir =
+        networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, baseSnapshotId.getId()));
 
     // Save user input for troubleshooting
     Path originalDir =
@@ -1516,9 +1524,7 @@ public class WorkMgr extends AbstractCoordinator {
     // Copy baseSnapshot into unzipDir so initSnapshot will see a properly formatted
     Path unzipDir = CommonUtil.createTempDirectory("files_to_add");
     Path baseSnapshotInputsDir =
-        testrigsDir
-            .resolve(baseSnapshotName)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+        baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     Path newSnapshotInputsDir =
         unzipDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {

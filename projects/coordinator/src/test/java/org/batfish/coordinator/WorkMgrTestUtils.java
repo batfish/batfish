@@ -1,7 +1,7 @@
 package org.batfish.coordinator;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,11 +50,13 @@ public final class WorkMgrTestUtils {
         new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
     Topology topology = new Topology(testrig);
     topology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
+    Path outputDir =
+        Main.getWorkMgr().getdirSnapshot(container, testrig).resolve(BfConsts.RELPATH_OUTPUT);
+    if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {
+      throw new IOException(String.format("Unable to make directory %s", outputDir));
+    }
     CommonUtil.writeFile(
-        Main.getWorkMgr()
-            .getdirSnapshot(container, testrig)
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
+        outputDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
   }
 

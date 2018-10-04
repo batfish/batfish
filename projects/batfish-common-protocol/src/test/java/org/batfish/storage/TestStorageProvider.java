@@ -25,7 +25,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
 public class TestStorageProvider implements StorageProvider {
-
   @Override
   public SortedMap<String, Configuration> loadCompressedConfigurations(
       NetworkId network, SnapshotId snapshot) {
@@ -42,21 +41,22 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nullable
   @Override
-  public SortedSet<Edge> loadEdgeBlacklist(String network, String snapshot) {
+  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Nullable
   @Override
-  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(String network, String snapshot) {
+  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
+      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Nullable
   @Override
-  public SortedSet<String> loadNodeBlacklist(String network, String snapshot) {
+  public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

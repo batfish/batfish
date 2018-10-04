@@ -39,8 +39,9 @@ public class TestrigMetadataMgr {
     }
   }
 
-  public static String getParentSnapshot(String container, String testrig) throws IOException {
-    return readMetadata(container, testrig).getParentSnapshot();
+  public static String getParentSnapshot(NetworkId network, SnapshotId snapshot)
+      throws IOException {
+    return readMetadata(network, snapshot).getParentSnapshot();
   }
 
   public static synchronized void initializeEnvironment(
