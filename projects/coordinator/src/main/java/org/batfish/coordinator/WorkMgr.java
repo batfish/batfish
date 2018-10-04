@@ -1317,7 +1317,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
-    return _workQueueMgr.getMatchingWork(workItem, qType);
+    return _workQueueMgr.getMatchingWork(resolveIds(workItem), qType);
   }
 
   public QueuedWork getWork(UUID workItemId) {
