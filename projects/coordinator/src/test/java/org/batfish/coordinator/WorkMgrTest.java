@@ -1597,6 +1597,7 @@ public class WorkMgrTest {
     assertThat(
         _idManager.getIssueSettingsId(majorIssueType, networkId), not(equalTo(issueSettingsId)));
   }
+
   @Test
   public void testComputeWorkDetailsAnalysisQuestion() throws IOException {
     String network = "network1";
