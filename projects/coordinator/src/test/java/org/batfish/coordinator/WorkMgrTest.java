@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -50,6 +51,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
@@ -1594,5 +1596,57 @@ public class WorkMgrTest {
     // The ID should have changed
     assertThat(
         _idManager.getIssueSettingsId(majorIssueType, networkId), not(equalTo(issueSettingsId)));
+  }
+  @Test
+  public void testComputeWorkDetailsAnalysisQuestion() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String question = "question1";
+    String analysis = "analysis1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, BatfishObjectMapper.writeString(new TestQuestion())),
+        ImmutableList.of(),
+        false);
+    WorkItem workItem =
+        new WorkItem(
+            UUID.randomUUID(),
+            network,
+            snapshot,
+            ImmutableMap.of(
+                BfConsts.COMMAND_ANSWER,
+                "",
+                BfConsts.ARG_QUESTION_NAME,
+                question,
+                BfConsts.ARG_ANALYSIS_NAME,
+                analysis));
+    WorkDetails workDetails = _manager.computeWorkDetails(workItem);
+
+    assertThat(workDetails.baseTestrig, equalTo(snapshot));
+    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+  }
+
+  @Test
+  public void testComputeWorkDetailsAdHocQuestion() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String question = "question1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    _manager.uploadQuestion(network, question, BatfishObjectMapper.writeString(new TestQuestion()));
+    WorkItem workItem =
+        new WorkItem(
+            UUID.randomUUID(),
+            network,
+            snapshot,
+            ImmutableMap.of(BfConsts.COMMAND_ANSWER, "", BfConsts.ARG_QUESTION_NAME, question));
+    WorkDetails workDetails = _manager.computeWorkDetails(workItem);
+
+    assertThat(workDetails.baseTestrig, equalTo(snapshot));
+    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 }
