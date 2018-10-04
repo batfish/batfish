@@ -8,8 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -89,12 +87,8 @@ public class BDDReachabilityAnalysis {
     reverseReachableStates.put(Query.INSTANCE, _bddPacket.getFactory().one());
     dirty.add(Query.INSTANCE);
 
-    List<Long> roundTimes = new LinkedList<>();
-    List<Integer> roundDirties = new LinkedList<>();
-
     while (!dirty.isEmpty()) {
       Set<StateExpr> newDirty = new HashSet<>();
-      long time = System.currentTimeMillis();
 
       dirty.forEach(
           postState -> {
@@ -123,10 +117,6 @@ public class BDDReachabilityAnalysis {
           });
 
       dirty = newDirty;
-
-      time = System.currentTimeMillis() - time;
-      roundTimes.add(time);
-      roundDirties.add(dirty.size());
     }
 
     return ImmutableMap.copyOf(reverseReachableStates);
