@@ -1269,6 +1269,7 @@ public class FlatJuniperGrammarTest {
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface("nextint")
             .setNextHopIp(new Ip("10.0.0.1"))
+            .setAdministrativeCost(1)
             .build();
 
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);

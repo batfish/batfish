@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
@@ -42,7 +42,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     }
 
     @Override
-    public Builder setActions(Set<ForwardingAction> actions) {
+    public Builder setActions(Set<FlowDisposition> actions) {
       return this;
     }
 

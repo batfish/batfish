@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
   "actions" : [
-    "ACCEPT"
+    "ACCEPTED"
   ],
   "headers" : {
     "dstIps" : "ddd",
@@ -29,7 +29,7 @@
         "optional" : true,
         "type" : "string",
         "value" : [
-          "accept"
+          "accepted"
         ]
       },
       "headers" : {

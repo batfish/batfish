@@ -1,7 +1,7 @@
 package org.batfish.main;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.datamodel.ForwardingAction.ACCEPT;
+import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.main.ReachabilityParametersResolver.isActive;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -70,7 +70,7 @@ public class ReachabilityParametersResolverTest {
   public void testDestinationIpSpace() throws InvalidReachabilityParametersException {
     Builder reachabilityParametersBuilder =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE);
 
@@ -100,7 +100,7 @@ public class ReachabilityParametersResolverTest {
       throws InvalidReachabilityParametersException {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
             .build();
@@ -115,7 +115,7 @@ public class ReachabilityParametersResolverTest {
   public void testResolveNodes_null() throws InvalidReachabilityParametersException {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(null)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
@@ -132,7 +132,7 @@ public class ReachabilityParametersResolverTest {
   public void testResolveNodes_noMatch() throws InvalidReachabilityParametersException {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(NoNodesNodeSpecifier.INSTANCE)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
@@ -150,7 +150,7 @@ public class ReachabilityParametersResolverTest {
       throws InvalidReachabilityParametersException {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
@@ -170,7 +170,7 @@ public class ReachabilityParametersResolverTest {
       throws InvalidReachabilityParametersException {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
@@ -191,7 +191,7 @@ public class ReachabilityParametersResolverTest {
     // all required transit nodes are also forbidden
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPT))
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setRequiredTransitNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)

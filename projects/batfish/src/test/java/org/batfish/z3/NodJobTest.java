@@ -31,9 +31,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -87,7 +87,7 @@ public class NodJobTest {
         ImmutableMap.of(ingressLocation, TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+            .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .setHeaderSpace(headerSpace)
             .setSrcIpConstraints(srcIpConstraints)
@@ -157,7 +157,7 @@ public class NodJobTest {
         .setAddress(new InterfaceAddress(pDest.getEndIp(), pDest.getPrefixLength()))
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
     _srcVrf.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
 
     _configs =

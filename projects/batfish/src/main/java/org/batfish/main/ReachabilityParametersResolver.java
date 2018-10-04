@@ -13,7 +13,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -69,7 +69,7 @@ final class ReachabilityParametersResolver {
         new ReachabilityParametersResolver(batfish, params, snapshot);
 
     // validate actions
-    SortedSet<ForwardingAction> actions = params.getActions();
+    SortedSet<FlowDisposition> actions = params.getActions();
     if (actions.isEmpty()) {
       throw new InvalidReachabilityParametersException("No actions");
     }
