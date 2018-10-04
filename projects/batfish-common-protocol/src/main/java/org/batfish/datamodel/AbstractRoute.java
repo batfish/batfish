@@ -100,12 +100,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull
   public abstract Ip getNextHopIp();
 
-  /** Check if this route is "non-routing", i.e., should not be installed in the main RIB. */
-  @JsonIgnore
-  public final boolean getNonRouting() {
-    return _nonRouting;
-  }
-
   /**
    * Returns {@code true} if this route is non-forwarding, i.e., it can be installed in the main RIB
    * but not the FIB.
@@ -113,6 +107,12 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public final boolean getNonForwarding() {
     return _nonForwarding;
+  }
+
+  /** Check if this route is "non-routing", i.e., should not be installed in the main RIB. */
+  @JsonIgnore
+  public final boolean getNonRouting() {
+    return _nonRouting;
   }
 
   @JsonIgnore
@@ -144,13 +144,13 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @JsonIgnore
-  public final void setNonRouting(boolean nonRouting) {
-    _nonRouting = nonRouting;
+  public final void setNonForwarding(boolean nonForwarding) {
+    _nonForwarding = nonForwarding;
   }
 
   @JsonIgnore
-  public final void setNonForwarding(boolean nonForwarding) {
-    _nonForwarding = nonForwarding;
+  public final void setNonRouting(boolean nonRouting) {
+    _nonRouting = nonRouting;
   }
 
   @Override
