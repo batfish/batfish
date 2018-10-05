@@ -74,6 +74,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -1566,6 +1567,35 @@ public class WorkMgrTest {
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       _manager.uploadSnapshot(network, snapshot, inputStream, false);
     }
+  }
+
+  @Test
+  public void testPutMajorIssueConfig() throws IOException {
+    String network = "network1";
+    String majorIssueType = "type1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    // no ID should exist at first
+    assertFalse(_idManager.hasIssueSettingsId(majorIssueType, networkId));
+
+    _manager.putMajorIssueConfig(
+        network, majorIssueType, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
+
+    // There should be an ID now
+    assertTrue(_idManager.hasIssueSettingsId(majorIssueType, networkId));
+
+    IssueSettingsId issueSettingsId = _idManager.getIssueSettingsId(majorIssueType, networkId);
+
+    _manager.putMajorIssueConfig(
+        network,
+        majorIssueType,
+        new MajorIssueConfig(
+            majorIssueType, ImmutableList.of(new MinorIssueConfig("foo", null, null))));
+
+    // The ID should have changed
+    assertThat(
+        _idManager.getIssueSettingsId(majorIssueType, networkId), not(equalTo(issueSettingsId)));
   }
 
   @Test
