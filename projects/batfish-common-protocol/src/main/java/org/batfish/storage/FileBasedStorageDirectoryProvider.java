@@ -28,8 +28,7 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   public @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
-    return getNetworkDir(networkId)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_QUESTIONS_DIR));
+    return getNetworkDir(networkId).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
   }
 
   public @Nonnull Path getAnalysisQuestionDir(
