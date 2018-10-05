@@ -1465,9 +1465,10 @@ public class WorkMgr extends AbstractCoordinator {
             _logger.errorf("Could not process reference library data: %s", e);
           }
         }
+      } else {
+        // rest is plain copy
+        CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
       }
-      // rest is plain copy
-      CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
     }
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
