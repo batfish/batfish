@@ -5,6 +5,7 @@ import static org.batfish.common.CoordConstsV2.KEY_RESULT;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import io.opentracing.util.GlobalTracer;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.Consumes;
@@ -20,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
@@ -97,6 +97,12 @@ public class WorkMgrServiceV2 {
           "Created snapshot:%s forked from snapshot: %s for network:%s using api-key:%s\n",
           snapshotName, forkSnapshotBean.baseSnapshot, networkName, apiKey);
       return Response.ok(new JSONObject().put(KEY_RESULT, "Successfully forked snapshot")).build();
+    } catch (FileNotFoundException e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf(
+          "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
+          apiKey, networkName, snapshotName, stackTrace);
+      return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
@@ -106,7 +112,8 @@ public class WorkMgrServiceV2 {
     }
   }
 
-  private static void assertNetworkAccessibility(String apiKey, String networkName) {
+  private static void assertNetworkAccessibility(String apiKey, String networkName)
+      throws FileNotFoundException {
     Optional<Container> networks =
         Main.getWorkMgr()
             .getContainers(apiKey)
@@ -114,7 +121,7 @@ public class WorkMgrServiceV2 {
             .filter(c -> c.getName().equals(networkName))
             .findFirst();
     if (!networks.isPresent()) {
-      throw new BatfishException(
+      throw new FileNotFoundException(
           "Network named: '" + networkName + "' does not exist or is not accessible.");
     }
   }

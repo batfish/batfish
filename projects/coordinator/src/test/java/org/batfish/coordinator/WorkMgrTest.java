@@ -434,7 +434,7 @@ public class WorkMgrTest {
     _manager.initNetwork(networkName, null);
 
     // Fork should fail because base snapshot does not exist
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(FileNotFoundException.class);
     _thrown.expectMessage(
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
@@ -486,7 +486,7 @@ public class WorkMgrTest {
     createSnapshotWithContent(networkName, snapshotNewName, fileName, fileContents);
 
     // Fork should fail due to duplicate/conflicting new snapshot name
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));

@@ -1499,10 +1499,11 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Fail early if the new snapshot already exists or the base snapshot does not
     if (_idManager.hasSnapshotId(snapshotName, networkId)) {
-      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
+      throw new IllegalArgumentException(
+          "Snapshot with name: '" + snapshotName + "' already exists");
     }
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
-      throw new BatfishException(
+      throw new FileNotFoundException(
           "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
     }
 
