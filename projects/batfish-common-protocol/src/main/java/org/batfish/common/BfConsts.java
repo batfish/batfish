@@ -186,11 +186,6 @@ public class BfConsts {
   public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
-
-  @SuppressWarnings("unused")
-  @Deprecated
-  public static final String RELPATH_TESTRIGS_DIR = "snapshots";
-
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
