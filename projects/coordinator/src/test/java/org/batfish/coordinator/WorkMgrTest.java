@@ -110,29 +110,10 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createSnapshotWithContent(
-      String network, String snapshot, String fileName, String fileContents) throws IOException {
-    createTestrigWithMetadata(network, snapshot);
-    Path filePath =
-        _manager
-            .getdirSnapshot(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, fileName));
-    filePath.toFile().getParentFile().mkdirs();
-
-    CommonUtil.writeFile(filePath, fileContents);
-  }
-
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(container);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
-    Path outputDir =
-        _manager
-            .getdirNetwork(container)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
-    outputDir.toFile().mkdirs();
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
   }
@@ -857,18 +838,16 @@ public class WorkMgrTest {
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
-    String fileName = "testrig/configs/test.cfg";
-    String fileContents = "! contents";
+    String fileName = "test.cfg";
 
     _manager.initNetwork(network, null);
-    createSnapshotWithContent(network, snapshot, fileName, fileContents);
-    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+    uploadTestSnapshot(network, snapshot, fileName);
+    // We know the config file will be written under 'testrig/configs/' in the snapshot zip
+    Path object = _manager.getTestrigObject(network, snapshot, "testrig/configs/" + fileName);
 
-    // Confirm object is found in the input directory, with the correct contents
+    // Confirm object is found in the input directory
     assertThat(object, is(not(nullValue())));
     assertThat(object.toFile(), anExistingFile());
-    String objectContents = CommonUtil.readFile(object);
-    assertThat(objectContents, equalTo(fileContents));
   }
 
   @Test
@@ -1623,17 +1602,22 @@ public class WorkMgrTest {
   }
 
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
+    uploadTestSnapshot(network, snapshot, "c1");
+  }
+
+  private void uploadTestSnapshot(String network, String snapshot, String fileName)
+      throws IOException {
     Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
     Path tmpSnapshotConfig =
         tmpSnapshotSrcDir
             .resolve(snapshot)
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve("c1");
+            .resolve(fileName);
     Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.getParent(), tmpSnapshotZip);
+    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       _manager.uploadSnapshot(network, snapshot, inputStream, false);
     }
