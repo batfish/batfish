@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -144,7 +145,7 @@ public class ReducedReachabilityTest {
   @Test
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
-    Set<Flow> flows = batfish.bddReducedReachability();
+    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
     assertThat(flows, hasSize(1));
     assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }
