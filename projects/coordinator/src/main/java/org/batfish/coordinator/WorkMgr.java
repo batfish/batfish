@@ -1701,8 +1701,9 @@ public class WorkMgr extends AbstractCoordinator {
   public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    IssueSettingsId issueSettingsId = getOrCreateIssueSettingsId(networkId, majorIssueType);
+    IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
     _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
+    _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
   public void putObject(
