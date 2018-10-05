@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow2.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -96,12 +98,22 @@ public final class TracerouteAnswerer extends Answerer {
   public AnswerElement answer() {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = getFlows(tag);
+    Multiset<Row> rows;
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory, false);
-    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
-    table.postProcessAnswer(_question, rows);
-    return table;
+    if( Sets.newHashSet(_batfish.getSettingsConfiguration().getList("debugflag")).contains("traceroute")){
+      org.batfish.datamodel.flow2.FlowHistory flowHistoryNew = _batfish.getHistoryNew();
+      rows = newFlowHistoryToRows(flowHistoryNew);
+      TableAnswerElement table = new TableAnswerElement(createMetadata(false));
+      table.postProcessAnswer(_question, rows);
+      return table;
+    }
+    else {
+      FlowHistory flowHistory = _batfish.getHistory();
+      rows = flowHistoryToRows(flowHistory, false);
+      TableAnswerElement table = new TableAnswerElement(createMetadata(false));
+      table.postProcessAnswer(_question, rows);
+      return table;
+    }
   }
 
   @Override
@@ -167,6 +179,18 @@ public final class TracerouteAnswerer extends Answerer {
     return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
   }
 
+  static Row newFlowHistoryToRow(org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo) {
+    // there should be only environment in this object
+    checkArgument(
+        historyInfo.getPaths().size() == 1,
+        String.format(
+            "Expect only one environment in flow history info. Found %d",
+            historyInfo.getPaths().size()));
+    Set<Trace> paths =
+        historyInfo.getPaths().values().stream().findAny().orElseGet(ImmutableSet::of);
+    return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
+  }
+
   /**
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for base and delta environments
@@ -201,6 +225,17 @@ public final class TracerouteAnswerer extends Answerer {
     }
     return rows;
   }
+
+  public static Multiset<Row> newFlowHistoryToRows(
+      org.batfish.datamodel.flow2.FlowHistory flowHistory) {
+    Multiset<Row> rows = LinkedHashMultiset.create();
+      for (org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
+        rows.add(newFlowHistoryToRow(historyInfo));
+      }
+    return rows;
+  }
+
+
 
   /** Generate a set of flows to do traceroute */
   @VisibleForTesting

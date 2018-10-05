@@ -22,6 +22,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
+import org.batfish.datamodel.flow2.Trace;
 import org.batfish.dataplane.TracerouteEngineImpl;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
@@ -32,10 +33,13 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   private final Map<IncrementalDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
+  private final Map<IncrementalDataPlane, Map<Flow, Set<Trace>>> _newFlowTraces;
+
   private IncrementalBdpEngine _engine;
 
   public IncrementalDataPlanePlugin() {
     _flowTraces = new HashMap<>();
+    _newFlowTraces = new HashMap<>();
   }
 
   @Override
@@ -122,6 +126,18 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
+  public List<Trace> getHistoryFlowTracesNew(DataPlane dataPlane) {
+    IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
+    Map<Flow, Set<Trace>> traces = _newFlowTraces.get(dp);
+    if (traces == null) {
+      return ImmutableList.of();
+    }
+    return traces.values().stream().flatMap(Set::stream).collect(ImmutableList.toImmutableList());
+  }
+
+
+
+  @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
@@ -132,6 +148,14 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         (IncrementalDataPlane) dataPlane,
         TracerouteEngineImpl.getInstance()
             .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
+  }
+
+  @Override
+  public void processFlowsNew(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
+    _newFlowTraces.put(
+        (IncrementalDataPlane) dataPlane,
+        TracerouteEngineImpl.getInstance()
+            .processFlowsNew(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
   }
 
   private IncrementalDataPlane loadDataPlane() {

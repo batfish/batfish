@@ -147,6 +147,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public org.batfish.datamodel.flow2.FlowHistory getHistoryNew() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
   }

@@ -95,6 +95,8 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
+  org.batfish.datamodel.flow2.FlowHistory getHistoryNew();
+
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 

@@ -13,6 +13,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
+import org.batfish.datamodel.flow2.Trace;
 
 /**
  * Abstract class that defines the behavior expected for a Batfish plugin that implements data plane
@@ -74,12 +75,16 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
 
+  public abstract List<Trace> getHistoryFlowTracesNew(DataPlane dataPlane);
+
   public abstract ITracerouteEngine getTracerouteEngine();
 
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 
   public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
+
+  public abstract void processFlowsNew(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
 
   /** Return the name of this plugin */
   public abstract String getName();

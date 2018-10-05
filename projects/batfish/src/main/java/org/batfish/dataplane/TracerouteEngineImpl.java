@@ -8,6 +8,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.flow2.Trace;
 
 /** The default implementation of a traceroute engine */
 public class TracerouteEngineImpl implements ITracerouteEngine {
@@ -26,5 +27,14 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Map<String, Map<String, Fib>> fibs,
       boolean ignoreAcls) {
     return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).processFlows();
+  }
+
+  @Override
+  public SortedMap<Flow, Set<Trace>> processFlowsNew(
+      DataPlane dataPlane,
+      Set<Flow> flows,
+      Map<String, Map<String, Fib>> fibs,
+      boolean ignoreAcls) {
+    return new TracerouteEngineImplContext2(dataPlane, flows, fibs, ignoreAcls).buildFlows();
   }
 }
