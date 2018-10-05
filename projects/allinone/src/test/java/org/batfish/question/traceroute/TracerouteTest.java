@@ -13,13 +13,16 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -29,12 +32,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -236,5 +242,563 @@ public class TracerouteTest {
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
+  }
+
+  /**
+   * Topology: R1 -- R2
+   * R1 interface IP: 1.0.0.1/24
+   * R2 interface IP: 1.0.0.2/24
+   * R1 static route 1.0.0.128/26 -> R2
+   *
+   * traceroute R1 -> 1.0.0.128
+   *
+   * R2 should not ARP response R1 (since R2 does not have route to 1.0.0.128,
+   * so the disposition should be NEIGHBOR_UNREACHABLE
+   * @throws IOException
+   */
+  @Test
+  public void testDisposition() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+
+    // set up static route "1.0.0.128/26" -> i1
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.128/26"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+
+    // set up interface on N2
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .setProxyArp(true)
+        .build();
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    //assertThat(answer.getRows().getData(), hasSize(1));
+
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+  }
+
+  /**
+   * Topology: R1 -- R2
+   * R1 interface1 IP: 1.0.0.1/24
+   * R2 interface1 IP: 1.0.0.2/24
+   * R2 interface2 IP: 1.0.0.129/mask
+   *
+   * R1 static route 1.0.0.128/mask -> R2
+   * R2 static route 1.0.0.128/mask -> interface2
+   *
+   * traceroute R1 -> 1.0.0.128
+   *
+   * Case 1: mask < 24 : NEIGHBOR_UNREACHABLE, since R2 not ARP response
+   * Case 2: mask = 24 : same above, since connected route has higher priority than static route
+   * Case 3: 29 >= mask > 24 : DELIVERED_TO_SUBNET, since R1 and R2 takes static route
+   *
+   * Note: in practice, R2 would complain about overlapping interfaces
+   * @throws IOException
+   */
+  private TableAnswerElement testDeliveredToSubnetVSStaticRoute(String mask) throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // destination interface
+    Interface n1i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .setProxyArp(true)
+            .build();
+
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n1i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.128/" + mask))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .setProxyArp(true)
+        .build();
+
+    Interface n2i2 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.129/" + mask))
+            .setOwner(c2)
+            .setVrf(v2)
+            .setProxyArp(true)
+            .build();
+
+    v2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n2i2.getName())
+                .setNetwork(Prefix.parse("1.0.0.128/" + mask))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    return answer;
+  }
+
+  @Test
+  public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
+    TableAnswerElement answer =
+        testDeliveredToSubnetVSStaticRoute("22");
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+  }
+
+  @Test
+  public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
+    TableAnswerElement answer =
+        testDeliveredToSubnetVSStaticRoute("24");
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+  }
+
+  @Test
+  public void testDeliveredToSubnetVSStaticRoute3() throws IOException {
+     TableAnswerElement answer =
+        testDeliveredToSubnetVSStaticRoute("26");
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+  }
+
+  /**
+   * R1 -- R2
+   * R1 interface1 IP: 1.0.0.130/mask
+   * R1 interface2 IP: 2.0.0.1/24
+   * R1 interface1 IP: 2.0.0.2/24
+   * R1 interface2 IP: 1.0.0.129/24
+   *
+   * Static routes:
+   * R1: 1.0.0.128/24 -> R2
+   * R2: 1.0.0.128/24 -> interface2
+   *
+   * Traceroute: R1 -> 1.0.0.128
+   *
+   * Case 1: mask < 24: DELIVERD_TO_SUBNET (to R2)
+   * Case 2: mask = 24: NEIGHBOR_UNREACHABLE, since packets take interface1 on R1, but R2 no ARP
+   *  response
+   * Case 3: 29 >= mask > 24: DELIVERD_TO_SUBNET (to R1)
+   *
+   * @throws IOException
+   */
+  private TableAnswerElement testDispositionLoop(String mask) throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.130/"+mask))
+        .setOwner(c1)
+        .setVrf(v1)
+        .setProxyArp(true)
+        .build();
+
+    Interface n1i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("2.0.0.1/24"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .setProxyArp(true)
+            .build();
+
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n1i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.128/24"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("2.0.0.2/24"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .setProxyArp(true)
+        .build();
+
+    Interface n2i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.129/24" ))
+            .setOwner(c2)
+            .setVrf(v2)
+            .setProxyArp(true)
+            .build();
+
+    v2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n2i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.128/24"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    return answer;
+  }
+
+  @Test
+  public void testDispositionLoop1() throws IOException {
+    TableAnswerElement answer = testDispositionLoop("22");
+    assertThat(answer.getRows().getData(), hasSize(2));
+
+    // check that packet should be reach R2
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+        containsString("Configuration_1"));
+
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+  }
+
+  @Test
+  public void testDispositionLoop2() throws IOException {
+    TableAnswerElement answer = testDispositionLoop("24");
+    assertThat(answer.getRows().getData(), hasSize(2));
+
+    // check that packet should go through interface 1 on R1
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+        (containsString("Interface_0")));
+
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+  }
+
+  @Test
+  public void testDispositionLoop3() throws IOException {
+    TableAnswerElement answer = testDispositionLoop("25");
+    assertThat(answer.getRows().getData(), hasSize(2));
+
+    // check that packet should be reach R2
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+        not(containsString("Configuration_1")));
+
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+  }
+
+  /**
+   * Topology: R1 -- R2 -- R3
+   *
+   * R1 interface1 IP: 1.0.0.1/mask
+   * R2 interface1 IP: 1.0.0.2/mask
+   * R2 interface2 IP: 2.0.0.1/24
+   * R3 interface1 IP: 2.0.0.2/24
+   * R3 interface2 IP: 1.0.0.3/24
+   *
+   * Static routes:
+   * R1: 1.0.0.0/25 -> R2
+   * R2: 1.0.0.0/25 -> interface2
+   * R3: 1.0.0.0/25 -> interface2
+   *
+   * Traceroute: R1 -> 1.0.0.4
+   *
+   * Case 1: mask < 24: EXITS_NETWORK (out of R3)
+   *    The is because R3 forwards packets through its static route, and no next hop found
+   * Case 2: mask = 24: LOOP (R1->R2->R3->R1), since packets take
+   *    interface1 on R1, but R2 no ARP response
+   * Case 3: 29 >= mask >= 25: NEIGHBOR_UNREACHABLE
+   *    since the connected route is taken, and R2 does not ARP response to R1
+   *
+   * @throws IOException
+   */
+
+  private TableAnswerElement testDispositionMultipleRouters(String mask) throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    Interface n1i0 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/" + mask))
+            .setOwner(c1)
+            .setVrf(v1)
+            .setProxyArp(true)
+            .build();
+
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n1i0.getName())
+                .setNetwork(Prefix.parse("1.0.0.0/25"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.2/" + mask))
+        .setOwner(c2)
+        .setVrf(v2)
+        .setProxyArp(true)
+        .build();
+
+    Interface n2i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("2.0.0.1/24"))
+            .setOwner(c2)
+            .setVrf(v2)
+            .setProxyArp(true)
+            .build();
+
+    v2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n2i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.0/25"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c3 = cb.build();
+    configs.put(c3.getHostname(), c3);
+
+    Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
+
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("2.0.0.2/24"))
+        .setOwner(c3)
+        .setVrf(v3)
+        .setProxyArp(true)
+        .build();
+
+    Interface n3i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.3/24"))
+            .setOwner(c3)
+            .setVrf(v3)
+            .setProxyArp(true)
+            .build();
+
+    v3.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(n3i1.getName())
+                .setNetwork(Prefix.parse("1.0.0.0/25"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(), PacketHeaderConstraints.builder().setDstIp("1.0.0.4").build(), false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    return answer;
+  }
+
+  @Test
+  public void testDispositionMultipleRouters1() throws IOException {
+    TableAnswerElement answer = testDispositionMultipleRouters("22");
+    assertThat(answer.getRows().getData(), hasSize(1));
+
+    // check that packet should be reach R3
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
+        (containsString("Configuration_2")));
+
+    // check disposition
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+  }
+
+  @Test
+  public void testDispositionMultipleRouters2() throws IOException {
+    TableAnswerElement answer = testDispositionMultipleRouters("24");
+    assertThat(answer.getRows().getData(), hasSize(1));
+
+    // check that packet should be reach R3
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
+        (containsString("Configuration_2")));
+
+    // check disposition
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.LOOP.toString()));
+  }
+
+  @Test
+  public void testDispositionMultipleRouters3() throws IOException {
+    TableAnswerElement answer = testDispositionMultipleRouters("25");
+    assertThat(answer.getRows().getData(), hasSize(1));
+
+    // check that packet only traverse R1
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").toString(),
+        not(containsString("Configuration_2")));
+
+    // check disposition
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+  }
+
+  /**
+   * A single route R1 with an interface IP 1.0.0.1/mask
+   *
+   * Traceroute from R1 to 1.0.0.2
+   *
+   * Case 1: mask <= 29:
+   *    DELIVERED_TO_SUBNET
+   * Case 2: mask > 29:
+   *    EXITS_NETWORK
+   */
+  private TableAnswerElement testHostSubnet(String mask) throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    Interface n1i0 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/" + mask))
+            .setOwner(c1)
+            .setVrf(v1)
+            .setProxyArp(true)
+            .build();
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(), PacketHeaderConstraints.builder().setDstIp("1.0.0.2").build(), false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    return answer;
+  }
+
+  @Test
+  public void testHostSubnet1() throws IOException {
+    TableAnswerElement answer = testHostSubnet("24");
+    assertThat(answer.getRows().getData(), hasSize(1));
+
+    // check disposition
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+  }
+
+  @Test
+  public void testHostSubnet2() throws IOException {
+    TableAnswerElement answer = testHostSubnet("30");
+    assertThat(answer.getRows().getData(), hasSize(1));
+
+    // check disposition
+    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+        containsString(FlowDisposition.EXITS_NETWORK.toString()));
   }
 }
