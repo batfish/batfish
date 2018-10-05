@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -10,6 +11,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -108,7 +110,7 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createForkableSnapshot(String network, String snapshot) throws IOException {
+  private void createForkableSnapshot2(String network, String snapshot) throws IOException {
     createTestrigWithMetadata(network, snapshot);
     NetworkId networkId = _idManager.getNetworkId(network);
     Files.createDirectories(
@@ -119,6 +121,18 @@ public class WorkMgrTest {
                     BfConsts.RELPATH_TESTRIGS_DIR,
                     _idManager.getSnapshotId(snapshot, networkId).getId()))
             .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
+  }
+
+  private void createSnapshotWithContent(
+      String network, String snapshot, String fileName, String fileContents) throws IOException {
+    createTestrigWithMetadata(network, snapshot);
+    Path filePath =
+        _manager
+            .getdirSnapshot(network, snapshot)
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, fileName));
+    filePath.toFile().getParentFile().mkdirs();
+
+    CommonUtil.writeFile(filePath, fileContents);
   }
 
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
@@ -384,9 +398,11 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
-    _manager.initNetwork(networkName, null);
-    createForkableSnapshot(networkName, snapshotBaseName);
+    String fileName = "testrig/configs/test.cfg";
+    String fileContents = "! contents";
 
+    _manager.initNetwork(networkName, null);
+    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
 
@@ -399,6 +415,7 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
+
     _manager.initNetwork(networkName, null);
     createTestrigWithMetadata(networkName, snapshotBaseName);
 
@@ -413,6 +430,7 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
+
     _manager.initNetwork(networkName, null);
 
     // Fork should fail because base snapshot does not exist
@@ -428,12 +446,14 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
+    String fileName = "testrig/configs/test.cfg";
+    String fileContents = "! contents";
+
     List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
     List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
     List<String> nodes = ImmutableList.of("n4", "n5");
-
     _manager.initNetwork(networkName, null);
-    createForkableSnapshot(networkName, snapshotBaseName);
+    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
     _manager.forkSnapshot(
         networkName,
         snapshotNewName,
@@ -458,9 +478,12 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
+    String fileName = "testrig/configs/test.cfg";
+    String fileContents = "! contents";
+
     _manager.initNetwork(networkName, null);
-    createForkableSnapshot(networkName, snapshotBaseName);
-    createForkableSnapshot(networkName, snapshotNewName);
+    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
+    createSnapshotWithContent(networkName, snapshotNewName, fileName, fileContents);
 
     // Fork should fail due to duplicate/conflicting new snapshot name
     _thrown.expect(BatfishException.class);
@@ -953,6 +976,53 @@ public class WorkMgrTest {
     } catch (IOException e) {
       throw new BatfishException("Failed to read metadata", e);
     }
+  }
+
+  @Test
+  public void testGetObjectInput() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "testrig/configs/test.cfg";
+    String fileContents = "! contents";
+
+    _manager.initNetwork(network, null);
+    createSnapshotWithContent(network, snapshot, fileName, fileContents);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm object is found in the input directory, with the correct contents
+    assertThat(object, is(not(nullValue())));
+    assertThat(object.toFile(), anExistingFile());
+    String objectContents = CommonUtil.readFile(object);
+    assertThat(objectContents, equalTo(fileContents));
+  }
+
+  @Test
+  public void testGetObjectOutput() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = BfConsts.RELPATH_METADATA_FILE;
+
+    _manager.initNetwork(network, null);
+    createTestrigWithMetadata(network, snapshot);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm metadata file is found (lives in the output directory)
+    assertThat(object, is(not(nullValue())));
+    assertThat(object.toFile(), anExistingFile());
+  }
+
+  @Test
+  public void testGetObjectMissing() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "missing.file";
+
+    _manager.initNetwork(network, null);
+    createTestrigWithMetadata(network, snapshot);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm the bogus file is not found
+    assertThat(object, is(nullValue()));
   }
 
   @Test
