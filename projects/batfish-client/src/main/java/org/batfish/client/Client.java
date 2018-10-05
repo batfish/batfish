@@ -61,7 +61,6 @@ import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
-import org.batfish.client.params.InitEnvironmentParams;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -78,11 +77,9 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -94,7 +91,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
@@ -1564,124 +1560,6 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initEnvironment(String paramsLine, FileWriter outWriter) {
-    InitEnvironmentParams params = parseInitEnvironmentParams(paramsLine);
-    String newEnvName;
-    String paramsLocation = params.getSourcePath();
-    String paramsName = params.getNewEnvironmentName();
-    String paramsPrefix = params.getNewEnvironmentPrefix();
-    String testrigName = params.getDoDelta() ? _currDeltaTestrig : _currTestrig;
-    if (paramsName != null) {
-      newEnvName = paramsName;
-    } else if (paramsPrefix != null) {
-      newEnvName = paramsPrefix + UUID.randomUUID();
-    } else {
-      newEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-    }
-    String paramsBaseEnv = params.getSourceEnvironmentName();
-    String baseEnvName =
-        paramsBaseEnv != null ? paramsBaseEnv : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
-    String fileToSend;
-    SortedSet<String> paramsNodeBlacklist = params.getNodeBlacklist();
-    SortedSet<NodeInterfacePair> paramsInterfaceBlacklist = params.getInterfaceBlacklist();
-    SortedSet<Edge> paramsEdgeBlacklist = params.getEdgeBlacklist();
-
-    if (paramsLocation == null
-        || Files.isDirectory(Paths.get(paramsLocation))
-        || !paramsNodeBlacklist.isEmpty()
-        || !paramsInterfaceBlacklist.isEmpty()
-        || !paramsEdgeBlacklist.isEmpty()) {
-      Path tempFile = CommonUtil.createTempFile("batfish_client_tmp_env_", ".zip");
-      fileToSend = tempFile.toString();
-      if (paramsLocation != null
-          && Files.isDirectory(Paths.get(paramsLocation))
-          && paramsNodeBlacklist.isEmpty()
-          && paramsInterfaceBlacklist.isEmpty()
-          && paramsEdgeBlacklist.isEmpty()) {
-        ZipUtility.zipFiles(Paths.get(paramsLocation), tempFile);
-      } else {
-        Path tempDir = CommonUtil.createTempDirectory("batfish_client_tmp_env_");
-        if (paramsLocation != null) {
-          if (Files.isDirectory(Paths.get(paramsLocation))) {
-            CommonUtil.copyDirectory(Paths.get(paramsLocation), tempDir);
-          } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
-            UnzipUtility.unzip(Paths.get(paramsLocation), tempDir);
-          } else {
-            throw new BatfishException(
-                "Invalid environment directory or zip: '" + paramsLocation + "'");
-          }
-        }
-        if (!paramsNodeBlacklist.isEmpty()) {
-          String nodeBlacklistText;
-          try {
-            nodeBlacklistText = BatfishObjectMapper.writePrettyString(paramsNodeBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write node blacklist to string", e);
-          }
-          Path nodeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-          CommonUtil.writeFile(nodeBlacklistFilePath, nodeBlacklistText);
-        }
-        if (!paramsInterfaceBlacklist.isEmpty()) {
-          String interfaceBlacklistText;
-          try {
-            interfaceBlacklistText =
-                BatfishObjectMapper.writePrettyString(paramsInterfaceBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write interface blacklist to string", e);
-          }
-          Path interfaceBlacklistFilePath =
-              tempDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-          CommonUtil.writeFile(interfaceBlacklistFilePath, interfaceBlacklistText);
-        }
-        if (!paramsEdgeBlacklist.isEmpty()) {
-          String edgeBlacklistText;
-          try {
-            edgeBlacklistText = BatfishObjectMapper.writePrettyString(paramsEdgeBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write edge blacklist to string", e);
-          }
-          Path edgeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-          CommonUtil.writeFile(edgeBlacklistFilePath, edgeBlacklistText);
-        }
-        ZipUtility.zipFiles(tempDir, tempFile);
-      }
-    } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
-      fileToSend = paramsLocation;
-    } else {
-      throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
-    }
-    if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
-      return false;
-    }
-
-    _currDeltaEnv = newEnvName;
-    _currDeltaTestrig = _currTestrig;
-
-    _logger.output("Active delta snapshot->environment is set");
-    _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
-    _logger.output("\n");
-
-    WorkItem wItemProcessEnv =
-        WorkItemBuilder.getWorkItemProcessEnvironment(
-            _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-    return execute(wItemProcessEnv, outWriter);
-  }
-
-  private boolean initEnvironment(
-      String[] words,
-      @Nullable FileWriter outWriter,
-      List<String> options,
-      List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.INIT_ENVIRONMENT)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-    String paramsLine = String.join(" ", Arrays.copyOfRange(words, 1, words.length));
-    return initEnvironment(paramsLine, outWriter);
-  }
-
   private void initHelpers() {
     switch (_settings.getRunMode()) {
       case batch:
@@ -2300,24 +2178,6 @@ public class Client extends AbstractClient implements IClient {
     ae.setNumLoaded(ae.getNumLoaded() + 1);
   }
 
-  static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
-    String jsonParamsStr = "{ " + paramsLine + " }";
-    InitEnvironmentParams parameters;
-    try {
-      parameters =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  new JSONObject(jsonParamsStr).toString(),
-                  new TypeReference<InitEnvironmentParams>() {});
-      return parameters;
-    } catch (JSONException | IOException e) {
-      throw new BatfishException(
-          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
-              + "values valid JSON?)",
-          e);
-    }
-  }
-
   private Map<String, JsonNode> parseParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
     Map<String, JsonNode> parameters;
@@ -2640,8 +2500,6 @@ public class Client extends AbstractClient implements IClient {
       case INIT_REFERENCE_SNAPSHOT:
       case INIT_DELTA_TESTRIG:
         return initSnapshot(outWriter, options, parameters, true);
-      case INIT_ENVIRONMENT:
-        return initEnvironment(words, outWriter, options, parameters);
       case INIT_NETWORK:
         return initNetwork(options, parameters);
       case INIT_SNAPSHOT:
@@ -3358,27 +3216,6 @@ public class Client extends AbstractClient implements IClient {
 
     // upload the object
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
-  }
-
-  private boolean uploadEnv(
-      String fileOrDir, String testrigName, String newEnvName, String baseEnvName) {
-    Path initialUploadTarget = Paths.get(fileOrDir);
-    Path uploadTarget = initialUploadTarget;
-    boolean createZip = Files.isDirectory(initialUploadTarget);
-    if (createZip) {
-      uploadTarget = CommonUtil.createTempFile("testrigOrEnv", ".zip");
-      ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
-    }
-    try {
-      boolean result =
-          _workHelper.uploadEnvironment(
-              _currContainerName, testrigName, baseEnvName, newEnvName, uploadTarget.toString());
-      return result;
-    } finally {
-      if (createZip) {
-        CommonUtil.delete(uploadTarget);
-      }
-    }
   }
 
   private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoAnalyze) {
