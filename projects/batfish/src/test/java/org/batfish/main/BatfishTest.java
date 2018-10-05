@@ -50,6 +50,7 @@ import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
@@ -427,8 +428,8 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId network, QuestionSettingsId questionSettingsId) throws IOException {
                 return questionSettings;
               }
             },
@@ -443,8 +444,8 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
                 return null;
               }
             },
@@ -459,8 +460,8 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
                 throw new IOException("simulated error");
               }
             },

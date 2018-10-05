@@ -55,6 +55,7 @@ import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
@@ -250,10 +251,11 @@ public final class FileBasedStorage implements StorageProvider {
     CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
   }
 
-  private @Nonnull Path getQuestionSettingsPath(NetworkId network, String questionClass) {
+  private @Nonnull Path getQuestionSettingsPath(
+      NetworkId network, QuestionSettingsId questionSettingsId) {
     return _d.getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(String.format("%s.json", questionClass));
+        .resolve(String.format("%s.json", questionSettingsId.getId()));
   }
 
   /**
@@ -518,9 +520,9 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(NetworkId network, String questionClassId)
-      throws IOException {
-    Path questionSettingsPath = getQuestionSettingsPath(network, questionClassId);
+  public @Nullable String loadQuestionSettings(
+      NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
+    Path questionSettingsPath = getQuestionSettingsPath(networkId, questionSettingsId);
     if (!Files.exists(questionSettingsPath)) {
       return null;
     }
@@ -533,10 +535,11 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
+  public void storeQuestionSettings(
+      String settings, NetworkId network, QuestionSettingsId questionSettingsId)
       throws IOException {
     FileUtils.writeStringToFile(
-        getQuestionSettingsPath(network, questionClassId).toFile(), settings);
+        getQuestionSettingsPath(network, questionSettingsId).toFile(), settings);
   }
 
   @Override

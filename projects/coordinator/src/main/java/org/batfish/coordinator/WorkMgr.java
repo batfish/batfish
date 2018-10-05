@@ -950,9 +950,14 @@ public class WorkMgr extends AbstractCoordinator {
   private QuestionSettingsId getOrCreateQuestionSettingsId(
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
     String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+    return getOrCreateQuestionSettingsId(networkId, questionClassId);
+  }
+
+  private QuestionSettingsId getOrCreateQuestionSettingsId(
+      NetworkId networkId, String questionClassId) throws IOException {
     if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
       QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
-      _storage.storeQuestionSettings("{}", networkId, questionClassId);
+      _storage.storeQuestionSettings("{}", networkId, questionSettingsId);
       _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
       return questionSettingsId;
     } else {
@@ -2180,8 +2185,13 @@ public class WorkMgr extends AbstractCoordinator {
   public @Nullable String getQuestionSettings(
       String network, String questionClassId, List<String> components) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      return null;
+    }
+    QuestionSettingsId questionSettingsId =
+        _idManager.getQuestionSettingsId(questionClassId, networkId);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionClassId);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
     if (questionSettings == null) {
       return null;
     }
@@ -2204,18 +2214,20 @@ public class WorkMgr extends AbstractCoordinator {
    * of the path computed from the specified components. Any absent components will be created.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionClassId The ID of the question class
    * @param components The components to traverse from the root of the question settings to reach
    *     the desired section or value
    * @param value The settings value to write at the end of the path
    * @throws IOException if there is an error writing the settings
    */
   public synchronized void writeQuestionSettings(
-      String network, String questionClass, List<String> components, JsonNode value)
+      String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
+    QuestionSettingsId questionSettingsId =
+        getOrCreateQuestionSettingsId(networkId, questionClassId);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionClass);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     JsonNode root;
     if (!components.isEmpty()) {
@@ -2235,7 +2247,7 @@ public class WorkMgr extends AbstractCoordinator {
       root = value;
     }
     _storage.storeQuestionSettings(
-        BatfishObjectMapper.writePrettyString(root), networkId, questionClass);
+        BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
   }
 
   public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)
