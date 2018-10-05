@@ -126,8 +126,6 @@ public class Client extends AbstractClient implements IClient {
 
   private static final String DEFAULT_NETWORK_PREFIX = "np";
 
-  private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
-
   private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
 
   private static final String DEFAULT_QUESTION_PREFIX = "q";
