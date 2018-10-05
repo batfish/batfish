@@ -433,7 +433,18 @@ public class BatfishTest {
                 return questionSettings;
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return true;
+              }
+
+              @Override
+              public QuestionSettingsId getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return new QuestionSettingsId("blah");
+              }
+            });
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), equalTo(questionSettings));
   }
@@ -449,7 +460,12 @@ public class BatfishTest {
                 return null;
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return false;
+              }
+            });
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
