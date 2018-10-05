@@ -313,7 +313,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setPrecomputedRoutesPath(envDirPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
+      envSettings.setPrecomputedRoutesPath(envPathOut.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
       envSettings.setDeltaCompiledConfigurationsDir(
           envPathOut.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
       envSettings.setDeltaVendorConfigurationsDir(
