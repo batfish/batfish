@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -242,41 +243,59 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
     settings.setSerializeVendorPath(
-        testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
-    settings.setTestRigPath(testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
-    settings.setParseAnswerPath(testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)));
+    settings.setTestRigPath(
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
+    settings.setParseAnswerPath(
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)));
     settings.setReferenceLibraryPath(
         testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
+            Paths.get(
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR,
+                BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
     settings.setNodeRolesPath(
         testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
+            Paths.get(
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR,
+                BfConsts.RELPATH_NODE_ROLES_PATH)));
     settings.setInferredNodeRolesPath(
         testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
-    settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
-    settings.setPojoTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
+            Paths.get(
+                BfConsts.RELPATH_INPUT,
+                BfConsts.RELPATH_TEST_RIG_DIR,
+                BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
+    settings.setTopologyPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH)));
+    settings.setPojoTopologyPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)));
     if (envName != null) {
       envSettings.setName(envName);
-      Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR).resolve(envName);
-      envSettings.setEnvironmentBasePath(envPath);
+      Path envPathOut =
+          testrigDir.resolve(
+              Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
       envSettings.setCompressedDataPlanePath(
-          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
+          envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
       envSettings.setCompressedDataPlaneAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
-      envSettings.setDataPlanePath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
-      envSettings.setDataPlaneAnswerPath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+          envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
+      envSettings.setDataPlanePath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE));
+      envSettings.setDataPlaneAnswerPath(
+          envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
       envSettings.setParseEnvironmentBgpTablesAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
+          envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
       envSettings.setParseEnvironmentRoutingTablesAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+          envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
       envSettings.setSerializeEnvironmentBgpTablesPath(
-          envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
+          envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
       envSettings.setSerializeEnvironmentRoutingTablesPath(
-          envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
+          envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
       envSettings.setValidateEnvironmentAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
-      Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+          envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
+      Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
       envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
       envSettings.setInterfaceBlacklistPath(
@@ -291,11 +310,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setPrecomputedRoutesPath(envPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
-      envSettings.setDeltaCompiledConfigurationsDir(
-          envPath.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
       envSettings.setDeltaVendorConfigurationsDir(
-          envPath.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+          envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     }
   }
 
@@ -4407,11 +4423,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
+   *
+   * @param dispositions Search for differences in the set of packets with the specified {@link
+   *     FlowDisposition FlowDispositions}.
    */
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> dispositions) {
+    checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
-    Set<FlowDisposition> dispositions = ImmutableSet.of(FlowDisposition.ACCEPTED);
 
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
@@ -4443,10 +4462,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       Flow.Builder flow =
           pkt.getFlow(reduced)
-              .orElseGet(
-                  () -> {
-                    throw new BatfishException("Error getting flow from BDD");
-                  });
+              .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
 
       // set flow parameters
       flow.setTag(getDifferentialFlowTag());
@@ -4616,6 +4632,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .resolve(_settings.getContainer().getId())
               .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
               .resolve(_settings.getTestrig().getId())
+              .resolve(BfConsts.RELPATH_OUTPUT)
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);
     }

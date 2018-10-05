@@ -1,6 +1,7 @@
 package org.batfish.storage;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -44,7 +45,8 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   public @Nonnull Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+    return getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
   }
 
   public @Nonnull Path getDeltaAnswerDir(
@@ -56,6 +58,7 @@ public class FileBasedStorageDirectoryProvider {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
         ? snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
             .resolve(BfConsts.RELPATH_ANALYSES_DIR)
             .resolve(analysis.getId())
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
@@ -66,6 +69,7 @@ public class FileBasedStorageDirectoryProvider {
             .resolve(referenceSnapshot.getId())
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
         : snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
             .resolve(BfConsts.RELPATH_ANSWERS_DIR)
             .resolve(question.getId())
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
@@ -108,6 +112,7 @@ public class FileBasedStorageDirectoryProvider {
     Path snapshotDir = getSnapshotDir(network, snapshot);
     return analysis != null
         ? snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
             .resolve(BfConsts.RELPATH_ANALYSES_DIR)
             .resolve(analysis.getId())
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
@@ -115,6 +120,7 @@ public class FileBasedStorageDirectoryProvider {
             .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
         : snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
             .resolve(BfConsts.RELPATH_ANSWERS_DIR)
             .resolve(question.getId())
             .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
@@ -127,10 +133,12 @@ public class FileBasedStorageDirectoryProvider {
 
   public @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+        .resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
   }
 
   public @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+    return getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
   }
 }
