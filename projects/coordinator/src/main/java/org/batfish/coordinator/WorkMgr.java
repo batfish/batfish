@@ -710,7 +710,7 @@ public class WorkMgr extends AbstractCoordinator {
       SnapshotId referenceSnapshotId =
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
-          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
@@ -750,6 +750,19 @@ public class WorkMgr extends AbstractCoordinator {
       answer = BatfishObjectMapper.writePrettyString(ans);
       return answer;
     }
+  }
+
+  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
+    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+    return getOrDefaultQuestionSettingsId(questionClassId,networkId);
+  }
+  
+  
+  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+      String questionClassId, NetworkId networkId) {
+    return _idManager.hasQuestionSettingsId(questionClassId, networkId)? _idManager.generateQuestionSettingsId() : QuestionSettingsId.DEFAULT_ID;
   }
 
   private @Nonnull AnswerId computeFinalAnswerAndId(
@@ -911,7 +924,7 @@ public class WorkMgr extends AbstractCoordinator {
       SnapshotId referenceSnapshotId =
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
-          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
@@ -944,24 +957,6 @@ public class WorkMgr extends AbstractCoordinator {
           analysis,
           Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
-    }
-  }
-
-  private QuestionSettingsId getOrCreateQuestionSettingsId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
-    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-    return getOrCreateQuestionSettingsId(networkId, questionClassId);
-  }
-
-  private QuestionSettingsId getOrCreateQuestionSettingsId(
-      NetworkId networkId, String questionClassId) throws IOException {
-    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
-      _storage.storeQuestionSettings("{}", networkId, questionSettingsId);
-      _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
-      return questionSettingsId;
-    } else {
-      return _idManager.getQuestionSettingsId(questionClassId, networkId);
     }
   }
 
@@ -2224,10 +2219,16 @@ public class WorkMgr extends AbstractCoordinator {
       String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    QuestionSettingsId questionSettingsId =
-        getOrCreateQuestionSettingsId(networkId, questionClassId);
+    QuestionSettingsId questionSettingsId;
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
+    if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      questionSettingsId = _idManager.getQuestionSettingsId(questionClassId, networkId);
+      questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
+    }
+    else {
+      questionSettingsId = _idManager.generateQuestionSettingsId();
+      questionSettings = "{}";
+    }
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     JsonNode root;
     if (!components.isEmpty()) {
@@ -2248,6 +2249,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     _storage.storeQuestionSettings(
         BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
+    _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
   }
 
   public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)
