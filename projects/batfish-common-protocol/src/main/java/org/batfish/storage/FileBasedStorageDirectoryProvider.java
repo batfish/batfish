@@ -104,7 +104,7 @@ public class FileBasedStorageDirectoryProvider {
   }
 
   public @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(snapshot.getId());
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
   }
 
   public @Nonnull Path getStandardAnswerDir(
