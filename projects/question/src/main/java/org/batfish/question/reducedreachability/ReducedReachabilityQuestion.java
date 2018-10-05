@@ -21,7 +21,7 @@ public final class ReducedReachabilityQuestion extends Question {
     setDifferential(true);
     _actions =
         actions == null
-            ? ImmutableSortedSet.of(FlowDisposition.ACCEPTED)
+            ? ImmutableSortedSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
             : ImmutableSortedSet.copyOf(actions);
   }
 
@@ -29,7 +29,8 @@ public final class ReducedReachabilityQuestion extends Question {
     this(null);
   }
 
-  public SortedSet<FlowDisposition> getActions() {
+  @Nonnull
+  SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 

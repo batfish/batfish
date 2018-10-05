@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -4465,12 +4466,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
    *
-   * @param actions
+   * @param dispositions Search for differences in the set of packets with the specified {@link
+   *     FlowDisposition FlowDispositions}.
    */
   @Override
-  public Set<Flow> bddReducedReachability(Set<FlowDisposition> actions) {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> dispositions) {
+    checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
-    Set<FlowDisposition> dispositions = ImmutableSet.of(FlowDisposition.ACCEPTED);
 
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
@@ -4502,10 +4504,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       Flow.Builder flow =
           pkt.getFlow(reduced)
-              .orElseGet(
-                  () -> {
-                    throw new BatfishException("Error getting flow from BDD");
-                  });
+              .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
 
       // set flow parameters
       flow.setTag(getDifferentialFlowTag());
