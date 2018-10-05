@@ -4,18 +4,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
-import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -36,28 +32,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Nullable
-  @Override
-  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Nullable
-  @Override
-  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
-      NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Nullable
-  @Override
-  public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

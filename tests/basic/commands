@@ -8,7 +8,7 @@ add-batfish-option verboseparse
 test -compareall tests/basic/init.ref init-snapshot networks/example/live basic-example
 test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
-test -raw tests/basic/topology.ref get-object output/testrig_pojo_topology
+test -raw tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/viModel.ref get viModel
 test tests/basic/nodes-summary.ref get nodes summary=true
 test tests/basic/nodes.ref get nodes summary=false
@@ -49,9 +49,9 @@ test tests/basic/outliers-verbose.ref get outliers verbose=True
 # takes toooo long. need to constrain to be useful.
 # test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
-# init-environment - no longer support environments, not worrying about making these tests pass
-#test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
-#test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
+# init-environment
+test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
 # failure case with non-existent interface -- but the stack trace returned in the answer is bad mojo the test
 #test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
 

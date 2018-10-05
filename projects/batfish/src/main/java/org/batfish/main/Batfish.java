@@ -302,10 +302,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
       Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
-      envSettings.setNodeBlacklistPath(envPathIn.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+      envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
       envSettings.setInterfaceBlacklistPath(
-          envPathIn.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-      envSettings.setEdgeBlacklistPath(envPathIn.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
+          envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+      envSettings.setEdgeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
       envSettings.setDeltaConfigurationsDir(
           envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
@@ -1520,10 +1520,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
-    if (blacklistEdges == null) {
-      return Collections.emptySortedSet();
+    SortedSet<Edge> blacklistEdges = Collections.emptySortedSet();
+    Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
+    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
+      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
     }
     return blacklistEdges;
   }
@@ -1640,10 +1640,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
-    if (blacklistInterfaces == null) {
-      return Collections.emptySortedSet();
+    SortedSet<NodeInterfacePair> blacklistInterfaces = Collections.emptySortedSet();
+    Path interfaceBlacklistPath =
+        _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
+    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
+      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
     }
     return blacklistInterfaces;
   }
@@ -1655,10 +1656,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private SortedSet<String> getNodeBlacklist() {
-    SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
-    if (blacklistNodes == null) {
-      return Collections.emptySortedSet();
+    SortedSet<String> blacklistNodes = Collections.emptySortedSet();
+    Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
+    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
+      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
     }
     return blacklistNodes;
   }
