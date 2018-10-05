@@ -237,7 +237,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -4614,7 +4614,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           _settings
               .getStorageBase()
               .resolve(_settings.getContainer().getId())
-              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+              .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
               .resolve(_settings.getTestrig().getId())
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);

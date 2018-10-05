@@ -1154,7 +1154,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public Path getdirSnapshots(String networkName) {
-    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR));
   }
 
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
@@ -1359,7 +1359,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     Path containerDir = getdirNetwork(networkName);
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId()));
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");

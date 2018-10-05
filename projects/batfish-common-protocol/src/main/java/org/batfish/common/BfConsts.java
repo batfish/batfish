@@ -177,13 +177,18 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
+  public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_STANDARD_DIR = "standard";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
-  public static final String RELPATH_TESTRIGS_DIR = "testrigs";
+
+  @SuppressWarnings("unused")
+  @Deprecated
+  public static final String RELPATH_TESTRIGS_DIR = "snapshots";
+
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
