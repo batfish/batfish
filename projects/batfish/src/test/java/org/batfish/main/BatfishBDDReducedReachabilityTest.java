@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
@@ -98,7 +99,7 @@ public class BatfishBDDReducedReachabilityTest {
     return batfish;
   }
 
-  class NeighborUnreachableNetworkGenerator implements NetworkGenerator {
+  class ExitNetworkGenerator implements NetworkGenerator {
     @Override
     public SortedMap<String, Configuration> generateConfigs(boolean delta) {
       Configuration node1 = _cb.setHostname(NODE1).build();
@@ -141,7 +142,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testNeighborUnreachable() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitNetworkGenerator());
     Set<Flow> flows =
         batfish.bddReducedReachability(ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK));
     assertThat(flows, hasSize(2));
@@ -151,7 +152,7 @@ public class BatfishBDDReducedReachabilityTest {
             ImmutableList.of(
                 allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_IP)),
                 allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
-    checkDispositions(batfish, flows, NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
+    checkDispositions(batfish, flows, EXITS_NETWORK);
   }
 
   class AcceptedNetworkGenerator implements NetworkGenerator {
