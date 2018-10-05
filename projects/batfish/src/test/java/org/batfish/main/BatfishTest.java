@@ -481,7 +481,18 @@ public class BatfishTest {
                 throw new IOException("simulated error");
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public QuestionSettingsId getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return new QuestionSettingsId("foo");
+              }
+
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return true;
+              }
+            });
 
     _thrown.expect(BatfishException.class);
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
