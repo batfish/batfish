@@ -219,6 +219,53 @@ class TracerouteEngineImplContext {
     return resolvedNextHopWithRoutes;
   }
 
+  private FlowDisposition computeDispositionWhenNoEdge(Interface outgoingInterface, Ip dstIp) {
+    FlowDisposition disposition;
+
+    // Check if the dstip is in a host subnet (prefix <= 29)
+    boolean isDeliveredToSubnet =
+        outgoingInterface
+            .getAllAddresses()
+            .stream()
+            .map(InterfaceAddress::getPrefix)
+            .anyMatch(
+                prefix ->
+                    prefix.containsIp(dstIp) && prefix.getPrefixLength() <= 29);
+
+    if (isDeliveredToSubnet) {
+      disposition = FlowDisposition.DELIVERED_TO_SUBNET;
+    } else {
+      boolean isDeliveredToSomewhere =
+        outgoingInterface
+            .getAllAddresses()
+            .stream()
+            .map(InterfaceAddress::getPrefix)
+            .anyMatch(prefix -> prefix.containsIp(dstIp));
+
+      if (isDeliveredToSomewhere) {
+        disposition = FlowDisposition.EXITS_NETWORK;
+      } else {
+        // check if nexthop ip match any interface IP
+        boolean isFinalNextHopIpInNetwork =
+            _configurations
+                .values()
+                .stream()
+                .flatMap(configuration -> configuration.getAllInterfaces().values().stream())
+                .flatMap(interf -> interf.getAllAddresses().stream())
+                .map(InterfaceAddress::getIp)
+                .anyMatch(interfaceIp -> (interfaceIp.compareTo(dstIp) == 0));
+
+        if (isFinalNextHopIpInNetwork) {
+          disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
+        } else {
+          disposition = FlowDisposition.EXITS_NETWORK;
+        }
+      }
+    }
+
+    return disposition;
+  }
+
   private void collectFlowTraces(
       String currentNodeName,
       String currentVrfName,
@@ -271,6 +318,7 @@ class TracerouteEngineImplContext {
       flowTraces.add(trace);
       return;
     }
+
 
     // nextHopInterfacesByRoute: matching route -> next hop interface -> next hop IP -> interface
     // routes
@@ -368,18 +416,7 @@ class TracerouteEngineImplContext {
                             transmissionContext);
                   }
                   if (!denied) {
-                    FlowDisposition disposition = FlowDisposition.EXITS_NETWORK;
-
-                    // Check if the dstip is in the subnet
-                    // If in the subset, the disposition is delivered to subnet
-                    // else exit the network
-                    if (outgoingInterface
-                        .getAllAddresses()
-                        .stream()
-                        .map(InterfaceAddress::getPrefix)
-                        .anyMatch(prefix -> prefix.containsIp(dstIp))) {
-                      disposition = FlowDisposition.DELIVERED_TO_SUBNET;
-                    }
+                    FlowDisposition disposition = computeDispositionWhenNoEdge(outgoingInterface, dstIp);
 
                     Edge nextEdge =
                         new Edge(
