@@ -230,7 +230,8 @@ public class TracerouteTest {
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
                 Schema.set(Schema.FLOW_TRACE))));
 
-    // with ignoreAcls we get DELIVERED_NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+    // with ignoreAcls we get DELIVERED_NEIGHBOR_UNREACHABLE
+    // EXITS_NETWORK
     question = new TracerouteQuestion(".*", header, true);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
@@ -240,7 +241,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                everyItem(hasDisposition(FlowDisposition.EXITS_NETWORK)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
