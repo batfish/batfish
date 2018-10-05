@@ -1289,7 +1289,7 @@ public class WorkMgr extends AbstractCoordinator {
   @Nullable
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path file = testrigDir.resolve(objectName);
+    Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
     /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
@@ -1297,6 +1297,13 @@ public class WorkMgr extends AbstractCoordinator {
     if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
+
+    // Check in output then input directories for backward compatibility
+    // Since inputs and outputs used to be stored together, in the testrig dir
+    if (!file.toFile().exists()) {
+      file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, objectName));
+    }
+
     if (Files.isRegularFile(file)) {
       return file;
     } else if (Files.isDirectory(file)) {
@@ -1310,7 +1317,6 @@ public class WorkMgr extends AbstractCoordinator {
 
       return zipfile;
     }
-
     return null;
   }
 

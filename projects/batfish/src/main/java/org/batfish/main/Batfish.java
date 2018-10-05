@@ -4649,6 +4649,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .resolve(_settings.getContainer().getId())
               .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
               .resolve(_settings.getTestrig().getId())
+              .resolve(BfConsts.RELPATH_OUTPUT)
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);
     }

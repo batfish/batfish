@@ -752,6 +752,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         .resolve(getContainer().getId())
         .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
         .resolve(tr)
+        .resolve(BfConsts.RELPATH_OUTPUT)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }

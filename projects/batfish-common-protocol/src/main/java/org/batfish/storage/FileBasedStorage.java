@@ -650,7 +650,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_METADATA_FILE);
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_METADATA_FILE));
   }
 
   @Override
