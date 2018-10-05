@@ -131,7 +131,7 @@ public class WorkMgrTest {
             .getdirNetwork(container)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
+                    BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
     outputDir.toFile().mkdirs();
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
