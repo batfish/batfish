@@ -53,6 +53,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -63,6 +64,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
@@ -419,6 +421,36 @@ public class WorkMgrTest {
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotBlacklists() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
+    List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
+    List<String> nodes = ImmutableList.of("n4", "n5");
+
+    _manager.initNetwork(networkName, null);
+    createForkableSnapshot(networkName, snapshotBaseName);
+    _manager.forkSnapshot(
+        networkName,
+        snapshotNewName,
+        new ForkSnapshotBean(snapshotBaseName, interfaces, links, nodes));
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    // Confirm the blacklists are correct
+    assertThat(
+        _storage.loadInterfaceBlacklist(networkId, snapshotId),
+        containsInAnyOrder(interfaces.toArray()));
+    assertThat(
+        _storage.loadEdgeBlacklist(networkId, snapshotId), containsInAnyOrder(links.toArray()));
+    assertThat(
+        _storage.loadNodeBlacklist(networkId, snapshotId), containsInAnyOrder(nodes.toArray()));
   }
 
   @Test

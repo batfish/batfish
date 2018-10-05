@@ -75,6 +75,15 @@ public interface StorageProvider {
   SortedSet<NodeInterfacePair> loadInterfaceBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
+   * Returns the node blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot
    *
    * @param network The name of the network
@@ -98,15 +107,6 @@ public interface StorageProvider {
    */
   @Nullable
   MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
-
-  /**
-   * Returns the node blacklist for the specified snapshot.
-   *
-   * @param network The name of the network
-   * @param snapshot The name of the snapshot
-   */
-  @Nullable
-  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored

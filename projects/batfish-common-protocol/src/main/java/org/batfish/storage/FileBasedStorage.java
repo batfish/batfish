@@ -226,6 +226,30 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<String>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
   public @Nullable Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
@@ -299,30 +323,6 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-    if (!Files.exists(path)) {
-      return null;
-    }
-    String fileText = CommonUtil.readFile(path);
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<SortedSet<String>>() {});
-    } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
-      return null;
-    }
-  }
-
-  @Override
   public void storeMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
       throws IOException {
@@ -383,8 +383,7 @@ public final class FileBasedStorage implements StorageProvider {
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
     if (!ccaePath.toFile().exists() && !ccaePath.toFile().mkdirs()) {
-      throw new BatfishException(
-          String.format("Unable to create snapshot directory '%s'", ccaePath));
+      throw new BatfishException(String.format("Unable to create directory '%s'", ccaePath));
     }
     CommonUtil.deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);

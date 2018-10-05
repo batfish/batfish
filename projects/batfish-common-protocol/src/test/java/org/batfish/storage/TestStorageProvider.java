@@ -39,6 +39,13 @@ public class TestStorageProvider implements StorageProvider {
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
+  @Override
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
+      NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
   @Nullable
   @Override
   public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
@@ -57,13 +64,6 @@ public class TestStorageProvider implements StorageProvider {
   @Nullable
   @Override
   public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
-      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

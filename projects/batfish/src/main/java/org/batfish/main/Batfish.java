@@ -1518,16 +1518,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
-    if (blacklistEdges == null) {
-      return Collections.emptySortedSet();
-    }
-    return blacklistEdges;
-  }
-
   @Override
   public Environment getEnvironment() {
     SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
@@ -1639,6 +1629,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges =
+        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistEdges == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistEdges;
+  }
+
+  @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
         _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
@@ -1646,11 +1646,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
-  }
-
-  @Override
-  public BatfishLogger getLogger() {
-    return _logger;
   }
 
   @Nonnull
@@ -1661,6 +1656,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return Collections.emptySortedSet();
     }
     return blacklistNodes;
+  }
+
+  @Override
+  public BatfishLogger getLogger() {
+    return _logger;
   }
 
   /**
