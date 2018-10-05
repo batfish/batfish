@@ -228,19 +228,17 @@ class TracerouteEngineImplContext {
             .getAllAddresses()
             .stream()
             .map(InterfaceAddress::getPrefix)
-            .anyMatch(
-                prefix ->
-                    prefix.containsIp(dstIp) && prefix.getPrefixLength() <= 29);
+            .anyMatch(prefix -> prefix.containsIp(dstIp) && prefix.getPrefixLength() <= 29);
 
     if (isDeliveredToSubnet) {
       disposition = FlowDisposition.DELIVERED_TO_SUBNET;
     } else {
       boolean isDeliveredToSomewhere =
-        outgoingInterface
-            .getAllAddresses()
-            .stream()
-            .map(InterfaceAddress::getPrefix)
-            .anyMatch(prefix -> prefix.containsIp(dstIp));
+          outgoingInterface
+              .getAllAddresses()
+              .stream()
+              .map(InterfaceAddress::getPrefix)
+              .anyMatch(prefix -> prefix.containsIp(dstIp));
 
       if (isDeliveredToSomewhere) {
         disposition = FlowDisposition.EXITS_NETWORK;
@@ -318,7 +316,6 @@ class TracerouteEngineImplContext {
       flowTraces.add(trace);
       return;
     }
-
 
     // nextHopInterfacesByRoute: matching route -> next hop interface -> next hop IP -> interface
     // routes
@@ -416,7 +413,8 @@ class TracerouteEngineImplContext {
                             transmissionContext);
                   }
                   if (!denied) {
-                    FlowDisposition disposition = computeDispositionWhenNoEdge(outgoingInterface, dstIp);
+                    FlowDisposition disposition =
+                        computeDispositionWhenNoEdge(outgoingInterface, dstIp);
 
                     Edge nextEdge =
                         new Edge(

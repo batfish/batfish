@@ -244,20 +244,21 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
-  /**
+  /*
    * Topology: R1 -- R2
    * R1 interface IP: 1.0.0.1/24
    * R2 interface IP: 1.0.0.2/24
-   * R1 static route 1.0.0.128/26 -> R2
+   *
+   * R1 static route: 1.0.0.128/26 -> R2
    *
    * traceroute R1 -> 1.0.0.128
    *
-   * R2 should not ARP response R1 (since R2 does not have route to 1.0.0.128,
-   * so the disposition should be NEIGHBOR_UNREACHABLE
-   * @throws IOException
+   * R2 should not ARP response R1 (since R2 does not have route to 1.0.0.128, so the disposition
+   * should be NEIGHBOR_UNREACHABLE
+   *
    */
   @Test
-  public void testDisposition() throws IOException {
+  public void testDispositionNeighborUnreach() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -311,14 +312,16 @@ public class TracerouteTest {
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
-    //assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(answer.getRows().getData(), hasSize(1));
 
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
   }
 
-  /**
-   * Topology: R1 -- R2
+  /*
+   * Topology:
+   * R1 -- R2
    * R1 interface1 IP: 1.0.0.1/24
    * R2 interface1 IP: 1.0.0.2/24
    * R2 interface2 IP: 1.0.0.129/mask
@@ -329,11 +332,11 @@ public class TracerouteTest {
    * traceroute R1 -> 1.0.0.128
    *
    * Case 1: mask < 24 : NEIGHBOR_UNREACHABLE, since R2 not ARP response
-   * Case 2: mask = 24 : same above, since connected route has higher priority than static route
+   * Case 2: mask = 24 : same above,
+   * since connected route has higher priority than static route
    * Case 3: 29 >= mask > 24 : DELIVERED_TO_SUBNET, since R1 and R2 takes static route
    *
    * Note: in practice, R2 would complain about overlapping interfaces
-   * @throws IOException
    */
   private TableAnswerElement testDeliveredToSubnetVSStaticRoute(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -409,37 +412,37 @@ public class TracerouteTest {
 
   @Test
   public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
-    TableAnswerElement answer =
-        testDeliveredToSubnetVSStaticRoute("22");
+    TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("22");
     assertThat(answer.getRows().getData(), hasSize(1));
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
   }
 
   @Test
   public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
-    TableAnswerElement answer =
-        testDeliveredToSubnetVSStaticRoute("24");
+    TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("24");
     assertThat(answer.getRows().getData(), hasSize(1));
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
   }
 
   @Test
   public void testDeliveredToSubnetVSStaticRoute3() throws IOException {
-     TableAnswerElement answer =
-        testDeliveredToSubnetVSStaticRoute("26");
+    TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("26");
     assertThat(answer.getRows().getData(), hasSize(1));
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
   }
 
-  /**
+  /*
    * R1 -- R2
    * R1 interface1 IP: 1.0.0.130/mask
    * R1 interface2 IP: 2.0.0.1/24
-   * R1 interface1 IP: 2.0.0.2/24
-   * R1 interface2 IP: 1.0.0.129/24
+   * R2 interface1 IP: 2.0.0.2/24
+   * R2 interface2 IP: 1.0.0.129/24
    *
    * Static routes:
    * R1: 1.0.0.128/24 -> R2
@@ -448,11 +451,10 @@ public class TracerouteTest {
    * Traceroute: R1 -> 1.0.0.128
    *
    * Case 1: mask < 24: DELIVERD_TO_SUBNET (to R2)
-   * Case 2: mask = 24: NEIGHBOR_UNREACHABLE, since packets take interface1 on R1, but R2 no ARP
-   *  response
+   * Case 2: mask = 24: NEIGHBOR_UNREACHABLE, since
+   *    packets take interface1 on R1, but R2 no ARP response
    * Case 3: 29 >= mask > 24: DELIVERD_TO_SUBNET (to R1)
    *
-   * @throws IOException
    */
   private TableAnswerElement testDispositionLoop(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -468,7 +470,7 @@ public class TracerouteTest {
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.130/"+mask))
+        .setAddress(new InterfaceAddress("1.0.0.130/" + mask))
         .setOwner(c1)
         .setVrf(v1)
         .setProxyArp(true)
@@ -504,7 +506,7 @@ public class TracerouteTest {
 
     Interface n2i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.129/24" ))
+            .setAddress(new InterfaceAddress("1.0.0.129/24"))
             .setOwner(c2)
             .setVrf(v2)
             .setProxyArp(true)
@@ -539,10 +541,12 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(2));
 
     // check that packet should be reach R2
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
         containsString("Configuration_1"));
 
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
   }
 
@@ -552,10 +556,12 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(2));
 
     // check that packet should go through interface 1 on R1
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
         (containsString("Interface_0")));
 
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
   }
 
@@ -565,14 +571,16 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(2));
 
     // check that packet should be reach R2
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
         not(containsString("Configuration_1")));
 
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
   }
 
-  /**
+  /*
    * Topology: R1 -- R2 -- R3
    *
    * R1 interface1 IP: 1.0.0.1/mask
@@ -589,15 +597,12 @@ public class TracerouteTest {
    * Traceroute: R1 -> 1.0.0.4
    *
    * Case 1: mask < 24: EXITS_NETWORK (out of R3)
-   *    The is because R3 forwards packets through its static route, and no next hop found
-   * Case 2: mask = 24: LOOP (R1->R2->R3->R1), since packets take
-   *    interface1 on R1, but R2 no ARP response
+   *    This is because R3 forwards packets through its static route, and no next hop found
+   * Case 2: mask = 24: LOOP (R1->R2->R3->R1), since packets
+   *   take interface1 on R1, but R2 no ARP response
    * Case 3: 29 >= mask >= 25: NEIGHBOR_UNREACHABLE
    *    since the connected route is taken, and R2 does not ARP response to R1
-   *
-   * @throws IOException
    */
-
   private TableAnswerElement testDispositionMultipleRouters(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -702,11 +707,13 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     // check that packet should be reach R3
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
         (containsString("Configuration_2")));
 
     // check disposition
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
   }
 
@@ -716,11 +723,13 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     // check that packet should be reach R3
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
         (containsString("Configuration_2")));
 
     // check disposition
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.LOOP.toString()));
   }
 
@@ -730,23 +739,23 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     // check that packet only traverse R1
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("hops").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("hops").toString(),
         not(containsString("Configuration_2")));
 
     // check disposition
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
   }
 
-  /**
+  /*
    * A single route R1 with an interface IP 1.0.0.1/mask
    *
    * Traceroute from R1 to 1.0.0.2
    *
-   * Case 1: mask <= 29:
-   *    DELIVERED_TO_SUBNET
-   * Case 2: mask > 29:
-   *    EXITS_NETWORK
+   * Case 1: mask <= 29: DELIVERED_TO_SUBNET
+   * Case 2: mask > 29: EXITS_NETWORK
    */
   private TableAnswerElement testHostSubnet(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -788,7 +797,8 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     // check disposition
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
   }
 
@@ -798,7 +808,8 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     // check disposition
-    assertThat(answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
+    assertThat(
+        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
         containsString(FlowDisposition.EXITS_NETWORK.toString()));
   }
 }
