@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -10,6 +11,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -103,6 +105,18 @@ public class WorkMgrTest {
     _manager = Main.getWorkMgr();
     _idManager = _manager.getIdManager();
     _storage = _manager.getStorage();
+  }
+
+  private void createSnapshotWithContent(
+      String network, String snapshot, String fileName, String fileContents) throws IOException {
+    createTestrigWithMetadata(network, snapshot);
+    Path filePath =
+        _manager
+            .getdirSnapshot(network, snapshot)
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, fileName));
+    filePath.toFile().getParentFile().mkdirs();
+
+    CommonUtil.writeFile(filePath, fileContents);
   }
 
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
@@ -834,6 +848,53 @@ public class WorkMgrTest {
     } catch (IOException e) {
       throw new BatfishException("Failed to read metadata", e);
     }
+  }
+
+  @Test
+  public void testGetObjectInput() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "testrig/configs/test.cfg";
+    String fileContents = "! contents";
+
+    _manager.initNetwork(network, null);
+    createSnapshotWithContent(network, snapshot, fileName, fileContents);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm object is found in the input directory, with the correct contents
+    assertThat(object, is(not(nullValue())));
+    assertThat(object.toFile(), anExistingFile());
+    String objectContents = CommonUtil.readFile(object);
+    assertThat(objectContents, equalTo(fileContents));
+  }
+
+  @Test
+  public void testGetObjectOutput() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = BfConsts.RELPATH_METADATA_FILE;
+
+    _manager.initNetwork(network, null);
+    createTestrigWithMetadata(network, snapshot);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm metadata file is found (lives in the output directory)
+    assertThat(object, is(not(nullValue())));
+    assertThat(object.toFile(), anExistingFile());
+  }
+
+  @Test
+  public void testGetObjectMissing() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "missing.file";
+
+    _manager.initNetwork(network, null);
+    createTestrigWithMetadata(network, snapshot);
+    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+
+    // Confirm the bogus file is not found
+    assertThat(object, is(nullValue()));
   }
 
   @Test
