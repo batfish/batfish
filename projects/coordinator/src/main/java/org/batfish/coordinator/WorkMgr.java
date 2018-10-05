@@ -756,13 +756,14 @@ public class WorkMgr extends AbstractCoordinator {
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
     String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-    return getOrDefaultQuestionSettingsId(questionClassId,networkId);
+    return getOrDefaultQuestionSettingsId(questionClassId, networkId);
   }
-  
-  
+
   private QuestionSettingsId getOrDefaultQuestionSettingsId(
       String questionClassId, NetworkId networkId) {
-    return _idManager.hasQuestionSettingsId(questionClassId, networkId)? _idManager.generateQuestionSettingsId() : QuestionSettingsId.DEFAULT_ID;
+    return _idManager.hasQuestionSettingsId(questionClassId, networkId)
+        ? _idManager.getQuestionSettingsId(questionClassId, networkId)
+        : QuestionSettingsId.DEFAULT_ID;
   }
 
   private @Nonnull AnswerId computeFinalAnswerAndId(
@@ -2224,8 +2225,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
       questionSettingsId = _idManager.getQuestionSettingsId(questionClassId, networkId);
       questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
-    }
-    else {
+    } else {
       questionSettingsId = _idManager.generateQuestionSettingsId();
       questionSettings = "{}";
     }
