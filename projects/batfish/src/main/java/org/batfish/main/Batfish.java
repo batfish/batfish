@@ -280,7 +280,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envPathOut =
           testrigDir.resolve(
               Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-      envSettings.setEnvironmentBasePath(envPathOut);
       envSettings.setCompressedDataPlanePath(
           envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
       envSettings.setCompressedDataPlaneAnswerPath(
@@ -313,9 +312,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setPrecomputedRoutesPath(envPathOut.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
-      envSettings.setDeltaCompiledConfigurationsDir(
-          envPathOut.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
       envSettings.setDeltaVendorConfigurationsDir(
           envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     }
