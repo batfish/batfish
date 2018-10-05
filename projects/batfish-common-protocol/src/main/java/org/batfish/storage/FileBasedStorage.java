@@ -99,7 +99,9 @@ public final class FileBasedStorage implements StorageProvider {
   public SortedMap<String, Configuration> loadCompressedConfigurations(
       NetworkId network, SnapshotId snapshot) {
     Path testrigDir = _d.getSnapshotDir(network, snapshot);
-    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+    Path indepDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
     return loadConfigurations(network, snapshot, indepDir);
   }
 
@@ -112,7 +114,9 @@ public final class FileBasedStorage implements StorageProvider {
   public SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
     Path testrigDir = _d.getSnapshotDir(network, snapshot);
-    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    Path indepDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
     return loadConfigurations(network, snapshot, indepDir);
   }
 
@@ -154,7 +158,8 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
     Path ccaePath =
-        _d.getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -174,7 +179,9 @@ public final class FileBasedStorage implements StorageProvider {
         _d.getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }
@@ -198,7 +205,9 @@ public final class FileBasedStorage implements StorageProvider {
         _d.getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }
@@ -297,6 +306,9 @@ public final class FileBasedStorage implements StorageProvider {
 
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
+    if (!ccaePath.toFile().exists() && !ccaePath.toFile().mkdirs()) {
+      throw new BatfishException(String.format("Unable to create directory '%s'", ccaePath));
+    }
     CommonUtil.deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);
 
@@ -311,7 +323,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
-    return _d.getSnapshotDir(network, snapshot).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
+    return _d.getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
   }
 
   private void storeConfigurations(
@@ -560,7 +573,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_METADATA_FILE);
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_METADATA_FILE));
   }
 
   @Override
