@@ -280,6 +280,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envPathOut =
           testrigDir.resolve(
               Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
+      Path envPathIn =
+          testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
       envSettings.setEnvironmentBasePath(envPathOut);
       envSettings.setCompressedDataPlanePath(
           envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
@@ -308,12 +310,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       envSettings.setDeltaConfigurationsDir(
           envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
-          envDirPath.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+          envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setPrecomputedRoutesPath(envDirPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
+      envSettings.setPrecomputedRoutesPath(envPathIn.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
       envSettings.setDeltaCompiledConfigurationsDir(
           envPathOut.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
       envSettings.setDeltaVendorConfigurationsDir(
