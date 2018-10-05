@@ -136,7 +136,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
-import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
@@ -209,15 +208,12 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.AclLine;
-import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.NodSatJob;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -720,25 +716,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .sum());
   }
 
-  /**
-   * Generates job to identify whether a given ACL line is unmatchable (i.e. it has unsatisfiable
-   * match condition).
-   *
-   * @param c Configuration containing ACL to check for unmatchable line
-   * @param aclName Name of ACL to check for unmatchable line
-   * @param lineToCheck Line number in the given ACL to check for matchability
-   * @return The {@link NodSatJob} to run to see if the given line is unmatchable
-   */
-  @VisibleForTesting
-  public NodSatJob<AclLine> generateUnmatchableAclLineJob(
-      Configuration c, String aclName, int lineToCheck) {
-    String hostname = c.getHostname();
-    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    AclLineIndependentSatisfiabilityQuerySynthesizer query =
-        new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineToCheck);
-    return new NodSatJob<>(_settings, aclSynthesizer, query, true);
-  }
-
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -940,14 +917,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
     _logger.printElapsedTime();
     return flows;
-  }
-
-  public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
-    _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
-    _logger.resetTimer();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
-    _logger.printElapsedTime();
   }
 
   @VisibleForTesting
@@ -4358,32 +4327,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
     return singleReachability(
         reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
-  }
-
-  private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
-    _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    _logger.resetTimer();
-
-    _logger.info("Synthesizing Z3 ACL logic...");
-    Synthesizer s =
-        new Synthesizer(
-            SynthesizerInputImpl.builder()
-                .setConfigurations(Collections.singletonMap(hostname, config))
-                .setEnabledAcls(Collections.singletonMap(hostname, ImmutableSet.of(aclName)))
-                .setSimplify(_settings.getSimplify())
-                .build());
-
-    List<String> warnings = s.getWarnings();
-    int numWarnings = warnings.size();
-    if (numWarnings == 0) {
-      _logger.info("OK\n");
-    } else {
-      for (String warning : warnings) {
-        _logger.warn(warning);
-      }
-    }
-    _logger.printElapsedTime();
-    return s;
   }
 
   public Synthesizer synthesizeDataPlane() {
