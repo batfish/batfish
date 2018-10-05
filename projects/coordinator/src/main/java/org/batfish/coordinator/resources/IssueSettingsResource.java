@@ -39,13 +39,13 @@ public class IssueSettingsResource {
     if (bean.minor == null) {
       throw new BadRequestException("IssueConfigBean must have a minor type");
     }
-    MajorIssueConfig issueConfig = Main.getWorkMgr().getMajorIssueConfig(_network, bean.major);
-    MajorIssueConfig updatedConfig = issueConfig.put(bean.toMinorIssueConfig());
     try {
+      MajorIssueConfig issueConfig = Main.getWorkMgr().getMajorIssueConfig(_network, bean.major);
+      MajorIssueConfig updatedConfig = issueConfig.put(bean.toMinorIssueConfig());
       Main.getWorkMgr().putMajorIssueConfig(_network, bean.major, updatedConfig);
       return Response.ok().build();
     } catch (IOException e) {
-      throw new InternalServerErrorException("Could not add the issue config");
+      throw new InternalServerErrorException("Could not add the issue config", e);
     }
   }
 

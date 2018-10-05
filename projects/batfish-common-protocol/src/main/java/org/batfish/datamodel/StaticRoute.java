@@ -1,13 +1,17 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** A static route */
 public class StaticRoute extends AbstractRoute {
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
 
@@ -33,17 +37,20 @@ public class StaticRoute extends AbstractRoute {
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) int tag) {
-    return new StaticRoute(network, nextHopIp, nextHopInterface, administrativeCost, metric, tag);
+    return new StaticRoute(
+        requireNonNull(network), nextHopIp, nextHopInterface, administrativeCost, metric, tag);
   }
 
-  public StaticRoute(
-      Prefix network,
+  private StaticRoute(
+      @Nonnull Prefix network,
       @Nullable Ip nextHopIp,
       @Nullable String nextHopInterface,
       int administrativeCost,
       long metric,
       int tag) {
     super(network);
+    checkArgument(
+        administrativeCost >= 0, "Invalid admin distance for static route: %d", administrativeCost);
     _administrativeCost = administrativeCost;
     _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
@@ -59,11 +66,11 @@ public class StaticRoute extends AbstractRoute {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    boolean res = _network.equals(rhs._network);
-    res = res && _administrativeCost == rhs._administrativeCost;
-    res = res && _nextHopIp.equals(rhs._nextHopIp);
-    res = res && _nextHopInterface.equals(rhs._nextHopInterface);
-    return res && _tag == rhs._tag;
+    return Objects.equals(_network, rhs._network)
+        && _administrativeCost == rhs._administrativeCost
+        && Objects.equals(_nextHopIp, rhs._nextHopIp)
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
+        && _tag == rhs._tag;
   }
 
   @Override
@@ -114,14 +121,7 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _network.hashCode();
-    result = prime * result + _administrativeCost;
-    result = prime * result + _nextHopInterface.hashCode();
-    result = prime * result + _nextHopIp.hashCode();
-    result = prime * result + _tag;
-    return result;
+    return Objects.hash(_administrativeCost, _metric, _nextHopInterface, _nextHopIp, _tag);
   }
 
   @Override
@@ -134,7 +134,8 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
-  public static class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
+  /** Builder for {@link StaticRoute} */
+  public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
     private int _administrativeCost = Route.UNSET_ROUTE_ADMIN;
     private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;

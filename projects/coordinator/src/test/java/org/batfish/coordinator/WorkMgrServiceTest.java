@@ -15,9 +15,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -35,20 +32,29 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
-import org.batfish.datamodel.answers.Aggregation;
+import org.batfish.coordinator.id.FileBasedIdManager;
+import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
-import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -64,8 +70,17 @@ public class WorkMgrServiceTest {
 
   private WorkMgrService _service;
 
-  private String _networkName = "myNetwork";
-  private String _snapshotName = "mySnapshot";
+  private String _networkName;
+  private String _snapshotName;
+  private SnapshotId _snapshotId;
+  private NetworkId _networkId;
+
+  public WorkMgrServiceTest() {
+    _networkName = "myNetwork";
+    _networkId = new NetworkId(_networkName + "_id");
+    _snapshotName = "mySnapshot";
+    _snapshotId = new SnapshotId(_snapshotName + "_id");
+  }
 
   private void initNetworkEnvironment() throws Exception {
     Settings settings = new Settings(new String[] {});
@@ -83,9 +98,11 @@ public class WorkMgrServiceTest {
         new WorkMgr(
             settings,
             logger,
+            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     Main.setWorkMgr(manager);
-    manager.initContainer(_networkName, null);
+    manager.initNetwork(_networkName, null);
+    manager.getIdManager().assignNetwork(_networkName, _networkId);
     _service = new WorkMgrService();
   }
 
@@ -119,9 +136,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getNonEmptyNetwork() throws Exception {
     initNetworkEnvironment();
-    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path snapshotPath = networkPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(_snapshotName);
-    assertThat(snapshotPath.toFile().mkdirs(), is(true));
+    initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
     Container network =
         BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
@@ -134,7 +149,10 @@ public class WorkMgrServiceTest {
   public void testConfigureAnalysis() throws Exception {
     initNetworkEnvironment();
     // test init and add questions to analysis
-    String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
+    String questionName = "q1";
+    String analysisName = "analysis";
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
     File analysisFile = _networksFolder.newFile("analysis");
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
     _service.configureAnalysis(
@@ -143,35 +161,25 @@ public class WorkMgrServiceTest {
         null,
         _networkName,
         "new",
-        "analysis",
+        analysisName,
         new FileInputStream(analysisFile),
         "",
         null);
-    Path questionPath =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    "analysis",
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    "question"));
-    assertTrue(Files.exists(questionPath));
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
-    String questionsToDelete = "[question]";
+    String questionsToDelete = String.format("[%s]", questionName);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
         null,
         _networkName,
         "",
-        "analysis",
+        analysisName,
         null,
         questionsToDelete,
         null);
-    assertFalse(Files.exists(questionPath));
+    assertFalse(idm().hasQuestionId(questionName, _networkId, analysisId));
     JSONArray result =
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
@@ -188,16 +196,17 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswer() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String question2Name = "question2Name";
-    String answer = "answerContent";
 
-    initNetworkEnvironment();
-
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -211,26 +220,23 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    TableAnswerElement table = new TableAnswerElement(new TableMetadata(ImmutableList.of()));
+    table.postProcessAnswer(questionObj, table.getRows().getData());
+    testAnswer.addAnswerElement(table);
+    testAnswer.setQuestion(questionObj);
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -276,74 +282,9 @@ public class WorkMgrServiceTest {
     String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
     String answerString =
         BatfishObjectMapper.mapper().readValue(answerJsonString, new TypeReference<String>() {});
-    assertThat(answerString, equalTo(answer));
-  }
-
-  @Test
-  public void getConfigNonExistNetwork() throws Exception {
-    initNetworkEnvironment();
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            null,
-            "nonExistNetwork",
-            null,
-            _snapshotName,
-            "config1.cfg");
-    String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("Network 'nonExistNetwork' not found"));
-  }
-
-  @Test
-  public void getNonExistConfig() throws Exception {
-    initNetworkEnvironment();
-    Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path snapshotPath =
-        networkDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
-    assertTrue(snapshotPath.toFile().mkdirs());
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            null,
-            _networkName,
-            null,
-            _snapshotName,
-            "config.cfg");
-    String actualMessage = response.getEntity().toString();
-    String expected =
-        String.format(
-            "Configuration file config.cfg does not exist in snapshot %s for network %s",
-            _snapshotName, _networkName);
-    assertThat(actualMessage, equalTo(expected));
-  }
-
-  @Test
-  public void getConfigContent() throws Exception {
-    initNetworkEnvironment();
-    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path configPath =
-        networkPath.resolve(
-            Paths.get(
-                BfConsts.RELPATH_TESTRIGS_DIR,
-                _snapshotName,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    assertTrue(configPath.toFile().mkdirs());
-    CommonUtil.writeFile(configPath.resolve("config.cfg"), "config content");
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            null,
-            _networkName,
-            null,
-            _snapshotName,
-            "config.cfg");
-    String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("config content"));
+    assertThat(
+        BatfishObjectMapper.mapper().readTree(answerString),
+        equalTo(BatfishObjectMapper.mapper().readTree(testAnswerStr)));
   }
 
   @Test
@@ -443,15 +384,17 @@ public class WorkMgrServiceTest {
     assertThat(actualMessage, equalTo(expected));
   }
 
+  private void initSnapshot() {
+    Main.getWorkMgr().getIdManager().assignSnapshot(_snapshotName, _networkId, _snapshotId);
+  }
+
   @Test
   public void getNonEmptyContainer() throws Exception {
     initNetworkEnvironment();
-    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path snapshotPath = networkPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(_snapshotName);
-    assertThat(snapshotPath.toFile().mkdirs(), is(true));
+    initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
-    Container network =
-        BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
+    String entityStr = response.getEntity().toString();
+    Container network = BatfishObjectMapper.mapper().readValue(entityStr, Container.class);
     Container expected =
         Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
     assertThat(network, equalTo(expected));
@@ -461,7 +404,10 @@ public class WorkMgrServiceTest {
   public void testConfigureAnalysisInContainer() throws Exception {
     initNetworkEnvironment();
     // test init and add questions to analysis
-    String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
+    String questionName = "q1";
+    String analysisName = "a1";
+    String analysisJsonString =
+        String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
     File analysisFile = _networksFolder.newFile("analysis");
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
     _service.configureAnalysis(
@@ -470,35 +416,25 @@ public class WorkMgrServiceTest {
         _networkName,
         null,
         "new",
-        "analysis",
+        analysisName,
         new FileInputStream(analysisFile),
         "",
         null);
-    Path questionPath =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    "analysis",
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    "question"));
-    assertTrue(Files.exists(questionPath));
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
-    String questionsToDelete = "[question]";
+    String questionsToDelete = String.format("[%s]", questionName);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
         _networkName,
         null,
         "",
-        "analysis",
+        analysisName,
         null,
         questionsToDelete,
         null);
-    assertFalse(Files.exists(questionPath));
+    assertFalse(idm().hasQuestionId(questionName, _networkId, analysisId));
     JSONArray result =
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
@@ -515,16 +451,17 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswerInContainer() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String question2Name = "question2Name";
-    String answer = "answerContent";
 
-    initNetworkEnvironment();
-
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -538,26 +475,21 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    testAnswer.addAnswerElement(new StringAnswerElement("foo"));
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -603,102 +535,23 @@ public class WorkMgrServiceTest {
     String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
     String answerString =
         BatfishObjectMapper.mapper().readValue(answerJsonString, new TypeReference<String>() {});
-    assertThat(answerString, equalTo(answer));
-  }
-
-  @Test
-  public void getConfigNonExistContainer() throws Exception {
-    initNetworkEnvironment();
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            "nonExistContainer",
-            null,
-            _snapshotName,
-            null,
-            "config1.cfg");
-    String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("Network 'nonExistContainer' not found"));
-  }
-
-  @Test
-  public void getNonExistConfigInContainer() throws Exception {
-    initNetworkEnvironment();
-    Path networkDir = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path snapshotPath =
-        networkDir.resolve(
-            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, _snapshotName, BfConsts.RELPATH_TEST_RIG_DIR));
-    assertTrue(snapshotPath.toFile().mkdirs());
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            _networkName,
-            null,
-            _snapshotName,
-            null,
-            "config.cfg");
-    String actualMessage = response.getEntity().toString();
-    String expected =
-        String.format(
-            "Configuration file config.cfg does not exist in snapshot %s for network %s",
-            _snapshotName, _networkName);
-    assertThat(actualMessage, equalTo(expected));
-  }
-
-  @Test
-  public void getConfigContentInContainer() throws Exception {
-    initNetworkEnvironment();
-    Path networkPath = _networksFolder.getRoot().toPath().resolve(_networkName);
-    Path configPath =
-        networkPath.resolve(
-            Paths.get(
-                BfConsts.RELPATH_TESTRIGS_DIR,
-                _snapshotName,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    assertTrue(configPath.toFile().mkdirs());
-    CommonUtil.writeFile(configPath.resolve("config.cfg"), "config content");
-    Response response =
-        _service.getConfiguration(
-            CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
-            _networkName,
-            null,
-            _snapshotName,
-            null,
-            "config.cfg");
-    String actualMessage = response.getEntity().toString();
-    assertThat(actualMessage, equalTo("config content"));
+    assertThat(answerString, equalTo(testAnswerStr));
   }
 
   @Test
   public void testGetAnalysisAnswersMetrics() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String analysisQuestionsStr =
         BatfishObjectMapper.writePrettyString(ImmutableList.of(questionName));
 
-    initNetworkEnvironment();
-
-    String columnName = "col";
-    int value = 5;
-    AnswerMetadata testAnswerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(
-                Metrics.builder()
-                    .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                    .setNumRows(1)
-                    .build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
-    String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
-
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -712,26 +565,20 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1MetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersMetrics(
@@ -754,27 +601,19 @@ public class WorkMgrServiceTest {
             .readValue(answerJsonString, new TypeReference<GetAnalysisAnswerMetricsAnswer>() {});
     assertThat(
         structuredAnswer,
-        equalTo(
-            new GetAnalysisAnswerMetricsAnswer(
-                ImmutableMap.of(
-                    questionName,
-                    AnswerMetadata.builder()
-                        .setMetrics(
-                            Metrics.builder()
-                                .setAggregations(
-                                    ImmutableMap.of(
-                                        columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                                .setNumRows(1)
-                                .build())
-                        .setStatus(AnswerStatus.SUCCESS)
-                        .build()))));
+        equalTo(new GetAnalysisAnswerMetricsAnswer(ImmutableMap.of(questionName, answerMetadata))));
   }
 
   @Test
   public void testGetAnalysisAnswersRows() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     Map<String, AnswerRowsOptions> analysisAnswersOptions =
         ImmutableMap.of(
@@ -789,21 +628,9 @@ public class WorkMgrServiceTest {
     String analysisAnswersOptionsStr =
         BatfishObjectMapper.writePrettyString(analysisAnswersOptions);
 
-    initNetworkEnvironment();
-
     int value = 5;
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -817,26 +644,25 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1Path = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1Path, answer);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    testAnswer.addAnswerElement(
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, value)));
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersRows(
@@ -869,28 +695,16 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAnalysis() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName + "_settings_id");
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
 
-    initNetworkEnvironment();
-
-    String columnName = "col";
-    int value = 5;
-    AnswerMetadata testAnswerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(
-                Metrics.builder()
-                    .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                    .setNumRows(1)
-                    .build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
-    String answerMetadata = BatfishObjectMapper.writePrettyString(testAnswerMetadata);
-
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", questionName, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -904,26 +718,20 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-
-    Path answerDir =
-        _networksFolder
-            .getRoot()
-            .toPath()
-            .resolve(
-                Paths.get(
-                    _networkName,
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _snapshotName,
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName,
-                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                    BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME));
-
-    Path answer1MetadataPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_METADATA);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(answer1MetadataPath, answerMetadata);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(
@@ -944,44 +752,31 @@ public class WorkMgrServiceTest {
     AnswerMetadata structuredAnswer =
         BatfishObjectMapper.mapper()
             .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
-    assertThat(
-        structuredAnswer,
-        equalTo(
-            AnswerMetadata.builder()
-                .setMetrics(
-                    Metrics.builder()
-                        .setAggregations(
-                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                        .setNumRows(1)
-                        .build())
-                .setStatus(AnswerStatus.SUCCESS)
-                .build()));
+    assertThat(structuredAnswer, equalTo(answerMetadata));
   }
 
   @Test
   public void testGetAnswerMetricsAdHoc() throws Exception {
-    String questionName = "question1";
-    String questionContent = "questionContent";
-    String columnName = "col";
     initNetworkEnvironment();
+    initSnapshot();
+    String question = "question1";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
 
-    int value = 5;
-    AnswerMetadata testAnswerMetadata =
-        AnswerMetadata.builder()
-            .setMetrics(
-                Metrics.builder()
-                    .setAggregations(
-                        ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                    .setNumRows(1)
-                    .build())
-            .setStatus(AnswerStatus.SUCCESS)
-            .build();
-
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, questionName, null);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(
-            testAnswerMetadata, _networkName, _snapshotName, questionName, null, null);
+    Main.getWorkMgr().uploadQuestion(_networkName, question, questionContent);
+    QuestionId questionId = idm().getQuestionId(question, _networkId, null);
+    AnswerId answerId =
+        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+    Answer testAnswer = new Answer();
+    testAnswer.setStatus(AnswerStatus.SUCCESS);
+    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
+    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(
@@ -992,7 +787,7 @@ public class WorkMgrServiceTest {
             null,
             null,
             null,
-            questionName,
+            question,
             null);
 
     assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
@@ -1002,25 +797,19 @@ public class WorkMgrServiceTest {
     AnswerMetadata structuredAnswer =
         BatfishObjectMapper.mapper()
             .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
-    assertThat(
-        structuredAnswer,
-        equalTo(
-            AnswerMetadata.builder()
-                .setMetrics(
-                    Metrics.builder()
-                        .setAggregations(
-                            ImmutableMap.of(columnName, ImmutableMap.of(Aggregation.MAX, value)))
-                        .setNumRows(1)
-                        .build())
-                .setStatus(AnswerStatus.SUCCESS)
-                .build()));
+    assertThat(structuredAnswer, equalTo(answerMetadata));
   }
 
   @Test
   public void testGetAnswerRowsAnalysis() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String analysis = "analysis1";
     String question = "question1";
-    String questionContent = "questionContent";
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionObj.getName() + "_id");
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -1031,9 +820,6 @@ public class WorkMgrServiceTest {
             ImmutableList.of(new ColumnSortOption(columnName, false)),
             false);
     String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
-
-    initNetworkEnvironment();
-
     int value = 5;
     Answer testAnswer = new Answer();
     testAnswer.addAnswerElement(
@@ -1045,8 +831,7 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"%s\"}}", question, questionContent);
+    String analysisJsonString = String.format("{\"%s\":%s}", question, questionContent);
     File analysisFile = _networksFolder.newFile(analysis);
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
 
@@ -1060,10 +845,18 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnswerId answerId =
+        idm()
+            .getBaseAnswerId(
+                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
 
+    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
         .getStorage()
-        .storeAnswer(answer, _networkName, _snapshotName, question, null, analysis);
+        .storeAnswerMetadata(
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
@@ -1090,10 +883,20 @@ public class WorkMgrServiceTest {
     assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
   }
 
+  private static IdManager idm() {
+    return Main.getWorkMgr().getIdManager();
+  }
+
   @Test
   public void testGetAnswerRowsAdHoc() throws Exception {
+    initNetworkEnvironment();
+    initSnapshot();
     String question = "question1";
-    String questionContent = "questionContent";
+    QuestionId questionId = new QuestionId(question + "_id");
+    Question questionObj = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(questionObj);
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
+    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -1104,8 +907,6 @@ public class WorkMgrServiceTest {
             ImmutableList.of(new ColumnSortOption(columnName, false)),
             false);
     String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
-
-    initNetworkEnvironment();
 
     int value = 5;
     Answer testAnswer = new Answer();
@@ -1118,10 +919,15 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkName, question, null);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
+    idm().assignQuestion(question, _networkId, questionId, null);
+    AnswerId answerId =
+        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
         .getStorage()
-        .storeAnswer(answer, _networkName, _snapshotName, question, null, null);
+        .storeAnswerMetadata(
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(

@@ -4,36 +4,20 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Flow.Builder;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PreInInterface;
+import org.batfish.z3.state.Query;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 /**
@@ -43,7 +27,9 @@ import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
  * particular, the graph nodes are {@link StateExpr StateExprs} and the edges are mostly the same as
  * the NOD program rules/transitions. {@link BDD BDDs} label the nodes and edges of the graph. A
  * node label represent the set of packets that can reach that node, and an edge label represents
- * the set of packets that can traverse the edge.
+ * the set of packets that can traverse the edge. There is a single designated {@link Query}
+ * StateExpr that we compute reachability sets (i.e. sets of packets that reach the query state).
+ * The query state never has any out-edges, and has in-edges from the dispositions of interest.
  *
  * <p>The two main departures from the NOD program are: 1) ACLs are encoded as a single BDD that
  * labels an edge (rather than a series of states/transitions in NOD programs). 2) Source NAT is
@@ -54,12 +40,8 @@ import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
  * <p>We currently implement backward all-pairs reachability. Forward reachability is useful for
  * questions with a tight source constraint, e.g. "find me packets send from node A that get
  * dropped". When reasoning about many sources simultaneously, we have to somehow remember the
- * source, which is very expensive for a large number of sources. Something like multipath
- * consistency -- "find me a packet and a node such that when the node sends the packet, it can be
- * either accepted and dropped" -- for which there are many sources but only a few sinks ({@link
- * Accept}, {@link Drop}, and {@link NeighborUnreachable}), backward reachability is much more
- * efficient. We still have to remember the sinks, but there's only ever 3 of those, no matter how
- * many sources there are.
+ * source, which is very expensive for a large number of sources. For queries that have to consider
+ * all packets that can reach the query state, backward reachability is much more efficient.
  */
 public class BDDReachabilityAnalysis {
   private final BDDPacket _bddPacket;
@@ -70,50 +52,17 @@ public class BDDReachabilityAnalysis {
   // postState --> preState --> predicate
   private final Map<StateExpr, Map<StateExpr, Edge>> _reverseEdges;
 
-  private final Map<StateExpr, BDD> _graphRoots;
-
-  // state --> final state --> predicate
-  private final Supplier<Map<StateExpr, Map<StateExpr, BDD>>> _reverseReachableStates;
-
-  private Set<StateExpr> _leafStates;
+  // stateExprs that correspond to the IngressLocations of interest
+  private final ImmutableSet<StateExpr> _ingressLocationStates;
 
   BDDReachabilityAnalysis(
       BDDPacket packet,
-      Map<StateExpr, BDD> graphRoots,
-      Map<StateExpr, Map<StateExpr, Edge>> transitions) {
+      Set<StateExpr> ingressLocationStates,
+      Map<StateExpr, Map<StateExpr, Edge>> edges) {
     _bddPacket = packet;
-    _edges = computeEdges(graphRoots, transitions);
+    _edges = edges;
     _reverseEdges = computeReverseEdges(_edges);
-    _graphRoots = ImmutableMap.copyOf(graphRoots);
-    _reverseReachableStates = Suppliers.memoize(this::computeReverseReachableStates);
-    _leafStates = computeTerminalStates();
-  }
-
-  private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(
-      Map<StateExpr, BDD> graphRoots, Map<StateExpr, Map<StateExpr, Edge>> transitions) {
-    Map<StateExpr, Map<StateExpr, Edge>> edges = new HashMap<>();
-    // add root transitions
-    graphRoots.forEach(
-        (root, predicate) -> {
-          if (root instanceof OriginateVrf) {
-            OriginateVrf originateVrf = (OriginateVrf) root;
-            PostInVrf postInVrf = new PostInVrf(originateVrf.getHostname(), originateVrf.getVrf());
-            Edge edge = new Edge(root, postInVrf, predicate);
-            edges.put(originateVrf, ImmutableMap.of(postInVrf, edge));
-          } else if (root instanceof OriginateInterfaceLink) {
-            OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) root;
-            PreInInterface preInInterface =
-                new PreInInterface(
-                    originateInterfaceLink.getHostname(), originateInterfaceLink.getIface());
-            Edge edge = new Edge(root, preInInterface, predicate);
-            edges.put(originateInterfaceLink, ImmutableMap.of(preInInterface, edge));
-          } else {
-            throw new BatfishException("unexpected graph root: " + root);
-          }
-        });
-    // add all other transitions
-    transitions.forEach(edges::put);
-    return ImmutableMap.copyOf(edges);
+    _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeReverseEdges(
@@ -131,40 +80,25 @@ public class BDDReachabilityAnalysis {
         reverseEdges, Entry::getKey, entry -> ImmutableMap.copyOf(entry.getValue()));
   }
 
-  /*
-   * node --> final --> set of headers that can reach final from node.
-   */
-  private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates() {
-    List<StateExpr> leaves =
-        ImmutableList.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE);
-    return computeReverseReachableStates(leaves);
-  }
+  private Map<StateExpr, BDD> computeReverseReachableStates() {
+    Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
+    Set<StateExpr> dirty = new HashSet<>();
 
-  private Map<StateExpr, Map<StateExpr, BDD>> computeReverseReachableStates(
-      List<StateExpr> leaves) {
-    Map<StateExpr, Map<StateExpr, BDD>> reverseReachableStates = new HashMap<>();
-    Multimap<StateExpr, StateExpr> dirty = HashMultimap.create();
-    for (StateExpr leaf : leaves) {
-      reverseReachableStates.put(leaf, ImmutableMap.of(leaf, _bddPacket.getFactory().one()));
-      dirty.put(leaf, leaf);
-    }
-
-    List<Long> roundTimes = new LinkedList<>();
-    List<Integer> roundDirties = new LinkedList<>();
+    reverseReachableStates.put(Query.INSTANCE, _bddPacket.getFactory().one());
+    dirty.add(Query.INSTANCE);
 
     while (!dirty.isEmpty()) {
-      Multimap<StateExpr, StateExpr> newDirty = HashMultimap.create();
-      long time = System.currentTimeMillis();
+      Set<StateExpr> newDirty = new HashSet<>();
 
       dirty.forEach(
-          (postState, leaf) -> {
+          postState -> {
             Map<StateExpr, Edge> postStateInEdges = _reverseEdges.get(postState);
             if (postStateInEdges == null) {
-              // preState has no in-edges
+              // postState has no in-edges
               return;
             }
 
-            BDD postStateBDD = reverseReachableStates.get(postState).get(leaf);
+            BDD postStateBDD = reverseReachableStates.get(postState);
             postStateInEdges.forEach(
                 (preState, edge) -> {
                   BDD result = edge.traverseBackward(postStateBDD);
@@ -173,94 +107,34 @@ public class BDDReachabilityAnalysis {
                   }
 
                   // update preState BDD reverse-reachable from leaf
-                  Map<StateExpr, BDD> reverseReachPreState =
-                      reverseReachableStates.computeIfAbsent(preState, k -> new HashMap<>());
-                  BDD oldReach = reverseReachPreState.get(leaf);
+                  BDD oldReach = reverseReachableStates.get(preState);
                   BDD newReach = oldReach == null ? result : oldReach.or(result);
-
                   if (oldReach == null || !oldReach.equals(newReach)) {
-                    reverseReachPreState.put(leaf, newReach);
-                    newDirty.put(preState, leaf);
+                    reverseReachableStates.put(preState, newReach);
+                    newDirty.add(preState);
                   }
                 });
           });
 
       dirty = newDirty;
-
-      time = System.currentTimeMillis() - time;
-      roundTimes.add(time);
-      roundDirties.add(dirty.size());
     }
 
-    return toImmutableMap(
-        reverseReachableStates,
-        Entry::getKey,
-        rootEntry -> toImmutableMap(rootEntry.getValue(), Entry::getKey, Entry::getValue));
+    return ImmutableMap.copyOf(reverseReachableStates);
   }
 
-  private Set<StateExpr> computeTerminalStates() {
-    Set<StateExpr> preStates = _edges.keySet();
-    Set<StateExpr> postStates =
-        _edges.values().stream().flatMap(m -> m.keySet().stream()).collect(Collectors.toSet());
-    return ImmutableSet.copyOf(Sets.difference(postStates, preStates));
+  public BDDPacket getBDDPacket() {
+    return _bddPacket;
   }
 
-  /**
-   * Return a list of {@link MultipathInconsistency multipath consistency violations} detected in
-   * the network.
-   */
-  @VisibleForTesting
-  List<MultipathInconsistency> computeMultipathInconsistencies() {
-    return _reverseReachableStates
-        .get()
-        .entrySet()
-        .stream()
-        .filter(entry -> _graphRoots.containsKey(entry.getKey()))
-        .flatMap(
-            entry -> {
-              StateExpr root = entry.getKey();
-              Map<StateExpr, BDD> leafBDDs = entry.getValue();
-              return _leafStates
-                  .stream()
-                  .filter(leafBDDs::containsKey)
-                  .flatMap(
-                      leaf1 -> {
-                        BDD leaf1BDD = leafBDDs.get(leaf1);
-                        return _leafStates
-                            .stream()
-                            .filter(leaf2 -> leaf1 != leaf2)
-                            .filter(leafBDDs::containsKey)
-                            // avoid duplicate violations
-                            .filter(leaf2 -> leaf1.toString().compareTo(leaf2.toString()) < 1)
-                            .flatMap(
-                                leaf2 -> {
-                                  BDD leaf2BDD = leafBDDs.get(leaf2);
-                                  BDD intersection = leaf1BDD.and(leaf2BDD);
-                                  return intersection.isZero()
-                                      ? Stream.empty()
-                                      : Stream.of(
-                                          new MultipathInconsistency(
-                                              root, ImmutableSet.of(leaf1, leaf2), intersection));
-                                });
-                      });
-            })
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  public Map<IngressLocation, BDD> getIngressLocationAcceptBDDs() {
+  public Map<IngressLocation, BDD> getIngressLocationReachableBDDs() {
     BDD zero = _bddPacket.getFactory().zero();
-    return _reverseReachableStates
-        .get()
-        .entrySet()
+    Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates();
+    return _ingressLocationStates
         .stream()
-        .filter(
-            entry ->
-                entry.getKey() instanceof OriginateInterfaceLink
-                    || entry.getKey() instanceof OriginateVrf)
         .collect(
             ImmutableMap.toImmutableMap(
-                entry -> toIngressLocation(entry.getKey()),
-                entry -> entry.getValue().getOrDefault(Accept.INSTANCE, zero)));
+                BDDReachabilityAnalysis::toIngressLocation,
+                root -> reverseReachableStates.getOrDefault(root, zero)));
   }
 
   @VisibleForTesting
@@ -278,40 +152,8 @@ public class BDDReachabilityAnalysis {
     }
   }
 
-  Set<StateExpr> getLeafStates() {
-    return _leafStates;
-  }
-
-  public Set<Flow> multipathInconsistencies(String flowTag) {
-    return computeMultipathInconsistencies()
-        .stream()
-        .map(violation -> multipathInconsistencyToFlow(violation, flowTag))
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
   @VisibleForTesting
-  Flow multipathInconsistencyToFlow(MultipathInconsistency violation, String flowTag) {
-    Builder fb =
-        _bddPacket
-            .getFlow(violation.getBDD())
-            .orElseGet(
-                () -> {
-                  throw new BatfishException("MultipathConsistencyViolation with UNSAT predicate");
-                });
-    StateExpr originateState = violation.getOriginateState();
-    fb.setTag(flowTag);
-    if (originateState instanceof OriginateVrf) {
-      OriginateVrf originateVrf = (OriginateVrf) originateState;
-      fb.setIngressNode(originateVrf.getHostname());
-      fb.setIngressVrf(originateVrf.getVrf());
-    } else if (originateState instanceof OriginateInterfaceLink) {
-      OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) originateState;
-      fb.setIngressNode(originateInterfaceLink.getHostname());
-      fb.setIngressInterface(originateInterfaceLink.getIface());
-    } else {
-      throw new BatfishException(
-          "Unexpected originateState type: " + originateState.getClass().getSimpleName());
-    }
-    return fb.build();
+  Map<StateExpr, Map<StateExpr, Edge>> getEdges() {
+    return _edges;
   }
 }

@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
@@ -75,7 +75,7 @@ public class PathDiffTest {
 
     if (connected) {
       // add a static route from A to pB
-      StaticRoute.Builder rb = StaticRoute.builder();
+      StaticRoute.Builder rb = StaticRoute.builder().setAdministrativeCost(1);
       vA.getStaticRoutes().add(rb.setNetwork(pB).setNextHopIp(pAB.getEndIp()).build());
       // add a static route from B to pA
       vB.getStaticRoutes().add(rb.setNetwork(pA).setNextHopIp(pAB.getStartIp()).build());
@@ -102,7 +102,7 @@ public class PathDiffTest {
     AnswerElement answer =
         batfish.pathDiff(
             ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(ForwardingAction.ACCEPT))
+                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
                 .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
                 .build());
     assertThat(answer, Matchers.instanceOf(FlowHistory.class));

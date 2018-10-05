@@ -2,7 +2,7 @@
 hostname cisco_acl
 !
 ip access-list BLAH-BLAH
-   10 permit icmp any any
+   10 permit icmp any any packet-too-big
    20 permit ip any any tracked
    30 permit ospf any any
    40 permit tcp any any eq bgp
@@ -53,3 +53,7 @@ arp access-list unnumberedArpAcl
 !
 arp access-list numberedArpAcl
     10 deny ip any mac any
+!
+ip access-list test-codes
+    10 permit udp any any eq bfd
+    20 permit udp any any eq bfd-echo

@@ -21,6 +21,7 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -42,6 +43,8 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -59,7 +62,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> actions) {
     throw new UnsupportedOperationException();
   }
 
@@ -105,7 +108,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getContainerName() {
+  public NetworkId getContainerName() {
     throw new UnsupportedOperationException();
   }
 
@@ -203,7 +206,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getTestrigName() {
+  public SnapshotId getTestrigName() {
     throw new UnsupportedOperationException();
   }
 

@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -20,8 +21,8 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -71,6 +72,7 @@ public class ReducedReachabilityTest {
               StaticRoute.builder()
                   .setNetwork(Prefix.parse("2.2.2.2/32"))
                   .setNextHopInterface(PHYSICAL)
+                  .setAdministrativeCost(1)
                   .build()));
     }
 
@@ -85,6 +87,7 @@ public class ReducedReachabilityTest {
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                 .setNextHopInterface(PHYSICAL)
+                .setAdministrativeCost(1)
                 .build()));
 
     return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -121,7 +124,7 @@ public class ReducedReachabilityTest {
     AnswerElement answer =
         batfish.reducedReachability(
             ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(ForwardingAction.ACCEPT))
+                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
                 .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
                 .setHeaderSpace(
                     HeaderSpace.builder().setDstIps(NODE2_ALTERNATE_IP.toIpSpace()).build())
@@ -142,7 +145,7 @@ public class ReducedReachabilityTest {
   @Test
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
-    Set<Flow> flows = batfish.bddReducedReachability();
+    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
     assertThat(flows, hasSize(1));
     assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }

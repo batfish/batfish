@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.BasicRuleStatement;
@@ -48,7 +48,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     public abstract T getThis();
 
-    public abstract T setActions(Set<ForwardingAction> actions);
+    public abstract T setActions(Set<FlowDisposition> actions);
 
     public abstract T setFinalNodes(Set<String> finalNodes);
 

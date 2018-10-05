@@ -31,8 +31,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -123,7 +123,7 @@ public class NodJobAclTest {
         .setOutgoingFilter(matchSrcInterfaceAcl)
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
     srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("1.0.0.1")).build());
     srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("2.0.0.1")).build());
 
@@ -161,7 +161,7 @@ public class NodJobAclTest {
         ImmutableMap.of(ingressLocation, TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .setActions(ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setFinalNodes(ImmutableSet.of(dstNode.getHostname()))
             .setHeaderSpace(headerSpace)
             .setSrcIpConstraints(srcIpConstraints)
@@ -298,7 +298,7 @@ public class NodJobAclTest {
 
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .setActions(ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setFinalNodes(ImmutableSet.of(node.getHostname()))
             .setHeaderSpace(headerSpace)
             .setSrcIpConstraints(srcIpConstraints)
@@ -428,7 +428,7 @@ public class NodJobAclTest {
         ImmutableMap.of(ingressLocation, TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .setActions(ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setHeaderSpace(headerSpace)
             .setSrcIpConstraints(srcIpConstraints)
             .build();
