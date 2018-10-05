@@ -1133,7 +1133,9 @@ public class WorkMgr extends AbstractCoordinator {
 
   private Path getdirEnvironment(String containerName, String testrigName, String envName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path envDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
+    Path envDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
     if (!Files.exists(envDir)) {
       throw new BatfishException("Environment '" + envName + "' does not exist");
     }
@@ -1200,7 +1202,9 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public Set<String> getNodes(String container, String testrig) throws IOException {
     Path pojoTopologyPath =
-        getdirSnapshot(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+        getdirSnapshot(container, testrig)
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
     Topology topology =
         BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
@@ -1211,7 +1215,8 @@ public class WorkMgr extends AbstractCoordinator {
 
     ParseVendorConfigurationAnswerElement pvcae =
         deserializeObject(
-            getdirSnapshot(containerName, testrigName).resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH),
+            getdirSnapshot(containerName, testrigName)
+                .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)),
             ParseVendorConfigurationAnswerElement.class);
     JSONObject warnings = new JSONObject();
     SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
@@ -1243,7 +1248,8 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getTestrigInfo(String containerName, String testrigName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path submittedTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+    Path submittedTestrigDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     if (!Files.exists(submittedTestrigDir)) {
       return "Missing folder '"
           + BfConsts.RELPATH_TEST_RIG_DIR
@@ -1285,7 +1291,7 @@ public class WorkMgr extends AbstractCoordinator {
   @Nullable
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path file = testrigDir.resolve(objectName);
+    Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
     /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
@@ -1293,6 +1299,13 @@ public class WorkMgr extends AbstractCoordinator {
     if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
+
+    // Check in output then input directories for backward compatibility
+    // Since inputs and outputs used to be stored together, in the testrig dir
+    if (!file.toFile().exists()) {
+      file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, objectName));
+    }
+
     if (Files.isRegularFile(file)) {
       return file;
     } else if (Files.isDirectory(file)) {
@@ -1306,7 +1319,6 @@ public class WorkMgr extends AbstractCoordinator {
 
       return zipfile;
     }
-
     return null;
   }
 
@@ -1361,7 +1373,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path testrigDir =
         containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
 
-    if (!testrigDir.toFile().mkdirs()) {
+    if (!testrigDir.resolve(BfConsts.RELPATH_OUTPUT).toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
     }
 
@@ -1381,12 +1393,14 @@ public class WorkMgr extends AbstractCoordinator {
       throw metadataError;
     }
 
-    Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+    Path srcTestrigDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
 
     // create empty default environment
     Path defaultEnvironmentLeafDir =
         testrigDir.resolve(
             Paths.get(
+                BfConsts.RELPATH_OUTPUT,
                 BfConsts.RELPATH_ENVIRONMENTS_DIR,
                 BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                 BfConsts.RELPATH_ENV_DIR));
@@ -1647,7 +1661,8 @@ public class WorkMgr extends AbstractCoordinator {
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
+    Path environmentsDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
     if (!Files.exists(environmentsDir)) {
       return new TreeSet<>();
     }
@@ -1886,7 +1901,8 @@ public class WorkMgr extends AbstractCoordinator {
       String newEnvName,
       InputStream fileStream) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
+    Path environmentsDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
     Path newEnvDir = environmentsDir.resolve(newEnvName);
     Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
     if (Files.exists(newEnvDir)) {
