@@ -678,11 +678,6 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delEnvironment(String network, String snapshot, String envName) {
-    Path envDir = getdirEnvironment(network, snapshot, envName);
-    CommonUtil.deleteDirectory(envDir);
-  }
-
   public void delSnapshot(String network, String snapshot) {
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.deleteSnapshot(snapshot, networkId);
@@ -1130,17 +1125,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
-  }
-
-  private Path getdirEnvironment(String containerName, String testrigName, String envName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path envDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-    if (!Files.exists(envDir)) {
-      throw new BatfishException("Environment '" + envName + "' does not exist");
-    }
-    return envDir;
   }
 
   public Path getdirSnapshot(String network, String snapshot) {
