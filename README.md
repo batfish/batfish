@@ -11,11 +11,9 @@ Batfish is a network configuration analysis tool that can find bugs and guarante
 
 ## How do I get started?
 
-The quickest way to get started is using one of the pre-built [Docker containers](https://github.com/batfish/docker/).
+The quickest way to get started is using pre-built [Docker containers](https://github.com/batfish/docker/). Or, you can [build from sources](https://github.com/batfish/batfish/wiki).
 
-Or, you can build from sources, the instructions for which are on the [Batfish Wiki](https://github.com/batfish/batfish/wiki).
-
-Batfish is also available as a commercially-supported service by [Intentionet](https://www.intentionet.com). Drop a line to [info@intentionet.com](mailto:info@intentionet.com) for more information.
+Batfish is also available as a supported service by [Intentionet](https://www.intentionet.com). Drop a line to [info@intentionet.com](mailto:info@intentionet.com) for more information.
 
 ## What kinds of correctness checks does Batfish support?
 
