@@ -7,9 +7,7 @@
 
 Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches. See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
 
-**Batfish does not require access to network devices.** It can work with configuration files pulled by tools like RANCID or those generated via templates.
-
-![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
+**Batfish does not require access to network devices.** It can work with configuration files pulled by tools like RANCID or those generated via templates. ![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
 
 ## How do I get started?
 
