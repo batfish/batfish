@@ -2,6 +2,8 @@
 !
 hostname nexus_bgp
 !
+feature bgp
+!
 router bgp 1
   enforce-first-as
   event-history periodic

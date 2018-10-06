@@ -46,6 +46,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_ROUTE_MAP_UNSUPPRESS("bgp unsuppress-map"),
   BGP_TABLE_MAP("bgp table-map"),
   BGP_UPDATE_SOURCE_INTERFACE("update-source interface"),
+  BGP_USE_NEIGHBOR_GROUP("bgp use neighbor-group"),
   BGP_VRF_AGGREGATE_ROUTE_MAP("bgp vrf aggregate-address route-map"),
   CLASS_MAP_ACCESS_GROUP("class-map access-group"),
   CLASS_MAP_ACCESS_LIST("class-map access-list"),

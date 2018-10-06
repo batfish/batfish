@@ -8,9 +8,9 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
   private String _name;
 
-  public NamedBgpPeerGroup(String name, int definitionLine) {
+  public NamedBgpPeerGroup(String name) {
     _name = name;
-    _definitionLine = definitionLine;
+    _definitionLine = -1;
   }
 
   public int getDefinitionLine() {

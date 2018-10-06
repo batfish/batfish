@@ -61,7 +61,6 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkeGateway;
@@ -1696,7 +1695,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (!namedPeerGroup.getInherited()) {
         _unusedPeerSessions.add(namedPeerGroup);
         String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
-        NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName, -1);
+        NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName);
         fakeNamedPg.setPeerSession(name);
         proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
         Ip fakeIp = new Ip(fakePeerCounter);
@@ -3593,9 +3592,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
-    // record references to defined structures
-    recordPeerGroups();
-    recordPeerSessions();
+    markConcreteStructure(
+        CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
 
     c.simplifyRoutingPolicies();
 
@@ -4078,50 +4076,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               CiscoStructureType.COMMUNITY_LIST_EXPANDED,
               CiscoStructureType.COMMUNITY_LIST_STANDARD));
-    }
-  }
-
-  private void recordPeerGroups() {
-    for (Vrf vrf : getVrfs().values()) {
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc == null) {
-        continue;
-      }
-      for (NamedBgpPeerGroup peerGroup : proc.getNamedPeerGroups().values()) {
-        int numReferrers =
-            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup))
-                ? 0
-                // we are not properly counting references for peer groups
-                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
-
-        recordStructure(
-            CiscoStructureType.BGP_PEER_GROUP,
-            peerGroup.getName(),
-            numReferrers,
-            peerGroup.getDefinitionLine());
-      }
-    }
-  }
-
-  private void recordPeerSessions() {
-    for (Vrf vrf : getVrfs().values()) {
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc == null) {
-        continue;
-      }
-      for (NamedBgpPeerGroup peerSession : proc.getPeerSessions().values()) {
-        // use -1 for now; we are not counting references for peerSessions
-        int numReferrers =
-            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession))
-                ? 0
-                // we are not properly counting references for peer sessions
-                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
-        recordStructure(
-            CiscoStructureType.BGP_PEER_SESSION,
-            peerSession.getName(),
-            numReferrers,
-            peerSession.getDefinitionLine());
-      }
     }
   }
 
