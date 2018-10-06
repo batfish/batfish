@@ -3138,7 +3138,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
-    if (Sets.newHashSet(getSettings().getDebugFlags()).contains("traceroute")) {
+    if (getSettings().debugFlagEnabled("traceroute")) {
       getDataPlanePlugin().processFlowsNew(flows, dp, ignoreAcls);
     } else {
       getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);

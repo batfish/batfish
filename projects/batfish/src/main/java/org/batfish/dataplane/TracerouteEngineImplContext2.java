@@ -384,7 +384,6 @@ public class TracerouteEngineImplContext2 {
         continue;
       }
       processFlowReception(
-          transmissionContext._hopsSoFar.get(transmissionContext._hopsSoFar.size() - 1),
           edge.getNode2(),
           edge.getInt2(),
           transmissionContext,
@@ -526,7 +525,6 @@ public class TracerouteEngineImplContext2 {
                         new TreeSet<>(),
                         flow);
                 processFlowReception(
-                    dummyHop,
                     ingressNodeName,
                     ingressInterfaceName,
                     transmissionContext,
@@ -548,7 +546,6 @@ public class TracerouteEngineImplContext2 {
 
   /** Process the packet incident on a hop */
   private void processFlowReception(
-      TraceHop previousHop,
       String currentNodeName,
       String currentInterfaceName,
       TransmissionContext oldTransmissionContext,
