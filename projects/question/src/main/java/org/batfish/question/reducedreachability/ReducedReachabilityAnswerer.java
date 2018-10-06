@@ -40,7 +40,8 @@ public class ReducedReachabilityAnswerer extends Answerer {
 
   @Override
   public TableAnswerElement answerDiff() {
-    Set<Flow> flows = _batfish.bddReducedReachability();
+    ReducedReachabilityQuestion question = (ReducedReachabilityQuestion) _question;
+    Set<Flow> flows = _batfish.bddReducedReachability(question.getActions());
     _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
     _batfish.popEnvironment();

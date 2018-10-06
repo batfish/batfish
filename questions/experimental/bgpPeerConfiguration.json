@@ -1,0 +1,20 @@
+{
+    "class": "org.batfish.question.bgpproperties.BgpPeerConfigurationQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "instance": {
+        "description": "Return BGP peer configuration properties",
+        "instanceName": "bgpPeerConfiguration",
+        "tags": [
+            "bgp",
+            "configuration"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "optional": true
+            }
+        }
+    }
+}

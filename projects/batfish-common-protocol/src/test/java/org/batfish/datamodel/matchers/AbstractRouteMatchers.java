@@ -12,6 +12,7 @@ import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopInterf
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopIp;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasProtocol;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.IsNonForwarding;
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteMatchers {
@@ -88,6 +89,14 @@ public final class AbstractRouteMatchers {
    */
   public static HasProtocol hasProtocol(RoutingProtocol expectedProtocol) {
     return new HasProtocol(equalTo(expectedProtocol));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code nonForwarding} is equal to the {@link
+   * AbstractRoute}'s nonForwarding.
+   */
+  public static IsNonForwarding isNonForwarding(boolean nonForwarding) {
+    return new IsNonForwarding(equalTo(nonForwarding));
   }
 
   private AbstractRouteMatchers() {}

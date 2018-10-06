@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -53,6 +54,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
@@ -78,6 +80,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -110,19 +113,6 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createForkableSnapshot2(String network, String snapshot) throws IOException {
-    createTestrigWithMetadata(network, snapshot);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    Files.createDirectories(
-        _manager
-            .getdirNetwork(network)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    _idManager.getSnapshotId(snapshot, networkId).getId()))
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
-  }
-
   private void createSnapshotWithContent(
       String network, String snapshot, String fileName, String fileContents) throws IOException {
     createTestrigWithMetadata(network, snapshot);
@@ -144,7 +134,7 @@ public class WorkMgrTest {
             .getdirNetwork(container)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
+                    BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
     outputDir.toFile().mkdirs();
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
@@ -262,7 +252,10 @@ public class WorkMgrTest {
         _manager.getdirSnapshot("container", "testrig1").resolve(BfConsts.RELPATH_OUTPUT);
     outputDir.toFile().mkdir();
     CommonUtil.writeFile(
-        outputDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
+        _manager
+            .getdirSnapshot("container", "testrig1")
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
     // should get the nodes of the topology when we ask for it
@@ -1762,5 +1755,87 @@ public class WorkMgrTest {
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       _manager.uploadSnapshot(network, snapshot, inputStream, false);
     }
+  }
+
+  @Test
+  public void testPutMajorIssueConfig() throws IOException {
+    String network = "network1";
+    String majorIssueType = "type1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    // no ID should exist at first
+    assertFalse(_idManager.hasIssueSettingsId(majorIssueType, networkId));
+
+    _manager.putMajorIssueConfig(
+        network, majorIssueType, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
+
+    // There should be an ID now
+    assertTrue(_idManager.hasIssueSettingsId(majorIssueType, networkId));
+
+    IssueSettingsId issueSettingsId = _idManager.getIssueSettingsId(majorIssueType, networkId);
+
+    _manager.putMajorIssueConfig(
+        network,
+        majorIssueType,
+        new MajorIssueConfig(
+            majorIssueType, ImmutableList.of(new MinorIssueConfig("foo", null, null))));
+
+    // The ID should have changed
+    assertThat(
+        _idManager.getIssueSettingsId(majorIssueType, networkId), not(equalTo(issueSettingsId)));
+  }
+
+  @Test
+  public void testComputeWorkDetailsAnalysisQuestion() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String question = "question1";
+    String analysis = "analysis1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    _manager.configureAnalysis(
+        network,
+        true,
+        analysis,
+        ImmutableMap.of(question, BatfishObjectMapper.writeString(new TestQuestion())),
+        ImmutableList.of(),
+        false);
+    WorkItem workItem =
+        new WorkItem(
+            UUID.randomUUID(),
+            network,
+            snapshot,
+            ImmutableMap.of(
+                BfConsts.COMMAND_ANSWER,
+                "",
+                BfConsts.ARG_QUESTION_NAME,
+                question,
+                BfConsts.ARG_ANALYSIS_NAME,
+                analysis));
+    WorkDetails workDetails = _manager.computeWorkDetails(workItem);
+
+    assertThat(workDetails.baseTestrig, equalTo(snapshot));
+    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+  }
+
+  @Test
+  public void testComputeWorkDetailsAdHocQuestion() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String question = "question1";
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    _manager.uploadQuestion(network, question, BatfishObjectMapper.writeString(new TestQuestion()));
+    WorkItem workItem =
+        new WorkItem(
+            UUID.randomUUID(),
+            network,
+            snapshot,
+            ImmutableMap.of(BfConsts.COMMAND_ANSWER, "", BfConsts.ARG_QUESTION_NAME, question));
+    WorkDetails workDetails = _manager.computeWorkDetails(workItem);
+
+    assertThat(workDetails.baseTestrig, equalTo(snapshot));
+    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 }

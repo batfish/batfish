@@ -1,6 +1,8 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -18,6 +20,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
@@ -58,7 +61,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -106,7 +108,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -120,6 +121,7 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -135,7 +137,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
-import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
@@ -208,15 +209,12 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.AclLine;
-import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.NodSatJob;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -240,7 +238,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -736,25 +734,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .sum());
   }
 
-  /**
-   * Generates job to identify whether a given ACL line is unmatchable (i.e. it has unsatisfiable
-   * match condition).
-   *
-   * @param c Configuration containing ACL to check for unmatchable line
-   * @param aclName Name of ACL to check for unmatchable line
-   * @param lineToCheck Line number in the given ACL to check for matchability
-   * @return The {@link NodSatJob} to run to see if the given line is unmatchable
-   */
-  @VisibleForTesting
-  public NodSatJob<AclLine> generateUnmatchableAclLineJob(
-      Configuration c, String aclName, int lineToCheck) {
-    String hostname = c.getHostname();
-    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    AclLineIndependentSatisfiabilityQuerySynthesizer query =
-        new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineToCheck);
-    return new NodSatJob<>(_settings, aclSynthesizer, query, true);
-  }
-
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -956,14 +935,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
     _logger.printElapsedTime();
     return flows;
-  }
-
-  public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
-    _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
-    _logger.resetTimer();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
-    _logger.printElapsedTime();
   }
 
   @VisibleForTesting
@@ -4375,32 +4346,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
-    _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    _logger.resetTimer();
-
-    _logger.info("Synthesizing Z3 ACL logic...");
-    Synthesizer s =
-        new Synthesizer(
-            SynthesizerInputImpl.builder()
-                .setConfigurations(Collections.singletonMap(hostname, config))
-                .setEnabledAcls(Collections.singletonMap(hostname, ImmutableSet.of(aclName)))
-                .setSimplify(_settings.getSimplify())
-                .build());
-
-    List<String> warnings = s.getWarnings();
-    int numWarnings = warnings.size();
-    if (numWarnings == 0) {
-      _logger.info("OK\n");
-    } else {
-      for (String warning : warnings) {
-        _logger.warn(warning);
-      }
-    }
-    _logger.printElapsedTime();
-    return s;
-  }
-
   public Synthesizer synthesizeDataPlane() {
     return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
   }
@@ -4419,47 +4364,93 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Set<Flow> bddMultipathConsistency() {
-    BDDReachabilityAnalysis bddReachabilityAnalysis = getBddReachabilityAnalysis(new BDDPacket());
-    return bddReachabilityAnalysis.multipathInconsistencies(getFlowTag());
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<FlowDisposition> dropDispositions =
+        ImmutableSet.of(
+            FlowDisposition.DENIED_IN,
+            FlowDisposition.DENIED_OUT,
+            FlowDisposition.NO_ROUTE,
+            FlowDisposition.NULL_ROUTED);
+    Map<IngressLocation, BDD> acceptedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(FlowDisposition.ACCEPTED))
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> droppedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, dropDispositions)
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> neighborUnreachableBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .getIngressLocationReachableBDDs();
+
+    String flowTag = getFlowTag();
+    return Streams.concat(
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, droppedBDDs).stream(),
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
+                .stream(),
+            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
+                .stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
-  private BDDReachabilityAnalysis getBddReachabilityAnalysis(BDDPacket pkt) {
-    Map<String, Configuration> configurations = loadConfigurations();
-    DataPlane dataPlane = loadDataPlane();
-    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, configurations);
+  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, loadConfigurations());
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
                 AllInterfaceLinksLocationSpecifier.INSTANCE)
             .resolve(specifierContext);
-    IpSpaceAssignment sourceIpAssignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+    return InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+  }
 
-    BDDReachabilityAnalysisFactory analysisFactory =
-        new BDDReachabilityAnalysisFactory(pkt, configurations, forwardingAnalysis);
-    return analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+  @Nonnull
+  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(BDDPacket pkt) {
+    return new BDDReachabilityAnalysisFactory(
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis());
   }
 
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
+   *
+   * @param dispositions Search for differences in the set of packets with the specified {@link
+   *     FlowDisposition FlowDispositions}.
    */
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public Set<Flow> bddReducedReachability(Set<FlowDisposition> dispositions) {
+    checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
     pushBaseEnvironment();
-    BDDReachabilityAnalysis baseReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
     Map<IngressLocation, BDD> baseAcceptBDDs =
-        baseReachabilityAnalysis.getIngressLocationAcceptBDDs();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                getAllSourcesInferFromLocationIpSpaceAssignment(),
+                UniverseIpSpace.INSTANCE,
+                dispositions)
+            .getIngressLocationReachableBDDs();
     popEnvironment();
 
     pushDeltaEnvironment();
-    BDDReachabilityAnalysis deltaReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
     Map<IngressLocation, BDD> deltaAcceptBDDs =
-        deltaReachabilityAnalysis.getIngressLocationAcceptBDDs();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                getAllSourcesInferFromLocationIpSpaceAssignment(),
+                UniverseIpSpace.INSTANCE,
+                dispositions)
+            .getIngressLocationReachableBDDs();
     popEnvironment();
 
     Set<IngressLocation> commonSources =
@@ -4472,10 +4463,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       Flow.Builder flow =
           pkt.getFlow(reduced)
-              .orElseGet(
-                  () -> {
-                    throw new BatfishException("Error getting flow from BDD");
-                  });
+              .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
 
       // set flow parameters
       flow.setTag(getDifferentialFlowTag());
@@ -4643,7 +4631,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           _settings
               .getStorageBase()
               .resolve(_settings.getContainer().getId())
-              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+              .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
               .resolve(_settings.getTestrig().getId())
               .resolve(BfConsts.RELPATH_OUTPUT)
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);

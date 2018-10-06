@@ -1,5 +1,7 @@
 package org.batfish.common;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,7 +50,7 @@ public class WorkItem {
     _id = id;
     _containerName = containerName;
     _testrigName = testrigName;
-    _requestParams = reqParams;
+    _requestParams = firstNonNull(reqParams, new HashMap<>());
     _spanData = new HashMap<>();
   }
 

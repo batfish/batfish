@@ -720,7 +720,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
     return getStorageBase()
         .resolve(getContainer().getId())
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
         .resolve(tr)
         .resolve(BfConsts.RELPATH_OUTPUT)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)

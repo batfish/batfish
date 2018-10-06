@@ -505,7 +505,9 @@ public class WorkMgr extends AbstractCoordinator {
       Question question =
           Question.parseQuestion(
               getQuestion(
-                  workItem.getContainerName(), WorkItemBuilder.getQuestionName(workItem), null));
+                  workItem.getContainerName(),
+                  WorkItemBuilder.getQuestionName(workItem),
+                  WorkItemBuilder.getAnalysisName(workItem)));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
@@ -1157,7 +1159,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public Path getdirSnapshots(String networkName) {
-    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR));
   }
 
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
@@ -1332,7 +1334,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
-    return _workQueueMgr.getMatchingWork(workItem, qType);
+    return _workQueueMgr.getMatchingWork(resolveIds(workItem), qType);
   }
 
   public QueuedWork getWork(UUID workItemId) {
@@ -1381,7 +1383,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     Path containerDir = getdirNetwork(networkName);
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId()));
 
     if (!testrigDir.resolve(BfConsts.RELPATH_OUTPUT).toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
@@ -1509,7 +1511,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
     Path baseSnapshotDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, baseSnapshotId.getId()));
+        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
 
     // Save user input for troubleshooting
     Path originalDir =
@@ -1830,8 +1832,9 @@ public class WorkMgr extends AbstractCoordinator {
   public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    IssueSettingsId issueSettingsId = getOrCreateIssueSettingsId(networkId, majorIssueType);
+    IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
     _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
+    _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
   public void putObject(
