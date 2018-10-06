@@ -33,15 +33,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _dataPlanePath;
 
-    private Path _deltaCompiledConfigurationsDir;
-
     private Path _deltaConfigurationsDir;
 
     private Path _deltaVendorConfigurationsDir;
 
     private Path _edgeBlacklistPath;
-
-    private Path _environmentBasePath;
 
     private Path _environmentBgpTablesPath;
 
@@ -60,8 +56,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     private Path _parseEnvironmentBgpTablesAnswerPath;
 
     private Path _parseEnvironmentRoutingTablesAnswerPath;
-
-    private Path _precomputedRoutesPath;
 
     private Path _serializedTopologyPath;
 
@@ -87,10 +81,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _dataPlanePath;
     }
 
-    public Path getDeltaCompiledConfigurationsDir() {
-      return _deltaCompiledConfigurationsDir;
-    }
-
     public Path getDeltaConfigurationsDir() {
       return _deltaConfigurationsDir;
     }
@@ -101,10 +91,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getEdgeBlacklistPath() {
       return _edgeBlacklistPath;
-    }
-
-    public Path getEnvironmentBasePath() {
-      return _environmentBasePath;
     }
 
     public Path getEnvironmentBgpTablesPath() {
@@ -143,10 +129,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _parseEnvironmentRoutingTablesAnswerPath;
     }
 
-    public Path getPrecomputedRoutesPath() {
-      return _precomputedRoutesPath;
-    }
-
     public Path getSerializedTopologyPath() {
       return _serializedTopologyPath;
     }
@@ -179,10 +161,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _dataPlanePath = path;
     }
 
-    public void setDeltaCompiledConfigurationsDir(Path deltaCompiledConfigurationsDir) {
-      _deltaCompiledConfigurationsDir = deltaCompiledConfigurationsDir;
-    }
-
     public void setDeltaConfigurationsDir(Path deltaConfigurationsDir) {
       _deltaConfigurationsDir = deltaConfigurationsDir;
     }
@@ -193,10 +171,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setEdgeBlacklistPath(Path edgeBlacklistPath) {
       _edgeBlacklistPath = edgeBlacklistPath;
-    }
-
-    public void setEnvironmentBasePath(Path environmentBasePath) {
-      _environmentBasePath = environmentBasePath;
     }
 
     public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
@@ -234,10 +208,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     public void setParseEnvironmentRoutingTablesAnswerPath(
         Path parseEnvironmentRoutingTablesAnswerPath) {
       _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
-    }
-
-    public void setPrecomputedRoutesPath(Path writeRoutesPath) {
-      _precomputedRoutesPath = writeRoutesPath;
     }
 
     public void setSerializedTopologyPath(Path serializedTopologyPath) {
@@ -591,8 +561,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public boolean debugFlagEnabled(String flag) {
-    List<String> debugFlags = getStringListOptionValue(ARG_DEBUG_FLAGS);
-    return debugFlags != null && debugFlags.contains(flag);
+    return getDebugFlags().contains(flag);
   }
 
   public boolean flattenOnTheFly() {
@@ -650,7 +619,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public List<String> getDebugFlags() {
-    return getStringListOptionValue(ARG_DEBUG_FLAGS);
+    return Arrays.asList(_config.getStringArray(ARG_DEBUG_FLAGS));
   }
 
   public String getDeltaEnvironmentName() {
@@ -752,6 +721,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         .resolve(getContainer().getId())
         .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
         .resolve(tr)
+        .resolve(BfConsts.RELPATH_OUTPUT)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }
@@ -989,6 +959,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+    setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
@@ -1375,6 +1346,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
+    getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);

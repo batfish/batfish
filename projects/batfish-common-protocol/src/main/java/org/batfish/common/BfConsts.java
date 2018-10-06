@@ -162,11 +162,13 @@ public class BfConsts {
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
+  public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
   public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
   public static final String RELPATH_ORIGINAL_DIR = "original";
+  public static final String RELPATH_OUTPUT = "output";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";

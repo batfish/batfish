@@ -60,9 +60,9 @@ java_library(
         ":coordinator",
         "//projects/batfish-common-protocol:common",
         "@guava//:compile",
-        "@jsr305//:compile",
         "@jersey_media_jackson//:compile",
         "@jersey_test_framework//:compile",
+        "@jsr305//:compile",
     ],
 )
 
@@ -84,6 +84,7 @@ junit_tests(
         "//projects/question",
         "@commons_io//:compile",
         "@guava//:compile",
+        "@guava_testlib//:compile",
         "@hamcrest//:compile",
         "@jackson_core//:compile",
         "@jaxrs_api//:compile",
