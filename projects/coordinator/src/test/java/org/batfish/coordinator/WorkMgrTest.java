@@ -733,10 +733,10 @@ public class WorkMgrTest {
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
     _storage.storeAnswer(answerStr, baseAnswerId);
-    AnswerMetadata answer2Result =
+    AnswerMetadata answerResult =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
 
-    assertThat(answer2Result, equalTo(answerMetadata));
+    assertThat(answerResult, equalTo(answerMetadata));
   }
 
   @Test

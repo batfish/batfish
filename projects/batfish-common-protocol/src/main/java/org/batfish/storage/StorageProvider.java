@@ -20,6 +20,7 @@ import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
@@ -187,16 +188,16 @@ public interface StorageProvider {
       String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
 
   /**
-   * Return the JSON-serialized settings for the specified question class for the specified network,
-   * or null if no custom settings exist.
+   * Return the JSON-serialized settings for the {@code questionClassId} under the specified {@code
+   * networkId}, or {@code null} if no custom settings exist.
    *
-   * @param network The name of the network
-   * @param questionClassId The internal name of the question, i.e. the value of {@link
-   *     org.batfish.datamodel.questions.Question#getName}
+   * @param networkId The ID of the network
+   * @param questionSettingsId The ID of the question class
    * @throws IOException if there is an error trying to read the settings
    */
   @Nullable
-  String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException;
+  String loadQuestionSettings(NetworkId networkId, QuestionSettingsId questionSettingsId)
+      throws IOException;
 
   /** Returns {@code true} iff the specified network question exists. */
   boolean checkNetworkExists(NetworkId network);
@@ -204,12 +205,13 @@ public interface StorageProvider {
   /**
    * Write the JSON-serialized settings for the specified question class for the specified network.
    *
-   * @param network The name of the network
-   * @param questionClassId The fully-qualified class name of the question
+   * @param networkId The name of the network
+   * @param questionSettingsId The ID of the question class
    * @param settings The settings to write
    * @throws IOException if there is an error writing the settings
    */
-  void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
+  void storeQuestionSettings(
+      String settings, NetworkId networkId, QuestionSettingsId questionSettingsId)
       throws IOException;
 
   /**

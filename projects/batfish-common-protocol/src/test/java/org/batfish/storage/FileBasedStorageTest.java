@@ -22,6 +22,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
 import org.junit.Rule;
@@ -109,19 +110,19 @@ public class FileBasedStorageTest {
   @Test
   public void testStoreQuestionSettingsThenLoad() throws IOException {
     NetworkId network = new NetworkId("network");
-    String questionClass = "q1";
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
     String settings = "{}";
-    _storage.storeQuestionSettings(settings, network, questionClass);
+    _storage.storeQuestionSettings(settings, network, questionSettingsId);
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), equalTo(settings));
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), equalTo(settings));
   }
 
   @Test
   public void testLoadQuestionSettingsMissing() throws IOException {
     NetworkId network = new NetworkId("network");
-    String questionClass = "q1";
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), nullValue());
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), nullValue());
   }
 
   @Test
