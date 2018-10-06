@@ -144,8 +144,6 @@ public class Interface implements Serializable {
 
   private String _incomingFilter;
 
-  private int _incomingFilterLine;
-
   @Nullable private Long _isisCost;
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
@@ -174,15 +172,11 @@ public class Interface implements Serializable {
 
   private String _outgoingFilter;
 
-  private int _outgoingFilterLine;
-
   private InterfaceAddress _address;
 
   private boolean _proxyArp;
 
   private String _routingPolicy;
-
-  int _routingPolicyLine;
 
   private Set<InterfaceAddress> _secondaryAddresses;
 
@@ -347,10 +341,6 @@ public class Interface implements Serializable {
     return _incomingFilter;
   }
 
-  public int getIncomingFilterLine() {
-    return _incomingFilterLine;
-  }
-
   public Long getIsisCost() {
     return _isisCost;
   }
@@ -407,10 +397,6 @@ public class Interface implements Serializable {
     return _outgoingFilter;
   }
 
-  public int getOutgoingFilterLine() {
-    return _outgoingFilterLine;
-  }
-
   public InterfaceAddress getAddress() {
     return _address;
   }
@@ -426,10 +412,6 @@ public class Interface implements Serializable {
 
   public String getRoutingPolicy() {
     return _routingPolicy;
-  }
-
-  public int getRoutingPolicyLine() {
-    return _routingPolicyLine;
   }
 
   public Set<InterfaceAddress> getSecondaryAddresses() {
@@ -523,10 +505,6 @@ public class Interface implements Serializable {
     _incomingFilter = accessListName;
   }
 
-  public void setIncomingFilterLine(int incomingFilterLine) {
-    _incomingFilterLine = incomingFilterLine;
-  }
-
   public void setIsisCost(Long isisCost) {
     _isisCost = isisCost;
   }
@@ -579,10 +557,6 @@ public class Interface implements Serializable {
     _outgoingFilter = accessListName;
   }
 
-  public void setOutgoingFilterLine(int outgoingFilterLine) {
-    _outgoingFilterLine = outgoingFilterLine;
-  }
-
   public void setAddress(InterfaceAddress address) {
     _address = address;
   }
@@ -597,10 +571,6 @@ public class Interface implements Serializable {
 
   public void setRoutingPolicy(String routingPolicy) {
     _routingPolicy = routingPolicy;
-  }
-
-  public void setRoutingPolicyLine(int routingPolicyLine) {
-    _routingPolicyLine = routingPolicyLine;
   }
 
   public void setSourceNats(List<CiscoSourceNat> sourceNats) {
