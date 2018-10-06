@@ -5,17 +5,17 @@
 
 ## What is Batfish?
 
-Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
+Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches. See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
 
-**Batfish does not require access to network devices.** It only needs offline configuration files, e.g., those pulled from RANCID or template authoring tools.
+**Batfish does not require access to network devices.** It can work with configuration files pulled by tools like RANCID or those generated via templates.
 
-See [www.batfish.org](http://www.batfish.org) for technical information on how it works. ![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
+![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
 
 ## How do I get started?
 
 The quickest way to get started is using one of the pre-built [Docker containers](https://github.com/batfish/docker/).
 
-Or, you can build from sources. The [Batfish Wiki](https://github.com/batfish/batfish/wiki) has instructions for that.
+Or, you can build from sources, the instructions for which are on the [Batfish Wiki](https://github.com/batfish/batfish/wiki).
 
 Batfish is also available as a commercially-supported service by [Intentionet](https://www.intentionet.com). Drop a line to [info@intentionet.com](mailto:info@intentionet.com) for more information.
 
