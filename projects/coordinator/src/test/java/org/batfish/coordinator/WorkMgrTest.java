@@ -851,10 +851,10 @@ public class WorkMgrTest {
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
     _storage.storeAnswer(answerStr, baseAnswerId);
-    AnswerMetadata answer2Result =
+    AnswerMetadata answerResult =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
 
-    assertThat(answer2Result, equalTo(answerMetadata));
+    assertThat(answerResult, equalTo(answerMetadata));
   }
 
   @Test
@@ -975,18 +975,16 @@ public class WorkMgrTest {
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
-    String fileName = "testrig/configs/test.cfg";
-    String fileContents = "! contents";
+    String fileName = "test.cfg";
 
     _manager.initNetwork(network, null);
-    createSnapshotWithContent(network, snapshot, fileName, fileContents);
-    Path object = _manager.getTestrigObject(network, snapshot, fileName);
+    uploadTestSnapshot(network, snapshot, fileName);
+    // We know the config file will be written under 'testrig/configs/' in the snapshot zip
+    Path object = _manager.getTestrigObject(network, snapshot, "testrig/configs/" + fileName);
 
-    // Confirm object is found in the input directory, with the correct contents
+    // Confirm object is found in the input directory
     assertThat(object, is(not(nullValue())));
     assertThat(object.toFile(), anExistingFile());
-    String objectContents = CommonUtil.readFile(object);
-    assertThat(objectContents, equalTo(fileContents));
   }
 
   @Test
@@ -1741,17 +1739,22 @@ public class WorkMgrTest {
   }
 
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
+    uploadTestSnapshot(network, snapshot, "c1");
+  }
+
+  private void uploadTestSnapshot(String network, String snapshot, String fileName)
+      throws IOException {
     Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
     Path tmpSnapshotConfig =
         tmpSnapshotSrcDir
             .resolve(snapshot)
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve("c1");
+            .resolve(fileName);
     Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.getParent(), tmpSnapshotZip);
+    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       _manager.uploadSnapshot(network, snapshot, inputStream, false);
     }
