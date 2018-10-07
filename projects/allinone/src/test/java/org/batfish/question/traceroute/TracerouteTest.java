@@ -8,16 +8,15 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHops;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
@@ -230,8 +229,7 @@ public class TracerouteTest {
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
                 Schema.set(Schema.FLOW_TRACE))));
 
-    // with ignoreAcls we get DELIVERED_NEIGHBOR_UNREACHABLE
-    // EXITS_NETWORK
+    // with ignoreAcls we get EXITS_NETWORK
     question = new TracerouteQuestion(".*", header, true);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
@@ -316,8 +314,12 @@ public class TracerouteTest {
     assertThat(answer.getRows().getData(), hasSize(1));
 
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   /*
@@ -415,9 +417,14 @@ public class TracerouteTest {
   public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("22");
     assertThat(answer.getRows().getData(), hasSize(1));
+
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test
@@ -425,8 +432,12 @@ public class TracerouteTest {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("24");
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test
@@ -434,8 +445,12 @@ public class TracerouteTest {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("26");
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   /*
@@ -457,7 +472,7 @@ public class TracerouteTest {
    * Case 3: 29 >= mask > 24: DELIVERD_TO_SUBNET (to R1)
    *
    */
-  private TableAnswerElement testDispositionLoop(String mask) throws IOException {
+  private TableAnswerElement testDispositionMultiInterfaces(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -537,48 +552,63 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDispositionLoop1() throws IOException {
-    TableAnswerElement answer = testDispositionLoop("22");
+  public void testDispositionMultiInterfaces1() throws IOException {
+    TableAnswerElement answer = testDispositionMultiInterfaces("22");
+    assertThat(answer.getRows().getData(), hasSize(2));
+
+    // check that packet should reach R1 and R2
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
+  }
+
+  @Test
+  public void testDispositionMultiInterfaces2() throws IOException {
+    TableAnswerElement answer = testDispositionMultiInterfaces("24");
+    assertThat(answer.getRows().getData(), hasSize(2));
+
+    // check that packet should reach R1 but R2 no response
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                Schema.set(Schema.FLOW_TRACE))));
+  }
+
+  @Test
+  public void testDispositionMultiInterfaces3() throws IOException {
+    TableAnswerElement answer = testDispositionMultiInterfaces("25");
     assertThat(answer.getRows().getData(), hasSize(2));
 
     // check that packet should be reach R2
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
-        containsString("Configuration_1"));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
 
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
-  }
-
-  @Test
-  public void testDispositionLoop2() throws IOException {
-    TableAnswerElement answer = testDispositionLoop("24");
-    assertThat(answer.getRows().getData(), hasSize(2));
-
-    // check that packet should go through interface 1 on R1
-    assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
-        (containsString("Interface_0")));
-
-    assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
-  }
-
-  @Test
-  public void testDispositionLoop3() throws IOException {
-    TableAnswerElement answer = testDispositionLoop("25");
-    assertThat(answer.getRows().getData(), hasSize(2));
-
-    // check that packet should be reach R2
-    assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(0).get("edge").toString(),
-        not(containsString("Configuration_1")));
-
-    assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   /*
@@ -709,13 +739,18 @@ public class TracerouteTest {
 
     // check that packet should be reach R3
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
-        (containsString("Configuration_2")));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(3))), Schema.set(Schema.FLOW_TRACE))));
 
     // check disposition
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test
@@ -723,15 +758,20 @@ public class TracerouteTest {
     TableAnswerElement answer = testDispositionMultipleRouters("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
-    // check that packet should be reach R3
+    // check that packet should traverse R1 - R2 - R3 - R1
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").get(2).get("edge").toString(),
-        (containsString("Configuration_2")));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(4))), Schema.set(Schema.FLOW_TRACE))));
 
     // check disposition
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.LOOP.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.LOOP)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test
@@ -741,13 +781,18 @@ public class TracerouteTest {
 
     // check that packet only traverse R1
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("hops").toString(),
-        not(containsString("Configuration_2")));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
 
     // check disposition
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.NEIGHBOR_UNREACHABLE.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   /*
@@ -771,13 +816,12 @@ public class TracerouteTest {
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
-    Interface n1i0 =
-        nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/" + mask))
-            .setOwner(c1)
-            .setVrf(v1)
-            .setProxyArp(true)
-            .build();
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.1/" + mask))
+        .setOwner(c1)
+        .setVrf(v1)
+        .setProxyArp(true)
+        .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.computeDataPlane(false);
@@ -799,8 +843,12 @@ public class TracerouteTest {
 
     // check disposition
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.DELIVERED_TO_SUBNET.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 
   @Test
@@ -810,7 +858,11 @@ public class TracerouteTest {
 
     // check disposition
     assertThat(
-        answer.getRowsList().get(0).get("Traces").get(0).get("disposition").toString(),
-        containsString(FlowDisposition.EXITS_NETWORK.toString()));
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.EXITS_NETWORK)),
+                Schema.set(Schema.FLOW_TRACE))));
   }
 }
