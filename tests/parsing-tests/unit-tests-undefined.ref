@@ -2547,11 +2547,11 @@
         "File_Name" : "configs/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BLIB",
-        "Context" : "bgp ipv6 network statement route-map",
+        "Context" : "bgp otherwise in/outbound route-map",
         "Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            21
+            22
           ]
         }
       },
@@ -2559,11 +2559,11 @@
         "File_Name" : "configs/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BLIBB",
-        "Context" : "bgp ipv4 network statement route-map",
+        "Context" : "bgp otherwise in/outbound route-map",
         "Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            18
+            19
           ]
         }
       },
@@ -2575,7 +2575,7 @@
         "Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            15
+            16
           ]
         }
       },
@@ -2587,7 +2587,7 @@
         "Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            29
+            30
           ]
         }
       },
@@ -2599,7 +2599,7 @@
         "Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            28
+            29
           ]
         }
       },
