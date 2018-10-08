@@ -16,6 +16,7 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow2.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
 
@@ -45,6 +46,7 @@ public class Schema {
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
+          .put("FlowTraceNew", getClassString(Trace.class))
           .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
@@ -64,6 +66,7 @@ public class Schema {
   public static final Schema FILE_LINES = new Schema("FileLines");
   public static final Schema FLOW = new Schema("Flow");
   public static final Schema FLOW_TRACE = new Schema("FlowTrace");
+  public static final Schema FLOW_TRACE_NEW = new Schema("FlowTraceNew");
   public static final Schema INTEGER = new Schema("Integer");
   public static final Schema INTERFACE = new Schema("Interface");
   public static final Schema IP = new Schema("Ip");
