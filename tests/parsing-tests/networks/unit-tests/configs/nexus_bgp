@@ -1,6 +1,7 @@
-! RANCID-CONTENT-TYPE:cisco-nx
+!RANCID-CONTENT-TYPE: cisco-nx
 !
 hostname nexus_bgp
+feature bgp
 !
 feature bgp
 !

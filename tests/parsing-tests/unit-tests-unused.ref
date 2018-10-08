@@ -2248,12 +2248,21 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp template peer",
         "Structure_Name" : "PEER_BLLF",
         "Source_Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            22
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
           ]
         }
       },
