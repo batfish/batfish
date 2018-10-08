@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 /** Represents a step in {@link TraceHop} */
 public abstract class Step {
 
+
   protected final StepDetail _detail;
 
   protected final StepAction _action;
@@ -21,6 +22,4 @@ public abstract class Step {
   public StepAction getAction() {
     return _action;
   }
-
-
 }

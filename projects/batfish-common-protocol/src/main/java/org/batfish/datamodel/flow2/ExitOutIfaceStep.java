@@ -27,11 +27,11 @@ public class ExitOutIfaceStep extends Step {
       return _filterOut;
     }
 
-    public Flow getOriginalFlow(){
+    public Flow getOriginalFlow() {
       return _originalFlow;
     }
 
-    public Flow getTransformedFlow(){
+    public Flow getTransformedFlow() {
       return _transformedFlow;
     }
 
@@ -51,8 +51,8 @@ public class ExitOutIfaceStep extends Step {
             _outputInterface, _filterOut, _originalFlow, _transformedFlow);
       }
 
-      public Builder setOutputInterface(NodeInterfacePair _outputIface) {
-        _outputInterface = _outputIface;
+      public Builder setOutputInterface(NodeInterfacePair outputIface) {
+        _outputInterface = outputIface;
         return this;
       }
 

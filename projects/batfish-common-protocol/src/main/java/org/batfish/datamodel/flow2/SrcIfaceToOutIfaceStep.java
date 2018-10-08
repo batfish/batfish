@@ -16,7 +16,7 @@ public class SrcIfaceToOutIfaceStep extends Step {
       return _routesConsidered;
     }
 
-    public static Builder builder(){
+    public static Builder builder() {
       return new Builder();
     }
 
@@ -53,7 +53,7 @@ public class SrcIfaceToOutIfaceStep extends Step {
     super(stepDetail, stepAction);
   }
 
-  public static Builder builder(){
+  public static Builder builder() {
     return new Builder();
   }
 

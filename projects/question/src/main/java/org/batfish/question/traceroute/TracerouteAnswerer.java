@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,14 +99,13 @@ public final class TracerouteAnswerer extends Answerer {
     Set<Flow> flows = getFlows(tag);
     Multiset<Row> rows;
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    if( Sets.newHashSet(_batfish.getSettingsConfiguration().getList("debugflag")).contains("traceroute")){
+    if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
       org.batfish.datamodel.flow2.FlowHistory flowHistoryNew = _batfish.getHistoryNew();
       rows = newFlowHistoryToRows(flowHistoryNew);
       TableAnswerElement table = new TableAnswerElement(createMetadata(false));
       table.postProcessAnswer(_question, rows);
       return table;
-    }
-    else {
+    } else {
       FlowHistory flowHistory = _batfish.getHistory();
       rows = flowHistoryToRows(flowHistory, false);
       TableAnswerElement table = new TableAnswerElement(createMetadata(false));
@@ -179,7 +177,8 @@ public final class TracerouteAnswerer extends Answerer {
     return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
   }
 
-  static Row newFlowHistoryToRow(org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo) {
+  static Row newFlowHistoryToRow(
+      org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo) {
     // there should be only environment in this object
     checkArgument(
         historyInfo.getPaths().size() == 1,
@@ -229,13 +228,12 @@ public final class TracerouteAnswerer extends Answerer {
   public static Multiset<Row> newFlowHistoryToRows(
       org.batfish.datamodel.flow2.FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
-      for (org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
-        rows.add(newFlowHistoryToRow(historyInfo));
-      }
+    for (org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo :
+        flowHistory.getTraces().values()) {
+      rows.add(newFlowHistoryToRow(historyInfo));
+    }
     return rows;
   }
-
-
 
   /** Generate a set of flows to do traceroute */
   @VisibleForTesting

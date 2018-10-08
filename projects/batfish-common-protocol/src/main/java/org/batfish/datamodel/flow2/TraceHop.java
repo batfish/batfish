@@ -1,10 +1,14 @@
 package org.batfish.datamodel.flow2;
 
+import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
-public class TraceHop {
+public class TraceHop implements Comparable<TraceHop>, Serializable {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   private String _nodeName;
 
@@ -23,14 +27,6 @@ public class TraceHop {
     return _steps;
   }
 
-  @Nullable
-  public Step getLastStep() {
-    if (_steps.isEmpty()) {
-      return null;
-    }
-    return _steps.get(_steps.size() - 1);
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -46,5 +42,10 @@ public class TraceHop {
   @Override
   public int hashCode() {
     return Objects.hash(_nodeName, _steps);
+  }
+
+  @Override
+  public int compareTo(TraceHop o) {
+    return Comparator.comparing(TraceHop::getNodeName).compare(this, o);
   }
 }

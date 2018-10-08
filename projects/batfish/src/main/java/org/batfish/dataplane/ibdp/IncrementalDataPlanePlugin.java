@@ -116,6 +116,20 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
+  public List<Flow> getHistoryFlowsNew(DataPlane dataPlane) {
+    IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
+    Map<Flow, Set<Trace>> traces = _newFlowTraces.get(dp);
+    if (traces == null) {
+      return ImmutableList.of();
+    }
+    return traces
+        .entrySet()
+        .stream()
+        .flatMap(e -> Collections.nCopies(e.getValue().size(), e.getKey()).stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
   public List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane) {
     IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
     Map<Flow, Set<FlowTrace>> traces = _flowTraces.get(dp);
@@ -134,8 +148,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     }
     return traces.values().stream().flatMap(Set::stream).collect(ImmutableList.toImmutableList());
   }
-
-
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {

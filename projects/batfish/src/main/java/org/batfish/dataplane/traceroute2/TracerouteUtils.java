@@ -97,7 +97,7 @@ public class TracerouteUtils {
    * @return {@link EnterSrcIfaceStep} containing {@link EnterSrcIfaceDetail} and {@link
    *     EnterSrcIfaceAction} for the step
    */
-  public static Step createEnterSrcIfaceStep(
+  public static EnterSrcIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       String srcIfaceName,
       boolean ignoreAcls,

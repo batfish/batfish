@@ -2943,7 +2943,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Environment environment,
       String flowTag) {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    List<Flow> flows = dataPlanePlugin.getHistoryFlows(loadDataPlane());
+    List<Flow> flows = dataPlanePlugin.getHistoryFlowsNew(loadDataPlane());
     List<Trace> flowTraces = dataPlanePlugin.getHistoryFlowTracesNew(loadDataPlane());
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
