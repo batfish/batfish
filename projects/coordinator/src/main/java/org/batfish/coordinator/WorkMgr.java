@@ -1294,6 +1294,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Nullable
+  @Deprecated
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
@@ -1726,6 +1727,7 @@ public class WorkMgr extends AbstractCoordinator {
     _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
+  @Deprecated
   public void putObject(
       String containerName, String testrigName, String objectName, InputStream fileStream) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
