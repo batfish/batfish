@@ -8,9 +8,9 @@ public class TraceHop {
 
   private String _nodeName;
 
-  private List<TraceHopStep> _steps;
+  private List<Step> _steps;
 
-  public TraceHop(String nodeName, List<TraceHopStep> steps) {
+  public TraceHop(String nodeName, List<Step> steps) {
     _nodeName = nodeName;
     _steps = steps;
   }
@@ -19,12 +19,12 @@ public class TraceHop {
     return _nodeName;
   }
 
-  public List<TraceHopStep> getSteps() {
+  public List<Step> getSteps() {
     return _steps;
   }
 
   @Nullable
-  public TraceHopStep getLastStep() {
+  public Step getLastStep() {
     if (_steps.isEmpty()) {
       return null;
     }

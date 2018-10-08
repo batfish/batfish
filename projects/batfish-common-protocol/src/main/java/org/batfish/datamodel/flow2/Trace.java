@@ -83,7 +83,7 @@ public class Trace {
     if (lastHop == null) {
       return null;
     } else {
-      List<TraceHopStep> steps = lastHop.getSteps();
+      List<Step> steps = lastHop.getSteps();
       if (steps.isEmpty()) {
         return null;
       } else {

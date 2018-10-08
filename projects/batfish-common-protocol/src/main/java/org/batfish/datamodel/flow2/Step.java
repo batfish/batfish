@@ -3,13 +3,13 @@ package org.batfish.datamodel.flow2;
 import javax.annotation.Nonnull;
 
 /** Represents a step in {@link TraceHop} */
-public abstract class TraceHopStep {
+public abstract class Step {
 
   protected final StepDetail _detail;
 
   protected final StepAction _action;
 
-  TraceHopStep(@Nonnull StepDetail detail, @Nonnull StepAction action) {
+  Step(@Nonnull StepDetail detail, @Nonnull StepAction action) {
     _detail = detail;
     _action = action;
   }
@@ -21,4 +21,6 @@ public abstract class TraceHopStep {
   public StepAction getAction() {
     return _action;
   }
+
+
 }

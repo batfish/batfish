@@ -6,7 +6,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class HopStepGeneral extends TraceHopStep {
+public class HopStepGeneral extends Step {
 
   public static class HopStepGeneralDetail extends StepDetail {
     private NodeInterfacePair _inputInterface;
