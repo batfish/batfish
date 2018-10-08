@@ -55,7 +55,7 @@ public class SrcIfaceToOutIfaceStep extends Step {
     @JsonCreator
     public SrcIfaceToOutIfaceStepAction(
         @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result) {
-      super("SrcIfaceToOutIfaceStepAction");
+      super("SrcIfaceToOutIface");
       _actionResult = result;
     }
 

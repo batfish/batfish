@@ -99,7 +99,7 @@ public class ExitOutIfaceStep extends Step {
     private @Nullable StepActionResult _actionResult;
 
     public ExitOutIfaceAction(@JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result) {
-      super("EnterSrcIface");
+      super("ExitOutIface");
       _actionResult = result;
     }
 
