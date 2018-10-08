@@ -18480,7 +18480,7 @@
         }
       },
       "nexus_bgp" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_NX",
         "name" : "nexus_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18513,6 +18513,22 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                           "protocol" : "connected"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                            "comment" : "match default route",
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                            },
+                            "prefixSet" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                              "prefixSpace" : [
+                                "0.0.0.0/0"
+                              ]
+                            }
+                          }
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
@@ -18619,6 +18635,76 @@
                       ]
                     },
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork6"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set",
+                            "prefix6Space" : [
+                              "0:0:0:0:0:0:102:300/120"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "bgp"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "ibgp"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "aggregate"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                       "protocol" : "bgp"
                     },
@@ -18644,10 +18730,10 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "nexus_bgp",
-            "logging" : {
-              "on" : true
-            }
+            "features" : {
+              "bgp" : true
+            },
+            "hostname" : "nexus_bgp"
           }
         },
         "vrfs" : {
@@ -18664,7 +18750,7 @@
         }
       },
       "nexus_ntp" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_NX",
         "name" : "nexus_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18676,9 +18762,6 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "nexus_ntp",
-            "logging" : {
-              "on" : true
-            },
             "ntp" : {
               "servers" : {
                 "1.2.3.4" : {
@@ -18702,17 +18785,14 @@
         }
       },
       "nexus_ssh" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_NX",
         "name" : "nexus_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "nexus_ssh",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "nexus_ssh"
           }
         },
         "vrfs" : {
