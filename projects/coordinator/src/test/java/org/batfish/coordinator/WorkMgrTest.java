@@ -383,22 +383,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotBaseSnapshotSpecifiedDoesNotExist() throws IOException {
-    String networkName = "network";
-    String snapshotBaseName = "snapshotBase";
-    String snapshotNewName = "snapshotNew";
-
-    _manager.initNetwork(networkName, null);
-
-    // Fork should fail because base snapshot does not exist
-    _thrown.expect(FileNotFoundException.class);
-    _thrown.expectMessage(
-        equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
-    _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
-  }
-
-  @Test
   public void testForkSnapshotBlacklists() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
@@ -446,23 +430,23 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotNoBaseSnapshot() throws IOException {
+  public void forkSnapshotMissingBaseSnapshot() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
 
     _manager.initNetwork(networkName, null);
 
-    // Fork should fail due to missing base snapshot
+    // Fork should fail because base snapshot does not exist
     _thrown.expect(FileNotFoundException.class);
     _thrown.expectMessage(
-        equalTo(String.format("Base snapshot with name: '%s' does not exist", snapshotBaseName)));
+        equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
   @Test
-  public void forkSnapshotNoBaseSnapshotName() throws IOException {
+  public void forkSnapshotMissingBaseSnapshotName() throws IOException {
     String networkName = "network";
     String snapshotNewName = "snapshotNew";
 
@@ -473,6 +457,19 @@ public class WorkMgrTest {
     _thrown.expectMessage(equalTo("No base snapshot supplied"));
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(null, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotMissingNetwork() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
   @Test

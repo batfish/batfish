@@ -136,7 +136,7 @@ public class WorkItemBuilder {
   }
 
   public static boolean isParsingWorkItem(WorkItem workItem) {
-    return (workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC));
+    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
   }
 
   public static Pair<Pair<String, String>, Pair<String, String>> getBaseAndDeltaSettings(

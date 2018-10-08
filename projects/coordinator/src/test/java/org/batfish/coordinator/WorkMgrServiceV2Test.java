@@ -65,7 +65,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .post(Entity.json(forkSnapshotBean));
+            .put(Entity.json(forkSnapshotBean));
     // Confirm missing network causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
@@ -75,7 +75,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .post(Entity.json(forkSnapshotBean));
+            .put(Entity.json(forkSnapshotBean));
     // Confirm missing snapshot causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
@@ -85,7 +85,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .post(Entity.json(forkSnapshotBean));
+            .put(Entity.json(forkSnapshotBean));
     // Confirm forking existing snapshot is successful
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
@@ -94,7 +94,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .post(Entity.json(forkSnapshotBean));
+            .put(Entity.json(forkSnapshotBean));
     // Confirm duplicate snapshot name fails with bad request
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }

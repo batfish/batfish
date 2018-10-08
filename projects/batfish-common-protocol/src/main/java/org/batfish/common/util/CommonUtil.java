@@ -136,7 +136,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
 
-  /** Add the specified collection with the serialized list at the specified path. */
+  /** Add the specified collection to the serialized list at the specified path. */
   public static <T> void addToSerializedList(
       Path serializedObjectPath, @Nullable Collection<T> addition) throws IOException {
     if (addition == null || addition.isEmpty()) {
