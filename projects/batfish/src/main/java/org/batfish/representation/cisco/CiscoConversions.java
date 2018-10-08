@@ -505,6 +505,59 @@ class CiscoConversions {
     return ikePhase1Proposal;
   }
 
+  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(
+            CiscoConfiguration.computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
+        .setSourceName(protocolObjectGroup.getName())
+        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
+  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(
+            CiscoConfiguration.computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
+        .setSourceName(icmpTypeObjectGroup.getName())
+        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
+  /** Converts an IPSec Profile to IPSec policy */
+  static IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
+    String name = ipsecProfile.getName();
+
+    IpsecPolicy policy = new IpsecPolicy(name);
+    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
+
+    for (String transformSetName : ipsecProfile.getTransformSets()) {
+      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
+      if (ipsecProposalName != null) {
+        policy.getProposals().add(ipsecProposalName);
+      }
+    }
+
+    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
+    if (isakmpProfileName != null) {
+      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
+      if (ikeGateway != null) {
+        policy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    return policy;
+  }
+
   static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Ip6AccessListLine> lines = new ArrayList<>();
@@ -823,33 +876,6 @@ class CiscoConversions {
     return ipsecPhase2Policy;
   }
 
-  /** Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy} */
-  private static IpsecPolicy toIpsecPolicy(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
-    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
-
-    if (cryptoMapEntry.getIsakmpProfile() != null) {
-      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-      if (ikeGateway != null) {
-        ipsecPolicy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    cryptoMapEntry
-        .getTransforms()
-        .forEach(
-            transform -> {
-              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
-              if (ipsecProposal != null) {
-                ipsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
-
-    return ipsecPolicy;
-  }
-
   /**
    * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
    */
@@ -932,6 +958,33 @@ class CiscoConversions {
     }
 
     return ipsecVpns;
+  }
+
+  /** Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy} */
+  private static IpsecPolicy toIpsecPolicy(
+      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
+    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
+
+    if (cryptoMapEntry.getIsakmpProfile() != null) {
+      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
+      if (ikeGateway != null) {
+        ipsecPolicy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    cryptoMapEntry
+        .getTransforms()
+        .forEach(
+            transform -> {
+              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
+              if (ipsecProposal != null) {
+                ipsecPolicy.getProposals().add(ipsecProposal);
+              }
+            });
+
+    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
+
+    return ipsecPolicy;
   }
 
   @Nullable

@@ -79,7 +79,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
@@ -3022,13 +3021,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _icmpTypeObjectGroups.forEach(
         (name, icmpTypeObjectGroups) ->
             c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+                .put(
+                    computeIcmpObjectGroupAclName(name),
+                    CiscoConversions.toIpAccessList(icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+                .put(
+                    computeProtocolObjectGroupAclName(name),
+                    CiscoConversions.toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
@@ -3175,7 +3178,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
-      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
+      IpsecPolicy ipsecPolicy = CiscoConversions.toIpSecPolicy(c, ipsecProfile);
       c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
       ipsecPhase2PoliciesBuilder.put(ipsecPolicy.getName(), toIpsecPhase2Policy(ipsecProfile));
     }
@@ -3583,57 +3586,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return c;
-  }
-
-  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  private IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  /** Converts an IPSec Profile to IPSec policy */
-  private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
