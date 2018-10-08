@@ -835,6 +835,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -851,6 +852,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectOutput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -866,6 +868,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectMissing() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
