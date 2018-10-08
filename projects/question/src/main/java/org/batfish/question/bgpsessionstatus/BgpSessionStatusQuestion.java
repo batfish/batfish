@@ -18,21 +18,19 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public class BgpSessionStatusQuestion extends Question {
 
-  private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
+  public static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
 
-  private static final String PROP_INCLUDE_ESTABLISHED_COUNT = "includeEstablishedCount";
+  public static final String PROP_INCLUDE_ESTABLISHED_COUNT = "includeEstablishedCount";
 
-  private static final String PROP_NODES = "nodes";
+  public static final String PROP_NODES = "nodes";
 
-  private static final String PROP_REMOTE_NODES = "remoteNodes";
+  public static final String PROP_REMOTE_NODES = "remoteNodes";
 
-  private static final String PROP_STATUS = "status";
+  public static final String PROP_STATUS = "status";
 
-  private static final String PROP_TYPE = "type";
+  public static final String PROP_TYPE = "type";
 
   @Nonnull private SortedSet<String> _foreignBgpGroups;
-
-  private boolean _includeEstablishedCount;
 
   @Nonnull private NodesSpecifier _nodes;
 
@@ -44,15 +42,14 @@ public class BgpSessionStatusQuestion extends Question {
 
   /** Create a new BGP Session question with default parameters. */
   public BgpSessionStatusQuestion() {
-    this(null, false, null, null, null, null);
+    this(null, true, null, null, null, null);
   }
 
   /**
    * Create a new BGP Session question.
    *
    * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
-   * @param includeEstablishedCount run post-dataplane analysis to see how many sessions get
-   *     actually established.
+   * @param includeEstablishedCount Unused; retained for backwards compatibility
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -64,13 +61,13 @@ public class BgpSessionStatusQuestion extends Question {
   @JsonCreator
   public BgpSessionStatusQuestion(
       @Nullable @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
-      @Nullable @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) Boolean includeEstablishedCount,
+      @Nullable @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) @SuppressWarnings("unused")
+          Boolean includeEstablishedCount,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
     _foreignBgpGroups = firstNonNull(foreignBgpGroups, ImmutableSortedSet.of());
-    _includeEstablishedCount = firstNonNull(includeEstablishedCount, Boolean.FALSE);
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
     _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
     _status =
@@ -83,17 +80,12 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Override
   public boolean getDataPlane() {
-    return _includeEstablishedCount;
+    return true;
   }
 
   @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
   private SortedSet<String> getForeignBgpGroups() {
     return _foreignBgpGroups;
-  }
-
-  @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT)
-  public boolean getIncludeEstablishedCount() {
-    return _includeEstablishedCount;
   }
 
   @Override

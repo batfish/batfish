@@ -99,19 +99,15 @@ public class BgpSessionStatusAnswerer extends Answerer {
         CommonUtil.initBgpTopology(configurations, ipOwners, true);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology;
-    if (question.getIncludeEstablishedCount()) {
-      DataPlane dp = _batfish.loadDataPlane();
-      establishedBgpTopology =
-          CommonUtil.initBgpTopology(
-              configurations,
-              ipOwners,
-              false,
-              true,
-              _batfish.getDataPlanePlugin().getTracerouteEngine(),
-              dp);
-    } else {
-      establishedBgpTopology = null;
-    }
+    DataPlane dp = _batfish.loadDataPlane();
+    establishedBgpTopology =
+        CommonUtil.initBgpTopology(
+            configurations,
+            ipOwners,
+            false,
+            true,
+            _batfish.getDataPlanePlugin().getTracerouteEngine(),
+            dp);
 
     sessions.addAll(
         configuredBgpTopology
