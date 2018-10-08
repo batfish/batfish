@@ -682,8 +682,13 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri) throws IOException {
+  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException {
     Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
+    if (!Files.exists(networkExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not delete: %s", networkExtendedObjectPath));
+    }
     Files.delete(networkExtendedObjectPath);
   }
 
@@ -720,8 +725,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
-      throws IOException {
+      throws FileNotFoundException, IOException {
     Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
+    if (!Files.exists(snapshotExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not delete: %s", snapshotExtendedObjectPath));
+    }
     Files.delete(snapshotExtendedObjectPath);
   }
 
@@ -769,5 +778,22 @@ public final class FileBasedStorage implements StorageProvider {
         .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
         .resolve(BfConsts.RELPATH_ENV_DIR)
         .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
+  }
+
+  @Override
+  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getEnvTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getPojoTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
   }
 }

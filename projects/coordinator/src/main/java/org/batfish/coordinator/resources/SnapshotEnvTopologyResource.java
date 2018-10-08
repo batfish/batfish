@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -31,6 +32,9 @@ public final class SnapshotEnvTopologyResource {
       topology = Main.getWorkMgr().getEnvTopology(_network, _snapshot);
     } catch (IOException e) {
       throw new InternalServerErrorException(Throwables.getStackTraceAsString(e));
+    }
+    if (topology == null) {
+      throw new NotFoundException();
     }
     return BatfishObjectMapper.mapper().valueToTree(topology);
   }

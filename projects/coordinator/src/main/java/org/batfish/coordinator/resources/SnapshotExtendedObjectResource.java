@@ -35,12 +35,17 @@ public final class SnapshotExtendedObjectResource {
 
   @DELETE
   public Response delete() {
+    boolean deleted;
     try {
-      Main.getWorkMgr().deleteSnapshotExtendedObject(_network, _snapshot, _uri);
+      deleted = Main.getWorkMgr().deleteSnapshotExtendedObject(_network, _snapshot, _uri);
     } catch (IOException e) {
       throw new InternalServerErrorException(Throwables.getStackTraceAsString(e));
     }
-    return Response.ok().build();
+    if (deleted) {
+      return Response.ok().build();
+    } else {
+      return Response.status(Status.NOT_FOUND).build();
+    }
   }
 
   @GET
@@ -65,11 +70,16 @@ public final class SnapshotExtendedObjectResource {
   @PUT
   @Consumes(MediaType.APPLICATION_OCTET_STREAM)
   public Response put(InputStream inputStream) {
+    boolean result;
     try {
-      Main.getWorkMgr().putSnapshotExtendedObject(inputStream, _network, _snapshot, _uri);
+      result = Main.getWorkMgr().putSnapshotExtendedObject(inputStream, _network, _snapshot, _uri);
     } catch (IOException e) {
       throw new InternalServerErrorException(Throwables.getStackTraceAsString(e));
     }
-    return Response.ok().build();
+    if (result) {
+      return Response.ok().build();
+    } else {
+      return Response.status(Status.NOT_FOUND).build();
+    }
   }
 }

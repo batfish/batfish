@@ -278,4 +278,17 @@ public class TestStorageProvider implements StorageProvider {
   public String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
 }

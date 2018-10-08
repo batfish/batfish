@@ -5,6 +5,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,14 +26,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2TestBase {
+public final class SnapshotExtendedObjectResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Builder getTarget(String network, URI uri) {
+  private Builder getTarget(String network, String snapshot, URI uri) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_CONTAINERS)
         .path(network)
+        .path(CoordConstsV2.RSC_SNAPSHOTS)
+        .path(snapshot)
         .path(CoordConstsV2.RSC_EXTENDED + uri.getPath())
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
@@ -47,10 +50,12 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testDeleteAbsent() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, uri).delete();
-    response = getTarget(network, uri).delete();
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
+    Response response = getTarget(network, snapshot, uri).delete();
+    response = getTarget(network, snapshot, uri).delete();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
@@ -58,9 +63,22 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testDeleteMissingNetwork() throws IOException {
     String network = "network1";
+    String snapshot = "snapshot1";
     URI uri = URI.create("file:///foo/bar");
-    Response response = getTarget(network, uri).delete();
-    response = getTarget(network, uri).delete();
+    Response response = getTarget(network, snapshot, uri).delete();
+    response = getTarget(network, snapshot, uri).delete();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testDeleteMissingSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    URI uri = URI.create("file:///foo/bar");
+    Response response = getTarget(network, snapshot, uri).delete();
+    response = getTarget(network, snapshot, uri).delete();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
@@ -68,17 +86,19 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testDeletePresent() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-    Main.getWorkMgr().putNetworkExtendedObject(inputStream, network, uri);
-    Response response = getTarget(network, uri).delete();
+    Main.getWorkMgr().putSnapshotExtendedObject(inputStream, network, snapshot, uri);
+    Response response = getTarget(network, snapshot, uri).delete();
 
     // delete should succeed
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    response = getTarget(network, uri).delete();
+    response = getTarget(network, snapshot, uri).delete();
 
     // delete should fail the second time
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -87,9 +107,11 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testGetAbsent() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, uri).get();
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
+    Response response = getTarget(network, snapshot, uri).get();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
@@ -97,8 +119,20 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testGetMissingNetwork() throws IOException {
     String network = "network1";
+    String snapshot = "snapshot1";
     URI uri = URI.create("file:///foo/bar");
-    Response response = getTarget(network, uri).get();
+    Response response = getTarget(network, snapshot, uri).get();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testGetMissingSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    URI uri = URI.create("file:///foo/bar");
+    Response response = getTarget(network, snapshot, uri).get();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
@@ -106,12 +140,14 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testGetPresent() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-    Main.getWorkMgr().putNetworkExtendedObject(inputStream, network, uri);
-    Response response = getTarget(network, uri).get();
+    Main.getWorkMgr().putSnapshotExtendedObject(inputStream, network, snapshot, uri);
+    Response response = getTarget(network, snapshot, uri).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(String.class), equalTo(content));
@@ -120,11 +156,28 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testPutMissingNetwork() throws IOException {
     String network = "network1";
+    String snapshot = "snapshot1";
     URI uri = URI.create("file:///foo/bar");
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Response response =
-        getTarget(network, uri).put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
+        getTarget(network, snapshot, uri)
+            .put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testPutMissingSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    URI uri = URI.create("file:///foo/bar");
+    String content = "baz";
+    InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+    Response response =
+        getTarget(network, snapshot, uri)
+            .put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
@@ -132,36 +185,41 @@ public final class NetworkExtendedObjectResourceTest extends WorkMgrServiceV2Tes
   @Test
   public void testPutNew() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Response response =
-        getTarget(network, uri).put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
+        getTarget(network, snapshot, uri)
+            .put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkExtendedObject(network, uri)),
+        IOUtils.toString(Main.getWorkMgr().getSnapshotExtendedObject(network, snapshot, uri)),
         equalTo(content));
   }
 
   @Test
   public void testPutOverwrite() throws IOException {
     String network = "network1";
-    URI uri = URI.create("file:///foo/bar");
+    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    URI uri = URI.create("file:///foo/bar");
     String oldContent = "baz";
     String newContent = "bath";
     InputStream oldContentInputStream = new ByteArrayInputStream(oldContent.getBytes());
     InputStream newContentInputStream = new ByteArrayInputStream(newContent.getBytes());
-    Main.getWorkMgr().putNetworkExtendedObject(oldContentInputStream, network, uri);
+    Main.getWorkMgr().putSnapshotExtendedObject(oldContentInputStream, network, snapshot, uri);
     Response response =
-        getTarget(network, uri)
+        getTarget(network, snapshot, uri)
             .put(Entity.entity(newContentInputStream, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkExtendedObject(network, uri)),
+        IOUtils.toString(Main.getWorkMgr().getSnapshotExtendedObject(network, snapshot, uri)),
         equalTo(newContent));
   }
 }

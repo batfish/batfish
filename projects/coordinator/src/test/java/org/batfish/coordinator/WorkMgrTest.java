@@ -26,8 +26,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -52,7 +50,6 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
@@ -1605,25 +1602,12 @@ public class WorkMgrTest {
   }
 
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    uploadTestSnapshot(network, snapshot, "c1");
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)
       throws IOException {
-    Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
-    // intentional duplication of snapshot to provide subdir
-    Path tmpSnapshotConfig =
-        tmpSnapshotSrcDir
-            .resolve(snapshot)
-            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve(fileName);
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
-    tmpSnapshotConfig.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      _manager.uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, _folder);
   }
 
   @Test

@@ -327,9 +327,11 @@ public interface StorageProvider {
   /**
    * Deletes the network-wide extended object at the given URI.
    *
+   * @throws FileNotFoundException if the object does not exist
    * @throws IOException if there is an error deleting the object
    */
-  void deleteNetworkExtendedObject(NetworkId networkId, URI uri) throws IOException;
+  void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException;
 
   /**
    * Provide a stream from which an snasphot-wide extended object at the given URI may be read
@@ -353,10 +355,11 @@ public interface StorageProvider {
   /**
    * Deletes the snapshot-wide extended object at the given URI.
    *
+   * @throws FileNotFoundException if the object does not exist
    * @throws IOException if there is an error deleting the object
    */
   void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
-      throws IOException;
+      throws FileNotFoundException, IOException;
 
   /**
    * Provide a stream from which an snasphot input object at the given URI may be read
@@ -383,4 +386,21 @@ public interface StorageProvider {
    */
   @Nonnull
   String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Writes the env topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Writes the pojo topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
 }

@@ -32,12 +32,17 @@ public final class NetworkExtendedObjectResource {
 
   @DELETE
   public Response delete() {
+    boolean deleted;
     try {
-      Main.getWorkMgr().deleteNetworkExtendedObject(_network, _uri);
+      deleted = Main.getWorkMgr().deleteNetworkExtendedObject(_network, _uri);
     } catch (IOException e) {
       throw new InternalServerErrorException(Throwables.getStackTraceAsString(e));
     }
-    return Response.ok().build();
+    if (deleted) {
+      return Response.ok().build();
+    } else {
+      return Response.status(Status.NOT_FOUND).build();
+    }
   }
 
   @GET
