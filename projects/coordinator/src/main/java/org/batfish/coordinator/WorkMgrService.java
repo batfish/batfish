@@ -1368,6 +1368,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_OBJECT)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @Deprecated
   public Response getObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -2063,6 +2064,7 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray putObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
