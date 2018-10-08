@@ -27,6 +27,7 @@ import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1202,13 +1203,16 @@ public class WorkMgr extends AbstractCoordinator {
    *     object
    */
   public Set<String> getNodes(String container, String testrig) throws IOException {
-    Path pojoTopologyPath =
-        getdirSnapshot(container, testrig)
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
-    Topology topology =
-        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    Topology topology = getPojoTopology(container, testrig);
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
+  }
+
+  public @Nonnull Topology getPojoTopology(@Nonnull String network, @Nonnull String snapshot)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return BatfishObjectMapper.mapper()
+        .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -2316,5 +2320,165 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       throw new BatfishException("error reading node roles", e);
     }
+  }
+
+  /**
+   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
+   * network} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      return _storage.loadNetworkExtendedObject(networkId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
+   * the given {@code network}.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public void putNetworkExtendedObject(
+      @Nonnull InputStream inputStream, @Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.storeNetworkExtendedObject(inputStream, networkId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not write extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+  }
+
+  /**
+   * Deletes the extended object at the given {@code uri} for the given {@code network}.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public void deleteNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.deleteNetworkExtendedObject(networkId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+  }
+
+  /**
+   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
+   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getSnapshotExtendedObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotExtendedObject(networkId, snapshotId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
+   * the given {@code network} and {@code snapshot}.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public void putSnapshotExtendedObject(
+      @Nonnull InputStream inputStream,
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.storeSnapshotExtendedObject(inputStream, networkId, snapshotId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not write extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  /**
+   * Deletes the extended object at the given {@code uri} for the given {@code network} and {@code
+   * snapshot}.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public void deleteSnapshotExtendedObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.deleteSnapshotExtendedObject(networkId, snapshotId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  /**
+   * Provides a stream from which the input object at the given {@code uri} for the given {@code
+   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public InputStream getSnapshotInputObject(String network, String snapshot, URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotInputObject(networkId, snapshotId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read input object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  public org.batfish.datamodel.Topology getEnvTopology(String network, String snapshot)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    String topologyStr = _storage.loadEnvTopology(networkId, snapshotId);
+    return BatfishObjectMapper.mapper()
+        .readValue(topologyStr, org.batfish.datamodel.Topology.class);
   }
 }
