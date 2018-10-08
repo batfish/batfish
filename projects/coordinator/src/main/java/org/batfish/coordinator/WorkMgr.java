@@ -2236,13 +2236,12 @@ public class WorkMgr extends AbstractCoordinator {
       String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    QuestionSettingsId questionSettingsId;
     String questionSettings;
     if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      questionSettingsId = _idManager.getQuestionSettingsId(questionClassId, networkId);
-      questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
+      questionSettings =
+          _storage.loadQuestionSettings(
+              networkId, _idManager.getQuestionSettingsId(questionClassId, networkId));
     } else {
-      questionSettingsId = _idManager.generateQuestionSettingsId();
       questionSettings = "{}";
     }
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
@@ -2263,6 +2262,7 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       root = value;
     }
+    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _storage.storeQuestionSettings(
         BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
     _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
