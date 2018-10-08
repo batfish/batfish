@@ -113,29 +113,10 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createSnapshotWithContent(
-      String network, String snapshot, String fileName, String fileContents) throws IOException {
-    createTestrigWithMetadata(network, snapshot);
-    Path filePath =
-        _manager
-            .getdirSnapshot(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, fileName));
-    filePath.toFile().getParentFile().mkdirs();
-
-    CommonUtil.writeFile(filePath, fileContents);
-  }
-
   private void createTestrigWithMetadata(String container, String testrig) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(container);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
-    Path outputDir =
-        _manager
-            .getdirNetwork(container)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId(), BfConsts.RELPATH_OUTPUT));
-    outputDir.toFile().mkdirs();
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
   }
@@ -391,31 +372,14 @@ public class WorkMgrTest {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
-    String fileName = "testrig/configs/test.cfg";
-    String fileContents = "! contents";
 
     _manager.initNetwork(networkName, null);
-    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
-  }
-
-  @Test
-  public void forkSnapshotIncomptibleSnapshot() throws IOException {
-    String networkName = "network";
-    String snapshotBaseName = "snapshotBase";
-    String snapshotNewName = "snapshotNew";
-
-    _manager.initNetwork(networkName, null);
-    createTestrigWithMetadata(networkName, snapshotBaseName);
-
-    // Confirm snapshot missing input dir cannot be forked
-    _thrown.expect(FileNotFoundException.class);
-    _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
   @Test
@@ -435,18 +399,16 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotBlacklists() throws IOException {
+  public void testForkSnapshotBlacklists() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
-    String fileName = "testrig/configs/test.cfg";
-    String fileContents = "! contents";
 
     List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
     List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
     List<String> nodes = ImmutableList.of("n4", "n5");
     _manager.initNetwork(networkName, null);
-    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
         snapshotNewName,
@@ -467,16 +429,14 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotDuplicateName() throws IOException {
+  public void testForkSnapshotDuplicateName() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
-    String fileName = "testrig/configs/test.cfg";
-    String fileContents = "! contents";
 
     _manager.initNetwork(networkName, null);
-    createSnapshotWithContent(networkName, snapshotBaseName, fileName, fileContents);
-    createSnapshotWithContent(networkName, snapshotNewName, fileName, fileContents);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
+    createTestrigWithMetadata(networkName, snapshotNewName);
 
     // Fork should fail due to duplicate/conflicting new snapshot name
     _thrown.expect(IllegalArgumentException.class);
@@ -486,7 +446,37 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotNoNetwork() throws IOException {
+  public void forkSnapshotNoBaseSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+
+    // Fork should fail due to missing base snapshot
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        equalTo(String.format("Base snapshot with name: '%s' does not exist", snapshotBaseName)));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotNoBaseSnapshotName() throws IOException {
+    String networkName = "network";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+
+    // Fork should fail due to missing base snapshot name
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(equalTo("No base snapshot supplied"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(null, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotNoNetwork() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";

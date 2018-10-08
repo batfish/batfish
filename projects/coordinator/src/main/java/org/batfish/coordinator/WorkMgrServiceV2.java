@@ -1,7 +1,5 @@
 package org.batfish.coordinator;
 
-import static org.batfish.common.CoordConstsV2.KEY_RESULT;
-
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import io.opentracing.util.GlobalTracer;
@@ -27,7 +25,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.ContainerResource;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -52,6 +49,20 @@ public class WorkMgrServiceV2 {
   private static void assertStringParamProvided(String paramStr, String parameterName) {
     if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
+    }
+  }
+
+  private static void assertNetworkAccessibility(String apiKey, String networkName)
+      throws FileNotFoundException {
+    Optional<Container> networks =
+        Main.getWorkMgr()
+            .getContainers(apiKey)
+            .stream()
+            .filter(c -> c.getName().equals(networkName))
+            .findFirst();
+    if (!networks.isPresent()) {
+      throw new FileNotFoundException(
+          "Network named: '" + networkName + "' does not exist or is not accessible.");
     }
   }
 
@@ -96,7 +107,7 @@ public class WorkMgrServiceV2 {
       _logger.infof(
           "Created snapshot:%s forked from snapshot: %s for network:%s using api-key:%s\n",
           snapshotName, forkSnapshotBean.baseSnapshot, networkName, apiKey);
-      return Response.ok(new JSONObject().put(KEY_RESULT, "Successfully forked snapshot")).build();
+      return Response.ok().build();
     } catch (FileNotFoundException e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
@@ -109,20 +120,6 @@ public class WorkMgrServiceV2 {
           "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
           apiKey, networkName, snapshotName, stackTrace);
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-    }
-  }
-
-  private static void assertNetworkAccessibility(String apiKey, String networkName)
-      throws FileNotFoundException {
-    Optional<Container> networks =
-        Main.getWorkMgr()
-            .getContainers(apiKey)
-            .stream()
-            .filter(c -> c.getName().equals(networkName))
-            .findFirst();
-    if (!networks.isPresent()) {
-      throw new FileNotFoundException(
-          "Network named: '" + networkName + "' does not exist or is not accessible.");
     }
   }
 

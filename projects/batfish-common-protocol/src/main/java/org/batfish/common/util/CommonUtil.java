@@ -136,6 +136,29 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
 
+  /** Add the specified collection with the serialized list at the specified path. */
+  public static <T> void addToSerializedList(
+      Path serializedObjectPath, @Nullable Collection<T> addition) throws IOException {
+    if (addition == null || addition.isEmpty()) {
+      return;
+    }
+
+    List<T> baseList;
+    if (serializedObjectPath.toFile().exists()) {
+      baseList =
+          BatfishObjectMapper.mapper()
+              .readValue(
+                  CommonUtil.readFile(serializedObjectPath), new TypeReference<List<T>>() {});
+    } else {
+      baseList = new ArrayList<>();
+    }
+
+    baseList.addAll(addition);
+    if (!baseList.isEmpty()) {
+      CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+    }
+  }
+
   public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
     // TODO use an IpSpace visitor
     if (ipSpace == null) {
@@ -1444,32 +1467,6 @@ public class CommonUtil {
     long upper = l >> 16;
     long lower = l & 0xFFFF;
     return upper + ":" + lower;
-  }
-
-  /**
-   * Merge the specified collection with the serialized list at the specified path. Creates a
-   * serialized list if it does not exist and is added to.
-   */
-  public static <T> void mergeWithSerializedList(Path serializedObjectPath, Collection<T> addition)
-      throws IOException {
-    if (addition == null || addition.isEmpty()) {
-      return;
-    }
-
-    List<T> baseList;
-    if (serializedObjectPath.toFile().exists()) {
-      baseList =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  CommonUtil.readFile(serializedObjectPath), new TypeReference<List<T>>() {});
-    } else {
-      baseList = new ArrayList<>();
-    }
-
-    baseList.addAll(addition);
-    if (!baseList.isEmpty()) {
-      CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
-    }
   }
 
   public static void moveByCopy(Path srcPath, Path dstPath) {

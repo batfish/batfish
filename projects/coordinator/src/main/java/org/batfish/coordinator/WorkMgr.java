@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
+import static org.batfish.common.util.CommonUtil.addToSerializedList;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -88,7 +90,6 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -103,7 +104,6 @@ import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -1365,7 +1365,7 @@ public class WorkMgr extends AbstractCoordinator {
       String snapshotName,
       Path srcDir,
       boolean autoAnalyze,
-      String parentSnapshot) {
+      @Nullable String parentSnapshot) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1505,14 +1505,13 @@ public class WorkMgr extends AbstractCoordinator {
       throw new IllegalArgumentException(
           "Snapshot with name: '" + snapshotName + "' already exists");
     }
+    if (Strings.isNullOrEmpty(baseSnapshotName)) {
+      throw new IllegalArgumentException("No base snapshot supplied");
+    }
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new FileNotFoundException(
           "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
     }
-
-    SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
-    Path baseSnapshotDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
 
     // Save user input for troubleshooting
     Path originalDir =
@@ -1526,68 +1525,40 @@ public class WorkMgr extends AbstractCoordinator {
         originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
         BatfishObjectMapper.writePrettyString(forkSnapshotBean));
 
-    // Copy baseSnapshot into unzipDir so initSnapshot will see a properly formatted
-    Path unzipDir = CommonUtil.createTempDirectory("files_to_add");
+    SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
+    Path baseSnapshotDir =
+        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
+
+    // Copy baseSnapshot so initSnapshot will see a properly formatted upload
     Path baseSnapshotInputsDir =
         baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     Path newSnapshotInputsDir =
-        unzipDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+        CommonUtil.createTempDirectory("files_to_add")
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
-    if (!baseSnapshotInputsDir.toFile().exists()) {
-      throw new FileNotFoundException(
-          String.format(
-              "Base snapshot '%s' is missing source files and cannot be forked.  Try re-uploading the base snapshot first.",
-              baseSnapshotName));
+    if (baseSnapshotInputsDir.toFile().exists()) {
+      CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+      _logger.infof(
+          "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
+          baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
     }
-    CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
-    _logger.infof(
-        "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
-        baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
 
-    // Add user-specified failures
-    deactivateSnapshotObjects(
-        newSnapshotInputsDir,
-        forkSnapshotBean.deactivateInterfaces,
-        forkSnapshotBean.deactivateLinks,
+    // Add user-specified failures to new blacklists
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateInterfaces);
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateLinks);
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
         forkSnapshotBean.deactivateNodes);
 
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
-        networkName,
-        snapshotName,
-        unzipDir.resolve(BfConsts.RELPATH_INPUT),
-        false,
-        baseSnapshotName);
-  }
-
-  /** Handle deactivating (failing) interfaces, links, and nodes for the specified snapshot */
-  static void deactivateSnapshotObjects(
-      Path blacklistDirPath,
-      Collection<NodeInterfacePair> deactivateInterfaces,
-      Collection<Edge> deactivateLinks,
-      Collection<String> deactivateNodes)
-      throws IOException {
-
-    CommonUtil.mergeWithSerializedList(
-        blacklistDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE), deactivateInterfaces);
-    //    List<NodeInterfacePair> baseDeactivatedInterfaces =
-    //        BatfishObjectMapper.mapper()
-    //            .readValue(
-    //
-    // CommonUtil.readFile(envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE)),
-    //                new TypeReference<List<NodeInterfacePair>>() {});
-    //    baseDeactivatedInterfaces.addAll(deactivateInterfaces);
-    //    CommonUtil.writeFile(
-    //        envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
-    //        BatfishObjectMapper.writePrettyString(baseDeactivatedInterfaces));
-
-    CommonUtil.mergeWithSerializedList(
-        blacklistDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE), deactivateLinks);
-
-    CommonUtil.mergeWithSerializedList(
-        blacklistDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE), deactivateNodes);
+        networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotName);
   }
 
   private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {

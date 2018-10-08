@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 
 public final class TestrigMetadata {
-
+  // Visible for testing
   static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
   static final String PROP_ENVIRONMENTS = "environments";
   static final String PROP_PARENTSNAPSHOT = "parentSnapshot";

@@ -1,7 +1,9 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
@@ -11,19 +13,17 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Version;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.junit.Before;
@@ -46,8 +46,12 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
   }
 
+  private WebTarget getSnapshotTarget(String network, String snapshot) {
+    return getContainersTarget().path(network).path(CoordConstsV2.RSC_SNAPSHOTS).path(snapshot);
+  }
+
   @Test
-  public void forkSnapshot() {
+  public void forkSnapshot() throws IOException {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
@@ -57,24 +61,42 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             baseSnapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of("node1"));
 
     Response response =
-        getContainersTarget()
-            .path(networkName)
-            .path(CoordConstsV2.RSC_SNAPSHOTS)
-            .path(snapshotName)
+        getSnapshotTarget(networkName, snapshotName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(Entity.json(forkSnapshotBean));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
+    // Confirm missing network causes not found
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
     Main.getWorkMgr().initNetwork(networkName, null);
-    Path unzipDir = CommonUtil.createTempDirectory("tr");
-    Path configsDir = unzipDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    configsDir.toFile().mkdirs();
-    CommonUtil.writeFile(configsDir.resolve("config.cfg"), "! text");
-    Main.getWorkMgr().initSnapshot(networkName, baseSnapshotName, unzipDir, false);
+    response =
+        getSnapshotTarget(networkName, snapshotName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .post(Entity.json(forkSnapshotBean));
+    // Confirm missing snapshot causes not found
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+
+    WorkMgrTestUtils.initSnapshot(networkName, baseSnapshotName);
+    response =
+        getSnapshotTarget(networkName, snapshotName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .post(Entity.json(forkSnapshotBean));
+    // Confirm forking existing snapshot is successful
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+
+    response =
+        getSnapshotTarget(networkName, snapshotName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .post(Entity.json(forkSnapshotBean));
+    // Confirm duplicate snapshot name fails with bad request
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 
   @Test

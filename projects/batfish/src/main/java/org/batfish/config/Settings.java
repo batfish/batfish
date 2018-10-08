@@ -33,12 +33,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _dataPlanePath;
 
-    private Path _deltaConfigurationsDir;
-
-    private Path _deltaVendorConfigurationsDir;
-
-    private Path _edgeBlacklistPath;
-
     private Path _environmentBgpTablesPath;
 
     private Path _environmentRoutingTablesPath;
@@ -47,11 +41,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _externalBgpAnnouncementsPath;
 
-    private Path _interfaceBlacklistPath;
-
     private String _name;
-
-    private Path _nodeBlacklistPath;
 
     private Path _parseEnvironmentBgpTablesAnswerPath;
 
@@ -81,18 +71,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _dataPlanePath;
     }
 
-    public Path getDeltaConfigurationsDir() {
-      return _deltaConfigurationsDir;
-    }
-
-    public Path getDeltaVendorConfigurationsDir() {
-      return _deltaVendorConfigurationsDir;
-    }
-
-    public Path getEdgeBlacklistPath() {
-      return _edgeBlacklistPath;
-    }
-
     public Path getEnvironmentBgpTablesPath() {
       return _environmentBgpTablesPath;
     }
@@ -109,16 +87,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _externalBgpAnnouncementsPath;
     }
 
-    public Path getInterfaceBlacklistPath() {
-      return _interfaceBlacklistPath;
-    }
-
     public String getName() {
       return _name;
-    }
-
-    public Path getNodeBlacklistPath() {
-      return _nodeBlacklistPath;
     }
 
     public Path getParseEnvironmentBgpTablesAnswerPath() {
@@ -161,18 +131,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _dataPlanePath = path;
     }
 
-    public void setDeltaConfigurationsDir(Path deltaConfigurationsDir) {
-      _deltaConfigurationsDir = deltaConfigurationsDir;
-    }
-
-    public void setDeltaVendorConfigurationsDir(Path deltaVendorConfigurationsDir) {
-      _deltaVendorConfigurationsDir = deltaVendorConfigurationsDir;
-    }
-
-    public void setEdgeBlacklistPath(Path edgeBlacklistPath) {
-      _edgeBlacklistPath = edgeBlacklistPath;
-    }
-
     public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
       _environmentBgpTablesPath = environmentBgpTablesPath;
     }
@@ -189,16 +147,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
     }
 
-    public void setInterfaceBlacklistPath(Path interfaceBlacklistPath) {
-      _interfaceBlacklistPath = interfaceBlacklistPath;
-    }
-
     public void setName(String name) {
       _name = name;
-    }
-
-    public void setNodeBlacklistPath(Path nodeBlacklistPath) {
-      _nodeBlacklistPath = nodeBlacklistPath;
     }
 
     public void setParseEnvironmentBgpTablesAnswerPath(Path parseEnvironmentBgpTablesAnswerPath) {
@@ -592,10 +542,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
-  }
-
-  public boolean getCompileEnvironment() {
-    return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
   public NetworkId getContainer() {
@@ -1031,7 +977,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
-    setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
     setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
@@ -1287,10 +1232,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
-    addBooleanOption(
-        BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
-        "compile configurations for differential environment");
-
     addBooleanOption(BfConsts.COMMAND_DUMP_DP, "compute and serialize data plane");
 
     addBooleanOption(
@@ -1340,7 +1281,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
-    getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     getStringOptionValue(BfConsts.ARG_CONTAINER);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
