@@ -1601,6 +1601,33 @@ public class WorkMgrTest {
     uploadTestSnapshot(network, snapshot);
   }
 
+  @Test
+  public void testWriteQuestionSettings() throws IOException {
+    String network = "network1";
+    String questionClassId = "foo";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    // no QuestionSettingsId for questionClassId at first
+    assertFalse(_idManager.hasQuestionSettingsId(questionClassId, networkId));
+
+    _manager.writeQuestionSettings(
+        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
+
+    // Should have QuestionSettingsId now
+    assertTrue(_idManager.hasQuestionSettingsId(questionClassId, networkId));
+
+    QuestionSettingsId questionSettingsId =
+        _idManager.getQuestionSettingsId(questionClassId, networkId);
+    _manager.writeQuestionSettings(
+        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
+
+    // QuestionSettingsId should change after subsequent write
+    assertThat(
+        _idManager.getQuestionSettingsId(questionClassId, networkId),
+        not(equalTo(questionSettingsId)));
+  }
+
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
     uploadTestSnapshot(network, snapshot, "c1");
   }
