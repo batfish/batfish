@@ -307,7 +307,7 @@ public interface StorageProvider {
   void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which an network-wide extended object at the given URI may be read
+   * Provide a stream from which a network-wide extended object at the given URI may be read
    *
    * @throws FileNotFoundException if the object at the specified URI does not exist
    * @throws IOException if there is an error reading the object
@@ -334,7 +334,7 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which an snasphot-wide extended object at the given URI may be read
+   * Provide a stream from which a snapshot-wide extended object at the given URI may be read
    *
    * @throws FileNotFoundException if the object at the specified URI does not exist
    * @throws IOException if there is an error reading the object
@@ -362,7 +362,7 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which an snasphot input object at the given URI may be read
+   * Provide a stream from which a snapshot input object at the given URI may be read
    *
    * @throws FileNotFoundException if the object at the specified URI does not exist
    * @throws IOException if there is an error reading the object
