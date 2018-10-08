@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -156,8 +155,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
-import org.batfish.vendor.StructureType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -458,12 +455,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private String _tacacsSourceInterface;
 
-  private final SortedMap<String, Integer> _undefinedPeerGroups;
-
-  private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
-
-  private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vrf> _vrfs;
@@ -523,7 +514,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
-    _undefinedPeerGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -939,10 +929,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
-  }
-
-  public SortedMap<String, Integer> getUndefinedPeerGroups() {
-    return _undefinedPeerGroups;
   }
 
   private Ip getUpdateSource(
@@ -1664,14 +1650,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (LeafBgpPeerGroup lpg : leafGroups) {
       lpg.inheritUnsetFields(proc, this);
     }
-    _unusedPeerGroups = new HashSet<>();
     int fakePeerCounter = -1;
     // peer groups / peer templates
     for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups().entrySet()) {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerGroups.add(namedPeerGroup);
         Ip fakeIp = new Ip(fakePeerCounter);
         IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
         fakePg.setGroupName(name);
@@ -1684,7 +1668,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       namedPeerGroup.inheritUnsetFields(proc, this);
     }
     // separate because peer sessions can inherit from other peer sessions
-    _unusedPeerSessions = new HashSet<>();
     int fakeGroupCounter = 1;
     for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
       namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc, this);
@@ -1693,7 +1676,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerSessions.add(namedPeerGroup);
         String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
         NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName);
         fakeNamedPg.setPeerSession(name);
@@ -3309,12 +3291,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
-    // warn about references to undefined peer groups
-    undefinedGroups(
-        _undefinedPeerGroups,
-        CiscoStructureType.BGP_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
-
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
@@ -3592,23 +3568,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
+    // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
+    markConcreteStructure(
+        CiscoStructureType.BGP_PEER_GROUP, CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP);
     markConcreteStructure(
         CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP, CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
 
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
 
     return c;
-  }
-
-  private void undefinedGroups(
-      Map<String, Integer> groupReferences,
-      StructureType structureType,
-      StructureUsage structureUsage) {
-    for (Entry<String, Integer> e : groupReferences.entrySet()) {
-      undefined(structureType, e.getKey(), structureUsage, e.getValue());
-    }
   }
 
   private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
