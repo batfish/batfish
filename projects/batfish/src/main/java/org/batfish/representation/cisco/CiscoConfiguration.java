@@ -3445,13 +3445,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
         CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT);
 
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
-
     // Cable
     markConcreteStructure(
         CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
@@ -3572,14 +3565,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(
-        CiscoStructureType.BGP_PEER_GROUP, CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP);
+    markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
         CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+        CiscoStructureType.BGP_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP, CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+        CiscoStructureType.BGP_SESSION_GROUP, CiscoStructureUsage.BGP_USE_SESSION_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP,
+        CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     c.simplifyRoutingPolicies();
 

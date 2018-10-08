@@ -67,8 +67,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   private String _peerSession;
 
-  private int _peerSessionLine;
-
   protected Long _remoteAs;
 
   protected Boolean _removePrivateAs;
@@ -211,13 +209,6 @@ public abstract class BgpPeerGroup implements Serializable {
       if (parent == null) {
         parent = defaultProc.getNamedPeerGroups().get(_groupName);
       }
-      if (parent == null) {
-        cv.undefined(
-            CiscoStructureType.BGP_PEER_GROUP,
-            _groupName,
-            CiscoStructureUsage.BGP_INHERITED_GROUP,
-            _groupNameLine);
-      }
     }
     return parent;
   }
@@ -230,13 +221,6 @@ public abstract class BgpPeerGroup implements Serializable {
       if (parent == null) {
         parent = defaultProc.getPeerSessions().get(_peerSession);
       }
-      if (parent == null) {
-        cv.undefined(
-            CiscoStructureType.BGP_PEER_GROUP,
-            _peerSession,
-            CiscoStructureUsage.BGP_INHERITED_SESSION,
-            _peerSessionLine);
-      }
     }
     if (parent == null) {
       parent = proc.getMasterBgpPeerGroup();
@@ -246,10 +230,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public String getPeerSession() {
     return _peerSession;
-  }
-
-  public int getPeerSessionLine() {
-    return _peerSessionLine;
   }
 
   public Long getRemoteAs() {
@@ -505,10 +485,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setPeerSession(String peerSession) {
     _peerSession = peerSession;
-  }
-
-  public void setPeerSessionLine(int peerSessionLine) {
-    _peerSessionLine = peerSessionLine;
   }
 
   public void setRemoteAs(long remoteAS) {
