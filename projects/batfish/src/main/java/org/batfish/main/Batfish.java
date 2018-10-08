@@ -233,13 +233,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
-  private static final String DEFAULT_QUESTION_SETTINGS_ID = "<NONE>";
-
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -2534,7 +2532,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
         questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
       } else {
-        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+        questionSettingsId = QuestionSettingsId.DEFAULT_ID;
       }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
@@ -4638,7 +4636,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
         questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
       } else {
-        questionSettingsId = new QuestionSettingsId(DEFAULT_QUESTION_SETTINGS_ID);
+        questionSettingsId = QuestionSettingsId.DEFAULT_ID;
       }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
@@ -4662,7 +4660,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           _settings
               .getStorageBase()
               .resolve(_settings.getContainer().getId())
-              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+              .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
               .resolve(_settings.getTestrig().getId())
               .resolve(BfConsts.RELPATH_OUTPUT)
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
@@ -4716,12 +4714,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable String loadQuestionSettings(@Nonnull Question question) {
-    String name = question.getName();
+    String questionClassId = question.getName();
+    NetworkId networkId = _settings.getContainer();
+    if (!_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+      return null;
+    }
     try {
-      return _storage.loadQuestionSettings(_settings.getContainer(), name);
+      QuestionSettingsId questionSettingsId =
+          _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      return _storage.loadQuestionSettings(_settings.getContainer(), questionSettingsId);
     } catch (IOException e) {
       throw new BatfishException(
-          String.format("Failed to read question settings for question: '%s'", name), e);
+          String.format("Failed to read question settings for question: '%s'", questionClassId), e);
     }
   }
 

@@ -69,7 +69,7 @@ public class SettingsTest {
         new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/output/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
 
     // Delta testrig present
     settings =
@@ -79,7 +79,7 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/delta/output/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/delta/output/tid.log"));
 
     // Delta testrig present, but the question is differential
     settings =
@@ -93,6 +93,6 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/output/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
   }
 }

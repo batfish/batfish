@@ -17,6 +17,7 @@ import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
@@ -105,7 +106,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadQuestionSettings(NetworkId network, String questionClassId) throws IOException {
+  public String loadQuestionSettings(NetworkId network, QuestionSettingsId questionSettingsId)
+      throws IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -117,7 +119,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
+  public void storeQuestionSettings(
+      String settings, NetworkId network, QuestionSettingsId questionSettingsId)
       throws IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub

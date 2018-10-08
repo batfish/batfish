@@ -24,6 +24,7 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.storage.TestStorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,18 +43,19 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     }
 
     @Override
-    public String loadQuestionSettings(NetworkId network, String questionClassId)
+    public String loadQuestionSettings(NetworkId network, QuestionSettingsId questionSettingsId)
         throws IOException {
-      if (questionClassId.equals(BAD_QUESTION)) {
+      if (questionSettingsId.equals(BAD_QUESTION_SETTINGS_ID)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;
     }
 
     @Override
-    public void storeQuestionSettings(String settings, NetworkId network, String questionClassId)
+    public void storeQuestionSettings(
+        String settings, NetworkId network, QuestionSettingsId questionSettingsId)
         throws IOException {
-      if (questionClassId.equals(BAD_QUESTION)) {
+      if (questionSettingsId.equals(BAD_QUESTION_SETTINGS_ID)) {
         throw new IOException("simulated exception");
       }
       _questionSettings = settings;
@@ -61,6 +63,8 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
   }
 
   private static final String BAD_QUESTION = "badquestion";
+
+  private static final QuestionSettingsId BAD_QUESTION_SETTINGS_ID = new QuestionSettingsId("bad");
 
   private static final String NETWORK = "network1";
 
@@ -86,7 +90,26 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
 
   @Before
   public void initContainerEnvironment() throws Exception {
-    _idManager = new LocalIdManager();
+    _idManager =
+        new LocalIdManager() {
+          @Override
+          public QuestionSettingsId getQuestionSettingsId(
+              String questionClassId, NetworkId networkId) {
+            if (questionClassId.equals(BAD_QUESTION)) {
+              return BAD_QUESTION_SETTINGS_ID;
+            }
+            return super.getQuestionSettingsId(questionClassId, networkId);
+          }
+
+          @Override
+          public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+            if (questionClassId.equals(BAD_QUESTION)) {
+              throw new RuntimeException();
+            }
+            return super.hasQuestionSettingsId(questionClassId, networkId);
+          }
+        };
+
     _storage = new LocalStorageProvider();
     WorkMgrTestUtils.initWorkManager(_idManager, _storage);
     Main.getWorkMgr().initNetwork(NETWORK, null);
@@ -110,6 +133,9 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
   public void testGetQuestionSettingsPresent() {
     String settings = "{}";
     _storage._questionSettings = settings;
+    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
+    _idManager.assignQuestionSettingsId(
+        QUESTION, _idManager.getNetworkId(NETWORK), questionSettingsId);
     Response response = getQuestionSettingsTarget(QUESTION).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

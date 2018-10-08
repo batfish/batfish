@@ -678,11 +678,6 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delEnvironment(String network, String snapshot, String envName) {
-    Path envDir = getdirEnvironment(network, snapshot, envName);
-    CommonUtil.deleteDirectory(envDir);
-  }
-
   public void delSnapshot(String network, String snapshot) {
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.deleteSnapshot(snapshot, networkId);
@@ -710,7 +705,7 @@ public class WorkMgr extends AbstractCoordinator {
       SnapshotId referenceSnapshotId =
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
-          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
@@ -750,6 +745,20 @@ public class WorkMgr extends AbstractCoordinator {
       answer = BatfishObjectMapper.writePrettyString(ans);
       return answer;
     }
+  }
+
+  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
+    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+    return getOrDefaultQuestionSettingsId(questionClassId, networkId);
+  }
+
+  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+      String questionClassId, NetworkId networkId) {
+    return _idManager.hasQuestionSettingsId(questionClassId, networkId)
+        ? _idManager.getQuestionSettingsId(questionClassId, networkId)
+        : QuestionSettingsId.DEFAULT_ID;
   }
 
   private @Nonnull AnswerId computeFinalAnswerAndId(
@@ -911,7 +920,7 @@ public class WorkMgr extends AbstractCoordinator {
       SnapshotId referenceSnapshotId =
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
-          getOrCreateQuestionSettingsId(networkId, questionId, analysisId);
+          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
@@ -944,19 +953,6 @@ public class WorkMgr extends AbstractCoordinator {
           analysis,
           Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
-    }
-  }
-
-  private QuestionSettingsId getOrCreateQuestionSettingsId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
-    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
-      _storage.storeQuestionSettings("{}", networkId, questionClassId);
-      _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
-      return questionSettingsId;
-    } else {
-      return _idManager.getQuestionSettingsId(questionClassId, networkId);
     }
   }
 
@@ -1131,17 +1127,6 @@ public class WorkMgr extends AbstractCoordinator {
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
-  private Path getdirEnvironment(String containerName, String testrigName, String envName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path envDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-    if (!Files.exists(envDir)) {
-      throw new BatfishException("Environment '" + envName + "' does not exist");
-    }
-    return envDir;
-  }
-
   public Path getdirSnapshot(String network, String snapshot) {
     FileBasedStorageDirectoryProvider dirProvider =
         new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
@@ -1156,7 +1141,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public Path getdirSnapshots(String networkName) {
-    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR));
   }
 
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
@@ -1371,7 +1356,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     Path containerDir = getdirNetwork(networkName);
     Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, snapshotId.getId()));
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId()));
 
     if (!testrigDir.resolve(BfConsts.RELPATH_OUTPUT).toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
@@ -2196,8 +2181,13 @@ public class WorkMgr extends AbstractCoordinator {
   public @Nullable String getQuestionSettings(
       String network, String questionClassId, List<String> components) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      return null;
+    }
+    QuestionSettingsId questionSettingsId =
+        _idManager.getQuestionSettingsId(questionClassId, networkId);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionClassId);
+    questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
     if (questionSettings == null) {
       return null;
     }
@@ -2220,18 +2210,24 @@ public class WorkMgr extends AbstractCoordinator {
    * of the path computed from the specified components. Any absent components will be created.
    *
    * @param network The name of the network
-   * @param questionClass The fully-qualified class name of the question
+   * @param questionClassId The ID of the question class
    * @param components The components to traverse from the root of the question settings to reach
    *     the desired section or value
    * @param value The settings value to write at the end of the path
    * @throws IOException if there is an error writing the settings
    */
   public synchronized void writeQuestionSettings(
-      String network, String questionClass, List<String> components, JsonNode value)
+      String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionClass);
+    if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
+      questionSettings =
+          _storage.loadQuestionSettings(
+              networkId, _idManager.getQuestionSettingsId(questionClassId, networkId));
+    } else {
+      questionSettings = "{}";
+    }
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     JsonNode root;
     if (!components.isEmpty()) {
@@ -2250,8 +2246,10 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       root = value;
     }
+    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _storage.storeQuestionSettings(
-        BatfishObjectMapper.writePrettyString(root), networkId, questionClass);
+        BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
+    _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
   }
 
   public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)

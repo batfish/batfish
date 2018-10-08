@@ -5506,24 +5506,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     CiscoStructureUsage usage = null;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
-        currentInterface.setIncomingFilterLine(line);
         usage = INTERFACE_INCOMING_FILTER;
       }
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
-        currentInterface.setOutgoingFilterLine(line);
         usage = INTERFACE_OUTGOING_FILTER;
       }
     } else {
       throw new BatfishException("bad direction");
     }
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -5683,13 +5680,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
-    int policyLine = ctx.name.getLine();
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setRoutingPolicy(policyName);
-      currentInterface.setRoutingPolicyLine(policyLine);
     }
     _configuration.referenceStructure(
-        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, policyLine);
+        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
   }
 
   @Override

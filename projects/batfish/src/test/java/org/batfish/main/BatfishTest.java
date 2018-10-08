@@ -50,6 +50,7 @@ import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
@@ -427,12 +428,23 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId network, QuestionSettingsId questionSettingsId) throws IOException {
                 return questionSettings;
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return true;
+              }
+
+              @Override
+              public QuestionSettingsId getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return new QuestionSettingsId("blah");
+              }
+            });
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), equalTo(questionSettings));
   }
@@ -443,12 +455,17 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
                 return null;
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return false;
+              }
+            });
 
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
@@ -459,12 +476,23 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestionSettings(NetworkId network, String questionClassId)
-                  throws IOException {
+              public String loadQuestionSettings(
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
                 throw new IOException("simulated error");
               }
             },
-            new TestIdResolver());
+            new TestIdResolver() {
+              @Override
+              public QuestionSettingsId getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return new QuestionSettingsId("foo");
+              }
+
+              @Override
+              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+                return true;
+              }
+            });
 
     _thrown.expect(BatfishException.class);
     assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
