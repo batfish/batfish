@@ -1,17 +1,28 @@
 package org.batfish.datamodel.flow2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class ExitOutIfaceStep extends Step {
   public static class ExitOutIfaceStepDetail extends StepDetail {
-    private NodeInterfacePair _outputInterface;
-    private String _filterOut;
-    private Flow _originalFlow;
-    private Flow _transformedFlow;
 
-    public ExitOutIfaceStepDetail(
-        NodeInterfacePair outInterface, String filterOut, Flow originalFlow, Flow transformedFlow) {
+    private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
+    private static final String PROP_FILTER_OUT = "filterOut";
+    private static final String PROP_ORIGINAL_FLOW = "originalFlow";
+    private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
+
+    private @Nullable NodeInterfacePair _outputInterface;
+    private @Nullable String _filterOut;
+    private @Nullable Flow _originalFlow;
+    private @Nullable Flow _transformedFlow;
+
+    private ExitOutIfaceStepDetail(
+        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
+        @Nullable String filterOut,
+        @Nullable Flow originalFlow,
+        @Nullable Flow transformedFlow) {
       super("ExitOutIface");
       _outputInterface = outInterface;
       _filterOut = filterOut;
@@ -19,18 +30,26 @@ public class ExitOutIfaceStep extends Step {
       _transformedFlow = transformedFlow;
     }
 
+    @JsonProperty(PROP_OUTPUT_INTERFACE)
+    @Nullable
     public NodeInterfacePair getOutputInterface() {
       return _outputInterface;
     }
 
+    @JsonProperty(PROP_FILTER_OUT)
+    @Nullable
     public String getFilterIOut() {
       return _filterOut;
     }
 
+    @JsonProperty(PROP_ORIGINAL_FLOW)
+    @Nullable
     public Flow getOriginalFlow() {
       return _originalFlow;
     }
 
+    @JsonProperty(PROP_TRANSFORMED_FLOW)
+    @Nullable
     public Flow getTransformedFlow() {
       return _transformedFlow;
     }
@@ -75,13 +94,17 @@ public class ExitOutIfaceStep extends Step {
 
   public static class ExitOutIfaceAction extends StepAction {
 
-    private StepActionResult _actionResult;
+    private static final String PROP_ACTION_RESULT = "actionResult";
 
-    public ExitOutIfaceAction(StepActionResult result) {
+    private @Nullable StepActionResult _actionResult;
+
+    public ExitOutIfaceAction(@JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result) {
       super("EnterSrcIface");
       _actionResult = result;
     }
 
+    @JsonProperty(PROP_ACTION_RESULT)
+    @Nullable
     public StepActionResult getActionResult() {
       return _actionResult;
     }

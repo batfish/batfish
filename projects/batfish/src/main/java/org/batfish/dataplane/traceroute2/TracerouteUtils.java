@@ -33,6 +33,12 @@ import org.batfish.datamodel.flow2.TraceHop;
 
 public class TracerouteUtils {
 
+  /**
+   * Does a basic validation of input to {@link TracerouteEngineImplContext2#buildFlows()}
+   *
+   * @param configurations {@link Map} of {@link Configuration}s
+   * @param flow {@link Flow} for which input validation is to be done
+   */
   public static void validateInputs(Map<String, Configuration> configurations, Flow flow) {
     if (flow.getIngressNode() == null) {
       throw new BatfishException("Cannot construct flow trace since ingressNode is not specified");
@@ -47,6 +53,11 @@ public class TracerouteUtils {
     }
   }
 
+  /**
+   * Creates a dummy {@link TraceHop} for starting a trace when ingressInterface is provided
+   *
+   * @return a dummy {@link TraceHop}
+   */
   public static TraceHop createDummyHop() {
     ImmutableList.Builder<Step> steps = ImmutableList.builder();
 

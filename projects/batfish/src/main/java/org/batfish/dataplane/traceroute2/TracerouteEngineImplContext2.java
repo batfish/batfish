@@ -289,6 +289,11 @@ public class TracerouteEngineImplContext2 {
     return true;
   }
 
+  /**
+   * Builds all possible flows with the corresponding {@link Trace}
+   *
+   * @return {@link SortedMap} of {@link Flow} to a {@link Set} of {@link Trace}
+   */
   public SortedMap<Flow, Set<Trace>> buildFlows() {
     Map<Flow, Set<Trace>> flowTraces = new ConcurrentHashMap<>();
     _flows
