@@ -4368,6 +4368,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt);
     IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<String> finalNodes = loadConfigurations().keySet();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
@@ -4379,18 +4380,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> droppedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
-                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, dropDispositions)
+                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, finalNodes, dropDispositions)
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> neighborUnreachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .getIngressLocationReachableBDDs();
 
@@ -4439,6 +4442,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();
@@ -4449,6 +4453,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();
