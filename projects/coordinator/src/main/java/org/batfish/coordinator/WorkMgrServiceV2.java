@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -69,13 +68,10 @@ public class WorkMgrServiceV2 {
   /**
    * Fork the specified snapshot and make changes to the new snapshot
    *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
    * @param networkName The name of the network under which to fork the snapshot
    * @param snapshotName The name of the new snapshot to create
    * @param forkSnapshotBean The {@link ForkSnapshotBean} containing parameters used to create the
    *     fork
-   * @return TODO: document JSON response
    */
   @PUT
   @Path(CoordConstsV2.RSC_NETWORKS + "/{network}/" + CoordConstsV2.RSC_SNAPSHOTS + "/{snapshot}")
@@ -84,17 +80,11 @@ public class WorkMgrServiceV2 {
   public Response forkSnapshot(
       @PathParam("network") String networkName,
       @PathParam("snapshot") String snapshotName,
-      @HeaderParam(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY) String apiKey,
-      @HeaderParam(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION) String clientVersion,
       ForkSnapshotBean forkSnapshotBean) {
     try {
-      _logger.infof("WMS2:forkSnapshot %s %s %s\n", apiKey, networkName, snapshotName);
-
-      assertStringParamProvided(apiKey, "API key");
-      assertStringParamProvided(clientVersion, "Client version");
       assertStringParamProvided(networkName, "Network name");
       assertStringParamProvided(snapshotName, "Snapshot name");
-      assertNetworkAccessibility(apiKey, networkName);
+      assertNetworkAccessibility(_apiKey, networkName);
 
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
@@ -104,21 +94,10 @@ public class WorkMgrServiceV2 {
       }
 
       Main.getWorkMgr().forkSnapshot(networkName, snapshotName, forkSnapshotBean);
-      _logger.infof(
-          "Created snapshot:%s forked from snapshot: %s for network:%s using api-key:%s\n",
-          snapshotName, forkSnapshotBean.baseSnapshot, networkName, apiKey);
       return Response.ok().build();
     } catch (FileNotFoundException e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
       return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
     } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS2:forkSnapshot exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     }
   }

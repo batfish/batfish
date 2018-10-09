@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.client.Invocation.Builder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
@@ -46,8 +47,14 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
   }
 
-  private WebTarget getSnapshotTarget(String network, String snapshot) {
-    return getContainersTarget().path(network).path(CoordConstsV2.RSC_SNAPSHOTS).path(snapshot);
+  private Builder getSnapshotTarget(String network, String snapshot) {
+    return getContainersTarget()
+        .path(network)
+        .path(CoordConstsV2.RSC_SNAPSHOTS)
+        .path(snapshot)
+        .request()
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Test
@@ -61,40 +68,21 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             baseSnapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of("node1"));
 
     Response response =
-        getSnapshotTarget(networkName, snapshotName)
-            .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .put(Entity.json(forkSnapshotBean));
+        getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
     // Confirm missing network causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
     Main.getWorkMgr().initNetwork(networkName, null);
-    response =
-        getSnapshotTarget(networkName, snapshotName)
-            .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
     // Confirm missing snapshot causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
     WorkMgrTestUtils.initSnapshot(networkName, baseSnapshotName);
-    response =
-        getSnapshotTarget(networkName, snapshotName)
-            .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
     // Confirm forking existing snapshot is successful
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    response =
-        getSnapshotTarget(networkName, snapshotName)
-            .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
     // Confirm duplicate snapshot name fails with bad request
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }

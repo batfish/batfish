@@ -368,7 +368,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshot() throws IOException {
+  public void testForkSnapshot() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -430,7 +430,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotMissingBaseSnapshot() throws IOException {
+  public void testForkSnapshotMissingBaseSnapshot() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -446,7 +446,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotMissingBaseSnapshotName() throws IOException {
+  public void testForkSnapshotMissingBaseSnapshotName() throws IOException {
     String networkName = "network";
     String snapshotNewName = "snapshotNew";
 
@@ -460,7 +460,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void forkSnapshotMissingNetwork() throws IOException {
+  public void testForkSnapshotMissingNetwork() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
