@@ -213,14 +213,11 @@
         "mos_misc" : "configs/mos_misc",
         "msdp_originator_id" : "configs/msdp_originator_id",
         "named_and_numbered_lists" : "configs/named_and_numbered_lists",
-        "neighbor" : "configs/neighbor",
         "neighbor-name-numbers" : "configs/neighbor_name_numbers",
-        "neighbor_dos" : "configs/neighbor_dos",
         "neighbor_mix" : "configs/neighbor_mix",
         "neighbor_nxos" : "configs/neighbor_nxos",
         "network6" : "configs/network6",
         "nexus" : "configs/nexus",
-        "nexus-arista-router-bgp" : "configs/nexus-arista-router-bgp",
         "nexus_bgp" : "configs/nexus_bgp",
         "nexus_ntp" : "configs/nexus_ntp",
         "nexus_ssh" : "configs/nexus_ssh",
@@ -478,14 +475,11 @@
         "configs/mos_misc" : "PASSED",
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
-        "configs/neighbor" : "PASSED",
-        "configs/neighbor_dos" : "PASSED",
         "configs/neighbor_mix" : "PASSED",
         "configs/neighbor_name_numbers" : "PASSED",
         "configs/neighbor_nxos" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
-        "configs/nexus-arista-router-bgp" : "PASSED",
         "configs/nexus_bgp" : "PASSED",
         "configs/nexus_ntp" : "PASSED",
         "configs/nexus_ssh" : "PASSED",
@@ -50719,100 +50713,6 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
-        "neighbor" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
-            "      NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:M_NEIGHBOR))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
-            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "      procnum = DEC:'1'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'1234-5'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip6 = IPV6_ADDRESS:'1:01::'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'1.2.3.4abc'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'abc1.2.3.4'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'abc1.2.3.4def'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip6 = IPV6_ADDRESS:'a1:01::'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'123.123.123.abc'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip = IP_ADDRESS:'123.123.123.123'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
-            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
-          ]
-        },
         "neighbor-name-numbers" : {
           "sentences" : [
             "(cisco_configuration",
@@ -50840,100 +50740,6 @@
             "          name = VARIABLE:'8075-CORE'  <== mode:M_NEIGHBOR",
             "          PEER_GROUP:'peer-group'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:M_NEIGHBOR))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
-            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
-          ]
-        },
-        "neighbor_dos" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
-            "      VARIABLE:'neighbor_dos'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
-            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "      procnum = DEC:'1'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'1234-5'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip6 = IPV6_ADDRESS:'1:01::'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'1.2.3.4abc'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'abc1.2.3.4'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'abc1.2.3.4def'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip6 = IPV6_ADDRESS:'a1:01::'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          peergroup = VARIABLE:'123.123.123.abc'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (router_bgp_stanza_tail",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "          ip = IP_ADDRESS:'123.123.123.123'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "            (bgp_asn",
-            "              asn = DEC:'1'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -51178,65 +50984,6 @@
             "        COMMIT:'commit'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
-            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
-          ]
-        },
-        "nexus-arista-router-bgp" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
-            "      VARIABLE:'nexus-arista-router-bgp'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
-            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "      procnum = DEC:'65000'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "      (router_bgp_stanza_tail",
-            "        (bgp_tail",
-            "          (null_bgp_tail",
-            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "            LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
-            "      (router_bgp_stanza_tail",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
-            "            af = (bgp_address_family",
-            "              IPV4:'ipv4'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "          (neighbor_flat_rb_stanza",
-            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "            ip = IP_ADDRESS:'1.2.3.4'  <== mode:M_NEIGHBOR",
-            "            (bgp_tail",
-            "              (activate_bgp_tail",
-            "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
-            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "          (address_family_footer)))",
-            "      (router_bgp_stanza_tail",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
-            "            af = (bgp_address_family",
-            "              IPV6:'ipv6'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "          (neighbor_flat_rb_stanza",
-            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
-            "            ip6 = IPV6_ADDRESS:'1a01:111:0:1000:a::1'  <== mode:M_NEIGHBOR",
-            "            (bgp_tail",
-            "              (activate_bgp_tail",
-            "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
-            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "          (address_family_footer)))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -56563,55 +56310,11 @@
             }
           ]
         },
-        "bgp_address_family" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '13.16.3.16'"
-            }
-          ]
-        },
         "bgp_default_originate_policy" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Unimplemented: IOS-XR RPL functionsroute-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in\n"
-            }
-          ]
-        },
-        "cadant_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
             }
           ]
         },
@@ -56631,18 +56334,6 @@
             }
           ]
         },
-        "cisco_additional_paths" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            }
-          ]
-        },
         "cisco_bgp" : {
           "Parse warnings" : [
             {
@@ -56656,28 +56347,6 @@
               "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '10.20.2.2'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '192.168.3.2'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '192.168.4.2'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '10.0.0.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '10.0.0.1'"
             }
           ]
         },
@@ -56871,18 +56540,6 @@
             }
           ]
         },
-        "ios_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
-            }
-          ]
-        },
         "ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
@@ -57061,18 +56718,6 @@
             }
           ]
         },
-        "nexus-arista-router-bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1.2.3.4'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '1a01:111:0:1000:a:0:0:1'"
-            }
-          ]
-        },
         "peer_template" : {
           "Parse warnings" : [
             {
@@ -57098,14 +56743,6 @@
               "Line" : 4,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "ip default-gateway 128.125.253.254"
-            }
-          ]
-        },
-        "vlan_access_map4" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignoring reference to undeclared peer group: '10.10.212.233'"
             }
           ]
         },
@@ -57144,14 +56781,6 @@
           }
         },
         "configs/arista_bgp" : {
-          "bgp group" : {
-            "UNDEFINED_PEER_GROUP" : {
-              "definitionLines" : [
-                11
-              ],
-              "numReferrers" : 0
-            }
-          },
           "route-map" : {
             "ROUTE_MAP" : {
               "definitionLines" : [
@@ -57340,18 +56969,18 @@
         "configs/banner" : { },
         "configs/banner_dos" : { },
         "configs/bgp_address_family" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 7
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
                 9
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as3" : {
               "definitionLines" : [
@@ -57368,17 +56997,18 @@
           }
         },
         "configs/bgp_default_originate_policy" : {
-          "bgp group" : {
+          "bgp neighbor-group" : {
             "ama-coe" : {
               "definitionLines" : [
-                5
+                5,
+                6
               ],
               "numReferrers" : 0
             }
           }
         },
         "configs/bgp_foundry" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "ucr" : {
               "definitionLines" : [
                 7
@@ -57827,10 +57457,13 @@
               "numReferrers" : 0
             }
           },
-          "bgp group" : {
+          "bgp template peer-policy" : {
             "p1" : {
               "definitionLines" : [
-                32
+                32,
+                33,
+                34,
+                35
               ],
               "numReferrers" : 0
             }
@@ -59381,7 +59014,7 @@
           }
         },
         "configs/foundry_bgp" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "bippety" : {
               "definitionLines" : [
                 11
@@ -59622,72 +59255,109 @@
         "configs/ios_xr_acl" : { },
         "configs/ios_xr_bgp" : { },
         "configs/ios_xr_bgp_neighbor_group" : {
-          "bgp group" : {
-            "BGPMonitor" : {
-              "definitionLines" : [
-                20
-              ],
-              "numReferrers" : -1
-            },
+          "bgp af-group" : {
             "blabbety" : {
               "definitionLines" : [
-                10
+                10,
+                11,
+                12,
+                13
               ],
               "numReferrers" : 0
             },
             "blappety" : {
               "definitionLines" : [
-                5
+                5,
+                6,
+                7,
+                8
               ],
               "numReferrers" : 0
+            }
+          },
+          "bgp neighbor-group" : {
+            "BGPMonitor" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "numReferrers" : 1
             },
             "foobar-iBGP_border_ipv4" : {
               "definitionLines" : [
-                56
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "foobar-iBGP_border_ipv6" : {
               "definitionLines" : [
-                67
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
               ],
               "numReferrers" : 0
             },
             "foobar-iBGP_ipv4" : {
               "definitionLines" : [
-                32
+                32,
+                33,
+                34,
+                35,
+                36
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             },
             "foobar-iBGP_ipv6" : {
               "definitionLines" : [
-                46
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
               ],
               "numReferrers" : 0
-            },
-            "~FAKE_PG_1~" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : -1
-            },
-            "~FAKE_PG_2~" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : -1
             }
           },
-          "bgp session" : {
+          "bgp session-group" : {
             "OLA" : {
               "definitionLines" : [
-                92
+                92,
+                93,
+                94,
+                95
               ],
               "numReferrers" : 0
             },
             "blibber" : {
               "definitionLines" : [
-                15
+                15,
+                16,
+                17,
+                18
               ],
               "numReferrers" : 0
             }
@@ -60508,7 +60178,7 @@
         "configs/juniper_system" : { },
         "configs/juniper_tacplus" : { },
         "configs/local_v6_addr" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "NEIGH" : {
               "definitionLines" : [
                 5
@@ -60600,77 +60270,9 @@
             }
           }
         },
-        "configs/neighbor" : {
-          "bgp group" : {
-            "1.2.3.4abc" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 0
-            },
-            "123.123.123.abc" : {
-              "definitionLines" : [
-                11
-              ],
-              "numReferrers" : 0
-            },
-            "1234-5" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 0
-            },
-            "abc1.2.3.4" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 0
-            },
-            "abc1.2.3.4def" : {
-              "definitionLines" : [
-                9
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
-        "configs/neighbor_dos" : {
-          "bgp group" : {
-            "1.2.3.4abc" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 0
-            },
-            "123.123.123.abc" : {
-              "definitionLines" : [
-                11
-              ],
-              "numReferrers" : 0
-            },
-            "1234-5" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 0
-            },
-            "abc1.2.3.4" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 0
-            },
-            "abc1.2.3.4def" : {
-              "definitionLines" : [
-                9
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
         "configs/neighbor_mix" : { },
         "configs/neighbor_name_numbers" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "8075-CORE" : {
               "definitionLines" : [
                 6
@@ -60682,7 +60284,6 @@
         "configs/neighbor_nxos" : { },
         "configs/network6" : { },
         "configs/nexus" : { },
-        "configs/nexus-arista-router-bgp" : { },
         "configs/nexus_bgp" : {
           "bgp template peer" : {
             "PEER_BLLF" : {
@@ -61223,6 +60824,13 @@
       },
       "referencedStructures" : {
         "configs/arista_bgp" : {
+          "bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor statement" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ROUTE_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
@@ -61337,6 +60945,18 @@
           }
         },
         "configs/bgp_address_family" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                13
+              ]
+            },
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                15
+              ]
+            }
+          },
           "interface" : {
             "Loopback0" : {
               "update-source interface" : [
@@ -61363,6 +60983,13 @@
             "as3_to_as1" : {
               "bgp inbound route-map" : [
                 29
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "13.16.3.16" : {
+              "bgp neighbor without remote-as" : [
+                17
               ]
             }
           }
@@ -61396,6 +61023,13 @@
           }
         },
         "configs/bgp_route_policy" : {
+          "bgp neighbor-group" : {
+            "EBGP-PEER-SVL-PNI" : {
+              "bgp use neighbor-group" : [
+                20
+              ]
+            }
+          },
           "route-policy" : {
             "EBGP-PEER-AS11164-SVL-PNI-IN" : {
               "bgp neighbor route-policy in" : [
@@ -61427,6 +61061,24 @@
             "blerp" : {
               "bgp outbound route-map" : [
                 35
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                26,
+                27,
+                28,
+                39
+              ]
+            },
+            "dead:beef:0:0:0:0:0:1" : {
+              "bgp neighbor without remote-as" : [
+                33,
+                34,
+                35,
+                40
               ]
             }
           }
@@ -61576,6 +61228,16 @@
             }
           }
         },
+        "configs/cisco_additional_paths" : {
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                7,
+                8
+              ]
+            }
+          }
+        },
         "configs/cisco_bgp" : {
           "as-path access-list" : {
             "10" : {
@@ -61591,6 +61253,18 @@
             "40" : {
               "bgp neighbor filter-list access-list" : [
                 18
+              ]
+            }
+          },
+          "bgp template peer-policy" : {
+            "p2" : {
+              "inherited BGP peer-policy" : [
+                33
+              ]
+            },
+            "p3" : {
+              "inherited BGP peer-policy" : [
+                34
               ]
             }
           },
@@ -61628,6 +61302,29 @@
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
                 40
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "10.0.0.1" : {
+              "bgp neighbor without remote-as" : [
+                36,
+                37
+              ]
+            },
+            "10.20.2.2" : {
+              "bgp neighbor without remote-as" : [
+                10
+              ]
+            },
+            "192.168.3.2" : {
+              "bgp neighbor without remote-as" : [
+                14
+              ]
+            },
+            "192.168.4.2" : {
+              "bgp neighbor without remote-as" : [
+                18
               ]
             }
           }
@@ -62797,6 +62494,20 @@
                 5
               ]
             }
+          },
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                5
+              ]
+            }
+          },
+          "undeclared bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp peer-group referenced before defined" : [
+                7
+              ]
+            }
           }
         },
         "configs/ios_interface" : {
@@ -62846,6 +62557,46 @@
           }
         },
         "configs/ios_xr_bgp_neighbor_group" : {
+          "bgp neighbor-group" : {
+            "BGPMonitor" : {
+              "bgp use neighbor-group" : [
+                33
+              ]
+            },
+            "foobar-iBGP_border_ipv4" : {
+              "bgp use neighbor-group" : [
+                87
+              ]
+            },
+            "foobar-iBGP_ipv4" : {
+              "bgp use neighbor-group" : [
+                78,
+                83
+              ]
+            }
+          },
+          "bgp session-group" : {
+            "CIAO" : {
+              "bgp use session-group" : [
+                94
+              ]
+            },
+            "bippety" : {
+              "bgp use session-group" : [
+                34
+              ]
+            },
+            "blabber" : {
+              "bgp use session-group" : [
+                17
+              ]
+            },
+            "excellect-group" : {
+              "bgp use session-group" : [
+                88
+              ]
+            }
+          },
           "interface" : {
             "Loopback0" : {
               "update-source interface" : [
@@ -63694,10 +63445,26 @@
               ]
             }
           }
+        },
+        "configs/vlan_access_map2" : {
+          "undeclared bgp peer" : {
+            "10.10.212.233" : {
+              "bgp neighbor without remote-as" : [
+                20
+              ]
+            }
+          }
         }
       },
       "undefinedReferences" : {
         "configs/arista_bgp" : {
+          "bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor statement" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
@@ -63753,6 +63520,13 @@
                 29
               ]
             }
+          },
+          "undeclared bgp peer" : {
+            "13.16.3.16" : {
+              "bgp neighbor without remote-as" : [
+                17
+              ]
+            }
           }
         },
         "configs/bgp_default_originate_policy" : {
@@ -63784,10 +63558,10 @@
           }
         },
         "configs/bgp_route_policy" : {
-          "bgp group" : {
+          "bgp neighbor-group" : {
             "EBGP-PEER-SVL-PNI" : {
-              "inherited BGP group" : [
-                0
+              "bgp use neighbor-group" : [
+                20
               ]
             }
           },
@@ -63822,6 +63596,24 @@
             "blerp" : {
               "bgp outbound route-map" : [
                 35
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                26,
+                27,
+                28,
+                39
+              ]
+            },
+            "dead:beef:0:0:0:0:0:1" : {
+              "bgp neighbor without remote-as" : [
+                33,
+                34,
+                35,
+                40
               ]
             }
           }
@@ -63883,6 +63675,16 @@
             }
           }
         },
+        "configs/cisco_additional_paths" : {
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                7,
+                8
+              ]
+            }
+          }
+        },
         "configs/cisco_bgp" : {
           "as-path access-list" : {
             "40" : {
@@ -63891,9 +63693,14 @@
               ]
             }
           },
-          "bgp group" : {
+          "bgp template peer-policy" : {
+            "p2" : {
+              "inherited BGP peer-policy" : [
+                33
+              ]
+            },
             "p3" : {
-              "inherited BGP group" : [
+              "inherited BGP peer-policy" : [
                 34
               ]
             }
@@ -63912,6 +63719,29 @@
             "bloop" : {
               "bgp redistribute connected route-map" : [
                 26
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "10.0.0.1" : {
+              "bgp neighbor without remote-as" : [
+                36,
+                37
+              ]
+            },
+            "10.20.2.2" : {
+              "bgp neighbor without remote-as" : [
+                10
+              ]
+            },
+            "192.168.3.2" : {
+              "bgp neighbor without remote-as" : [
+                14
+              ]
+            },
+            "192.168.4.2" : {
+              "bgp neighbor without remote-as" : [
+                18
               ]
             }
           }
@@ -64570,13 +64400,6 @@
           }
         },
         "configs/ios_bgp" : {
-          "bgp group" : {
-            "UNDEFINED_PEER_GROUP" : {
-              "bgp neighbor statement" : [
-                7
-              ]
-            }
-          },
           "route-map" : {
             "ADVERTISE_MAP" : {
               "bgp address-family aggregate-address advertise-map" : [
@@ -64586,6 +64409,20 @@
             "EXIST_MAP" : {
               "bgp neighbor advertise-map exist-map" : [
                 5
+              ]
+            }
+          },
+          "undeclared bgp peer" : {
+            "1.2.3.4" : {
+              "bgp neighbor without remote-as" : [
+                5
+              ]
+            }
+          },
+          "undeclared bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp peer-group referenced before defined" : [
+                7
               ]
             }
           }
@@ -64623,14 +64460,24 @@
           }
         },
         "configs/ios_xr_bgp_neighbor_group" : {
-          "bgp group" : {
+          "bgp session-group" : {
+            "CIAO" : {
+              "bgp use session-group" : [
+                94
+              ]
+            },
             "bippety" : {
-              "inherited BGP peer-session" : [
+              "bgp use session-group" : [
                 34
               ]
             },
+            "blabber" : {
+              "bgp use session-group" : [
+                17
+              ]
+            },
             "excellect-group" : {
-              "inherited BGP peer-session" : [
+              "bgp use session-group" : [
                 88
               ]
             }
@@ -65221,6 +65068,15 @@
               ]
             }
           }
+        },
+        "configs/vlan_access_map2" : {
+          "undeclared bgp peer" : {
+            "10.10.212.233" : {
+              "bgp neighbor without remote-as" : [
+                20
+              ]
+            }
+          }
         }
       },
       "version" : "0.36.0",
@@ -65478,22 +65334,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
-            }
-          ]
-        },
-        "neighbor" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '123.123.123.123'"
-            }
-          ]
-        },
-        "neighbor_dos" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '123.123.123.123'"
             }
           ]
         },
@@ -65796,14 +65636,11 @@
         "configs/mos_misc" : "PASSED",
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
-        "configs/neighbor" : "PASSED",
-        "configs/neighbor_dos" : "PASSED",
         "configs/neighbor_mix" : "PASSED",
         "configs/neighbor_name_numbers" : "PASSED",
         "configs/neighbor_nxos" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
-        "configs/nexus-arista-router-bgp" : "PASSED",
         "configs/nexus_bgp" : "PASSED",
         "configs/nexus_ntp" : "PASSED",
         "configs/nexus_ssh" : "PASSED",
