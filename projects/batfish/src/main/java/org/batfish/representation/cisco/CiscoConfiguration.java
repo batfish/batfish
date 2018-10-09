@@ -16,6 +16,7 @@ import static org.batfish.representation.cisco.CiscoConversions.suppressSummariz
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
@@ -282,6 +283,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
   }
 
+  public static String computeIcmpObjectGroupAclName(String name) {
+    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
+  }
+
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
    * Filters out the interfaces having no primary {@link InterfaceAddress}
@@ -293,10 +298,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeIcmpObjectGroupAclName(String name) {
-    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -2979,16 +2980,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(
-              saList.getName(),
-              CiscoConversions.toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
+          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, this._objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3037,15 +3036,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObjectGroup)));
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
     _serviceObjects.forEach(
         (name, serviceObject) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObject)));
+                .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter

@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -505,59 +506,6 @@ class CiscoConversions {
     return ikePhase1Proposal;
   }
 
-  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(
-            CiscoConfiguration.computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(
-            CiscoConfiguration.computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  /** Converts an IPSec Profile to IPSec policy */
-  static IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
-  }
-
   static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Ip6AccessListLine> lines = new ArrayList<>();
@@ -619,6 +567,58 @@ class CiscoConversions {
         .setLines(lines)
         .setSourceName(name)
         .setSourceType(sourceType)
+        .build();
+  }
+
+  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
+        .setSourceName(icmpTypeObjectGroup.getName())
+        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
+  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
+        .setSourceName(protocolObjectGroup.getName())
+        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
+        .build();
+  }
+
+  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
+                    .build()))
+        .setName(CiscoConfiguration.computeServiceObjectAclName(serviceObject.getName()))
+        .setSourceName(serviceObject.getName())
+        .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
+        .build();
+  }
+
+  static IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .setSourceName(serviceObjectGroup.getName())
+        .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -762,6 +762,31 @@ class CiscoConversions {
         }
       }
     }
+  }
+
+  /** Converts an IPSec Profile to IPSec policy */
+  static IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
+    String name = ipsecProfile.getName();
+
+    IpsecPolicy policy = new IpsecPolicy(name);
+    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
+
+    for (String transformSetName : ipsecProfile.getTransformSets()) {
+      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
+      if (ipsecProposalName != null) {
+        policy.getProposals().add(ipsecProposalName);
+      }
+    }
+
+    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
+    if (isakmpProfileName != null) {
+      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
+      if (ikeGateway != null) {
+        policy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    return policy;
   }
 
   /**
@@ -1212,32 +1237,6 @@ class CiscoConversions {
         .setNextHopInterface(nextHopInterface)
         .setAdministrativeCost(staticRoute.getDistance())
         .setTag(firstNonNull(staticRoute.getTag(), -1))
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
-        .setSourceName(serviceObjectGroup.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
-                    .build()))
-        .setName(CiscoConfiguration.computeServiceObjectAclName(serviceObject.getName()))
-        .setSourceName(serviceObject.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
         .build();
   }
 
