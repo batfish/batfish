@@ -3,7 +3,6 @@ package org.batfish.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.common.topology.Layer1Topology;
@@ -229,42 +228,42 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri) {
+  public InputStream loadNetworkObject(NetworkId networkId, String key) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+  public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri) throws IOException {
+  public void deleteNetworkObject(NetworkId networkId, String key) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InputStream loadSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeSnapshotExtendedObject(
-      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
@@ -275,12 +274,12 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+  public String loadTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+  public void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     throw new UnsupportedOperationException();
   }

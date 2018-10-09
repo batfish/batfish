@@ -1,7 +1,7 @@
 package org.batfish.coordinator.resources;
 
-import static org.batfish.common.CoordConstsV2.RSC_EXTENDED;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
+import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
@@ -46,10 +46,10 @@ public class ContainerResource {
     return Response.ok(container).build();
   }
 
-  /** Relocate the request to {@link NetworkExtendedObjectsResource} */
-  @Path(RSC_EXTENDED)
-  public NetworkExtendedObjectsResource getNetworkExtendedObjectResource() {
-    return new NetworkExtendedObjectsResource(_name);
+  /** Relocate the request to {@link NetworkObjectsResource} */
+  @Path(RSC_OBJECTS)
+  public NetworkObjectsResource getNetworkExtendedObjectResource() {
+    return new NetworkObjectsResource(_name);
   }
 
   /** Relocate the request to {@link NodeRolesResource}. */
@@ -95,7 +95,7 @@ public class ContainerResource {
 
   /** Relocate the request to {@link SnapshotsResource} */
   @Path(RSC_SNAPSHOTS)
-  public SnapshotsResource getSnaspshotsResource() {
+  public SnapshotsResource getSnapshotsResource() {
     return new SnapshotsResource(_name);
   }
 }

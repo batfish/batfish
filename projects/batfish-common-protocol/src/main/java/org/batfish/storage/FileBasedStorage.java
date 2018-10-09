@@ -17,7 +17,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
-import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +35,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -643,111 +643,107 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri)
+  public @Nonnull InputStream loadNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException {
-    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
-    if (!Files.exists(networkExtendedObjectPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not load: %s", networkExtendedObjectPath));
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
-    return Files.newInputStream(networkExtendedObjectPath);
+    return Files.newInputStream(objectPath);
   }
 
-  private @Nonnull Path rootedUriToRelativePath(URI uri) throws IOException {
-    Path rootedPath = Paths.get(uri);
-    Path canonicalRootedPath = rootedPath.toFile().getCanonicalFile().toPath();
-    if (!rootedPath.equals(canonicalRootedPath)) {
-      throw new IllegalArgumentException(
-          String.format("URI '%s' represents non-canonical path", uri));
+  /** {@code key} must be relative path that is canonical modulo its relativeness. */
+  private @Nonnull Path objectKeyToRelativePath(String key) throws IOException {
+    Path relativePathCandidate = Paths.get(FilenameUtils.separatorsToSystem(key));
+    Path absolutePath = relativePathCandidate.toAbsolutePath();
+    Path canonicalPath = absolutePath.toFile().getCanonicalFile().toPath();
+    if (!absolutePath.equals(canonicalPath)) {
+      throw new IllegalArgumentException(String.format("Key '%s' not a valid relative path", key));
     }
-    return canonicalRootedPath.getRoot().relativize(canonicalRootedPath);
+    return relativePathCandidate;
   }
 
-  private @Nonnull Path getNetworkExtendedObjectPath(NetworkId networkId, URI uri)
-      throws IOException {
-    Path relativePath = rootedUriToRelativePath(uri);
-    return _d.getNetworkExtendedObjectsDir(networkId).resolve(relativePath);
+  private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) throws IOException {
+    Path relativePath = objectKeyToRelativePath(key);
+    return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
   }
 
   @Override
-  public void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+  public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
-    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
-    networkExtendedObjectPath.getParent().toFile().mkdirs();
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    objectPath.getParent().toFile().mkdirs();
     try {
-      FileUtils.copyInputStreamToFile(inputStream, networkExtendedObjectPath.toFile());
+      FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
     } finally {
       inputStream.close();
     }
   }
 
   @Override
-  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+  public void deleteNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException {
-    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
-    if (!Files.exists(networkExtendedObjectPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not delete: %s", networkExtendedObjectPath));
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not delete: %s", objectPath));
     }
-    Files.delete(networkExtendedObjectPath);
+    Files.delete(objectPath);
   }
 
-  private @Nonnull Path getSnapshotExtendedObjectPath(
-      NetworkId networkId, SnapshotId snapshotId, URI uri) throws IOException {
-    Path relativePath = rootedUriToRelativePath(uri);
-    return _d.getSnapshotExtendedObjectsDir(networkId, snapshotId).resolve(relativePath);
+  private @Nonnull Path getSnapshotObjectPath(
+      NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
+    Path relativePath = objectKeyToRelativePath(key);
+    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(relativePath);
   }
 
   @Override
-  public @Nonnull InputStream loadSnapshotExtendedObject(
-      NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public @Nonnull InputStream loadSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
-    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
-    if (!Files.exists(snapshotExtendedObjectPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not load: %s", snapshotExtendedObjectPath));
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
-    return Files.newInputStream(snapshotExtendedObjectPath);
+    return Files.newInputStream(objectPath);
   }
 
   @Override
-  public void storeSnapshotExtendedObject(
-      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
-    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
-    snapshotExtendedObjectPath.getParent().toFile().mkdirs();
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    objectPath.getParent().toFile().mkdirs();
     try {
-      FileUtils.copyInputStreamToFile(inputStream, snapshotExtendedObjectPath.toFile());
+      FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
     } finally {
       inputStream.close();
     }
   }
 
   @Override
-  public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  public void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
-    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
-    if (!Files.exists(snapshotExtendedObjectPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not delete: %s", snapshotExtendedObjectPath));
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not delete: %s", objectPath));
     }
-    Files.delete(snapshotExtendedObjectPath);
+    Files.delete(objectPath);
   }
 
   @Override
   public @Nonnull InputStream loadSnapshotInputObject(
-      NetworkId networkId, SnapshotId snapshotId, URI uri)
+      NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
-    Path snapshotInputObjectPath = getSnapshotInputObjectPath(networkId, snapshotId, uri);
-    if (!Files.exists(snapshotInputObjectPath)) {
-      throw new FileNotFoundException(String.format("Could not load: %s", snapshotInputObjectPath));
+    Path objectPath = getSnapshotInputObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
-    return Files.newInputStream(snapshotInputObjectPath);
+    return Files.newInputStream(objectPath);
   }
 
-  private Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  private Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
-    Path relativePath = rootedUriToRelativePath(uri);
+    Path relativePath = objectKeyToRelativePath(key);
     return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
   }
 
@@ -765,7 +761,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId)
+  public @Nonnull String loadTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     return FileUtils.readFileToString(path.toFile());
@@ -781,7 +777,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+  public void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();

@@ -27,7 +27,6 @@ import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -2345,80 +2344,84 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
-   * network} may be read. Returns {@code null} if the object cannot be found.
+   * Provides a stream from which the extended object with the given {@code key} for the given
+   * {@code network} may be read. Returns {@code null} if the object cannot be found.
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     try {
-      return _storage.loadNetworkExtendedObject(networkId, uri);
+      return _storage.loadNetworkObject(networkId, key);
     } catch (FileNotFoundException e) {
       return null;
     } catch (IOException e) {
       throw new IOException(
-          String.format(
-              "Could not read extended object for network '%s' at URI '%s'", network, uri),
+          String.format("Could not read extended object for network '%s', key '%s'", network, key),
           e);
     }
   }
 
   /**
-   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
-   * the given {@code network}.
+   * Writes an extended object from the provided {@code inputStream} with the given {@code key} for
+   * the given {@code network}. Returns {@code true} if the object was written, or {@code false} if
+   * the network does not exist.
    *
    * @throws IOException if there is an error writing the object
    */
-  public void putNetworkExtendedObject(
-      @Nonnull InputStream inputStream, @Nonnull String network, @Nonnull URI uri)
-      throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(network);
-    try {
-      _storage.storeNetworkExtendedObject(inputStream, networkId, uri);
-    } catch (IOException e) {
-      throw new IOException(
-          String.format(
-              "Could not write extended object for network '%s' at URI '%s'", network, uri),
-          e);
-    }
-  }
-
-  /**
-   * Deletes the extended object at the given {@code uri} for the given {@code network}. Returns
-   * {@code true} if deletion is successful, or {@code false} if the object or network does not
-   * exist.
-   *
-   * @throws IOException if there is an error deleting the object
-   */
-  public boolean deleteNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+  public boolean putNetworkObject(
+      @Nonnull InputStream inputStream, @Nonnull String network, @Nonnull String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     try {
-      _storage.deleteNetworkExtendedObject(networkId, uri);
-    } catch (FileNotFoundException e) {
-      return false;
+      _storage.storeNetworkObject(inputStream, networkId, key);
     } catch (IOException e) {
       throw new IOException(
-          String.format(
-              "Could not delete extended object for network '%s' at URI '%s'", network, uri),
+          String.format("Could not write extended object for network '%s', key '%s'", network, key),
           e);
     }
     return true;
   }
 
   /**
-   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
-   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   * Deletes the extended object with the given {@code key} for the given {@code network}. Returns
+   * {@code true} if deletion is successful, or {@code false} if the object or network does not
+   * exist.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public boolean deleteNetworkObject(@Nonnull String network, @Nonnull String key)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.deleteNetworkObject(networkId, key);
+    } catch (FileNotFoundException e) {
+      return false;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s' at key '%s'", network, key),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Provides a stream from which the extended object with the given {@code key} for the given
+   * {@code network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be
+   * found.
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getSnapshotExtendedObject(
-      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+  public @Nullable InputStream getSnapshotObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
     }
@@ -2428,20 +2431,20 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     try {
-      return _storage.loadSnapshotExtendedObject(networkId, snapshotId, uri);
+      return _storage.loadSnapshotObject(networkId, snapshotId, key);
     } catch (FileNotFoundException e) {
       return null;
     } catch (IOException e) {
       throw new IOException(
           String.format(
-              "Could not read extended object for network '%s', snapshot '%s', URI '%s'",
-              network, snapshot, uri),
+              "Could not read extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
           e);
     }
   }
 
   /**
-   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
+   * Writes an extended object from the provided {@code inputStream} with the given {@code key} for
    * the given {@code network} and {@code snapshot}. Returns {@code true} if the object was written,
    * or {@code false} if the network or snapshot does not exist.
    *
@@ -2451,7 +2454,7 @@ public class WorkMgr extends AbstractCoordinator {
       @Nonnull InputStream inputStream,
       @Nonnull String network,
       @Nonnull String snapshot,
-      @Nonnull URI uri)
+      @Nonnull String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return false;
@@ -2462,26 +2465,26 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     try {
-      _storage.storeSnapshotExtendedObject(inputStream, networkId, snapshotId, uri);
+      _storage.storeSnapshotObject(inputStream, networkId, snapshotId, key);
     } catch (IOException e) {
       throw new IOException(
           String.format(
-              "Could not write extended object for network '%s', snapshot '%s', URI '%s'",
-              network, snapshot, uri),
+              "Could not write extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
           e);
     }
     return true;
   }
 
   /**
-   * Deletes the extended object at the given {@code uri} for the given {@code network} and {@code
+   * Deletes the extended object with the given {@code key} for the given {@code network} and {@code
    * snapshot}. Returns {@code true} if deletion is successful, or {@code false} if the object,
    * network, or snapshot does not exist.
    *
    * @throws IOException if there is an error deleting the object
    */
-  public boolean deleteSnapshotExtendedObject(
-      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+  public boolean deleteSnapshotObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
@@ -2491,26 +2494,26 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     try {
-      _storage.deleteSnapshotExtendedObject(networkId, snapshotId, uri);
+      _storage.deleteSnapshotObject(networkId, snapshotId, key);
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
       throw new IOException(
           String.format(
-              "Could not delete extended object for network '%s', snapshot '%s', URI '%s'",
-              network, snapshot, uri),
+              "Could not delete extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
           e);
     }
     return true;
   }
 
   /**
-   * Provides a stream from which the input object at the given {@code uri} for the given {@code
+   * Provides a stream from which the input object with the given {@code key} for the given {@code
    * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
    *
    * @throws IOException if there is an error reading the object
    */
-  public InputStream getSnapshotInputObject(String network, String snapshot, URI uri)
+  public InputStream getSnapshotInputObject(String network, String snapshot, String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2521,14 +2524,14 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     try {
-      return _storage.loadSnapshotInputObject(networkId, snapshotId, uri);
+      return _storage.loadSnapshotInputObject(networkId, snapshotId, key);
     } catch (FileNotFoundException e) {
       return null;
     } catch (IOException e) {
       throw new IOException(
           String.format(
-              "Could not read input object for network '%s', snapshot '%s', URI '%s'",
-              network, snapshot, uri),
+              "Could not read input object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
           e);
     }
   }
@@ -2537,7 +2540,7 @@ public class WorkMgr extends AbstractCoordinator {
    * Returns the env topology for the given network and snapshot, or {@code null} if either does not
    * exist.
    */
-  public @Nullable org.batfish.datamodel.Topology getEnvTopology(String network, String snapshot)
+  public @Nullable org.batfish.datamodel.Topology getTopology(String network, String snapshot)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2547,7 +2550,7 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    String topologyStr = _storage.loadEnvTopology(networkId, snapshotId);
+    String topologyStr = _storage.loadTopology(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
         .readValue(topologyStr, org.batfish.datamodel.Topology.class);
   }

@@ -56,7 +56,7 @@ public final class WorkMgrTestUtils {
     Main.getWorkMgr().getStorage().storePojoTopology(pojoTopology, networkId, snapshotId);
     org.batfish.datamodel.Topology envTopology =
         new org.batfish.datamodel.Topology(ImmutableSortedSet.of());
-    Main.getWorkMgr().getStorage().storeEnvTopology(envTopology, networkId, snapshotId);
+    Main.getWorkMgr().getStorage().storeTopology(envTopology, networkId, snapshotId);
   }
 
   public static void initWorkManager(IdManager idManager, StorageProvider storage) {

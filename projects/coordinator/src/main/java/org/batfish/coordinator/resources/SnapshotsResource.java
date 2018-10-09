@@ -14,8 +14,8 @@ public final class SnapshotsResource {
     _network = network;
   }
 
-  @Path("/{snapshotParam}")
-  public SnapshotResource getSnapshotResource(@PathParam("snapshotParam") String snapshot) {
+  @Path("/{snapshot}")
+  public SnapshotResource getSnapshotResource(@PathParam("snapshot") String snapshot) {
     return new SnapshotResource(_network, snapshot);
   }
 }

@@ -144,11 +144,11 @@ public class FileBasedStorageDirectoryProvider {
         .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
   }
 
-  public Path getNetworkExtendedObjectsDir(NetworkId networkId) {
+  public Path getNetworkObjectsDir(NetworkId networkId) {
     return getNetworkDir(networkId).resolve(RELPATH_EXTENDED);
   }
 
-  public Path getSnapshotExtendedObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+  public Path getSnapshotObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_EXTENDED);
   }
 

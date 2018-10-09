@@ -3,7 +3,6 @@ package org.batfish.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -307,68 +306,68 @@ public interface StorageProvider {
   void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which a network-wide extended object at the given URI may be read
+   * Provide a stream from which a network-wide extended object for the given key may be read
    *
-   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
-  InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri)
+  InputStream loadNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
   /**
-   * Writes the network-wide extended object at the given URI using the provided input stream.
+   * Writes the network-wide extended object at for the given key using the provided input stream.
    *
    * @throws IOException if there is an error writing the object
    */
-  void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+  void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException;
 
   /**
-   * Deletes the network-wide extended object at the given URI.
+   * Deletes the network-wide extended object for the given key.
    *
    * @throws FileNotFoundException if the object does not exist
    * @throws IOException if there is an error deleting the object
    */
-  void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+  void deleteNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which a snapshot-wide extended object at the given URI may be read
+   * Provide a stream from which a snapshot-wide extended object for the given key may be read
    *
-   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
-  InputStream loadSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
   /**
-   * Writes the snapshot-wide extended object at the given URI using the provided input stream.
+   * Writes the snapshot-wide extended object for the given key using the provided input stream.
    *
    * @throws IOException if there is an error writing the object
    */
-  void storeSnapshotExtendedObject(
-      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+  void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException;
 
   /**
-   * Deletes the snapshot-wide extended object at the given URI.
+   * Deletes the snapshot-wide extended object for the given key.
    *
    * @throws FileNotFoundException if the object does not exist
    * @throws IOException if there is an error deleting the object
    */
-  void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
   /**
-   * Provide a stream from which a snapshot input object at the given URI may be read
+   * Provide a stream from which a snapshot input object for the given key may be read
    *
-   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
-  InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+  InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
   /**
@@ -380,19 +379,19 @@ public interface StorageProvider {
   String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
 
   /**
-   * Loads the JSON-serialized environment topology produced for a snapshot
+   * Loads the JSON-serialized topology produced for a snapshot
    *
    * @throws IOException if there is an error reading the topology
    */
   @Nonnull
-  String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+  String loadTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
 
   /**
-   * Writes the env topology for the provided network and snapshot
+   * Writes the topology for the provided network and snapshot
    *
    * @throws IOException if there is an error writing the topology
    */
-  void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+  void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
       throws IOException;
 
   /**
