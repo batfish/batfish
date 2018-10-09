@@ -30,11 +30,13 @@ public class IntegerSpaceTest {
   }
 
   @Test
-  public void testClosedRange() {
+  public void testClosedRangeCreation() {
     IntegerSpace space = _b.including(new SubRange(1, 10)).build();
-    assertThat(space.contains(1), equalTo(true));
-    assertThat(space.contains(10), equalTo(true));
-    assertThat(space.contains(5), equalTo(true));
+    for (int i = 1; i <= 10; i++) {
+      assertThat("Closed ranges are inclusive", space.contains(i));
+    }
+    assertThat("No members outside of subrange", !space.contains(11));
+    assertThat("No members outside of subrange", !space.contains(0));
   }
 
   @Test
