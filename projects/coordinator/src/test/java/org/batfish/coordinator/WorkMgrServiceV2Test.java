@@ -48,11 +48,10 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
   }
 
-  private Builder getSnapshotTarget(String network, String snapshot) {
+  private Builder getSnapshotTarget(String network) {
     return getContainersTarget()
         .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS)
-        .path(snapshot)
+        .path(CoordConstsV2.RSC_SNAPSHOTS + ":" + CoordConstsV2.RSC_FORK)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
@@ -66,24 +65,27 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
     ForkSnapshotBean forkSnapshotBean =
         new ForkSnapshotBean(
-            baseSnapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of("node1"));
+            baseSnapshotName,
+            snapshotName,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of("node1"));
 
-    Response response =
-        getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
+    Response response = getSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm missing network causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
     Main.getWorkMgr().initNetwork(networkName, null);
-    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm missing snapshot causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
     WorkMgrTestUtils.initTestrigWithTopology(networkName, baseSnapshotName, ImmutableSet.of());
-    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm forking existing snapshot is successful
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
+    response = getSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm duplicate snapshot name fails with bad request
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }

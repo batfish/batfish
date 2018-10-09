@@ -1,6 +1,8 @@
 package org.batfish.coordinator;
 
-import com.google.common.base.Strings;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -9,7 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -46,7 +48,7 @@ public class WorkMgrServiceV2 {
   @Context private UriInfo _uriInfo;
 
   private static void assertStringParamProvided(String paramStr, String parameterName) {
-    if (Strings.isNullOrEmpty(paramStr)) {
+    if (isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
   }
@@ -69,31 +71,33 @@ public class WorkMgrServiceV2 {
    * Fork the specified snapshot and make changes to the new snapshot
    *
    * @param networkName The name of the network under which to fork the snapshot
-   * @param snapshotName The name of the new snapshot to create
    * @param forkSnapshotBean The {@link ForkSnapshotBean} containing parameters used to create the
    *     fork
    */
-  @PUT
-  @Path(CoordConstsV2.RSC_NETWORKS + "/{network}/" + CoordConstsV2.RSC_SNAPSHOTS + "/{snapshot}")
+  @POST
+  @Path(
+      CoordConstsV2.RSC_NETWORKS
+          + "/{network}/"
+          + CoordConstsV2.RSC_SNAPSHOTS
+          + ":"
+          + CoordConstsV2.RSC_FORK)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response forkSnapshot(
-      @PathParam("network") String networkName,
-      @PathParam("snapshot") String snapshotName,
-      ForkSnapshotBean forkSnapshotBean) {
+      @PathParam("network") String networkName, ForkSnapshotBean forkSnapshotBean) {
     try {
-      assertStringParamProvided(networkName, "Network name");
-      assertStringParamProvided(snapshotName, "Snapshot name");
+      checkArgument(!isNullOrEmpty(networkName), "Parameter '%s' is required", "network");
       assertNetworkAccessibility(_apiKey, networkName);
 
+      // Set the appropriate tags for the trace being captured
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
             .activeSpan()
             .setTag("network-name", networkName)
-            .setTag("snapshot-name", snapshotName);
+            .setTag("snapshot-name", forkSnapshotBean.newSnapshot);
       }
 
-      Main.getWorkMgr().forkSnapshot(networkName, snapshotName, forkSnapshotBean);
+      Main.getWorkMgr().forkSnapshot(networkName, forkSnapshotBean);
       return Response.ok().build();
     } catch (FileNotFoundException e) {
       return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();

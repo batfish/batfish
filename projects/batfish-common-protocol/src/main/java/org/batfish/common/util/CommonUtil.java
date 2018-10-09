@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +42,6 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -135,29 +133,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
-
-  /** Add the specified collection to the serialized list at the specified path. */
-  public static <T> void addToSerializedList(
-      Path serializedObjectPath, @Nullable Collection<T> addition) throws IOException {
-    if (addition == null || addition.isEmpty()) {
-      return;
-    }
-
-    List<T> baseList;
-    if (serializedObjectPath.toFile().exists()) {
-      baseList =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  CommonUtil.readFile(serializedObjectPath), new TypeReference<List<T>>() {});
-    } else {
-      baseList = new ArrayList<>();
-    }
-
-    baseList.addAll(addition);
-    if (!baseList.isEmpty()) {
-      CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
-    }
-  }
 
   public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
     // TODO use an IpSpace visitor

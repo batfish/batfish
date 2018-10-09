@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -24,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -86,6 +90,9 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -119,6 +126,126 @@ public class WorkMgrTest {
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
+  }
+
+  @Test
+  public void testAddToSerializedList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(
+        serializedListPath,
+        ImmutableList.of(additionalInterface),
+        new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm the additional and original interfaces show up in the merged list
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface, additionalInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm original interface shows up in the merged list, even if there are no additions
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNullAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(serializedListPath, null, new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm original interface shows up in the merged list, even if addition is null
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    addToSerializedList(
+        serializedListPath,
+        ImmutableList.of(additionalInterface),
+        new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm the additional interface shows up in the serialized list, even if the serialized list
+    // didn't exist in the first place
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(additionalInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    addToSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm no file was created (since there was no list to begin with and nothing was added)
+    MatcherAssert.assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
   }
 
   @Test
@@ -376,7 +503,7 @@ public class WorkMgrTest {
     _manager.initNetwork(networkName, null);
     createTestrigWithMetadata(networkName, snapshotBaseName);
     _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -391,12 +518,12 @@ public class WorkMgrTest {
     List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
     List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
     List<String> nodes = ImmutableList.of("n4", "n5");
+
     _manager.initNetwork(networkName, null);
     createTestrigWithMetadata(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
-        snapshotNewName,
-        new ForkSnapshotBean(snapshotBaseName, interfaces, links, nodes));
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes));
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
 
@@ -426,7 +553,7 @@ public class WorkMgrTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
     _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
   }
 
   @Test
@@ -442,7 +569,7 @@ public class WorkMgrTest {
     _thrown.expectMessage(
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
   }
 
   @Test
@@ -456,7 +583,7 @@ public class WorkMgrTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("No base snapshot supplied"));
     _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(null, null, null, null));
+        networkName, new ForkSnapshotBean(null, snapshotNewName, null, null, null));
   }
 
   @Test
@@ -469,7 +596,19 @@ public class WorkMgrTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
     _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotMissingSnapshotName() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, new ForkSnapshotBean(snapshotBaseName, null, null, null, null));
   }
 
   @Test

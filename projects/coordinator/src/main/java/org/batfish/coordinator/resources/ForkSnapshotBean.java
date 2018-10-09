@@ -7,14 +7,19 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class ForkSnapshotBean {
-  private static final String PROP_SNAPSHOT_BASE = "snapshotbase";
-  private static final String PROP_DEACTIVATE_INTERFACES = "deactivateinterfaces";
-  private static final String PROP_DEACTIVATE_LINKS = "deactivatelinks";
-  private static final String PROP_DEACTIVATE_NODES = "deactivatenodes";
+  private static final String PROP_SNAPSHOT_BASE = "snapshotBase";
+  private static final String PROP_SNAPSHOT_NEW = "snapshotNew";
+  private static final String PROP_DEACTIVATE_INTERFACES = "deactivateInterfaces";
+  private static final String PROP_DEACTIVATE_LINKS = "deactivateLinks";
+  private static final String PROP_DEACTIVATE_NODES = "deactivateNodes";
 
   /** Name of the snapshot to copy */
   @JsonProperty(PROP_SNAPSHOT_BASE)
   public String baseSnapshot;
+
+  /** Name of the snapshot to create */
+  @JsonProperty(PROP_SNAPSHOT_NEW)
+  public String newSnapshot;
 
   /** List of interfaces to deactivate */
   @JsonProperty(PROP_DEACTIVATE_INTERFACES)
@@ -33,10 +38,12 @@ public class ForkSnapshotBean {
 
   public ForkSnapshotBean(
       String baseSnapshotName,
+      String newSnapshotName,
       List<NodeInterfacePair> deactivateInterfacesList,
       List<Edge> deactivateLinksList,
       List<String> deactivateNodesList) {
     baseSnapshot = baseSnapshotName;
+    newSnapshot = newSnapshotName;
     deactivateInterfaces = deactivateInterfacesList;
     deactivateLinks = deactivateLinksList;
     deactivateNodes = deactivateNodesList;
