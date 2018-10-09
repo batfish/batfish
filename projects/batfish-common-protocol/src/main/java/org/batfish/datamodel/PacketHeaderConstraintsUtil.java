@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +81,8 @@ public class PacketHeaderConstraintsUtil {
             .setIcmpTypes(firstNonNull(phc.getIcmpTypes(), ImmutableSortedSet.of()))
             .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
             .setFragmentOffsets(firstNonNull(phc.getFragmentOffsets(), ImmutableSortedSet.of()))
-            .setPacketLengths(firstNonNull(phc.getPacketLengths(), ImmutableSortedSet.of()));
+            .setPacketLengths(firstNonNull(phc.getPacketLengths(), ImmutableSortedSet.of()))
+            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));
 
     if (phc.getDscps() != null) {
       builder.setDscps(
@@ -114,6 +116,7 @@ public class PacketHeaderConstraintsUtil {
     setEcnValue(phc, builder);
     setFragmentOffsets(phc, builder);
     setFlowStates(phc, builder);
+    setTcpFlags(phc, builder);
     return builder;
   }
 
@@ -234,6 +237,17 @@ public class PacketHeaderConstraintsUtil {
         "Cannot construct flow  with multiple packet lengths");
     if (flowStates != null) {
       builder.setState(flowStates.iterator().next());
+    }
+  }
+
+  @VisibleForTesting
+  static void setTcpFlags(PacketHeaderConstraints phc, Builder builder) {
+    Set<TcpFlagsMatchConditions> tcpFlags = phc.getTcpFlags();
+    checkArgument(
+        tcpFlags == null || tcpFlags.size() == 1,
+        "Cannot construct flow with multiple versions of TCP flags specified");
+    if (tcpFlags != null) {
+      builder.setTcpFlags(tcpFlags.iterator().next().getTcpFlags());
     }
   }
 }

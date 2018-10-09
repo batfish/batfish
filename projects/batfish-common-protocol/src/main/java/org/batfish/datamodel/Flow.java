@@ -373,6 +373,18 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _tcpFlagsUrg = tcpFlagsUrg;
       return this;
     }
+
+    public Builder setTcpFlags(TcpFlags tcpFlags) {
+      _tcpFlagsAck = tcpFlags.getAck() ? 1 : 0;
+      _tcpFlagsCwr = tcpFlags.getCwr() ? 1 : 0;
+      _tcpFlagsEce = tcpFlags.getEce() ? 1 : 0;
+      _tcpFlagsFin = tcpFlags.getFin() ? 1 : 0;
+      _tcpFlagsPsh = tcpFlags.getPsh() ? 1 : 0;
+      _tcpFlagsRst = tcpFlags.getRst() ? 1 : 0;
+      _tcpFlagsSyn = tcpFlags.getSyn() ? 1 : 0;
+      _tcpFlagsUrg = tcpFlags.getUrg() ? 1 : 0;
+      return this;
+    }
   }
 
   private static final String PROP_DSCP = "dscp";
