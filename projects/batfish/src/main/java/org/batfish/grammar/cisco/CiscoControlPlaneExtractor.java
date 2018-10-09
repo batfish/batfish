@@ -79,6 +79,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
@@ -4469,13 +4470,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitBgp_listen_range_rb_stanza(Bgp_listen_range_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        BGP_PEER_GROUP, name, BGP_LISTEN_RANGE_PEER_GROUP, ctx.name.getStart().getLine());
     BgpProcess proc = currentVrf().getBgpProcess();
     if (ctx.IP_PREFIX() != null) {
       Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
       pg.setGroupName(name);
-      pg.setGroupNameLine(line);
       if (ctx.bgp_asn() != null) {
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
@@ -4484,7 +4485,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Prefix6 prefix6 = new Prefix6(ctx.IPV6_PREFIX().getText());
       DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
       pg.setGroupName(name);
-      pg.setGroupNameLine(line);
       if (ctx.bgp_asn() != null) {
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
@@ -4871,10 +4871,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentPeerGroup.setDefaultOriginate(true);
     if (ctx.map != null) {
       String mapName = ctx.map.getText();
-      int line = ctx.map.getStart().getLine();
       _currentPeerGroup.setDefaultOriginateMap(mapName);
-      _currentPeerGroup.setDefaultOriginateMapLine(line);
-      _configuration.referenceStructure(ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, line);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.map.getStart().getLine());
     }
   }
 

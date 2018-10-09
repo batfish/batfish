@@ -3570,6 +3570,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
     markConcreteStructure(
         CiscoStructureType.BGP_PEER_GROUP,
+        CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
         CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
         CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
     markConcreteStructure(
