@@ -561,8 +561,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public boolean debugFlagEnabled(String flag) {
-    List<String> debugFlags = getStringListOptionValue(ARG_DEBUG_FLAGS);
-    return debugFlags != null && debugFlags.contains(flag);
+    return getDebugFlags().contains(flag);
   }
 
   public boolean flattenOnTheFly() {
@@ -620,7 +619,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public List<String> getDebugFlags() {
-    return getStringListOptionValue(ARG_DEBUG_FLAGS);
+    return Arrays.asList(_config.getStringArray(ARG_DEBUG_FLAGS));
   }
 
   public String getDeltaEnvironmentName() {
@@ -720,7 +719,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
     return getStorageBase()
         .resolve(getContainer().getId())
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
         .resolve(tr)
         .resolve(BfConsts.RELPATH_OUTPUT)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
@@ -960,6 +959,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+    setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
@@ -1346,6 +1346,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
+    getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
