@@ -1110,16 +1110,16 @@ ip_nat_source
    NO? IP NAT (INSIDE | OUTSIDE) SOURCE
    (
       (
-         LIST acl = variable POOL pool = variable NEWLINE
+         LIST acl = variable POOL pool = variable ADD_ROUTE? NEWLINE
       )
       |
       (
-         STATIC local = IP_ADDRESS global = IP_ADDRESS NEWLINE
+         STATIC local = IP_ADDRESS global = IP_ADDRESS ADD_ROUTE? NO_ALIAS? NEWLINE
       )
       |
       (
          STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
-	 (mask = IP_ADDRESS | FORWARD_SLASH prefix = DEC) NEWLINE
+	 (mask = IP_ADDRESS | FORWARD_SLASH prefix = DEC) ADD_ROUTE? NO_ALIAS? NEWLINE
       )
    )
 ;
@@ -1135,7 +1135,7 @@ ip_nat_pool
       (
          PREFIX_LENGTH prefix_length = DEC
       )
-   )? NEWLINE
+   )? ADD_ROUTE? NO_ALIAS? NEWLINE
 ;
 
 ip_nat_pool_range
