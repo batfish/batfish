@@ -5,7 +5,6 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionInfo.getBgpSession
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -61,15 +59,6 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             .map(BgpSessionCompatibilityAnswerer::toRow)
             .collect(Collectors.toCollection(HashMultiset::create)));
     return answer;
-  }
-
-  private static boolean node2RegexMatchesIp(
-      Ip ip, Map<Ip, Set<String>> ipOwners, Set<String> includeNodes2) {
-    Set<String> owners = ipOwners.get(ip);
-    if (owners == null) {
-      throw new BatfishException("Expected at least one owner of ip: " + ip);
-    }
-    return !Sets.intersection(includeNodes2, owners).isEmpty();
   }
 
   /**
