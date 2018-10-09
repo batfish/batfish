@@ -25,7 +25,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
@@ -240,11 +240,49 @@ public class TestFiltersAnswerer extends Answerer {
    * @throws IllegalArgumentException if the {@code constraints} cannot be resolved to a single
    *     value.
    */
-  @VisibleForTesting
-  Flow.Builder headerConstraintsToFlow(PacketHeaderConstraints constraints, Location srcLocation)
-      throws IllegalArgumentException {
-    Flow.Builder builder = Flow.builder();
+  private Flow.Builder headerConstraintsToFlow(
+      PacketHeaderConstraints constraints, Location srcLocation) throws IllegalArgumentException {
+    Flow.Builder builder = PacketHeaderConstraintsUtil.toFlow(constraints);
+    setSrcIp(constraints, srcLocation, builder);
+    setDstIp(constraints, builder);
 
+    // Set defaults for protocol, and ports and packet lengths:
+    if (builder.getIpProtocol() == null || builder.getIpProtocol() == IpProtocol.IP) {
+      builder.setIpProtocol(IpProtocol.TCP);
+    }
+    if (builder.getDstPort() == 0) {
+      builder.setDstPort(NamedPort.HTTP.number());
+    }
+    if (builder.getSrcPort() == 0) {
+      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+    }
+    return builder;
+  }
+
+  private void setDstIp(PacketHeaderConstraints constraints, Builder builder) {
+    String headerDstIp = constraints.getDstIps();
+    if (headerDstIp != null) {
+      IpSpaceSpecifier dstIpSpecifier =
+          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+      IpSpaceAssignment dstIps =
+          dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+      checkArgument(
+          dstIps.getEntries().size() == 1,
+          "Specified destination: %s, resolves to more than one IP",
+          headerDstIp);
+      IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
+      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
+      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+      builder.setDstIp(dstIp.get());
+    } else {
+      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
+      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+      builder.setDstIp(dstIp.get());
+    }
+  }
+
+  private void setSrcIp(
+      PacketHeaderConstraints constraints, Location srcLocation, Builder builder) {
     // Extract source IP from header constraints,
     String headerSrcIp = constraints.getSrcIps();
     if (headerSrcIp != null) {
@@ -284,98 +322,6 @@ public class TestFiltersAnswerer extends Answerer {
           srcLocation);
       builder.setSrcIp(srcIp.get());
     }
-
-    String headerDstIp = constraints.getDstIps();
-    if (headerDstIp != null) {
-      IpSpaceSpecifier dstIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
-      IpSpaceAssignment dstIps =
-          dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
-      checkArgument(
-          dstIps.getEntries().size() == 1,
-          "Specified destination: %s, resolves to more than one IP",
-          headerDstIp);
-      IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
-      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
-      builder.setDstIp(dstIp.get());
-    } else {
-      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
-      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
-      builder.setDstIp(dstIp.get());
-    }
-
-    // Deal with IP packet header values.
-    // IP protocol (default to UDP)
-    Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
-    checkArgument(
-        ipProtocols == null || ipProtocols.size() == 1,
-        "Cannot run testfilters with multiple IP protocols");
-    if (ipProtocols != null) {
-      builder.setIpProtocol(ipProtocols.iterator().next());
-    } else {
-      builder.setIpProtocol(IpProtocol.TCP);
-    }
-
-    // Src Ports
-    Set<SubRange> srcPorts = constraints.getSrcPorts();
-    checkArgument(
-        srcPorts == null || srcPorts.size() == 1,
-        "Cannot run testfilters with multiple source ports");
-    if (srcPorts != null) {
-      SubRange srcPort = srcPorts.iterator().next();
-      builder.setSrcPort(srcPort.getStart());
-    } else {
-      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
-    }
-
-    // Dst Ports
-    Set<SubRange> dstPorts = constraints.resolveDstPorts();
-    checkArgument(
-        dstPorts == null || dstPorts.size() == 1,
-        "Cannot perform traceroute with multiple destination ports");
-    if (dstPorts != null) {
-      SubRange dstPort = dstPorts.iterator().next();
-      if (dstPorts.size() > 1 || !dstPort.isSingleValue()) {
-        throw new IllegalArgumentException();
-      }
-      builder.setDstPort(dstPort.getStart());
-    } else {
-      builder.setDstPort(NamedPort.HTTP.number());
-    }
-
-    // Icmp values
-    Set<SubRange> icmpTypes = constraints.getIcmpTypes();
-    if (icmpTypes != null) {
-      SubRange icmpType = icmpTypes.iterator().next();
-      if (icmpTypes.size() > 1 || !icmpType.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot run testfilters with multiple ICMP types");
-      }
-      builder.setIcmpType(icmpType.getStart());
-    }
-    Set<SubRange> icmpCodes = constraints.getIcmpCodes();
-    if (icmpCodes != null) {
-      SubRange icmpCode = icmpCodes.iterator().next();
-      if (icmpCodes.size() > 1 || !icmpCode.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot run testfilters with multiple ICMP codes");
-      }
-      builder.setIcmpType(icmpCode.getStart());
-    }
-
-    // DSCP value
-    Set<SubRange> dscps = constraints.getDscps();
-    if (dscps != null) {
-      SubRange dscp = dscps.iterator().next();
-      if (dscps.size() > 1 || !dscp.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot run testfilters with multiple DSCP values");
-      }
-      builder.setDscp(dscp.getStart());
-    } else {
-      builder.setDscp(0);
-    }
-
-    // TODO: ECN value, fragments, etc
-    return builder;
   }
 
   private static void setSourceLocation(Builder flowBuilder, Location loc, Configuration c) {
