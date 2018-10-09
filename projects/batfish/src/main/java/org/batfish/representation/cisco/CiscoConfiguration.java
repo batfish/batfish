@@ -16,6 +16,8 @@ import static org.batfish.representation.cisco.CiscoConversions.suppressSummariz
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
+import static org.batfish.representation.cisco.CiscoConversions.toIpSecPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
@@ -81,7 +83,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
@@ -287,6 +288,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
   }
 
+  public static String computeIcmpObjectGroupAclName(String name) {
+    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
+  }
+
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
    * Filters out the interfaces having no primary {@link InterfaceAddress}
@@ -298,10 +303,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeIcmpObjectGroupAclName(String name) {
-    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -2999,16 +3000,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(
-              saList.getName(),
-              CiscoConversions.toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
+          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, this._objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3053,15 +3052,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObjectGroup)));
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
     _serviceObjects.forEach(
         (name, serviceObject) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObject)));
+                .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
@@ -3611,57 +3606,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, Integer> e : groupReferences.entrySet()) {
       undefined(structureType, e.getKey(), structureUsage, e.getValue());
     }
-  }
-
-  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  private IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  /** Converts an IPSec Profile to IPSec policy */
-  private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
