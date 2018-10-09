@@ -20,7 +20,7 @@ public class ReferenceFilterGroupFilterSpecifierFactoryTest {
   @Test
   public void buildNonString() {
     exception.expect(IllegalArgumentException.class);
-    new ReferenceFilterGroupFilterSpecifierFactory().buildFilterSpecifier(new Integer(1));
+    new ReferenceFilterGroupFilterSpecifierFactory().buildFilterSpecifier(1);
   }
 
   @Test
