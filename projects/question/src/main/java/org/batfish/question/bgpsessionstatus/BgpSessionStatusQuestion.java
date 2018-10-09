@@ -12,8 +12,6 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
 
   public static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
 
-  public static final String PROP_INCLUDE_ESTABLISHED_COUNT = "includeEstablishedCount";
-
   public static final String PROP_NODES = "nodes";
 
   public static final String PROP_REMOTE_NODES = "remoteNodes";
@@ -31,7 +29,6 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
    * Create a new BGP session status question.
    *
    * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
-   * @param includeEstablishedCount Unused; retained for backwards compatibility
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -43,8 +40,6 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
   @JsonCreator
   public BgpSessionStatusQuestion(
       @Nullable @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
-      @Nullable @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) @SuppressWarnings("unused")
-          Boolean includeEstablishedCount,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
