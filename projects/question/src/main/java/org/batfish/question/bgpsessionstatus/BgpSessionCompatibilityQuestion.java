@@ -11,16 +11,6 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 /** Based on node configurations, determines the compatibility of IBGP and EBGP sessions. */
 public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
 
-  private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
-
-  private static final String PROP_NODES = "nodes";
-
-  private static final String PROP_REMOTE_NODES = "remoteNodes";
-
-  private static final String PROP_STATUS = "status";
-
-  private static final String PROP_TYPE = "type";
-
   /** Create a new BGP session compatibility question with default parameters. */
   public BgpSessionCompatibilityQuestion() {
     super(null, null, null, null, null);
@@ -29,7 +19,7 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
   /**
    * Create a new BGP session compatibility question.
    *
-   * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
+   * @param bgpGroups only look at peers that belong to a given named BGP group.
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -39,12 +29,12 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
    */
   @JsonCreator
   public BgpSessionCompatibilityQuestion(
-      @Nullable @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
+      @Nullable @JsonProperty(PROP_BGP_GROUPS) SortedSet<String> bgpGroups,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
-    super(foreignBgpGroups, nodes, remoteNodes, status, type);
+    super(bgpGroups, nodes, remoteNodes, status, type);
   }
 
   @Override
@@ -52,9 +42,9 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
     return false;
   }
 
-  @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
-  private SortedSet<String> getForeignBgpGroups() {
-    return _foreignBgpGroups;
+  @JsonProperty(PROP_BGP_GROUPS)
+  private SortedSet<String> getBgpGroups() {
+    return _bgpGroups;
   }
 
   @Override

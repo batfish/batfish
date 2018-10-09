@@ -119,8 +119,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
       return Optional.empty();
     }
     // Only match groups we care about
-    if (bgpPeerConfig.getGroup() != null
-        && question.matchesForeignGroup(bgpPeerConfig.getGroup())) {
+    if (bgpPeerConfig.getGroup() != null && question.matchesGroup(bgpPeerConfig.getGroup())) {
       return Optional.empty();
     }
 

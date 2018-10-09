@@ -16,7 +16,17 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {
 
-  @Nonnull protected SortedSet<String> _foreignBgpGroups;
+  public static final String PROP_BGP_GROUPS = "bgpGroups";
+
+  public static final String PROP_NODES = "nodes";
+
+  public static final String PROP_REMOTE_NODES = "remoteNodes";
+
+  public static final String PROP_STATUS = "status";
+
+  public static final String PROP_TYPE = "type";
+
+  @Nonnull protected SortedSet<String> _bgpGroups;
 
   @Nonnull protected NodesSpecifier _nodes;
 
@@ -29,7 +39,7 @@ public abstract class BgpSessionQuestion extends Question {
   /**
    * Create a new BGP session question.
    *
-   * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
+   * @param bgpGroups only look at peers that belong to a given named BGP group.
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -39,12 +49,12 @@ public abstract class BgpSessionQuestion extends Question {
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   public BgpSessionQuestion(
-      @Nullable SortedSet<String> foreignBgpGroups,
+      @Nullable SortedSet<String> bgpGroups,
       @Nullable NodesSpecifier nodes,
       @Nullable NodesSpecifier remoteNodes,
       @Nullable String status,
       @Nullable String type) {
-    _foreignBgpGroups = firstNonNull(foreignBgpGroups, ImmutableSortedSet.of());
+    _bgpGroups = firstNonNull(bgpGroups, ImmutableSortedSet.of());
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
     _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
     _status =
@@ -55,8 +65,8 @@ public abstract class BgpSessionQuestion extends Question {
         Strings.isNullOrEmpty(type) ? Pattern.compile(".*") : Pattern.compile(type.toUpperCase());
   }
 
-  boolean matchesForeignGroup(String group) {
-    return _foreignBgpGroups.contains(group);
+  boolean matchesGroup(String group) {
+    return _bgpGroups.contains(group);
   }
 
   boolean matchesStatus(@Nullable SessionStatus status) {

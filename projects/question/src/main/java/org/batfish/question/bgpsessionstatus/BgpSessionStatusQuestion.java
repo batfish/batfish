@@ -10,16 +10,6 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public class BgpSessionStatusQuestion extends BgpSessionQuestion {
 
-  public static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
-
-  public static final String PROP_NODES = "nodes";
-
-  public static final String PROP_REMOTE_NODES = "remoteNodes";
-
-  public static final String PROP_STATUS = "status";
-
-  public static final String PROP_TYPE = "type";
-
   /** Create a new BGP session status question with default parameters. */
   public BgpSessionStatusQuestion() {
     super(null, null, null, null, null);
@@ -28,7 +18,7 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
   /**
    * Create a new BGP session status question.
    *
-   * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
+   * @param bgpGroups only look at peers that belong to a given named BGP group.
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -39,12 +29,12 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
    */
   @JsonCreator
   public BgpSessionStatusQuestion(
-      @Nullable @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
+      @Nullable @JsonProperty(PROP_BGP_GROUPS) SortedSet<String> bgpGroups,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
-    super(foreignBgpGroups, nodes, remoteNodes, status, type);
+    super(bgpGroups, nodes, remoteNodes, status, type);
   }
 
   @Override
@@ -52,9 +42,9 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
     return true;
   }
 
-  @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
-  private SortedSet<String> getForeignBgpGroups() {
-    return _foreignBgpGroups;
+  @JsonProperty(PROP_BGP_GROUPS)
+  private SortedSet<String> getBgpGroups() {
+    return _bgpGroups;
   }
 
   @Override
