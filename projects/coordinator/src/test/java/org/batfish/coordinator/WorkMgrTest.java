@@ -784,7 +784,7 @@ public class WorkMgrTest {
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(containsString(questionName));
-    _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
   }
 
   @Test
