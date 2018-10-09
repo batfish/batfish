@@ -739,7 +739,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPostInInterfacePostNat(PostInInterfacePostNat.State postInInterface) {
     // Matches ingress nat.
-    Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> nats = _input.getIngressNats();
+    Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> nats = _input.getIngressSrcNats();
     _input
         .getEnabledInterfaces()
         .forEach(
@@ -751,7 +751,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                     .forEach(
                         ifaceName ->
                             generateMatchNatRules(
-                                _input.getIngressNats().get(hostname).get(ifaceName),
+                                _input.getIngressSrcNats().get(hostname).get(ifaceName),
                                 new PostInInterface(hostname, ifaceName),
                                 new PostInInterfacePostNat(hostname, ifaceName))));
 
@@ -764,7 +764,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                     ifaceName ->
                         generateNoMatchNatRules(
                             _input
-                                .getIngressNats()
+                                .getIngressSrcNats()
                                 .getOrDefault(hostname, ImmutableMap.of())
                                 .getOrDefault(ifaceName, ImmutableList.of()),
                             new PostInInterface(hostname, ifaceName),
@@ -986,7 +986,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPreOutEdgePostNat(PreOutEdgePostNat.State preOutEdgePostNat) {
     Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressNats =
-        _input.getEgressNats();
+        _input.getEgressSrcNats();
     // Matches egress nat.
     _input
         .getEnabledEdges()

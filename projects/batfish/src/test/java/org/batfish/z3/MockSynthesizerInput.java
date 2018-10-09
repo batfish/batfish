@@ -29,7 +29,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private boolean _dataPlane;
 
-    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressNats;
+    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressSrcNats;
+
+    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressDstNats;
 
     private Set<Edge> _enabledEdges;
 
@@ -43,7 +45,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _incomingAcls;
 
-    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressNats;
+    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressSrcNats;
+
+    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressDstNats;
 
     private Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
@@ -100,7 +104,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
-      _egressNats = ImmutableMap.of();
+      _egressSrcNats = ImmutableMap.of();
+      _egressDstNats = ImmutableMap.of();
+      _ingressSrcNats = ImmutableMap.of();
+      _ingressDstNats = ImmutableMap.of();
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
@@ -222,16 +229,30 @@ public class MockSynthesizerInput implements SynthesizerInput {
     }
 
     // TODO move me
-    public Builder setEgressNats(
-        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressNats) {
-      _egressNats = egressNats;
+    public Builder setEgressSrcNats(
+        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressSrcNats) {
+      _egressSrcNats = egressSrcNats;
       return this;
     }
 
     // TODO move me
-    public Builder setIngressNats(
-        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> ingressNats) {
-      _ingressNats = ingressNats;
+    public Builder setEgressDstNats(
+        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressDstNats) {
+      _egressDstNats = egressDstNats;
+      return this;
+    }
+
+    // TODO move me
+    public Builder setIngressSrcNats(
+        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> ingressSrcNats) {
+      _ingressSrcNats = ingressSrcNats;
+      return this;
+    }
+
+    // TODO move me
+    public Builder setIngressDstNats(
+        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> ingressDstNats) {
+      _ingressDstNats = ingressDstNats;
       return this;
     }
 
@@ -317,9 +338,13 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressNats;
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressSrcNats;
 
-  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressNats;
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _egressDstNats;
+
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressSrcNats;
+
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _ingressDstNats;
 
   private final Field _sourceInterfaceField;
 
@@ -336,14 +361,16 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _aclConditions = builder._aclConditions;
     _arpTrueEdge = builder._arpTrueEdge;
     _dataPlane = builder._dataPlane;
-    _egressNats = builder._egressNats;
+    _egressSrcNats = builder._egressSrcNats;
+    _egressDstNats = builder._egressDstNats;
     _enabledEdges = builder._enabledEdges;
     _enabledInterfaces = builder._enabledInterfaces;
     _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
-    _ingressNats = builder._ingressNats;
+    _ingressSrcNats = builder._ingressSrcNats;
+    _ingressDstNats = builder._ingressDstNats;
     _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
@@ -385,8 +412,13 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressNats() {
-    return _egressNats;
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressSrcNats() {
+    return _egressSrcNats;
+  }
+
+  @Override
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressDstNats() {
+    return _egressDstNats;
   }
 
   @Override
@@ -420,8 +452,13 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String,  Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressNats() {
-    return _ingressNats;
+  public Map<String,  Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressSrcNats() {
+    return _ingressSrcNats;
+  }
+
+  @Override
+  public Map<String,  Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressDstNats() {
+    return _ingressDstNats;
   }
 
   @Override

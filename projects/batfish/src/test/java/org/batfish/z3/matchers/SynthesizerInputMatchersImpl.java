@@ -148,7 +148,7 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
         SynthesizerInput actual) {
-      return actual.getEgressNats();
+      return actual.getEgressSrcNats();
     }
   }
 

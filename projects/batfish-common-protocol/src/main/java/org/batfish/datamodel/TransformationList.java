@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -121,8 +122,8 @@ public class TransformationList implements Serializable {
         .collect(toImmutableList());
   }
 
-  public Map<Transformed, List<Transformation>> getTransformsByType(Direction direction) {
-    return _transformTypes.get(direction);
+  public List<Transformation> getTransforms(Direction direction, Transformed type) {
+    return _transformTypes.get(direction).getOrDefault(type, new ArrayList<>());
   }
 
   private static Flow apply(

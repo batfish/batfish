@@ -98,13 +98,25 @@ public interface SynthesizerInput {
    * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
    * transformationToApply)]
    */
-  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressNats();
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressSrcNats();
 
   /**
    * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
    * transformationToApply)]
    */
-  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressNats();
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getEgressDstNats();
+
+  /**
+   * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
+   * transformationToApply)]
+   */
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressSrcNats();
+
+  /**
+   * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
+   * transformationToApply)]
+   */
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressDstNats();
 
   /** The set of nodes for which we should track whether they are transited */
   Set<String> getTransitNodes();

@@ -856,7 +856,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setEgressNats(
+            .setEgressSrcNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1340,7 +1340,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setEgressNats(
+            .setEgressSrcNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1887,7 +1887,7 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
-            .setEgressNats(
+            .setEgressSrcNats(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
