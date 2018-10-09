@@ -758,7 +758,7 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nonnull String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getPojoTopologyPath(networkId, snapshotId);
-    return FileUtils.readFileToString(path.toFile());
+    return FileUtils.readFileToString(path.toFile(), UTF_8);
   }
 
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
@@ -771,7 +771,7 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nonnull String loadTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
-    return FileUtils.readFileToString(path.toFile());
+    return FileUtils.readFileToString(path.toFile(), UTF_8);
   }
 
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
@@ -788,7 +788,8 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
+    FileUtils.writeStringToFile(
+        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
   }
 
   @Override
@@ -797,6 +798,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getPojoTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
+    FileUtils.writeStringToFile(
+        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
   }
 }
