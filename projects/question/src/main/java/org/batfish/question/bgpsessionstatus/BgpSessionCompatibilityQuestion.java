@@ -15,7 +15,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 
-/** Based on node configurations, determines the status of IBGP and EBGP sessions. */
+/** Based on node configurations, determines the compatibility of IBGP and EBGP sessions. */
 public class BgpSessionCompatibilityQuestion extends Question {
 
   private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
@@ -38,13 +38,13 @@ public class BgpSessionCompatibilityQuestion extends Question {
 
   @Nonnull private Pattern _type;
 
-  /** Create a new BGP Session question with default parameters. */
+  /** Create a new BGP session compatibility question with default parameters. */
   public BgpSessionCompatibilityQuestion() {
     this(null, null, null, null, null);
   }
 
   /**
-   * Create a new BGP Session question.
+   * Create a new BGP session compatibility question.
    *
    * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default

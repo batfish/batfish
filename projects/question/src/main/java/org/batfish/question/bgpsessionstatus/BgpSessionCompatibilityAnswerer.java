@@ -51,7 +51,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   public static final String COL_SESSION_TYPE = "Session_Type";
   public static final String COL_VRF_NAME = "VRF";
 
-  /** Answerer for the BGP Session status question (new version). */
+  /** Answerer for the BGP session compatibility question. */
   public BgpSessionCompatibilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -82,7 +82,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
 
   /**
    * Return the answer for {@link BgpSessionCompatibilityQuestion} -- a set of BGP sessions and
-   * their status.
+   * their compatibility.
    */
   public Multiset<BgpSessionInfo> rawAnswer(BgpSessionCompatibilityQuestion question) {
     Multiset<BgpSessionInfo> sessions = HashMultiset.create();

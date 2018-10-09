@@ -40,13 +40,13 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Nonnull private Pattern _type;
 
-  /** Create a new BGP Session question with default parameters. */
+  /** Create a new BGP session status question with default parameters. */
   public BgpSessionStatusQuestion() {
     this(null, true, null, null, null, null);
   }
 
   /**
-   * Create a new BGP Session question.
+   * Create a new BGP session status question.
    *
    * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
    * @param includeEstablishedCount Unused; retained for backwards compatibility
