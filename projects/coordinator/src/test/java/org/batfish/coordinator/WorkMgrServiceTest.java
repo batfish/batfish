@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -154,7 +155,7 @@ public class WorkMgrServiceTest {
     String analysisJsonString =
         String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
     File analysisFile = _networksFolder.newFile("analysis");
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
@@ -208,7 +209,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -409,7 +410,7 @@ public class WorkMgrServiceTest {
     String analysisJsonString =
         String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
     File analysisFile = _networksFolder.newFile("analysis");
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
@@ -463,7 +464,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -553,7 +554,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -632,7 +633,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -706,7 +707,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -833,7 +834,7 @@ public class WorkMgrServiceTest {
 
     String analysisJsonString = String.format("{\"%s\":%s}", question, questionContent);
     File analysisFile = _networksFolder.newFile(analysis);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
