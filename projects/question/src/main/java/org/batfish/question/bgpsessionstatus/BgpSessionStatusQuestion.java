@@ -1,22 +1,14 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.datamodel.questions.Question;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
-public class BgpSessionStatusQuestion extends Question {
+public class BgpSessionStatusQuestion extends BgpSessionQuestion {
 
   public static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
 
@@ -30,19 +22,9 @@ public class BgpSessionStatusQuestion extends Question {
 
   public static final String PROP_TYPE = "type";
 
-  @Nonnull private SortedSet<String> _foreignBgpGroups;
-
-  @Nonnull private NodesSpecifier _nodes;
-
-  @Nonnull private NodesSpecifier _remoteNodes;
-
-  @Nonnull private Pattern _status;
-
-  @Nonnull private Pattern _type;
-
   /** Create a new BGP session status question with default parameters. */
   public BgpSessionStatusQuestion() {
-    this(null, true, null, null, null, null);
+    super(null, null, null, null, null);
   }
 
   /**
@@ -67,15 +49,7 @@ public class BgpSessionStatusQuestion extends Question {
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
-    _foreignBgpGroups = firstNonNull(foreignBgpGroups, ImmutableSortedSet.of());
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
-    _status =
-        Strings.isNullOrEmpty(status)
-            ? Pattern.compile(".*")
-            : Pattern.compile(status.toUpperCase());
-    _type =
-        Strings.isNullOrEmpty(type) ? Pattern.compile(".*") : Pattern.compile(type.toUpperCase());
+    super(foreignBgpGroups, nodes, remoteNodes, status, type);
   }
 
   @Override
@@ -111,17 +85,5 @@ public class BgpSessionStatusQuestion extends Question {
   @JsonProperty(PROP_TYPE)
   private String getType() {
     return _type.toString();
-  }
-
-  boolean matchesForeignGroup(String group) {
-    return _foreignBgpGroups.contains(group);
-  }
-
-  boolean matchesStatus(@Nullable SessionStatus status) {
-    return status != null && _status.matcher(status.toString()).matches();
-  }
-
-  boolean matchesType(SessionType type) {
-    return _type.matcher(type.toString()).matches();
   }
 }
