@@ -61,7 +61,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SE
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
@@ -81,6 +83,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
@@ -2586,7 +2589,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentServiceObject =
         _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
-    defineStructure(CiscoStructureType.SERVICE_OBJECT, name, ctx);
+    defineStructure(SERVICE_OBJECT, name, ctx);
   }
 
   @Override
@@ -2877,10 +2880,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .getLines()
           .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
       _configuration.referenceStructure(
-          CiscoStructureType.SERVICE_OBJECT,
-          name,
-          SERVICE_OBJECT_GROUP_SERVICE_OBJECT,
-          ctx.name.getStart().getLine());
+          SERVICE_OBJECT, name, SERVICE_OBJECT_GROUP_SERVICE_OBJECT, ctx.name.getStart().getLine());
     } else if (ctx.service_specifier() != null) {
       _currentServiceObjectGroup.getLines().add(_currentServiceObject);
       _currentServiceObject = null;
@@ -4582,7 +4582,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String dstName = ctx.destination.getText();
     int dstLine = ctx.destination.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
-    defineStructure(CiscoStructureType.SECURITY_ZONE_PAIR, name, ctx);
+    defineStructure(SECURITY_ZONE_PAIR, name, ctx);
     _currentSecurityZonePair =
         _configuration
             .getSecurityZonePairs()
@@ -7263,10 +7263,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ipv6PeerGroup.setGroupName(peerGroupName);
     }
     _configuration.referenceStructure(
-        BGP_PEER_GROUP,
-        peerGroupName,
-        CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
-        ctx.name.getStart().getLine());
+        BGP_PEER_GROUP, peerGroupName, BGP_NEIGHBOR_PEER_GROUP, ctx.name.getStart().getLine());
   }
 
   @Override
