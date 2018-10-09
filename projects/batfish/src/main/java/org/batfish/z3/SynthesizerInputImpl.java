@@ -29,15 +29,13 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDIpSpaceSpecializer;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -45,7 +43,8 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
@@ -59,7 +58,6 @@ import org.batfish.z3.state.StateParameter.Type;
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
   static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
-  private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -74,7 +72,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private ForwardingAnalysis _forwardingAnalysis;
 
-    @Nullable private HeaderSpace _headerSpace;
+    @Nullable private AclLineMatchExpr _headerSpace;
 
     private Map<IngressLocation, IpSpace> _srcIpConstraints = ImmutableMap.of();
 
@@ -126,7 +124,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
-    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(AclLineMatchExpr headerSpace) {
       _headerSpace = headerSpace;
       return this;
     }
@@ -201,9 +199,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Set<String>> _enabledVrfs;
 
+  private final @Nonnull BDD _headerSpaceBdd;
+
   private final @Nonnull Map<String, Map<String, String>> _incomingAcls;
 
   private final @Nullable Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
+
+  private final @Nonnull IpAccessListToBDD _ipAccessListToBDD;
 
   private final @Nullable Map<String, Set<Ip>> _ipsByHostname;
 
@@ -231,13 +233,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final @Nonnull IpSpace _specializationIpSpace;
-
   private final @Nonnull Field _sourceInterfaceField;
 
   private final @Nonnull Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
   private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
+
+  private final @Nonnull Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
   private final @Nullable Map<String, Set<String>> _topologyInterfaces;
 
@@ -252,21 +254,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _configurations = ImmutableMap.copyOf(builder._configurations);
     _namedIpSpaces =
         toImmutableMap(_configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
-    HeaderSpace headerSpace =
-        builder._headerSpace != null ? builder._headerSpace : new HeaderSpace();
-    _specializationIpSpace =
-        builder._specialize
-            ? firstNonNull(
-                AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
-                UniverseIpSpace.INSTANCE)
-            : UniverseIpSpace.INSTANCE;
+    AclLineMatchExpr headerSpace = firstNonNull(builder._headerSpace, AclLineMatchExprs.TRUE);
+    BDDPacket pkt = new BDDPacket();
+    _ipAccessListToBDD = IpAccessListToBDD.create(pkt, ImmutableMap.of(), ImmutableMap.of());
     if (builder._specialize) {
-      BDDPacket pkt = new BDDPacket();
-      BDD headerSpaceBdd = new HeaderSpaceToBDD(pkt, ImmutableMap.of()).toBDD(headerSpace);
-      _ipSpaceSpecializers = computeIpSpaceSpecializers(pkt, headerSpaceBdd, _configurations);
+      _headerSpaceBdd = _ipAccessListToBDD.visit(headerSpace);
+      _ipSpaceSpecializers = computeIpSpaceSpecializers(pkt, _headerSpaceBdd, _configurations);
       _ipAccessListSpecializers =
-          computeIpAccessListSpecializers(pkt, headerSpaceBdd, _configurations);
+          computeIpAccessListSpecializers(pkt, _headerSpaceBdd, _configurations);
     } else {
+      _headerSpaceBdd = pkt.getFactory().one();
       _ipSpaceSpecializers = null;
       _ipAccessListSpecializers = null;
     }
@@ -667,14 +664,21 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _enabledInterfaces.keySet().forEach(node -> map.put(node, new HashSet<>()));
     ipInterfaceOwners.forEach(
         (ip, owners) -> {
-          for (String owner : owners.keySet()) {
-            if (_specializationIpSpace.containsIp(ip, _namedIpSpaces.get(owner))) {
+          if (inSpecializationSpace(ip)) {
+            for (String owner : owners.keySet()) {
               map.get(owner).add(ip);
             }
           }
         });
     // freeze
     return toImmutableMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
+  }
+
+  private boolean inSpecializationSpace(Ip ip) {
+    return _headerSpaceBdd.isOne()
+        || !_headerSpaceBdd
+            .and(_ipAccessListToBDD.getHeaderSpaceToBDD().getDstIpSpaceToBdd().toBDD(ip))
+            .isZero();
   }
 
   private Map<String, Map<String, Set<Ip>>> computeIpsByNodeVrf() {
@@ -703,13 +707,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
 
     ipOwners.forEach(
-        (ip, nodeVrfOwners) ->
+        (ip, nodeVrfOwners) -> {
+          if (inSpecializationSpace(ip)) {
             nodeVrfOwners.forEach(
-                (node, vrfs) -> {
-                  if (_specializationIpSpace.containsIp(ip, _namedIpSpaces.get(node))) {
-                    vrfs.forEach(vrf -> ipsByNodeByVrf.get(node).get(vrf).add(ip));
-                  }
-                }));
+                (node, vrfs) -> vrfs.forEach(vrf -> ipsByNodeByVrf.get(node).get(vrf).add(ip)));
+          }
+        });
+
     // freeze
     return toImmutableMap(
         ipsByNodeByVrf,

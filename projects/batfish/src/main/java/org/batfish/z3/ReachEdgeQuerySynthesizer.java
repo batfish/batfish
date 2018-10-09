@@ -1,14 +1,12 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -23,7 +21,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
   private Edge _edge;
 
-  private HeaderSpace _headerSpace;
+  private AclLineMatchExpr _headerSpace;
 
   private String _ingressVrf;
 
@@ -36,7 +34,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       String ingressVrf,
       Edge edge,
       boolean requireAcceptance,
-      HeaderSpace headerSpace) {
+      AclLineMatchExpr headerSpace) {
     _edge = edge;
     _headerSpace = headerSpace;
     _ingressVrf = ingressVrf;
@@ -65,7 +63,9 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                                 new VarIntExpr(Field.ORIG_SRC_IP), new VarIntExpr(Field.SRC_IP)),
                             _headerSpace == null
                                 ? TrueExpr.INSTANCE
-                                : new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of()))),
+                                : AclLineMatchExprToBooleanExpr
+                                    .NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE.toBooleanExpr(
+                                    _headerSpace))),
                     new OriginateVrf(_originationNode, _ingressVrf)),
                 new BasicRuleStatement(
                     queryPreconditionPreTransformationStates.build(), Query.INSTANCE)))
