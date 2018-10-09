@@ -39,7 +39,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -767,16 +766,6 @@ public class CommonUtil {
     return differenceSet;
   }
 
-  public static String extractBits(long l, int start, int end) {
-    StringBuilder s = new StringBuilder();
-    for (int pos = end; pos >= start; pos--) {
-      long mask = 1L << pos;
-      long bit = l & mask;
-      s.append((bit != 0) ? '1' : '0');
-    }
-    return s.toString();
-  }
-
   public static <T> void forEachWithIndex(Iterable<T> ts, BiConsumer<Integer, T> biConsumer) {
     int i = 0;
     for (T t : ts) {
@@ -893,14 +882,6 @@ public class CommonUtil {
       }
     }
     return null;
-  }
-
-  public static FileTime getLastModifiedTime(Path path) {
-    try {
-      return Files.getLastModifiedTime(path);
-    } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
-    }
   }
 
   public static SortedSet<Path> getSubdirectories(Path directory) {
@@ -1473,7 +1454,7 @@ public class CommonUtil {
   public static String readFile(Path file) {
     String text = null;
     try {
-      text = new String(Files.readAllBytes(file), "UTF-8");
+      text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new BatfishException("Failed to read file: " + file, e);
     }
@@ -1486,7 +1467,7 @@ public class CommonUtil {
       if (is == null) {
         throw new BatfishException("Error opening resource: '" + resourcePath + "'");
       }
-      String output = IOUtils.toString(is);
+      String output = IOUtils.toString(is, StandardCharsets.UTF_8);
       return output;
     } catch (IOException e) {
       throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);

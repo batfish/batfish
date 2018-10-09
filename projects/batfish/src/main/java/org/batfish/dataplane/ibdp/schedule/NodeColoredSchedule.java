@@ -77,6 +77,7 @@ public class NodeColoredSchedule extends IbdpSchedule {
    *
    * @param nodes all nodes in the network
    */
+  @SuppressWarnings("deprecation")
   private void makeGraph(
       Map<String, Node> nodes, ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     /*
