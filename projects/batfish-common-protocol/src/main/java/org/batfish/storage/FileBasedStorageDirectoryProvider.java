@@ -17,6 +17,8 @@ import org.batfish.identifiers.SnapshotId;
 @ParametersAreNonnullByDefault
 public class FileBasedStorageDirectoryProvider {
 
+  private static final String RELPATH_EXTENDED = "extended";
+
   private final Path _baseDir;
 
   public FileBasedStorageDirectoryProvider(Path baseDir) {
@@ -140,5 +142,17 @@ public class FileBasedStorageDirectoryProvider {
   public @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
         .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+  }
+
+  public Path getNetworkExtendedObjectsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_EXTENDED);
+  }
+
+  public Path getSnapshotExtendedObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_EXTENDED);
+  }
+
+  public Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
   }
 }

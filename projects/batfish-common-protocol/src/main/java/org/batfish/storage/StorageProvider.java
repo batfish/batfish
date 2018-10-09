@@ -2,6 +2,8 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -333,4 +335,102 @@ public interface StorageProvider {
 
   /** Delete answer metadata for given ID */
   void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a network-wide extended object at the given URI may be read
+   *
+   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the network-wide extended object at the given URI using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+      throws IOException;
+
+  /**
+   * Deletes the network-wide extended object at the given URI.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot-wide extended object at the given URI may be read
+   *
+   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the snapshot-wide extended object at the given URI using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeSnapshotExtendedObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException;
+
+  /**
+   * Deletes the snapshot-wide extended object at the given URI.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot input object at the given URI may be read
+   *
+   * @throws FileNotFoundException if the object at the specified URI does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Loads the JSON-serialized POJO topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Loads the JSON-serialized environment topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Writes the env topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Writes the pojo topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
 }

@@ -2,6 +2,8 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -249,5 +251,69 @@ public class TestStorageProvider implements StorageProvider {
   public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InputStream loadSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeSnapshotExtendedObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
   }
 }

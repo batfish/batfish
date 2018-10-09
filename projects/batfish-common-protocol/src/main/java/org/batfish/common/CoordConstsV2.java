@@ -11,10 +11,15 @@ public class CoordConstsV2 {
 
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
+  public static final String RSC_ENV_TOPOLOGY = "env_topology";
+  public static final String RSC_EXTENDED = "extended";
+  public static final String RSC_INPUT = "input";
   public static final String RSC_ISSUES = "issues";
+  public static final String RSC_METADATA = "metadata";
   public static final String RSC_NETWORK = "network";
   public static final String RSC_NETWORKS = "networks";
   public static final String RSC_NODE_ROLES = "noderoles";
+  public static final String RSC_POJO_TOPOLOGY = "pojo_topology";
   public static final String RSC_QUESTIONS = "questions";
   public static final String RSC_REFERENCE_LIBRARY = "referencelibrary";
   public static final String RSC_SETTINGS = "settings";
