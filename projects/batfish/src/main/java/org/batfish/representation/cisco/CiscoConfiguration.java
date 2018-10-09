@@ -1653,47 +1653,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (LeafBgpPeerGroup lpg : leafGroups) {
       lpg.inheritUnsetFields(proc, this);
     }
-    int fakePeerCounter = -1;
-    // peer groups / peer templates
-    for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups().entrySet()) {
-      String name = e.getKey();
-      NamedBgpPeerGroup namedPeerGroup = e.getValue();
-      if (!namedPeerGroup.getInherited()) {
-        Ip fakeIp = new Ip(fakePeerCounter);
-        IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
-        fakePg.setGroupName(name);
-        fakePg.setActive(false);
-        fakePg.setShutdown(true);
-        leafGroups.add(fakePg);
-        fakePg.inheritUnsetFields(proc, this);
-        fakePeerCounter--;
-      }
-      namedPeerGroup.inheritUnsetFields(proc, this);
-    }
-    // separate because peer sessions can inherit from other peer sessions
-    int fakeGroupCounter = 1;
-    for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
-      namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc, this);
-    }
-    for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions().entrySet()) {
-      String name = e.getKey();
-      NamedBgpPeerGroup namedPeerGroup = e.getValue();
-      if (!namedPeerGroup.getInherited()) {
-        String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
-        NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName);
-        fakeNamedPg.setPeerSession(name);
-        proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
-        Ip fakeIp = new Ip(fakePeerCounter);
-        IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
-        fakePg.setGroupName(fakeNamedPgName);
-        fakePg.setActive(false);
-        fakePg.setShutdown(true);
-        leafGroups.add(fakePg);
-        fakePg.inheritUnsetFields(proc, this);
-        fakeGroupCounter++;
-        fakePeerCounter--;
-      }
-    }
 
     // create origination prefilter from listed advertised networks
     proc.getIpNetworks()
