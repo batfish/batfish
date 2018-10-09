@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.resources.SnapshotObjectsResource.QP_KEY;
@@ -198,7 +199,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key)),
+        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key), UTF_8),
         equalTo(content));
   }
 
@@ -220,7 +221,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key)),
+        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key), UTF_8),
         equalTo(newContent));
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.resources.NetworkObjectsResource.QP_KEY;
@@ -142,7 +143,8 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key)), equalTo(content));
+        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key), UTF_8),
+        equalTo(content));
   }
 
   @Test
@@ -161,6 +163,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key)), equalTo(newContent));
+        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key), UTF_8),
+        equalTo(newContent));
   }
 }
