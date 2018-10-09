@@ -178,13 +178,16 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
+  public @Nullable SortedSet<Edge> loadEdgeBlacklist(
+      NetworkId network, SnapshotId snapshot, String environment) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_OUTPUT,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    environment,
+                    BfConsts.RELPATH_ENV_DIR,
                     BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;
@@ -203,13 +206,15 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
-      NetworkId network, SnapshotId snapshot) {
+      NetworkId network, SnapshotId snapshot, String environment) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_OUTPUT,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    environment,
+                    BfConsts.RELPATH_ENV_DIR,
                     BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;
@@ -227,13 +232,16 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
+  public @Nullable SortedSet<String> loadNodeBlacklist(
+      NetworkId network, SnapshotId snapshot, String environment) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_OUTPUT,
+                    BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                    environment,
+                    BfConsts.RELPATH_ENV_DIR,
                     BfConsts.RELPATH_NODE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;

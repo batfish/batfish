@@ -1437,6 +1437,7 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
+        CommonUtil.copy(subFile, defaultEnvironmentLeafDir.resolve(subFile.getFileName()));
       } else if (isContainerFile(subFile)) {
         // derive and write the new container level file from the input
         if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
@@ -1998,6 +1999,95 @@ public class WorkMgr extends AbstractCoordinator {
           "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
+  }
+
+  /**
+   * Upload a new environment to an existing testrig.
+   *
+   * @param containerName The container in which the testrig resides
+   * @param testrigName The testrig in which the (optional base environment and) new environment
+   *     reside
+   * @param baseEnvName The name of an optional base environment. The new environment is initialized
+   *     with files from this base if it is provided.
+   * @param newEnvName The name of the new environment to be created
+   * @param fileStream A stream providing the zip file containing the file structure of the new
+   *     environment.
+   */
+  public void uploadEnvironment(
+      String containerName,
+      String testrigName,
+      String baseEnvName,
+      String newEnvName,
+      InputStream fileStream) {
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
+    Path environmentsDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
+    Path newEnvDir = environmentsDir.resolve(newEnvName);
+    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
+    if (Files.exists(newEnvDir)) {
+      throw new BatfishException(
+          "Environment: '" + newEnvName + "' already exists for snapshot: '" + testrigName + "'");
+    }
+    if (!dstDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
+    }
+    Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
+    CommonUtil.writeStreamToFile(fileStream, zipFile);
+
+    /* First copy base environment if it is set */
+    if (baseEnvName.length() > 0) {
+      Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
+      if (!Files.exists(baseEnvPath)) {
+        CommonUtil.delete(zipFile);
+        throw new BatfishException(
+            "Base environment for copy does not exist: '" + baseEnvName + "'");
+      }
+      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
+      dstDir.toFile().mkdirs();
+      for (Path baseFile : baseFileList) {
+        Path target;
+        if (isEnvFile(baseFile)) {
+          target = dstDir.resolve(baseFile.getFileName());
+          CommonUtil.copy(baseFile, target);
+        }
+      }
+    }
+
+    // now unzip
+    Path unzipDir = CommonUtil.createTempDirectory("coord_up_env_unzip_dir_");
+    UnzipUtility.unzip(zipFile, unzipDir);
+
+    /*-
+     *  Sanity check what we got:
+     *    There should be just one top-level folder
+     */
+    SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
+    if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
+      CommonUtil.deleteDirectory(newEnvDir);
+      CommonUtil.deleteDirectory(unzipDir);
+      throw new BatfishException(
+          "Unexpected packaging of environment. There should be just one top-level folder");
+    }
+    Path unzipSubdir = unzipDirEntries.iterator().next();
+    SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
+
+    // things look ok, now make the move
+    for (Path subdirFile : subFileList) {
+      Path target = dstDir.resolve(subdirFile.getFileName());
+      CommonUtil.moveByCopy(subdirFile, target);
+    }
+
+    try {
+      NetworkId networkId = _idManager.getNetworkId(containerName);
+      SnapshotId snapshotId = _idManager.getSnapshotId(testrigName, networkId);
+      TestrigMetadataMgr.initializeEnvironment(networkId, snapshotId, newEnvName);
+    } catch (IOException e) {
+      throw new BatfishException("Could not initialize environmentMetadata", e);
+    }
+
+    // delete the empty directory and the zip file
+    CommonUtil.deleteDirectory(unzipDir);
+    CommonUtil.deleteIfExists(zipFile);
   }
 
   public void uploadQuestion(String network, String question, String questionJson) {

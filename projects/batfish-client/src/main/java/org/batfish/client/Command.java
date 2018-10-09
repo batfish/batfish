@@ -58,6 +58,7 @@ public enum Command {
   INIT_CONTAINER("init-container"),
   INIT_DELTA_SNAPSHOT("init-delta-snapshot"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
+  INIT_ENVIRONMENT("init-environment"),
   INIT_NETWORK("init-network"),
   INIT_REFERENCE_SNAPSHOT("init-reference-snapshot"),
   INIT_SNAPSHOT("init-snapshot"),
@@ -304,6 +305,61 @@ public enum Command {
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
             "Initialize the delta snapshot with default environment"));
+    descs.put(
+        INIT_ENVIRONMENT,
+        new Pair<>(
+            "[sourcePath=path], [newEnvironmentName=string], [newEnvironmentPrefix=string], "
+                + "[sourceEnvironmentName=string], [nodeBlacklist=string_set], "
+                + "[interfaceBlacklist=map_of_strings_to_string_sets], [edgeBlacklist=edge_set]",
+            "    Initialize a new reference environment\n"
+                + "\n"
+                + "    Arguments:\n"
+                + "\n"
+                + "    sourcePath\n"
+                + "        Either a directory or zip containing the environment to initialize.\n"
+                + "        These files override those in the environment identified by "
+                + "'sourceEnvironmentName',\n"
+                + "        and are overridden by values passed to node/interface/edgeBlacklist.\n"
+                + "\n"
+                + "    newEnvironmentName\n"
+                + "        The name to assign the new environment. If not specified, a name is "
+                + "generated.\n"
+                + "\n"
+                + "    sourceEnvironmentName\n"
+                + "        The name of an environment in the current snapshot from which to clone "
+                + "a new environment.\n"
+                + "        Files in the source environment are overriden by those in envDirOrZip "
+                + "(if specified),\n"
+                + "        as well as by values passed to node/interface/edgeBlacklist.\n"
+                + "\n"
+                + "    nodeBlacklist\n"
+                + "        A list of nodes whose interfaces will be turned off in the new "
+                + "environment.\n"
+                + "\n"
+                + "    interfaceBlacklist\n"
+                + "        A list of interfaces that will be turned off in the new environment.\n"
+                + "\n"
+                + "    edgeBlacklist\n"
+                + "        For maximum granularity, a list of edges to be disabled in the new "
+                + "environment. This\n"
+                + "        option should rarely be used. The interfaces making up the edge will "
+                + "not necessarily\n"
+                + "        be disabled. This feature is experimental, and may not always yield "
+                + "expected results.\n"
+                + "\n"
+                + "    doDelta\n"
+                + "        Whether the sourceEnvironment and newEnvironment should be chosen "
+                + "from/created in the\n"
+                + "        current(false) or reference(true) snapshot. Defaults to false.\n"
+                + "\n"));
+    /*                + "    update\n"
+    + "        Whether to update the current base(doDelta=false)/delta(doDelta=true) "
+    + "environment\n"
+    + "        pointer after this action has completed. Regardless of the value of "
+    + "this option,\n"
+    + "        bf_session.scenarios appended with a new scenario corresponding to the "
+    + "newly-created\n"
+    + "        environment.\n"));*/
     descs.put(
         INIT_NETWORK,
         new Pair<>(

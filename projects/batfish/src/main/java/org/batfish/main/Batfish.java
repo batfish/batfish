@@ -298,12 +298,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
+      envSettings.setDeltaConfigurationsDir(
+          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
           envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
           envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
+      envSettings.setDeltaVendorConfigurationsDir(
+          envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     }
   }
 
@@ -783,6 +787,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Environment not initialized: \""
               + testrigSettings.getEnvironmentSettings().getName()
               + "\"");
+    }
+  }
+
+  private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
+    Answer answer = new Answer();
+    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
+    Path deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
+    Path vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
+    if (deltaConfigurationsDir != null) {
+      if (Files.exists(deltaConfigurationsDir)) {
+        answer.append(serializeVendorConfigs(envSettings.getEnvPath(), vendorConfigsDir));
+        answer.append(serializeIndependentConfigs(vendorConfigsDir));
+      }
+      return answer;
+    } else {
+      throw new BatfishException("Delta configurations directory cannot be null");
     }
   }
 
@@ -1572,7 +1592,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<Edge> getEdgeBlacklist() {
     SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadEdgeBlacklist(
+            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
     if (blacklistEdges == null) {
       return Collections.emptySortedSet();
     }
@@ -1582,7 +1603,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadInterfaceBlacklist(
+            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
     if (blacklistInterfaces == null) {
       return Collections.emptySortedSet();
     }
@@ -1592,7 +1614,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<String> getNodeBlacklist() {
     SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadNodeBlacklist(
+            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
     if (blacklistNodes == null) {
       return Collections.emptySortedSet();
     }
@@ -3580,6 +3603,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
       answer.addAnswerElement(initInfoAnswerElement);
+      action = true;
+    }
+
+    if (_settings.getCompileEnvironment()) {
+      answer.append(compileEnvironmentConfigurations(_testrigSettings));
       action = true;
     }
 

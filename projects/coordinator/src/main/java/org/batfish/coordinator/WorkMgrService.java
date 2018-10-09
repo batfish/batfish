@@ -2337,6 +2337,60 @@ public class WorkMgrService {
   }
 
   /**
+   * Uploads a new environment under the container, testrig
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container under which the testrig resides
+   * @param testrigName The name of the testrig under which to upload the new environment
+   * @param baseEnvName The environment name from which the new environment initially inherits
+   * @param envName The name of the new environment to create
+   * @param fileStream The stream from which the contents of the new environment are read. These
+   *     contents overwrite those inherited from any base environment.
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_UPLOAD_ENV)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray uploadEnvironment(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_BASE_ENV_NAME) String baseEnvName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
+      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
+    try {
+      _logger.infof(
+          "WMS:uploadEnvironment %s %s %s/%s\n", apiKey, containerName, testrigName, envName);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Testrig name");
+      checkStringParam(envName, "Environment name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkNetworkAccessibility(apiKey, containerName);
+
+      Main.getWorkMgr()
+          .uploadEnvironment(containerName, testrigName, baseEnvName, envName, fileStream);
+
+      return successResponse(new JSONObject().put("result", "successfully uploaded environment"));
+
+    } catch (BatfishException e) {
+      _logger.errorf("WMS:uploadEnvironment exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = Throwables.getStackTraceAsString(e);
+      _logger.errorf("WMS:uploadEnvironment exception: %s", stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * Upload a new question in the specified network.
    *
    * @param apiKey The API key of the client
