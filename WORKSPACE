@@ -57,23 +57,23 @@ antlr4_runtime_compile()
 
 # AutoService
 maven_repository(
-    name = 'auto_service',
-    deps = [
-        'com.google.auto.service:auto-service:1.0-rc4',
-    ],
+    name = "auto_service",
     force = [
-        'com.google.errorprone:error_prone_annotations:2.3.1',
-        'com.google.guava:guava:26.0-jre',
+        "com.google.errorprone:error_prone_annotations:2.3.1",
+        "com.google.guava:guava:26.0-jre",
     ],
     transitive_deps = [
-        'c6f7af0e57b9d69d81b05434ef9f3c5610d498c4:com.google.auto:auto-common:0.8',
-        '44954d465f3b9065388bbd2fc08a3eb8fd07917c:com.google.auto.service:auto-service:1.0-rc4',
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        'a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1',
-        '6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre',
-        'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        'cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2',
-        '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
+        "c6f7af0e57b9d69d81b05434ef9f3c5610d498c4:com.google.auto:auto-common:0.8",
+        "44954d465f3b9065388bbd2fc08a3eb8fd07917c:com.google.auto.service:auto-service:1.0-rc4",
+        "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
+        "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
+        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
+        "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
+        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+    ],
+    deps = [
+        "com.google.auto.service:auto-service:1.0-rc4",
     ],
 )
 
@@ -83,20 +83,20 @@ auto_service_compile()
 
 # azure-storage
 maven_repository(
-    name = 'azure_storage',
-    deps = [
-        'com.microsoft.azure:azure-storage:2.0.0',
-    ],
+    name = "azure_storage",
     force = [
-        'com.fasterxml.jackson.core:jackson-core:2.9.7',
-        'org.apache.commons:commons-lang3:3.8.1',
-        'org.slf4j:slf4j-api:1.7.25',
+        "com.fasterxml.jackson.core:jackson-core:2.9.7",
+        "org.apache.commons:commons-lang3:3.8.1",
+        "org.slf4j:slf4j-api:1.7.25",
     ],
     transitive_deps = [
-        '4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7',
-        'b970c65a38da0569013e0c76de7c404f842496c2:com.microsoft.azure:azure-storage:2.0.0',
-        '6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1',
-        'da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25',
+        "4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7",
+        "b970c65a38da0569013e0c76de7c404f842496c2:com.microsoft.azure:azure-storage:2.0.0",
+        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
+        "da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25",
+    ],
+    deps = [
+        "com.microsoft.azure:azure-storage:2.0.0",
     ],
 )
 
@@ -153,17 +153,17 @@ commons_collections4_compile()
 
 #
 maven_repository(
-    name = 'commons_configuration2',
-    deps = [
-        'org.apache.commons:commons-configuration2:2.3',
-    ],
+    name = "commons_configuration2",
     force = [
-        'org.apache.commons:commons-lang3:3.8.1',
+        "org.apache.commons:commons-lang3:3.8.1",
     ],
     transitive_deps = [
-        '4bfc12adfe4842bf07b657f0369c4cb522955686:commons-logging:commons-logging:1.2',
-        '97dcb24a1624e93d7ef2a434d3c1707ceba9d01b:org.apache.commons:commons-configuration2:2.3',
-        '6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1',
+        "4bfc12adfe4842bf07b657f0369c4cb522955686:commons-logging:commons-logging:1.2",
+        "97dcb24a1624e93d7ef2a434d3c1707ceba9d01b:org.apache.commons:commons-configuration2:2.3",
+        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
+    ],
+    deps = [
+        "org.apache.commons:commons-configuration2:2.3",
     ],
 )
 
@@ -266,20 +266,20 @@ grizzly_server_compile()
 
 # Guava
 maven_repository(
-    name = 'guava',
-    deps = [
-        'com.google.guava:guava:26.0-jre',
-    ],
+    name = "guava",
     force = [
-        'com.google.errorprone:error_prone_annotations:2.3.1',
+        "com.google.errorprone:error_prone_annotations:2.3.1",
     ],
     transitive_deps = [
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        'a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1',
-        '6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre',
-        'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        'cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2',
-        '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
+        "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
+        "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
+        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
+        "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
+        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+    ],
+    deps = [
+        "com.google.guava:guava:26.0-jre",
     ],
 )
 
@@ -289,30 +289,30 @@ guava_compile()
 
 # Guava-testlib
 maven_repository(
-    name = 'guava_testlib',
-    deps = [
-        'com.google.guava:guava-testlib:26.0-jre',
-        'org.hamcrest:java-hamcrest:2.0.0.0',
-    ],
+    name = "guava_testlib",
     exclude = {
-        'com.google.guava:guava-testlib': [
-            'org.hamcrest:hamcrest-core',
+        "com.google.guava:guava-testlib": [
+            "org.hamcrest:hamcrest-core",
         ],
     },
     force = [
-        'junit:junit:4.12',
-        'com.google.errorprone:error_prone_annotations:2.3.1',
+        "junit:junit:4.12",
+        "com.google.errorprone:error_prone_annotations:2.3.1",
     ],
     transitive_deps = [
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        'a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1',
-        '6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre',
-        '3d6b3f4877cf8b203860333811af4764de93c8c1:com.google.guava:guava-testlib:26.0-jre',
-        'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        '2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12',
-        'cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2',
-        '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
-        '0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0',
+        "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
+        "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
+        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "3d6b3f4877cf8b203860333811af4764de93c8c1:com.google.guava:guava-testlib:26.0-jre",
+        "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
+        "2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12",
+        "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
+        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+        "0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0",
+    ],
+    deps = [
+        "com.google.guava:guava-testlib:26.0-jre",
+        "org.hamcrest:java-hamcrest:2.0.0.0",
     ],
 )
 
@@ -387,26 +387,26 @@ jackson_databind_compile()
 
 #
 maven_repository(
-    name = 'jackson_guava',
-    deps = [
-        'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.7',
-    ],
+    name = "jackson_guava",
     force = [
-        'com.fasterxml.jackson.core:jackson-annotations:2.9.7',
-        'com.google.guava:guava:26.0-jre',
-        'com.google.errorprone:error_prone_annotations:2.3.1',
+        "com.fasterxml.jackson.core:jackson-annotations:2.9.7",
+        "com.google.guava:guava:26.0-jre",
+        "com.google.errorprone:error_prone_annotations:2.3.1",
     ],
     transitive_deps = [
-        '4b838e5c4fc17ac02f3293e9a558bb781a51c46d:com.fasterxml.jackson.core:jackson-annotations:2.9.7',
-        '4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7',
-        'e6faad47abd3179666e89068485a1b88a195ceb7:com.fasterxml.jackson.core:jackson-databind:2.9.7',
-        '3fc843def28bb7b7f7fae414cc61b347ba89e5ce:com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.7',
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        'a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1',
-        '6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre',
-        'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        'cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2',
-        '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
+        "4b838e5c4fc17ac02f3293e9a558bb781a51c46d:com.fasterxml.jackson.core:jackson-annotations:2.9.7",
+        "4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7",
+        "e6faad47abd3179666e89068485a1b88a195ceb7:com.fasterxml.jackson.core:jackson-databind:2.9.7",
+        "3fc843def28bb7b7f7fae414cc61b347ba89e5ce:com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.7",
+        "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
+        "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
+        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
+        "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
+        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+    ],
+    deps = [
+        "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.7",
     ],
 )
 
@@ -511,12 +511,12 @@ jaeger_core_compile()
 
 # JAX-RS
 maven_repository(
-    name = 'jaxrs_api',
-    deps = [
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
-    ],
+    name = "jaxrs_api",
     transitive_deps = [
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+    ],
+    deps = [
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
 )
 
@@ -541,21 +541,21 @@ javax_annotation_compile()
 
 # Jersey
 maven_repository(
-    name = 'jersey_client',
-    deps = [
-        'org.glassfish.jersey.core:jersey-client:2.27',
-    ],
+    name = "jersey_client",
     force = [
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        '66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.core:jersey-client:2.27",
     ],
 )
 
@@ -565,20 +565,20 @@ jersey_client_compile()
 
 #
 maven_repository(
-    name = 'jersey_common',
-    deps = [
-        'org.glassfish.jersey.core:jersey-common:2.27',
-    ],
+    name = "jersey_common",
     force = [
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.core:jersey-common:2.27",
     ],
 )
 
@@ -588,29 +588,29 @@ jersey_common_compile()
 
 #
 maven_repository(
-    name = 'jersey_container_grizzly2',
-    deps = [
-        'org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27',
-    ],
+    name = "jersey_container_grizzly2",
     force = [
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
-        'org.glassfish.grizzly:grizzly-http-server:2.4.3',
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "org.glassfish.grizzly:grizzly-http-server:2.4.3",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        '8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '3dc308a8ee5f5cf7349148237a1e2c1c6c459ba1:org.glassfish.grizzly:grizzly-framework:2.4.3',
-        'abe2f327ace7f46625f49ce2e20d033c28baddfa:org.glassfish.grizzly:grizzly-http:2.4.3',
-        '5bb7c86c60f7642c2aed359823e4cca629014e9c:org.glassfish.grizzly:grizzly-http-server:2.4.3',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        '57ac01a84d7084802398ff7caae38d8e68bb3c50:org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27',
-        '66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27',
-        '106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "3dc308a8ee5f5cf7349148237a1e2c1c6c459ba1:org.glassfish.grizzly:grizzly-framework:2.4.3",
+        "abe2f327ace7f46625f49ce2e20d033c28baddfa:org.glassfish.grizzly:grizzly-http:2.4.3",
+        "5bb7c86c60f7642c2aed359823e4cca629014e9c:org.glassfish.grizzly:grizzly-http-server:2.4.3",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "57ac01a84d7084802398ff7caae38d8e68bb3c50:org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+        "66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27",
+        "106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
     ],
 )
 
@@ -620,32 +620,32 @@ jersey_container_grizzly2_compile()
 
 #
 maven_repository(
-    name = 'jersey_media_jackson',
-    deps = [
-        'org.glassfish.jersey.media:jersey-media-json-jackson:2.27',
-    ],
+    name = "jersey_media_jackson",
     force = [
-        'com.fasterxml.jackson.core:jackson-annotations:2.9.7',
-        'com.fasterxml.jackson.core:jackson-core:2.9.7',
-        'com.fasterxml.jackson.core:jackson-databind:2.9.7',
-        'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.9.7',
-        'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.7',
-        'com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.7',
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "com.fasterxml.jackson.core:jackson-annotations:2.9.7",
+        "com.fasterxml.jackson.core:jackson-core:2.9.7",
+        "com.fasterxml.jackson.core:jackson-databind:2.9.7",
+        "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.9.7",
+        "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.7",
+        "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.7",
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '4b838e5c4fc17ac02f3293e9a558bb781a51c46d:com.fasterxml.jackson.core:jackson-annotations:2.9.7',
-        '4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7',
-        'e6faad47abd3179666e89068485a1b88a195ceb7:com.fasterxml.jackson.core:jackson-databind:2.9.7',
-        '2774b8e960697678ca87cf54abd59c736fcd1e83:com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.7',
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '60280972e427915c123db25dbb7adc3fd4fc28a1:org.glassfish.jersey.ext:jersey-entity-filtering:2.27',
-        'c426d54b5a7f4dd470286c7fa44d08d8cbc286be:org.glassfish.jersey.media:jersey-media-json-jackson:2.27',
+        "4b838e5c4fc17ac02f3293e9a558bb781a51c46d:com.fasterxml.jackson.core:jackson-annotations:2.9.7",
+        "4b7f0e0dc527fab032e9800ed231080fdc3ac015:com.fasterxml.jackson.core:jackson-core:2.9.7",
+        "e6faad47abd3179666e89068485a1b88a195ceb7:com.fasterxml.jackson.core:jackson-databind:2.9.7",
+        "2774b8e960697678ca87cf54abd59c736fcd1e83:com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.7",
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "60280972e427915c123db25dbb7adc3fd4fc28a1:org.glassfish.jersey.ext:jersey-entity-filtering:2.27",
+        "c426d54b5a7f4dd470286c7fa44d08d8cbc286be:org.glassfish.jersey.media:jersey-media-json-jackson:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.media:jersey-media-json-jackson:2.27",
     ],
 )
 
@@ -655,24 +655,24 @@ jersey_media_jackson_compile()
 
 #
 maven_repository(
-    name = 'jersey_media_jettison',
-    deps = [
-        'org.glassfish.jersey.media:jersey-media-json-jettison:2.27',
-    ],
+    name = "jersey_media_jettison",
     force = [
-        'org.codehaus.jettison:jettison:1.4.0',
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "org.codehaus.jettison:jettison:1.4.0",
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '8f0e7bb69242e9ed5bfdf7384b37c1095b0974fc:org.codehaus.jettison:jettison:1.4.0',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27',
-        '5649c52a4e0e54df7612afabd67f2bae24c593f3:org.glassfish.jersey.media:jersey-media-json-jettison:2.27',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "8f0e7bb69242e9ed5bfdf7384b37c1095b0974fc:org.codehaus.jettison:jettison:1.4.0",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+        "5649c52a4e0e54df7612afabd67f2bae24c593f3:org.glassfish.jersey.media:jersey-media-json-jettison:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.media:jersey-media-json-jettison:2.27",
     ],
 )
 
@@ -682,22 +682,22 @@ jersey_media_jettison_compile()
 
 #
 maven_repository(
-    name = 'jersey_media_multipart',
-    deps = [
-        'org.glassfish.jersey.media:jersey-media-multipart:2.27',
-    ],
+    name = "jersey_media_multipart",
     force = [
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        'ebd5d04fbd308ba7d7cba7ecc93869062e42327b:org.glassfish.jersey.media:jersey-media-multipart:2.27',
-        '41c913d791e16f93bc712a8c8a30bb64daa2e9bd:org.jvnet.mimepull:mimepull:1.9.6',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "ebd5d04fbd308ba7d7cba7ecc93869062e42327b:org.glassfish.jersey.media:jersey-media-multipart:2.27",
+        "41c913d791e16f93bc712a8c8a30bb64daa2e9bd:org.jvnet.mimepull:mimepull:1.9.6",
+    ],
+    deps = [
+        "org.glassfish.jersey.media:jersey-media-multipart:2.27",
     ],
 )
 
@@ -707,24 +707,24 @@ jersey_media_multipart_compile()
 
 #
 maven_repository(
-    name = 'jersey_server',
-    deps = [
-        'org.glassfish.jersey.core:jersey-server:2.27',
-    ],
+    name = "jersey_server",
     force = [
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        '8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        '66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27',
-        '106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27",
+        "106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+    ],
+    deps = [
+        "org.glassfish.jersey.core:jersey-server:2.27",
     ],
 )
 
@@ -734,36 +734,36 @@ jersey_server_compile()
 
 #
 maven_repository(
-    name = 'jersey_test_framework',
-    deps = [
-        'org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27',
-        'org.hamcrest:java-hamcrest:2.0.0.0',
-    ],
+    name = "jersey_test_framework",
     exclude = {
-        'org.glassfish.jersey.test-framework:jersey-test-framework-core': [
-            'org.hamcrest:hamcrest-core',
+        "org.glassfish.jersey.test-framework:jersey-test-framework-core": [
+            "org.hamcrest:hamcrest-core",
         ],
     },
     force = [
-        'javax.servlet:javax.servlet-api:4.0.0',
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
+        "javax.servlet:javax.servlet-api:4.0.0",
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        '60200affc2fe0165136ed3690faf00b66aed581a:javax.servlet:javax.servlet-api:4.0.0',
-        '8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        '81e24b17ff7cee96a1c830fe63aa1215176c009c:org.glassfish.jersey.containers:jersey-container-servlet-core:2.27',
-        '66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27',
-        '106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27',
-        '5e5cc32c73cda92af420be5302b963c8bd26f26f:org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27',
-        '0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "60200affc2fe0165136ed3690faf00b66aed581a:javax.servlet:javax.servlet-api:4.0.0",
+        "8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "81e24b17ff7cee96a1c830fe63aa1215176c009c:org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+        "66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27",
+        "106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+        "5e5cc32c73cda92af420be5302b963c8bd26f26f:org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+        "0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0",
+    ],
+    deps = [
+        "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+        "org.hamcrest:java-hamcrest:2.0.0.0",
     ],
 )
 
@@ -773,48 +773,48 @@ jersey_test_framework_compile()
 
 #
 maven_repository(
-    name = 'jersey_test_framework_grizzly2',
-    deps = [
-        'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.27',
-        'org.hamcrest:java-hamcrest:2.0.0.0',
-    ],
+    name = "jersey_test_framework_grizzly2",
     exclude = {
-        'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2': [
-            'org.hamcrest:hamcrest-core',
+        "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2": [
+            "org.hamcrest:hamcrest-core",
         ],
     },
     force = [
-        'javax.servlet:javax.servlet-api:4.0.0',
-        'javax.annotation:javax.annotation-api:1.3.2',
-        'javax.ws.rs:javax.ws.rs-api:2.1.1',
-        'org.glassfish.grizzly:grizzly-framework:2.4.3',
-        'org.glassfish.grizzly:grizzly-http:2.4.3',
-        'org.glassfish.grizzly:grizzly-http-server:2.4.3',
-        'org.glassfish.grizzly:grizzly-http-servlet:2.4.3',
+        "javax.servlet:javax.servlet-api:4.0.0",
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "org.glassfish.grizzly:grizzly-framework:2.4.3",
+        "org.glassfish.grizzly:grizzly-http:2.4.3",
+        "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+        "org.glassfish.grizzly:grizzly-http-servlet:2.4.3",
     ],
     transitive_deps = [
-        '934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2',
-        '60200affc2fe0165136ed3690faf00b66aed581a:javax.servlet:javax.servlet-api:4.0.0',
-        '8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final',
-        'd3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1',
-        '2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12',
-        '3dc308a8ee5f5cf7349148237a1e2c1c6c459ba1:org.glassfish.grizzly:grizzly-framework:2.4.3',
-        'abe2f327ace7f46625f49ce2e20d033c28baddfa:org.glassfish.grizzly:grizzly-http:2.4.3',
-        '5bb7c86c60f7642c2aed359823e4cca629014e9c:org.glassfish.grizzly:grizzly-http-server:2.4.3',
-        '00a067d0e6bc3220997afe6fda1dd015482044fd:org.glassfish.grizzly:grizzly-http-servlet:2.4.3',
-        '98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42',
-        '4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1',
-        '57ac01a84d7084802398ff7caae38d8e68bb3c50:org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27',
-        '41f451e3d73fe701f836f15a1fdf1bd27243407e:org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:2.27',
-        'aa97ee9f6528706d1d7214f39a404297903a7598:org.glassfish.jersey.containers:jersey-container-servlet:2.27',
-        '81e24b17ff7cee96a1c830fe63aa1215176c009c:org.glassfish.jersey.containers:jersey-container-servlet-core:2.27',
-        '66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27',
-        'f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27',
-        '92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27',
-        '106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27',
-        '5e5cc32c73cda92af420be5302b963c8bd26f26f:org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27',
-        'e0f254a263831248d009a9538d0a43412d1ae09a:org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.27',
-        '0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0',
+        "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
+        "60200affc2fe0165136ed3690faf00b66aed581a:javax.servlet:javax.servlet-api:4.0.0",
+        "8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final",
+        "d3466bc9321fe84f268a1adb3b90373fc14b0eb5:javax.ws.rs:javax.ws.rs-api:2.1.1",
+        "2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12",
+        "3dc308a8ee5f5cf7349148237a1e2c1c6c459ba1:org.glassfish.grizzly:grizzly-framework:2.4.3",
+        "abe2f327ace7f46625f49ce2e20d033c28baddfa:org.glassfish.grizzly:grizzly-http:2.4.3",
+        "5bb7c86c60f7642c2aed359823e4cca629014e9c:org.glassfish.grizzly:grizzly-http-server:2.4.3",
+        "00a067d0e6bc3220997afe6fda1dd015482044fd:org.glassfish.grizzly:grizzly-http-servlet:2.4.3",
+        "98e0b7dcef77dc04809f0603868140a1c60bea71:org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+        "4ed2b2d4738aed5786cfa64cba5a332779c4c708:org.glassfish.hk2:osgi-resource-locator:1.0.1",
+        "57ac01a84d7084802398ff7caae38d8e68bb3c50:org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+        "41f451e3d73fe701f836f15a1fdf1bd27243407e:org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:2.27",
+        "aa97ee9f6528706d1d7214f39a404297903a7598:org.glassfish.jersey.containers:jersey-container-servlet:2.27",
+        "81e24b17ff7cee96a1c830fe63aa1215176c009c:org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+        "66dd6a62a981c0f186d96048fe11e9ddeca3ae28:org.glassfish.jersey.core:jersey-client:2.27",
+        "f20d4304a476a92001930d75747adcc232dbe779:org.glassfish.jersey.core:jersey-common:2.27",
+        "92c158af89e6749b20134c3182935046a49a1662:org.glassfish.jersey.core:jersey-server:2.27",
+        "106f2237ee03493185d9d915c9a1c011df716a2a:org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+        "5e5cc32c73cda92af420be5302b963c8bd26f26f:org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+        "e0f254a263831248d009a9538d0a43412d1ae09a:org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.27",
+        "0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0",
+    ],
+    deps = [
+        "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.27",
+        "org.hamcrest:java-hamcrest:2.0.0.0",
     ],
 )
 
@@ -973,17 +973,17 @@ lz4_compile()
 
 # Maven-Artifact
 maven_repository(
-    name = 'maven_artifact',
-    deps = [
-        'org.apache.maven:maven-artifact:3.5.4',
-    ],
+    name = "maven_artifact",
     force = [
-        'org.apache.commons:commons-lang3:3.8.1',
+        "org.apache.commons:commons-lang3:3.8.1",
     ],
     transitive_deps = [
-        '6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1',
-        '9c905d5a9c144e6f0d30c9db748090e807fed60e:org.apache.maven:maven-artifact:3.5.4',
-        '60eecb6f15abdb1c653ad80abaac6fe188b3feaa:org.codehaus.plexus:plexus-utils:3.1.0',
+        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
+        "9c905d5a9c144e6f0d30c9db748090e807fed60e:org.apache.maven:maven-artifact:3.5.4",
+        "60eecb6f15abdb1c653ad80abaac6fe188b3feaa:org.codehaus.plexus:plexus-utils:3.1.0",
+    ],
+    deps = [
+        "org.apache.maven:maven-artifact:3.5.4",
     ],
 )
 
