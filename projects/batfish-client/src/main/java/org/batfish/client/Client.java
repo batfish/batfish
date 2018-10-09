@@ -594,7 +594,7 @@ public class Client extends AbstractClient implements IClient {
           _reader.unsetOpt(Option.INSERT_TAB); // supports completion with nothing entered
 
           PrintWriter pWriter = new PrintWriter(_reader.getTerminal().output(), true);
-          OutputStream os = new WriterOutputStream(pWriter);
+          OutputStream os = new WriterOutputStream(pWriter, StandardCharsets.UTF_8);
           PrintStream ps = new PrintStream(os, true);
           _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
         } catch (Exception e) {

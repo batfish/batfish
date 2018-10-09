@@ -678,11 +678,6 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delEnvironment(String network, String snapshot, String envName) {
-    Path envDir = getdirEnvironment(network, snapshot, envName);
-    CommonUtil.deleteDirectory(envDir);
-  }
-
   public void delSnapshot(String network, String snapshot) {
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.deleteSnapshot(snapshot, networkId);
@@ -1130,17 +1125,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
-  }
-
-  private Path getdirEnvironment(String containerName, String testrigName, String envName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path envDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-    if (!Files.exists(envDir)) {
-      throw new BatfishException("Environment '" + envName + "' does not exist");
-    }
-    return envDir;
   }
 
   public Path getdirSnapshot(String network, String snapshot) {
@@ -2251,13 +2235,12 @@ public class WorkMgr extends AbstractCoordinator {
       String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    QuestionSettingsId questionSettingsId;
     String questionSettings;
     if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      questionSettingsId = _idManager.getQuestionSettingsId(questionClassId, networkId);
-      questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
+      questionSettings =
+          _storage.loadQuestionSettings(
+              networkId, _idManager.getQuestionSettingsId(questionClassId, networkId));
     } else {
-      questionSettingsId = _idManager.generateQuestionSettingsId();
       questionSettings = "{}";
     }
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
@@ -2278,6 +2261,7 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       root = value;
     }
+    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _storage.storeQuestionSettings(
         BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
     _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);

@@ -291,7 +291,7 @@ public interface StorageProvider {
    * Read the node roles data for the network with the given ID.
    *
    * @throws FileNotFoundException if the roles do not exist
-   * @throws IOException} if there is an error reading the roles.
+   * @throws IOException if there is an error reading the roles.
    */
   @Nonnull
   String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException;

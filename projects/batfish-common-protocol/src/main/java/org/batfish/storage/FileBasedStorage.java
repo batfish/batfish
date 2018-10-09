@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
@@ -498,7 +499,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(answerPath)) {
       throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
     }
-    return FileUtils.readFileToString(answerPath.toFile());
+    return FileUtils.readFileToString(answerPath.toFile(), UTF_8);
   }
 
   @Override
@@ -509,7 +510,7 @@ public final class FileBasedStorage implements StorageProvider {
       throw new FileNotFoundException(
           String.format("Could not find answer metadata for ID: %s", answerId));
     }
-    String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile());
+    String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile(), UTF_8);
     return BatfishObjectMapper.mapper()
         .readValue(answerMetadataStr, new TypeReference<AnswerMetadata>() {});
   }
@@ -541,7 +542,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(questionSettingsPath)) {
       return null;
     }
-    return FileUtils.readFileToString(questionSettingsPath.toFile());
+    return FileUtils.readFileToString(questionSettingsPath.toFile(), UTF_8);
   }
 
   @Override
@@ -554,7 +555,7 @@ public final class FileBasedStorage implements StorageProvider {
       String settings, NetworkId network, QuestionSettingsId questionSettingsId)
       throws IOException {
     FileUtils.writeStringToFile(
-        getQuestionSettingsPath(network, questionSettingsId).toFile(), settings);
+        getQuestionSettingsPath(network, questionSettingsId).toFile(), settings, UTF_8);
   }
 
   @Override
@@ -588,13 +589,15 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getAnalysisMetadataPath(networkId, analysisId).toFile(),
-        BatfishObjectMapper.writePrettyString(analysisMetadata));
+        BatfishObjectMapper.writePrettyString(analysisMetadata),
+        UTF_8);
   }
 
   @Override
   public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(getAnalysisMetadataPath(networkId, analysisId).toFile());
+    return FileUtils.readFileToString(
+        getAnalysisMetadataPath(networkId, analysisId).toFile(), UTF_8);
   }
 
   @Override
@@ -603,19 +606,23 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getSnapshotMetadataPath(networkId, snapshotId).toFile(),
-        BatfishObjectMapper.writePrettyString(snapshotMetadata));
+        BatfishObjectMapper.writePrettyString(snapshotMetadata),
+        UTF_8);
   }
 
   @Override
   public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(getSnapshotMetadataPath(networkId, snapshotId).toFile());
+    return FileUtils.readFileToString(
+        getSnapshotMetadataPath(networkId, snapshotId).toFile(), UTF_8);
   }
 
   @Override
   public void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException {
     FileUtils.write(
-        getNodeRolesPath(networkId).toFile(), BatfishObjectMapper.writePrettyString(nodeRolesData));
+        getNodeRolesPath(networkId).toFile(),
+        BatfishObjectMapper.writePrettyString(nodeRolesData),
+        UTF_8);
   }
 
   private @Nonnull Path getNodeRolesPath(NetworkId networkId) {
@@ -624,7 +631,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(getNodeRolesPath(networkId).toFile());
+    return FileUtils.readFileToString(getNodeRolesPath(networkId).toFile(), UTF_8);
   }
 
   @Override
