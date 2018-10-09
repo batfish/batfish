@@ -37,25 +37,20 @@ public final class WorkMgrTestUtils {
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
   }
 
-  public static void initSnapshot(String network, String snapshot) throws IOException {
-    IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshotId =
-        idManager.hasSnapshotId(snapshot, networkId)
-            ? idManager.getSnapshotId(snapshot, networkId)
-            : idManager.generateSnapshotId();
-    idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
-  }
-
   public static void initTestrigWithTopology(String container, String testrig, Set<String> nodes)
       throws IOException {
-    initSnapshot(container, testrig);
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idManager.getNetworkId(container);
+    SnapshotId snapshotId =
+        idManager.hasSnapshotId(testrig, networkId)
+            ? idManager.getSnapshotId(testrig, networkId)
+            : idManager.generateSnapshotId();
+    idManager.assignSnapshot(testrig, networkId, snapshotId);
+    TestrigMetadataMgr.writeMetadata(
+        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
     Topology topology = new Topology(testrig);
     topology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
 
-    // TODO update this to use storageProvider access
     Path outputDir =
         Main.getWorkMgr().getdirSnapshot(container, testrig).resolve(BfConsts.RELPATH_OUTPUT);
     if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {

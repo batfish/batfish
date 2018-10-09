@@ -14,6 +14,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +78,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     // Confirm missing snapshot causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
-    WorkMgrTestUtils.initSnapshot(networkName, baseSnapshotName);
+    WorkMgrTestUtils.initTestrigWithTopology(networkName, baseSnapshotName, ImmutableSet.of());
     response = getSnapshotTarget(networkName, snapshotName).put(Entity.json(forkSnapshotBean));
     // Confirm forking existing snapshot is successful
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

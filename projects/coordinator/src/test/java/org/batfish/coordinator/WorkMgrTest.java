@@ -473,19 +473,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotNoNetwork() throws IOException {
-    String networkName = "network";
-    String snapshotBaseName = "snapshotBase";
-    String snapshotNewName = "snapshotNew";
-
-    // Fork should fail because network does not exist
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
-    _manager.forkSnapshot(
-        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
-  }
-
-  @Test
   public void testGetAnswerAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
