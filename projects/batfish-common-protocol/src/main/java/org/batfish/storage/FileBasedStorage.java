@@ -11,11 +11,13 @@ import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -44,11 +47,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -170,6 +175,79 @@ public final class FileBasedStorage implements StorageProvider {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
           Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<Edge>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading edge blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
+      NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_TEST_RIG_DIR,
+                    BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<SortedSet<String>>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
       return null;
     }
   }
@@ -638,5 +716,160 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
     Files.delete(getAnswerMetadataPath(answerId));
+  }
+
+  @Override
+  public @Nonnull InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException {
+    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
+    if (!Files.exists(networkExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not load: %s", networkExtendedObjectPath));
+    }
+    return Files.newInputStream(networkExtendedObjectPath);
+  }
+
+  private @Nonnull Path rootedUriToRelativePath(URI uri) throws IOException {
+    Path rootedPath = Paths.get(uri);
+    Path canonicalRootedPath = rootedPath.toFile().getCanonicalFile().toPath();
+    if (!rootedPath.equals(canonicalRootedPath)) {
+      throw new IllegalArgumentException(
+          String.format("URI '%s' represents non-canonical path", uri));
+    }
+    return canonicalRootedPath.getRoot().relativize(canonicalRootedPath);
+  }
+
+  private @Nonnull Path getNetworkExtendedObjectPath(NetworkId networkId, URI uri)
+      throws IOException {
+    Path relativePath = rootedUriToRelativePath(uri);
+    return _d.getNetworkExtendedObjectsDir(networkId).resolve(relativePath);
+  }
+
+  @Override
+  public void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+      throws IOException {
+    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
+    networkExtendedObjectPath.getParent().toFile().mkdirs();
+    try {
+      FileUtils.copyInputStreamToFile(inputStream, networkExtendedObjectPath.toFile());
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  @Override
+  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri)
+      throws FileNotFoundException, IOException {
+    Path networkExtendedObjectPath = getNetworkExtendedObjectPath(networkId, uri);
+    if (!Files.exists(networkExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not delete: %s", networkExtendedObjectPath));
+    }
+    Files.delete(networkExtendedObjectPath);
+  }
+
+  private @Nonnull Path getSnapshotExtendedObjectPath(
+      NetworkId networkId, SnapshotId snapshotId, URI uri) throws IOException {
+    Path relativePath = rootedUriToRelativePath(uri);
+    return _d.getSnapshotExtendedObjectsDir(networkId, snapshotId).resolve(relativePath);
+  }
+
+  @Override
+  public @Nonnull InputStream loadSnapshotExtendedObject(
+      NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
+    if (!Files.exists(snapshotExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not load: %s", snapshotExtendedObjectPath));
+    }
+    return Files.newInputStream(snapshotExtendedObjectPath);
+  }
+
+  @Override
+  public void storeSnapshotExtendedObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
+    snapshotExtendedObjectPath.getParent().toFile().mkdirs();
+    try {
+      FileUtils.copyInputStreamToFile(inputStream, snapshotExtendedObjectPath.toFile());
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  @Override
+  public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    Path snapshotExtendedObjectPath = getSnapshotExtendedObjectPath(networkId, snapshotId, uri);
+    if (!Files.exists(snapshotExtendedObjectPath)) {
+      throw new FileNotFoundException(
+          String.format("Could not delete: %s", snapshotExtendedObjectPath));
+    }
+    Files.delete(snapshotExtendedObjectPath);
+  }
+
+  @Override
+  public @Nonnull InputStream loadSnapshotInputObject(
+      NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    Path snapshotInputObjectPath = getSnapshotInputObjectPath(networkId, snapshotId, uri);
+    if (!Files.exists(snapshotInputObjectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", snapshotInputObjectPath));
+    }
+    return Files.newInputStream(snapshotInputObjectPath);
+  }
+
+  private Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    Path relativePath = rootedUriToRelativePath(uri);
+    return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
+  }
+
+  @Override
+  public @Nonnull String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getPojoTopologyPath(networkId, snapshotId);
+    return FileUtils.readFileToString(path.toFile());
+  }
+
+  private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+  }
+
+  @Override
+  public @Nonnull String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getEnvTopologyPath(networkId, snapshotId);
+    return FileUtils.readFileToString(path.toFile());
+  }
+
+  private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        .resolve(BfConsts.RELPATH_ENV_DIR)
+        .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
+  }
+
+  @Override
+  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getEnvTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getPojoTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writePrettyString(topology));
   }
 }

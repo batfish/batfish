@@ -2,16 +2,22 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -22,7 +28,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
 public class TestStorageProvider implements StorageProvider {
-
   @Override
   public SortedMap<String, Configuration> loadCompressedConfigurations(
       NetworkId network, SnapshotId snapshot) {
@@ -40,6 +45,28 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
+      NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Nullable
+  @Override
+  public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -224,5 +251,69 @@ public class TestStorageProvider implements StorageProvider {
   public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public InputStream loadNetworkExtendedObject(NetworkId networkId, URI uri) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeNetworkExtendedObject(InputStream inputStream, NetworkId networkId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteNetworkExtendedObject(NetworkId networkId, URI uri) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InputStream loadSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeSnapshotExtendedObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteSnapshotExtendedObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, URI uri)
+      throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String loadEnvTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeEnvTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    throw new UnsupportedOperationException();
   }
 }

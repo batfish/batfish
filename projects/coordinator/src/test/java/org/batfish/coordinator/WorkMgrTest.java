@@ -26,8 +26,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -52,10 +50,11 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -66,6 +65,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
@@ -115,23 +115,23 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
+        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
   }
 
   @Test
-  public void initContainerWithContainerName() {
+  public void initNetworkWithContainerName() {
     String initResult = _manager.initNetwork("container", null);
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
-  public void initContainerWithContainerPrefix() {
+  public void initNetworkWithContainerPrefix() {
     String initResult = _manager.initNetwork(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
-  public void initContainerWithNullInput() {
+  public void initNetworkWithNullInput() {
     String initResult = _manager.initNetwork(null, null);
     assertThat(initResult, startsWith("null_"));
   }
@@ -226,6 +226,9 @@ public class WorkMgrTest {
     createTestrigWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
+    Path outputDir =
+        _manager.getdirSnapshot("container", "testrig1").resolve(BfConsts.RELPATH_OUTPUT);
+    outputDir.toFile().mkdir();
     CommonUtil.writeFile(
         _manager
             .getdirSnapshot("container", "testrig1")
@@ -359,6 +362,124 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), true);
     assertTrue(getMetadataSuggested(containerName, "analysis3"));
+  }
+
+  @Test
+  public void forkSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+  }
+
+  @Test
+  public void testForkSnapshotBlacklists() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
+    List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
+    List<String> nodes = ImmutableList.of("n4", "n5");
+    _manager.initNetwork(networkName, null);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
+    _manager.forkSnapshot(
+        networkName,
+        snapshotNewName,
+        new ForkSnapshotBean(snapshotBaseName, interfaces, links, nodes));
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    // Confirm the blacklists are correct
+    assertThat(
+        _storage.loadInterfaceBlacklist(networkId, snapshotId),
+        containsInAnyOrder(interfaces.toArray()));
+    assertThat(
+        _storage.loadEdgeBlacklist(networkId, snapshotId), containsInAnyOrder(links.toArray()));
+    assertThat(
+        _storage.loadNodeBlacklist(networkId, snapshotId), containsInAnyOrder(nodes.toArray()));
+  }
+
+  @Test
+  public void testForkSnapshotDuplicateName() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+    createTestrigWithMetadata(networkName, snapshotBaseName);
+    createTestrigWithMetadata(networkName, snapshotNewName);
+
+    // Fork should fail due to duplicate/conflicting new snapshot name
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotMissingBaseSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+
+    // Fork should fail because base snapshot does not exist
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotMissingBaseSnapshotName() throws IOException {
+    String networkName = "network";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+
+    // Fork should fail due to missing base snapshot name
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(equalTo("No base snapshot supplied"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(null, null, null, null));
+  }
+
+  @Test
+  public void forkSnapshotMissingNetwork() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotNoNetwork() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName, snapshotNewName, new ForkSnapshotBean(snapshotBaseName, null, null, null));
   }
 
   @Test
@@ -835,6 +956,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -851,6 +973,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectOutput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -866,6 +989,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectMissing() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -1629,25 +1753,12 @@ public class WorkMgrTest {
   }
 
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    uploadTestSnapshot(network, snapshot, "c1");
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)
       throws IOException {
-    Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
-    // intentional duplication of snapshot to provide subdir
-    Path tmpSnapshotConfig =
-        tmpSnapshotSrcDir
-            .resolve(snapshot)
-            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve(fileName);
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
-    tmpSnapshotConfig.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      _manager.uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, _folder);
   }
 
   @Test

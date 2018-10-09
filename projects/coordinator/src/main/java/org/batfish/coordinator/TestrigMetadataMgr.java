@@ -39,6 +39,11 @@ public class TestrigMetadataMgr {
     }
   }
 
+  public static String getParentSnapshot(NetworkId network, SnapshotId snapshot)
+      throws IOException {
+    return readMetadata(network, snapshot).getParentSnapshot();
+  }
+
   public static synchronized void initializeEnvironment(
       NetworkId networkId, SnapshotId snapshotId, String envName) throws IOException {
     TestrigMetadata metadata = readMetadata(networkId, snapshotId);

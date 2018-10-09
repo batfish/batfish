@@ -1187,35 +1187,6 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean uploadEnvironment(
-      String containerName,
-      String testrigName,
-      String baseEnvName,
-      String envName,
-      String zipfileName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_ENV);
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_BASE_ENV_NAME, baseEnvName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, envName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
-      return postData(webTarget, multiPart) != null;
-    } catch (Exception e) {
-      if (e.getMessage().contains("FileNotFoundException")) {
-        _logger.errorf("File not found: %s\n", zipfileName);
-      } else {
-        _logger.errorf(
-            "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, testrigName, envName, zipfileName, Throwables.getStackTraceAsString(e));
-      }
-      return false;
-    }
-  }
-
   boolean uploadQuestion(String containerName, String testrigName, String qName, String qFileName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);

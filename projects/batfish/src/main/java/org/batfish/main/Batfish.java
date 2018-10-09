@@ -276,6 +276,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envPathOut =
           testrigDir.resolve(
               Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
+      Path envPathIn =
+          testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
       envSettings.setCompressedDataPlanePath(
           envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
       envSettings.setCompressedDataPlaneAnswerPath(
@@ -295,21 +297,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
       Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
-      envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-      envSettings.setInterfaceBlacklistPath(
-          envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-      envSettings.setEdgeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setDeltaConfigurationsDir(
-          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
-          envDirPath.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+          envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setDeltaVendorConfigurationsDir(
-          envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
     }
   }
 
@@ -789,22 +783,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Environment not initialized: \""
               + testrigSettings.getEnvironmentSettings().getName()
               + "\"");
-    }
-  }
-
-  private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
-    Answer answer = new Answer();
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    Path deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
-    Path vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
-    if (deltaConfigurationsDir != null) {
-      if (Files.exists(deltaConfigurationsDir)) {
-        answer.append(serializeVendorConfigs(envSettings.getEnvPath(), vendorConfigsDir));
-        answer.append(serializeIndependentConfigs(vendorConfigsDir));
-      }
-      return answer;
-    } else {
-      throw new BatfishException("Delta configurations directory cannot be null");
     }
   }
 
@@ -1481,16 +1459,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges = Collections.emptySortedSet();
-    Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
-    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
-      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
-    }
-    return blacklistEdges;
-  }
-
   @Override
   public Environment getEnvironment() {
     SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
@@ -1602,29 +1570,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges =
+        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistEdges == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistEdges;
+  }
+
+  @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    SortedSet<NodeInterfacePair> blacklistInterfaces = Collections.emptySortedSet();
-    Path interfaceBlacklistPath =
-        _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
-    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
-      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
+    SortedSet<NodeInterfacePair> blacklistInterfaces =
+        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistInterfaces == null) {
+      return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
+  }
+
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes =
+        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistNodes == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistNodes;
   }
 
   @Override
   public BatfishLogger getLogger() {
     return _logger;
-  }
-
-  @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
-    SortedSet<String> blacklistNodes = Collections.emptySortedSet();
-    Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
-    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
-      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
-    }
-    return blacklistNodes;
   }
 
   /**
@@ -3603,11 +3580,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
       answer.addAnswerElement(initInfoAnswerElement);
-      action = true;
-    }
-
-    if (_settings.getCompileEnvironment()) {
-      answer.append(compileEnvironmentConfigurations(_testrigSettings));
       action = true;
     }
 

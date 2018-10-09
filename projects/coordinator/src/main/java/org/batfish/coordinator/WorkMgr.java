@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
+import static org.batfish.common.util.CommonUtil.addToSerializedList;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -27,6 +29,7 @@ import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,6 +89,7 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
@@ -1121,7 +1125,7 @@ public class WorkMgr extends AbstractCoordinator {
     FileBasedStorageDirectoryProvider dirProvider =
         new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
     if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(containerName)) {
-      throw new BatfishException("Container '" + containerName + "' does not exist");
+      throw new BatfishException("Network '" + containerName + "' does not exist");
     }
     NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
@@ -1186,13 +1190,26 @@ public class WorkMgr extends AbstractCoordinator {
    *     object
    */
   public Set<String> getNodes(String container, String testrig) throws IOException {
-    Path pojoTopologyPath =
-        getdirSnapshot(container, testrig)
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
-    Topology topology =
-        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    Topology topology = getPojoTopology(container, testrig);
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
+  }
+
+  /**
+   * Returns the pojo topology for the given network and snapshot, or {@code null} if either does
+   * not exist.
+   */
+  public @Nullable Topology getPojoTopology(@Nonnull String network, @Nonnull String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return BatfishObjectMapper.mapper()
+        .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -1274,6 +1291,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Nullable
+  @Deprecated
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
@@ -1338,6 +1356,15 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public void initSnapshot(
       String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
+    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, null);
+  }
+
+  public void initSnapshot(
+      String networkName,
+      String snapshotName,
+      Path srcDir,
+      boolean autoAnalyze,
+      @Nullable String parentSnapshot) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1365,7 +1392,8 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          new TestrigMetadata(
+              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshot),
           networkId,
           snapshotId);
     } catch (Exception e) {
@@ -1406,7 +1434,6 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
-        CommonUtil.copy(subFile, defaultEnvironmentLeafDir.resolve(subFile.getFileName()));
       } else if (isContainerFile(subFile)) {
         // derive and write the new container level file from the input
         if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
@@ -1439,10 +1466,9 @@ public class WorkMgr extends AbstractCoordinator {
             _logger.errorf("Could not process reference library data: %s", e);
           }
         }
-      } else {
-        // rest is plain copy
-        CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
       }
+      // Copy everything over
+      CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
     }
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
@@ -1456,6 +1482,82 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     }
+  }
+
+  /**
+   * Copy a snapshot and make modifications to the copy.
+   *
+   * @param networkName Name of the network containing the original snapshot
+   * @param snapshotName Name of the new snapshot
+   * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
+   */
+  public void forkSnapshot(
+      String networkName, String snapshotName, ForkSnapshotBean forkSnapshotBean)
+      throws IOException {
+    Path networkDir = getdirNetwork(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+
+    String baseSnapshotName = forkSnapshotBean.baseSnapshot;
+
+    // Fail early if the new snapshot already exists or the base snapshot does not
+    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
+      throw new IllegalArgumentException(
+          "Snapshot with name: '" + snapshotName + "' already exists");
+    }
+    if (Strings.isNullOrEmpty(baseSnapshotName)) {
+      throw new IllegalArgumentException("No base snapshot supplied");
+    }
+    if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
+      throw new FileNotFoundException(
+          "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
+    }
+
+    // Save user input for troubleshooting
+    Path originalDir =
+        networkDir
+            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
+            .resolve(generateFileDateString(snapshotName));
+    if (!originalDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    }
+    CommonUtil.writeFile(
+        originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
+        BatfishObjectMapper.writePrettyString(forkSnapshotBean));
+
+    SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
+    Path baseSnapshotDir =
+        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
+
+    // Copy baseSnapshot so initSnapshot will see a properly formatted upload
+    Path baseSnapshotInputsDir =
+        baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path newSnapshotInputsDir =
+        CommonUtil.createTempDirectory("files_to_add")
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    if (!newSnapshotInputsDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
+    }
+    if (baseSnapshotInputsDir.toFile().exists()) {
+      CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+      _logger.infof(
+          "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
+          baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
+    }
+
+    // Add user-specified failures to new blacklists
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateInterfaces);
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateLinks);
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateNodes);
+
+    // Use initSnapshot to handle creating metadata, etc.
+    initSnapshot(
+        networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotName);
   }
 
   private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {
@@ -1706,6 +1808,7 @@ public class WorkMgr extends AbstractCoordinator {
     _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
+  @Deprecated
   public void putObject(
       String containerName, String testrigName, String objectName, InputStream fileStream) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
@@ -1865,95 +1968,6 @@ public class WorkMgr extends AbstractCoordinator {
           "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
-  }
-
-  /**
-   * Upload a new environment to an existing testrig.
-   *
-   * @param containerName The container in which the testrig resides
-   * @param testrigName The testrig in which the (optional base environment and) new environment
-   *     reside
-   * @param baseEnvName The name of an optional base environment. The new environment is initialized
-   *     with files from this base if it is provided.
-   * @param newEnvName The name of the new environment to be created
-   * @param fileStream A stream providing the zip file containing the file structure of the new
-   *     environment.
-   */
-  public void uploadEnvironment(
-      String containerName,
-      String testrigName,
-      String baseEnvName,
-      String newEnvName,
-      InputStream fileStream) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
-    Path newEnvDir = environmentsDir.resolve(newEnvName);
-    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
-    if (Files.exists(newEnvDir)) {
-      throw new BatfishException(
-          "Environment: '" + newEnvName + "' already exists for snapshot: '" + testrigName + "'");
-    }
-    if (!dstDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
-    }
-    Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
-    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    /* First copy base environment if it is set */
-    if (baseEnvName.length() > 0) {
-      Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
-      if (!Files.exists(baseEnvPath)) {
-        CommonUtil.delete(zipFile);
-        throw new BatfishException(
-            "Base environment for copy does not exist: '" + baseEnvName + "'");
-      }
-      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
-      dstDir.toFile().mkdirs();
-      for (Path baseFile : baseFileList) {
-        Path target;
-        if (isEnvFile(baseFile)) {
-          target = dstDir.resolve(baseFile.getFileName());
-          CommonUtil.copy(baseFile, target);
-        }
-      }
-    }
-
-    // now unzip
-    Path unzipDir = CommonUtil.createTempDirectory("coord_up_env_unzip_dir_");
-    UnzipUtility.unzip(zipFile, unzipDir);
-
-    /*-
-     *  Sanity check what we got:
-     *    There should be just one top-level folder
-     */
-    SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
-    if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(newEnvDir);
-      CommonUtil.deleteDirectory(unzipDir);
-      throw new BatfishException(
-          "Unexpected packaging of environment. There should be just one top-level folder");
-    }
-    Path unzipSubdir = unzipDirEntries.iterator().next();
-    SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
-
-    // things look ok, now make the move
-    for (Path subdirFile : subFileList) {
-      Path target = dstDir.resolve(subdirFile.getFileName());
-      CommonUtil.moveByCopy(subdirFile, target);
-    }
-
-    try {
-      NetworkId networkId = _idManager.getNetworkId(containerName);
-      SnapshotId snapshotId = _idManager.getSnapshotId(testrigName, networkId);
-      TestrigMetadataMgr.initializeEnvironment(networkId, snapshotId, newEnvName);
-    } catch (IOException e) {
-      throw new BatfishException("Could not initialize environmentMetadata", e);
-    }
-
-    // delete the empty directory and the zip file
-    CommonUtil.deleteDirectory(unzipDir);
-    CommonUtil.deleteIfExists(zipFile);
   }
 
   public void uploadQuestion(String network, String question, String questionJson) {
@@ -2264,9 +2278,19 @@ public class WorkMgr extends AbstractCoordinator {
     return _idManager;
   }
 
-  public TestrigMetadata getTestrigMetadata(String networkName, String snapshot)
+  /**
+   * Fetch testrig metadata for network and snapshot. Returns {@code null} if network or snapshot
+   * does not exist.
+   */
+  public @Nullable TestrigMetadata getTestrigMetadata(String network, String snapshot)
       throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     return TestrigMetadataMgr.readMetadata(networkId, snapshotId);
   }
@@ -2300,5 +2324,213 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       throw new BatfishException("error reading node roles", e);
     }
+  }
+
+  /**
+   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
+   * network} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      return _storage.loadNetworkExtendedObject(networkId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
+   * the given {@code network}.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public void putNetworkExtendedObject(
+      @Nonnull InputStream inputStream, @Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.storeNetworkExtendedObject(inputStream, networkId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not write extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+  }
+
+  /**
+   * Deletes the extended object at the given {@code uri} for the given {@code network}. Returns
+   * {@code true} if deletion is successful, or {@code false} if the object or network does not
+   * exist.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public boolean deleteNetworkExtendedObject(@Nonnull String network, @Nonnull URI uri)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.deleteNetworkExtendedObject(networkId, uri);
+    } catch (FileNotFoundException e) {
+      return false;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s' at URI '%s'", network, uri),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Provides a stream from which the extended object at the given {@code uri} for the given {@code
+   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getSnapshotExtendedObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotExtendedObject(networkId, snapshotId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} at the given {@code uri} for
+   * the given {@code network} and {@code snapshot}. Returns {@code true} if the object was written,
+   * or {@code false} if the network or snapshot does not exist.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public boolean putSnapshotExtendedObject(
+      @Nonnull InputStream inputStream,
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nonnull URI uri)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.storeSnapshotExtendedObject(inputStream, networkId, snapshotId, uri);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not write extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Deletes the extended object at the given {@code uri} for the given {@code network} and {@code
+   * snapshot}. Returns {@code true} if deletion is successful, or {@code false} if the object,
+   * network, or snapshot does not exist.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public boolean deleteSnapshotExtendedObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull URI uri) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.deleteSnapshotExtendedObject(networkId, snapshotId, uri);
+    } catch (FileNotFoundException e) {
+      return false;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Provides a stream from which the input object at the given {@code uri} for the given {@code
+   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public InputStream getSnapshotInputObject(String network, String snapshot, URI uri)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotInputObject(networkId, snapshotId, uri);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read input object for network '%s', snapshot '%s', URI '%s'",
+              network, snapshot, uri),
+          e);
+    }
+  }
+
+  /**
+   * Returns the env topology for the given network and snapshot, or {@code null} if either does not
+   * exist.
+   */
+  public @Nullable org.batfish.datamodel.Topology getEnvTopology(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    String topologyStr = _storage.loadEnvTopology(networkId, snapshotId);
+    return BatfishObjectMapper.mapper()
+        .readValue(topologyStr, org.batfish.datamodel.Topology.class);
   }
 }
