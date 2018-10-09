@@ -22,16 +22,39 @@ public class PacketHeaderConstraintsUtil {
 
   public static final int DEFAULT_PACKET_LENGTH = 512;
 
+  /**
+   * Convert {@link PacketHeaderConstraints} to an {@link AclLineMatchExpr}.
+   *
+   * @param phc the packet header constraints
+   * @param srcIpSpace Resolved source IP space
+   * @param dstIpSpace Resolved destination IP space
+   */
   public static AclLineMatchExpr toAclLineMatchExpr(
       PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     return new MatchHeaderSpace(
         toHeaderSpaceBuilder(phc).setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build());
   }
 
+  /**
+   * Convert given {@link PacketHeaderConstraints} to a BDD
+   *
+   * @param phc the packet header constraints
+   * @param srcIpSpace Resolved source IP space
+   * @param dstIpSpace Resolved destination IP space
+   */
   public static BDD toBDD(PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     return toBDD(phc, ImmutableMap.of(), srcIpSpace, dstIpSpace);
   }
 
+  /**
+   * Convert given {@link PacketHeaderConstraints} to a BDD, also taking into account named IP
+   * spaces
+   *
+   * @param phc the packet header constraints
+   * @param namedIpSpaces map of named IP spaces
+   * @param srcIpSpace Resolved source IP space
+   * @param dstIpSpace Resolved destination IP space
+   */
   public static BDD toBDD(
       PacketHeaderConstraints phc,
       Map<String, IpSpace> namedIpSpaces,
@@ -55,7 +78,9 @@ public class PacketHeaderConstraintsUtil {
             .setDstPorts(firstNonNull(phc.resolveDstPorts(), ImmutableSortedSet.of()))
             .setIcmpCodes(firstNonNull(phc.getIcmpCodes(), ImmutableSortedSet.of()))
             .setIcmpTypes(firstNonNull(phc.getIcmpTypes(), ImmutableSortedSet.of()))
-            .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()));
+            .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
+            .setFragmentOffsets(firstNonNull(phc.getFragmentOffsets(), ImmutableSortedSet.of()))
+            .setPacketLengths(firstNonNull(phc.getPacketLengths(), ImmutableSortedSet.of()));
 
     if (phc.getDscps() != null) {
       builder.setDscps(
