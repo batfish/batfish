@@ -13,10 +13,13 @@ import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpPro
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco.CiscoConversions.toCommunityList;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
+import static org.batfish.representation.cisco.CiscoConversions.toIpSecPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.toIpSpace;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
@@ -2949,16 +2952,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert standard/expanded community lists and community-sets to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = CiscoConversions.toCommunityList(scList);
+      CommunityList cList = toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = CiscoConversions.toCommunityList(ecList);
+      CommunityList cList = toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     _communitySets.forEach(
-        (name, communitySet) ->
-            c.getCommunityLists().put(name, CiscoConversions.toCommunityList(communitySet)));
+        (name, communitySet) -> c.getCommunityLists().put(name, toCommunityList(communitySet)));
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -2993,8 +2995,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
-        (name, networkObjectGroup) ->
-            c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
     _networkObjectGroups
         .keySet()
         .forEach(
@@ -3020,17 +3021,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _icmpTypeObjectGroups.forEach(
         (name, icmpTypeObjectGroups) ->
             c.getIpAccessLists()
-                .put(
-                    computeIcmpObjectGroupAclName(name),
-                    CiscoConversions.toIpAccessList(icmpTypeObjectGroups)));
+                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(
-                    computeProtocolObjectGroupAclName(name),
-                    CiscoConversions.toIpAccessList(protocolObjectGroup)));
+                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
@@ -3173,7 +3170,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
-      IpsecPolicy ipsecPolicy = CiscoConversions.toIpSecPolicy(c, ipsecProfile);
+      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
       c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
       ipsecPhase2PoliciesBuilder.put(ipsecPolicy.getName(), toIpsecPhase2Policy(ipsecProfile));
     }

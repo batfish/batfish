@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.main.Driver.RunMode;
 import org.junit.Test;
@@ -94,5 +95,11 @@ public class SettingsTest {
     settings.setTaskId("tid");
 
     assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+  }
+
+  @Test
+  public void testDebugSettings() {
+    Settings settings = new Settings(new String[] {"-debugflags=blah"});
+    assertThat(settings.getDebugFlags(), equalTo(ImmutableList.of("blah")));
   }
 }
