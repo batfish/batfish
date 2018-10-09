@@ -22,7 +22,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Rule;
@@ -367,8 +366,8 @@ public class AbstractRibTest {
   }
 
   /**
-   * Test that {@link VirtualRouter ::removeRoute} actually removes the route and returns correct
-   * {@link RibDelta}
+   * Test that {@link AbstractRib#removeRoute} actually removes the route and returns correct {@link
+   * RibDelta}
    */
   @Test
   public void testRemoveRoute() {
@@ -405,8 +404,8 @@ public class AbstractRibTest {
   }
 
   /**
-   * Test that {@link VirtualRouter::removeRoute} correctly removes the route and returns proper
-   * delta if multiple routes have the same preference, but only one of them is getting removed
+   * Test that {@link AbstractRib#removeRoute} correctly removes the route and returns proper delta
+   * if multiple routes have the same preference, but only one of them is getting removed
    */
   @Test
   public void testRemoveRouteSamePreference() {

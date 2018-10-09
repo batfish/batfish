@@ -25,7 +25,6 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       }
     }
 
-    exception.printStackTrace();
     String stackTrace = Throwables.getStackTraceAsString(exception);
     return Response.status(500).entity(stackTrace).build();
   }

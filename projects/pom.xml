@@ -27,14 +27,14 @@
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
     <antlr4-maven-plugin.version>4.7.1</antlr4-maven-plugin.version>
-    <maven-artifact.version>3.5.0</maven-artifact.version>
+    <maven-artifact.version>3.5.4</maven-artifact.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-    <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
+    <maven-jacoco-plugin.version>0.8.2</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
@@ -46,44 +46,47 @@
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
     <antlr4.version>4.7.1-batfish-internal</antlr4.version>
     <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
-    <autoservice.version>1.0-rc3</autoservice.version>
+    <autoservice.version>1.0-rc4</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
     <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
-    <commons-cli.version>1.3.1</commons-cli.version>
-    <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-configuration2.version>2.2</commons-configuration2.version>
+    <commons-cli.version>1.4</commons-cli.version>
+    <commons-collections4.version>4.2</commons-collections4.version>
+    <commons-configuration2.version>2.3</commons-configuration2.version>
     <commons-exec.version>1.3</commons-exec.version>
-    <commons-io.version>2.4</commons-io.version>
-    <commons-lang3.version>3.7</commons-lang3.version>
+    <commons-io.version>2.6</commons-io.version>
+    <commons-lang3.version>3.8.1</commons-lang3.version>
     <diffutils.version>2.2</diffutils.version>
-    <errorprone.version>2.1.3</errorprone.version>
-    <grizzly.version>2.3.18</grizzly.version>
+    <errorprone.version>2.3.1</errorprone.version>
+    <grizzly.version>2.4.3</grizzly.version>
     <guava.version>26.0-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
-    <jackson.version>2.9.6</jackson.version>
+    <jackson.version>2.9.7</jackson.version>
     <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
-    <javax-annotation-api.version>1.2</javax-annotation-api.version>
+    <javax-activation.version>1.1</javax-activation.version>
+    <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
-    <jaxrs.version>2.0.1</jaxrs.version>
+    <jaxb-api.version>2.3.0</jaxb-api.version>
+    <jaxrs.version>2.1.1</jaxrs.version>
     <jdk-eea.version>0.0.1</jdk-eea.version>
-    <jersey.version>2.25.1</jersey.version>
-    <jettison.version>1.3.8</jettison.version>
-    <jgrapht-core.version>1.1.0</jgrapht-core.version>
-    <jline.version>3.5.2</jline.version>
-    <jsonassert.version>1.2.3</jsonassert.version>
+    <jersey.version>2.27</jersey.version>
+    <jettison.version>1.4.0</jettison.version>
+    <jgrapht-core.version>1.2.0</jgrapht-core.version>
+    <jline.version>3.9.0</jline.version>
+    <jsonassert.version>1.5.0</jsonassert.version>
     <jsonpath.version>2.4.0-batfish-internal</jsonpath.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
-    <lz4.version>1.4.1</lz4.version>
+    <lz4.version>1.5.0</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
-    <pmd.version>6.4.0</pmd.version>
-    <puppycrawl.version>8.0</puppycrawl.version>
+    <pmd.version>6.8.0</pmd.version>
+    <puppycrawl.version>8.13</puppycrawl.version>
+    <servlet.version>4.0.0</servlet.version>
     <slf4j.version>1.7.25</slf4j.version>
-    <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
+    <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <xstream.version>1.4.7</xstream.version>
     <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
 
@@ -133,6 +136,7 @@
             <compilerArgs>
               <arg>-Werror</arg>
               <arg>-Xlint:all</arg>
+              <arg>-Xlint:-options</arg>
               <arg>-Xlint:-processing</arg>
               <arg>-XDignore.symbol.file</arg>
             </compilerArgs>
@@ -523,7 +527,7 @@
               <rules>
                 <dependencyConvergence/>
                 <requireJavaVersion>
-                  <version>[1.8.0,1.8.99999)</version>
+                  <version>[1.8,)</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.3.9</version>
@@ -788,15 +792,33 @@
       </dependency>
 
       <dependency>
+        <groupId>javax.activation</groupId>
+        <artifactId>activation</artifactId>
+        <version>${javax-activation.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>javax.annotation</groupId>
         <artifactId>javax.annotation-api</artifactId>
         <version>${javax-annotation-api.version}</version>
       </dependency>
 
       <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>${servlet.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>javax.ws.rs</groupId>
         <artifactId>javax.ws.rs-api</artifactId>
         <version>${jaxrs.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>${jaxb-api.version}</version>
       </dependency>
 
       <dependency>
@@ -916,6 +938,12 @@
       <dependency>
         <groupId>org.glassfish.jersey.core</groupId>
         <artifactId>jersey-server</artifactId>
+        <version>${jersey.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.glassfish.jersey.inject</groupId>
+        <artifactId>jersey-hk2</artifactId>
         <version>${jersey.version}</version>
       </dependency>
 
