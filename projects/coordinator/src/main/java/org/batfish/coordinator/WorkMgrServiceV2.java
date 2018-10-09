@@ -47,12 +47,6 @@ public class WorkMgrServiceV2 {
   /** Information on the URI of a request, injected by the server framework at runtime. */
   @Context private UriInfo _uriInfo;
 
-  private static void assertStringParamProvided(String paramStr, String parameterName) {
-    if (isNullOrEmpty(paramStr)) {
-      throw new IllegalArgumentException(parameterName + " is missing or empty");
-    }
-  }
-
   private static void assertNetworkAccessibility(String apiKey, String networkName)
       throws FileNotFoundException {
     Optional<Container> networks =
