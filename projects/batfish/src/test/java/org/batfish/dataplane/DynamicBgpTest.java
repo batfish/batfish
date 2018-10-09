@@ -101,7 +101,7 @@ public class DynamicBgpTest {
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("4.4.4.4/32"))));
   }
 
-  /** Test BGP session establishment if dynamic seessions have been misconfigured */
+  /** Test BGP session establishment if dynamic sessions have been misconfigured. */
   @Test
   public void testDynamicBgpMisconfigured() throws IOException {
     String testrigName = "bgp-dynamic-session-misconfigured";

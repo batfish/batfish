@@ -17,7 +17,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierFactoryTest {
   @Test
   public void buildNonString() {
     exception.expect(IllegalArgumentException.class);
-    new ReferenceAddressGroupIpSpaceSpecifierFactory().buildIpSpaceSpecifier(new Integer(1));
+    new ReferenceAddressGroupIpSpaceSpecifierFactory().buildIpSpaceSpecifier(1);
   }
 
   @Test
