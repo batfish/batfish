@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -26,7 +27,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
@@ -62,6 +62,7 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
+  private static final Ip DEFAULT_IP_ADDRESS = new Ip("8.8.8.8");
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final IpSpaceAssignment _sourceIpAssignment;
@@ -266,18 +267,26 @@ public class TestFiltersAnswerer extends Answerer {
           IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
       IpSpaceAssignment dstIps =
           dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+      // Filter out empty IP assignments
+      ImmutableList<Entry> nonEmptyIpSpaces =
+          dstIps
+              .getEntries()
+              .stream()
+              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
+              .collect(ImmutableList.toImmutableList());
       checkArgument(
-          dstIps.getEntries().size() == 1,
+          nonEmptyIpSpaces.size() > 0,
+          "At least one destination IP is required, could not resolve any");
+      checkArgument(
+          nonEmptyIpSpaces.size() == 1,
           "Specified destination: %s, resolves to more than one IP",
           headerDstIp);
-      IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
+      IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
       Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+      checkArgument(dstIp.isPresent(), "Specified destination: %s has no IPs", headerDstIp);
       builder.setDstIp(dstIp.get());
     } else {
-      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
-      checkArgument(dstIp.isPresent(), "At least one destination IP is required");
-      builder.setDstIp(dstIp.get());
+      builder.setSrcIp(DEFAULT_IP_ADDRESS);
     }
   }
 
@@ -286,26 +295,35 @@ public class TestFiltersAnswerer extends Answerer {
     // Extract source IP from header constraints,
     String headerSrcIp = constraints.getSrcIps();
     if (headerSrcIp != null) {
-      // interpret given Src IP using sane mode
+      // interpret given Src IP flexibly
       IpSpaceSpecifier srcIpSpecifier =
           IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerSrcIp);
+      // Resolve to set of locations/IPs
       IpSpaceAssignment srcIps =
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
+      // Filter out empty IP assignments
+      ImmutableList<Entry> nonEmptyIpSpaces =
+          srcIps
+              .getEntries()
+              .stream()
+              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
+              .collect(ImmutableList.toImmutableList());
       checkArgument(
-          srcIps.getEntries().size() == 1,
-          "Specified source: %s, resolves to more than one IP",
-          headerSrcIp);
-      IpSpace space = srcIps.getEntries().iterator().next().getIpSpace();
+          nonEmptyIpSpaces.size() > 0, "At least one source IP is required, could not resolve any");
+      checkArgument(
+          nonEmptyIpSpaces.size() == 1,
+          "Specified source IP %s resolves to more than one location/IP: %s",
+          headerSrcIp,
+          nonEmptyIpSpaces);
+      // Pick a representative from the remaining space
+      IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(srcIp.isPresent(), "At least one source IP is required");
+      checkArgument(srcIp.isPresent(), "Specified source: %s has no IPs", headerSrcIp);
       builder.setSrcIp(srcIp.get());
     } else if (srcLocation == null) {
-      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE);
-      builder.setSrcIp(
-          srcIp.orElseThrow(
-              () -> new IllegalArgumentException("Failed to pick an IP for unspecified location")));
+      builder.setSrcIp(DEFAULT_IP_ADDRESS);
     } else {
-      // Use from source location to determine header Src IP
+      // Use source location to determine header Src IP
       Optional<Entry> entry =
           _sourceIpAssignment
               .getEntries()
