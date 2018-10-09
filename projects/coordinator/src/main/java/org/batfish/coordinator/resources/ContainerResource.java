@@ -48,7 +48,7 @@ public class ContainerResource {
 
   /** Relocate the request to {@link NetworkObjectsResource} */
   @Path(RSC_OBJECTS)
-  public NetworkObjectsResource getNetworkExtendedObjectResource() {
+  public NetworkObjectsResource getNetworkObjectsResource() {
     return new NetworkObjectsResource(_name);
   }
 
