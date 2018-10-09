@@ -1,4 +1,5 @@
 workspace(name = "batfish")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 ##########################################################
 # The Maven artifacts depended-upon by our Java projects #
