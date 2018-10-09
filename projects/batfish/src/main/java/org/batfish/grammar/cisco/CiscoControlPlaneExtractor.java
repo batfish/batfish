@@ -565,6 +565,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
@@ -1226,6 +1227,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String DUPLICATE = "DUPLICATE";
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
+
+  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
+
+  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -5783,7 +5788,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .add(alias)
               .build());
       iface.setAlias(alias);
+
+      switch (alias) {
+        case TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, 100);
+          break;
+        case NO_TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, 0);
+          break;
+        default:
+          // don't set a level
+      }
     }
+  }
+
+  @Override
+  public void exitIf_security_level(If_security_levelContext ctx) {
+    if (_currentInterfaces.size() > 1) {
+      _w.redFlag("Parse assertion failed for _currentInterfaces");
+    } else {
+      setIfaceSecurityLevel(_currentInterfaces.get(0), Integer.valueOf(ctx.level.getText()));
+    }
+  }
+
+  private void setIfaceSecurityLevel(Interface iface, Integer level) {
+    iface.setSecurityLevel(level);
+    String zoneName =
+        CiscoConfiguration.computeSecurityLevelZoneName(level.toString(), iface.getName());
+    iface.setSecurityZone(zoneName);
+    _configuration.getSecurityZones().put(zoneName, new SecurityZone(zoneName));
   }
 
   @Override
