@@ -1,8 +1,10 @@
 package org.batfish.coordinator.resources;
 
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
+import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
+import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
@@ -44,6 +46,12 @@ public class ContainerResource {
     return Response.ok(container).build();
   }
 
+  /** Relocate the request to {@link NetworkObjectsResource} */
+  @Path(RSC_OBJECTS)
+  public NetworkObjectsResource getNetworkObjectsResource() {
+    return new NetworkObjectsResource(_name);
+  }
+
   /** Relocate the request to {@link NodeRolesResource}. */
   @Path(RSC_NODE_ROLES)
   public NodeRolesResource getNodeRolesResource() {
@@ -83,5 +91,11 @@ public class ContainerResource {
       throw new ForbiddenException(
           String.format("network '%s' is not accessible by the api key: %s", container, apiKey));
     }
+  }
+
+  /** Relocate the request to {@link SnapshotsResource} */
+  @Path(RSC_SNAPSHOTS)
+  public SnapshotsResource getSnapshotsResource() {
+    return new SnapshotsResource(_name);
   }
 }

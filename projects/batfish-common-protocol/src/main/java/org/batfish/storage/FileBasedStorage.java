@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
@@ -12,6 +13,7 @@ import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -35,6 +37,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -645,5 +648,164 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
     Files.delete(getAnswerMetadataPath(answerId));
+  }
+
+  @Override
+  public @Nonnull InputStream loadNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+    return Files.newInputStream(objectPath);
+  }
+
+  /** {@code key} must be relative normalized path. */
+  @VisibleForTesting
+  static @Nonnull Path objectKeyToRelativePath(String key) {
+    Path relativePathCandidate = Paths.get(FilenameUtils.separatorsToSystem(key));
+    // ensure path is relative
+    checkArgument(
+        relativePathCandidate.getRoot() == null,
+        "Key '%s' does not represent a relative path",
+        key);
+    // ensure path is normalized
+    checkArgument(
+        relativePathCandidate.equals(relativePathCandidate.normalize()),
+        "Key '%s' does not represent a normalized path  (without '.', '..',  etc.)",
+        key);
+    return relativePathCandidate;
+  }
+
+  private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
+    Path relativePath = objectKeyToRelativePath(key);
+    return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
+  }
+
+  @Override
+  public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException {
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    objectPath.getParent().toFile().mkdirs();
+    try {
+      FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  @Override
+  public void deleteNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not delete: %s", objectPath));
+    }
+    Files.delete(objectPath);
+  }
+
+  private @Nonnull Path getSnapshotObjectPath(
+      NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
+    Path relativePath = objectKeyToRelativePath(key);
+    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(relativePath);
+  }
+
+  @Override
+  public @Nonnull InputStream loadSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+    return Files.newInputStream(objectPath);
+  }
+
+  @Override
+  public void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException {
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    objectPath.getParent().toFile().mkdirs();
+    try {
+      FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  @Override
+  public void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getSnapshotObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not delete: %s", objectPath));
+    }
+    Files.delete(objectPath);
+  }
+
+  @Override
+  public @Nonnull InputStream loadSnapshotInputObject(
+      NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getSnapshotInputObjectPath(networkId, snapshotId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+    return Files.newInputStream(objectPath);
+  }
+
+  private Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException {
+    Path relativePath = objectKeyToRelativePath(key);
+    return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
+  }
+
+  @Override
+  public @Nonnull String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getPojoTopologyPath(networkId, snapshotId);
+    return FileUtils.readFileToString(path.toFile(), UTF_8);
+  }
+
+  private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+  }
+
+  @Override
+  public @Nonnull String loadTopology(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getEnvTopologyPath(networkId, snapshotId);
+    return FileUtils.readFileToString(path.toFile(), UTF_8);
+  }
+
+  private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        .resolve(BfConsts.RELPATH_ENV_DIR)
+        .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
+  }
+
+  @Override
+  public void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getEnvTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(
+        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
+  }
+
+  @Override
+  public void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path path = getPojoTopologyPath(networkId, snapshotId);
+    path.getParent().toFile().mkdirs();
+    FileUtils.writeStringToFile(
+        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
   }
 }
