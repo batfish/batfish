@@ -258,27 +258,6 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean delEnvironment(String containerName, String testrigName, String envName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ENVIRONMENT);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, envName);
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      return jObj != null;
-    } catch (Exception e) {
-      _logger.errorf("exception: ");
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return false;
-    }
-  }
-
   boolean delQuestion(String containerName, String testrigName, String questionName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_QUESTION);
