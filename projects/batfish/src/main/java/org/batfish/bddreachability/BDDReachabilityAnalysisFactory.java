@@ -192,7 +192,9 @@ public final class BDDReachabilityAnalysisFactory {
 
     edgeStream.forEach(
         edge ->
-            edges.computeIfAbsent(edge._preState, k -> new HashMap<>()).put(edge._postState, edge));
+            edges
+                .computeIfAbsent(edge.getPreState(), k -> new HashMap<>())
+                .put(edge.getPostState(), edge));
 
     // freeze
     return toImmutableMap(
