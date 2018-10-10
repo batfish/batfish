@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -34,7 +36,7 @@ public final class ReachabilityParameters {
 
     private @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier = null;
 
-    private @Nullable HeaderSpace _headerSpace;
+    private @Nullable AclLineMatchExpr _headerSpace;
 
     private int _maxChunkSize;
 
@@ -89,7 +91,7 @@ public final class ReachabilityParameters {
     }
 
     public Builder setHeaderSpace(@Nonnull HeaderSpace headerSpace) {
-      _headerSpace = headerSpace;
+      _headerSpace = new MatchHeaderSpace(headerSpace);
       return this;
     }
 
@@ -127,7 +129,7 @@ public final class ReachabilityParameters {
 
   private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
 
-  private final HeaderSpace _headerSpace;
+  private final AclLineMatchExpr _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -181,7 +183,7 @@ public final class ReachabilityParameters {
     return _forbiddenTransitNodesSpecifier;
   }
 
-  public HeaderSpace getHeaderSpace() {
+  public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 
