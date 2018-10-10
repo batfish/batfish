@@ -23,7 +23,6 @@ public enum Command {
   DEL_ANALYSIS_QUESTIONS("del-analysis-questions"),
   DEL_BATFISH_OPTION("del-batfish-option"),
   DEL_CONTAINER("del-container"),
-  DEL_ENVIRONMENT("del-environment"),
   DEL_NETWORK("del-network"),
   DEL_QUESTION("del-question"),
   DEL_SNAPSHOT("del-snapshot"),
@@ -58,7 +57,6 @@ public enum Command {
   INIT_CONTAINER("init-container"),
   INIT_DELTA_SNAPSHOT("init-delta-snapshot"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
-  INIT_ENVIRONMENT("init-environment"),
   INIT_NETWORK("init-network"),
   INIT_REFERENCE_SNAPSHOT("init-reference-snapshot"),
   INIT_SNAPSHOT("init-snapshot"),
@@ -66,7 +64,6 @@ public enum Command {
   KILL_WORK("kill-work"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
-  LIST_ENVIRONMENTS("list-environments"),
   LIST_INCOMPLETE_WORK("list-incomplete-work"),
   LIST_NETWORKS("list-networks"),
   LIST_QUESTIONS("list-questions"),
@@ -84,10 +81,8 @@ public enum Command {
   SET_BACKGROUND_EXECUCTION("set-background-execution"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
-  SET_DELTA_ENV("set-delta-environment"),
   SET_DELTA_SNAPSHOT("set-delta-snapshot"),
   SET_DELTA_TESTRIG("set-delta-testrig"),
-  SET_ENV("set-environment"),
   SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
   SET_NETWORK("set-network"),
@@ -229,8 +224,6 @@ public enum Command {
     descs.put(
         DEL_BATFISH_OPTION, new Pair<>("<option-key>", "Stop passing this option to Batfish"));
     descs.put(DEL_CONTAINER, new Pair<>("<network-name>", "Delete the specified network"));
-    descs.put(
-        DEL_ENVIRONMENT, new Pair<>("<environment-name>", "Delete the specified environment"));
     descs.put(DEL_NETWORK, new Pair<>("<network-name>", "Delete the specified network"));
     descs.put(DEL_QUESTION, new Pair<>("<question-name>", "Delete the specified question"));
     descs.put(DEL_SNAPSHOT, new Pair<>("<snapshot-name>", "Delete the specified snapshot"));
@@ -306,61 +299,6 @@ public enum Command {
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
             "Initialize the delta snapshot with default environment"));
     descs.put(
-        INIT_ENVIRONMENT,
-        new Pair<>(
-            "[sourcePath=path], [newEnvironmentName=string], [newEnvironmentPrefix=string], "
-                + "[sourceEnvironmentName=string], [nodeBlacklist=string_set], "
-                + "[interfaceBlacklist=map_of_strings_to_string_sets], [edgeBlacklist=edge_set]",
-            "    Initialize a new reference environment\n"
-                + "\n"
-                + "    Arguments:\n"
-                + "\n"
-                + "    sourcePath\n"
-                + "        Either a directory or zip containing the environment to initialize.\n"
-                + "        These files override those in the environment identified by "
-                + "'sourceEnvironmentName',\n"
-                + "        and are overridden by values passed to node/interface/edgeBlacklist.\n"
-                + "\n"
-                + "    newEnvironmentName\n"
-                + "        The name to assign the new environment. If not specified, a name is "
-                + "generated.\n"
-                + "\n"
-                + "    sourceEnvironmentName\n"
-                + "        The name of an environment in the current snapshot from which to clone "
-                + "a new environment.\n"
-                + "        Files in the source environment are overriden by those in envDirOrZip "
-                + "(if specified),\n"
-                + "        as well as by values passed to node/interface/edgeBlacklist.\n"
-                + "\n"
-                + "    nodeBlacklist\n"
-                + "        A list of nodes whose interfaces will be turned off in the new "
-                + "environment.\n"
-                + "\n"
-                + "    interfaceBlacklist\n"
-                + "        A list of interfaces that will be turned off in the new environment.\n"
-                + "\n"
-                + "    edgeBlacklist\n"
-                + "        For maximum granularity, a list of edges to be disabled in the new "
-                + "environment. This\n"
-                + "        option should rarely be used. The interfaces making up the edge will "
-                + "not necessarily\n"
-                + "        be disabled. This feature is experimental, and may not always yield "
-                + "expected results.\n"
-                + "\n"
-                + "    doDelta\n"
-                + "        Whether the sourceEnvironment and newEnvironment should be chosen "
-                + "from/created in the\n"
-                + "        current(false) or reference(true) snapshot. Defaults to false.\n"
-                + "\n"));
-    /*                + "    update\n"
-    + "        Whether to update the current base(doDelta=false)/delta(doDelta=true) "
-    + "environment\n"
-    + "        pointer after this action has completed. Regardless of the value of "
-    + "this option,\n"
-    + "        bf_session.scenarios appended with a new scenario corresponding to the "
-    + "newly-created\n"
-    + "        environment.\n"));*/
-    descs.put(
         INIT_NETWORK,
         new Pair<>(
             "[-setname <network-name> | <network-name-prefix>]", "Initialize a new network"));
@@ -384,9 +322,6 @@ public enum Command {
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active network"));
-    descs.put(
-        LIST_ENVIRONMENTS,
-        new Pair<>("", "List the environments under current network and snapshot"));
     descs.put(LIST_NETWORKS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_QUESTIONS, new Pair<>("", "List the questions under current network and snapshot"));
@@ -421,14 +356,12 @@ public enum Command {
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));
     descs.put(SET_CONTAINER, new Pair<>("<network-name>", "Set the current network"));
-    descs.put(SET_DELTA_ENV, new Pair<>("<environment-name>", "Set the delta environment"));
     descs.put(
         SET_DELTA_SNAPSHOT,
         new Pair<>("<snapshot-name> [environment name]", "Set the delta snapshot"));
     descs.put(
         SET_DELTA_TESTRIG,
         new Pair<>("<snapshot-name> [environment name]", "Set the delta snapshot"));
-    descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current environment"));
     descs.put(
         SET_FIXED_WORKITEM_ID,
         new Pair<>("<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));

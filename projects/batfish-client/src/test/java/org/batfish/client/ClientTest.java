@@ -29,7 +29,6 @@ import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_REFERENCE;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
-import static org.batfish.client.Command.INIT_ENVIRONMENT;
 import static org.batfish.client.Command.INIT_NETWORK;
 import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
@@ -536,17 +535,6 @@ public class ClientTest {
   public void testInitNetworkInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2", "parameter3"};
     testInvalidInput(INIT_NETWORK, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testInitEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_ENVIRONMENT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testInitEnvValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
