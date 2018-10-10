@@ -797,6 +797,7 @@ public final class BDDReachabilityAnalysisFactory {
         srcIpSpaceAssignment,
         UniverseIpSpace.INSTANCE,
         ImmutableSet.of(),
+        ImmutableSet.of(),
         _configs.keySet(),
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
@@ -804,16 +805,23 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       IpSpace dstIpSpace,
+      Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     return bddReachabilityAnalysis(
-        srcIpSpaceAssignment, matchDst(dstIpSpace), requiredTransitNodes, finalNodes, actions);
+        srcIpSpaceAssignment,
+        matchDst(dstIpSpace),
+        forbiddenTransitNodes,
+        requiredTransitNodes,
+        finalNodes,
+        actions);
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr dstHeaderSpace,
+      Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       @Nonnull Set<String> finalNodes,
       Set<FlowDisposition> actions) {
@@ -836,9 +844,8 @@ public final class BDDReachabilityAnalysisFactory {
         Streams.concat(
             generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
 
-    if (!requiredTransitNodes.isEmpty()) {
-      edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
-    }
+    edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
+    edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
     Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
 
@@ -976,8 +983,27 @@ public final class BDDReachabilityAnalysisFactory {
         bdd -> edge._traverseForward.apply(bdd).and(constraint));
   }
 
+  private Stream<Edge> instrumentForbiddenTransitNodes(
+      Set<String> forbiddenTransitNodes, Stream<Edge> edgeStream) {
+    if (forbiddenTransitNodes.isEmpty()) {
+      return edgeStream;
+    }
+
+    // remove any edges at which a forbidden node becomes transited.
+    return edgeStream.filter(
+        edge ->
+            !(edge._preState instanceof PreOutEdgePostNat
+                && edge._postState instanceof PreInInterface
+                && forbiddenTransitNodes.contains(
+                    ((PreOutEdgePostNat) edge._preState).getSrcNode())));
+  }
+
   private Stream<Edge> instrumentRequiredTransitNodes(
       Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
+    if (requiredTransitNodes.isEmpty()) {
+      return edgeStream;
+    }
+
     BDD transited = _requiredTransitNodeBDD;
     BDD notTransited = _requiredTransitNodeBDD.not();
 

@@ -91,6 +91,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   IpSpaceAssignment.builder().build(),
                   UniverseIpSpace.INSTANCE,
                   ImmutableSet.of(),
+                  ImmutableSet.of(),
                   ImmutableSet.of(node),
                   ALL_DISPOSITIONS)
               .getEdges();
@@ -129,6 +130,53 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
+  public void testForbiddenTransitNodes() throws IOException {
+    SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+    DataPlane dataPlane = batfish.loadDataPlane();
+
+    assertThat(configs.size(), equalTo(2));
+    for (String node : configs.keySet()) {
+      String otherNode = configs.keySet().stream().filter(n -> !n.equals(node)).findFirst().get();
+      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+          new BDDReachabilityAnalysisFactory(PKT, configs, dataPlane.getForwardingAnalysis());
+      Map<StateExpr, Map<StateExpr, Edge>> edgeMap =
+          bddReachabilityAnalysisFactory
+              .bddReachabilityAnalysis(
+                  IpSpaceAssignment.builder().build(),
+                  UniverseIpSpace.INSTANCE,
+                  ImmutableSet.of(node),
+                  ImmutableSet.of(),
+                  ImmutableSet.of(),
+                  ALL_DISPOSITIONS)
+              .getEdges();
+
+      Set<Edge> edges =
+          edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
+
+      assertThat(
+          "Edges at which a forbiddenTransitNode would become transited should be removed.",
+          edges
+              .stream()
+              .noneMatch(
+                  edge ->
+                      edge._preState instanceof PreOutEdgePostNat
+                          && edge._postState instanceof PreInInterface
+                          && ((PreOutEdgePostNat) edge._preState).getSrcNode().equals(node)));
+      assertThat(
+          "Edges at which a non-forbiddenTransitNodes become transited should not be removed.",
+          edges
+              .stream()
+              .anyMatch(
+                  edge ->
+                      edge._preState instanceof PreOutEdgePostNat
+                          && edge._postState instanceof PreInInterface
+                          && ((PreOutEdgePostNat) edge._preState).getSrcNode().equals(otherNode)));
+    }
+  }
+
+  @Test
   public void testRequiredTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
@@ -147,6 +195,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
               .bddReachabilityAnalysis(
                   IpSpaceAssignment.builder().build(),
                   UniverseIpSpace.INSTANCE,
+                  ImmutableSet.of(),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
                   ALL_DISPOSITIONS)

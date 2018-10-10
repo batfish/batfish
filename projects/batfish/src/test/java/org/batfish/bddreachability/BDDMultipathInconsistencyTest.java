@@ -100,6 +100,7 @@ public class BDDMultipathInconsistencyTest {
                 assignment,
                 _dstIface2Ip.toIpSpace(),
                 ImmutableSet.of(),
+                ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
@@ -108,6 +109,7 @@ public class BDDMultipathInconsistencyTest {
             .bddReachabilityAnalysis(
                 assignment,
                 _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(DENIED_IN))
@@ -144,6 +146,7 @@ public class BDDMultipathInconsistencyTest {
                 assignment,
                 _dstIface2Ip.toIpSpace(),
                 ImmutableSet.of(),
+                ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
@@ -152,6 +155,7 @@ public class BDDMultipathInconsistencyTest {
             .bddReachabilityAnalysis(
                 assignment,
                 _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(DENIED_IN))
@@ -186,6 +190,7 @@ public class BDDMultipathInconsistencyTest {
                 assignment,
                 UniverseIpSpace.INSTANCE,
                 ImmutableSet.of(),
+                ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
@@ -194,6 +199,7 @@ public class BDDMultipathInconsistencyTest {
             .bddReachabilityAnalysis(
                 assignment,
                 UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(DENIED_IN))
@@ -204,6 +210,7 @@ public class BDDMultipathInconsistencyTest {
                 assignment,
                 UniverseIpSpace.INSTANCE,
                 ImmutableSet.of(),
+                ImmutableSet.of(),
                 finalNodes,
                 dropDispositions)
             .getIngressLocationReachableBDDs();
@@ -213,6 +220,7 @@ public class BDDMultipathInconsistencyTest {
                 assignment,
                 UniverseIpSpace.INSTANCE,
                 ImmutableSet.of(),
+                ImmutableSet.of(),
                 finalNodes,
                 Sets.difference(dropDispositions, ImmutableSet.of(DENIED_IN)))
             .getIngressLocationReachableBDDs();
@@ -221,6 +229,7 @@ public class BDDMultipathInconsistencyTest {
             .bddReachabilityAnalysis(
                 assignment,
                 UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
