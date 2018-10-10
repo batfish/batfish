@@ -286,7 +286,7 @@ public class TestFiltersAnswerer extends Answerer {
       checkArgument(dstIp.isPresent(), "Specified destination: %s has no IPs", headerDstIp);
       builder.setDstIp(dstIp.get());
     } else {
-      builder.setSrcIp(DEFAULT_IP_ADDRESS);
+      builder.setDstIp(DEFAULT_IP_ADDRESS);
     }
   }
 
