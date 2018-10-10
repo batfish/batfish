@@ -659,13 +659,19 @@ public final class FileBasedStorage implements StorageProvider {
     return Files.newInputStream(objectPath);
   }
 
-  /** {@code key} must be relative path that is canonical modulo its relativeness. */
-  private @Nonnull Path objectKeyToRelativePath(String key) throws IOException {
+  /** {@code key} must be relative normalized path. */
+  @VisibleForTesting
+  static @Nonnull Path objectKeyToRelativePath(String key) throws IOException {
     Path relativePathCandidate = Paths.get(FilenameUtils.separatorsToSystem(key));
-    Path absolutePath = relativePathCandidate.toAbsolutePath();
-    Path canonicalPath = absolutePath.toFile().getCanonicalFile().toPath();
-    if (!absolutePath.equals(canonicalPath)) {
-      throw new IllegalArgumentException(String.format("Key '%s' not a valid relative path", key));
+    // ensure path is relative
+    if (relativePathCandidate.getRoot() != null) {
+      throw new IllegalArgumentException(String.format("Key '%s' not a relative path", key));
+    }
+    // ensure path is normalized
+    if (!relativePathCandidate.equals(relativePathCandidate.normalize())) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Key '%s' does not represent a normalized path  (without '.', '..',  etc.)", key));
     }
     return relativePathCandidate;
   }
