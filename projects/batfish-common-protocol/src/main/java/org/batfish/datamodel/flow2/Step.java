@@ -2,9 +2,13 @@ package org.batfish.datamodel.flow2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import javax.annotation.Nullable;
 
-/** Represents a step in {@link TraceHop} */
+/** Represents a step in a {@link TraceHop} */
+@JsonSchemaDescription("Represents an operation within a hop")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Step {
 
   private static final String PROP_DETAIL = "detail";

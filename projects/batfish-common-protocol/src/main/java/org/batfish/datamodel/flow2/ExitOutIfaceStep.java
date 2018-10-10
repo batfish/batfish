@@ -1,5 +1,8 @@
 package org.batfish.datamodel.flow2;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -20,10 +23,11 @@ public class ExitOutIfaceStep extends Step {
 
     private ExitOutIfaceStepDetail(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @Nullable String filterOut,
-        @Nullable Flow originalFlow,
-        @Nullable Flow transformedFlow) {
-      super("ExitOutIface");
+        @JsonProperty(PROP_FILTER_OUT) @Nullable String filterOut,
+        @JsonProperty(PROP_ORIGINAL_FLOW) @Nullable Flow originalFlow,
+        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow,
+        @JsonProperty(PROP_NAME) @Nullable String name) {
+      super(firstNonNull(name, "ExitOutIface"));
       _outputInterface = outInterface;
       _filterOut = filterOut;
       _originalFlow = originalFlow;
@@ -61,13 +65,18 @@ public class ExitOutIfaceStep extends Step {
     public static class Builder {
       private NodeInterfacePair _outputInterface;
       private String _filterOut;
-
       private Flow _originalFlow;
       private Flow _transformedFlow;
+      private String _name;
 
       public ExitOutIfaceStepDetail build() {
         return new ExitOutIfaceStepDetail(
-            _outputInterface, _filterOut, _originalFlow, _transformedFlow);
+            _outputInterface, _filterOut, _originalFlow, _transformedFlow, _name);
+      }
+
+      public Builder setName(String name) {
+        _name = name;
+        return this;
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {
@@ -98,8 +107,10 @@ public class ExitOutIfaceStep extends Step {
 
     private @Nullable StepActionResult _actionResult;
 
-    public ExitOutIfaceAction(@JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result) {
-      super("ExitOutIface");
+    public ExitOutIfaceAction(
+        @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
+        @JsonProperty(PROP_NAME) @Nullable String name) {
+      super(firstNonNull(name, "ExitOutIface"));
       _actionResult = result;
     }
 
@@ -110,7 +121,13 @@ public class ExitOutIfaceStep extends Step {
     }
   }
 
-  public ExitOutIfaceStep(ExitOutIfaceStepDetail stepDetail, ExitOutIfaceAction stepAction) {
+  private static final String PROP_DETAIL = "detail";
+  private static final String PROP_ACTION = "action";
+
+  @JsonCreator
+  public ExitOutIfaceStep(
+      @JsonProperty(PROP_DETAIL) ExitOutIfaceStepDetail stepDetail,
+      @JsonProperty(PROP_ACTION) ExitOutIfaceAction stepAction) {
     super(stepDetail, stepAction);
   }
 

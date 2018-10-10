@@ -2,11 +2,16 @@ package org.batfish.datamodel.flow2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import javax.annotation.Nonnull;
 
+/** Represents an action taken in a {@link Step} */
+@JsonSchemaDescription("Represents an action taken in a step")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class StepAction {
 
-  private static final String PROP_NAME = "name";
+  protected static final String PROP_NAME = "name";
 
   private final String _name;
 

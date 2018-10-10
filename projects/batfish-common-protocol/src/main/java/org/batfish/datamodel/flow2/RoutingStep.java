@@ -8,18 +8,18 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-public class SrcIfaceToOutIfaceStep extends Step {
-  public static class SrcIfaceToOutIfaceStepDetail extends StepDetail {
+public class RoutingStep extends Step {
+  public static class RoutingStepDetail extends StepDetail {
 
     private static final String PROP_ROUTE_CONSIDERED = "routesConsidered";
 
     private Set<String> _routesConsidered;
 
     @JsonCreator
-    public SrcIfaceToOutIfaceStepDetail(
-        @JsonProperty(PROP_ROUTE_CONSIDERED) @Nullable Set<String> routesConsidered) {
-      super("SrcIfaceToOutIface");
-
+    public RoutingStepDetail(
+        @JsonProperty(PROP_ROUTE_CONSIDERED) @Nullable Set<String> routesConsidered,
+        @JsonProperty(PROP_NAME) @Nullable String name) {
+      super(firstNonNull(name, "RoutingStep"));
       _routesConsidered = firstNonNull(routesConsidered, ImmutableSet.of());
     }
 
@@ -34,9 +34,15 @@ public class SrcIfaceToOutIfaceStep extends Step {
 
     public static class Builder {
       private Set<String> _routesConsidered;
+      private String _name;
 
-      public SrcIfaceToOutIfaceStepDetail build() {
-        return new SrcIfaceToOutIfaceStepDetail(_routesConsidered);
+      public RoutingStepDetail build() {
+        return new RoutingStepDetail(_routesConsidered, _name);
+      }
+
+      public Builder setName(String name) {
+        _name = name;
+        return this;
       }
 
       public Builder setRoutesConsidered(Set<String> routesConsidered) {
@@ -46,16 +52,17 @@ public class SrcIfaceToOutIfaceStep extends Step {
     }
   }
 
-  public static class SrcIfaceToOutIfaceStepAction extends StepAction {
+  public static class RoutingStepAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
 
     private @Nullable StepActionResult _actionResult;
 
     @JsonCreator
-    public SrcIfaceToOutIfaceStepAction(
-        @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result) {
-      super("SrcIfaceToOutIface");
+    public RoutingStepAction(
+        @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
+        @JsonProperty(PROP_NAME) @Nullable String name) {
+      super(firstNonNull(name, "RoutingAction"));
       _actionResult = result;
     }
 
@@ -66,8 +73,13 @@ public class SrcIfaceToOutIfaceStep extends Step {
     }
   }
 
-  public SrcIfaceToOutIfaceStep(
-      SrcIfaceToOutIfaceStepDetail stepDetail, SrcIfaceToOutIfaceStepAction stepAction) {
+  private static final String PROP_DETAIL = "detail";
+  private static final String PROP_ACTION = "action";
+
+  @JsonCreator
+  public RoutingStep(
+      @JsonProperty(PROP_DETAIL) RoutingStepDetail stepDetail,
+      @JsonProperty(PROP_ACTION) RoutingStepAction stepAction) {
     super(stepDetail, stepAction);
   }
 
@@ -76,19 +88,19 @@ public class SrcIfaceToOutIfaceStep extends Step {
   }
 
   public static class Builder {
-    private SrcIfaceToOutIfaceStepDetail _detail;
-    private SrcIfaceToOutIfaceStepAction _action;
+    private RoutingStepDetail _detail;
+    private RoutingStepAction _action;
 
-    public SrcIfaceToOutIfaceStep build() {
-      return new SrcIfaceToOutIfaceStep(_detail, _action);
+    public RoutingStep build() {
+      return new RoutingStep(_detail, _action);
     }
 
-    public Builder setDetail(SrcIfaceToOutIfaceStepDetail detail) {
+    public Builder setDetail(RoutingStepDetail detail) {
       _detail = detail;
       return this;
     }
 
-    public Builder setAction(SrcIfaceToOutIfaceStepAction action) {
+    public Builder setAction(RoutingStepAction action) {
       _action = action;
       return this;
     }
