@@ -661,7 +661,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   /** {@code key} must be relative normalized path. */
   @VisibleForTesting
-  static @Nonnull Path objectKeyToRelativePath(String key) throws IOException {
+  static @Nonnull Path objectKeyToRelativePath(String key) {
     Path relativePathCandidate = Paths.get(FilenameUtils.separatorsToSystem(key));
     // ensure path is relative
     if (relativePathCandidate.getRoot() != null) {
@@ -676,7 +676,7 @@ public final class FileBasedStorage implements StorageProvider {
     return relativePathCandidate;
   }
 
-  private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) throws IOException {
+  private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
     Path relativePath = objectKeyToRelativePath(key);
     return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
   }
