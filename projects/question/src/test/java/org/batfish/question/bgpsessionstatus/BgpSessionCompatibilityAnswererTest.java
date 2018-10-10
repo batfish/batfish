@@ -83,7 +83,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Ip ip2 = new Ip("2.2.2.2");
 
     Configuration node1 = cb.setHostname("node1").build();
-    Interface iface1 = new Interface("iface1", node1, InterfaceType.VPN);
+    Interface iface1 = new Interface("iface1", node1, InterfaceType.PHYSICAL);
     iface1.setAllAddresses(ImmutableList.of(new InterfaceAddress(ip1, new Ip("255.255.255.255"))));
 
     BgpActivePeerConfig peerConfig1 =
@@ -104,7 +104,7 @@ public class BgpSessionCompatibilityAnswererTest {
     node1.setInterfaces(ImmutableSortedMap.of("iface1", iface1));
 
     Configuration node2 = cb.setHostname("node2").build();
-    Interface iface2 = new Interface("iface2", node2, InterfaceType.VPN);
+    Interface iface2 = new Interface("iface2", node2, InterfaceType.PHYSICAL);
     iface2.setAllAddresses(ImmutableList.of(new InterfaceAddress(ip2, new Ip("255.255.255.255"))));
 
     BgpActivePeerConfig peerConfig2 =
