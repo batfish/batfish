@@ -149,6 +149,10 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  public BooleanExpr matchOrigDstIp(IpSpace ipSpace) {
+    return matchIpSpace(ipSpace, Field.ORIG_DST_IP);
+  }
+
   public BooleanExpr matchOrigSrcIp(IpSpace ipSpace) {
     return matchIpSpace(ipSpace, Field.ORIG_SRC_IP);
   }
@@ -330,7 +334,6 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
         HeaderSpaceMatchExpr::matchSrcOrDstProtocol);
 
     // ip
-    // TODO matchOrigDstIp
     if (headerSpace.getSrcIps() != null) {
       requireMatch(
           matchBuilder, headerSpace.getSrcIps(), orig ? this::matchOrigSrcIp : this::matchSrcIp);
@@ -346,10 +349,12 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
           orig ? this::matchOrigSrcOrDstIp : this::matchSrcOrDstIp);
     }
     if (headerSpace.getDstIps() != null) {
-      requireMatch(matchBuilder, headerSpace.getDstIps(), this::matchDstIp);
+      requireMatch(
+          matchBuilder, headerSpace.getDstIps(), orig ? this::matchOrigDstIp : this::matchDstIp);
     }
     if (headerSpace.getNotDstIps() != null) {
-      requireNoMatch(matchBuilder, headerSpace.getNotDstIps(), this::matchDstIp);
+      requireNoMatch(
+          matchBuilder, headerSpace.getNotDstIps(), orig ? this::matchOrigDstIp : this::matchDstIp);
     }
 
     // port
