@@ -5,7 +5,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class PreOutEdgePostNat extends StateExpr {
+public class PreOutEdgePostSrcNat extends StateExpr {
 
   public static class State extends StateExpr.State {
 
@@ -15,7 +15,7 @@ public class PreOutEdgePostNat extends StateExpr {
 
     @Override
     public void accept(StateVisitor visitor) {
-      visitor.visitPreOutEdgePostNat(this);
+      visitor.visitPreOutEdgePostSrcNat(this);
     }
   }
 
@@ -27,11 +27,11 @@ public class PreOutEdgePostNat extends StateExpr {
 
   private final String _srcNode;
 
-  public PreOutEdgePostNat(Edge edge) {
+  public PreOutEdgePostSrcNat(Edge edge) {
     this(edge.getNode1(), edge.getInt1(), edge.getNode2(), edge.getInt2());
   }
 
-  public PreOutEdgePostNat(String srcNode, String srcIface, String dstNode, String dstIface) {
+  public PreOutEdgePostSrcNat(String srcNode, String srcIface, String dstNode, String dstIface) {
     _srcNode = srcNode;
     _srcIface = srcIface;
     _dstNode = dstNode;
@@ -40,7 +40,7 @@ public class PreOutEdgePostNat extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitPreOutEdgePostNat(this);
+    return visitor.visitPreOutEdgePostSrcNat(this);
   }
 
   public String getDstNode() {

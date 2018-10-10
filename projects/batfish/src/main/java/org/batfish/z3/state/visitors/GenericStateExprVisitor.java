@@ -36,11 +36,13 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
+import org.batfish.z3.state.PostInInterfacePostSrcNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
@@ -125,6 +127,8 @@ public interface GenericStateExprVisitor<R> {
 
   R visitPostInInterfacePostNat(PostInInterfacePostNat postInInterfacePostNat);
 
+  R visitPostInInterfacePostSrcNat(PostInInterfacePostSrcNat postInInterfacePostSrcNat);
+
   R visitPostInVrf(PostInVrf postInVrf);
 
   R visitPostOutEdge(PostOutEdge preOutInterface);
@@ -136,6 +140,8 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutEdgePostNat);
+
+  R visitPreOutEdgePostSrcNat(PreOutEdgePostSrcNat preOutEdgePostSrcNat);
 
   R visitQuery(Query query);
 }

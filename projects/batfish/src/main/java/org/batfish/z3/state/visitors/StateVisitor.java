@@ -36,11 +36,13 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
+import org.batfish.z3.state.PostInInterfacePostSrcNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
@@ -119,6 +121,8 @@ public interface StateVisitor {
 
   void visitPostInInterfacePostNat(PostInInterfacePostNat.State postInInterface);
 
+  void visitPostInInterfacePostSrcNat(PostInInterfacePostSrcNat.State state);
+
   void visitPostInVrf(PostInVrf.State postInVrf);
 
   void visitPostOutEdge(PostOutEdge.State state);
@@ -128,6 +132,8 @@ public interface StateVisitor {
   void visitPreOutVrf(PreOutVrf.State preOut);
 
   void visitPreOutEdge(PreOutEdge.State preOutEdge);
+
+  void visitPreOutEdgePostSrcNat(PreOutEdgePostSrcNat.State state);
 
   void visitPreOutEdgePostNat(PreOutEdgePostNat.State state);
 

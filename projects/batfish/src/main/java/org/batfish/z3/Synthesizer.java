@@ -30,14 +30,16 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
+import org.batfish.z3.state.PostInInterfacePostSrcNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
-import org.batfish.z3.state.PostInInterfacePostNat;
 
 public class Synthesizer {
 
@@ -93,11 +95,13 @@ public class Synthesizer {
               OriginateVrf.State.INSTANCE,
               PostInInterface.State.INSTANCE,
               PostInInterfacePostNat.State.INSTANCE,
+              PostInInterfacePostSrcNat.State.INSTANCE,
               PostInVrf.State.INSTANCE,
               PostOutEdge.State.INSTANCE,
               PreInInterface.State.INSTANCE,
               PreOutEdge.State.INSTANCE,
               PreOutEdgePostNat.State.INSTANCE,
+              PreOutEdgePostSrcNat.State.INSTANCE,
               PreOutVrf.State.INSTANCE));
     }
     return synthesizeNodProgram(

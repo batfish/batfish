@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
@@ -68,11 +69,13 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
+import org.batfish.z3.state.PostInInterfacePostSrcNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
@@ -738,37 +741,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPostInInterfacePostNat(PostInInterfacePostNat.State postInInterface) {
-    // Matches ingress nat.
-    Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> nats = _input.getIngressSrcNats();
-    _input
-        .getEnabledInterfaces()
-        .forEach(
-            (hostname, interfaces) ->
-                interfaces
-                    .stream()
-                    .filter(x -> nats.containsKey(hostname))
-                    .filter(ifaceName -> nats.get(hostname).containsKey(ifaceName))
-                    .forEach(
-                        ifaceName ->
-                            generateMatchNatRules(
-                                _input.getIngressSrcNats().get(hostname).get(ifaceName),
-                                new PostInInterface(hostname, ifaceName),
-                                new PostInInterfacePostNat(hostname, ifaceName))));
+    generateNatIngressRules(_input.getIngressDstNats(),
+        PostInInterfacePostSrcNat::new,
+        PostInInterfacePostNat::new);
+  }
 
-    // Doesn't match ingress nat.
-    _input
-        .getEnabledInterfaces()
-        .forEach(
-            (hostname, interfaces) ->
-                interfaces.forEach(
-                    ifaceName ->
-                        generateNoMatchNatRules(
-                            _input
-                                .getIngressSrcNats()
-                                .getOrDefault(hostname, ImmutableMap.of())
-                                .getOrDefault(ifaceName, ImmutableList.of()),
-                            new PostInInterface(hostname, ifaceName),
-                            new PostInInterfacePostNat(hostname, ifaceName))));
+  @Override
+  public void visitPostInInterfacePostSrcNat(PostInInterfacePostSrcNat.State postInInterface) {
+    generateNatIngressRules(_input.getIngressSrcNats(),
+        PostInInterface::new,
+        PostInInterfacePostSrcNat::new);
   }
 
   @Override
@@ -985,47 +967,63 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreOutEdgePostNat(PreOutEdgePostNat.State preOutEdgePostNat) {
-    Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressNats =
-        _input.getEgressSrcNats();
-    // Matches egress nat.
-    _input
-        .getEnabledEdges()
-        .stream()
-        .filter(e -> egressNats.containsKey(e.getNode1()))
-        .filter(e -> egressNats.get(e.getNode1()).containsKey(e.getInt1()))
-        .forEach(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
-
-              generateMatchNatRules(
-                  egressNats.get(node1).get(iface1),
-                  new PreOutEdge(node1, iface1, node2, iface2),
-                  new PreOutEdgePostNat(node1, iface1, node2, iface2));
-            });
-
-    // Doesn't match egress nat.
-    _input
-        .getEnabledEdges()
-        .forEach(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
-
-              generateNoMatchNatRules(
-                  egressNats
-                      .getOrDefault(node1, ImmutableMap.of())
-                      .getOrDefault(iface1, ImmutableList.of()),
-                  new PreOutEdge(node1, iface1, node2, iface2),
-                  new PreOutEdgePostNat(node1, iface1, node2, iface2));
-            });
+    generateNatEgressRules(_input.getEgressDstNats(),
+        PreOutEdgePostSrcNat::new,
+        PreOutEdgePostNat::new);
   }
 
-  private void generateMatchNatRules(
+  @Override
+  public void visitPreOutEdgePostSrcNat(PreOutEdgePostSrcNat.State preOutEdgePostSrcNat) {
+    generateNatEgressRules(_input.getEgressSrcNats(), PreOutEdge::new, PreOutEdgePostSrcNat::new);
+  }
+
+  // TODO javadoc
+  private void generateNatEgressRules(
+      Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> nats,
+      Function<Edge, StateExpr> preState, Function<Edge, StateExpr> postState) {
+
+    // Matches egress nat.
+    _input.getEnabledEdges()
+        .stream()
+        .filter(e -> nats.containsKey(e.getNode1()))
+        .filter(e -> nats.get(e.getNode1()).containsKey(e.getInt1()))
+        .forEach(edge -> generateNatMatchRules(nats.get(edge.getNode1()).get(edge.getInt1()),
+            preState.apply(edge),
+            postState.apply(edge)));
+
+    // Doesn't match egress nat.
+    _input.getEnabledEdges().forEach(edge -> generateNatNoMatchRules(
+        nats.getOrDefault(edge.getNode1(), ImmutableMap.of())
+            .getOrDefault(edge.getInt1(), ImmutableList.of()),
+        preState.apply(edge),
+        postState.apply(edge)));
+  }
+
+  // TODO javadoc
+  private void generateNatIngressRules(
+      Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> nats,
+      BiFunction<String, String, StateExpr> preState,
+      BiFunction<String, String, StateExpr> postState) {
+
+    // Matches ingress nat.
+    _input.getEnabledInterfaces()
+        .forEach((hostname, interfaces) -> interfaces.stream()
+            .filter(x -> nats.containsKey(hostname))
+            .filter(ifaceName -> nats.get(hostname).containsKey(ifaceName))
+            .forEach(ifaceName -> generateNatMatchRules(nats.get(hostname).get(ifaceName),
+                preState.apply(hostname, ifaceName),
+                postState.apply(hostname, ifaceName))));
+
+    // Doesn't match ingress nat.
+    _input.getEnabledInterfaces()
+        .forEach((hostname, interfaces) -> interfaces.forEach(ifaceName -> generateNatNoMatchRules(
+            nats.getOrDefault(hostname, ImmutableMap.of())
+                .getOrDefault(ifaceName, ImmutableList.of()),
+            preState.apply(hostname, ifaceName),
+            postState.apply(hostname, ifaceName))));
+  }
+
+  private void generateNatMatchRules(
       List<Entry<AclPermit, BooleanExpr>> nats, StateExpr preState, StateExpr postState) {
 
     for (int natNumber = 0; natNumber < nats.size(); natNumber++) {
@@ -1057,7 +1055,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
     }
   }
 
-  private void generateNoMatchNatRules(
+  private void generateNatNoMatchRules(
       List<Entry<AclPermit, BooleanExpr>> nats, StateExpr preState, StateExpr postState) {
 
     ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();

@@ -46,11 +46,13 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
+import org.batfish.z3.state.PostInInterfacePostSrcNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.StateParameter;
@@ -295,6 +297,14 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
+  public List<StateParameter> visitPostInInterfacePostSrcNat(
+      PostInInterfacePostSrcNat postInInterfacePostSrcNat) {
+    return ImmutableList.of(
+        new StateParameter(postInInterfacePostSrcNat.getHostname(), NODE),
+        new StateParameter(postInInterfacePostSrcNat.getIface(), INTERFACE));
+  }
+
+  @Override
   public List<StateParameter> visitPostInVrf(PostInVrf postInVrf) {
     return ImmutableList.of(
         new StateParameter(postInVrf.getHostname(), NODE),
@@ -322,6 +332,15 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(preOutEdge.getSrcIface(), INTERFACE),
         new StateParameter(preOutEdge.getDstNode(), NODE),
         new StateParameter(preOutEdge.getDstIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPreOutEdgePostSrcNat(PreOutEdgePostSrcNat preOutEdgePostSrcNat) {
+    return ImmutableList.of(
+        new StateParameter(preOutEdgePostSrcNat.getSrcNode(), NODE),
+        new StateParameter(preOutEdgePostSrcNat.getSrcIface(), INTERFACE),
+        new StateParameter(preOutEdgePostSrcNat.getDstNode(), NODE),
+        new StateParameter(preOutEdgePostSrcNat.getDstIface(), INTERFACE));
   }
 
   @Override
