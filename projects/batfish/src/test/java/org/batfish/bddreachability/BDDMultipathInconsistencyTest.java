@@ -97,12 +97,20 @@ public class BDDMultipathInconsistencyTest {
     Map<IngressLocation, BDD> acceptedBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, _dstIface2Ip.toIpSpace(), finalNodes, ImmutableSet.of(ACCEPTED))
+                assignment,
+                _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> deniedOutBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, _dstIface2Ip.toIpSpace(), finalNodes, ImmutableSet.of(DENIED_IN))
+                assignment,
+                _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(DENIED_IN))
             .getIngressLocationReachableBDDs();
 
     BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
@@ -133,12 +141,20 @@ public class BDDMultipathInconsistencyTest {
     Map<IngressLocation, BDD> acceptedBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, _dstIface2Ip.toIpSpace(), finalNodes, ImmutableSet.of(ACCEPTED))
+                assignment,
+                _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> deniedOutBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, _dstIface2Ip.toIpSpace(), finalNodes, ImmutableSet.of(DENIED_IN))
+                assignment,
+                _dstIface2Ip.toIpSpace(),
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(DENIED_IN))
             .getIngressLocationReachableBDDs();
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
@@ -167,23 +183,36 @@ public class BDDMultipathInconsistencyTest {
     Map<IngressLocation, BDD> acceptedBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, UniverseIpSpace.INSTANCE, finalNodes, ImmutableSet.of(ACCEPTED))
+                assignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> deniedInBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, UniverseIpSpace.INSTANCE, finalNodes, ImmutableSet.of(DENIED_IN))
+                assignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
+                finalNodes,
+                ImmutableSet.of(DENIED_IN))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> dropBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment, UniverseIpSpace.INSTANCE, finalNodes, dropDispositions)
+                assignment,
+                UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
+                finalNodes,
+                dropDispositions)
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> dropExceptDeniedInBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
                 UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
                 finalNodes,
                 Sets.difference(dropDispositions, ImmutableSet.of(DENIED_IN)))
             .getIngressLocationReachableBDDs();
@@ -192,6 +221,7 @@ public class BDDMultipathInconsistencyTest {
             .bddReachabilityAnalysis(
                 assignment,
                 UniverseIpSpace.INSTANCE,
+                ImmutableSet.of(),
                 finalNodes,
                 ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .getIngressLocationReachableBDDs();
