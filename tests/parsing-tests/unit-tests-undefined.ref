@@ -44,6 +44,18 @@
     "rows" : [
       {
         "File_Name" : "configs/arista_bgp",
+        "Struct_Type" : "bgp peer-group",
+        "Ref_Name" : "UNDEFINED_PEER_GROUP",
+        "Context" : "bgp neighbor statement",
+        "Lines" : {
+          "filename" : "configs/arista_bgp",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "UNDEFINED_MAP",
         "Context" : "bgp redistribute ospfv3 route-map",
@@ -139,6 +151,18 @@
         }
       },
       {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "13.16.3.16",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/bgp_default_originate_policy",
         "Struct_Type" : "route-policy",
         "Ref_Name" : "EBGP_CUST_FULL_v4",
@@ -188,13 +212,13 @@
       },
       {
         "File_Name" : "configs/bgp_route_policy",
-        "Struct_Type" : "bgp group",
+        "Struct_Type" : "bgp neighbor-group",
         "Ref_Name" : "EBGP-PEER-SVL-PNI",
-        "Context" : "inherited BGP group",
+        "Context" : "bgp use neighbor-group",
         "Lines" : {
           "filename" : "configs/bgp_route_policy",
           "lines" : [
-            0
+            20
           ]
         }
       },
@@ -256,6 +280,36 @@
           "filename" : "configs/cadant_bgp",
           "lines" : [
             35
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            26,
+            27,
+            28,
+            39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "dead:beef:0:0:0:0:0:1",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            33,
+            34,
+            35,
+            40
           ]
         }
       },
@@ -344,6 +398,19 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_additional_paths",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_additional_paths",
+          "lines" : [
+            7,
+            8
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_bgp",
         "Struct_Type" : "as-path access-list",
         "Ref_Name" : "40",
@@ -357,9 +424,21 @@
       },
       {
         "File_Name" : "configs/cisco_bgp",
-        "Struct_Type" : "bgp group",
+        "Struct_Type" : "bgp template peer-policy",
+        "Ref_Name" : "p2",
+        "Context" : "inherited BGP peer-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            33
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "bgp template peer-policy",
         "Ref_Name" : "p3",
-        "Context" : "inherited BGP group",
+        "Context" : "inherited BGP peer-policy",
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
@@ -400,6 +479,55 @@
           "filename" : "configs/cisco_bgp",
           "lines" : [
             26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.0.0.1",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            36,
+            37
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.20.2.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "192.168.3.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "192.168.4.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            18
           ]
         }
       },
@@ -1647,18 +1775,6 @@
       },
       {
         "File_Name" : "configs/ios_bgp",
-        "Struct_Type" : "bgp group",
-        "Ref_Name" : "UNDEFINED_PEER_GROUP",
-        "Context" : "bgp neighbor statement",
-        "Lines" : {
-          "filename" : "configs/ios_bgp",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/ios_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "ADVERTISE_MAP",
         "Context" : "bgp address-family aggregate-address advertise-map",
@@ -1678,6 +1794,30 @@
           "filename" : "configs/ios_bgp",
           "lines" : [
             5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "undeclared bgp peer-group",
+        "Ref_Name" : "UNDEFINED_PEER_GROUP",
+        "Context" : "bgp peer-group referenced before defined",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            7
           ]
         }
       },
@@ -1731,9 +1871,21 @@
       },
       {
         "File_Name" : "configs/ios_xr_bgp_neighbor_group",
-        "Struct_Type" : "bgp group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "CIAO",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            94
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
         "Ref_Name" : "bippety",
-        "Context" : "inherited BGP peer-session",
+        "Context" : "bgp use session-group",
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
@@ -1743,9 +1895,21 @@
       },
       {
         "File_Name" : "configs/ios_xr_bgp_neighbor_group",
-        "Struct_Type" : "bgp group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "blabber",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
         "Ref_Name" : "excellect-group",
-        "Context" : "inherited BGP peer-session",
+        "Context" : "bgp use session-group",
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
@@ -2854,13 +3018,25 @@
             5
           ]
         }
+      },
+      {
+        "File_Name" : "configs/vlan_access_map2",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.10.212.233",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/vlan_access_map2",
+          "lines" : [
+            20
+          ]
+        }
       }
     ],
     "summary" : {
-      "notes" : "Found 232 results",
+      "notes" : "Found 246 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 232
+      "numResults" : 246
     }
   }
 ]
