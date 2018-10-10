@@ -65,13 +65,12 @@ import org.batfish.z3.state.Query;
  * provides two methods for constructing {@link BDDReachabilityAnalysis}, depending on whether or
  * not you have a destination Ip constraint.
  *
- * <p>The core of the implementation is the {@link BDDReachabilityAnalysisFactory#generateEdges()}
- * method and its many helpers, which generate the {@link StateExpr nodes} and {@link Edge edges} of
- * the reachability graph. Each node represents a step of the routing process within some network
- * device or between devices. The edges represent the flow of traffic between these steps. Each edge
- * is labeled with a {@link BDD} that represents the set of packets that can traverse that edge. If
- * the edge represents a source NAT, the edge will be labeled with the NAT rules (match conditions
- * and set of pool IPs).
+ * <p>The core of the implementation is the {@code generateEdges()} method and its many helpers,
+ * which generate the {@link StateExpr nodes} and {@link Edge edges} of the reachability graph. Each
+ * node represents a step of the routing process within some network device or between devices. The
+ * edges represent the flow of traffic between these steps. Each edge is labeled with a {@link BDD}
+ * that represents the set of packets that can traverse that edge. If the edge represents a source
+ * NAT, the edge will be labeled with the NAT rules (match conditions and set of pool IPs).
  *
  * <p>To support {@link org.batfish.datamodel.acl.MatchSrcInterface} and {@link
  * org.batfish.datamodel.acl.OriginatingFromDevice} {@link
