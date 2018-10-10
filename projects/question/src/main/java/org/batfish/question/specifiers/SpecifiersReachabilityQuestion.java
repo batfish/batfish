@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
@@ -40,7 +39,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
       NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
-  @Nonnull private final SortedSet<FlowDisposition> _actions;
+  @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
@@ -56,24 +55,24 @@ public final class SpecifiersReachabilityQuestion extends Question {
    */
   @JsonCreator
   public SpecifiersReachabilityQuestion(
-      @Nullable @JsonProperty(PROP_ACTIONS) SortedSet<FlowDisposition> actions,
+      @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
-    _actions = firstNonNull(actions, ImmutableSortedSet.of(FlowDisposition.ACCEPTED));
+    _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_DISPOSITIONS);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   SpecifiersReachabilityQuestion() {
     this(
-        ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
+        DispositionSpecifier.SUCCESS_DISPOSITIONS,
         PacketHeaderConstraints.unconstrained(),
         PathConstraintsInput.unconstrained());
   }
 
   @Nonnull
   @JsonProperty(PROP_ACTIONS)
-  public SortedSet<FlowDisposition> getActions() {
+  public DispositionSpecifier getActions() {
     return _actions;
   }
 
@@ -168,7 +167,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   ReachabilityParameters getReachabilityParameters() {
     PathConstraints pathConstraints = getPathConstraints();
     return ReachabilityParameters.builder()
-        .setActions(getActions())
+        .setActions(ImmutableSortedSet.copyOf(getActions().getDispositions()))
         .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())
         .setFinalNodesSpecifier(pathConstraints.getEndLocation())
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
@@ -187,13 +186,13 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   static final class Builder {
-    private SortedSet<FlowDisposition> _actions;
+    private DispositionSpecifier _actions;
     private PacketHeaderConstraints _headerConstraints;
     private PathConstraintsInput _pathConstraints;
 
     private Builder() {}
 
-    public Builder setActions(SortedSet<FlowDisposition> actions) {
+    public Builder setActions(DispositionSpecifier actions) {
       _actions = actions;
       return this;
     }
