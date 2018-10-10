@@ -5,28 +5,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 
-/** Based on node configurations, determines the status of IBGP and EBGP sessions. */
-public class BgpSessionStatusQuestion extends BgpSessionQuestion {
+/** Based on node configurations, determines the compatibility of IBGP and EBGP sessions. */
+public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
 
-  /** Create a new BGP session status question with default parameters. */
-  public BgpSessionStatusQuestion() {
+  /** Create a new BGP session compatibility question with default parameters. */
+  public BgpSessionCompatibilityQuestion() {
     super(null, null, null, null);
   }
 
   /**
-   * Create a new BGP session status question.
+   * Create a new BGP session compatibility question.
    *
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
    *     sessions. Default is '.*' (all nodes).
-   * @param status Regular expression to match status type (see {@link
-   *     BgpSessionInfo.SessionStatus})
+   * @param status Regular expression to match status type (see {@link SessionStatus})
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   @JsonCreator
-  public BgpSessionStatusQuestion(
+  public BgpSessionCompatibilityQuestion(
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
@@ -36,12 +36,12 @@ public class BgpSessionStatusQuestion extends BgpSessionQuestion {
 
   @Override
   public boolean getDataPlane() {
-    return true;
+    return false;
   }
 
   @Override
   public String getName() {
-    return "bgpSessionStatusNew";
+    return "bgpSessionCompatibility";
   }
 
   @JsonProperty(PROP_NODES)

@@ -1,5 +1,5 @@
 {
-  "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusQuestion",
+  "class" : "org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityQuestion",
   "nodes" : ".*",
   "remoteNodes" : ".*",
   "status" : ".*",
@@ -7,11 +7,10 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return the status of configured BGP sessions",
+    "description" : "Return the status of configured BGP sessions, independent of remote peer configurations",
     "instanceName" : "qname",
     "tags" : [
       "bgp",
-      "dataplane",
       "status"
     ],
     "variables" : {
