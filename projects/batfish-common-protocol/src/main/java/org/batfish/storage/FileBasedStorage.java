@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
@@ -664,15 +665,15 @@ public final class FileBasedStorage implements StorageProvider {
   static @Nonnull Path objectKeyToRelativePath(String key) {
     Path relativePathCandidate = Paths.get(FilenameUtils.separatorsToSystem(key));
     // ensure path is relative
-    if (relativePathCandidate.getRoot() != null) {
-      throw new IllegalArgumentException(String.format("Key '%s' not a relative path", key));
-    }
+    checkArgument(
+        relativePathCandidate.getRoot() != null,
+        "Key '%s' does not represent a relative path",
+        key);
     // ensure path is normalized
-    if (!relativePathCandidate.equals(relativePathCandidate.normalize())) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Key '%s' does not represent a normalized path  (without '.', '..',  etc.)", key));
-    }
+    checkArgument(
+        !relativePathCandidate.equals(relativePathCandidate.normalize()),
+        "Key '%s' does not represent a normalized path  (without '.', '..',  etc.)",
+        key);
     return relativePathCandidate;
   }
 
