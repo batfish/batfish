@@ -4787,6 +4787,33 @@
                   }
                 },
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "icmpCodes" : [
+                      "2-2"
+                    ],
+                    "icmpTypes" : [
+                      "5-5"
+                    ],
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "280 permit icmp any any 5 2"
               }
             ],
             "sourceName" : "BLAH-BLAH",
