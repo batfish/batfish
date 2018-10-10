@@ -1,8 +1,10 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -793,11 +796,19 @@ public final class BDDReachabilityAnalysisFactory {
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace, Set<FlowDisposition> actions) {
-    Map<StateExpr, BDD> roots = new HashMap<>();
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
-    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
-    BDD dstIpSpaceBDD = dstIpSpace.accept(dstIpSpaceToBDD);
+    return bddReachabilityAnalysis(srcIpSpaceAssignment, matchDst(dstIpSpace), actions);
+  }
 
+  public BDDReachabilityAnalysis bddReachabilityAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr dstHeaderSpace,
+      Set<FlowDisposition> actions) {
+    Map<StateExpr, BDD> roots = new HashMap<>();
+    BDD dstIpSpaceBDD =
+        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of())
+            .visit(dstHeaderSpace);
+
+    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
       BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
       BDD headerspaceBDD = srcIpSpaceBDD.and(dstIpSpaceBDD);
