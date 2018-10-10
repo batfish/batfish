@@ -1,7 +1,6 @@
 {
     "class": "org.batfish.question.bgpsessionstatus.BgpSessionStatusQuestion",
     "differential": false,
-    "includeEstablishedCount": "${includeEstablishedCount}",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}",
     "status": "${status}",
@@ -15,11 +14,6 @@
             "status"
         ],
         "variables": {
-            "includeEstablishedCount": {
-                "description": "Flag to decide if the count of established neighbors should be included. Primarily used for dynamic BGP sessions",
-                "optional": true,
-                "type": "boolean"
-            },
             "nodes": {
                 "description": "Include sessions whose first node matches this name or regex",
                 "type": "nodeSpec",

@@ -44,7 +44,7 @@ public class EnterSrcIfaceStep extends Step {
 
     @JsonProperty(PROP_INPUT_VRF)
     @Nullable
-    public String getInputVrf(){
+    public String getInputVrf() {
       return _inputVrf;
     }
 
@@ -67,7 +67,7 @@ public class EnterSrcIfaceStep extends Step {
         return this;
       }
 
-      public Builder setInputVrf(String inputVrf){
+      public Builder setInputVrf(String inputVrf) {
         _inputVrf = inputVrf;
         return this;
       }

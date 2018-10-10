@@ -1,7 +1,8 @@
 package org.batfish.z3;
 
+import static org.batfish.z3.AclLineMatchExprToBooleanExpr.NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE;
+
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +10,12 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
@@ -91,7 +91,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
 
   protected StandardReachabilityQuerySynthesizer(
       @Nonnull Set<FlowDisposition> actions,
-      @Nonnull HeaderSpace headerSpace,
+      @Nonnull AclLineMatchExpr headerSpace,
       @Nonnull Set<String> finalNodes,
       @Nonnull Map<IngressLocation, BooleanExpr> srcIpConstraints,
       @Nonnull SrcNattedConstraint srcNatted,
@@ -206,7 +206,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
+                    NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE.toBooleanExpr(_headerSpace),
                     getSrcNattedConstraint(),
                     transitNodesConstraint)))
         .build();

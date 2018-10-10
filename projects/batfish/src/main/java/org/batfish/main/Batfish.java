@@ -3,6 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -124,6 +125,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -2823,7 +2826,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(
               ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
-          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
+          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, TRUE);
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
       CompositeNodJob job =
@@ -4037,7 +4040,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = parameters.getConfigurations();
     DataPlane dataPlane = parameters.getDataPlane();
     Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
-    HeaderSpace headerSpace = parameters.getHeaderSpace();
+    AclLineMatchExpr headerSpace = parameters.getHeaderSpace();
     Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
@@ -4384,7 +4387,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        new HeaderSpace(),
+        AclLineMatchExprs.TRUE,
         ImmutableSet.of(),
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
@@ -4397,29 +4400,39 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt);
     IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<String> finalNodes = loadConfigurations().keySet();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
+    Set<String> requiredTransitNodes = ImmutableSet.of();
     Map<IngressLocation, BDD> acceptedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> droppedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
-                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, dropDispositions)
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
+                dropDispositions)
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> neighborUnreachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .getIngressLocationReachableBDDs();
 
@@ -4462,12 +4475,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
+    Set<String> requiredTransitNodes = ImmutableSet.of();
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();
@@ -4478,6 +4494,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();
@@ -4530,7 +4548,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      HeaderSpace headerSpace,
+      AclLineMatchExpr headerSpace,
       Set<String> nonTransitNodes,
       Set<String> transitNodes,
       IpSpaceAssignment ipSpaceAssignment,
@@ -4568,7 +4586,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static SynthesizerInputImpl computeSynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      HeaderSpace headerSpace,
+      AclLineMatchExpr headerSpace,
       IpSpaceAssignment ipSpaceAssignment,
       Set<String> transitNodes,
       Set<String> nonTransitNodes,

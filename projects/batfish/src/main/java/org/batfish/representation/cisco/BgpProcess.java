@@ -144,14 +144,14 @@ public class BgpProcess implements Serializable {
     _allPeerGroups.add(pg);
   }
 
-  public void addNamedPeerGroup(String name, int definitionLine) {
-    NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
+  public void addNamedPeerGroup(String name) {
+    NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
     _namedPeerGroups.put(name, pg);
     _allPeerGroups.add(pg);
   }
 
-  public void addPeerSession(String name, int definitionLine) {
-    NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
+  public void addPeerSession(String name) {
+    NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
     _peerSessions.put(name, pg);
     _allPeerGroups.add(pg);
   }
