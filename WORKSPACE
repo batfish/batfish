@@ -1,4 +1,5 @@
 workspace(name = "batfish")
+
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 ##########################################################
@@ -9,7 +10,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 ## First section: enable pubref_rules_maven at all
 git_repository(
     name = "org_pubref_rules_maven",
-    commit = "25cc1cfce31760d2f2d04ce20f7263a98ca201d6",
+    commit = "2783c17bc78b5f4391e28249c96d7da9539878af",
     remote = "https://github.com/dhalperi/rules_maven",
 )
 
