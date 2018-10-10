@@ -18,7 +18,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -31,10 +30,9 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-public class BgpSessionStatusAnswerer extends Answerer {
+public class BgpSessionCompatibilityAnswerer extends Answerer {
 
   public static final String COL_CONFIGURED_STATUS = "Configured_Status";
-  public static final String COL_ESTABLISHED_NEIGHBORS = "Established_Neighbors";
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_LOCAL_IP = "Local_IP";
   public static final String COL_NODE = "Node";
@@ -43,31 +41,31 @@ public class BgpSessionStatusAnswerer extends Answerer {
   public static final String COL_SESSION_TYPE = "Session_Type";
   public static final String COL_VRF_NAME = "VRF";
 
-  /** Answerer for the BGP Session status question (new version). */
-  public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
+  /** Answerer for the BGP session compatibility question. */
+  public BgpSessionCompatibilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
   public AnswerElement answer() {
-    BgpSessionStatusQuestion question = (BgpSessionStatusQuestion) _question;
+    BgpSessionCompatibilityQuestion question = (BgpSessionCompatibilityQuestion) _question;
     Multiset<BgpSessionInfo> sessions = rawAnswer(question);
     TableAnswerElement answer =
-        new TableAnswerElement(BgpSessionStatusAnswerer.createMetadata(question));
+        new TableAnswerElement(BgpSessionCompatibilityAnswerer.createMetadata(question));
     answer.postProcessAnswer(
         question,
         sessions
             .stream()
-            .map(BgpSessionStatusAnswerer::toRow)
+            .map(BgpSessionCompatibilityAnswerer::toRow)
             .collect(Collectors.toCollection(HashMultiset::create)));
     return answer;
   }
 
   /**
-   * Return the answer for {@link BgpSessionStatusQuestion} -- a set of BGP sessions and their
-   * status.
+   * Return the answer for {@link BgpSessionCompatibilityQuestion} -- a set of BGP sessions and
+   * their compatibility.
    */
-  public Multiset<BgpSessionInfo> rawAnswer(BgpSessionStatusQuestion question) {
+  public Multiset<BgpSessionInfo> rawAnswer(BgpSessionCompatibilityQuestion question) {
     Multiset<BgpSessionInfo> sessions = HashMultiset.create();
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> includeNodes1 = question.getNodes().getMatchingNodes(_batfish);
@@ -78,17 +76,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, true);
-
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology;
-    DataPlane dp = _batfish.loadDataPlane();
-    establishedBgpTopology =
-        CommonUtil.initBgpTopology(
-            configurations,
-            ipOwners,
-            false,
-            true,
-            _batfish.getDataPlanePlugin().getTracerouteEngine(),
-            dp);
 
     sessions.addAll(
         configuredBgpTopology
@@ -104,7 +91,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                         ipOwners,
                         allInterfaceIps,
                         configuredBgpTopology,
-                        establishedBgpTopology,
+                        null,
                         neighbor))
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -139,13 +126,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
             new ColumnMetadata(
-                COL_CONFIGURED_STATUS, Schema.STRING, "Configured status", false, true),
-            new ColumnMetadata(
-                COL_ESTABLISHED_NEIGHBORS,
-                Schema.INTEGER,
-                "Number of neighbors with whom BGP session was established",
-                false,
-                true));
+                COL_CONFIGURED_STATUS, Schema.STRING, "Configured status", false, true));
 
     String textDesc =
         String.format(
@@ -167,7 +148,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
   public static Row toRow(@Nonnull BgpSessionInfo info) {
     RowBuilder row = Row.builder();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
-        .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())
         .put(COL_LOCAL_INTERFACE, info.getLocalInterface())
         .put(COL_LOCAL_IP, info.getLocalIp())
         .put(COL_NODE, new Node(info.getNodeName()))
