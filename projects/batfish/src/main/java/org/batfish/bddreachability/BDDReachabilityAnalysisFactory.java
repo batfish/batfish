@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -118,6 +119,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final BDD _one;
 
+  private final BDD _requiredTransitNodeBDD;
+
   // node --> vrf --> set of packets routable by the vrf
   private final Map<String, Map<String, BDD>> _routableBDDs;
 
@@ -138,6 +141,7 @@ public final class BDDReachabilityAnalysisFactory {
     _bddPacket = packet;
     _one = packet.getFactory().one();
     _zero = packet.getFactory().zero();
+    _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
@@ -231,6 +235,10 @@ public final class BDDReachabilityAnalysisFactory {
 
   Map<String, Map<String, BDD>> getVrfAcceptBDDs() {
     return _vrfAcceptBDDs;
+  }
+
+  BDD getRequiredTransitNodeBDD() {
+    return _requiredTransitNodeBDD;
   }
 
   private static Map<org.batfish.datamodel.Edge, BDD> computeArpTrueEdgeBDDs(
@@ -788,6 +796,7 @@ public final class BDDReachabilityAnalysisFactory {
     return bddReachabilityAnalysis(
         srcIpSpaceAssignment,
         UniverseIpSpace.INSTANCE,
+        ImmutableSet.of(),
         _configs.keySet(),
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
@@ -795,14 +804,17 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       IpSpace dstIpSpace,
+      Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    return bddReachabilityAnalysis(srcIpSpaceAssignment, matchDst(dstIpSpace), finalNodes, actions);
+    return bddReachabilityAnalysis(
+        srcIpSpaceAssignment, matchDst(dstIpSpace), requiredTransitNodes, finalNodes, actions);
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr dstHeaderSpace,
+      Set<String> requiredTransitNodes,
       @Nonnull Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     Map<StateExpr, BDD> roots = new HashMap<>();
@@ -820,12 +832,17 @@ public final class BDDReachabilityAnalysisFactory {
       }
     }
 
-    Map<StateExpr, Map<StateExpr, Edge>> edges =
-        computeEdges(
-            Streams.concat(
-                generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions)));
+    Stream<Edge> edgeStream =
+        Streams.concat(
+            generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
 
-    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges);
+    if (!requiredTransitNodes.isEmpty()) {
+      edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
+    }
+
+    Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
+
+    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap);
   }
 
   private String ifaceVrf(String node, String iface) {
@@ -928,6 +945,57 @@ public final class BDDReachabilityAnalysisFactory {
       }
       return result;
     };
+  }
+
+  /**
+   * Adapt an edge to set the bit indicating that one the nodes required to be transited has now
+   * been transited.
+   *
+   * <p>Going forward, we erase the previous value of the bit as we enter the edge, then set it to 1
+   * as we exit. Going backward, we just erase the bit, since the requirement has been satisfied.
+   */
+  @VisibleForTesting
+  Edge adaptEdgeSetTransitedBit(Edge edge) {
+    Function<BDD, BDD> traverseBackward =
+        bdd -> edge._traverseBackward.apply(bdd.exist(_requiredTransitNodeBDD));
+    Function<BDD, BDD> traverseForward =
+        bdd ->
+            edge._traverseForward
+                .apply(bdd.exist(_requiredTransitNodeBDD))
+                .and(_requiredTransitNodeBDD);
+    return new Edge(edge._preState, edge._postState, traverseBackward, traverseForward);
+  }
+
+  /** Adapt an edge, applying an additional constraint after traversing the edge. */
+  @VisibleForTesting
+  static Edge adaptEdgeAddConstraint(BDD constraint, Edge edge) {
+    return new Edge(
+        edge._preState,
+        edge._postState,
+        bdd -> edge._traverseBackward.apply(bdd.and(constraint)),
+        bdd -> edge._traverseForward.apply(bdd).and(constraint));
+  }
+
+  private Stream<Edge> instrumentRequiredTransitNodes(
+      Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
+    BDD transited = _requiredTransitNodeBDD;
+    BDD notTransited = _requiredTransitNodeBDD.not();
+
+    return edgeStream.map(
+        edge -> {
+          if (edge._preState instanceof PreOutEdgePostNat
+              && edge._postState instanceof PreInInterface) {
+            String hostname = ((PreOutEdgePostNat) edge._preState).getSrcNode();
+            return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
+          } else if (edge._preState instanceof OriginateVrf
+              || edge._preState instanceof OriginateInterfaceLink) {
+            return adaptEdgeAddConstraint(notTransited, edge);
+          } else if (edge._postState instanceof Query) {
+            return adaptEdgeAddConstraint(transited, edge);
+          } else {
+            return edge;
+          }
+        });
   }
 
   public Map<String, BDDSourceManager> getBDDSourceManagers() {
