@@ -58,14 +58,14 @@ public final class SpecifiersReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
-    _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_DISPOSITIONS);
+    _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   SpecifiersReachabilityQuestion() {
     this(
-        DispositionSpecifier.SUCCESS_DISPOSITIONS,
+        DispositionSpecifier.SUCCESS_SPECIFIER,
         PacketHeaderConstraints.unconstrained(),
         PathConstraintsInput.unconstrained());
   }

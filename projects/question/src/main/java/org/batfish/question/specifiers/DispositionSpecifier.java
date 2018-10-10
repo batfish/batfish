@@ -12,6 +12,7 @@ import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
@@ -30,7 +32,7 @@ public class DispositionSpecifier {
   private static final String FAILURE = "failure";
 
   @VisibleForTesting
-  static final Set<FlowDisposition> failureDispositions =
+  static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
       ImmutableSet.<FlowDisposition>builder()
           .add(DENIED_IN)
           .add(DENIED_OUT)
@@ -43,7 +45,7 @@ public class DispositionSpecifier {
   private static final Map<String, Set<FlowDisposition>> _expansions =
       ImmutableMap.<String, Set<FlowDisposition>>builder()
           .put(SUCCESS, ImmutableSet.of(ACCEPTED))
-          .put(FAILURE, failureDispositions)
+          .put(FAILURE, FAILURE_DISPOSITIONS)
           .build();
   private static final Map<String, Set<FlowDisposition>> _map = getMap();
 
@@ -57,9 +59,13 @@ public class DispositionSpecifier {
     return builder.build();
   }
 
-  /** A specifier that expands to all successfull dispositions */
-  public static DispositionSpecifier SUCCESS_DISPOSITIONS =
+  /** A specifier that expands to all successful dispositions */
+  public static final DispositionSpecifier SUCCESS_SPECIFIER =
       new DispositionSpecifier(fromString(SUCCESS));
+
+  /** A specifier that expands to all failure dispositions */
+  public static final DispositionSpecifier FAILURE_SPECIFIER =
+      new DispositionSpecifier(fromString(FAILURE));
 
   private final Set<FlowDisposition> _dispositions;
 
@@ -97,5 +103,27 @@ public class DispositionSpecifier {
 
   public Set<FlowDisposition> getDispositions() {
     return _dispositions;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    DispositionSpecifier that = (DispositionSpecifier) o;
+    return Objects.equals(_dispositions, that._dispositions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_dispositions);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("dispositions", _dispositions).toString();
   }
 }
