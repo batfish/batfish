@@ -964,25 +964,27 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Edge adaptEdgeSetTransitedBit(Edge edge) {
     Function<BDD, BDD> traverseBackward =
-        bdd -> edge._traverseBackward.apply(bdd.exist(_requiredTransitNodeBDD));
+        bdd -> edge.traverseBackward(bdd.exist(_requiredTransitNodeBDD));
     Function<BDD, BDD> traverseForward =
         bdd ->
-            edge._traverseForward
-                .apply(bdd.exist(_requiredTransitNodeBDD))
-                .and(_requiredTransitNodeBDD);
-    return new Edge(edge._preState, edge._postState, traverseBackward, traverseForward);
+            edge.traverseForward(bdd.exist(_requiredTransitNodeBDD)).and(_requiredTransitNodeBDD);
+    return new Edge(edge.getPreState(), edge.getPostState(), traverseBackward, traverseForward);
   }
 
   /** Adapt an edge, applying an additional constraint after traversing the edge. */
   @VisibleForTesting
   static Edge adaptEdgeAddConstraint(BDD constraint, Edge edge) {
     return new Edge(
-        edge._preState,
-        edge._postState,
-        bdd -> edge._traverseBackward.apply(bdd.and(constraint)),
-        bdd -> edge._traverseForward.apply(bdd).and(constraint));
+        edge.getPreState(),
+        edge.getPostState(),
+        bdd -> edge.traverseBackward(bdd.and(constraint)),
+        bdd -> edge.traverseForward(bdd).and(constraint));
   }
 
+  /**
+   * Instrumentation to forbid certain nodes from being transited. Simply removes the edges from the
+   * graph at which one of those nodes would become transited.
+   */
   private Stream<Edge> instrumentForbiddenTransitNodes(
       Set<String> forbiddenTransitNodes, Stream<Edge> edgeStream) {
     if (forbiddenTransitNodes.isEmpty()) {
@@ -992,12 +994,19 @@ public final class BDDReachabilityAnalysisFactory {
     // remove any edges at which a forbidden node becomes transited.
     return edgeStream.filter(
         edge ->
-            !(edge._preState instanceof PreOutEdgePostNat
-                && edge._postState instanceof PreInInterface
+            !(edge.getPreState() instanceof PreOutEdgePostNat
+                && edge.getPostState() instanceof PreInInterface
                 && forbiddenTransitNodes.contains(
-                    ((PreOutEdgePostNat) edge._preState).getSrcNode())));
+                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
   }
 
+  /**
+   * Instrumentation to require that one of a set of nodes is transited. We use a single bit of
+   * state in the BDDs to track this. The bit is initialized to 0 at the origination points, and
+   * constrained to be 1 at the Query state. When one of the specified nodes becomes transited (i.e.
+   * the flow leaves that node and enters another) we set the bit to 1. All other edges in the graph
+   * propagate the current value of that bit unchanged.
+   */
   private Stream<Edge> instrumentRequiredTransitNodes(
       Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
     if (requiredTransitNodes.isEmpty()) {
@@ -1009,14 +1018,14 @@ public final class BDDReachabilityAnalysisFactory {
 
     return edgeStream.map(
         edge -> {
-          if (edge._preState instanceof PreOutEdgePostNat
-              && edge._postState instanceof PreInInterface) {
-            String hostname = ((PreOutEdgePostNat) edge._preState).getSrcNode();
+          if (edge.getPreState() instanceof PreOutEdgePostNat
+              && edge.getPostState() instanceof PreInInterface) {
+            String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
             return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
-          } else if (edge._preState instanceof OriginateVrf
-              || edge._preState instanceof OriginateInterfaceLink) {
+          } else if (edge.getPreState() instanceof OriginateVrf
+              || edge.getPreState() instanceof OriginateInterfaceLink) {
             return adaptEdgeAddConstraint(notTransited, edge);
-          } else if (edge._postState instanceof Query) {
+          } else if (edge.getPostState() instanceof Query) {
             return adaptEdgeAddConstraint(transited, edge);
           } else {
             return edge;
