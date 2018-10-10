@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.batfish.common.CoordConstsV2.RSC_FORK;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
@@ -117,6 +119,13 @@ public class ContainerResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response forkSnapshot(ForkSnapshotBean forkSnapshotBean) {
     try {
+      checkArgument(
+          !isNullOrEmpty(forkSnapshotBean.newSnapshot), "Parameter %s is required", "new snapshot");
+      checkArgument(
+          !isNullOrEmpty(forkSnapshotBean.baseSnapshot),
+          "Parameter %s is required",
+          "base snapshot");
+
       // Set the appropriate tags for the trace being captured
       if (GlobalTracer.get().activeSpan() != null) {
         GlobalTracer.get()
@@ -129,8 +138,10 @@ public class ContainerResource {
       return Response.ok().build();
     } catch (FileNotFoundException e) {
       return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
-    } catch (Exception e) {
+    } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (Exception e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
   }
 }

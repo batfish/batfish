@@ -6,6 +6,7 @@ package org.batfish.coordinator;
 
 import java.io.IOException;
 import java.time.Instant;
+import javax.annotation.Nullable;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.EnvironmentMetadata;
@@ -39,7 +40,7 @@ public class TestrigMetadataMgr {
     }
   }
 
-  public static SnapshotId getParentSnapshotId(NetworkId network, SnapshotId snapshot)
+  public static @Nullable SnapshotId getParentSnapshotId(NetworkId network, SnapshotId snapshot)
       throws IOException {
     return readMetadata(network, snapshot).getParentSnapshotId();
   }

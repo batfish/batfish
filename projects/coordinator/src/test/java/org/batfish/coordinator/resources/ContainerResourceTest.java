@@ -4,11 +4,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -77,13 +77,37 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
     // Confirm missing snapshot causes not found
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
 
-    WorkMgrTestUtils.initTestrigWithTopology(networkName, baseSnapshotName, ImmutableSet.of());
+    uploadTestSnapshot(networkName, baseSnapshotName, _folder);
     response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm forking existing snapshot is successful
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
     response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm duplicate snapshot name fails with bad request
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+  }
+
+  @Test
+  public void testForkSnapshotBadRequest() throws IOException {
+    String networkName = "network";
+    String snapshotName = "snapshot";
+    String baseSnapshotName = "baseSnapshot";
+    Main.getWorkMgr().initNetwork(networkName, null);
+
+    ForkSnapshotBean forkSnapshotBeanNoName =
+        new ForkSnapshotBean(
+            baseSnapshotName, null, ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
+    ForkSnapshotBean forkSnapshotBeanNoBaseName =
+        new ForkSnapshotBean(
+            null, snapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
+
+    Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
+    // Confirm no snapshot name fails with bad request
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+
+    response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoBaseName));
+    // Confirm no base snapshot name fails with bad request
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 

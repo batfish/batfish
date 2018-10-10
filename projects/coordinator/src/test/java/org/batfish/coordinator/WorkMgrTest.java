@@ -353,9 +353,6 @@ public class WorkMgrTest {
     createTestrigWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
-    Path outputDir =
-        _manager.getdirSnapshot("container", "testrig1").resolve(BfConsts.RELPATH_OUTPUT);
-    outputDir.toFile().mkdir();
     CommonUtil.writeFile(
         _manager
             .getdirSnapshot("container", "testrig1")
@@ -498,7 +495,7 @@ public class WorkMgrTest {
     String snapshotNewName = "snapshotNew";
 
     _manager.initNetwork(networkName, null);
-    createTestrigWithMetadata(networkName, snapshotBaseName);
+    uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
 
@@ -517,7 +514,7 @@ public class WorkMgrTest {
     List<String> nodes = ImmutableList.of("n4", "n5");
 
     _manager.initNetwork(networkName, null);
-    createTestrigWithMetadata(networkName, snapshotBaseName);
+    uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
         new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes));
@@ -548,8 +545,8 @@ public class WorkMgrTest {
     String snapshotNewName = "snapshotNew";
 
     _manager.initNetwork(networkName, null);
-    createTestrigWithMetadata(networkName, snapshotBaseName);
-    createTestrigWithMetadata(networkName, snapshotNewName);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+    uploadTestSnapshot(networkName, snapshotNewName);
 
     // Fork should fail due to duplicate/conflicting new snapshot name
     _thrown.expect(IllegalArgumentException.class);
@@ -575,20 +572,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotMissingBaseSnapshotName() throws IOException {
-    String networkName = "network";
-    String snapshotNewName = "snapshotNew";
-
-    _manager.initNetwork(networkName, null);
-
-    // Fork should fail due to missing base snapshot name
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(equalTo("No base snapshot supplied"));
-    _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(null, snapshotNewName, null, null, null));
-  }
-
-  @Test
   public void testForkSnapshotMissingNetwork() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
@@ -599,18 +582,6 @@ public class WorkMgrTest {
     _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
     _manager.forkSnapshot(
         networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
-  }
-
-  @Test
-  public void testForkSnapshotMissingSnapshotName() throws IOException {
-    String networkName = "network";
-    String snapshotBaseName = "snapshotBase";
-
-    // Fork should fail because network does not exist
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
-    _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(snapshotBaseName, null, null, null, null));
   }
 
   @Test

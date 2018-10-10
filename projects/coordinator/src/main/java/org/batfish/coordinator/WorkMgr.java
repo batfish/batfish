@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -34,7 +33,6 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -1501,15 +1499,9 @@ public class WorkMgr extends AbstractCoordinator {
     String snapshotName = forkSnapshotBean.newSnapshot;
 
     // Fail early if the new snapshot already exists or the base snapshot does not
-    if (Strings.isNullOrEmpty(snapshotName)) {
-      throw new IllegalArgumentException("No new snapshot supplied");
-    }
     if (_idManager.hasSnapshotId(snapshotName, networkId)) {
       throw new IllegalArgumentException(
           "Snapshot with name: '" + snapshotName + "' already exists");
-    }
-    if (Strings.isNullOrEmpty(baseSnapshotName)) {
-      throw new IllegalArgumentException("No base snapshot supplied");
     }
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new FileNotFoundException(
@@ -1546,6 +1538,10 @@ public class WorkMgr extends AbstractCoordinator {
       _logger.infof(
           "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
           baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "Base snapshot %s is not properly formatted, try re-uploading.", baseSnapshotName));
     }
 
     // Add user-specified failures to new blacklists
@@ -1580,14 +1576,11 @@ public class WorkMgr extends AbstractCoordinator {
     if (serializedObjectPath.toFile().exists()) {
       baseList =
           BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(serializedObjectPath), type);
+      baseList.addAll(addition);
     } else {
-      baseList = new ArrayList<>();
+      baseList = ImmutableList.copyOf(addition);
     }
-
-    baseList.addAll(addition);
-    if (!baseList.isEmpty()) {
-      CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
-    }
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 
   private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {

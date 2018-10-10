@@ -1,6 +1,5 @@
 package org.batfish.coordinator;
 
-import static javax.ws.rs.client.Invocation.Builder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -39,15 +38,6 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   private WebTarget getContainersTarget() {
     return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
-  }
-
-  private Builder getSnapshotTarget(String network) {
-    return getContainersTarget()
-        .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS + ":" + CoordConstsV2.RSC_FORK)
-        .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Test
