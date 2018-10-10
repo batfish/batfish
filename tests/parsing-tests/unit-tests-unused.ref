@@ -41,16 +41,6 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "UNDEFINED_PEER_GROUP",
-        "Source_Lines" : {
-          "filename" : "configs/arista_bgp",
-          "lines" : [
-            11
-          ]
-        }
-      },
-      {
         "Structure_Type" : "crypto-dynamic-map-set",
         "Structure_Name" : "abcd",
         "Source_Lines" : {
@@ -104,7 +94,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "as3",
         "Source_Lines" : {
           "filename" : "configs/bgp_address_family",
@@ -114,7 +104,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "dcp-rrs",
         "Source_Lines" : {
           "filename" : "configs/bgp_address_family",
@@ -124,17 +114,18 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp neighbor-group",
         "Structure_Name" : "ama-coe",
         "Source_Lines" : {
           "filename" : "configs/bgp_default_originate_policy",
           "lines" : [
-            5
+            5,
+            6
           ]
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "ucr",
         "Source_Lines" : {
           "filename" : "configs/bgp_foundry",
@@ -372,12 +363,15 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp template peer-policy",
         "Structure_Name" : "p1",
         "Source_Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            32
+            32,
+            33,
+            34,
+            35
           ]
         }
       },
@@ -1212,7 +1206,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "bippety",
         "Source_Lines" : {
           "filename" : "configs/foundry_bgp",
@@ -1222,7 +1216,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "boop",
         "Source_Lines" : {
           "filename" : "configs/foundry_bgp",
@@ -1303,62 +1297,88 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp af-group",
         "Structure_Name" : "blabbety",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            10
+            10,
+            11,
+            12,
+            13
           ]
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp af-group",
         "Structure_Name" : "blappety",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            5
+            5,
+            6,
+            7,
+            8
           ]
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp neighbor-group",
         "Structure_Name" : "foobar-iBGP_border_ipv6",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            67
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74
           ]
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp neighbor-group",
         "Structure_Name" : "foobar-iBGP_ipv6",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            46
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53
           ]
         }
       },
       {
-        "Structure_Type" : "bgp session",
+        "Structure_Type" : "bgp session-group",
         "Structure_Name" : "OLA",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            92
+            92,
+            93,
+            94,
+            95
           ]
         }
       },
       {
-        "Structure_Type" : "bgp session",
+        "Structure_Type" : "bgp session-group",
         "Structure_Name" : "blibber",
         "Source_Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            15
+            15,
+            16,
+            17,
+            18
           ]
         }
       },
@@ -2069,7 +2089,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "NEIGH",
         "Source_Lines" : {
           "filename" : "configs/local_v6_addr",
@@ -2138,107 +2158,7 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "1.2.3.4abc",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "123.123.123.abc",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor",
-          "lines" : [
-            11
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "1234-5",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor",
-          "lines" : [
-            5
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "abc1.2.3.4",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor",
-          "lines" : [
-            8
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "abc1.2.3.4def",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor",
-          "lines" : [
-            9
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "1.2.3.4abc",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_dos",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "123.123.123.abc",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_dos",
-          "lines" : [
-            11
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "1234-5",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_dos",
-          "lines" : [
-            5
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "abc1.2.3.4",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_dos",
-          "lines" : [
-            8
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
-        "Structure_Name" : "abc1.2.3.4def",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_dos",
-          "lines" : [
-            9
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "8075-CORE",
         "Source_Lines" : {
           "filename" : "configs/neighbor_name_numbers",
@@ -2248,12 +2168,21 @@
         }
       },
       {
-        "Structure_Type" : "bgp group",
+        "Structure_Type" : "bgp template peer",
         "Structure_Name" : "PEER_BLLF",
         "Source_Lines" : {
           "filename" : "configs/nexus_bgp",
           "lines" : [
-            22
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
           ]
         }
       },
@@ -2636,10 +2565,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 191 results",
+      "notes" : "Found 180 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 191
+      "numResults" : 180
     }
   }
 ]

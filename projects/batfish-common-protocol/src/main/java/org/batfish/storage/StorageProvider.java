@@ -2,6 +2,7 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -324,7 +325,7 @@ public interface StorageProvider {
    * Read the node roles data for the network with the given ID.
    *
    * @throws FileNotFoundException if the roles do not exist
-   * @throws IOException} if there is an error reading the roles.
+   * @throws IOException if there is an error reading the roles.
    */
   @Nonnull
   String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException;
@@ -337,4 +338,102 @@ public interface StorageProvider {
 
   /** Delete answer metadata for given ID */
   void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a network-wide extended object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the network-wide extended object at for the given key using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException;
+
+  /**
+   * Deletes the network-wide extended object for the given key.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot-wide extended object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the snapshot-wide extended object for the given key using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException;
+
+  /**
+   * Deletes the snapshot-wide extended object for the given key.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot input object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Loads the JSON-serialized POJO topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Loads the JSON-serialized topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Writes the topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Writes the pojo topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
 }

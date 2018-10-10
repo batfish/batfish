@@ -34,7 +34,7 @@
             },
             "rows" : [
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as3",
                 "Source_Lines" : {
                   "filename" : "configs/as1border1.cfg",
@@ -65,7 +65,7 @@
                 }
               },
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as2",
                 "Source_Lines" : {
                   "filename" : "configs/as1border2.cfg",
@@ -96,7 +96,7 @@
                 }
               },
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as3",
                 "Source_Lines" : {
                   "filename" : "configs/as2border1.cfg",
@@ -127,7 +127,7 @@
                 }
               },
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as1",
                 "Source_Lines" : {
                   "filename" : "configs/as2border2.cfg",
@@ -204,7 +204,7 @@
                 }
               },
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as1",
                 "Source_Lines" : {
                   "filename" : "configs/as3border1.cfg",
@@ -235,7 +235,7 @@
                 }
               },
               {
-                "Structure_Type" : "bgp group",
+                "Structure_Type" : "bgp peer-group",
                 "Structure_Name" : "as2",
                 "Source_Lines" : {
                   "filename" : "configs/as3border2.cfg",

@@ -29,8 +29,6 @@ import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -56,7 +54,6 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
@@ -1039,7 +1036,7 @@ public class WorkMgrTest {
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(containsString(questionName));
-    _manager.getAnswerMetadata(networkName, snapshotName, null, null, questionName);
+    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
   }
 
   @Test
@@ -1090,6 +1087,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -1106,6 +1104,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectOutput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -1121,6 +1120,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectMissing() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -1856,26 +1856,40 @@ public class WorkMgrTest {
     uploadTestSnapshot(network, snapshot);
   }
 
+  @Test
+  public void testWriteQuestionSettings() throws IOException {
+    String network = "network1";
+    String questionClassId = "foo";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    // no QuestionSettingsId for questionClassId at first
+    assertFalse(_idManager.hasQuestionSettingsId(questionClassId, networkId));
+
+    _manager.writeQuestionSettings(
+        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
+
+    // Should have QuestionSettingsId now
+    assertTrue(_idManager.hasQuestionSettingsId(questionClassId, networkId));
+
+    QuestionSettingsId questionSettingsId =
+        _idManager.getQuestionSettingsId(questionClassId, networkId);
+    _manager.writeQuestionSettings(
+        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
+
+    // QuestionSettingsId should change after subsequent write
+    assertThat(
+        _idManager.getQuestionSettingsId(questionClassId, networkId),
+        not(equalTo(questionSettingsId)));
+  }
+
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    uploadTestSnapshot(network, snapshot, "c1");
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)
       throws IOException {
-    Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
-    // intentional duplication of snapshot to provide subdir
-    Path tmpSnapshotConfig =
-        tmpSnapshotSrcDir
-            .resolve(snapshot)
-            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve(fileName);
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
-    tmpSnapshotConfig.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      _manager.uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, _folder);
   }
 
   @Test

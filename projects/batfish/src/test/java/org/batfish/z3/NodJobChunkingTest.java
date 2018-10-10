@@ -30,6 +30,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -156,7 +157,7 @@ public class NodJobChunkingTest {
             Batfish.computeSynthesizerInput(
                 _configs,
                 _dataPlane,
-                new HeaderSpace(),
+                AclLineMatchExprs.TRUE,
                 IpSpaceAssignment.empty(),
                 ImmutableSortedSet.of(),
                 ImmutableSortedSet.of(),
@@ -176,7 +177,7 @@ public class NodJobChunkingTest {
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
-            .setHeaderSpace(new HeaderSpace())
+            .setHeaderSpace(AclLineMatchExprs.TRUE)
             .setSrcIpConstraints(srcIpConstraints)
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .build();

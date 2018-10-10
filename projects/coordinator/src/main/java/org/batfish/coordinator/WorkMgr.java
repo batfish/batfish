@@ -683,11 +683,6 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delEnvironment(String network, String snapshot, String envName) {
-    Path envDir = getdirEnvironment(network, snapshot, envName);
-    CommonUtil.deleteDirectory(envDir);
-  }
-
   public void delSnapshot(String network, String snapshot) {
     NetworkId networkId = _idManager.getNetworkId(network);
     _idManager.deleteSnapshot(snapshot, networkId);
@@ -1137,17 +1132,6 @@ public class WorkMgr extends AbstractCoordinator {
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
-  private Path getdirEnvironment(String containerName, String testrigName, String envName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path envDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-    if (!Files.exists(envDir)) {
-      throw new BatfishException("Environment '" + envName + "' does not exist");
-    }
-    return envDir;
-  }
-
   public Path getdirSnapshot(String network, String snapshot) {
     FileBasedStorageDirectoryProvider dirProvider =
         new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
@@ -1207,13 +1191,26 @@ public class WorkMgr extends AbstractCoordinator {
    *     object
    */
   public Set<String> getNodes(String container, String testrig) throws IOException {
-    Path pojoTopologyPath =
-        getdirSnapshot(container, testrig)
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
-    Topology topology =
-        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    Topology topology = getPojoTopology(container, testrig);
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
+  }
+
+  /**
+   * Returns the pojo topology for the given network and snapshot, or {@code null} if either does
+   * not exist.
+   */
+  public @Nullable Topology getPojoTopology(@Nonnull String network, @Nonnull String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return BatfishObjectMapper.mapper()
+        .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -1295,6 +1292,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Nullable
+  @Deprecated
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
@@ -1840,6 +1838,7 @@ public class WorkMgr extends AbstractCoordinator {
     _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
+  @Deprecated
   public void putObject(
       String containerName, String testrigName, String objectName, InputStream fileStream) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
@@ -2354,13 +2353,12 @@ public class WorkMgr extends AbstractCoordinator {
       String network, String questionClassId, List<String> components, JsonNode value)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    QuestionSettingsId questionSettingsId;
     String questionSettings;
     if (_idManager.hasQuestionSettingsId(questionClassId, networkId)) {
-      questionSettingsId = _idManager.getQuestionSettingsId(questionClassId, networkId);
-      questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
+      questionSettings =
+          _storage.loadQuestionSettings(
+              networkId, _idManager.getQuestionSettingsId(questionClassId, networkId));
     } else {
-      questionSettingsId = _idManager.generateQuestionSettingsId();
       questionSettings = "{}";
     }
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
@@ -2381,6 +2379,7 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       root = value;
     }
+    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _storage.storeQuestionSettings(
         BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
     _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
@@ -2398,9 +2397,19 @@ public class WorkMgr extends AbstractCoordinator {
     return _idManager;
   }
 
-  public TestrigMetadata getTestrigMetadata(String networkName, String snapshot)
+  /**
+   * Fetch testrig metadata for network and snapshot. Returns {@code null} if network or snapshot
+   * does not exist.
+   */
+  public @Nullable TestrigMetadata getTestrigMetadata(String network, String snapshot)
       throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     return TestrigMetadataMgr.readMetadata(networkId, snapshotId);
   }
@@ -2434,5 +2443,217 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       throw new BatfishException("error reading node roles", e);
     }
+  }
+
+  /**
+   * Provides a stream from which the extended object with the given {@code key} for the given
+   * {@code network} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      return _storage.loadNetworkObject(networkId, key);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format("Could not read extended object for network '%s', key '%s'", network, key),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} with the given {@code key} for
+   * the given {@code network}. Returns {@code true} if the object was written, or {@code false} if
+   * the network does not exist.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public boolean putNetworkObject(
+      @Nonnull InputStream inputStream, @Nonnull String network, @Nonnull String key)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.storeNetworkObject(inputStream, networkId, key);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format("Could not write extended object for network '%s', key '%s'", network, key),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Deletes the extended object with the given {@code key} for the given {@code network}. Returns
+   * {@code true} if deletion is successful, or {@code false} if the object or network does not
+   * exist.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public boolean deleteNetworkObject(@Nonnull String network, @Nonnull String key)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    try {
+      _storage.deleteNetworkObject(networkId, key);
+    } catch (FileNotFoundException e) {
+      return false;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s' at key '%s'", network, key),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Provides a stream from which the extended object with the given {@code key} for the given
+   * {@code network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be
+   * found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public @Nullable InputStream getSnapshotObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotObject(networkId, snapshotId, key);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
+          e);
+    }
+  }
+
+  /**
+   * Writes an extended object from the provided {@code inputStream} with the given {@code key} for
+   * the given {@code network} and {@code snapshot}. Returns {@code true} if the object was written,
+   * or {@code false} if the network or snapshot does not exist.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  public boolean putSnapshotExtendedObject(
+      @Nonnull InputStream inputStream,
+      @Nonnull String network,
+      @Nonnull String snapshot,
+      @Nonnull String key)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.storeSnapshotObject(inputStream, networkId, snapshotId, key);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not write extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Deletes the extended object with the given {@code key} for the given {@code network} and {@code
+   * snapshot}. Returns {@code true} if deletion is successful, or {@code false} if the object,
+   * network, or snapshot does not exist.
+   *
+   * @throws IOException if there is an error deleting the object
+   */
+  public boolean deleteSnapshotObject(
+      @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      _storage.deleteSnapshotObject(networkId, snapshotId, key);
+    } catch (FileNotFoundException e) {
+      return false;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not delete extended object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
+          e);
+    }
+    return true;
+  }
+
+  /**
+   * Provides a stream from which the input object with the given {@code key} for the given {@code
+   * network} and {@code snapshot} may be read. Returns {@code null} if the object cannot be found.
+   *
+   * @throws IOException if there is an error reading the object
+   */
+  public InputStream getSnapshotInputObject(String network, String snapshot, String key)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.loadSnapshotInputObject(networkId, snapshotId, key);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not read input object for network '%s', snapshot '%s', key '%s'",
+              network, snapshot, key),
+          e);
+    }
+  }
+
+  /**
+   * Returns the env topology for the given network and snapshot, or {@code null} if either does not
+   * exist.
+   */
+  public @Nullable org.batfish.datamodel.Topology getTopology(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    String topologyStr = _storage.loadTopology(networkId, snapshotId);
+    return BatfishObjectMapper.mapper()
+        .readValue(topologyStr, org.batfish.datamodel.Topology.class);
   }
 }

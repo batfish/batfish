@@ -1,17 +1,9 @@
 package org.batfish.coordinator;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Strings.isNullOrEmpty;
-
-import io.opentracing.util.GlobalTracer;
-import java.io.FileNotFoundException;
 import java.util.List;
-import java.util.Optional;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -25,7 +17,6 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.ContainerResource;
-import org.batfish.coordinator.resources.ForkSnapshotBean;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -46,59 +37,6 @@ public class WorkMgrServiceV2 {
 
   /** Information on the URI of a request, injected by the server framework at runtime. */
   @Context private UriInfo _uriInfo;
-
-  private static void assertNetworkAccessibility(String apiKey, String networkName)
-      throws FileNotFoundException {
-    Optional<Container> networks =
-        Main.getWorkMgr()
-            .getContainers(apiKey)
-            .stream()
-            .filter(c -> c.getName().equals(networkName))
-            .findFirst();
-    if (!networks.isPresent()) {
-      throw new FileNotFoundException(
-          "Network named: '" + networkName + "' does not exist or is not accessible.");
-    }
-  }
-
-  /**
-   * Fork the specified snapshot and make changes to the new snapshot
-   *
-   * @param networkName The name of the network under which to fork the snapshot
-   * @param forkSnapshotBean The {@link ForkSnapshotBean} containing parameters used to create the
-   *     fork
-   */
-  @POST
-  @Path(
-      CoordConstsV2.RSC_NETWORKS
-          + "/{network}/"
-          + CoordConstsV2.RSC_SNAPSHOTS
-          + ":"
-          + CoordConstsV2.RSC_FORK)
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response forkSnapshot(
-      @PathParam("network") String networkName, ForkSnapshotBean forkSnapshotBean) {
-    try {
-      checkArgument(!isNullOrEmpty(networkName), "Parameter '%s' is required", "network");
-      assertNetworkAccessibility(_apiKey, networkName);
-
-      // Set the appropriate tags for the trace being captured
-      if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get()
-            .activeSpan()
-            .setTag("network-name", networkName)
-            .setTag("snapshot-name", forkSnapshotBean.newSnapshot);
-      }
-
-      Main.getWorkMgr().forkSnapshot(networkName, forkSnapshotBean);
-      return Response.ok().build();
-    } catch (FileNotFoundException e) {
-      return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
-    } catch (Exception e) {
-      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-    }
-  }
 
   /**
    * Returns the list of {@link Container containers} that the given API key may access. Deprecated

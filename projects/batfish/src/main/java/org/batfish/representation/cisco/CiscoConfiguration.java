@@ -13,9 +13,13 @@ import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpPro
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco.CiscoConversions.toCommunityList;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
+import static org.batfish.representation.cisco.CiscoConversions.toIpSecPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.toIpSpace;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
@@ -31,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +64,6 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkeGateway;
@@ -81,7 +83,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
@@ -157,8 +158,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
-import org.batfish.vendor.StructureType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -287,6 +286,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
   }
 
+  public static String computeIcmpObjectGroupAclName(String name) {
+    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
+  }
+
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
    * Filters out the interfaces having no primary {@link InterfaceAddress}
@@ -298,10 +301,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeIcmpObjectGroupAclName(String name) {
-    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -459,12 +458,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private String _tacacsSourceInterface;
 
-  private final SortedMap<String, Integer> _undefinedPeerGroups;
-
-  private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
-
-  private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vrf> _vrfs;
@@ -524,7 +517,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
-    _undefinedPeerGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -940,10 +932,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
-  }
-
-  public SortedMap<String, Integer> getUndefinedPeerGroups() {
-    return _undefinedPeerGroups;
   }
 
   private Ip getUpdateSource(
@@ -1664,51 +1652,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     leafGroups.addAll(proc.getDynamicIpv6PeerGroups().values());
     for (LeafBgpPeerGroup lpg : leafGroups) {
       lpg.inheritUnsetFields(proc, this);
-    }
-    _unusedPeerGroups = new HashSet<>();
-    int fakePeerCounter = -1;
-    // peer groups / peer templates
-    for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups().entrySet()) {
-      String name = e.getKey();
-      NamedBgpPeerGroup namedPeerGroup = e.getValue();
-      if (!namedPeerGroup.getInherited()) {
-        _unusedPeerGroups.add(namedPeerGroup);
-        Ip fakeIp = new Ip(fakePeerCounter);
-        IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
-        fakePg.setGroupName(name);
-        fakePg.setActive(false);
-        fakePg.setShutdown(true);
-        leafGroups.add(fakePg);
-        fakePg.inheritUnsetFields(proc, this);
-        fakePeerCounter--;
-      }
-      namedPeerGroup.inheritUnsetFields(proc, this);
-    }
-    // separate because peer sessions can inherit from other peer sessions
-    _unusedPeerSessions = new HashSet<>();
-    int fakeGroupCounter = 1;
-    for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
-      namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc, this);
-    }
-    for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions().entrySet()) {
-      String name = e.getKey();
-      NamedBgpPeerGroup namedPeerGroup = e.getValue();
-      if (!namedPeerGroup.getInherited()) {
-        _unusedPeerSessions.add(namedPeerGroup);
-        String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
-        NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName, -1);
-        fakeNamedPg.setPeerSession(name);
-        proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
-        Ip fakeIp = new Ip(fakePeerCounter);
-        IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
-        fakePg.setGroupName(fakeNamedPgName);
-        fakePg.setActive(false);
-        fakePg.setShutdown(true);
-        leafGroups.add(fakePg);
-        fakePg.inheritUnsetFields(proc, this);
-        fakeGroupCounter++;
-        fakePeerCounter--;
-      }
     }
 
     // create origination prefilter from listed advertised networks
@@ -2968,16 +2911,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert standard/expanded community lists and community-sets to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = CiscoConversions.toCommunityList(scList);
+      CommunityList cList = toCommunityList(scList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = CiscoConversions.toCommunityList(ecList);
+      CommunityList cList = toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     _communitySets.forEach(
-        (name, communitySet) ->
-            c.getCommunityLists().put(name, CiscoConversions.toCommunityList(communitySet)));
+        (name, communitySet) -> c.getCommunityLists().put(name, toCommunityList(communitySet)));
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -2999,23 +2941,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(
-              saList.getName(),
-              CiscoConversions.toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
+          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, this._objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
-        (name, networkObjectGroup) ->
-            c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
     _networkObjectGroups
         .keySet()
         .forEach(
@@ -3053,15 +2992,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObjectGroup)));
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
     _serviceObjects.forEach(
         (name, serviceObject) ->
             c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    CiscoConversions.toIpAccessList(serviceObject)));
+                .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
@@ -3310,12 +3245,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
-    // warn about references to undefined peer groups
-    undefinedGroups(
-        _undefinedPeerGroups,
-        CiscoStructureType.BGP_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
-
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
@@ -3467,13 +3396,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
         CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT);
 
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
-    markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
-
     // Cable
     markConcreteStructure(
         CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
@@ -3593,75 +3515,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
-    // record references to defined structures
-    recordPeerGroups();
-    recordPeerSessions();
+    // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
+    markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.BGP_PEER_GROUP,
+        CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
+        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+    markConcreteStructure(
+        CiscoStructureType.BGP_SESSION_GROUP, CiscoStructureUsage.BGP_USE_SESSION_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
+    markConcreteStructure(
+        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP,
+        CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
 
     return c;
-  }
-
-  private void undefinedGroups(
-      Map<String, Integer> groupReferences,
-      StructureType structureType,
-      StructureUsage structureUsage) {
-    for (Entry<String, Integer> e : groupReferences.entrySet()) {
-      undefined(structureType, e.getKey(), structureUsage, e.getValue());
-    }
-  }
-
-  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  private IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  /** Converts an IPSec Profile to IPSec policy */
-  private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
@@ -4078,50 +3959,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               CiscoStructureType.COMMUNITY_LIST_EXPANDED,
               CiscoStructureType.COMMUNITY_LIST_STANDARD));
-    }
-  }
-
-  private void recordPeerGroups() {
-    for (Vrf vrf : getVrfs().values()) {
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc == null) {
-        continue;
-      }
-      for (NamedBgpPeerGroup peerGroup : proc.getNamedPeerGroups().values()) {
-        int numReferrers =
-            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup))
-                ? 0
-                // we are not properly counting references for peer groups
-                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
-
-        recordStructure(
-            CiscoStructureType.BGP_PEER_GROUP,
-            peerGroup.getName(),
-            numReferrers,
-            peerGroup.getDefinitionLine());
-      }
-    }
-  }
-
-  private void recordPeerSessions() {
-    for (Vrf vrf : getVrfs().values()) {
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc == null) {
-        continue;
-      }
-      for (NamedBgpPeerGroup peerSession : proc.getPeerSessions().values()) {
-        // use -1 for now; we are not counting references for peerSessions
-        int numReferrers =
-            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession))
-                ? 0
-                // we are not properly counting references for peer sessions
-                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
-        recordStructure(
-            CiscoStructureType.BGP_PEER_SESSION,
-            peerSession.getName(),
-            numReferrers,
-            peerSession.getDefinitionLine());
-      }
     }
   }
 

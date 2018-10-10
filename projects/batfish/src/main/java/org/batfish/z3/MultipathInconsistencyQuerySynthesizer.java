@@ -1,18 +1,18 @@
 package org.batfish.z3;
 
+import static org.batfish.z3.AclLineMatchExprToBooleanExpr.NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE;
+
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.state.Accept;
@@ -57,7 +57,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
   }
 
   private MultipathInconsistencyQuerySynthesizer(
-      @Nonnull HeaderSpace headerSpace,
+      @Nonnull AclLineMatchExpr headerSpace,
       @Nonnull Map<IngressLocation, BooleanExpr> ingressLocations,
       @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
@@ -84,7 +84,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
+                    NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE.toBooleanExpr(_headerSpace),
                     getSrcNattedConstraint())))
         .build();
   }

@@ -48,6 +48,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.SrcNattedConstraint;
@@ -89,7 +90,7 @@ public class NodJobTest {
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
-            .setHeaderSpace(headerSpace)
+            .setHeaderSpace(AclLineMatchExprs.match(headerSpace))
             .setSrcIpConstraints(srcIpConstraints)
             .setSrcNatted(srcNatted)
             .setRequiredTransitNodes(ImmutableSet.of())

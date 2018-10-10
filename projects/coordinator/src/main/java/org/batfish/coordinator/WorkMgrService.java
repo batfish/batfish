@@ -425,54 +425,6 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes the specified environment under the specified network and snapshot
-   *
-   * @param apiKey The API key of the requester
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network in which the environment and snapshot reside
-   * @param envName The name of the environment to delete
-   * @param snapshotName The name of the snapshot in which the environment resides
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_DEL_ENVIRONMENT)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray delEnvironment(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String snapshotName) {
-    try {
-      _logger.infof("WMS:delEnvironment %s\n", networkName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-      checkStringParam(envName, "Environment name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
-
-      Main.getWorkMgr().delEnvironment(networkName, snapshotName, envName);
-
-      return successResponse(new JSONObject().put("result", "true"));
-
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:delEnvironment exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:delEnvironment exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
    * Delete the specified question under the specified network
    *
    * @param apiKey The API key of the requester
@@ -1368,6 +1320,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_OBJECT)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @Deprecated
   public Response getObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -2063,6 +2016,7 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray putObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
