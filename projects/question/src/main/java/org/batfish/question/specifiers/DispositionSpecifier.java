@@ -23,9 +23,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FlowDisposition;
 
 /** A way to specify dispositions using a shorthand, such as "success" or "failure". */
+@ParametersAreNonnullByDefault
 public class DispositionSpecifier {
 
   private static final String SUCCESS = "success";
@@ -71,22 +73,19 @@ public class DispositionSpecifier {
 
   @JsonCreator
   @VisibleForTesting
-  static DispositionSpecifier create(@Nullable Set<String> values) {
-    values = firstNonNull(values, ImmutableSet.of());
-    if (values.isEmpty()) {
-      return new DispositionSpecifier(fromString(SUCCESS));
-    }
-    return new DispositionSpecifier(fromIterable(values));
-  }
-
-  private static Set<FlowDisposition> fromIterable(Iterable<String> values) {
-    ImmutableSet.Builder<FlowDisposition> builder = ImmutableSet.builder();
-    values.forEach(s -> builder.addAll(fromString(s)));
-    return builder.build();
+  static DispositionSpecifier create(@Nullable String values) {
+    values = firstNonNull(values, SUCCESS);
+    return new DispositionSpecifier(fromString(values));
   }
 
   private static Set<FlowDisposition> fromString(String s) {
-    return _map.get(s.toLowerCase());
+    String[] values = s.trim().split(",");
+    return Arrays.stream(values)
+        .map(String::toLowerCase)
+        .map(_map::get)
+        .filter(Objects::nonNull)
+        .flatMap(Set::stream)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @JsonValue
