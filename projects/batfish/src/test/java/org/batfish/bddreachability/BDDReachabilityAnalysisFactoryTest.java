@@ -161,18 +161,20 @@ public final class BDDReachabilityAnalysisFactoryTest {
               .stream()
               .noneMatch(
                   edge ->
-                      edge._preState instanceof PreOutEdgePostNat
-                          && edge._postState instanceof PreInInterface
-                          && ((PreOutEdgePostNat) edge._preState).getSrcNode().equals(node)));
+                      edge.getPreState() instanceof PreOutEdgePostNat
+                          && edge.getPostState() instanceof PreInInterface
+                          && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)));
       assertThat(
           "Edges at which a non-forbiddenTransitNodes become transited should not be removed.",
           edges
               .stream()
               .anyMatch(
                   edge ->
-                      edge._preState instanceof PreOutEdgePostNat
-                          && edge._postState instanceof PreInInterface
-                          && ((PreOutEdgePostNat) edge._preState).getSrcNode().equals(otherNode)));
+                      edge.getPreState() instanceof PreOutEdgePostNat
+                          && edge.getPostState() instanceof PreInInterface
+                          && ((PreOutEdgePostNat) edge.getPreState())
+                              .getSrcNode()
+                              .equals(otherNode)));
     }
   }
 
@@ -206,15 +208,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
       // all edges into the query state require transit nodes transited bit to be set.
       edges
           .stream()
-          .filter(edge -> edge._postState == Query.INSTANCE)
+          .filter(edge -> edge.getPostState() == Query.INSTANCE)
           .forEach(
               edge -> {
                 assertThat(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge._traverseForward.apply(ONE).and(notTransited).isZero());
+                    edge.traverseForward(ONE).and(notTransited).isZero());
                 assertThat(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge._traverseBackward.apply(ONE).and(notTransited).isZero());
+                    edge.traverseBackward(ONE).and(notTransited).isZero());
               });
 
       // all edges from originate states initialize the transit nodes bit to zero
@@ -222,33 +224,33 @@ public final class BDDReachabilityAnalysisFactoryTest {
           .stream()
           .filter(
               edge ->
-                  edge._preState instanceof OriginateVrf
-                      || edge._preState instanceof OriginateInterfaceLink)
+                  edge.getPreState() instanceof OriginateVrf
+                      || edge.getPreState() instanceof OriginateInterfaceLink)
           .forEach(
               edge -> {
                 assertThat(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge._traverseForward.apply(ONE).and(transited).isZero());
+                    edge.traverseForward(ONE).and(transited).isZero());
                 assertThat(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge._traverseBackward.apply(ONE).and(transited).isZero());
+                    edge.traverseBackward(ONE).and(transited).isZero());
               });
 
       edges
           .stream()
           .filter(
               edge ->
-                  edge._preState instanceof PreOutEdgePostNat
-                      && edge._postState instanceof PreInInterface)
+                  edge.getPreState() instanceof PreOutEdgePostNat
+                      && edge.getPostState() instanceof PreInInterface)
           .forEach(
               edge -> {
-                String hostname = ((PreOutEdgePostNat) edge._preState).getSrcNode();
+                String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
                 if (hostname.equals(node)) {
                   assertThat(
                       "Forward Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "requiredTransitNode must set the requiredTransitNodes bit",
-                      edge._traverseForward.apply(ONE).and(notTransited).isZero());
-                  BDD backwardOne = edge._traverseBackward.apply(ONE);
+                      edge.traverseForward(ONE).and(notTransited).isZero());
+                  BDD backwardOne = edge.traverseBackward(ONE);
                   assertThat(
                       "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
                           + " requiredTransitNode must not constrain the bit after exit",
@@ -257,19 +259,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   assertThat(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge._traverseForward.apply(transited).and(notTransited).isZero());
+                      edge.traverseForward(transited).and(notTransited).isZero());
                   assertThat(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge._traverseForward.apply(notTransited).and(transited).isZero());
+                      edge.traverseForward(notTransited).and(transited).isZero());
                   assertThat(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge._traverseBackward.apply(transited).and(notTransited).isZero());
+                      edge.traverseBackward(transited).and(notTransited).isZero());
                   assertThat(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge._traverseBackward.apply(notTransited).and(transited).isZero());
+                      edge.traverseBackward(notTransited).and(transited).isZero());
                 }
               });
     }
