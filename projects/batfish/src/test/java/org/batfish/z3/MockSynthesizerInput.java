@@ -228,28 +228,24 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    // TODO move me
     public Builder setEgressSrcNats(
         Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressSrcNats) {
       _egressSrcNats = egressSrcNats;
       return this;
     }
 
-    // TODO move me
     public Builder setEgressDstNats(
         Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> egressDstNats) {
       _egressDstNats = egressDstNats;
       return this;
     }
 
-    // TODO move me
     public Builder setIngressSrcNats(
         Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> ingressSrcNats) {
       _ingressSrcNats = ingressSrcNats;
       return this;
     }
 
-    // TODO move me
     public Builder setIngressDstNats(
         Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> ingressDstNats) {
       _ingressDstNats = ingressDstNats;
@@ -452,12 +448,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String,  Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressSrcNats() {
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressSrcNats() {
     return _ingressSrcNats;
   }
 
   @Override
-  public Map<String,  Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressDstNats() {
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getIngressDstNats() {
     return _ingressDstNats;
   }
 

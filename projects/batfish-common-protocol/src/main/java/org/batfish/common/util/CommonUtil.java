@@ -601,12 +601,13 @@ public class CommonUtil {
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
           interfaces
               .stream()
-              .filter(i -> i.getEgressNats() == null || i.getEgressNats()
-                  .getTransformations()
-                  .isEmpty())
-              .filter(i -> i.getIngressNats() == null || i.getIngressNats()
-                  .getTransformations()
-                  .isEmpty())
+              .filter(
+                  i ->
+                      i.getEgressNats() == null || i.getEgressNats().getTransformations().isEmpty())
+              .filter(
+                  i ->
+                      i.getIngressNats() == null
+                          || i.getIngressNats().getTransformations().isEmpty())
               .flatMap(i -> i.getAllAddresses().stream())
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
@@ -619,33 +620,43 @@ public class CommonUtil {
               .stream()
               .map(address -> new IpWildcard(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
-      // TODO is this as intended?
       IpWildcardSetIpSpace ipSpace =
           IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
-          .stream().flatMap(i -> Stream.concat(
-          i.getEgressNats() == null
-              ? Stream.empty()
-              : i.getEgressNats().getDynamicTransformations().stream(),
-          i.getIngressNats() == null
-              ? Stream.empty()
-              : i.getIngressNats().getDynamicTransformations().stream())).forEach(nat -> {
-            for (long ipAsLong = nat.getPoolIpFirst().asLong();
-                ipAsLong <= nat.getPoolIpLast().asLong();
-                ipAsLong++) {
-              Ip currentPoolIp = new Ip(ipAsLong);
-              builder.put(currentPoolIp, ipSpace);
-            }
-          });
-      interfaces.stream().flatMap(i -> Stream.concat(
-          i.getEgressNats() == null
-              ? Stream.empty()
-              : i.getEgressNats().getStaticTransformations().stream(),
-          i.getIngressNats() == null
-              ? Stream.empty()
-              : i.getIngressNats().getStaticTransformations().stream())).forEach(nat -> {
-        for (long ipAsLong = nat.getLocalNetwork().getStartIp().asLong();
-            ipAsLong <= nat.getLocalNetwork().getEndIp().asLong();
+          .stream()
+          .flatMap(
+              i ->
+                  Stream.concat(
+                      i.getEgressNats() == null
+                          ? Stream.empty()
+                          : i.getEgressNats().getDynamicTransformations().stream(),
+                      i.getIngressNats() == null
+                          ? Stream.empty()
+                          : i.getIngressNats().getDynamicTransformations().stream()))
+          .forEach(
+              nat -> {
+                for (long ipAsLong = nat.getPoolIpFirst().asLong();
+                    ipAsLong <= nat.getPoolIpLast().asLong();
+                    ipAsLong++) {
+                  Ip currentPoolIp = new Ip(ipAsLong);
+                  builder.put(currentPoolIp, ipSpace);
+                }
+              });
+      interfaces
+          .stream()
+          .flatMap(
+              i ->
+                  Stream.concat(
+                      i.getEgressNats() == null
+                          ? Stream.empty()
+                          : i.getEgressNats().getStaticTransformations().stream(),
+                      i.getIngressNats() == null
+                          ? Stream.empty()
+                          : i.getIngressNats().getStaticTransformations().stream()))
+          .forEach(
+              nat -> {
+                for (long ipAsLong = nat.getLocalNetwork().getStartIp().asLong();
+                    ipAsLong <= nat.getLocalNetwork().getEndIp().asLong();
                     ipAsLong++) {
                   Ip currentPoolIp = new Ip(ipAsLong);
                   builder.put(currentPoolIp, ipSpace);

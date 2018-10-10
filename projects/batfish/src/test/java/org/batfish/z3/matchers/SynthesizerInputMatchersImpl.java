@@ -109,6 +109,40 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
+  static final class HasIngressDstNats
+      extends FeatureMatcher<
+          SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
+    HasIngressDstNats(
+        @Nonnull
+            Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with ingress dst NATs", "ingress dst NATs");
+    }
+
+    @Override
+    protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getIngressDstNats();
+    }
+  }
+
+  static final class HasIngressSrcNats
+      extends FeatureMatcher<
+          SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
+    HasIngressSrcNats(
+        @Nonnull
+            Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with ingress src NATs", "ingress src NATs");
+    }
+
+    @Override
+    protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getIngressSrcNats();
+    }
+  }
+
   static final class HasIpsByHostname
       extends FeatureMatcher<SynthesizerInput, Map<String, Set<Ip>>> {
     HasIpsByHostname(@Nonnull Matcher<? super Map<String, Set<Ip>>> subMatcher) {
@@ -135,14 +169,31 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
-  static final class HasEgressNats
+  static final class HasEgressDstNats
       extends FeatureMatcher<
           SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
-    HasEgressNats(
+    HasEgressDstNats(
         @Nonnull
             Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
                 subMatcher) {
-      super(subMatcher, "SynthesizerInput with egress NATs", "egress NATs");
+      super(subMatcher, "SynthesizerInput with egress dst NATs", "egress dst NATs");
+    }
+
+    @Override
+    protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getEgressDstNats();
+    }
+  }
+
+  static final class HasEgressSrcNats
+      extends FeatureMatcher<
+          SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
+    HasEgressSrcNats(
+        @Nonnull
+            Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with egress src NATs", "egress src NATs");
     }
 
     @Override

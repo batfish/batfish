@@ -1,6 +1,8 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.Map;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDSourceNat;
 import org.batfish.common.bdd.BDDPacket;
@@ -11,21 +13,21 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.RuleAction;
 
 /** Visitor that converts a {@link Transformation} to a @{link BDDSourceNat}. */
-// TODO more javadoc
-// TODO need to generalize this and BDDSourceNat
 public class TransformationToBDD implements GenericTransformationRuleVisitor<BDDSourceNat> {
 
-  private final Map<String, Map<String, BDD>> _aclPermitBDDs;
+  private final Map<String, Map<String, Supplier<BDD>>> _aclPermitBDDs;
   private final BDDPacket _bddPacket;
   private final String _node;
 
-  public TransformationToBDD(String node, Map<String, Map<String, BDD>> aclPermitBDDs, BDDPacket bddPacket) {
+  public TransformationToBDD(
+      String node, Map<String, Map<String, Supplier<BDD>>> aclPermitBDDs, BDDPacket bddPacket) {
     _aclPermitBDDs = aclPermitBDDs;
     _bddPacket = bddPacket;
     _node = node;
   }
 
-  // TODO static NAT
+  // Static NAT not implemented
+  @Nullable
   @Override
   public BDDSourceNat visitStaticTransformationRule(StaticNatRule rule) {
     return null;
@@ -33,19 +35,20 @@ public class TransformationToBDD implements GenericTransformationRuleVisitor<BDD
 
   @Override
   public BDDSourceNat visitDynamicTransformationRule(DynamicNatRule rule) {
-    // TODO Require src interface to match if specified in rule
+    // Source interface matching not implemented
 
     if (rule.getAcl() == null) {
-      // TODO handle dynamic NATs without ACLs (permit all)
+      // Handling dynamic NATs without ACLs is not implemented
+      // This is Arista-specific
       return null;
     }
     if (rule.getAction() != RuleAction.SOURCE_INSIDE) {
-      // TODO handle destination NAT
+      // Destination NAT not supported in BDD
       return null;
     }
 
     String aclName = rule.getAcl().getName();
-    BDD match = _aclPermitBDDs.get(_node).get(aclName);
+    BDD match = _aclPermitBDDs.get(_node).get(aclName).get();
     BDD setSrcIp =
         _bddPacket
             .getSrcIp()

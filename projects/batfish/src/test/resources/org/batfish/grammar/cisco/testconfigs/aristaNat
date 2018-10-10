@@ -1,0 +1,13 @@
+boot system flash this-is-an-arista-device.swi
+!
+hostname aristaNat
+!
+interface Ethernet1
+ ip nat source dynamic access-list nat-list pool nat-pool
+!
+
+ip access-list nat-list
+ 10 permit ip any any
+
+ip nat pool nat-pool prefix-length 32
+ range 10.10.10.10 10.10.10.10

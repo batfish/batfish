@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IpAccessList;
 
-// TODO javadoc
+/** Represents an abstract header transformation for NAT */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class Transformation implements Serializable, Comparable<Transformation> {
 
@@ -24,9 +24,7 @@ public abstract class Transformation implements Serializable, Comparable<Transfo
   final @Nullable String _description;
 
   Transformation(
-      @Nullable IpAccessList acl,
-      @Nonnull RuleAction action,
-      @Nullable String description) {
+      @Nullable IpAccessList acl, @Nonnull RuleAction action, @Nullable String description) {
     _acl = acl;
     _action = action;
     _description = description;
@@ -40,7 +38,6 @@ public abstract class Transformation implements Serializable, Comparable<Transfo
     if (this == o) {
       return 0;
     }
-    //TODO check this
     return Comparator.comparing((Transformation t) -> t.getClass().getSimpleName())
         .thenComparing(Transformation::getAcl, nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Transformation::getAction)
@@ -93,9 +90,9 @@ public abstract class Transformation implements Serializable, Comparable<Transfo
   abstract boolean transformEquals(Transformation o);
 
   public enum Direction {
-    /** inside -> outside */
+    /** inside -&gt; outside */
     EGRESS,
-    /** outside-> inside */
+    /** outside-&gt; inside */
     INGRESS
   }
 

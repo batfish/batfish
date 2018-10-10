@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.transformation.DynamicNatRule;
 import org.batfish.datamodel.transformation.Transformation;
@@ -9,6 +10,21 @@ import org.hamcrest.Matcher;
 
 final class DynamicNatRuleMatchersImpl {
   private DynamicNatRuleMatchersImpl() {}
+
+  static final class HasAclName extends FeatureMatcher<DynamicNatRule, String> {
+    HasAclName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "aclName", "aclName");
+    }
+
+    @Nullable
+    @Override
+    protected String featureValueOf(DynamicNatRule actual) {
+      if (actual.getAcl() != null) {
+        return actual.getAcl().getName();
+      }
+      return null;
+    }
+  }
 
   static final class HasPoolIpFirst extends FeatureMatcher<DynamicNatRule, Ip> {
     HasPoolIpFirst(@Nonnull Matcher<? super Ip> subMatcher) {
@@ -38,4 +54,3 @@ final class DynamicNatRuleMatchersImpl {
     }
   }
 }
-

@@ -64,6 +64,9 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.hasPoolIpFirst;
+import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.hasPoolIpLast;
+import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.isDynamicNatRuleThat;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
@@ -87,9 +90,13 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAl
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEgressDstNats;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEgressSrcNats;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIngressDstNats;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIngressSrcNats;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -137,6 +144,9 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.StaticNatRuleMatchers.hasGlobalNetwork;
+import static org.batfish.datamodel.matchers.StaticNatRuleMatchers.hasLocalNetwork;
+import static org.batfish.datamodel.matchers.StaticNatRuleMatchers.isStaticNatRuleThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
@@ -148,6 +158,8 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeDynamicDestinationNatAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeDynamicNatAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
@@ -290,6 +302,7 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.DynamicNatRuleMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
@@ -1912,10 +1925,154 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testParseIosNat() throws IOException {
-    parseConfig("ios-nat");
-    parseConfig("us_border");
-    parseConfig("cisco_ip_nat");
+  public void testParseIosStaticNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-static");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix nat1Local = new Prefix(new Ip("1.1.1.1"), 32);
+    Prefix nat2Local = new Prefix(new Ip("1.1.2.0"), 14);
+    Prefix nat3Local = new Prefix(new Ip("1.1.3.0"), 24);
+    Prefix nat4Local = new Prefix(new Ip("7.7.7.7"), 32);
+    Prefix nat1Global = new Prefix(new Ip("2.2.2.2"), 32);
+    Prefix nat2Global = new Prefix(new Ip("2.2.2.0"), 14);
+    Prefix nat3Global = new Prefix(new Ip("2.2.3.0"), 24);
+    Prefix nat4Global = new Prefix(new Ip("6.6.6.6"), 32);
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside, hasIngressDstNats(nullValue()));
+    assertThat(inside, hasIngressSrcNats(nullValue()));
+    assertThat(inside, hasEgressDstNats(nullValue()));
+    assertThat(inside, hasEgressSrcNats(nullValue()));
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    assertThat(outside, hasIngressDstNats(notNullValue()));
+    assertThat(outside, hasIngressSrcNats(notNullValue()));
+    assertThat(outside, hasEgressDstNats(notNullValue()));
+    assertThat(outside, hasEgressSrcNats(notNullValue()));
+
+    assertThat(outside, hasIngressDstNats(hasSize(3)));
+    assertThat(outside, hasIngressSrcNats(hasSize(1)));
+    assertThat(outside, hasEgressDstNats(hasSize(1)));
+    assertThat(outside, hasEgressSrcNats(hasSize(3)));
+
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat1Local)))));
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat2Local)))));
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat3Local)))));
+    assertThat(
+        outside, hasIngressSrcNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat4Local)))));
+    assertThat(outside, hasEgressDstNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat4Local)))));
+    assertThat(outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat1Local)))));
+    assertThat(outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat2Local)))));
+    assertThat(outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasLocalNetwork(nat3Local)))));
+
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat1Global)))));
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat2Global)))));
+    assertThat(
+        outside, hasIngressDstNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat3Global)))));
+    assertThat(
+        outside, hasIngressSrcNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat4Global)))));
+    assertThat(
+        outside, hasEgressDstNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat4Global)))));
+    assertThat(
+        outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat1Global)))));
+    assertThat(
+        outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat2Global)))));
+    assertThat(
+        outside, hasEgressSrcNats(hasItem(isStaticNatRuleThat(hasGlobalNetwork(nat3Global)))));
+  }
+
+  @Test
+  public void testParseIosDynamicNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-dynamic");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Ip nat1PoolFirst = new Ip("3.3.3.1");
+    Ip nat1PoolLast = new Ip("3.3.3.254");
+    Ip nat2PoolFirst = new Ip("3.3.4.1");
+    Ip nat2PoolLast = new Ip("3.3.4.254");
+    Ip nat3PoolFirst = new Ip("4.4.4.1");
+    Ip nat3PoolLast = new Ip("4.4.4.254");
+    String nat1AclName = computeDynamicNatAclName("10");
+    String nat2AclName = computeDynamicNatAclName(computeDynamicDestinationNatAclName("11"));
+    String nat3AclName = computeDynamicNatAclName("22");
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside, hasIngressDstNats(nullValue()));
+    assertThat(inside, hasIngressSrcNats(nullValue()));
+    assertThat(inside, hasEgressDstNats(nullValue()));
+    assertThat(inside, hasEgressSrcNats(nullValue()));
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    assertThat(outside, hasIngressDstNats(nullValue()));
+    assertThat(outside, hasIngressSrcNats(nullValue()));
+    assertThat(outside, hasEgressDstNats(notNullValue()));
+    assertThat(outside, hasEgressSrcNats(notNullValue()));
+
+    assertThat(outside, hasEgressDstNats(hasSize(2)));
+    assertThat(outside, hasEgressSrcNats(hasSize(1)));
+
+    assertThat(
+        outside,
+        hasEgressDstNats(
+            hasItem(isDynamicNatRuleThat(DynamicNatRuleMatchers.hasAclName(nat2AclName)))));
+    assertThat(
+        outside,
+        hasEgressDstNats(
+            hasItem(isDynamicNatRuleThat(DynamicNatRuleMatchers.hasAclName(nat3AclName)))));
+    assertThat(
+        outside,
+        hasEgressSrcNats(
+            hasItem(isDynamicNatRuleThat(DynamicNatRuleMatchers.hasAclName(nat1AclName)))));
+
+    assertThat(
+        outside, hasEgressDstNats(hasItem(isDynamicNatRuleThat(hasPoolIpFirst(nat2PoolFirst)))));
+    assertThat(
+        outside, hasEgressDstNats(hasItem(isDynamicNatRuleThat(hasPoolIpFirst(nat3PoolFirst)))));
+    assertThat(
+        outside, hasEgressSrcNats(hasItem(isDynamicNatRuleThat(hasPoolIpFirst(nat1PoolFirst)))));
+
+    assertThat(
+        outside, hasEgressDstNats(hasItem(isDynamicNatRuleThat(hasPoolIpLast(nat2PoolLast)))));
+    assertThat(
+        outside, hasEgressDstNats(hasItem(isDynamicNatRuleThat(hasPoolIpLast(nat3PoolLast)))));
+    assertThat(
+        outside, hasEgressSrcNats(hasItem(isDynamicNatRuleThat(hasPoolIpLast(nat1PoolLast)))));
+  }
+
+  @Test
+  public void testParseAristaDynamicNat() throws IOException {
+    Configuration c = parseConfig("aristaNat");
+    String intfName = "Ethernet1";
+    Ip poolFirst = new Ip("10.10.10.10");
+    Ip poolLast = new Ip("10.10.10.10");
+    String natAclName = computeDynamicNatAclName("nat-list");
+
+    assertThat(c, hasInterface(intfName, notNullValue()));
+
+    Interface intf = c.getAllInterfaces().get(intfName);
+    assertThat(intf, hasIngressDstNats(nullValue()));
+    assertThat(intf, hasIngressSrcNats(nullValue()));
+    assertThat(intf, hasEgressDstNats(empty()));
+    assertThat(intf, hasEgressSrcNats(hasSize(1)));
+
+    assertThat(
+        intf,
+        hasEgressSrcNats(
+            hasItem(isDynamicNatRuleThat(DynamicNatRuleMatchers.hasAclName(natAclName)))));
+
+    assertThat(intf, hasEgressSrcNats(hasItem(isDynamicNatRuleThat(hasPoolIpFirst(poolFirst)))));
+    assertThat(intf, hasEgressSrcNats(hasItem(isDynamicNatRuleThat(hasPoolIpLast(poolLast)))));
   }
 
   @Test

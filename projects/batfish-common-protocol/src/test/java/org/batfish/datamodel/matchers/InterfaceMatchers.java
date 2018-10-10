@@ -24,10 +24,13 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
-import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEgressNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEgressDstNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEgressSrcNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIngressDstNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIngressSrcNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
@@ -148,6 +151,24 @@ public final class InterfaceMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * ingress source NATs.
+   */
+  public static HasIngressSrcNats hasIngressSrcNats(
+      @Nonnull Matcher<? super List<Transformation>> subMatcher) {
+    return new HasIngressSrcNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * ingress destination NATs.
+   */
+  public static HasIngressDstNats hasIngressDstNats(
+      @Nonnull Matcher<? super List<Transformation>> subMatcher) {
+    return new HasIngressDstNats(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the {@link Interface}'s hsrpVersion is equal to {@code
    * expectedHsrpVersion}.
    */
@@ -224,11 +245,20 @@ public final class InterfaceMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
-   * source NATs.
+   * egress destination NATs.
    */
-  public static HasEgressNats hasEgressNats(
+  public static HasEgressDstNats hasEgressDstNats(
       @Nonnull Matcher<? super List<Transformation>> subMatcher) {
-    return new HasEgressNats(subMatcher);
+    return new HasEgressDstNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * egress source NATs.
+   */
+  public static HasEgressSrcNats hasEgressSrcNats(
+      @Nonnull Matcher<? super List<Transformation>> subMatcher) {
+    return new HasEgressSrcNats(subMatcher);
   }
 
   /**

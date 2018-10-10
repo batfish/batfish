@@ -69,6 +69,7 @@ import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutEdgePostSrcNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.junit.Test;
 
@@ -188,50 +189,121 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE2),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE2, NODE2, INTERFACE1),
                 new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE2, NODE2, INTERFACE2),
                 new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE1, NODE1, INTERFACE1),
                 new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE1, NODE1, INTERFACE2),
                 new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE2, NODE1, INTERFACE1),
                 new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE2, NODE1, INTERFACE2),
                 new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2))));
+  }
+
+  @Test
+  public void testPreOutEdgePostSrcNat() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setEnabledEdges(
+                ImmutableSet.of(
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PreOutEdgePostSrcNat.State.INSTANCE)));
+
+    // PreOutEdgePostNatForTopologyEdges
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE2, NODE2, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE1, INTERFACE2, NODE2, INTERFACE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE1, NODE1, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE1, NODE1, INTERFACE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE2, NODE1, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2),
+                new PreOutEdgePostSrcNat(NODE2, INTERFACE2, NODE1, INTERFACE2))));
   }
 
   @Test
@@ -1896,7 +1968,7 @@ public class DefaultTransitionGeneratorTest {
             .build();
     List<RuleStatement> rules =
         DefaultTransitionGenerator.generateTransitions(
-            input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
+            input, ImmutableSet.of(PreOutEdgePostSrcNat.State.INSTANCE));
 
     RuleStatement permitRule =
         new BasicRuleStatement(
@@ -1904,13 +1976,13 @@ public class DefaultTransitionGeneratorTest {
             ImmutableSet.of(
                 new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
                 new AclPermit(NODE1, NAT_ACL1)),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+            new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
 
     RuleStatement denyRule =
         new BasicRuleStatement(
             ImmutableSet.of(
                 new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+            new PreOutEdgePostSrcNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
 
     assertThat(rules, containsInAnyOrder(permitRule, denyRule));
   }

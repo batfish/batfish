@@ -3,7 +3,7 @@ package org.batfish.grammar.host;
 import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.hasPoolIpFirst;
 import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.hasPoolIpLast;
 import static org.batfish.datamodel.matchers.DynamicNatRuleMatchers.isDynamicNatRuleThat;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEgressNats;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEgressSrcNats;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -112,12 +112,12 @@ public class HostInterfaceTest {
      */
     assertThat(
         sharedInterface,
-        hasEgressNats(
+        hasEgressSrcNats(
             hasItem(
                 allOf(
                     isDynamicNatRuleThat(hasPoolIpFirst(sharedIp)),
                     isDynamicNatRuleThat(hasPoolIpLast(sharedIp))))));
-    assertThat(nonShared1Interface, hasEgressNats(nullValue()));
-    assertThat(nonShared2Interface, hasEgressNats(nullValue()));
+    assertThat(nonShared1Interface, hasEgressSrcNats(nullValue()));
+    assertThat(nonShared2Interface, hasEgressSrcNats(nullValue()));
   }
 }

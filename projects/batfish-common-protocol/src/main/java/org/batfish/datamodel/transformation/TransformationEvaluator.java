@@ -45,44 +45,44 @@ public class TransformationEvaluator implements GenericTransformationRuleVisitor
 
     Flow.Builder transformedFlowBuilder = new Flow.Builder(_flow);
     switch (rule.getAction()) {
-    case SOURCE_INSIDE:
-      switch (_direction) {
-      case EGRESS:
-        // If source matches localNetwork, then rewrite source to globalNetwork
-        if (rule.getLocalNetwork().containsIp(_flow.getSrcIp())) {
-          transformedFlowBuilder.setSrcIp(shiftIp(_flow.getSrcIp(), rule, _direction));
+      case SOURCE_INSIDE:
+        switch (_direction) {
+          case EGRESS:
+            // If source matches localNetwork, then rewrite source to globalNetwork
+            if (rule.getLocalNetwork().containsIp(_flow.getSrcIp())) {
+              transformedFlowBuilder.setSrcIp(shiftIp(_flow.getSrcIp(), rule, _direction));
+            }
+            break;
+          case INGRESS:
+            // If destination matches globalNetwork, then rewrite destination to localNetwork
+            if (rule.getGlobalNetwork().containsIp(_flow.getDstIp())) {
+              transformedFlowBuilder.setDstIp(shiftIp(_flow.getDstIp(), rule, _direction));
+            }
+            break;
+          default:
+            throw new BatfishException("Unexpected direction: " + _direction);
         }
         break;
-      case INGRESS:
-        // If destination matches globalNetwork, then rewrite destination to localNetwork
-        if (rule.getGlobalNetwork().containsIp(_flow.getDstIp())) {
-          transformedFlowBuilder.setDstIp(shiftIp(_flow.getDstIp(), rule, _direction));
+      case SOURCE_OUTSIDE:
+        switch (_direction) {
+          case EGRESS:
+            // If destination matches localNetwork, then rewrite destination to globalNetwork
+            if (rule.getLocalNetwork().containsIp(_flow.getDstIp())) {
+              transformedFlowBuilder.setDstIp(shiftIp(_flow.getDstIp(), rule, _direction));
+            }
+            break;
+          case INGRESS:
+            // If source matches globalNetwork, then rewrite flow source to localNetwork
+            if (rule.getGlobalNetwork().containsIp(_flow.getSrcIp())) {
+              transformedFlowBuilder.setSrcIp(shiftIp(_flow.getSrcIp(), rule, _direction));
+            }
+            break;
+          default:
+            throw new BatfishException("Unexpected direction: " + _direction);
         }
         break;
       default:
-        throw new BatfishException("Unexpected direction: " + _direction);
-      }
-      break;
-    case SOURCE_OUTSIDE:
-      switch (_direction) {
-      case EGRESS:
-        // If destination matches localNetwork, then rewrite destination to globalNetwork
-        if (rule.getLocalNetwork().containsIp(_flow.getDstIp())) {
-          transformedFlowBuilder.setDstIp(shiftIp(_flow.getDstIp(), rule, _direction));
-        }
-        break;
-      case INGRESS:
-        // If source matches globalNetwork, then rewrite flow source to localNetwork
-        if (rule.getGlobalNetwork().containsIp(_flow.getSrcIp())) {
-          transformedFlowBuilder.setSrcIp(shiftIp(_flow.getSrcIp(), rule, _direction));
-        }
-        break;
-      default:
-        throw new BatfishException("Unexpected direction: " + _direction);
-      }
-      break;
-      default:
-      throw new BatfishException("Static NAT is invalid");
+        throw new BatfishException("Static NAT is invalid");
     }
 
     return transformedFlowBuilder.build();
@@ -91,7 +91,7 @@ public class TransformationEvaluator implements GenericTransformationRuleVisitor
   @Override
   public Flow visitDynamicTransformationRule(DynamicNatRule rule) {
     if (rule.getAction() == RuleAction.SOURCE_OUTSIDE) {
-      // TODO: Add support for "source outside" dynamic NAT
+      // Not supported
       return _flow;
     }
     // Check if flow matches ACL
@@ -126,7 +126,7 @@ public class TransformationEvaluator implements GenericTransformationRuleVisitor
   }
 
   private static long localToGlobalShift(StaticNatRule rule) {
-    return  rule.getGlobalNetwork().getStartIp().asLong()
+    return rule.getGlobalNetwork().getStartIp().asLong()
         - rule.getLocalNetwork().getStartIp().asLong();
   }
 

@@ -2,6 +2,7 @@ package org.batfish.z3.expr.visitors;
 
 import static org.batfish.z3.expr.ExtractExpr.newExtractExpr;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -26,7 +27,10 @@ import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.AclPermit;
 
-// TODO javadoc
+/**
+ * Transforms a {@link org.batfish.datamodel.transformation.Transformation} into a symbolic
+ * representation of the transformation.
+ */
 public class TransformationExprTransformer
     implements GenericTransformationRuleVisitor<Entry<AclPermit, BooleanExpr>> {
 
@@ -38,7 +42,8 @@ public class TransformationExprTransformer
     _hostname = hostname;
   }
 
-  private static BooleanExpr transformedSuffixMatchExpr(Field srcOrDest, int prefixLength) {
+  @VisibleForTesting
+  public static BooleanExpr transformedSuffixMatchExpr(Field srcOrDest, int prefixLength) {
     if (prefixLength == Prefix.MAX_PREFIX_LENGTH) {
       return TrueExpr.INSTANCE;
     }
@@ -101,12 +106,11 @@ public class TransformationExprTransformer
     return Maps.immutableEntry(preconditionPreTransformationState, transformationConstraint);
   }
 
-  // TODO egress only
+  // Only supports inside-to-outside flow of "source inside" dynamic NAT
   @Nullable
   @Override
   public Entry<AclPermit, BooleanExpr> visitDynamicTransformationRule(DynamicNatRule rule) {
     if (_direction != Direction.EGRESS || rule.getAction() != RuleAction.SOURCE_INSIDE) {
-      // TODO Only supports inside-to-outside flow of "source inside" dynamic NAT
       return null;
     }
 

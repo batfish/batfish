@@ -148,12 +148,14 @@ public class HostInterface implements Serializable {
             .setVrf(configuration.getDefaultVrf());
     if (_shared) {
       Ip publicIp = _address.getIp();
-      iface.setEgressNats(ImmutableList.of(requireNonNull(DynamicNatRule
-          .builder()
-          .setAction(RuleAction.SOURCE_INSIDE)
-          .setPoolIpFirst(publicIp)
-          .setPoolIpLast(publicIp)
-          .build())));
+      iface.setEgressNats(
+          ImmutableList.of(
+              requireNonNull(
+                  DynamicNatRule.builder()
+                      .setAction(RuleAction.SOURCE_INSIDE)
+                      .setPoolIpFirst(publicIp)
+                      .setPoolIpLast(publicIp)
+                      .build())));
     }
     return iface.build();
   }

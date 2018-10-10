@@ -106,9 +106,10 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final void addOriginateRules(ImmutableList.Builder<RuleStatement> rules) {
     // create rules for injecting symbolic packets into ingress node(s)
     BooleanExpr initialConstraint =
-        new AndExpr(ImmutableList.of(
-            new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)),
-            new EqExpr(new VarIntExpr(Field.DST_IP), new VarIntExpr(Field.ORIG_DST_IP))));
+        new AndExpr(
+            ImmutableList.of(
+                new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)),
+                new EqExpr(new VarIntExpr(Field.DST_IP), new VarIntExpr(Field.ORIG_DST_IP))));
 
     _srcIpConstraints.forEach(
         (ingressLocation, srcIpConstraint) -> {

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 
-// TODO javadoc
+/** Represents a dynamic NAT transformation */
 public class DynamicNatRule extends Transformation {
   private static final String PROP_POOL_IP_FIRST = "poolIpFirst";
   private static final String PROP_POOL_IP_LAST = "poolIpLast";
@@ -25,7 +25,7 @@ public class DynamicNatRule extends Transformation {
       @Nonnull RuleAction action,
       @Nullable String description,
       @Nonnull Ip poolIpFirst,
-      @Nonnull Ip poolIpLast){
+      @Nonnull Ip poolIpLast) {
     super(acl, action, description);
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
@@ -110,8 +110,7 @@ public class DynamicNatRule extends Transformation {
       if (_action == null || _poolIpFirst == null || _poolIpLast == null) {
         return null;
       }
-      return new DynamicNatRule(
-          _acl, _action, _description, _poolIpFirst, _poolIpLast);
+      return new DynamicNatRule(_acl, _action, _description, _poolIpFirst, _poolIpLast);
     }
 
     public Builder setAcl(IpAccessList acl) {

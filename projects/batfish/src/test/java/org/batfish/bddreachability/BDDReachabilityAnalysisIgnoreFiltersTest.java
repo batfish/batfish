@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static java.util.Objects.requireNonNull;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -27,11 +28,13 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.TransformationList;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.Transformation.RuleAction;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachabilityParameters;
@@ -95,13 +98,16 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
             .setVrf(vrf1)
             .setActive(true)
             .setAddress(NODE1_ADDR)
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(natAcl)
-                        .setPoolIpFirst(NAT_POOL_IP)
-                        .setPoolIpLast(NAT_POOL_IP)
-                        .build()))
+            .setEgressNats(
+                new TransformationList(
+                    ImmutableList.of(
+                        requireNonNull(
+                            DynamicNatRule.builder()
+                                .setAction(RuleAction.SOURCE_INSIDE)
+                                .setAcl(natAcl)
+                                .setPoolIpFirst(NAT_POOL_IP)
+                                .setPoolIpLast(NAT_POOL_IP)
+                                .build()))))
             .setOutgoingFilter(outgoingFilter)
             .build();
 

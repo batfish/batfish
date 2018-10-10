@@ -108,12 +108,14 @@ public final class TestNetwork {
         ib.setAddress(
                 new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
             .setEgressNats(
-                ImmutableList.of(requireNonNull(DynamicNatRule.builder()
-                    .setAcl(_link2SrcSourceNatAcl)
-                    .setAction(RuleAction.SOURCE_INSIDE)
-                    .setPoolIpFirst(SOURCE_NAT_POOL_IP)
-                    .setPoolIpLast(SOURCE_NAT_POOL_IP)
-                    .build())))
+                ImmutableList.of(
+                    requireNonNull(
+                        DynamicNatRule.builder()
+                            .setAcl(_link2SrcSourceNatAcl)
+                            .setAction(RuleAction.SOURCE_INSIDE)
+                            .setPoolIpFirst(SOURCE_NAT_POOL_IP)
+                            .setPoolIpLast(SOURCE_NAT_POOL_IP)
+                            .build())))
             .setOutgoingFilter(link2PostSourceNatAcl)
             .setOwner(_srcNode)
             .setVrf(srcVrf)

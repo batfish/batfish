@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -55,10 +56,6 @@ public class TransformationList implements Serializable {
   @JsonCreator
   private static TransformationList create(
       @JsonProperty(PROP_TRANSFORMATIONS) @Nullable List<Transformation> transformations) {
-    // TODO why is this necessary
-    if (transformations == null) {
-      return new TransformationList(ImmutableList.of());
-    }
     return new TransformationList(requireNonNull(transformations));
   }
 
@@ -69,7 +66,7 @@ public class TransformationList implements Serializable {
    * @param direction Direction the flow is traveling through the node.
    * @param srcInterface Interface that sourced the flow.
    * @param aclDefinitions ACLs that maybe referenced by a NAT rule.
-   * @param namedIpSpaces Named IpSpace that maybe referenced by a NAT rul.
+   * @param namedIpSpaces Named IpSpace that maybe referenced by a NAT rule.
    * @return The resultant flow after applying each matching transform. If no transforms match the
    *     given flow, the original flow will be returned.
    */
@@ -106,6 +103,7 @@ public class TransformationList implements Serializable {
     return output.toString();
   }
 
+  @JsonIgnore
   public List<DynamicNatRule> getDynamicTransformations() {
     return _transformations
         .stream()
@@ -114,6 +112,7 @@ public class TransformationList implements Serializable {
         .collect(toImmutableList());
   }
 
+  @JsonIgnore
   public List<StaticNatRule> getStaticTransformations() {
     return _transformations
         .stream()
@@ -122,7 +121,7 @@ public class TransformationList implements Serializable {
         .collect(toImmutableList());
   }
 
-  public List<Transformation> getTransforms(Direction direction, Transformed type) {
+  public List<Transformation> getTransformations(Direction direction, Transformed type) {
     return _transformTypes.get(direction).getOrDefault(type, new ArrayList<>());
   }
 
@@ -164,7 +163,7 @@ public class TransformationList implements Serializable {
     // These sorting rules are known.
     // - static goes before dynamic
     // - static with a longer prefix length goes before static with a shorter prefix
-    // TODO: verify the following
+    // Note for future development: verify/determine the following
     // - NATs with route map are sorted route map name and then by static/dynamic
     // - Not sure about route map NATs vs non-route map NATs
     // - Not sure if dynamic NATs are ordered

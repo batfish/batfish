@@ -12,11 +12,14 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasArpTrueEdge;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEgressNats;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEgressDstNats;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEgressSrcNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIngressDstNats;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIngressSrcNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasNeighborUnreachable;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
@@ -89,6 +92,28 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's ingress destination NATs.
+   */
+  public static HasIngressDstNats hasIngressDstNats(
+      @Nonnull
+          Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+              subMatcher) {
+    return new HasIngressDstNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's ingress source NATs.
+   */
+  public static HasIngressSrcNats hasIngressSrcNats(
+      @Nonnull
+          Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+              subMatcher) {
+    return new HasIngressSrcNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
    * SynthesizerInput's IPs by hostname.
    */
   public static HasIpsByHostname hasIpsByHostname(
@@ -107,13 +132,24 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's egress NATs.
+   * SynthesizerInput's egress destination NATs.
    */
-  public static HasEgressNats hasEgressNats(
+  public static HasEgressDstNats hasEgressDstNats(
       @Nonnull
           Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
               subMatcher) {
-    return new HasEgressNats(subMatcher);
+    return new HasEgressDstNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's egress source NATs.
+   */
+  public static HasEgressSrcNats hasEgressSrcNats(
+      @Nonnull
+          Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
+              subMatcher) {
+    return new HasEgressSrcNats(subMatcher);
   }
 
   /**

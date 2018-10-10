@@ -12,4 +12,10 @@ ip nat pool example-2-dynamic-nat-pool 192.168.0.128 192.168.0.254 netmask 255.2
 ip NAT pool dynamic-srcnat 0.0.0.0 0.0.0.0
 !
 !
-
+ip nat inside source static 99.99.99.99 98.98.98.98 no-alias
+ip nat inside source static network 99.99.1.0 98.98.1.0 /24 no-alias
+ip nat outside source static 97.97.97.97 96.96.96.96 add-route no-alias
+ip nat outside source static network 97.97.1.0 97.97.1.0 /24 add-route no-alias
+!
+ip nat pool out-src-nat-pool 97.97.2.1 97.97.2.254 prefix-length 24 add-route no-alias
+!

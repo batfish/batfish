@@ -2,14 +2,18 @@ package org.batfish.z3;
 
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
+import static org.batfish.z3.expr.visitors.TransformationExprTransformer.transformedSuffixMatchExpr;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasArpTrueEdge;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEgressNats;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEgressDstNats;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEgressSrcNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledEdges;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledInterfaces;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledNodes;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIngressDstNats;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIngressSrcNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
@@ -27,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,9 +53,16 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.transformation.DynamicNatRule;
+import org.batfish.datamodel.transformation.StaticNatRule;
 import org.batfish.datamodel.transformation.Transformation.RuleAction;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
@@ -72,6 +84,8 @@ public class SynthesizerInputImplTest {
 
   private DynamicNatRule.Builder _dtb;
 
+  private StaticNatRule.Builder _stb;
+
   private Vrf.Builder _vb;
 
   @Before
@@ -83,6 +97,7 @@ public class SynthesizerInputImplTest {
     _aclb = _nf.aclBuilder();
     _inputBuilder = SynthesizerInputImpl.builder();
     _dtb = org.batfish.datamodel.transformation.DynamicNatRule.builder();
+    _stb = org.batfish.datamodel.transformation.StaticNatRule.builder();
   }
 
   @Test
@@ -534,7 +549,7 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeSourceNats() {
+  public void testComputeDynamicSourceNats() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
     Vrf srcVrf = _vb.setOwner(srcNode).build();
@@ -581,14 +596,43 @@ public class SynthesizerInputImplTest {
 
     assertThat(
         inputWithDataPlane,
-        hasEgressNats(
+        hasEgressDstNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
                     equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
     assertThat(
         inputWithDataPlane,
-        hasEgressNats(
+        hasEgressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasEgressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceOneSourceNat.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasEgressSrcNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
@@ -604,7 +648,29 @@ public class SynthesizerInputImplTest {
                                         Range.closed(ip11.asLong(), ip12.asLong()))))))))));
     assertThat(
         inputWithDataPlane,
-        hasEgressNats(
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceOneSourceNat.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceOneSourceNat.getName()), equalTo(ImmutableList.of())))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasEgressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoSourceNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasEgressSrcNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(
@@ -624,7 +690,287 @@ public class SynthesizerInputImplTest {
                                     Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip21.asLong(), ip22.asLong()))))))))));
-    assertThat(inputWithoutDataPlane, hasEgressNats(nullValue()));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoSourceNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoSourceNats.getName()), equalTo(ImmutableList.of())))));
+
+    assertThat(inputWithoutDataPlane, hasEgressDstNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasEgressSrcNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasIngressDstNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasIngressSrcNats(nullValue()));
+  }
+
+  @Test
+  public void testComputeStaticNats() {
+    Configuration srcNode = _cb.build();
+    Configuration nextHop = _cb.build();
+    Vrf srcVrf = _vb.setOwner(srcNode).build();
+    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
+    Prefix nat1Local = new Prefix(new Ip("1.0.0.0"), 24);
+    Prefix nat1Global = new Prefix(new Ip("2.0.0.0"), 24);
+    Prefix nat2Local = new Prefix(new Ip("3.0.0.1"), 32);
+    Prefix nat2Global = new Prefix(new Ip("4.0.0.1"), 32);
+    String insideInterface = "inside0";
+    _aclb.setOwner(srcNode);
+
+    // NAT 1 is SOURCE_INSIDE
+    ImmutableList.Builder<AclLineMatchExpr> nat1EgressAclExpr = new ImmutableList.Builder<>();
+    nat1EgressAclExpr.add(new MatchSrcInterface(Collections.singleton(insideInterface)));
+    nat1EgressAclExpr.add(
+        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(nat1Local.toIpSpace()).build()));
+
+    ImmutableList.Builder<AclLineMatchExpr> nat1IngressAclExpr = new ImmutableList.Builder<>();
+    nat1IngressAclExpr.add(
+        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(nat1Global.toIpSpace()).build()));
+
+    // NAT 2 is SOURCE_OUTSIDE
+    ImmutableList.Builder<AclLineMatchExpr> nat2EgressAclExpr = new ImmutableList.Builder<>();
+    nat2EgressAclExpr.add(new MatchSrcInterface(Collections.singleton(insideInterface)));
+    nat2EgressAclExpr.add(
+        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(nat2Local.toIpSpace()).build()));
+
+    ImmutableList.Builder<AclLineMatchExpr> nat2IngressAclExpr = new ImmutableList.Builder<>();
+    nat2IngressAclExpr.add(
+        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(nat2Global.toIpSpace()).build()));
+
+    IpAccessList nat1IngressAcl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new AndMatchExpr(nat1IngressAclExpr.build()))
+                        .build()))
+            .build();
+    IpAccessList nat1EgressAcl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new AndMatchExpr(nat1EgressAclExpr.build()))
+                        .build()))
+            .build();
+    IpAccessList nat2IngressAcl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new AndMatchExpr(nat2IngressAclExpr.build()))
+                        .build()))
+            .build();
+    IpAccessList nat2EgressAcl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new AndMatchExpr(nat2EgressAclExpr.build()))
+                        .build()))
+            .build();
+
+    _stb.setAction(RuleAction.SOURCE_INSIDE);
+    StaticNatRule nat1Ingress =
+        _stb.setLocalNetwork(nat1Local).setGlobalNetwork(nat1Global).setAcl(nat1IngressAcl).build();
+    assertThat(nat1Ingress, notNullValue());
+    StaticNatRule nat1Egress =
+        _stb.setLocalNetwork(nat1Local).setGlobalNetwork(nat1Global).setAcl(nat1EgressAcl).build();
+    assertThat(nat1Egress, notNullValue());
+    _stb.setAction(RuleAction.SOURCE_OUTSIDE);
+    StaticNatRule nat2Ingress =
+        _stb.setLocalNetwork(nat2Local).setGlobalNetwork(nat2Global).setAcl(nat2IngressAcl).build();
+    assertThat(nat2Ingress, notNullValue());
+    StaticNatRule nat2Egress =
+        _stb.setLocalNetwork(nat2Local).setGlobalNetwork(nat2Global).setAcl(nat2EgressAcl).build();
+    assertThat(nat2Egress, notNullValue());
+
+    Interface srcInterfaceZeroNats =
+        _ib.setOwner(srcNode).setVrf(srcVrf).setEgressNats(ImmutableList.of()).build();
+    Interface srcInterfaceOneNat =
+        _ib.setEgressNats(ImmutableList.of(nat1Egress))
+            .setIngressNats(ImmutableList.of(nat1Ingress))
+            .build();
+    Interface srcInterfaceTwoNats =
+        _ib.setEgressNats(ImmutableList.of(nat1Egress, nat2Egress))
+            .setIngressNats(ImmutableList.of(nat1Ingress, nat2Ingress))
+            .setName(insideInterface) // Need to make sure insideInterface exists
+            .build();
+    Interface nextHopInterface =
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setEgressNats(ImmutableList.of()).build();
+
+    Edge forwardEdge1 = new Edge(srcInterfaceZeroNats, nextHopInterface);
+    Edge forwardEdge2 = new Edge(srcInterfaceOneNat, nextHopInterface);
+    Edge forwardEdge3 = new Edge(srcInterfaceTwoNats, nextHopInterface);
+    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroNats);
+    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneNat);
+    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoNats);
+    SynthesizerInput inputWithoutDataPlane =
+        _inputBuilder
+            .setConfigurations(
+                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
+            .build();
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(
+                new Topology(
+                    ImmutableSortedSet.of(
+                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
+            .build();
+
+    assertThat(
+        inputWithDataPlane,
+        hasEgressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceZeroNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasEgressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceZeroNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceZeroNats.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceZeroNats.getName()), equalTo(ImmutableList.of())))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasEgressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceOneNat.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasEgressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceOneNat.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat1EgressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.SRC_IP), nat1Global),
+                                        transformedSuffixMatchExpr(
+                                            Field.SRC_IP, nat1Global.getPrefixLength()))))))))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(equalTo(srcInterfaceOneNat.getName()), equalTo(ImmutableList.of())))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceOneNat.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat1IngressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.DST_IP), nat1Local),
+                                        transformedSuffixMatchExpr(
+                                            Field.DST_IP, nat1Local.getPrefixLength()))))))))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasEgressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoNats.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat2EgressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.DST_IP), nat2Global),
+                                        transformedSuffixMatchExpr(
+                                            Field.DST_IP, nat2Global.getPrefixLength()))))))))));
+    assertThat(
+        inputWithDataPlane,
+        hasEgressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoNats.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat1EgressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.SRC_IP), nat1Global),
+                                        transformedSuffixMatchExpr(
+                                            Field.SRC_IP, nat1Global.getPrefixLength()))))))))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressDstNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoNats.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat1IngressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.DST_IP), nat1Local),
+                                        transformedSuffixMatchExpr(
+                                            Field.DST_IP, nat1Local.getPrefixLength()))))))))));
+    assertThat(
+        inputWithDataPlane,
+        hasIngressSrcNats(
+            hasEntry(
+                equalTo(srcNode.getHostname()),
+                hasEntry(
+                    equalTo(srcInterfaceTwoNats.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(srcNode.getHostname(), nat2IngressAcl.getName()),
+                                new AndExpr(
+                                    ImmutableList.of(
+                                        new PrefixMatchExpr(
+                                            new TransformedVarIntExpr(Field.SRC_IP), nat2Local),
+                                        transformedSuffixMatchExpr(
+                                            Field.SRC_IP, nat2Local.getPrefixLength()))))))))));
+
+    assertThat(inputWithoutDataPlane, hasEgressDstNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasEgressSrcNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasIngressDstNats(nullValue()));
+    assertThat(inputWithoutDataPlane, hasIngressSrcNats(nullValue()));
   }
 
   @Test
@@ -730,7 +1076,7 @@ public class SynthesizerInputImplTest {
     // Acl for the SourceNat is DefaultSourceNatAcl
     assertThat(
         inputWithDataPlane,
-        hasEgressNats(
+        hasEgressSrcNats(
             hasEntry(
                 equalTo(srcNode.getHostname()),
                 hasEntry(

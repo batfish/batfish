@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.HasAclName;
 import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.HasPoolIpFirst;
 import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.HasPoolIpLast;
 import org.batfish.datamodel.matchers.DynamicNatRuleMatchersImpl.IsDynamicNatRuleThat;
@@ -13,6 +14,22 @@ import org.hamcrest.Matcher;
 public final class DynamicNatRuleMatchers {
 
   private DynamicNatRuleMatchers() {}
+
+  /**
+   * Provides a matcher that matches when {@code expectedPoolIpFirst} is equal to the {@link
+   * DynamicNatRule}'s ACL name.
+   */
+  public static HasAclName hasAclName(String expectedAclName) {
+    return new HasAclName(equalTo(expectedAclName));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * DynamicNatRule}'s ACL name.
+   */
+  public static HasAclName hasAclName(@Nonnull Matcher<? super String> subMatcher) {
+    return new HasAclName(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches when {@code expectedPoolIpFirst} is equal to the {@link
@@ -55,4 +72,3 @@ public final class DynamicNatRuleMatchers {
     return new IsDynamicNatRuleThat(subMatcher);
   }
 }
-

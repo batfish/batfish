@@ -860,7 +860,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (nats == null) {
       return new ArrayList<>();
     }
-    return nats.getTransforms(direction, transformType);
+    return nats.getTransformations(direction, transformType);
   }
 
   private Map<String, Set<String>> computeTopologyInterfaces() {

@@ -2383,7 +2383,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // Add ingress NATs to interface
-    // TODO: Remove dynamic NAT filtering ingress is supported
     TransformationList ingressList =
         new TransformationList(
             ingressNats
@@ -2449,12 +2448,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static String computeDynamicNatAclName(@Nonnull String natAclName) {
+  public static String computeDynamicNatAclName(@Nonnull String natAclName) {
     return String.format("~DYNAMIC_NAT_INSIDE_ACL~%s~", natAclName);
   }
 
   @VisibleForTesting
-  static String computeDynamicDestinationNatAclName(@Nonnull String natAclName) {
+  public static String computeDynamicDestinationNatAclName(@Nonnull String natAclName) {
     return String.format("~DYNAMIC_DESTINATION_NAT_INSIDE_ACL~%s~", natAclName);
   }
 

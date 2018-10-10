@@ -347,31 +347,31 @@ public final class BDDReachabilityAnalysisFactory {
         .map(
             action -> {
               switch (action) {
-              case ACCEPTED:
-                return new Edge(Accept.INSTANCE, Query.INSTANCE, _one);
-              case DENIED_IN:
-                return new Edge(DropAclIn.INSTANCE, Query.INSTANCE, _one);
-              case DENIED_OUT:
-                return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
-              case LOOP:
-                throw new BatfishException("FlowDisposition LOOP is unsupported");
-              case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
-                throw new BatfishException(
-                    "FlowDisposition NEIGHBOR_UNREACHABLE_OR_EXITS is unsupported");
-              case NEIGHBOR_UNREACHABLE:
-                return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
-              case DELIVERED_TO_SUBNET:
-                return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
-              case EXITS_NETWORK:
-                return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE, _one);
-              case INSUFFICIENT_INFO:
-                return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE, _one);
-              case NO_ROUTE:
-                return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
-              case NULL_ROUTED:
-                return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE, _one);
-              default:
-                throw new BatfishException("Unknown FlowDisposition " + action.toString());
+                case ACCEPTED:
+                  return new Edge(Accept.INSTANCE, Query.INSTANCE, _one);
+                case DENIED_IN:
+                  return new Edge(DropAclIn.INSTANCE, Query.INSTANCE, _one);
+                case DENIED_OUT:
+                  return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
+                case LOOP:
+                  throw new BatfishException("FlowDisposition LOOP is unsupported");
+                case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
+                  throw new BatfishException(
+                      "FlowDisposition NEIGHBOR_UNREACHABLE_OR_EXITS is unsupported");
+                case NEIGHBOR_UNREACHABLE:
+                  return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
+                case DELIVERED_TO_SUBNET:
+                  return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
+                case EXITS_NETWORK:
+                  return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE, _one);
+                case INSUFFICIENT_INFO:
+                  return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE, _one);
+                case NO_ROUTE:
+                  return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
+                case NULL_ROUTED:
+                  return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE, _one);
+                default:
+                  throw new BatfishException("Unknown FlowDisposition " + action.toString());
               }
             });
   }
@@ -792,10 +792,10 @@ public final class BDDReachabilityAnalysisFactory {
                                   String name = iface.getName();
                                   BDD ipSpaceBDD =
                                       Stream.of(
-                                          deliveredToSubnetBDDs.get(name),
-                                          exitsNetworkBDDs.get(name),
-                                          neighborUnreachableBDDs.get(name),
-                                          insufficientInfoBDDs.get(name))
+                                              deliveredToSubnetBDDs.get(name),
+                                              exitsNetworkBDDs.get(name),
+                                              neighborUnreachableBDDs.get(name),
+                                              insufficientInfoBDDs.get(name))
                                           .reduce(_zero, BDD::or);
                                   String outAcl = iface.getOutgoingFilterName();
                                   BDD outAclDenyBDD = ignorableAclDenyBDD(node, outAcl);
@@ -1310,7 +1310,7 @@ public final class BDDReachabilityAnalysisFactory {
             !(edge.getPreState() instanceof PreOutEdgePostNat
                 && edge.getPostState() instanceof PreInInterface
                 && forbiddenTransitNodes.contains(
-                ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
   }
 
   /**

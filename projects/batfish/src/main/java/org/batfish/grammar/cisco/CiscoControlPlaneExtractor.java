@@ -5643,9 +5643,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
-    Set<String> currentInterfaceSet = _currentInterfaces.stream()
-        .map(Interface::getName)
-        .collect(Collectors.toSet());
+    Set<String> currentInterfaceSet =
+        _currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet());
 
     if (ctx.NO() == null) {
       _configuration.getNatInside().addAll(currentInterfaceSet);
@@ -5656,9 +5655,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
-    Set<String> currentInterfaceSet = _currentInterfaces.stream()
-        .map(Interface::getName)
-        .collect(Collectors.toSet());
+    Set<String> currentInterfaceSet =
+        _currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet());
 
     if (ctx.NO() == null) {
       _configuration.getNatOutside().addAll(currentInterfaceSet);
@@ -6352,10 +6350,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     NatPool natPool = new NatPool();
     _configuration.getNatPools().put(name, natPool);
+    // Just ignore ctx.prefix_length since it is only for sanity check
     natPool.setFirst(toIp(ctx.first));
     natPool.setLast(toIp(ctx.last));
-    // TODO: decide what to do about prefix/mask
-
     defineStructure(NAT_POOL, name, ctx);
   }
 
@@ -10955,10 +10952,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .add(
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
-    }
-     else {
+    } else {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
-     }
+    }
   }
 }

@@ -216,10 +216,11 @@ public class ConfigurationTest {
     InterfaceAddress p3to4Physical = new InterfaceAddress(ip3to4Physical, 24);
     Interface i3to1 = ib.setOwner(c3).setVrf(v3).setAddress(p3to1Physical).build();
     ib.setAddress(p3to4Physical).build();
-    DynamicNatRule.Builder builder = org.batfish.datamodel.transformation.DynamicNatRule.builder()
-        .setAction(RuleAction.SOURCE_INSIDE)
-        .setPoolIpFirst(ip3to1Physical)
-        .setPoolIpLast(ip3to1Physical);
+    DynamicNatRule.Builder builder =
+        org.batfish.datamodel.transformation.DynamicNatRule.builder()
+            .setAction(RuleAction.SOURCE_INSIDE)
+            .setPoolIpFirst(ip3to1Physical)
+            .setPoolIpLast(ip3to1Physical);
     DynamicNatRule snat3copy1 = builder.build();
     assertThat(snat3copy1, notNullValue());
     DynamicNatRule snat3copy2 = builder.build();

@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class CiscoNatTest {
-  private static final String HOST_NAME = "ios-nat";
+  private static final String HOST_NAME = "ios-nat-test";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco/testconfigs/";
   private static final String INSIDE_IFACE_NAME = "Ethernet1";
   private static final String OUTSIDE_IFACE_NAME = "Ethernet2";
@@ -238,7 +238,6 @@ public class CiscoNatTest {
     // assertNotTransformed(
     //     SOME_OTHER_IP_ADDER, "22.22.22.22", Direction.EGRESS, INSIDE_IFACE_NAME, _ingressNats);
   }
-
 
   private Flow applyEgressTransform(Flow flow) {
     return applyTransform(_egressNats, flow, Direction.EGRESS, INSIDE_IFACE_NAME);

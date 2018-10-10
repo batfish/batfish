@@ -11,12 +11,14 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TransformationList.Transformed;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.Transformation.Direction;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -141,6 +143,38 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasIngressDstNats extends FeatureMatcher<Interface, List<Transformation>> {
+    HasIngressDstNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
+      super(subMatcher, "an Interface with ingressDstNats:", "ingressDstNats");
+    }
+
+    @Nullable
+    @Override
+    protected List<Transformation> featureValueOf(Interface actual) {
+      if (actual.getIngressNats() == null) {
+        return null;
+      }
+      return actual
+          .getIngressNats()
+          .getTransformations(Direction.INGRESS, Transformed.DESTINATION_ADDR);
+    }
+  }
+
+  static final class HasIngressSrcNats extends FeatureMatcher<Interface, List<Transformation>> {
+    HasIngressSrcNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
+      super(subMatcher, "an Interface with ingressSrcNats:", "ingressSrcNats");
+    }
+
+    @Nullable
+    @Override
+    protected List<Transformation> featureValueOf(Interface actual) {
+      if (actual.getIngressNats() == null) {
+        return null;
+      }
+      return actual.getIngressNats().getTransformations(Direction.INGRESS, Transformed.SOURCE_ADDR);
+    }
+  }
+
   static final class HasIsis extends FeatureMatcher<Interface, IsisInterfaceSettings> {
     HasIsis(@Nonnull Matcher<? super IsisInterfaceSettings> subMatcher) {
       super(subMatcher, "An Interface with isis:", "isis");
@@ -251,9 +285,9 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasEgressNats extends FeatureMatcher<Interface, List<Transformation>> {
-    HasEgressNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
-      super(subMatcher, "an Interface with egressNats:", "egressNats");
+  static final class HasEgressDstNats extends FeatureMatcher<Interface, List<Transformation>> {
+    HasEgressDstNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
+      super(subMatcher, "an Interface with egressDstNats:", "egressDstNats");
     }
 
     @Nullable
@@ -262,7 +296,24 @@ final class InterfaceMatchersImpl {
       if (actual.getEgressNats() == null) {
         return null;
       }
-      return actual.getEgressNats().getTransformations();
+      return actual
+          .getEgressNats()
+          .getTransformations(Direction.EGRESS, Transformed.DESTINATION_ADDR);
+    }
+  }
+
+  static final class HasEgressSrcNats extends FeatureMatcher<Interface, List<Transformation>> {
+    HasEgressSrcNats(@Nonnull Matcher<? super List<Transformation>> subMatcher) {
+      super(subMatcher, "an Interface with egressSrcNats:", "egressSrcNats");
+    }
+
+    @Nullable
+    @Override
+    protected List<Transformation> featureValueOf(Interface actual) {
+      if (actual.getEgressNats() == null) {
+        return null;
+      }
+      return actual.getEgressNats().getTransformations(Direction.EGRESS, Transformed.SOURCE_ADDR);
     }
   }
 

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 
-// TODO javadoc
+/** Represents a Static NAT transformation */
 public class StaticNatRule extends Transformation {
   private static final String PROP_LOCAL_NETWORK = "localNetwork";
   private static final String PROP_GLOBAL_NETWORK = "globalNetwork";

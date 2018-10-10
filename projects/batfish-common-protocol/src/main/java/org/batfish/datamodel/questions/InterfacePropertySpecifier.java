@@ -95,9 +95,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               DHCP_RELAY_ADDRESSES,
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
-          .put(EGRESS_NATS,
-              new PropertyDescriptor<>(Interface::getEgressNats,
-                  Schema.list(Schema.STRING)))
+          .put(
+              EGRESS_NATS,
+              new PropertyDescriptor<>(Interface::getEgressNats, Schema.list(Schema.STRING)))
           .put(
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
@@ -106,9 +106,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
-          .put(INGRESS_NATS,
-              new PropertyDescriptor<>(Interface::getIngressNats,
-                  Schema.list(Schema.STRING)))
+          .put(
+              INGRESS_NATS,
+              new PropertyDescriptor<>(Interface::getIngressNats, Schema.list(Schema.STRING)))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
           .put(NATIVE_VLAN, new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))

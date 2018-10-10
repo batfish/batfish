@@ -59,7 +59,7 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     // second link
@@ -72,7 +72,7 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setEgressNats(ImmutableList.of())
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);
