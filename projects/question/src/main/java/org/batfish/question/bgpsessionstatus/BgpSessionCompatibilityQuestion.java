@@ -2,7 +2,6 @@ package org.batfish.question.bgpsessionstatus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -13,13 +12,12 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
 
   /** Create a new BGP session compatibility question with default parameters. */
   public BgpSessionCompatibilityQuestion() {
-    super(null, null, null, null, null);
+    super(null, null, null, null);
   }
 
   /**
    * Create a new BGP session compatibility question.
    *
-   * @param bgpGroups only look at peers that belong to a given named BGP group.
    * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
@@ -29,22 +27,16 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
    */
   @JsonCreator
   public BgpSessionCompatibilityQuestion(
-      @Nullable @JsonProperty(PROP_BGP_GROUPS) SortedSet<String> bgpGroups,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
-    super(bgpGroups, nodes, remoteNodes, status, type);
+    super(nodes, remoteNodes, status, type);
   }
 
   @Override
   public boolean getDataPlane() {
     return false;
-  }
-
-  @JsonProperty(PROP_BGP_GROUPS)
-  private SortedSet<String> getBgpGroups() {
-    return _bgpGroups;
   }
 
   @Override

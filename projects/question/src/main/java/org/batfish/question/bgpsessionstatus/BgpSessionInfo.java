@@ -118,10 +118,6 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     if (bgpPeerConfig == null) {
       return Optional.empty();
     }
-    // Only match groups we care about
-    if (bgpPeerConfig.getGroup() != null && question.matchesGroup(bgpPeerConfig.getGroup())) {
-      return Optional.empty();
-    }
 
     // Setup session info.
     SessionType sessionType =
