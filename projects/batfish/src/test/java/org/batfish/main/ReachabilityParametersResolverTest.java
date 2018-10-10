@@ -6,7 +6,6 @@ import static org.batfish.main.ReachabilityParametersResolver.isActive;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -26,6 +25,7 @@ import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ReachabilityParameters.Builder;
@@ -78,10 +78,11 @@ public class ReachabilityParametersResolverTest {
     ReachabilityParameters reachabilityParameters = reachabilityParametersBuilder.build();
     ResolvedReachabilityParameters resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
-    assertThat(resolvedReachabilityParameters.getHeaderSpace().getNotDstIps(), nullValue());
     assertThat(
-        resolvedReachabilityParameters.getHeaderSpace().getDstIps(),
-        equalTo(UniverseIpSpace.INSTANCE));
+        resolvedReachabilityParameters.getHeaderSpace(),
+        equalTo(
+            AclLineMatchExprs.and(
+                AclLineMatchExprs.matchDst(UniverseIpSpace.INSTANCE), AclLineMatchExprs.TRUE)));
 
     // test setting destination IpSpace
     IpIpSpace dstIpSpace = new Ip("1.1.1.1").toIpSpace();
@@ -91,8 +92,10 @@ public class ReachabilityParametersResolverTest {
             .build();
     resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
-    assertThat(resolvedReachabilityParameters.getHeaderSpace().getNotDstIps(), nullValue());
-    assertThat(resolvedReachabilityParameters.getHeaderSpace().getDstIps(), equalTo(dstIpSpace));
+    assertThat(
+        resolvedReachabilityParameters.getHeaderSpace(),
+        equalTo(
+            AclLineMatchExprs.and(AclLineMatchExprs.matchDst(dstIpSpace), AclLineMatchExprs.TRUE)));
   }
 
   @Test

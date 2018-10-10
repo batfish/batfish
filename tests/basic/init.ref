@@ -46,18 +46,18 @@
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
         "configs/as1border1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 79
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
                 81
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as3" : {
               "definitionLines" : [
@@ -69,13 +69,13 @@
               "definitionLines" : [
                 87
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "xanadu" : {
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -223,12 +223,12 @@
           }
         },
         "configs/as1border2.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
@@ -240,13 +240,13 @@
               "definitionLines" : [
                 89
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as4" : {
               "definitionLines" : [
                 91
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -420,12 +420,12 @@
           }
         },
         "configs/as1core1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 80
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "interface" : {
@@ -467,18 +467,18 @@
           }
         },
         "configs/as2border1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 89
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
                 91
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             },
             "as3" : {
               "definitionLines" : [
@@ -651,7 +651,7 @@
           }
         },
         "configs/as2border2.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 86
@@ -662,13 +662,13 @@
               "definitionLines" : [
                 88
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             },
             "as3" : {
               "definitionLines" : [
                 90
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -834,12 +834,12 @@
           }
         },
         "configs/as2core1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as2" : {
               "definitionLines" : [
                 90
               ],
-              "numReferrers" : -1
+              "numReferrers" : 4
             }
           },
           "extended ipv4 access-list" : {
@@ -909,12 +909,12 @@
           }
         },
         "configs/as2core2.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as2" : {
               "definitionLines" : [
                 91
               ],
-              "numReferrers" : -1
+              "numReferrers" : 4
             }
           },
           "interface" : {
@@ -975,12 +975,12 @@
           }
         },
         "configs/as2dept1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as2" : {
               "definitionLines" : [
                 83
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "expanded community-list" : {
@@ -1103,18 +1103,18 @@
           }
         },
         "configs/as2dist1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as2" : {
               "definitionLines" : [
                 83
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             },
             "dept" : {
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -1208,18 +1208,18 @@
           }
         },
         "configs/as2dist2.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as2" : {
               "definitionLines" : [
                 83
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             },
             "dept" : {
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -1313,7 +1313,7 @@
           }
         },
         "configs/as3border1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 81
@@ -1324,13 +1324,13 @@
               "definitionLines" : [
                 83
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as3" : {
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -1478,12 +1478,12 @@
           }
         },
         "configs/as3border2.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as1" : {
               "definitionLines" : [
                 81
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
@@ -1495,7 +1495,7 @@
               "definitionLines" : [
                 85
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "expanded community-list" : {
@@ -1633,12 +1633,12 @@
           }
         },
         "configs/as3core1.cfg" : {
-          "bgp group" : {
+          "bgp peer-group" : {
             "as3" : {
               "definitionLines" : [
                 87
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "interface" : {
@@ -1700,6 +1700,28 @@
       },
       "referencedStructures" : {
         "configs/as1border1.cfg" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                89
+              ]
+            },
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                93
+              ]
+            },
+            "bad-ebgp" : {
+              "bgp neighbor peer-group" : [
+                91
+              ]
+            },
+            "xanadu" : {
+              "bgp neighbor peer-group" : [
+                92
+              ]
+            }
+          },
           "community-list" : {
             "as2_community" : {
               "route-map match community-list" : [
@@ -1786,6 +1808,23 @@
           }
         },
         "configs/as1border2.cfg" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                93
+              ]
+            },
+            "as3" : {
+              "bgp neighbor peer-group" : [
+                95
+              ]
+            },
+            "as4" : {
+              "bgp neighbor peer-group" : [
+                96
+              ]
+            }
+          },
           "community-list" : {
             "as2_community" : {
               "route-map match community-list" : [
@@ -1892,6 +1931,14 @@
           }
         },
         "configs/as1core1.cfg" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                82,
+                84
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -1920,6 +1967,19 @@
           }
         },
         "configs/as2border1.cfg" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                99
+              ]
+            },
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                95,
+                97
+              ]
+            }
+          },
           "community-list" : {
             "as1_community" : {
               "route-map match community-list" : [
@@ -2017,6 +2077,19 @@
           }
         },
         "configs/as2border2.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                92,
+                94
+              ]
+            },
+            "as3" : {
+              "bgp neighbor peer-group" : [
+                96
+              ]
+            }
+          },
           "community-list" : {
             "as1_community" : {
               "route-map match community-list" : [
@@ -2114,6 +2187,16 @@
           }
         },
         "configs/as2core1.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                92,
+                94,
+                96,
+                98
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -2162,6 +2245,16 @@
           }
         },
         "configs/as2core2.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                93,
+                95,
+                97,
+                99
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -2209,6 +2302,14 @@
           }
         },
         "configs/as2dept1.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                85,
+                86
+              ]
+            }
+          },
           "community-list" : {
             "as2_community" : {
               "route-map match community-list" : [
@@ -2275,6 +2376,19 @@
           }
         },
         "configs/as2dist1.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                87,
+                89
+              ]
+            },
+            "dept" : {
+              "bgp neighbor peer-group" : [
+                91
+              ]
+            }
+          },
           "community-list" : {
             "dept_community" : {
               "route-map match community-list" : [
@@ -2334,6 +2448,19 @@
           }
         },
         "configs/as2dist2.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                87,
+                89
+              ]
+            },
+            "dept" : {
+              "bgp neighbor peer-group" : [
+                91
+              ]
+            }
+          },
           "community-list" : {
             "dept_community" : {
               "route-map match community-list" : [
@@ -2393,6 +2520,18 @@
           }
         },
         "configs/as3border1.cfg" : {
+          "bgp peer-group" : {
+            "as2" : {
+              "bgp neighbor peer-group" : [
+                89
+              ]
+            },
+            "as3" : {
+              "bgp neighbor peer-group" : [
+                87
+              ]
+            }
+          },
           "community-list" : {
             "as1_community" : {
               "route-map match community-list" : [
@@ -2479,6 +2618,18 @@
           }
         },
         "configs/as3border2.cfg" : {
+          "bgp peer-group" : {
+            "as1" : {
+              "bgp neighbor peer-group" : [
+                89
+              ]
+            },
+            "as3" : {
+              "bgp neighbor peer-group" : [
+                87
+              ]
+            }
+          },
           "community-list" : {
             "as1_community" : {
               "route-map match community-list" : [
@@ -2558,6 +2709,14 @@
           }
         },
         "configs/as3core1.cfg" : {
+          "bgp peer-group" : {
+            "as3" : {
+              "bgp neighbor peer-group" : [
+                89,
+                91
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [

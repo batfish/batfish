@@ -9,7 +9,7 @@ import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
@@ -30,7 +30,7 @@ public final class ResolvedReachabilityParameters {
 
     private Set<String> _forbiddenTransitNodes;
 
-    private HeaderSpace _headerSpace;
+    private AclLineMatchExpr _headerSpace;
 
     private int _maxChunkSize;
 
@@ -73,7 +73,7 @@ public final class ResolvedReachabilityParameters {
       return this;
     }
 
-    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(AclLineMatchExpr headerSpace) {
       _headerSpace = headerSpace;
       return this;
     }
@@ -119,7 +119,7 @@ public final class ResolvedReachabilityParameters {
 
   private Set<String> _forbiddenTransitNodes;
 
-  private final HeaderSpace _headerSpace;
+  private final AclLineMatchExpr _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -172,7 +172,7 @@ public final class ResolvedReachabilityParameters {
     return _forbiddenTransitNodes;
   }
 
-  public HeaderSpace getHeaderSpace() {
+  public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 

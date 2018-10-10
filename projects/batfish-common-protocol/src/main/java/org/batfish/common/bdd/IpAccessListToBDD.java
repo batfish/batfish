@@ -98,6 +98,10 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
     return _pkt;
   }
 
+  public HeaderSpaceToBDD getHeaderSpaceToBDD() {
+    return _headerSpaceToBDD;
+  }
+
   /**
    * Convert an Access Control List (ACL) to a symbolic boolean expression. The default action in an
    * ACL is to deny all traffic.

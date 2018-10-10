@@ -1,8 +1,10 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -62,13 +65,12 @@ import org.batfish.z3.state.Query;
  * provides two methods for constructing {@link BDDReachabilityAnalysis}, depending on whether or
  * not you have a destination Ip constraint.
  *
- * <p>The core of the implementation is the {@link BDDReachabilityAnalysisFactory#generateEdges()}
- * method and its many helpers, which generate the {@link StateExpr nodes} and {@link Edge edges} of
- * the reachability graph. Each node represents a step of the routing process within some network
- * device or between devices. The edges represent the flow of traffic between these steps. Each edge
- * is labeled with a {@link BDD} that represents the set of packets that can traverse that edge. If
- * the edge represents a source NAT, the edge will be labeled with the NAT rules (match conditions
- * and set of pool IPs).
+ * <p>The core of the implementation is the {@code generateEdges()} method and its many helpers,
+ * which generate the {@link StateExpr nodes} and {@link Edge edges} of the reachability graph. Each
+ * node represents a step of the routing process within some network device or between devices. The
+ * edges represent the flow of traffic between these steps. Each edge is labeled with a {@link BDD}
+ * that represents the set of packets that can traverse that edge. If the edge represents a source
+ * NAT, the edge will be labeled with the NAT rules (match conditions and set of pool IPs).
  *
  * <p>To support {@link org.batfish.datamodel.acl.MatchSrcInterface} and {@link
  * org.batfish.datamodel.acl.OriginatingFromDevice} {@link
@@ -333,14 +335,14 @@ public final class BDDReachabilityAnalysisFactory {
    * These edges do not depend on the query. Compute them separately so that we can later cache them
    * across queries if we want to.
    */
-  private Stream<Edge> generateEdges() {
+  private Stream<Edge> generateEdges(Set<String> finalNodes) {
     return Streams.concat(
-        generateRules_NodeAccept_Accept(),
-        generateRules_NodeDropAclIn_DropAclIn(),
-        generateRules_NodeDropNoRoute_DropNoRoute(),
-        generateRules_NodeDropNullRoute_DropNullRoute(),
-        generateRules_NodeDropAclOut_DropAclOut(),
-        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(),
+        generateRules_NodeAccept_Accept(finalNodes),
+        generateRules_NodeDropAclIn_DropAclIn(finalNodes),
+        generateRules_NodeDropNoRoute_DropNoRoute(finalNodes),
+        generateRules_NodeDropNullRoute_DropNullRoute(finalNodes),
+        generateRules_NodeDropAclOut_DropAclOut(finalNodes),
+        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_PostInVrf(),
         generateRules_PostInVrf_NodeAccept(),
@@ -355,45 +357,39 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutVrf_PreOutEdge());
   }
 
-  private Stream<Edge> generateRules_NodeAccept_Accept() {
-    return _configs
-        .keySet()
-        .stream()
-        .map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE, _one));
+  private Stream<Edge> generateRules_NodeAccept_Accept(Set<String> finalNodes) {
+    return finalNodes.stream().map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropAclIn_DropAclIn() {
-    return _configs
-        .keySet()
+  private Stream<Edge> generateRules_NodeDropAclIn_DropAclIn(Set<String> finalNodes) {
+    return finalNodes
         .stream()
         .map(node -> new Edge(new NodeDropAclIn(node), DropAclIn.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropAclOut_DropAclOut() {
-    return _configs
-        .keySet()
+  private Stream<Edge> generateRules_NodeDropAclOut_DropAclOut(Set<String> finalNodes) {
+    return finalNodes
         .stream()
         .map(node -> new Edge(new NodeDropAclOut(node), DropAclOut.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropNoRoute_DropNoRoute() {
-    return _configs
-        .keySet()
+  private Stream<Edge> generateRules_NodeDropNoRoute_DropNoRoute(Set<String> finalNodes) {
+    return finalNodes
         .stream()
         .map(node -> new Edge(new NodeDropNoRoute(node), DropNoRoute.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute() {
-    return _configs
-        .keySet()
+  private Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute(Set<String> finalNodes) {
+    return finalNodes
         .stream()
         .map(node -> new Edge(new NodeDropNullRoute(node), DropNullRoute.INSTANCE, _one));
   }
 
-  private Stream<Edge> generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable() {
-    return _configs
-        .values()
+  private Stream<Edge> generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(
+      Set<String> finalNodes) {
+    return finalNodes
         .stream()
+        .map(_configs::get)
         .flatMap(c -> c.getAllInterfaces().values().stream())
         .map(
             iface -> {
@@ -788,16 +784,31 @@ public final class BDDReachabilityAnalysisFactory {
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
     return bddReachabilityAnalysis(
-        srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, ImmutableSet.of(FlowDisposition.ACCEPTED));
+        srcIpSpaceAssignment,
+        UniverseIpSpace.INSTANCE,
+        _configs.keySet(),
+        ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
-      IpSpaceAssignment srcIpSpaceAssignment, IpSpace dstIpSpace, Set<FlowDisposition> actions) {
-    Map<StateExpr, BDD> roots = new HashMap<>();
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
-    IpSpaceToBDD dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
-    BDD dstIpSpaceBDD = dstIpSpace.accept(dstIpSpaceToBDD);
+      IpSpaceAssignment srcIpSpaceAssignment,
+      IpSpace dstIpSpace,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions) {
+    return bddReachabilityAnalysis(srcIpSpaceAssignment, matchDst(dstIpSpace), finalNodes, actions);
+  }
 
+  public BDDReachabilityAnalysis bddReachabilityAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr dstHeaderSpace,
+      @Nonnull Set<String> finalNodes,
+      Set<FlowDisposition> actions) {
+    Map<StateExpr, BDD> roots = new HashMap<>();
+    BDD dstIpSpaceBDD =
+        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of())
+            .visit(dstHeaderSpace);
+
+    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
       BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
       BDD headerspaceBDD = srcIpSpaceBDD.and(dstIpSpaceBDD);
@@ -809,7 +820,8 @@ public final class BDDReachabilityAnalysisFactory {
 
     Map<StateExpr, Map<StateExpr, Edge>> edges =
         computeEdges(
-            Streams.concat(generateEdges(), generateRootEdges(roots), generateQueryEdges(actions)));
+            Streams.concat(
+                generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions)));
 
     return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges);
   }
