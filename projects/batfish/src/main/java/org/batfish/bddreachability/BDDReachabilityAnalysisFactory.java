@@ -957,23 +957,21 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Edge adaptEdgeSetTransitedBit(Edge edge) {
     Function<BDD, BDD> traverseBackward =
-        bdd -> edge._traverseBackward.apply(bdd.exist(_requiredTransitNodeBDD));
+        bdd -> edge.traverseBackward(bdd.exist(_requiredTransitNodeBDD));
     Function<BDD, BDD> traverseForward =
         bdd ->
-            edge._traverseForward
-                .apply(bdd.exist(_requiredTransitNodeBDD))
-                .and(_requiredTransitNodeBDD);
-    return new Edge(edge._preState, edge._postState, traverseBackward, traverseForward);
+            edge.traverseForward(bdd.exist(_requiredTransitNodeBDD)).and(_requiredTransitNodeBDD);
+    return new Edge(edge.getPreState(), edge.getPostState(), traverseBackward, traverseForward);
   }
 
   /** Adapt an edge, applying an additional constraint after traversing the edge. */
   @VisibleForTesting
   static Edge adaptEdgeAddConstraint(BDD constraint, Edge edge) {
     return new Edge(
-        edge._preState,
-        edge._postState,
-        bdd -> edge._traverseBackward.apply(bdd.and(constraint)),
-        bdd -> edge._traverseForward.apply(bdd).and(constraint));
+        edge.getPreState(),
+        edge.getPostState(),
+        bdd -> edge.traverseBackward(bdd.and(constraint)),
+        bdd -> edge.traverseForward(bdd).and(constraint));
   }
 
   private Stream<Edge> instrumentRequiredTransitNodes(
@@ -983,14 +981,14 @@ public final class BDDReachabilityAnalysisFactory {
 
     return edgeStream.map(
         edge -> {
-          if (edge._preState instanceof PreOutEdgePostNat
-              && edge._postState instanceof PreInInterface) {
-            String hostname = ((PreOutEdgePostNat) edge._preState).getSrcNode();
+          if (edge.getPreState() instanceof PreOutEdgePostNat
+              && edge.getPostState() instanceof PreInInterface) {
+            String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
             return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
-          } else if (edge._preState instanceof OriginateVrf
-              || edge._preState instanceof OriginateInterfaceLink) {
+          } else if (edge.getPreState() instanceof OriginateVrf
+              || edge.getPreState() instanceof OriginateInterfaceLink) {
             return adaptEdgeAddConstraint(notTransited, edge);
-          } else if (edge._postState instanceof Query) {
+          } else if (edge.getPostState() instanceof Query) {
             return adaptEdgeAddConstraint(transited, edge);
           } else {
             return edge;
