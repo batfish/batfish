@@ -52,7 +52,7 @@ public final class WorkMgrTestUtils {
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
+        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
     pojoTopology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
     Main.getWorkMgr().getStorage().storePojoTopology(pojoTopology, networkId, snapshotId);

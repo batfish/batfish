@@ -85,9 +85,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String content = "stuff";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, content, _folder);
-    String key =
-        String.format(
-            "%s/%s/%s", BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_CONFIGURATIONS_DIR, node);
+    String key = String.format("%s/%s", BfConsts.RELPATH_CONFIGURATIONS_DIR, node);
     Response response = getTarget(network, snapshot, key).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

@@ -1,8 +1,6 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
-  "actions" : [
-    "ACCEPTED"
-  ],
+  "actions" : "ACCEPTED",
   "headers" : {
     "dstIps" : "ddd",
     "srcIps" : "sss"
@@ -25,12 +23,9 @@
     "variables" : {
       "actions" : {
         "description" : "Only return flows for which the disposition is from this set",
-        "minElements" : 1,
         "optional" : true,
         "type" : "string",
-        "value" : [
-          "accepted"
-        ]
+        "value" : "success"
       },
       "headers" : {
         "description" : "Packet header constraints",

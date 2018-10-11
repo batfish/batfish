@@ -1,19 +1,27 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.batfish.common.CoordConstsV2.RSC_FORK;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
 
+import io.opentracing.util.GlobalTracer;
+import java.io.FileNotFoundException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.coordinator.Main;
@@ -97,5 +105,43 @@ public class ContainerResource {
   @Path(RSC_SNAPSHOTS)
   public SnapshotsResource getSnapshotsResource() {
     return new SnapshotsResource(_name);
+  }
+
+  /**
+   * Fork the specified snapshot and make changes to the new snapshot
+   *
+   * @param forkSnapshotBean The {@link ForkSnapshotBean} containing parameters used to create the
+   *     fork
+   */
+  @POST
+  @Path(RSC_SNAPSHOTS + ":" + RSC_FORK)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response forkSnapshot(ForkSnapshotBean forkSnapshotBean) {
+    try {
+      checkArgument(
+          !isNullOrEmpty(forkSnapshotBean.newSnapshot), "Parameter %s is required", "new snapshot");
+      checkArgument(
+          !isNullOrEmpty(forkSnapshotBean.baseSnapshot),
+          "Parameter %s is required",
+          "base snapshot");
+
+      // Set the appropriate tags for the trace being captured
+      if (GlobalTracer.get().activeSpan() != null) {
+        GlobalTracer.get()
+            .activeSpan()
+            .setTag("network-name", _name)
+            .setTag("snapshot-name", forkSnapshotBean.newSnapshot);
+      }
+
+      Main.getWorkMgr().forkSnapshot(_name, forkSnapshotBean);
+      return Response.ok().build();
+    } catch (FileNotFoundException e) {
+      return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (Exception e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+    }
   }
 }
