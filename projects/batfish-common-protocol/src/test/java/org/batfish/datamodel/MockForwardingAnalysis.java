@@ -117,6 +117,11 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   }
 
   @Override
+  public Map<String, Map<String, IpSpace>> getNeighborUnreachable2() {
+    return ImmutableMap.of();
+  }
+
+  @Override
   public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
@@ -124,5 +129,15 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getRoutableIps() {
     return _routableIps;
+  }
+
+  @Override
+  public Map<String, Map<String, IpSpace>> getExitsNetwork() {
+    return ImmutableMap.of();
+  }
+
+  @Override
+  public Map<String, Map<String, IpSpace>> getDeliveredToSubnet() {
+    return ImmutableMap.of();
   }
 }

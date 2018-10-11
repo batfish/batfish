@@ -13,6 +13,15 @@ public interface ForwardingAnalysis {
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 
+  /** Mapping: hostname ->&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
+  Map<String, Map<String, IpSpace>> getDeliveredToSubnet();
+
+  /** Mapping: hostname ->&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
+  Map<String, Map<String, IpSpace>> getExitsNetwork();
+
+  /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
+  Map<String, Map<String, IpSpace>> getNeighborUnreachable2();
+
   /**
    * Mapping: hostname -&gt; vrfName -&gt; nullRoutedIps <br>
    * A nullable IP is a destination IP for which there is a longest-prefix-match route that discards

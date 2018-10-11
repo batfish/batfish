@@ -37,12 +37,14 @@ import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.Debug;
+import org.batfish.z3.state.DeliveredToSubnet;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.DropAcl;
 import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.ExitNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -391,6 +393,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
                     new BasicRuleStatement(
                         new NodeNeighborUnreachable(hostname), NeighborUnreachable.INSTANCE)));
   }
+
+  // TODO: complete this function
+  @Override
+  public void visitExitsNetwork(ExitNetwork.State state) {}
+
+  // TODO: complete this function
+  @Override
+  public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {}
 
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {

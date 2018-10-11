@@ -25,6 +25,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -35,10 +36,12 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
+import org.batfish.z3.state.DeliveredToSubnet;
 import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.ExitNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
@@ -237,6 +240,18 @@ public final class BDDReachabilityAnalysisFactory {
         entry -> entry.getValue().accept(ipSpaceToBDD));
   }
 
+  private static Map<String, Map<String, BDD>> computeDeliveredToSubnetBDDs(
+      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+    return toImmutableMap(
+        forwardingAnalysis.getDeliveredToSubnet(),
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey,
+                ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD)));
+  }
+
   private static Map<String, Map<String, Map<String, BDD>>> computeNeighborUnreachableBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return toImmutableMap(
@@ -273,8 +288,12 @@ public final class BDDReachabilityAnalysisFactory {
                   return new Edge(DropAclOut.INSTANCE, Query.INSTANCE, _one);
                 case LOOP:
                   throw new BatfishException("FlowDisposition LOOP is unsupported");
-                case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
+                case NEIGHBOR_UNREACHABLE:
                   return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
+                case DELIVERED_TO_SUBNET:
+                  return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
+                case EXITS_NETWORK:
+                  return new Edge(ExitNetwork.INSTANCE, Query.INSTANCE, _one);
                 case NO_ROUTE:
                   return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
                 case NULL_ROUTED:
@@ -351,8 +370,11 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdgePostNat_PreInInterface(),
         generateRules_PreOutVrf_NodeDropAclOut(),
         generateRules_PreOutVrf_NodeDropNullRoute(),
-        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable(),
-        generateRules_PreOutVrf_PreOutEdge());
+        // generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable(),
+        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable2(),
+        generateRules_PreOutVrf_PreOutEdge(),
+        generateRules_PreOutVrf_DeliveredToSubnet(),
+        generateRules_PreOutVrf_ExitsNetwork());
   }
 
   private Stream<Edge> generateRules_NodeAccept_Accept() {
@@ -736,6 +758,108 @@ public final class BDDReachabilityAnalysisFactory {
                                               edgeBdd::and,
                                               eraseSourceAfter(edgeBdd, node)));
                                 });
+                      });
+            });
+  }
+
+  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable2() {
+    return _forwardingAnalysis
+        .getNeighborUnreachable2()
+        .entrySet()
+        .stream()
+        .flatMap(
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .flatMap(
+                      ifaceEntry -> {
+                        String ifaceName = ifaceEntry.getKey();
+                        BDD ipSpaceBDD = ifaceEntry.getValue().accept(_dstIpSpaceToBDD);
+                        Interface iface = _configs.get(node).getAllInterfaces().get(ifaceName);
+                        String outAcl = iface.getOutgoingFilterName();
+                        BDD outAclPermitBDD =
+                            outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
+                        BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
+
+                        return edgeBdd.isZero()
+                            ? Stream.of()
+                            : Stream.of(
+                                new Edge(
+                                    new PreOutVrf(node, iface.getVrfName()),
+                                    new NodeInterfaceNeighborUnreachable(node, ifaceName),
+                                    edgeBdd::and,
+                                    eraseSourceAfter(edgeBdd, node)));
+                      });
+            });
+  }
+
+  private Stream<Edge> generateRules_PreOutVrf_ExitsNetwork() {
+    return _forwardingAnalysis
+        .getExitsNetwork()
+        .entrySet()
+        .stream()
+        .flatMap(
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .flatMap(
+                      ifaceEntry -> {
+                        String ifaceName = ifaceEntry.getKey();
+                        BDD ipSpaceBDD = ifaceEntry.getValue().accept(_dstIpSpaceToBDD);
+                        Interface iface = _configs.get(node).getAllInterfaces().get(ifaceName);
+                        String outAcl = iface.getOutgoingFilterName();
+                        BDD outAclPermitBDD =
+                            outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
+                        BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
+
+                        return edgeBdd.isZero()
+                            ? Stream.of()
+                            : Stream.of(
+                                new Edge(
+                                    new PreOutVrf(node, iface.getVrfName()),
+                                    DeliveredToSubnet.INSTANCE,
+                                    edgeBdd::and,
+                                    eraseSourceAfter(edgeBdd, node)));
+                      });
+            });
+  }
+
+  private Stream<Edge> generateRules_PreOutVrf_DeliveredToSubnet() {
+    return _forwardingAnalysis
+        .getDeliveredToSubnet()
+        .entrySet()
+        .stream()
+        .flatMap(
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .flatMap(
+                      ifaceEntry -> {
+                        String ifaceName = ifaceEntry.getKey();
+                        BDD ipSpaceBDD = ifaceEntry.getValue().accept(_dstIpSpaceToBDD);
+                        Interface iface = _configs.get(node).getAllInterfaces().get(ifaceName);
+                        String outAcl = iface.getOutgoingFilterName();
+                        BDD outAclPermitBDD =
+                            outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
+                        BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
+
+                        return edgeBdd.isZero()
+                            ? Stream.of()
+                            : Stream.of(
+                                new Edge(
+                                    new PreOutVrf(node, iface.getVrfName()),
+                                    DeliveredToSubnet.INSTANCE,
+                                    edgeBdd::and,
+                                    eraseSourceAfter(edgeBdd, node)));
                       });
             });
   }

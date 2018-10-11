@@ -17,12 +17,14 @@ import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.Debug;
+import org.batfish.z3.state.DeliveredToSubnet;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.DropAcl;
 import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.ExitNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -143,6 +145,16 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
 
   @Override
   public List<StateParameter> visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public List<StateParameter> visitExitNetwork(ExitNetwork exitNetwork) {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public List<StateParameter> visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet) {
     return ImmutableList.of();
   }
 
