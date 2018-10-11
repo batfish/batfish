@@ -8,6 +8,7 @@ import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 
@@ -33,6 +34,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.reducedreachability.ReducedReachabilityResult;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
@@ -145,7 +147,10 @@ public class ReducedReachabilityTest {
   @Test
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
+    ReducedReachabilityResult reducedReachabilityResult =
+        batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
+    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(1));
     assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }
