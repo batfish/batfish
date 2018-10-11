@@ -5142,6 +5142,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setUrg(true).build())
                   .setUseUrg(true)
                   .build());
+        } else if (feature.icmp_message_type != null) {
+          icmpType = toInteger(feature.icmp_message_type);
+          if (feature.icmp_message_code != null) {
+            icmpCode = toInteger(feature.icmp_message_code);
+          }
         } else {
           _w.addWarning(ctx, getFullText(feature), _parser, "clause in extended access list");
           return UnimplementedAccessListServiceSpecifier.INSTANCE;

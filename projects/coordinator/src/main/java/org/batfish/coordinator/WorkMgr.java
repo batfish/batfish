@@ -86,7 +86,9 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -101,6 +103,7 @@ import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -1121,7 +1124,7 @@ public class WorkMgr extends AbstractCoordinator {
     FileBasedStorageDirectoryProvider dirProvider =
         new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
     if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(containerName)) {
-      throw new BatfishException("Container '" + containerName + "' does not exist");
+      throw new BatfishException("Network '" + containerName + "' does not exist");
     }
     NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(containerName);
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
@@ -1246,14 +1249,9 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getTestrigInfo(String containerName, String testrigName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path submittedTestrigDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path submittedTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!Files.exists(submittedTestrigDir)) {
-      return "Missing folder '"
-          + BfConsts.RELPATH_TEST_RIG_DIR
-          + "' for snapshot '"
-          + testrigName
-          + "'\n";
+      return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
     }
     StringBuilder retStringBuilder = new StringBuilder();
     SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
@@ -1352,6 +1350,15 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public void initSnapshot(
       String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
+    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, null);
+  }
+
+  public void initSnapshot(
+      String networkName,
+      String snapshotName,
+      Path srcDir,
+      boolean autoAnalyze,
+      @Nullable SnapshotId parentSnapshotId) {
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -1379,7 +1386,8 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          new TestrigMetadata(
+              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshotId),
           networkId,
           snapshotId);
     } catch (Exception e) {
@@ -1392,8 +1400,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw metadataError;
     }
 
-    Path srcTestrigDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
     // create empty default environment
     Path defaultEnvironmentLeafDir =
@@ -1420,7 +1427,6 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
-        CommonUtil.copy(subFile, defaultEnvironmentLeafDir.resolve(subFile.getFileName()));
       } else if (isContainerFile(subFile)) {
         // derive and write the new container level file from the input
         if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
@@ -1453,10 +1459,9 @@ public class WorkMgr extends AbstractCoordinator {
             _logger.errorf("Could not process reference library data: %s", e);
           }
         }
-      } else {
-        // rest is plain copy
-        CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
       }
+      // Copy everything over
+      CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
     }
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
@@ -1470,6 +1475,103 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     }
+  }
+
+  /**
+   * Copy a snapshot and make modifications to the copy.
+   *
+   * @param networkName Name of the network containing the original snapshot
+   * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
+   */
+  public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
+      throws IOException {
+    Path networkDir = getdirNetwork(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+
+    String baseSnapshotName = forkSnapshotBean.baseSnapshot;
+    String snapshotName = forkSnapshotBean.newSnapshot;
+
+    // Fail early if the new snapshot already exists or the base snapshot does not
+    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
+      throw new IllegalArgumentException(
+          "Snapshot with name: '" + snapshotName + "' already exists");
+    }
+    if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
+      throw new FileNotFoundException(
+          "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
+    }
+
+    // Save user input for troubleshooting
+    Path originalDir =
+        networkDir
+            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
+            .resolve(generateFileDateString(snapshotName));
+    if (!originalDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    }
+    CommonUtil.writeFile(
+        originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
+        BatfishObjectMapper.writePrettyString(forkSnapshotBean));
+
+    SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
+    Path baseSnapshotDir =
+        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
+
+    // Copy baseSnapshot so initSnapshot will see a properly formatted upload
+    Path baseSnapshotInputsDir = baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
+    Path newSnapshotInputsDir =
+        CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
+    if (!newSnapshotInputsDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
+    }
+    if (baseSnapshotInputsDir.toFile().exists()) {
+      CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+      _logger.infof(
+          "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
+          baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "Base snapshot %s is not properly formatted, try re-uploading.", baseSnapshotName));
+    }
+
+    // Add user-specified failures to new blacklists
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateInterfaces,
+        new TypeReference<List<NodeInterfacePair>>() {});
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateLinks,
+        new TypeReference<List<Edge>>() {});
+    addToSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+        forkSnapshotBean.deactivateNodes,
+        new TypeReference<List<String>>() {});
+
+    // Use initSnapshot to handle creating metadata, etc.
+    initSnapshot(
+        networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
+  }
+
+  // Visible for testing
+  /** Helper method to add the specified collection to the serialized list at the specified path. */
+  static <T> void addToSerializedList(
+      Path serializedObjectPath, @Nullable Collection<T> addition, TypeReference<List<T>> type)
+      throws IOException {
+    if (addition == null || addition.isEmpty()) {
+      return;
+    }
+
+    List<T> baseList;
+    if (serializedObjectPath.toFile().exists()) {
+      baseList =
+          BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(serializedObjectPath), type);
+      baseList.addAll(addition);
+    } else {
+      baseList = ImmutableList.copyOf(addition);
+    }
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 
   private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {
@@ -1880,95 +1982,6 @@ public class WorkMgr extends AbstractCoordinator {
           "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
-  }
-
-  /**
-   * Upload a new environment to an existing testrig.
-   *
-   * @param containerName The container in which the testrig resides
-   * @param testrigName The testrig in which the (optional base environment and) new environment
-   *     reside
-   * @param baseEnvName The name of an optional base environment. The new environment is initialized
-   *     with files from this base if it is provided.
-   * @param newEnvName The name of the new environment to be created
-   * @param fileStream A stream providing the zip file containing the file structure of the new
-   *     environment.
-   */
-  public void uploadEnvironment(
-      String containerName,
-      String testrigName,
-      String baseEnvName,
-      String newEnvName,
-      InputStream fileStream) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
-    Path newEnvDir = environmentsDir.resolve(newEnvName);
-    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
-    if (Files.exists(newEnvDir)) {
-      throw new BatfishException(
-          "Environment: '" + newEnvName + "' already exists for snapshot: '" + testrigName + "'");
-    }
-    if (!dstDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
-    }
-    Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
-    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    /* First copy base environment if it is set */
-    if (baseEnvName.length() > 0) {
-      Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
-      if (!Files.exists(baseEnvPath)) {
-        CommonUtil.delete(zipFile);
-        throw new BatfishException(
-            "Base environment for copy does not exist: '" + baseEnvName + "'");
-      }
-      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
-      dstDir.toFile().mkdirs();
-      for (Path baseFile : baseFileList) {
-        Path target;
-        if (isEnvFile(baseFile)) {
-          target = dstDir.resolve(baseFile.getFileName());
-          CommonUtil.copy(baseFile, target);
-        }
-      }
-    }
-
-    // now unzip
-    Path unzipDir = CommonUtil.createTempDirectory("coord_up_env_unzip_dir_");
-    UnzipUtility.unzip(zipFile, unzipDir);
-
-    /*-
-     *  Sanity check what we got:
-     *    There should be just one top-level folder
-     */
-    SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
-    if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(newEnvDir);
-      CommonUtil.deleteDirectory(unzipDir);
-      throw new BatfishException(
-          "Unexpected packaging of environment. There should be just one top-level folder");
-    }
-    Path unzipSubdir = unzipDirEntries.iterator().next();
-    SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
-
-    // things look ok, now make the move
-    for (Path subdirFile : subFileList) {
-      Path target = dstDir.resolve(subdirFile.getFileName());
-      CommonUtil.moveByCopy(subdirFile, target);
-    }
-
-    try {
-      NetworkId networkId = _idManager.getNetworkId(containerName);
-      SnapshotId snapshotId = _idManager.getSnapshotId(testrigName, networkId);
-      TestrigMetadataMgr.initializeEnvironment(networkId, snapshotId, newEnvName);
-    } catch (IOException e) {
-      throw new BatfishException("Could not initialize environmentMetadata", e);
-    }
-
-    // delete the empty directory and the zip file
-    CommonUtil.deleteDirectory(unzipDir);
-    CommonUtil.deleteIfExists(zipFile);
   }
 
   public void uploadQuestion(String network, String question, String questionJson) {

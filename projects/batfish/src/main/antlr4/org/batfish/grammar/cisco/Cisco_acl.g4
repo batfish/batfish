@@ -177,7 +177,7 @@ extended_access_list_additional_feature
    )
    |
    (
-      icmpv6_message_type = DEC icmpv6_message_code = DEC?
+      icmp_message_type = DEC icmp_message_code = DEC?
    )
    | ECE
    | ECHO
