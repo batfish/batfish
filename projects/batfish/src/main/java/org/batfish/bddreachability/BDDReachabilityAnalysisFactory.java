@@ -797,6 +797,7 @@ public final class BDDReachabilityAnalysisFactory {
         srcIpSpaceAssignment,
         UniverseIpSpace.INSTANCE,
         ImmutableSet.of(),
+        ImmutableSet.of(),
         _configs.keySet(),
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
@@ -804,16 +805,23 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       IpSpace dstIpSpace,
+      Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     return bddReachabilityAnalysis(
-        srcIpSpaceAssignment, matchDst(dstIpSpace), requiredTransitNodes, finalNodes, actions);
+        srcIpSpaceAssignment,
+        matchDst(dstIpSpace),
+        forbiddenTransitNodes,
+        requiredTransitNodes,
+        finalNodes,
+        actions);
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr dstHeaderSpace,
+      Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       @Nonnull Set<String> finalNodes,
       Set<FlowDisposition> actions) {
@@ -836,9 +844,8 @@ public final class BDDReachabilityAnalysisFactory {
         Streams.concat(
             generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
 
-    if (!requiredTransitNodes.isEmpty()) {
-      edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
-    }
+    edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
+    edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
     Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
 
@@ -974,8 +981,38 @@ public final class BDDReachabilityAnalysisFactory {
         bdd -> edge.traverseForward(bdd).and(constraint));
   }
 
+  /**
+   * Instrumentation to forbid certain nodes from being transited. Simply removes the edges from the
+   * graph at which one of those nodes would become transited.
+   */
+  private Stream<Edge> instrumentForbiddenTransitNodes(
+      Set<String> forbiddenTransitNodes, Stream<Edge> edgeStream) {
+    if (forbiddenTransitNodes.isEmpty()) {
+      return edgeStream;
+    }
+
+    // remove any edges at which a forbidden node becomes transited.
+    return edgeStream.filter(
+        edge ->
+            !(edge.getPreState() instanceof PreOutEdgePostNat
+                && edge.getPostState() instanceof PreInInterface
+                && forbiddenTransitNodes.contains(
+                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+  }
+
+  /**
+   * Instrumentation to require that one of a set of nodes is transited. We use a single bit of
+   * state in the BDDs to track this. The bit is initialized to 0 at the origination points, and
+   * constrained to be 1 at the Query state. When one of the specified nodes becomes transited (i.e.
+   * the flow leaves that node and enters another) we set the bit to 1. All other edges in the graph
+   * propagate the current value of that bit unchanged.
+   */
   private Stream<Edge> instrumentRequiredTransitNodes(
       Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
+    if (requiredTransitNodes.isEmpty()) {
+      return edgeStream;
+    }
+
     BDD transited = _requiredTransitNodeBDD;
     BDD notTransited = _requiredTransitNodeBDD.not();
 

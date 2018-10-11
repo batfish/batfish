@@ -4350,12 +4350,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
             FlowDisposition.DENIED_OUT,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
+    Set<String> forbiddenTransitNodes = ImmutableSet.of();
     Set<String> requiredTransitNodes = ImmutableSet.of();
     Map<IngressLocation, BDD> acceptedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
                 ImmutableSet.of(FlowDisposition.ACCEPTED))
@@ -4365,6 +4367,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
                 dropDispositions)
@@ -4374,6 +4377,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
                 ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
@@ -4418,6 +4422,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
+    Set<String> forbiddenTransitNodes = ImmutableSet.of();
     Set<String> requiredTransitNodes = ImmutableSet.of();
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
@@ -4425,6 +4430,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
                 requiredTransitNodes,
                 loadConfigurations().keySet(),
                 dispositions)
@@ -4437,6 +4443,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
                 requiredTransitNodes,
                 loadConfigurations().keySet(),
                 dispositions)
