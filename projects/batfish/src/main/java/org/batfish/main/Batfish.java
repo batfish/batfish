@@ -4347,7 +4347,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 params.getHeaderSpace(),
                 params.getForbiddenTransitNodes(),
                 params.getRequiredTransitNodes(),
-                loadConfigurations().keySet(),
+                params.getFinalNodes(),
                 params.getActions())
             .getIngressLocationReachableBDDs();
 
