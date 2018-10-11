@@ -18,12 +18,12 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     SpecifiersReachabilityQuestion question = (SpecifiersReachabilityQuestion) _question;
-    TableAnswerElement tableAnswer =
-        new TableAnswerElement(TracerouteAnswerer.createMetadata(false));
     AnswerElement answer = _batfish.standard(question.getReachabilityParameters());
     if (!(answer instanceof FlowHistory)) {
       return answer;
     }
+    TableAnswerElement tableAnswer =
+        new TableAnswerElement(TracerouteAnswerer.createMetadata(false));
     TracerouteAnswerer.flowHistoryToRows((FlowHistory) answer, false).forEach(tableAnswer::addRow);
     return tableAnswer;
   }
