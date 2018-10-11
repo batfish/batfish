@@ -61,8 +61,10 @@ test tests/basic/example-iptables-protection.ref get reachability notIngressNode
 
 # z3 timeout - 1 millisecond
 add-batfish-option z3timeout 1
+add-batfish-option debugflags useNodReachability
 init-snapshot tests/basic/networks/fattree2
 test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
+add-batfish-option debugflags ""
 
 # data-plane related diff tests
 test -compareall tests/basic/init-with-ba.ref init-snapshot networks/example/live-with-bgp-announcements example-with-ba
