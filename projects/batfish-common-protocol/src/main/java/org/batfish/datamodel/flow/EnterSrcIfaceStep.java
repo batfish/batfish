@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/**
+ * {@link Step} to represent the entering of a packet on an {@link org.batfish.datamodel.Interface}
+ * in a node
+ */
 public class EnterSrcIfaceStep extends Step {
   public static class EnterSrcIfaceDetail extends StepDetail {
 

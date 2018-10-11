@@ -151,7 +151,7 @@ public class TracerouteUtils {
         .getIpVrfOwners()
         .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
         .getOrDefault(node.getHostname(), ImmutableSet.of())
-        .contains(inputVrfName)) {
+        .contains(selectedInputVrfName)) {
       return enterSrcIfaceStepBuilder
           .setDetail(enterSrcStepDetailBuilder.build())
           .setAction(new EnterSrcIfaceAction(StepActionResult.ACCEPTED, null))
