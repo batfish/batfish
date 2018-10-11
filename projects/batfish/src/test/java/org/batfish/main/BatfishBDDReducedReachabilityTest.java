@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -52,10 +51,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/**
- * Test of {@link IBatfish#bddReducedReachability(Set, org.batfish.specifier.IpSpaceAssignment,
- * org.batfish.datamodel.acl.AclLineMatchExpr)}.
- */
+/** Test of {@link Batfish#bddReducedReachability} */
 public class BatfishBDDReducedReachabilityTest {
   private static final Ip DST_IP = new Ip("3.3.3.3");
   private static final String NODE1 = "node1";
