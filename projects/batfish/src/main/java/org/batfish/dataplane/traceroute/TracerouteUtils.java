@@ -28,9 +28,9 @@ import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceDetail;
 import org.batfish.datamodel.flow.ExitOutIfaceStep;
 import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceAction;
 import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
+import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepActionResult;
-import org.batfish.datamodel.flow.Hop;
 
 public class TracerouteUtils {
 

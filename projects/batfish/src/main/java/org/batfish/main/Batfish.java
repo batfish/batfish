@@ -1562,7 +1562,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-
   @Nonnull
   private SortedSet<Edge> getEdgeBlacklist() {
     SortedSet<Edge> blacklistEdges =
@@ -2898,7 +2897,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
@@ -3065,11 +3063,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
-      getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
+    getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls){
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
     return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
   }

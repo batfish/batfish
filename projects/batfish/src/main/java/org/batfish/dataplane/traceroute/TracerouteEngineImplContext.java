@@ -46,6 +46,7 @@ import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceAction;
 import org.batfish.datamodel.flow.ExitOutIfaceStep;
 import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceAction;
 import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
+import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepAction;
@@ -53,7 +54,6 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepActionResult;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.Hop;
 
 public class TracerouteEngineImplContext {
 
@@ -282,8 +282,7 @@ public class TracerouteEngineImplContext {
                   new ExitOutIfaceAction(
                       StepActionResult.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, null))
               .build());
-      Hop neighborUnreachableOrExitsNetwork =
-          new Hop(currentNodeName, stepBuilder.build());
+      Hop neighborUnreachableOrExitsNetwork = new Hop(currentNodeName, stepBuilder.build());
       transmissionContext._hopsSoFar.add(neighborUnreachableOrExitsNetwork);
       Trace trace =
           new Trace(
@@ -509,8 +508,7 @@ public class TracerouteEngineImplContext {
                                   .build())
                           .setAction(new ExitOutIfaceAction(StepActionResult.NULL_ROUTED, null))
                           .build());
-                  Hop nullRoutedHop =
-                      new Hop(currentNodeName, clonedStepsBuilder.build());
+                  Hop nullRoutedHop = new Hop(currentNodeName, clonedStepsBuilder.build());
                   transmissionContext._hopsSoFar.add(nullRoutedHop);
                   Trace trace =
                       new Trace(FlowDisposition.NULL_ROUTED, transmissionContext._hopsSoFar);

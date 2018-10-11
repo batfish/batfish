@@ -1,10 +1,5 @@
 package org.batfish.question.traceroute;
 
-import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -14,22 +9,16 @@ import java.util.List;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.matchers.TraceMatchers;
-import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
@@ -97,5 +86,4 @@ public class Traceroute2Test {
 
     return configs.build();
   }
-
 }

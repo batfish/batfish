@@ -163,11 +163,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls){
-    return TracerouteEngineImpl.getInstance().buildFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls);
+  public SortedMap<Flow, List<Trace>> buildFlows(
+      Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
+    return TracerouteEngineImpl.getInstance()
+        .buildFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls);
   }
-
-
 
   private IncrementalDataPlane loadDataPlane() {
     return (IncrementalDataPlane) _batfish.loadDataPlane();

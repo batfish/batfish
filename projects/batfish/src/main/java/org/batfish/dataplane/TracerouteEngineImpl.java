@@ -28,7 +28,8 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
       boolean ignoreAcls) {
-    return new org.batfish.dataplane.TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).processFlows();
+    return new org.batfish.dataplane.TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls)
+        .processFlows();
   }
 
   @Override

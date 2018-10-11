@@ -239,7 +239,6 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
-
   @Test
   public void testIgnoreAclsNew() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
