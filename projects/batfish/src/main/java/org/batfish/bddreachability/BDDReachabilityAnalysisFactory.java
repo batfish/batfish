@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
@@ -7,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Collection;
@@ -820,25 +822,24 @@ public final class BDDReachabilityAnalysisFactory {
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
-      AclLineMatchExpr dstHeaderSpace,
+      AclLineMatchExpr initialHeaderSpace,
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       @Nonnull Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    Map<StateExpr, BDD> roots = new HashMap<>();
-    BDD dstIpSpaceBDD =
+    BDD initialHeaderSpaceBdd =
         IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of())
-            .visit(dstHeaderSpace);
+            .visit(initialHeaderSpace);
 
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
-    for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
-      BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
-      BDD headerspaceBDD = srcIpSpaceBDD.and(dstIpSpaceBDD);
-      for (Location loc : entry.getLocations()) {
-        StateExpr root = loc.accept(getLocationToStateExpr());
-        roots.put(root, headerspaceBDD);
-      }
-    }
+    /*
+     * erase constraints on header fields that may change
+     */
+    BDD finalHeaderSpaceBdd = initialHeaderSpaceBdd.exist(_sourceIpVars);
+
+    Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
+
+    checkArgument(
+        !roots.isEmpty(), "No source locations are compatible with headerspace constraint");
 
     Stream<Edge> edgeStream =
         Streams.concat(
@@ -849,7 +850,41 @@ public final class BDDReachabilityAnalysisFactory {
 
     Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
 
-    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap);
+    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap, finalHeaderSpaceBdd);
+  }
+
+  private Map<StateExpr, BDD> rootConstraints(
+      IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
+    LocationVisitor<StateExpr> locationToStateExpr = getLocationToStateExpr();
+    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
+
+    // convert Locations to StateExprs, and merge srcIp constraints
+    Map<StateExpr, BDD> rootConstraints = new HashMap<>();
+    for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
+      BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
+      for (Location loc : entry.getLocations()) {
+        StateExpr root = loc.accept(locationToStateExpr);
+        rootConstraints.merge(root, srcIpSpaceBDD, BDD::or);
+      }
+    }
+
+    // add the global initial HeaderSpace and remove unsat entries
+    rootConstraints =
+        rootConstraints
+            .entrySet()
+            .stream()
+            .map(
+                entry ->
+                    Maps.immutableEntry(
+                        entry.getKey(), entry.getValue().and(initialHeaderSpaceBdd)))
+            .filter(entry -> !entry.getValue().isZero())
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
+    // make sure there is at least one possible source
+    checkArgument(
+        !rootConstraints.isEmpty(), "No sources are compatible with the headerspace constraint");
+
+    return rootConstraints;
   }
 
   private String ifaceVrf(String node, String iface) {
