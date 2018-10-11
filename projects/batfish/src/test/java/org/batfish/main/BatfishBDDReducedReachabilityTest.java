@@ -42,7 +42,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.question.reducedreachability.ReducedReachabilityResult;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -144,10 +144,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -189,10 +189,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testAccepted() throws IOException {
     Batfish batfish = initBatfish(new AcceptedNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -245,10 +245,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedIn() throws IOException {
     Batfish batfish = initBatfish(new DeniedInNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(DENIED_IN));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(3));
     assertThat(
         flows,
@@ -310,10 +310,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedOutNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutNeighborUnreachableNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(DENIED_OUT));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -379,10 +379,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedOutForward() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutForwardNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(DENIED_OUT));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -434,10 +434,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNoRoute() throws IOException {
     Batfish batfish = initBatfish(new NoRouteNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(NO_ROUTE));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -489,10 +489,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNullRouted() throws IOException {
     Batfish batfish = initBatfish(new NullRoutedNetworkGenerator());
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(NULL_ROUTED));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,

@@ -9,11 +9,11 @@ import org.batfish.datamodel.Flow;
  * The result of {@link IBatfish#bddReducedReachability} -- sets of flows demonstrating increased
  * and reduced reachability.
  */
-public final class ReducedReachabilityResult {
+public final class DifferentialReachabilityResult {
   private final Set<Flow> _increasedReachabilityFlows;
   private final Set<Flow> _decreasedReachabilityFlows;
 
-  public ReducedReachabilityResult(
+  public DifferentialReachabilityResult(
       Set<Flow> increasedReachabilityFlows, Set<Flow> decreasedReachabilityFlows) {
     _increasedReachabilityFlows = ImmutableSet.copyOf(increasedReachabilityFlows);
     _decreasedReachabilityFlows = ImmutableSet.copyOf(decreasedReachabilityFlows);

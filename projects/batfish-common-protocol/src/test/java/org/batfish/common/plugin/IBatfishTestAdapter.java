@@ -47,7 +47,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.reducedreachability.ReducedReachabilityResult;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -63,7 +63,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public ReducedReachabilityResult bddReducedReachability(Set<FlowDisposition> actions) {
+  public DifferentialReachabilityResult bddReducedReachability(Set<FlowDisposition> actions) {
     throw new UnsupportedOperationException();
   }
 

@@ -42,7 +42,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
   @Override
   public TableAnswerElement answerDiff() {
     ReducedReachabilityQuestion question = (ReducedReachabilityQuestion) _question;
-    ReducedReachabilityResult result = _batfish.bddReducedReachability(question.getActions());
+    DifferentialReachabilityResult result = _batfish.bddReducedReachability(question.getActions());
 
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());

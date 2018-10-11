@@ -34,7 +34,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.reducedreachability.ReducedReachabilityResult;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
@@ -147,10 +147,10 @@ public class ReducedReachabilityTest {
   @Test
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
-    ReducedReachabilityResult reducedReachabilityResult =
+    DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
-    assertThat(reducedReachabilityResult.getIncreasedReachabilityFlows(), empty());
-    Set<Flow> flows = reducedReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(1));
     assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }

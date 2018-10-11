@@ -185,7 +185,7 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.reducedreachability.ReducedReachabilityResult;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -4415,7 +4415,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *     FlowDisposition FlowDispositions}.
    */
   @Override
-  public ReducedReachabilityResult bddReducedReachability(Set<FlowDisposition> dispositions) {
+  public DifferentialReachabilityResult bddReducedReachability(Set<FlowDisposition> dispositions) {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
@@ -4452,7 +4452,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
     Set<Flow> increasedFlows =
         getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
-    return new ReducedReachabilityResult(increasedFlows, decreasedFlows);
+    return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
   }
 
   private static Set<Flow> getDifferentialFlows(
