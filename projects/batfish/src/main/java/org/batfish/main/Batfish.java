@@ -186,6 +186,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -4361,7 +4362,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 params.getHeaderSpace(),
                 params.getForbiddenTransitNodes(),
                 params.getRequiredTransitNodes(),
-                loadConfigurations().keySet(),
+                params.getFinalNodes(),
                 params.getActions())
             .getIngressLocationReachableBDDs();
 
@@ -4484,7 +4485,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *     FlowDisposition FlowDispositions}.
    */
   @Override
-  public Set<Flow> bddReducedReachability(Set<FlowDisposition> dispositions) {
+  public DifferentialReachabilityResult bddReducedReachability(Set<FlowDisposition> dispositions) {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
@@ -4518,32 +4519,51 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Set<IngressLocation> commonSources =
         Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
-    ImmutableSet.Builder<Flow> flows = ImmutableSet.builder();
-    for (IngressLocation source : commonSources) {
-      BDD reduced = baseAcceptBDDs.get(source).and(deltaAcceptBDDs.get(source).not());
-      if (reduced.isZero()) {
-        continue;
-      }
-      Flow.Builder flow =
-          pkt.getFlow(reduced)
-              .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
+    String flowTag = getDifferentialFlowTag();
 
-      // set flow parameters
-      flow.setTag(getDifferentialFlowTag());
-      flow.setIngressNode(source.getNode());
-      switch (source.getType()) {
-        case VRF:
-          flow.setIngressVrf(source.getVrf());
-          break;
-        case INTERFACE_LINK:
-          flow.setIngressInterface(source.getInterface());
-          break;
-        default:
-          throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
-      }
-      flows.add(flow.build());
-    }
-    return flows.build();
+    Set<Flow> decreasedFlows =
+        getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
+    Set<Flow> increasedFlows =
+        getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
+    return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
+  }
+
+  private static Set<Flow> getDifferentialFlows(
+      BDDPacket pkt,
+      Set<IngressLocation> commonSources,
+      Map<IngressLocation, BDD> includeBDDs,
+      Map<IngressLocation, BDD> excludeBDDs,
+      String flowTag) {
+    return commonSources
+        .stream()
+        .flatMap(
+            source -> {
+              BDD difference = includeBDDs.get(source).and(excludeBDDs.get(source).not());
+
+              if (difference.isZero()) {
+                return Stream.of();
+              }
+
+              Flow.Builder flow =
+                  pkt.getFlow(difference)
+                      .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
+
+              // set flow parameters
+              flow.setTag(flowTag);
+              flow.setIngressNode(source.getNode());
+              switch (source.getType()) {
+                case VRF:
+                  flow.setIngressVrf(source.getVrf());
+                  break;
+                case INTERFACE_LINK:
+                  flow.setIngressInterface(source.getInterface());
+                  break;
+                default:
+                  throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
+              }
+              return Stream.of(flow.build());
+            })
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
