@@ -23,7 +23,7 @@ public final class ReducedReachabilityQuestion extends Question {
   @JsonCreator
   public ReducedReachabilityQuestion(
       @Nullable @JsonProperty(PROP_ACTIONS) SortedSet<FlowDisposition> actions,
-      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints) {
+      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints) {
     setDifferential(true);
     _actions =
         actions == null
