@@ -33,13 +33,10 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   private final Map<IncrementalDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
-  private final Map<IncrementalDataPlane, Map<Flow, Set<Trace>>> _newFlowTraces;
-
   private IncrementalBdpEngine _engine;
 
   public IncrementalDataPlanePlugin() {
     _flowTraces = new HashMap<>();
-    _newFlowTraces = new HashMap<>();
   }
 
   @Override
@@ -116,33 +113,9 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public List<Flow> getHistoryFlowsNew(DataPlane dataPlane) {
-    IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
-    Map<Flow, Set<Trace>> traces = _newFlowTraces.get(dp);
-    if (traces == null) {
-      return ImmutableList.of();
-    }
-    return traces
-        .entrySet()
-        .stream()
-        .flatMap(e -> Collections.nCopies(e.getValue().size(), e.getKey()).stream())
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
   public List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane) {
     IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
     Map<Flow, Set<FlowTrace>> traces = _flowTraces.get(dp);
-    if (traces == null) {
-      return ImmutableList.of();
-    }
-    return traces.values().stream().flatMap(Set::stream).collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
-  public List<Trace> getHistoryFlowTracesNew(DataPlane dataPlane) {
-    IncrementalDataPlane dp = (IncrementalDataPlane) dataPlane;
-    Map<Flow, Set<Trace>> traces = _newFlowTraces.get(dp);
     if (traces == null) {
       return ImmutableList.of();
     }

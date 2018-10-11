@@ -76,11 +76,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract List<Flow> getHistoryFlows(DataPlane dataPlane);
 
-  public abstract List<Flow> getHistoryFlowsNew(DataPlane dataPlane);
-
   public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
-
-  public abstract List<Trace> getHistoryFlowTracesNew(DataPlane dataPlane);
 
   public abstract ITracerouteEngine getTracerouteEngine();
 
