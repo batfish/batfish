@@ -47,22 +47,20 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nullable
   @Override
-  public SortedSet<Edge> loadEdgeBlacklist(
-      NetworkId network, SnapshotId snapshot, String environment) {
+  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Nullable
   @Override
   public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
-      NetworkId network, SnapshotId snapshot, String environment) {
+      NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Nullable
   @Override
-  public SortedSet<String> loadNodeBlacklist(
-      NetworkId network, SnapshotId snapshot, String environment) {
+  public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

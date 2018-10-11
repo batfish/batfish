@@ -63,31 +63,27 @@ public interface StorageProvider {
    *
    * @param network The name of the network
    * @param snapshot The name of the snapshot
-   * @param environment The name of the environment
    */
   @Nullable
-  SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot, String environment);
+  SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the interface blacklist for the specified snapshot.
    *
    * @param network The name of the network
    * @param snapshot The name of the snapshot
-   * @param environment The name of the environment
    */
   @Nullable
-  SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
-      NetworkId network, SnapshotId snapshot, String environment);
+  SortedSet<NodeInterfacePair> loadInterfaceBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the node blacklist for the specified snapshot.
    *
    * @param network The name of the network
    * @param snapshot The name of the snapshot
-   * @param environment The name of the environment
    */
   @Nullable
-  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot, String environment);
+  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot

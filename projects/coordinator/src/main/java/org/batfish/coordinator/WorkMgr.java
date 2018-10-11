@@ -1433,7 +1433,6 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
-        CommonUtil.copy(subFile, defaultEnvironmentLeafDir.resolve(subFile.getFileName()));
       } else if (isContainerFile(subFile)) {
         // derive and write the new container level file from the input
         if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {

@@ -1575,8 +1575,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<Edge> getEdgeBlacklist() {
     SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(
-            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
+        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
     if (blacklistEdges == null) {
       return Collections.emptySortedSet();
     }
@@ -1586,8 +1585,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(
-            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
+        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
     if (blacklistInterfaces == null) {
       return Collections.emptySortedSet();
     }
@@ -1597,8 +1595,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<String> getNodeBlacklist() {
     SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(
-            _settings.getContainer(), _settings.getTestrig(), _settings.getEnvironmentName());
+        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
     if (blacklistNodes == null) {
       return Collections.emptySortedSet();
     }

@@ -525,17 +525,12 @@ public class WorkMgrTest {
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
     // Confirm the blacklists are correct
     assertThat(
-        _storage.loadInterfaceBlacklist(
-            networkId, snapshotId, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+        _storage.loadInterfaceBlacklist(networkId, snapshotId),
         containsInAnyOrder(interfaces.toArray()));
     assertThat(
-        _storage.loadEdgeBlacklist(
-            networkId, snapshotId, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
-        containsInAnyOrder(links.toArray()));
+        _storage.loadEdgeBlacklist(networkId, snapshotId), containsInAnyOrder(links.toArray()));
     assertThat(
-        _storage.loadNodeBlacklist(
-            networkId, snapshotId, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
-        containsInAnyOrder(nodes.toArray()));
+        _storage.loadNodeBlacklist(networkId, snapshotId), containsInAnyOrder(nodes.toArray()));
   }
 
   @Test
