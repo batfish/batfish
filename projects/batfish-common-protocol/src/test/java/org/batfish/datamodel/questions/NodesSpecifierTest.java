@@ -44,7 +44,7 @@ public class NodesSpecifierTest {
             null);
     SortedSet<NodeRoleDimension> roleDimensions =
         new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
-    return new NodeRolesData(null, null, roleDimensions);
+    return new NodeRolesData(null, roleDimensions);
   }
 
   @Test

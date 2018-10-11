@@ -1,11 +1,16 @@
 package org.batfish.role;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,6 +20,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.CommonUtil;
 
 public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
@@ -41,9 +47,9 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * a list of regexes used to identify roles from node names. each regex in regexes has at least
    * one group in it that locates the role name within a node name. there are multiple regexes to
    * handle node names that have different formats, and to allow a node to have multple roles. this
-   * value is usually populated by auto role inference and may be null for custom role dimensions.
+   * value is usually populated by auto role inference and may be empty for custom role dimensions.
    */
-  @Nullable private List<String> _roleRegexes;
+  @Nonnull private List<String> _roleRegexes;
 
   @Nonnull private SortedSet<NodeRole> _roles;
 
@@ -59,54 +65,59 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     _name = name;
     _roles = firstNonNull(roles, ImmutableSortedSet.of());
     _type = firstNonNull(type, Type.CUSTOM);
-    _roleRegexes = roleRegexes;
-    if (_type == Type.CUSTOM && _name.startsWith(AUTO_DIMENSION_PREFIX)) {
-      throw new IllegalArgumentException(
-          "Name for a CUSTOM role dimension cannot begin with: " + AUTO_DIMENSION_PREFIX);
-    }
+    _roleRegexes = firstNonNull(roleRegexes, ImmutableList.of());
     if (_type == Type.AUTO && !_name.startsWith(AUTO_DIMENSION_PREFIX)) {
       throw new IllegalArgumentException(
           "Name for a AUTO role dimension must begin with: " + AUTO_DIMENSION_PREFIX);
     }
   }
 
+  private static final Comparator<NodeRoleDimension> COMPARATOR =
+      comparing(NodeRoleDimension::getName)
+          .thenComparing(NodeRoleDimension::getRoles, nullsFirst(CommonUtil::compareCollection))
+          .thenComparing(NodeRoleDimension::getType)
+          .thenComparing(
+              NodeRoleDimension::getRoleRegexes, nullsFirst(CommonUtil::compareCollection));
+
   @Override
   public int compareTo(NodeRoleDimension o) {
-    return _name.compareTo(o._name);
+    return COMPARATOR.compare(this, o);
   }
 
-  /** If names are equal the NodeRoleDimension objects are considered equal */
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof NodeRoleDimension)) {
       return false;
     }
     NodeRoleDimension other = (NodeRoleDimension) o;
-    return Objects.equals(_name, other._name);
+    return _name.equals(other._name)
+        && _roleRegexes.equals(other._roleRegexes)
+        && _roles.equals(other._roles)
+        && _type == other._type;
   }
 
   @Override
   public int hashCode() {
-    return _name.hashCode();
+    return Objects.hash(_name, _roleRegexes, _roles, _type.ordinal());
   }
 
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
   @JsonProperty(PROP_ROLE_REGEXES)
-  public List<String> getRoleRegexes() {
+  public @Nonnull List<String> getRoleRegexes() {
     return _roleRegexes;
   }
 
   @JsonProperty(PROP_ROLES)
-  public SortedSet<NodeRole> getRoles() {
+  public @Nonnull SortedSet<NodeRole> getRoles() {
     return _roles;
   }
 
   @JsonProperty(PROP_TYPE)
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
@@ -149,5 +160,15 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
       }
     }
     return roleNodesMap;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add(PROP_NAME, _name)
+        .add(PROP_ROLE_REGEXES, _roleRegexes)
+        .add(PROP_ROLES, _roles)
+        .add(PROP_TYPE, _type)
+        .toString();
   }
 }

@@ -52,10 +52,10 @@ public class ContainerResource {
     return new NetworkObjectsResource(_name);
   }
 
-  /** Relocate the request to {@link NodeRolesResource}. */
+  /** Relocate the request to {@link NetworkNodeRolesResource}. */
   @Path(RSC_NODE_ROLES)
-  public NodeRolesResource getNodeRolesResource() {
-    return new NodeRolesResource(_name);
+  public NetworkNodeRolesResource getNodeRolesResource() {
+    return new NetworkNodeRolesResource(_name);
   }
 
   /** Relocate the request to {@link ReferenceLibraryResource}. */
