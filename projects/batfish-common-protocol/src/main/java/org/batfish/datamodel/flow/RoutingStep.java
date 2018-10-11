@@ -16,6 +16,9 @@ import org.batfish.datamodel.Route;
  * org.batfish.datamodel.Flow}
  */
 public class RoutingStep extends Step {
+
+  private static final long serialVersionUID = 1L;
+
   /**
    * {@link StepDetail} containing details of routing to direct a {@link Flow} from an input {@link
    * Interface} to output {@link Interface}
@@ -24,6 +27,7 @@ public class RoutingStep extends Step {
 
     private static final String PROP_ROUTES = "routes";
 
+    private static final long serialVersionUID = 1L;
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
@@ -71,6 +75,8 @@ public class RoutingStep extends Step {
   public static class RoutingStepAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
+
+    private static final long serialVersionUID = 1L;
 
     private @Nullable StepActionResult _actionResult;
 

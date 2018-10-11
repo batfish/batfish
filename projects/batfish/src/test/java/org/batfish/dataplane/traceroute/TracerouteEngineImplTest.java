@@ -324,7 +324,7 @@ public class TracerouteEngineImplTest {
   }
 
   /** When ingress node is non-existent, don't crash with null-pointer. */
-  @Test(expected = BatfishException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testTracerouteOutsideNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =

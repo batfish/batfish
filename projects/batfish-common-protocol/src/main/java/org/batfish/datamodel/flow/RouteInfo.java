@@ -1,5 +1,7 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
@@ -26,14 +28,20 @@ public class RouteInfo {
   /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
 
-  @JsonCreator
-  public RouteInfo(
-      @JsonProperty(PROP_TYPE) String type,
-      @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp) {
+  public RouteInfo(String type, Prefix network, @Nullable Ip nextHopIp) {
     _type = type;
     _network = network;
     _nextHopIp = nextHopIp;
+  }
+
+  @JsonCreator
+  private static RouteInfo jsonCreator(
+      @JsonProperty(PROP_TYPE) @Nullable String type,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp) {
+    checkArgument(type != null, "Route type should be present");
+    checkArgument(network != null, "Network should exist in a route");
+    return new RouteInfo(type, network, nextHopIp);
   }
 
   @JsonProperty(PROP_TYPE)

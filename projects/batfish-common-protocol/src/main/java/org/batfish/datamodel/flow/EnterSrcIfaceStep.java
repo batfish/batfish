@@ -11,6 +11,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 public class EnterSrcIfaceStep extends Step {
+
+  private static final long serialVersionUID = 1L;
+
   /**
    * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input
    * {@link Interface}
@@ -19,21 +22,23 @@ public class EnterSrcIfaceStep extends Step {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
-    private static final String PROP_FILTER_IN = "filterIn";
+    private static final String PROP_FILTER = "filter";
+
+    private static final long serialVersionUID = 1L;
 
     private @Nullable NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
-    private @Nullable String _filterIn;
+    private @Nullable String _filter;
 
     @JsonCreator
     private EnterSrcIfaceDetail(
         @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
-        @JsonProperty(PROP_FILTER_IN) @Nullable String filterIn,
+        @JsonProperty(PROP_FILTER) @Nullable String filter,
         @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf,
         @JsonProperty(PROP_NAME) @Nullable String name) {
       super(firstNonNull(name, "EnterSrcIface"));
       _inputInterface = inputInterface;
-      _filterIn = filterIn;
+      _filter = filter;
       _inputVrf = inputVrf;
     }
 
@@ -43,10 +48,10 @@ public class EnterSrcIfaceStep extends Step {
       return _inputInterface;
     }
 
-    @JsonProperty(PROP_FILTER_IN)
+    @JsonProperty(PROP_FILTER)
     @Nullable
-    public String getFilterIn() {
-      return _filterIn;
+    public String getFilter() {
+      return _filter;
     }
 
     @JsonProperty(PROP_INPUT_VRF)
@@ -63,11 +68,11 @@ public class EnterSrcIfaceStep extends Step {
     public static class Builder {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
-      private String _filterIn;
+      private String _filter;
       private String _name;
 
       public EnterSrcIfaceDetail build() {
-        return new EnterSrcIfaceDetail(_inputInterface, _filterIn, _inputVrf, _name);
+        return new EnterSrcIfaceDetail(_inputInterface, _filter, _inputVrf, _name);
       }
 
       public Builder setInputInterface(NodeInterfacePair inputInterface) {
@@ -80,8 +85,8 @@ public class EnterSrcIfaceStep extends Step {
         return this;
       }
 
-      public Builder setFilterIn(String filterIn) {
-        _filterIn = filterIn;
+      public Builder setFilter(String filter) {
+        _filter = filter;
         return this;
       }
 
@@ -95,6 +100,8 @@ public class EnterSrcIfaceStep extends Step {
   public static class EnterSrcIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
+
+    private static final long serialVersionUID = 1L;
 
     private @Nullable StepActionResult _actionResult;
 

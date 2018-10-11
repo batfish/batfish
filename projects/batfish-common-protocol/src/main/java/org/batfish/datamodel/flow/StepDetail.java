@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 /**
@@ -12,9 +13,12 @@ import javax.annotation.Nonnull;
  */
 @JsonSchemaDescription("Represents the detail of a step")
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class StepDetail {
+public abstract class StepDetail implements Serializable {
 
   protected static final String PROP_NAME = "name";
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   private final String _name;
 

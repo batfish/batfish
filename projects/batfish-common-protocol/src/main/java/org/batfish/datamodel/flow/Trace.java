@@ -1,21 +1,27 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Ordering;
-import java.util.Comparator;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 
 /** Represents one of the paths found for a {@link Flow} */
-public class Trace implements Comparable<Trace> {
+public class Trace implements Serializable {
 
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   /** Final action taken on the last {@link Step} of the last {@link Hop} of the {@link Trace} */
   private final FlowDisposition _disposition;
@@ -23,19 +29,17 @@ public class Trace implements Comparable<Trace> {
   /** List of {@link Hop}s making up {@link Trace} */
   private final List<Hop> _hops;
 
-  @JsonCreator
-  public Trace(
-      @JsonProperty(PROP_DISPOSITION) FlowDisposition disposition,
-      @JsonProperty(PROP_HOPS) List<Hop> hops) {
+  public Trace(@Nonnull FlowDisposition disposition, @Nonnull List<Hop> hops) {
     _disposition = disposition;
-    _hops = hops != null ? hops : ImmutableList.of();
+    _hops = hops;
   }
 
-  @Override
-  public int compareTo(Trace rhs) {
-    return Comparator.comparing(Trace::getHops, Comparators.lexicographical(Ordering.natural()))
-        .thenComparing(Trace::getDisposition)
-        .compare(this, rhs);
+  @JsonCreator
+  private static Trace jsonCreator(
+      @JsonProperty(PROP_DISPOSITION) @Nullable FlowDisposition disposition,
+      @JsonProperty(PROP_HOPS) @Nullable List<Hop> hops) {
+    checkArgument(disposition != null, "Disposition should be set for a trace");
+    return new Trace(disposition, firstNonNull(hops, ImmutableList.of()));
   }
 
   @Override

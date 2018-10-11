@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepActionResult.SENT_OUT;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
@@ -10,7 +11,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FilterResult;
@@ -31,8 +31,9 @@ import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepActionResult;
+import org.batfish.datamodel.pojo.Node;
 
-public class TracerouteUtils {
+final class TracerouteUtils {
 
   /**
    * Does a basic validation of input to {@link TracerouteEngineImplContext#buildFlows()}
@@ -40,28 +41,28 @@ public class TracerouteUtils {
    * @param configurations {@link Map} of {@link Configuration}s
    * @param flow {@link Flow} for which input validation is to be done
    */
-  public static void validateInputs(Map<String, Configuration> configurations, Flow flow) {
+  static void validateInputs(Map<String, Configuration> configurations, Flow flow) {
     String ingressNodeName = flow.getIngressNode();
-    if (ingressNodeName == null) {
-      throw new BatfishException("Cannot construct flow trace since ingressNode is not specified");
-    }
+    checkArgument(
+        ingressNodeName != null, "Cannot construct flow trace since ingressNode is not specified");
+
     Configuration ingressNode = configurations.get(ingressNodeName);
-    if (ingressNode == null) {
-      throw new BatfishException(
-          String.format(
-              "Node %s is not in the network, cannot perform traceroute", ingressNodeName));
-    }
+    checkArgument(
+        ingressNode != null,
+        "Node %s is not in the network, cannot perform traceroute",
+        ingressNodeName);
+
     String ingressIfaceName = flow.getIngressInterface();
     if (ingressIfaceName != null) {
-      if (ingressNode.getAllInterfaces().get(ingressIfaceName) == null) {
-        throw new BatfishException(
-            String.format(
-                "%s interface does not exist on the node %s", ingressIfaceName, ingressNodeName));
-      }
+      checkArgument(
+          ingressNode.getAllInterfaces().get(ingressIfaceName) != null,
+          "%s interface does not exist on the node %s",
+          ingressIfaceName,
+          ingressNodeName);
     }
-    if (flow.getDstIp() == null) {
-      throw new BatfishException("Cannot construct flow trace since dstIp is not specified");
-    }
+
+    checkArgument(
+        flow.getDstIp() != null, "Cannot construct flow trace since dstIp is not specified");
   }
 
   /**
@@ -69,7 +70,7 @@ public class TracerouteUtils {
    *
    * @return a dummy {@link Hop}
    */
-  public static Hop createDummyHop() {
+  static Hop createDummyHop() {
     ImmutableList.Builder<Step> steps = ImmutableList.builder();
 
     // creating the exit from out interface step
@@ -81,7 +82,7 @@ public class TracerouteUtils {
     exitOutStepBuilder.setDetail(stepDetailBuilder.build());
     exitOutStepBuilder.setAction(exitOutIfaceAction);
 
-    return new Hop(TRACEROUTE_DUMMY_NODE, steps.add(exitOutStepBuilder.build()).build());
+    return new Hop(new Node(TRACEROUTE_DUMMY_NODE), steps.add(exitOutStepBuilder.build()).build());
   }
 
   /**
@@ -93,7 +94,7 @@ public class TracerouteUtils {
    * @param iface Name of the interface in the next node to be tested for ARP
    * @return true if ARP request will get a response
    */
-  public static boolean isArpSuccessful(
+  static boolean isArpSuccessful(
       Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
     return (arpIp != null
         && forwardingAnalysis
@@ -120,7 +121,7 @@ public class TracerouteUtils {
    *     EnterSrcIfaceAction} for the step; null if {@link EnterSrcIfaceStep} can't be created
    */
   @Nullable
-  public static EnterSrcIfaceStep createEnterSrcIfaceStep(
+  static EnterSrcIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       @Nullable String inputIfaceName,
       @Nullable String inputVrfName,
@@ -170,7 +171,7 @@ public class TracerouteUtils {
     if (!ignoreAcls && inFilter != null) {
       FilterResult filterResult =
           inFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
-      enterSrcStepDetailBuilder.setFilterIn(inFilter.getName());
+      enterSrcStepDetailBuilder.setFilter(inFilter.getName());
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())
