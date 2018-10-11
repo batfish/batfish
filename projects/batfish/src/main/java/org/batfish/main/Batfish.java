@@ -4505,7 +4505,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Set<IngressLocation> commonSources =
         Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
-    String flowTag = getFlowTag();
+    String flowTag = getDifferentialFlowTag();
 
     Set<Flow> decreasedFlows =
         getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
