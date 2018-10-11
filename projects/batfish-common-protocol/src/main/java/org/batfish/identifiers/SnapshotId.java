@@ -1,15 +1,21 @@
 package org.batfish.identifiers;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class SnapshotId extends Id {
-  private static final String PROP_ID = "id";
+public final class SnapshotId extends Id {
+  public SnapshotId(String id) {
+    super(id);
+  }
 
   @JsonCreator
-  public SnapshotId(@JsonProperty(PROP_ID) String id) {
-    super(id);
+  private static SnapshotId jsonCreator(@Nullable String id) {
+    checkArgument(!isNullOrEmpty(id), "Id must be provided");
+    return new SnapshotId(id);
   }
 }

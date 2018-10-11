@@ -246,28 +246,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setSerializeVendorPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)));
-    settings.setTestRigPath(
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
+    settings.setTestRigPath(testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT)));
     settings.setParseAnswerPath(
         testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)));
     settings.setReferenceLibraryPath(
         testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
+            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
     settings.setNodeRolesPath(
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_NODE_ROLES_PATH)));
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_ROLES_PATH)));
     settings.setInferredNodeRolesPath(
         testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
+            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
     settings.setTopologyPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH)));
@@ -279,8 +268,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envPathOut =
           testrigDir.resolve(
               Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-      Path envPathIn =
-          testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+      Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
       envSettings.setCompressedDataPlanePath(
           envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
       envSettings.setCompressedDataPlaneAnswerPath(

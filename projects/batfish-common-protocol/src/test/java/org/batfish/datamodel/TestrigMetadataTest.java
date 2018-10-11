@@ -27,7 +27,7 @@ public class TestrigMetadataTest {
             new SnapshotId("blah"));
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(metadata);
     assertThat(jsonNode.get(PROP_CREATION_TIMESTAMP).asText(), equalTo("1994-01-19T03:10:05.001Z"));
-    assertThat(jsonNode.get(PROP_PARENT_SNAPSHOT_ID).get("id").asText(), equalTo("blah"));
+    assertThat(jsonNode.get(PROP_PARENT_SNAPSHOT_ID).asText(), equalTo("blah"));
     assertThat(
         jsonNode
             .get(PROP_ENVIRONMENTS)

@@ -185,11 +185,7 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;
     }
@@ -210,11 +206,7 @@ public final class FileBasedStorage implements StorageProvider {
       NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;
     }
@@ -234,11 +226,7 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE));
     if (!Files.exists(path)) {
       return null;
     }
@@ -259,10 +247,7 @@ public final class FileBasedStorage implements StorageProvider {
     Path path =
         _d.getSnapshotDir(network, snapshot)
             .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
+                Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }
@@ -284,11 +269,7 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_TEST_RIG_DIR,
-                    BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
     if (!Files.exists(path)) {
       return null;
     }

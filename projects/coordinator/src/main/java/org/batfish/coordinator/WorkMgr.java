@@ -1249,14 +1249,9 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getTestrigInfo(String containerName, String testrigName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path submittedTestrigDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path submittedTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!Files.exists(submittedTestrigDir)) {
-      return "Missing folder '"
-          + BfConsts.RELPATH_TEST_RIG_DIR
-          + "' for snapshot '"
-          + testrigName
-          + "'\n";
+      return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
     }
     StringBuilder retStringBuilder = new StringBuilder();
     SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
@@ -1405,8 +1400,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw metadataError;
     }
 
-    Path srcTestrigDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
     // create empty default environment
     Path defaultEnvironmentLeafDir =
@@ -1524,11 +1518,9 @@ public class WorkMgr extends AbstractCoordinator {
         networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
 
     // Copy baseSnapshot so initSnapshot will see a properly formatted upload
-    Path baseSnapshotInputsDir =
-        baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+    Path baseSnapshotInputsDir = baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     Path newSnapshotInputsDir =
-        CommonUtil.createTempDirectory("files_to_add")
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR));
+        CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }

@@ -1061,8 +1061,8 @@ public class WorkMgrTest {
 
     _manager.initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, fileName);
-    // We know the config file will be written under 'testrig/configs/' in the snapshot zip
-    Path object = _manager.getTestrigObject(network, snapshot, "testrig/configs/" + fileName);
+    // We know the config file will be written under 'configs/' in the snapshot zip
+    Path object = _manager.getTestrigObject(network, snapshot, "configs/" + fileName);
 
     // Confirm object is found in the input directory
     assertThat(object, is(not(nullValue())));

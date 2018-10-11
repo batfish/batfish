@@ -1,7 +1,6 @@
 package org.batfish.identifiers;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -9,12 +8,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public abstract class Id {
-  private static final String PROP_ID = "id";
 
   private final String _id;
 
-  @JsonCreator
-  public Id(@JsonProperty(PROP_ID) String id) {
+  public Id(String id) {
     _id = id;
   }
 
@@ -30,7 +27,6 @@ public abstract class Id {
     return getClass().equals(rhs.getClass()) && _id.equals(rhs._id);
   }
 
-  @JsonProperty(PROP_ID)
   public @Nonnull String getId() {
     return _id;
   }
@@ -40,8 +36,9 @@ public abstract class Id {
     return Objects.hash(_id);
   }
 
+  @JsonValue
   @Override
-  public String toString() {
+  public final String toString() {
     return _id;
   }
 }
