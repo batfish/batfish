@@ -126,7 +126,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -185,6 +184,7 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.SrcNattedConstraint;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -4302,8 +4302,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
-    return singleReachability(
-        reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
+    if (debugFlagEnabled("useNodReachability")) {
+      return singleReachability(
+          reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
+    }
+    return bddSingleReachability(reachabilityParameters);
   }
 
   public Synthesizer synthesizeDataPlane() {
@@ -4315,11 +4318,75 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        AclLineMatchExprs.TRUE,
+        TRUE,
         ImmutableSet.of(),
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
         false);
+  }
+
+  public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
+    ResolvedReachabilityParameters params;
+    try {
+      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+
+    checkArgument(
+        params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
+        "Requiring or forbidding Source NAT is currently unsupported");
+
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    Map<IngressLocation, BDD> reachableBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                params.getSourceIpAssignment(),
+                params.getHeaderSpace(),
+                params.getForbiddenTransitNodes(),
+                params.getRequiredTransitNodes(),
+                loadConfigurations().keySet(),
+                params.getActions())
+            .getIngressLocationReachableBDDs();
+
+    String flowTag = getFlowTag();
+    Set<Flow> flows =
+        reachableBDDs
+            .entrySet()
+            .stream()
+            .flatMap(
+                entry -> {
+                  IngressLocation loc = entry.getKey();
+                  BDD headerSpace = entry.getValue();
+                  Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
+                  if (!optionalFlow.isPresent()) {
+                    return Stream.of();
+                  }
+                  Flow.Builder flow = optionalFlow.get();
+                  flow.setIngressNode(loc.getNode());
+                  flow.setTag(flowTag);
+                  switch (loc.getType()) {
+                    case INTERFACE_LINK:
+                      flow.setIngressInterface(loc.getInterface());
+                      break;
+                    case VRF:
+                      flow.setIngressVrf(loc.getVrf());
+                      break;
+                    default:
+                      throw new BatfishException(
+                          "Unexpected IngressLocation Type: " + loc.getType().name());
+                  }
+                  return Stream.of(flow.build());
+                })
+            .collect(ImmutableSet.toImmutableSet());
+
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin().processFlows(flows, dp, false);
+
+    AnswerElement answerElement = getHistory();
+    return answerElement;
   }
 
   @Override
