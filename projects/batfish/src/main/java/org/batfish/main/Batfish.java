@@ -4469,8 +4469,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *
    * @param dispositions Search for differences in the set of packets with the specified {@link
    *     FlowDisposition FlowDispositions}.
-   * @param ipSpaceAssignment
-   * @param headerSpace
+   * @param ipSpaceAssignment Assignment of IpSpaces to each enabled source.
+   * @param headerSpace Extra user-input headerspace constraint
    */
   @Override
   public DifferentialReachabilityResult bddReducedReachability(

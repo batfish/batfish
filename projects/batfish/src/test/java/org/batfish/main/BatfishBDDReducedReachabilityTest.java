@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
@@ -48,6 +49,7 @@ import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -70,6 +72,7 @@ public class BatfishBDDReducedReachabilityTest {
   private Configuration.Builder _cb;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _exception = ExpectedException.none();
 
   private org.batfish.datamodel.Interface.Builder _ib;
 
@@ -105,6 +108,27 @@ public class BatfishBDDReducedReachabilityTest {
     return batfish;
   }
 
+  private static void checkDispositions(
+      Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
+
+    batfish.pushBaseEnvironment();
+    batfish.processFlows(flows, false);
+    List<FlowTrace> traces =
+        batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
+    assertThat(
+        String.format("all traces should have disposition %s in the base environment", disposition),
+        traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+    batfish.popEnvironment();
+
+    batfish.pushDeltaEnvironment();
+    batfish.processFlows(flows, false);
+    traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
+    assertThat(
+        String.format("no traces should have disposition %s in the delta environment", disposition),
+        traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+    batfish.popEnvironment();
+  }
+
   class NeighborUnreachableNetworkGenerator implements NetworkGenerator {
     @Override
     public SortedMap<String, Configuration> generateConfigs(boolean delta) {
@@ -125,25 +149,16 @@ public class BatfishBDDReducedReachabilityTest {
     }
   }
 
-  private static void checkDispositions(
-      Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
+  @Test
+  public void testHeaderSpace() throws IOException {
+    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
 
-    batfish.pushBaseEnvironment();
-    batfish.processFlows(flows, false);
-    List<FlowTrace> traces =
-        batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
-    assertThat(
-        String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
-
-    batfish.pushDeltaEnvironment();
-    batfish.processFlows(flows, false);
-    traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
-    assertThat(
-        String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
+    _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("No sources are compatible with the headerspace constraint");
+    batfish.bddReducedReachability(
+        ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+        batfish.getAllSourcesInferFromLocationIpSpaceAssignment(),
+        matchSrcIp("7.7.7.7"));
   }
 
   @Test

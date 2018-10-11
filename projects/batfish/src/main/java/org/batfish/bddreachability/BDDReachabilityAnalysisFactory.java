@@ -838,9 +838,6 @@ public final class BDDReachabilityAnalysisFactory {
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
 
-    checkArgument(
-        !roots.isEmpty(), "No source locations are compatible with headerspace constraint");
-
     Stream<Edge> edgeStream =
         Streams.concat(
             generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
