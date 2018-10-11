@@ -4,7 +4,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class ExitNetwork extends StateExpr {
+public class NodeInterfaceExitsNetwork extends StateExpr {
 
   public static class State extends StateExpr.State {
 
@@ -14,17 +14,30 @@ public class ExitNetwork extends StateExpr {
 
     @Override
     public void accept(StateVisitor visitor) {
-      visitor.visitExitsNetwork(this);
+      visitor.visitNodeInterfaceExitsNetwork(this);
     }
   }
 
-  public static final ExitNetwork INSTANCE = new ExitNetwork();
+  private final String _hostname;
 
-  private ExitNetwork() {}
+  private final String _iface;
+
+  public NodeInterfaceExitsNetwork(String hostname, String iface) {
+    _hostname = hostname;
+    _iface = iface;
+  }
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitExitNetwork(this);
+    return visitor.visitNodeInterfaceExitsNetwork(this);
+  }
+
+  public String getHostname() {
+    return _hostname;
+  }
+
+  public String getIface() {
+    return _iface;
   }
 
   @Override
