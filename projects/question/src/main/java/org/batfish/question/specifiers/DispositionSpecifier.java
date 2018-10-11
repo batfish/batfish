@@ -28,7 +28,7 @@ import org.batfish.datamodel.FlowDisposition;
 
 /** A way to specify dispositions using a shorthand, such as "success" or "failure". */
 @ParametersAreNonnullByDefault
-public class DispositionSpecifier {
+public final class DispositionSpecifier {
 
   private static final String SUCCESS = "success";
   private static final String FAILURE = "failure";
@@ -81,6 +81,7 @@ public class DispositionSpecifier {
   private static Set<FlowDisposition> fromString(String s) {
     String[] values = s.trim().split(",");
     return Arrays.stream(values)
+        .map(String::trim)
         .map(String::toLowerCase)
         .map(_map::get)
         .filter(Objects::nonNull)
@@ -109,7 +110,7 @@ public class DispositionSpecifier {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof DispositionSpecifier)) {
       return false;
     }
     DispositionSpecifier that = (DispositionSpecifier) o;

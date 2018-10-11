@@ -37,6 +37,13 @@ public class DispositionSpecifierTest {
   }
 
   @Test
+  public void testTrimming() {
+    assertThat(
+        DispositionSpecifier.create("no_route  ,       null_routed").getDispositions(),
+        equalTo(ImmutableSet.of(FlowDisposition.NO_ROUTE, FlowDisposition.NULL_ROUTED)));
+  }
+
+  @Test
   public void testSuccess() {
     assertThat(
         DispositionSpecifier.create("success").getDispositions(),
@@ -59,7 +66,7 @@ public class DispositionSpecifierTest {
   }
 
   @Test
-  public void testUnionEqualsCardinality() {
+  public void testAllDispositionsCovered() {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
         equalTo(ImmutableSet.copyOf(FlowDisposition.values())));
