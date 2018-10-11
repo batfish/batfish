@@ -104,7 +104,7 @@ public class TracerouteUtils {
   }
 
   /**
-   * Returns the {@link Step} representing the entering of a packet on a source interface in a
+   * Returns the {@link Step} representing the entering of a packet on an input interface in a
    * {@link Hop}
    *
    * @param node Name of the {@link Hop}
@@ -117,7 +117,7 @@ public class TracerouteUtils {
    *     Hop})
    * @param dataPlane Computed {@link DataPlane} for the node
    * @return {@link EnterSrcIfaceStep} containing {@link EnterSrcIfaceDetail} and {@link
-   *     EnterSrcIfaceAction} for the step
+   *     EnterSrcIfaceAction} for the step; null if {@link EnterSrcIfaceStep} can't be created
    */
   @Nullable
   public static EnterSrcIfaceStep createEnterSrcIfaceStep(
@@ -133,16 +133,19 @@ public class TracerouteUtils {
     if (inputIfaceName == null && inputVrfName == null) {
       return null;
     }
+    String selectedInputVrfName;
     // prefer input interface's VRF if both input interface and input VRF are set
     if (inputIfaceName != null && node.getAllInterfaces().get(inputIfaceName) != null) {
-      inputVrfName = node.getAllInterfaces().get(inputIfaceName).getVrfName();
+      selectedInputVrfName = node.getAllInterfaces().get(inputIfaceName).getVrfName();
+    } else {
+      selectedInputVrfName = inputVrfName;
     }
 
     EnterSrcIfaceStep.Builder enterSrcIfaceStepBuilder = EnterSrcIfaceStep.builder();
     EnterSrcIfaceDetail.Builder enterSrcStepDetailBuilder = EnterSrcIfaceDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
-        .setInputVrf(inputVrfName);
+        .setInputVrf(selectedInputVrfName);
 
     if (dataPlane
         .getIpVrfOwners()
@@ -176,7 +179,7 @@ public class TracerouteUtils {
       }
     }
 
-    // Packet was forwarded further after being received at the input interface
+    // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
         .setAction(new EnterSrcIfaceAction(StepActionResult.SENT_IN, null))

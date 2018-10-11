@@ -1555,7 +1555,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // + testrigSettings.getEnvironmentSettings().getEnvName();
       String envTag = flowTag;
       Environment env = getEnvironment();
-
       populateFlowHistory(flowHistory, envTag, env, flowTag);
     }
     _logger.debug(flowHistory.toString());
