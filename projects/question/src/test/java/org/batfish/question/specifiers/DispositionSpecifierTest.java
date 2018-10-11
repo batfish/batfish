@@ -1,12 +1,14 @@
 package org.batfish.question.specifiers;
 
-import static org.batfish.question.specifiers.DispositionSpecifier.FAILURE_DISPOSITIONS;
+import static org.batfish.question.specifiers.DispositionSpecifier.FAILURE_SPECIFIER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.io.IOException;
 import java.util.Set;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDisposition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +55,8 @@ public class DispositionSpecifierTest {
   @Test
   public void testFailure() {
     assertThat(
-        DispositionSpecifier.create("FAILURE").getDispositions(), equalTo(FAILURE_DISPOSITIONS));
+        DispositionSpecifier.create("FAILURE").getDispositions(),
+        equalTo(FAILURE_SPECIFIER.getDispositions()));
   }
 
   @Test
@@ -70,5 +73,13 @@ public class DispositionSpecifierTest {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
         equalTo(ImmutableSet.copyOf(FlowDisposition.values())));
+  }
+
+  @Test
+  public void serializationCheck() throws IOException {
+    String serialized = BatfishObjectMapper.writePrettyString(FAILURE_SPECIFIER);
+    assertThat(
+        BatfishObjectMapper.mapper().readValue(serialized, DispositionSpecifier.class),
+        equalTo(FAILURE_SPECIFIER));
   }
 }
