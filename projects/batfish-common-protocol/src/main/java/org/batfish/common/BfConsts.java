@@ -77,7 +77,6 @@ public class BfConsts {
 
   public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
-  public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
   public static final String COMMAND_DUMP_DP = "dp";
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
