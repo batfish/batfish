@@ -1,8 +1,6 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
-  "actions" : [
-    "ACCEPTED"
-  ],
+  "actions" : "ACCEPTED",
   "headers" : {
     "dstIps" : "ddd",
     "srcIps" : "sss"

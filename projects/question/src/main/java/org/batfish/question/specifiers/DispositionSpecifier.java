@@ -33,8 +33,7 @@ public final class DispositionSpecifier {
   private static final String SUCCESS = "success";
   private static final String FAILURE = "failure";
 
-  @VisibleForTesting
-  static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
+  private static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
       ImmutableSet.<FlowDisposition>builder()
           .add(DENIED_IN)
           .add(DENIED_OUT)
@@ -89,11 +88,13 @@ public final class DispositionSpecifier {
   }
 
   @JsonValue
-  private Set<String> value() {
-    return _dispositions
-        .stream()
-        .map(FlowDisposition::name)
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  public String value() {
+    return String.join(
+        ",",
+        _dispositions
+            .stream()
+            .map(FlowDisposition::name)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
   public DispositionSpecifier(Set<FlowDisposition> dispositions) {
