@@ -829,7 +829,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     // If this interface has an outgoing edge, the all packets should be forwarded to the next hop,
     // i.e.,
     // not delivered yet
-    if (edges != null && edges.size() > 0) {
+    if (edges != null && !edges.isEmpty()) {
       return AclIpSpace.DENY_ALL;
     }
 
@@ -899,11 +899,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
     // If this interface has an outgoing edge, the all packets should be forwarded to the next hop,
     // i.e., not exits the network yet
-    if (edges != null && edges.size() > 0) {
+    if (edges != null && !edges.isEmpty()) {
       return AclIpSpace.DENY_ALL;
     }
-
-    Interface outgoingInterface = configuration.getAllInterfaces().get(interfaceName);
 
     // compute all dst IPs routed to this interface
     IpSpace ipsRoutedOutThisInterface = _ipsRoutedOutInterfaces.get(hostname).get(interfaceName);
@@ -917,6 +915,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     ipSpaceBuilder.thenRejecting(_deliveredToSubnet.get(hostname).get(interfaceName));
 
     // Other packets routed to this interface should be considered as "exits the network".
+    ipSpaceBuilder.thenPermitting(ipsRoutedOutThisInterface);
+
     return ipSpaceBuilder.build();
   }
 

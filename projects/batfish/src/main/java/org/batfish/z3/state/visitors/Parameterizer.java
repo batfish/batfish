@@ -24,7 +24,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitNetwork;
+import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -33,6 +33,8 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
@@ -149,7 +151,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitExitNetwork(ExitNetwork exitNetwork) {
+  public List<StateParameter> visitExitNetwork(ExitsNetwork exitNetwork) {
     return ImmutableList.of();
   }
 
@@ -199,6 +201,22 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
     return ImmutableList.of(
         new StateParameter(nodeIfaceNeighborUnreachable.getHostname(), NODE),
         new StateParameter(nodeIfaceNeighborUnreachable.getIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitNodeInterfaceDeliveredToSubnet(
+      NodeInterfaceDeliveredToSubnet nodeIfaceDeliveredToSubnet) {
+    return ImmutableList.of(
+        new StateParameter(nodeIfaceDeliveredToSubnet.getHostname(), NODE),
+        new StateParameter(nodeIfaceDeliveredToSubnet.getIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitNodeInterfaceExitsNetwork(
+      NodeInterfaceExitsNetwork nodeIfaceExitsNetwork) {
+    return ImmutableList.of(
+        new StateParameter(nodeIfaceExitsNetwork.getHostname(), NODE),
+        new StateParameter(nodeIfaceExitsNetwork.getIface(), INTERFACE));
   }
 
   @Override

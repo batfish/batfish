@@ -3,10 +3,11 @@ package org.batfish.main;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -143,8 +144,21 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new ExitNetworkGenerator());
-    Set<Flow> flows =
-        batfish.bddReducedReachability(ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK));
+    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(NEIGHBOR_UNREACHABLE));
+    assertThat(flows, hasSize(0));
+  }
+
+  @Test
+  public void testDeliveredToSubnet() throws IOException {
+    Batfish batfish = initBatfish(new ExitNetworkGenerator());
+    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(DELIVERED_TO_SUBNET));
+    assertThat(flows, hasSize(0));
+  }
+
+  @Test
+  public void testExitsNetwork() throws IOException {
+    Batfish batfish = initBatfish(new ExitNetworkGenerator());
+    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(EXITS_NETWORK));
     assertThat(flows, hasSize(2));
     assertThat(
         flows,

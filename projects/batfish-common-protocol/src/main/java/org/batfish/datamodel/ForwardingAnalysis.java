@@ -13,10 +13,10 @@ public interface ForwardingAnalysis {
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 
-  /** Mapping: hostname ->&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
+  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
   Map<String, Map<String, IpSpace>> getDeliveredToSubnet();
 
-  /** Mapping: hostname ->&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
+  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
   Map<String, Map<String, IpSpace>> getExitsNetwork();
 
   /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */

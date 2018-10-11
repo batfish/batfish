@@ -44,7 +44,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitNetwork;
+import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -53,6 +53,8 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
@@ -396,7 +398,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   // TODO: complete this function
   @Override
-  public void visitExitsNetwork(ExitNetwork.State state) {}
+  public void visitExitsNetwork(ExitsNetwork.State state) {}
 
   // TODO: complete this function
   @Override
@@ -617,6 +619,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                       preStates.build(),
                                       new NodeInterfaceNeighborUnreachable(hostname, outIface)));
                             })));
+  }
+
+  @Override
+  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
+    // TODO: add implementation
+  }
+
+  @Override
+  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
+    // TODO: add implementation
   }
 
   @Override

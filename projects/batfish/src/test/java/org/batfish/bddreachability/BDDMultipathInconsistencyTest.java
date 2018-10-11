@@ -10,7 +10,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
@@ -185,9 +185,7 @@ public class BDDMultipathInconsistencyTest {
     Map<IngressLocation, BDD> neighborUnreachableBDDs =
         _graphFactory
             .bddReachabilityAnalysis(
-                assignment,
-                UniverseIpSpace.INSTANCE,
-                ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                assignment, UniverseIpSpace.INSTANCE, ImmutableSet.of(NEIGHBOR_UNREACHABLE))
             .getIngressLocationReachableBDDs();
 
     assertThat(

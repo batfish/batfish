@@ -14,7 +14,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitNetwork;
+import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -23,6 +23,8 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable.State;
 import org.batfish.z3.state.NumberedQuery;
@@ -67,7 +69,7 @@ public interface StateVisitor {
 
   void visitNeighborUnreachable(NeighborUnreachable.State state);
 
-  void visitExitsNetwork(ExitNetwork.State state);
+  void visitExitsNetwork(ExitsNetwork.State state);
 
   void visitDeliveredToSubnet(DeliveredToSubnet.State state);
 
@@ -86,6 +88,10 @@ public interface StateVisitor {
   void visitNodeDropNullRoute(NodeDropNullRoute.State nodeDropNullRoute);
 
   void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state);
+
+  void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state);
+
+  void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state);
 
   void visitNodeNeighborUnreachable(State state);
 
