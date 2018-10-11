@@ -31,7 +31,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testQuestionDefaults() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    assertThat(question.getActions(), equalTo(ImmutableSortedSet.of(ACCEPTED)));
+    assertThat(question.getActions().getDispositions(), equalTo(ImmutableSortedSet.of(ACCEPTED)));
     assertThat(
         question.getReachabilityParameters().getDestinationIpSpaceSpecifier(),
         equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
