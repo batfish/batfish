@@ -2476,7 +2476,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
-    NodeRolesId networkNodeRolesId = _idResolver.getNetworkNodeRolesId(networkId);
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
@@ -4662,7 +4665,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
-    NodeRolesId networkNodeRolesId = _idResolver.getNetworkNodeRolesId(networkId);
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
