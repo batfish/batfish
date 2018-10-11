@@ -7,7 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Flow;
 
+/** Represents a hop in a particular {@link Trace} of a {@link Flow} */
 public class Hop implements Comparable<Hop>, Serializable {
 
   private static final String PROP_NODE_NAME = "nodeName";
@@ -16,8 +18,10 @@ public class Hop implements Comparable<Hop>, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  /** Name of the node for this {@link Hop} */
   private @Nullable String _nodeName;
 
+  /** {@link List} of {@link Step} present for the given {@link Hop} */
   private List<Step> _steps;
 
   @JsonCreator

@@ -106,6 +106,7 @@ public final class TracerouteAnswerer extends Answerer {
       table = new TableAnswerElement(metadata());
 
     } else {
+      _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
       FlowHistory flowHistory = _batfish.getHistory();
       rows = flowHistoryToRows(flowHistory, false);
       table = new TableAnswerElement(createMetadata(false));

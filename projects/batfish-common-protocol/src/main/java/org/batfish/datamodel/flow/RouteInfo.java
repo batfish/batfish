@@ -5,17 +5,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 
+/**
+ * Contains information about the {@link Route}s which led to the selection of the outgoing
+ * interface for the {@link ExitOutIfaceStep}
+ */
 public class RouteInfo {
 
   private static final String PROP_TYPE = "type";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
+  /** Type of the route like BGP, OSPF etc. */
   private final String _type;
 
+  /** Network of this route */
   private final Prefix _network;
 
+  /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
 
   @JsonCreator

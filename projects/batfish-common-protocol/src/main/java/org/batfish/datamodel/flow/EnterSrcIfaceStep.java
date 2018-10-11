@@ -5,12 +5,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-/**
- * {@link Step} to represent the entering of a packet on an {@link org.batfish.datamodel.Interface}
- * in a node
- */
+/** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 public class EnterSrcIfaceStep extends Step {
   public static class EnterSrcIfaceDetail extends StepDetail {
 

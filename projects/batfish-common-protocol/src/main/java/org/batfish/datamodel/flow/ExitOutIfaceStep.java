@@ -8,6 +8,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/**
+ * {@link Step} to represent the exiting of a {@link Flow} from an outgoing {@link
+ * org.batfish.datamodel.Interface} on a node
+ */
 public class ExitOutIfaceStep extends Step {
   public static class ExitOutIfaceStepDetail extends StepDetail {
 
