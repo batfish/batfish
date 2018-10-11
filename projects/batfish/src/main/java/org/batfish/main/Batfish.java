@@ -3,6 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -125,7 +126,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -4333,7 +4333,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        AclLineMatchExprs.TRUE,
+        TRUE,
         ImmutableSet.of(),
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
@@ -4359,7 +4359,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 params.getSourceIpAssignment(),
-                match(params.getHeaderSpace()),
+                params.getHeaderSpace(),
                 params.getForbiddenTransitNodes(),
                 params.getRequiredTransitNodes(),
                 loadConfigurations().keySet(),
