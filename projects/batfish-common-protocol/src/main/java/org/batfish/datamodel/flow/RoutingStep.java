@@ -7,13 +7,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Route;
 
 /**
  * {@link Step} to represent the selection of the outgoing {@link Interface} on a node for a {@link
- * Flow}
+ * org.batfish.datamodel.Flow}
  */
 public class RoutingStep extends Step {
   public static class RoutingStepDetail extends StepDetail {
