@@ -1,6 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.getLocallyBrokenStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionInfo.getLocallyBrokenStatus;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -12,8 +12,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.junit.Test;
 
-/** Tests of {@link BgpSessionStatusAnswerer} */
-public class BgpSessionStatusAnswererTest {
+/** Tests of static methods of {@link BgpSessionInfo} */
+public class BgpSessionInfoTest {
 
   @Test
   public void testLocalIpUnknownStatically() {

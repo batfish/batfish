@@ -301,16 +301,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setDeltaConfigurationsDir(
-          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
           envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
           envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setDeltaVendorConfigurationsDir(
-          envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     }
   }
 
@@ -790,22 +786,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Environment not initialized: \""
               + testrigSettings.getEnvironmentSettings().getName()
               + "\"");
-    }
-  }
-
-  private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
-    Answer answer = new Answer();
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    Path deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
-    Path vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
-    if (deltaConfigurationsDir != null) {
-      if (Files.exists(deltaConfigurationsDir)) {
-        answer.append(serializeVendorConfigs(envSettings.getEnvPath(), vendorConfigsDir));
-        answer.append(serializeIndependentConfigs(vendorConfigsDir));
-      }
-      return answer;
-    } else {
-      throw new BatfishException("Delta configurations directory cannot be null");
     }
   }
 
@@ -3609,11 +3589,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       action = true;
     }
 
-    if (_settings.getCompileEnvironment()) {
-      answer.append(compileEnvironmentConfigurations(_testrigSettings));
-      action = true;
-    }
-
     if (_settings.getAnswer()) {
       try (ActiveSpan questionSpan =
           GlobalTracer.get().buildSpan("Getting answer to question").startActive()) {
@@ -4368,29 +4343,39 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt);
     IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<String> finalNodes = loadConfigurations().keySet();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
+    Set<String> requiredTransitNodes = ImmutableSet.of();
     Map<IngressLocation, BDD> acceptedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.ACCEPTED))
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> droppedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
-                srcIpSpaceAssignment, UniverseIpSpace.INSTANCE, dropDispositions)
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
+                dropDispositions)
             .getIngressLocationReachableBDDs();
     Map<IngressLocation, BDD> neighborUnreachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                finalNodes,
                 ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .getIngressLocationReachableBDDs();
 
@@ -4433,12 +4418,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
+    Set<String> requiredTransitNodes = ImmutableSet.of();
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();
@@ -4449,6 +4437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .bddReachabilityAnalysis(
                 getAllSourcesInferFromLocationIpSpaceAssignment(),
                 UniverseIpSpace.INSTANCE,
+                requiredTransitNodes,
+                loadConfigurations().keySet(),
                 dispositions)
             .getIngressLocationReachableBDDs();
     popEnvironment();

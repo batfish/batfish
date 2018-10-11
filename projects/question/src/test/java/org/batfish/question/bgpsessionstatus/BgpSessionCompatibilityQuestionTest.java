@@ -6,20 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.junit.Test;
 
-public class BgpSessionStatusQuestionTest {
+public class BgpSessionCompatibilityQuestionTest {
   @Test
   public void testDefaultParameters() {
-    BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
+    BgpSessionCompatibilityQuestion question = new BgpSessionCompatibilityQuestion();
 
-    assertThat(question.getDataPlane(), equalTo(true));
+    assertThat(question.getDataPlane(), equalTo(false));
     assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getRemoteNodes(), equalTo(NodesSpecifier.ALL));
-    assertThat(question.getName(), equalTo("bgpSessionStatusNew"));
+    assertThat(question.getName(), equalTo("bgpSessionCompatibility"));
   }
 
   @Test
   public void testDoesNotMatchNullStatus() {
-    BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
+    BgpSessionCompatibilityQuestion question = new BgpSessionCompatibilityQuestion();
     assertThat(question.matchesStatus(null), equalTo(false));
   }
 }
