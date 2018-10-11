@@ -246,28 +246,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setSerializeVendorPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)));
-    settings.setTestRigPath(
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TEST_RIG_DIR)));
+    settings.setTestRigPath(testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT)));
     settings.setParseAnswerPath(
         testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)));
     settings.setReferenceLibraryPath(
         testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
+            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
     settings.setNodeRolesPath(
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_NODE_ROLES_PATH)));
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_ROLES_PATH)));
     settings.setInferredNodeRolesPath(
         testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_INPUT,
-                BfConsts.RELPATH_TEST_RIG_DIR,
-                BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
+            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
     settings.setTopologyPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH)));
@@ -279,6 +268,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path envPathOut =
           testrigDir.resolve(
               Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
+      Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
       envSettings.setCompressedDataPlanePath(
           envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
       envSettings.setCompressedDataPlaneAnswerPath(
@@ -298,17 +288,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
       Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
-      envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-      envSettings.setInterfaceBlacklistPath(
-          envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-      envSettings.setEdgeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
       envSettings.setExternalBgpAnnouncementsPath(
-          envDirPath.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+          envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
+          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
     }
   }
 
@@ -1464,16 +1450,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges = Collections.emptySortedSet();
-    Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
-    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
-      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
-    }
-    return blacklistEdges;
-  }
-
   @Override
   public Environment getEnvironment() {
     SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
@@ -1585,29 +1561,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges =
+        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistEdges == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistEdges;
+  }
+
+  @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    SortedSet<NodeInterfacePair> blacklistInterfaces = Collections.emptySortedSet();
-    Path interfaceBlacklistPath =
-        _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
-    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
-      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
+    SortedSet<NodeInterfacePair> blacklistInterfaces =
+        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistInterfaces == null) {
+      return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
+  }
+
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes =
+        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistNodes == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistNodes;
   }
 
   @Override
   public BatfishLogger getLogger() {
     return _logger;
-  }
-
-  @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
-    SortedSet<String> blacklistNodes = Collections.emptySortedSet();
-    Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
-    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
-      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
-    }
-    return blacklistNodes;
   }
 
   /**
