@@ -7,12 +7,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Route;
 
+/**
+ * {@link Step} to represent the selection of the outgoing {@link Interface} on a node for a {@link
+ * Flow}
+ */
 public class RoutingStep extends Step {
   public static class RoutingStepDetail extends StepDetail {
 
     private static final String PROP_ROUTES = "routes";
 
+    /**
+     * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
+     * be multiple in case of ECMP
+     */
     private List<RouteInfo> _routes;
 
     @JsonCreator

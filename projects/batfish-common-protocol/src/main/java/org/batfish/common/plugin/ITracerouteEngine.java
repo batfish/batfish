@@ -18,6 +18,15 @@ public interface ITracerouteEngine {
   SortedMap<Flow, Set<FlowTrace>> processFlows(
       DataPlane dataPlane, Set<Flow> flows, Map<String, Map<String, Fib>> fibs, boolean ignoreAcls);
 
+  /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param dataPlane {@link DataPlane} for this network snapshot
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param fibs {@link Fib} for the dataplane
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
+   */
   SortedMap<Flow, List<Trace>> buildFlows(
       DataPlane dataPlane, Set<Flow> flows, Map<String, Map<String, Fib>> fibs, boolean ignoreAcls);
 }

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+/** Types of {@link StepAction}s which can be taken at the end of a {@link Step} */
 public enum StepActionResult {
   ACCEPTED,
   DENIED_IN,

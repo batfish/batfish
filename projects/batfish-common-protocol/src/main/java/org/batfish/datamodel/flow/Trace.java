@@ -11,14 +11,16 @@ import java.util.Objects;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 
-/** Represents the result of performing a traceroute for a {@link Flow} */
+/** Represents one of the paths found for a {@link Flow} */
 public class Trace implements Comparable<Trace> {
 
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
 
+  /** Final action taken on the last {@link Step} of the last {@link Hop} of the {@link Trace} */
   private final FlowDisposition _disposition;
 
+  /** List of {@link Hop}s making up {@link Trace} */
   private final List<Hop> _hops;
 
   @JsonCreator

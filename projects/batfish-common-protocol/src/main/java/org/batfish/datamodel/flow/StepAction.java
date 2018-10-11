@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import javax.annotation.Nonnull;
 
-/** Represents an action taken in a {@link Step} */
+/** Represents an action taken at the end of a {@link Step} */
 @JsonSchemaDescription("Represents an action taken in a step")
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class StepAction {

@@ -295,9 +295,10 @@ public class TracerouteEngineImplContext {
   }
 
   /**
-   * Builds all possible flows with the corresponding {@link Trace}
+   * Builds the possible {@link Trace}s for a {@link Set} of {@link Flow}s in {@link
+   * TracerouteEngineImplContext#_flows}
    *
-   * @return {@link SortedMap} of {@link Flow} to a {@link Set} of {@link Trace}
+   * @return {@link SortedMap} of {@link Flow} to a {@link List} of {@link Trace}s
    */
   public SortedMap<Flow, List<Trace>> buildFlows() {
     Map<Flow, List<Trace>> flowTraces = new ConcurrentHashMap<>();

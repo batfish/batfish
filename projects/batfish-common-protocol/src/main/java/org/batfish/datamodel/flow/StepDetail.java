@@ -6,7 +6,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import javax.annotation.Nonnull;
 
-/** Represents the detail of a {@link Step} */
+/**
+ * Represents the detail of a {@link Step}, contains metadata about the entities involved in the
+ * {@link Step}
+ */
 @JsonSchemaDescription("Represents the detail of a step")
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class StepDetail {
