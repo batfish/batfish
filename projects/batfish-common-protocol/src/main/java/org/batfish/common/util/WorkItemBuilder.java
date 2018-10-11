@@ -92,15 +92,6 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemProcessEnvironment(
-      String containerName, String testrigName, String envName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
-    wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
-    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
-    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-    return wItem;
-  }
-
   public static WorkItem getWorkItemRunAnalysis(
       String analysisName,
       String containerName,
@@ -145,8 +136,7 @@ public class WorkItemBuilder {
   }
 
   public static boolean isParsingWorkItem(WorkItem workItem) {
-    return (workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC)
-        || workItem.getRequestParams().containsKey(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT));
+    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
   }
 
   public static Pair<Pair<String, String>, Pair<String, String>> getBaseAndDeltaSettings(

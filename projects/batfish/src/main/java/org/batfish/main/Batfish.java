@@ -303,16 +303,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
       envSettings.setEdgeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
       envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setDeltaConfigurationsDir(
-          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
       envSettings.setExternalBgpAnnouncementsPath(
           envDirPath.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
       envSettings.setEnvironmentBgpTablesPath(
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
       envSettings.setEnvironmentRoutingTablesPath(
           envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setDeltaVendorConfigurationsDir(
-          envPathOut.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     }
   }
 
@@ -792,22 +788,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Environment not initialized: \""
               + testrigSettings.getEnvironmentSettings().getName()
               + "\"");
-    }
-  }
-
-  private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
-    Answer answer = new Answer();
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    Path deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
-    Path vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
-    if (deltaConfigurationsDir != null) {
-      if (Files.exists(deltaConfigurationsDir)) {
-        answer.append(serializeVendorConfigs(envSettings.getEnvPath(), vendorConfigsDir));
-        answer.append(serializeIndependentConfigs(vendorConfigsDir));
-      }
-      return answer;
-    } else {
-      throw new BatfishException("Delta configurations directory cannot be null");
     }
   }
 
@@ -3606,11 +3586,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
       answer.addAnswerElement(initInfoAnswerElement);
-      action = true;
-    }
-
-    if (_settings.getCompileEnvironment()) {
-      answer.append(compileEnvironmentConfigurations(_testrigSettings));
       action = true;
     }
 
