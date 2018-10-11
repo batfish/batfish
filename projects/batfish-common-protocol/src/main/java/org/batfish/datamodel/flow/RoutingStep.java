@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Route;
 
@@ -15,6 +16,10 @@ import org.batfish.datamodel.Route;
  * org.batfish.datamodel.Flow}
  */
 public class RoutingStep extends Step {
+  /**
+   * {@link StepDetail} containing details of routing to direct a {@link Flow} from an input {@link
+   * Interface} to output {@link Interface}
+   */
   public static class RoutingStepDetail extends StepDetail {
 
     private static final String PROP_ROUTES = "routes";
@@ -42,6 +47,7 @@ public class RoutingStep extends Step {
       return new Builder();
     }
 
+    /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
       private List<RouteInfo> _routes;
       private String _name;
@@ -97,6 +103,7 @@ public class RoutingStep extends Step {
     return new Builder();
   }
 
+  /** Chained builder to create a {@link RoutingStep} object */
   public static class Builder {
     private RoutingStepDetail _detail;
     private RoutingStepAction _action;

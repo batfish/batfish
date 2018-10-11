@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
@@ -13,8 +14,12 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  * org.batfish.datamodel.Interface} on a node
  */
 public class ExitOutIfaceStep extends Step {
-  public static class ExitOutIfaceStepDetail extends StepDetail {
 
+  /**
+   * {@link StepDetail} containing details of the exiting of a {@link Flow} from an output {@link
+   * Interface}
+   */
+  public static class ExitOutIfaceStepDetail extends StepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_FILTER_OUT = "filterOut";
     private static final String PROP_ORIGINAL_FLOW = "originalFlow";
@@ -66,6 +71,7 @@ public class ExitOutIfaceStep extends Step {
       return new Builder();
     }
 
+    /** Chained builder to create a {@link ExitOutIfaceStepDetail} object */
     public static class Builder {
       private NodeInterfacePair _outputInterface;
       private String _filterOut;
@@ -139,6 +145,7 @@ public class ExitOutIfaceStep extends Step {
     return new Builder();
   }
 
+  /** Chained builder to create a {@link ExitOutIfaceStep} object */
   public static class Builder {
     private ExitOutIfaceStepDetail _detail;
     private ExitOutIfaceAction _action;

@@ -11,6 +11,10 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 public class EnterSrcIfaceStep extends Step {
+  /**
+   * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input
+   * {@link Interface}
+   */
   public static class EnterSrcIfaceDetail extends StepDetail {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
@@ -55,6 +59,7 @@ public class EnterSrcIfaceStep extends Step {
       return new Builder();
     }
 
+    /** Chained builder to create a {@link EnterSrcIfaceDetail} object */
     public static class Builder {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
@@ -122,6 +127,7 @@ public class EnterSrcIfaceStep extends Step {
     return new Builder();
   }
 
+  /** Chained builder to create an {@link EnterSrcIfaceStep} object */
   public static class Builder {
     private EnterSrcIfaceDetail _detail;
     private EnterSrcIfaceAction _action;

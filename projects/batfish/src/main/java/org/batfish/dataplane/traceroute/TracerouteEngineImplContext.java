@@ -55,6 +55,11 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepActionResult;
 import org.batfish.datamodel.flow.Trace;
 
+/**
+ * Class containing an implementation of {@link
+ * org.batfish.dataplane.TracerouteEngineImpl#buildFlows(DataPlane, Set, Map, boolean)} and the
+ * context (data) needed for it
+ */
 public class TracerouteEngineImplContext {
 
   private static class TransmissionContext {

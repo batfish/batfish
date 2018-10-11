@@ -59,6 +59,13 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<Flow> bddReducedReachability(Set<FlowDisposition> actions);
 
+  /**
+   * Given a {@link Set} of {@link Flow}s it populates the {@link List} of {@link Trace}s for them
+   *
+   * @param flows {@link Set} of {@link Flow}s for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, ACLs encountered while building the {@link Flow}s are ignored
+   * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
+   */
   SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls);
 
   void checkDataPlane();

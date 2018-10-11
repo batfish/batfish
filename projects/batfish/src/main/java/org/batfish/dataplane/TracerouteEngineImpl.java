@@ -32,6 +32,15 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
         .processFlows();
   }
 
+  /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param dataPlane {@link DataPlane} for this network snapshot
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param fibs {@link Fib} for the dataplane
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
+   */
   @Override
   public SortedMap<Flow, List<Trace>> buildFlows(
       DataPlane dataPlane,
