@@ -5,17 +5,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -54,6 +57,33 @@ public interface StorageProvider {
   @Nullable
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the edge blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the interface blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<NodeInterfacePair> loadInterfaceBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the node blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot

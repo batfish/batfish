@@ -11,6 +11,7 @@ public class CoordConstsV2 {
 
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
+  public static final String RSC_FORK = "fork";
   public static final String RSC_TOPOLOGY = "topology";
   public static final String RSC_INPUT = "input";
   public static final String RSC_ISSUES = "issues";
