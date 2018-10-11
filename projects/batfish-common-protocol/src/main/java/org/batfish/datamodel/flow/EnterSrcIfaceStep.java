@@ -1,4 +1,4 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -29,7 +30,7 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -97,12 +98,12 @@ public final class TracerouteAnswerer extends Answerer {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = getFlows(tag);
     Multiset<Row> rows;
-    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
     TableAnswerElement table;
     if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
-      org.batfish.datamodel.flow2.FlowHistory flowHistoryNew = _batfish.getHistoryNew();
-      rows = newFlowHistoryToRows(flowHistoryNew, false);
-      table = new TableAnswerElement(createMetadataNew(false));
+      SortedMap<Flow, List<Trace>> flowTraces =
+          _batfish.buildFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+      rows = flowTracesToRows(flowTraces);
+      table = new TableAnswerElement(metadata());
 
     } else {
       FlowHistory flowHistory = _batfish.getHistory();
@@ -127,15 +128,9 @@ public final class TracerouteAnswerer extends Answerer {
 
     TableAnswerElement table;
     Multiset<Row> rows;
-    if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
-      org.batfish.datamodel.flow2.FlowHistory flowHistory = _batfish.getHistoryNew();
-      rows = newFlowHistoryToRows(flowHistory, true);
-      table = new TableAnswerElement(createMetadataNew(true));
-    } else {
-      FlowHistory flowHistory = _batfish.getHistory();
-      rows = flowHistoryToRows(flowHistory, true);
-      table = new TableAnswerElement(createMetadata(true));
-    }
+    FlowHistory flowHistory = _batfish.getHistory();
+    rows = flowHistoryToRows(flowHistory, true);
+    table = new TableAnswerElement(createMetadata(true));
 
     table.postProcessAnswer(_question, rows);
     return table;
@@ -169,31 +164,14 @@ public final class TracerouteAnswerer extends Answerer {
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
-  private static TableMetadata createMetadataNew(boolean differential) {
+  private static TableMetadata metadata() {
     List<ColumnMetadata> columnMetadata;
-    if (differential) {
-      columnMetadata =
-          ImmutableList.of(
-              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-              new ColumnMetadata(
-                  TableDiff.baseColumnName(COL_TRACES),
-                  Schema.set(Schema.FLOW_TRACE_NEW),
-                  "The flow traces in the BASE environment",
-                  false,
-                  true),
-              new ColumnMetadata(
-                  TableDiff.deltaColumnName(COL_TRACES),
-                  Schema.set(Schema.FLOW_TRACE_NEW),
-                  "The flow traces in the DELTA environment",
-                  false,
-                  true));
-    } else {
-      columnMetadata =
-          ImmutableList.of(
-              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-              new ColumnMetadata(
-                  COL_TRACES, Schema.set(Schema.FLOW_TRACE_NEW), "The flow traces", false, true));
-    }
+    columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+            new ColumnMetadata(
+                COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true));
+
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
@@ -213,45 +191,11 @@ public final class TracerouteAnswerer extends Answerer {
     return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
   }
 
-  private static Row newFlowHistoryToRow(
-      org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo) {
-    // there should be only environment in this object
-    checkArgument(
-        historyInfo.getPaths().size() == 1,
-        String.format(
-            "Expect only one environment in flow history info. Found %d",
-            historyInfo.getPaths().size()));
-    Set<Trace> paths =
-        historyInfo.getPaths().values().stream().findAny().orElseGet(ImmutableSet::of);
-    return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
-  }
-
   /**
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for base and delta environments
    */
   private static Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
-    // there should only be two environments in this object
-    checkArgument(
-        historyInfo.getPaths().size() == 2,
-        String.format(
-            "Expect exactly two environments in flow history info. Found %d",
-            historyInfo.getPaths().size()));
-    return Row.of(
-        COL_FLOW,
-        historyInfo.getFlow(),
-        TableDiff.baseColumnName(COL_TRACES),
-        historyInfo.getPaths().get(Flow.BASE_FLOW_TAG),
-        TableDiff.deltaColumnName(COL_TRACES),
-        historyInfo.getPaths().get(Flow.DELTA_FLOW_TAG));
-  }
-
-  /**
-   * Converts {@link org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo} into {@link Row}.
-   * Expects that the history object contains traces for base and delta environments
-   */
-  static Row diffNewFlowHistoryToRow(
-      org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo) {
     // there should only be two environments in this object
     checkArgument(
         historyInfo.getPaths().size() == 2,
@@ -282,19 +226,10 @@ public final class TracerouteAnswerer extends Answerer {
     return rows;
   }
 
-  public static Multiset<Row> newFlowHistoryToRows(
-      org.batfish.datamodel.flow2.FlowHistory flowHistory, boolean differential) {
+  public static Multiset<Row> flowTracesToRows(SortedMap<Flow, List<Trace>> flowTraces) {
     Multiset<Row> rows = LinkedHashMultiset.create();
-    if (differential) {
-      for (org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo historyInfo :
-          flowHistory.getTraces().values()) {
-        rows.add(diffNewFlowHistoryToRow(historyInfo));
-      }
-    } else {
-      for (org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo newHistoryInfo :
-          flowHistory.getTraces().values()) {
-        rows.add(newFlowHistoryToRow(newHistoryInfo));
-      }
+    for (Map.Entry<Flow, List<Trace>> flowTrace : flowTraces.entrySet()) {
+      rows.add(Row.of(COL_FLOW, flowTrace.getKey(), COL_TRACES, flowTrace.getValue()));
     }
     return rows;
   }

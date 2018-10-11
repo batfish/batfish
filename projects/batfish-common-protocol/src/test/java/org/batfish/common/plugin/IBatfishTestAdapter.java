@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -63,6 +65,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Set<Flow> bddReducedReachability(Set<FlowDisposition> actions) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls){
     throw new UnsupportedOperationException();
   }
 
@@ -144,11 +151,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public FlowHistory getHistory() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public org.batfish.datamodel.flow2.FlowHistory getHistoryNew() {
     throw new UnsupportedOperationException();
   }
 

@@ -150,7 +150,7 @@ import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -1606,13 +1606,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-  @Override
-  public org.batfish.datamodel.flow2.FlowHistory getHistoryNew() {
-    org.batfish.datamodel.flow2.FlowHistory flowHistoryNew =
-        new org.batfish.datamodel.flow2.FlowHistory();
-    populateFlowHistoryNew(flowHistoryNew, getFlowTag(), getEnvironment(), getFlowTag());
-    return flowHistoryNew;
-  }
 
   @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
@@ -2940,23 +2933,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void populateFlowHistoryNew(
-      org.batfish.datamodel.flow2.FlowHistory flowHistoryNew,
-      String envTag,
-      Environment environment,
-      String flowTag) {
-    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    List<Flow> flows = dataPlanePlugin.getHistoryFlowsNew(loadDataPlane());
-    List<Trace> flowTraces = dataPlanePlugin.getHistoryFlowTracesNew(loadDataPlane());
-    int numEntries = flows.size();
-    for (int i = 0; i < numEntries; i++) {
-      Flow flow = flows.get(i);
-      if (flow.getTag().equals(flowTag)) {
-        Trace flowTrace = flowTraces.get(i);
-        flowHistoryNew.addFlowTrace(flow, envTag, environment, flowTrace);
-      }
-    }
-  }
 
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
     configurations
@@ -3124,11 +3100,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
-    if (getSettings().debugFlagEnabled("traceroute")) {
-      getDataPlanePlugin().processFlowsNew(flows, dp, ignoreAcls);
-    } else {
       getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
-    }
+  }
+
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls){
+    DataPlane dp = loadDataPlane();
+    return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
   }
 
   /**

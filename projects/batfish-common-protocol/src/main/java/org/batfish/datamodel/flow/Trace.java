@@ -1,4 +1,4 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,12 +19,12 @@ public class Trace implements Comparable<Trace> {
 
   private final FlowDisposition _disposition;
 
-  private final List<TraceHop> _hops;
+  private final List<Hop> _hops;
 
   @JsonCreator
   public Trace(
       @JsonProperty(PROP_DISPOSITION) FlowDisposition disposition,
-      @JsonProperty(PROP_HOPS) List<TraceHop> hops) {
+      @JsonProperty(PROP_HOPS) List<Hop> hops) {
     _disposition = disposition;
     _hops = hops != null ? hops : ImmutableList.of();
   }
@@ -53,7 +53,7 @@ public class Trace implements Comparable<Trace> {
   }
 
   @JsonProperty(PROP_HOPS)
-  public List<TraceHop> getHops() {
+  public List<Hop> getHops() {
     return _hops;
   }
 

@@ -16,7 +16,7 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
 
@@ -46,7 +46,6 @@ public class Schema {
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
-          .put("FlowTraceNew", getClassString(Trace.class))
           .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
@@ -57,6 +56,7 @@ public class Schema {
           .put("Prefix", getClassString(Prefix.class))
           .put("SelfDescribing", getClassString(SelfDescribingObject.class))
           .put("String", getClassString(String.class))
+          .put("Trace", getClassString(Trace.class))
           .build();
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
@@ -66,7 +66,6 @@ public class Schema {
   public static final Schema FILE_LINES = new Schema("FileLines");
   public static final Schema FLOW = new Schema("Flow");
   public static final Schema FLOW_TRACE = new Schema("FlowTrace");
-  public static final Schema FLOW_TRACE_NEW = new Schema("FlowTraceNew");
   public static final Schema INTEGER = new Schema("Integer");
   public static final Schema INTERFACE = new Schema("Interface");
   public static final Schema IP = new Schema("Ip");
@@ -77,6 +76,7 @@ public class Schema {
   public static final Schema PREFIX = new Schema("Prefix");
   public static final Schema SELF_DESCRIBING = new Schema("SelfDescribing");
   public static final Schema STRING = new Schema("String");
+  public static final Schema TRACE = new Schema("Trace");
 
   /** Generates a list Schema with the give base schema */
   public static final Schema list(Schema baseSchema) {

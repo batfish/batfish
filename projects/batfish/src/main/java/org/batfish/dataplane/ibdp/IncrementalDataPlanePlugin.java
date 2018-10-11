@@ -22,7 +22,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.dataplane.TracerouteEngineImpl;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
@@ -163,12 +163,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public void processFlowsNew(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
-    _newFlowTraces.put(
-        (IncrementalDataPlane) dataPlane,
-        TracerouteEngineImpl.getInstance()
-            .processFlowsNew(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls){
+    return TracerouteEngineImpl.getInstance().buildFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls);
   }
+
+
 
   private IncrementalDataPlane loadDataPlane() {
     return (IncrementalDataPlane) _batfish.loadDataPlane();

@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -56,6 +58,8 @@ import org.batfish.specifier.SpecifierContext;
 public interface IBatfish extends IPluginConsumer {
 
   Set<Flow> bddReducedReachability(Set<FlowDisposition> actions);
+
+  SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls);
 
   void checkDataPlane();
 
@@ -95,8 +99,6 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
-
-  org.batfish.datamodel.flow2.FlowHistory getHistoryNew();
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);

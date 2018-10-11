@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

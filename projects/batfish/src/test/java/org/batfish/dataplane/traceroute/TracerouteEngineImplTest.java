@@ -1,4 +1,4 @@
-package org.batfish.dataplane.traceroute2;
+package org.batfish.dataplane.traceroute;
 
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
@@ -34,7 +34,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.flow2.Trace;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
@@ -74,7 +74,7 @@ public class TracerouteEngineImplTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        TracerouteEngineImplContext2.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
@@ -88,7 +88,7 @@ public class TracerouteEngineImplTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        TracerouteEngineImplContext2.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
@@ -106,7 +106,7 @@ public class TracerouteEngineImplTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        TracerouteEngineImplContext2.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
@@ -124,7 +124,7 @@ public class TracerouteEngineImplTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        TracerouteEngineImplContext2.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
@@ -138,7 +138,7 @@ public class TracerouteEngineImplTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    TracerouteEngineImplContext2.applySourceNat(
+    TracerouteEngineImplContext.applySourceNat(
         flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
   }
 
@@ -182,9 +182,9 @@ public class TracerouteEngineImplTest {
     System.out.print("aha");
 
     // Compute flow traces
-    SortedMap<Flow, Set<Trace>> traces =
+    SortedMap<Flow, List<Trace>> traces =
         TracerouteEngineImpl.getInstance()
-            .processFlowsNew(dp, ImmutableSet.of(flow1, flow2), dp.getFibs(), false);
+            .buildFlows(dp, ImmutableSet.of(flow1, flow2), dp.getFibs(), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
@@ -226,9 +226,9 @@ public class TracerouteEngineImplTest {
             .setDstIp(new Ip("10.0.0.2"))
             .setTag("tag")
             .build();
-    Set<Trace> traces =
+    List<Trace> traces =
         TracerouteEngineImpl.getInstance()
-            .processFlowsNew(dp, ImmutableSet.of(flow), dp.getFibs(), false)
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false)
             .get(flow);
 
     /*
@@ -264,14 +264,11 @@ public class TracerouteEngineImplTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
-            .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(new Ip("1.0.0.1"))
+            .setTag("tag")
             .build();
-    b.processFlows(ImmutableSet.of(flow), false);
-    org.batfish.datamodel.flow2.FlowHistory history = b.getHistoryNew();
-    org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo info =
-        history.getTraces().get(flow.toString());
-    Trace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
+    SortedMap<Flow, List<Trace>> flowTraces = b.buildFlows(ImmutableSet.of(flow), false);
+    Trace trace = flowTraces.get(flow).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
@@ -316,14 +313,11 @@ public class TracerouteEngineImplTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setTag(Flow.BASE_FLOW_TAG)
+            .setTag("tag")
             .setDstIp(new Ip("1.0.0.1"))
             .build();
-    b.processFlows(ImmutableSet.of(flow), false);
-    org.batfish.datamodel.flow2.FlowHistory history = b.getHistoryNew();
-    org.batfish.datamodel.flow2.FlowHistory.FlowHistoryInfo info =
-        history.getTraces().get(flow.toString());
-    Trace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
+    SortedMap<Flow, List<Trace>> flowTraces = b.buildFlows(ImmutableSet.of(flow), false);
+    Trace trace = flowTraces.get(flow).iterator().next();
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
@@ -341,7 +335,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
     TracerouteEngineImpl.getInstance()
-        .processFlowsNew(
+        .buildFlows(
             dp,
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             dp.getFibs(),

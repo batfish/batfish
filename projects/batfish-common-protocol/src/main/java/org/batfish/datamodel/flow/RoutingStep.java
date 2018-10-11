@@ -1,31 +1,31 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.annotation.Nullable;
 
 public class RoutingStep extends Step {
   public static class RoutingStepDetail extends StepDetail {
 
-    private static final String PROP_ROUTE_CONSIDERED = "routesConsidered";
+    private static final String PROP_ROUTES = "routes";
 
-    private Set<String> _routesConsidered;
+    private List<RouteInfo> _routes;
 
     @JsonCreator
     public RoutingStepDetail(
-        @JsonProperty(PROP_ROUTE_CONSIDERED) @Nullable Set<String> routesConsidered,
+        @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
         @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "RoutingStep"));
-      _routesConsidered = firstNonNull(routesConsidered, ImmutableSet.of());
+      super(firstNonNull(name, "Routing"));
+      _routes = firstNonNull(routes, ImmutableList.of());
     }
 
-    @JsonProperty(PROP_ROUTE_CONSIDERED)
-    public Set<String> getRoutesConsidered() {
-      return _routesConsidered;
+    @JsonProperty(PROP_ROUTES)
+    public List<RouteInfo> getRoutes() {
+      return _routes;
     }
 
     public static Builder builder() {
@@ -33,11 +33,11 @@ public class RoutingStep extends Step {
     }
 
     public static class Builder {
-      private Set<String> _routesConsidered;
+      private List<RouteInfo> _routes;
       private String _name;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_routesConsidered, _name);
+        return new RoutingStepDetail(_routes, _name);
       }
 
       public Builder setName(String name) {
@@ -45,8 +45,8 @@ public class RoutingStep extends Step {
         return this;
       }
 
-      public Builder setRoutesConsidered(Set<String> routesConsidered) {
-        _routesConsidered = routesConsidered;
+      public Builder setRoutes(List<RouteInfo> routes) {
+        _routes = routes;
         return this;
       }
     }
@@ -62,7 +62,7 @@ public class RoutingStep extends Step {
     public RoutingStepAction(
         @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
         @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "RoutingAction"));
+      super(firstNonNull(name, "Routing"));
       _actionResult = result;
     }
 

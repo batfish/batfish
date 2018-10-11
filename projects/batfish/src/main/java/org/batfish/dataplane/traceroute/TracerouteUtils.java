@@ -1,8 +1,8 @@
-package org.batfish.dataplane.traceroute2;
+package org.batfish.dataplane.traceroute;
 
-import static org.batfish.datamodel.flow2.StepActionResult.SENT_OUT;
-import static org.batfish.dataplane.traceroute2.TracerouteEngineImplContext2.TRACEROUTE_DUMMY_NODE;
-import static org.batfish.dataplane.traceroute2.TracerouteEngineImplContext2.TRACEROUTE_DUMMY_OUT_INTERFACE;
+import static org.batfish.datamodel.flow.StepActionResult.SENT_OUT;
+import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
+import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,20 +22,20 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow2.EnterSrcIfaceStep;
-import org.batfish.datamodel.flow2.EnterSrcIfaceStep.EnterSrcIfaceAction;
-import org.batfish.datamodel.flow2.EnterSrcIfaceStep.EnterSrcIfaceDetail;
-import org.batfish.datamodel.flow2.ExitOutIfaceStep;
-import org.batfish.datamodel.flow2.ExitOutIfaceStep.ExitOutIfaceAction;
-import org.batfish.datamodel.flow2.ExitOutIfaceStep.ExitOutIfaceStepDetail;
-import org.batfish.datamodel.flow2.Step;
-import org.batfish.datamodel.flow2.StepActionResult;
-import org.batfish.datamodel.flow2.TraceHop;
+import org.batfish.datamodel.flow.EnterSrcIfaceStep;
+import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceAction;
+import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceDetail;
+import org.batfish.datamodel.flow.ExitOutIfaceStep;
+import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceAction;
+import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
+import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.StepActionResult;
+import org.batfish.datamodel.flow.Hop;
 
 public class TracerouteUtils {
 
   /**
-   * Does a basic validation of input to {@link TracerouteEngineImplContext2#buildFlows()}
+   * Does a basic validation of input to {@link TracerouteEngineImplContext#buildFlows()}
    *
    * @param configurations {@link Map} of {@link Configuration}s
    * @param flow {@link Flow} for which input validation is to be done
@@ -65,11 +65,11 @@ public class TracerouteUtils {
   }
 
   /**
-   * Creates a dummy {@link TraceHop} for starting a trace when ingressInterface is provided
+   * Creates a dummy {@link Hop} for starting a trace when ingressInterface is provided
    *
-   * @return a dummy {@link TraceHop}
+   * @return a dummy {@link Hop}
    */
-  public static TraceHop createDummyHop() {
+  public static Hop createDummyHop() {
     ImmutableList.Builder<Step> steps = ImmutableList.builder();
 
     // creating the exit from out interface step
@@ -81,7 +81,7 @@ public class TracerouteUtils {
     exitOutStepBuilder.setDetail(stepDetailBuilder.build());
     exitOutStepBuilder.setAction(exitOutIfaceAction);
 
-    return new TraceHop(TRACEROUTE_DUMMY_NODE, steps.add(exitOutStepBuilder.build()).build());
+    return new Hop(TRACEROUTE_DUMMY_NODE, steps.add(exitOutStepBuilder.build()).build());
   }
 
   /**
@@ -105,16 +105,16 @@ public class TracerouteUtils {
 
   /**
    * Returns the {@link Step} representing the entering of a packet on a source interface in a
-   * {@link TraceHop}
+   * {@link Hop}
    *
-   * @param node Name of the {@link TraceHop}
+   * @param node Name of the {@link Hop}
    * @param inputIfaceName Name of the source interface
    * @param ignoreAcls if set to true, ACLs are ignored
    * @param currentFlow {@link Flow} for the current packet entering the source interface
    * @param aclDefinitions {@link Map} from ACL names to definitions ({@link IpAccessList}) for the
    *     node
    * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
-   *     TraceHop})
+   *     Hop})
    * @param dataPlane Computed {@link DataPlane} for the node
    * @return {@link EnterSrcIfaceStep} containing {@link EnterSrcIfaceDetail} and {@link
    *     EnterSrcIfaceAction} for the step

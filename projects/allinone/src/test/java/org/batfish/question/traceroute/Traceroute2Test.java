@@ -98,42 +98,4 @@ public class Traceroute2Test {
     return configs.build();
   }
 
-  @Test
-  public void testIgnoreAcls() throws IOException {
-    SortedMap<String, Configuration> configs = aclNetwork();
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane(false);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
-
-    PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
-
-    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
-
-    // without ignoreAcls we get DENIED_OUT
-    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
-    assertThat(answer.getRows().getData(), hasSize(1));
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(TraceMatchers.hasDisposition(FlowDisposition.DENIED_OUT)),
-                Schema.set(Schema.FLOW_TRACE_NEW))));
-
-    // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question = new TracerouteQuestion(".*", header, true);
-    answerer = new TracerouteAnswerer(question, batfish);
-    answer = (TableAnswerElement) answerer.answer();
-    assertThat(answer.getRows().getData(), hasSize(1));
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(
-                    TraceMatchers.hasDisposition(
-                        FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
-                Schema.set(Schema.FLOW_TRACE_NEW))));
-  }
 }

@@ -1,4 +1,4 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

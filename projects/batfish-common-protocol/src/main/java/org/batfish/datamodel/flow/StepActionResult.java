@@ -1,4 +1,4 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 public enum StepActionResult {
   ACCEPTED,

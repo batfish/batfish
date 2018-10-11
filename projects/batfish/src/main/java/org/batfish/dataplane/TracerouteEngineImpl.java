@@ -1,5 +1,6 @@
 package org.batfish.dataplane;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -8,8 +9,8 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.flow2.Trace;
-import org.batfish.dataplane.traceroute2.TracerouteEngineImplContext2;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.dataplane.traceroute.TracerouteEngineImplContext;
 
 /** The default implementation of a traceroute engine */
 public class TracerouteEngineImpl implements ITracerouteEngine {
@@ -27,15 +28,15 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
       boolean ignoreAcls) {
-    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).processFlows();
+    return new org.batfish.dataplane.TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).processFlows();
   }
 
   @Override
-  public SortedMap<Flow, Set<Trace>> processFlowsNew(
+  public SortedMap<Flow, List<Trace>> buildFlows(
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
       boolean ignoreAcls) {
-    return new TracerouteEngineImplContext2(dataPlane, flows, fibs, ignoreAcls).buildFlows();
+    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).buildFlows();
   }
 }

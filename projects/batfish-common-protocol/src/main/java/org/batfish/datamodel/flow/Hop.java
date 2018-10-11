@@ -1,4 +1,4 @@
-package org.batfish.datamodel.flow2;
+package org.batfish.datamodel.flow;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-public class TraceHop implements Comparable<TraceHop>, Serializable {
+public class Hop implements Comparable<Hop>, Serializable {
 
   private static final String PROP_NODE_NAME = "nodeName";
   private static final String PROP_STEPS = "steps";
@@ -21,7 +21,7 @@ public class TraceHop implements Comparable<TraceHop>, Serializable {
   private List<Step> _steps;
 
   @JsonCreator
-  public TraceHop(
+  public Hop(
       @JsonProperty(PROP_NODE_NAME) @Nullable String nodeName,
       @JsonProperty(PROP_STEPS) @Nullable List<Step> steps) {
     _nodeName = nodeName;
@@ -44,10 +44,10 @@ public class TraceHop implements Comparable<TraceHop>, Serializable {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof TraceHop)) {
+    if (!(o instanceof Hop)) {
       return false;
     }
-    TraceHop other = (TraceHop) o;
+    Hop other = (Hop) o;
     return Objects.equals(_nodeName, other._nodeName) && Objects.equals(_steps, other._steps);
   }
 
@@ -57,7 +57,7 @@ public class TraceHop implements Comparable<TraceHop>, Serializable {
   }
 
   @Override
-  public int compareTo(TraceHop o) {
-    return Comparator.comparing(TraceHop::getNodeName).compare(this, o);
+  public int compareTo(Hop o) {
+    return Comparator.comparing(Hop::getNodeName).compare(this, o);
   }
 }
