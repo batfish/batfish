@@ -74,8 +74,7 @@ public final class DispositionSpecifier {
   @JsonCreator
   @VisibleForTesting
   static DispositionSpecifier create(@Nullable String values) {
-    values = firstNonNull(values, SUCCESS);
-    return new DispositionSpecifier(fromString(values));
+    return new DispositionSpecifier(fromString(firstNonNull(values, SUCCESS)));
   }
 
   private static Set<FlowDisposition> fromString(String s) {

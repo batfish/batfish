@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
@@ -46,8 +45,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   /**
    * Create a new reachability question. {@code null} values result in default parameter values.
    *
-   * @param actions set of actions/flow dispositions to search for (default is {@link
-   *     FlowDisposition#ACCEPTED}
+   * @param actions set of actions/flow dispositions to search for (default is {@code success})
    * @param headerConstraints header constraints that constrain the search space of valid flows.
    *     Default is unconstrained.
    * @param pathConstraints path constraints dictating where a flow can originate/terminate/transit.
