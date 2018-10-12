@@ -9,6 +9,7 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setFragmentOffse
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setSrcPort;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setTcpFlags;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -179,5 +180,31 @@ public class PacketHeaderConstraintsUtilTest {
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setFlowStates(phc, builder);
+  }
+
+  @Test
+  public void testSetTcpFlags() {
+    Builder builder =
+        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG))
+            .build();
+    setTcpFlags(phc, builder);
+    assertThat(builder.build().getTcpFlagsAck(), equalTo(1));
+  }
+
+  @Test
+  public void testSetTcpFlagsMultiple() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setTcpFlags(
+                ImmutableSet.of(
+                    TcpFlagsMatchConditions.ACK_TCP_FLAG,
+                    TcpFlagsMatchConditions.builder().build()))
+            .build();
+    Builder builder = Flow.builder();
+    thrown.expect(IllegalArgumentException.class);
+    setTcpFlags(phc, builder);
   }
 }
