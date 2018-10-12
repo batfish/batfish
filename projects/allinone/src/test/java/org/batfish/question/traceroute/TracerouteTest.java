@@ -248,16 +248,15 @@ public class TracerouteTest {
    * R1 interface IP: 1.0.0.1/24
    * R2 interface IP: 1.0.0.2/24
    *
-   * R1 static route: 1.0.0.128/26 -> R2
+   * R1 static route: 1.0.0.128/26 -> interface on R1
    *
-   * traceroute R1 -> 1.0.0.128
+   * traceroute R1 -> 1.0.0.129
    *
-   * R2 should not ARP response R1 (since R2 does not have route to 1.0.0.128, so the disposition
-   * should be NEIGHBOR_UNREACHABLE
+   * R1 should deliver the packet to the subnet
    *
    */
   @Test
-  public void testDispositionNeighborUnreach() throws IOException {
+  public void testDeliveredToSubnet1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -306,38 +305,128 @@ public class TracerouteTest {
     TracerouteQuestion question =
         new TracerouteQuestion(
             c1.getHostname(),
-            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.129").build(),
             false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    // should only have one trace
     assertThat(answer.getRows().getData(), hasSize(1));
+
+    // the trace should only traverse R1
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
 
     assertThat(
         answer.getRows().getData(),
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
+                Schema.set(Schema.FLOW_TRACE))));
+  }
+
+  /*
+   * Topology: R1 -- R2
+   * R1 interface IP: 1.0.0.1/24
+   * R2 interface IP: 1.0.0.2/24
+   *
+   * R1 static route: 1.0.0.128/26 -> 1.0.0.2
+   *
+   * traceroute R1 -> 1.0.0.129
+   *
+   * Expected: R1 -> R2 -> deliver to the subnet
+   *
+   */
+  @Test
+  public void testDeliveredToSubnet2() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+
+    // set up static route "1.0.0.128/26" -> "1.0.0.2"
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(i1.getName())
+                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNetwork(Prefix.parse("1.0.0.128/26"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+
+    // set up interface on N2
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .setProxyArp(true)
+        .build();
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.129").build(),
+            false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
   /*
    * Topology:
-   * R1 -- R2
+   * R1 -- R2 --
    * R1 interface1 IP: 1.0.0.1/24
    * R2 interface1 IP: 1.0.0.2/24
    * R2 interface2 IP: 1.0.0.129/mask
    *
-   * R1 static route 1.0.0.128/mask -> R2
+   * R1 static route 1.0.0.128/mask -> interface1
    * R2 static route 1.0.0.128/mask -> interface2
    *
    * traceroute R1 -> 1.0.0.128
    *
-   * Case 1: mask < 24 : NEIGHBOR_UNREACHABLE, since R2 not ARP response
+   * Case 1: mask < 24 : R1 -> DELIVERED_TO_SUBNET
    * Case 2: mask = 24 : same above,
    * since connected route has higher priority than static route
-   * Case 3: 29 >= mask > 24 : DELIVERED_TO_SUBNET, since R1 and R2 takes static route
+   * Case 3: 29 >= mask > 24 : DELIVERED_TO_SUBNET, R1 -> R2 -> delivered
    *
    * Note: in practice, R2 would complain about overlapping interfaces
    */
@@ -421,9 +510,14 @@ public class TracerouteTest {
     assertThat(
         answer.getRows().getData(),
         everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
@@ -431,12 +525,18 @@ public class TracerouteTest {
   public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("24");
     assertThat(answer.getRows().getData(), hasSize(1));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+
     assertThat(
         answer.getRows().getData(),
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
@@ -444,6 +544,12 @@ public class TracerouteTest {
   public void testDeliveredToSubnetVSStaticRoute3() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("26");
     assertThat(answer.getRows().getData(), hasSize(1));
+
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
+
     assertThat(
         answer.getRows().getData(),
         everyItem(
@@ -454,20 +560,20 @@ public class TracerouteTest {
   }
 
   /*
-   * R1 -- R2
+   * -- R1 -- R2 --
    * R1 interface1 IP: 1.0.0.130/mask
    * R1 interface2 IP: 2.0.0.1/24
    * R2 interface1 IP: 2.0.0.2/24
    * R2 interface2 IP: 1.0.0.129/24
    *
    * Static routes:
-   * R1: 1.0.0.128/24 -> R2
+   * R1: 1.0.0.128/24 -> interface2
    * R2: 1.0.0.128/24 -> interface2
    *
    * Traceroute: R1 -> 1.0.0.128
    *
    * Case 1: mask < 24: DELIVERD_TO_SUBNET (to R2)
-   * Case 2: mask = 24: NEIGHBOR_UNREACHABLE, since
+   * Case 2: mask = 24: DELIVERD_TO_SUBNET (to R1)
    *    packets take interface1 on R1, but R2 no ARP response
    * Case 3: 29 >= mask > 24: DELIVERD_TO_SUBNET (to R1)
    *
@@ -587,7 +693,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
@@ -612,7 +718,7 @@ public class TracerouteTest {
   }
 
   /*
-   * Topology: R1 -- R2 -- R3
+   * Topology: R1 -- R2 -- R3 --
    *
    * R1 interface1 IP: 1.0.0.1/mask
    * R2 interface1 IP: 1.0.0.2/mask
@@ -621,18 +727,18 @@ public class TracerouteTest {
    * R3 interface2 IP: 1.0.0.3/24
    *
    * Static routes:
-   * R1: 1.0.0.0/25 -> R2
+   * R1: 1.0.0.0/25 -> interface1
    * R2: 1.0.0.0/25 -> interface2
    * R3: 1.0.0.0/25 -> interface2
    *
    * Traceroute: R1 -> 1.0.0.4
    *
-   * Case 1: mask < 24: EXITS_NETWORK (out of R3)
+   * Case 1: mask < 24: Delivered To Subnet (out of R3)
    *    This is because R3 forwards packets through its static route, and no next hop found
    * Case 2: mask = 24: LOOP (R1->R2->R3->R1), since packets
    *   take interface1 on R1, but R2 no ARP response
    * Case 3: 29 >= mask >= 25: NEIGHBOR_UNREACHABLE
-   *    since the connected route is taken, and R2 does not ARP response to R1
+   *    since the connected route is taken, and R1 should deliver the packet to subnet
    */
   private TableAnswerElement testDispositionMultipleRouters(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -791,7 +897,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 

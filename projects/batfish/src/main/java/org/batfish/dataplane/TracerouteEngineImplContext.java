@@ -24,7 +24,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -47,7 +47,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -225,74 +224,67 @@ class TracerouteEngineImplContext {
     return resolvedNextHopWithRoutesBuilder.build();
   }
 
-  private FlowDisposition computeDisposition(Interface outgoingInterface, Ip dstIp) {
-    FlowDisposition disposition;
+  private boolean checkDeliveredToSubnet(Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
+    Stream<Prefix> matchingPrefixes =
+        outgoingInterface.getAllAddresses().stream().map(InterfaceAddress::getPrefix);
 
-    PrefixTrie prefixTrie =
-        new PrefixTrie(
-            new TreeSet(
-                outgoingInterface
-                    .getAllAddresses()
-                    .stream()
-                    .map(InterfaceAddress::getPrefix)
-                    .collect(Collectors.toSet())));
-
-    Prefix matchingPrefix = prefixTrie.getLongestPrefixMatch(dstIp);
-
-    boolean isDelivered = matchingPrefix != null && matchingPrefix.containsIp(dstIp);
-
-    // Check if the dstip is in a host subnet (prefix <= 29)
-    boolean isHostSubnet =
-        matchingPrefix != null
-            && matchingPrefix.getPrefixLength()
-                <= NodeNameRegexConnectedHostsIpSpaceSpecifier.HOST_SUBNET_MAX_PREFIX_LENGTH;
-
-    /*
     boolean isDeliveredToSubnet =
-        outgoingInterface
-            .getAllAddresses()
-            .stream()
-            .map(InterfaceAddress::getPrefix)
-            .anyMatch(
-                prefix ->
-                    prefix.containsIp(dstIp)
-                        && prefix.getPrefixLength()
-                            <= NodeNameRegexConnectedHostsIpSpaceSpecifier
-                                .HOST_SUBNET_MAX_PREFIX_LENGTH);
-                                */
+        matchingPrefixes.anyMatch(
+            prefix ->
+                prefix.containsIp(dstIp)
+                    && prefix.getPrefixLength()
+                        <= NodeNameRegexConnectedHostsIpSpaceSpecifier
+                            .HOST_SUBNET_MAX_PREFIX_LENGTH);
 
-    if (isDelivered && isHostSubnet) {
-      disposition = FlowDisposition.DELIVERED_TO_SUBNET;
-    } else {
-      boolean isDeliveredToSomewhere =
-          outgoingInterface
-              .getAllAddresses()
-              .stream()
-              .map(InterfaceAddress::getPrefix)
-              .anyMatch(prefix -> prefix.containsIp(dstIp));
-
-      if (isDeliveredToSomewhere) {
-        disposition = FlowDisposition.EXITS_NETWORK;
-      } else {
-        // check if nexthop ip match any interface IP
-        boolean isFinalNextHopIpInNetwork =
-            _configurations
-                .values()
-                .stream()
-                .flatMap(configuration -> configuration.getAllInterfaces().values().stream())
-                .flatMap(interf -> interf.getAllAddresses().stream())
-                .map(InterfaceAddress::getIp)
-                .anyMatch(interfaceIp -> (interfaceIp.compareTo(dstIp) == 0));
-
-        if (isFinalNextHopIpInNetwork) {
-          disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
-        } else {
-          disposition = FlowDisposition.EXITS_NETWORK;
-        }
-      }
+    if (isDeliveredToSubnet) {
+      return true;
     }
+    return false;
+  }
 
-    return disposition;
+  private boolean checkExitsNetwork(
+      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
+    if (fnhIp != null) {
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
+          CommonUtil.computeIpInterfaceOwners(
+              CommonUtil.computeNodeInterfaces(_configurations), true);
+      Map<String, Map<String, IpSpace>> vrfOwnedIps =
+          CommonUtil.computeVrfOwnedIpSpaces(
+              CommonUtil.computeIpVrfOwners(ipInterfaceOwners, _configurations));
+
+      boolean isFinalNextHopIpInNetwork =
+          vrfOwnedIps
+              .entrySet()
+              .stream()
+              .anyMatch(
+                  nodeEntry ->
+                      nodeEntry
+                          .getValue()
+                          .entrySet()
+                          .stream()
+                          .anyMatch(
+                              vrfEntry ->
+                                  vrfEntry.getValue().containsIp(fnhIp, nodeConfig.getIpSpaces())));
+      if (!isFinalNextHopIpInNetwork) {
+        return true;
+      }
+    } else if (outgoingInterface
+        .getAllAddresses()
+        .stream()
+        .map(InterfaceAddress::getPrefix)
+        .anyMatch(prefix -> prefix.containsIp(dstIp))) {
+      return true;
+    }
+    return false;
+  }
+
+  private FlowDisposition computeDisposition(
+      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
+    if (checkDeliveredToSubnet(outgoingInterface, fnhIp, dstIp))
+      return FlowDisposition.DELIVERED_TO_SUBNET;
+    else if (checkExitsNetwork(nodeConfig, outgoingInterface, fnhIp, dstIp))
+      return FlowDisposition.EXITS_NETWORK;
+    return FlowDisposition.NEIGHBOR_UNREACHABLE;
   }
 
   private void collectFlowTraces(
@@ -333,9 +325,6 @@ class TracerouteEngineImplContext {
       FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
       srcInterfaceName = lastHop.getEdge().getInt2();
       vrfName = currentConfiguration.getAllInterfaces().get(srcInterfaceName).getVrf().getName();
-    }
-    if (!vrfName.equals(currentVrfName)) {
-      throw new BatfishException("vrfName not equals currentVrfName\n");
     }
     // .. and what the next hops are based on the FIB.
     Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
@@ -400,9 +389,11 @@ class TracerouteEngineImplContext {
                   flowTraces.add(nullRouteTrace);
                   return;
                 }
+                Configuration nodeConfig =
+                     _configurations
+                        .get(nextHopInterface.getHostname());
                 Interface outgoingInterface =
-                    _configurations
-                        .get(nextHopInterface.getHostname())
+                    nodeConfig
                         .getAllInterfaces()
                         .get(nextHopInterface.getInterface());
 
@@ -445,7 +436,7 @@ class TracerouteEngineImplContext {
                   }
                   if (!denied) {
                     FlowDisposition disposition =
-                        computeDisposition(outgoingInterface, dstIp);
+                        computeDisposition(nodeConfig, outgoingInterface, finalNextHopIp, dstIp);
 
                     Edge nextEdge =
                         new Edge(
@@ -544,29 +535,29 @@ class TracerouteEngineImplContext {
     }
   }
 
-  private static FlowTrace neighborUnreachableTrace(
-      NodeInterfacePair srcInterface, TransmissionContext transmissionContext) {
-    Edge neighborUnreachableEdge =
+  private static FlowTrace neighborUnreachableOrExitsNetworkTrace(
+      NodeInterfacePair srcInterface,
+      TransmissionContext transmissionContext,
+      FlowDisposition disposition) {
+    Edge edge =
         new Edge(
             srcInterface,
             new NodeInterfacePair(Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
-    FlowTraceHop neighborUnreachableHop =
+    FlowTraceHop flowTraceHop =
         new FlowTraceHop(
-            neighborUnreachableEdge,
+            edge,
             transmissionContext._routesForThisNextHopInterface,
             null,
             null,
             hopFlow(transmissionContext._originalFlow, transmissionContext._transformedFlow));
-    neighborUnreachableHop.setFilterOut(transmissionContext._filterOutNotes);
+    flowTraceHop.setFilterOut(transmissionContext._filterOutNotes);
     List<FlowTraceHop> newHops =
         ImmutableList.<FlowTraceHop>builder()
             .addAll(transmissionContext._hopsSoFar)
-            .add(neighborUnreachableHop)
+            .add(flowTraceHop)
             .build();
-    return new FlowTrace(
-        FlowDisposition.NEIGHBOR_UNREACHABLE,
-        newHops,
-        FlowDisposition.NEIGHBOR_UNREACHABLE.toString());
+
+    return new FlowTrace(disposition, newHops, disposition.toString());
   }
 
   private void processCurrentNextHopInterfaceEdges(
@@ -748,7 +739,19 @@ class TracerouteEngineImplContext {
         .get(c.getAllInterfaces().get(nextHopInterfaceName).getVrfName())
         .get(nextHopInterfaceName)
         .containsIp(arpIp, c.getIpSpaces())) {
-      FlowTrace trace = neighborUnreachableTrace(nextHopInterface, transmissionContext);
+      FlowDisposition disposition =
+          computeDisposition(
+              _configurations
+                  .get(nextHopInterface.getHostname()),
+             _configurations
+                  .get(nextHopInterface.getHostname())
+                  .getAllInterfaces()
+                  .get(nextHopInterface.getInterface()),
+              finalNextHopIp,
+              dstIp);
+      FlowTrace trace =
+          neighborUnreachableOrExitsNetworkTrace(
+              nextHopInterface, transmissionContext, disposition);
       transmissionContext._flowTraces.add(trace);
       return false;
     }
