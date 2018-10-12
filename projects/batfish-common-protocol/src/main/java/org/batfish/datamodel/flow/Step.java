@@ -21,7 +21,7 @@ public abstract class Step {
   /** Metadata about the {@link Step} */
   protected @Nullable final StepDetail _detail;
 
-  /** Information about the action which was taken at the end of this step */
+  /** The action which was taken at the end of this step */
   protected @Nullable final StepAction _action;
 
   @JsonCreator

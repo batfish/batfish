@@ -69,35 +69,14 @@ public class RoutingStep extends Step {
     }
   }
 
-  public static class RoutingStepAction extends StepAction {
-
-    private static final String PROP_ACTION_RESULT = "actionResult";
-
-    private @Nullable StepActionResult _actionResult;
-
-    @JsonCreator
-    public RoutingStepAction(
-        @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
-        @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "Routing"));
-      _actionResult = result;
-    }
-
-    @Nullable
-    @JsonProperty(PROP_ACTION_RESULT)
-    public StepActionResult getActionResult() {
-      return _actionResult;
-    }
-  }
-
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
   @JsonCreator
   public RoutingStep(
-      @JsonProperty(PROP_DETAIL) RoutingStepDetail stepDetail,
-      @JsonProperty(PROP_ACTION) RoutingStepAction stepAction) {
-    super(stepDetail, stepAction);
+      @JsonProperty(PROP_DETAIL) RoutingStepDetail detail,
+      @JsonProperty(PROP_ACTION) StepAction action) {
+    super(detail, action);
   }
 
   public static Builder builder() {
@@ -107,7 +86,7 @@ public class RoutingStep extends Step {
   /** Chained builder to create a {@link RoutingStep} object */
   public static class Builder {
     private RoutingStepDetail _detail;
-    private RoutingStepAction _action;
+    private StepAction _action;
 
     public RoutingStep build() {
       return new RoutingStep(_detail, _action);
@@ -118,7 +97,7 @@ public class RoutingStep extends Step {
       return this;
     }
 
-    public Builder setAction(RoutingStepAction action) {
+    public Builder setAction(StepAction action) {
       _action = action;
       return this;
     }

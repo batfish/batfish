@@ -93,35 +93,14 @@ public class EnterInputIfaceStep extends Step {
     }
   }
 
-  public static class EnterInputIfaceAction extends StepAction {
-
-    private static final String PROP_ACTION_RESULT = "actionResult";
-
-    private @Nullable StepActionResult _actionResult;
-
-    @JsonCreator
-    public EnterInputIfaceAction(
-        @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
-        @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "EnterSrcIface"));
-      _actionResult = result;
-    }
-
-    @Nullable
-    @JsonProperty(PROP_ACTION_RESULT)
-    public StepActionResult getActionResult() {
-      return _actionResult;
-    }
-  }
-
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
   @JsonCreator
   private EnterInputIfaceStep(
-      @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail stepDetail,
-      @JsonProperty(PROP_ACTION) EnterInputIfaceAction stepAction) {
-    super(stepDetail, stepAction);
+      @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail detail,
+      @JsonProperty(PROP_ACTION) StepAction action) {
+    super(detail, action);
   }
 
   public static Builder builder() {
@@ -131,7 +110,7 @@ public class EnterInputIfaceStep extends Step {
   /** Chained builder to create an {@link EnterInputIfaceStep} object */
   public static class Builder {
     private EnterInputIfaceStepDetail _detail;
-    private EnterInputIfaceAction _action;
+    private StepAction _action;
 
     public EnterInputIfaceStep build() {
       return new EnterInputIfaceStep(_detail, _action);
@@ -142,7 +121,7 @@ public class EnterInputIfaceStep extends Step {
       return this;
     }
 
-    public Builder setAction(EnterInputIfaceAction action) {
+    public Builder setAction(StepAction action) {
       _action = action;
       return this;
     }

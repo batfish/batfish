@@ -1,7 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.flow.StepActionResult.SENT_OUT;
+import static org.batfish.datamodel.flow.StepAction.SENT_OUT;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
 
@@ -30,7 +30,7 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceAction;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
-import org.batfish.datamodel.flow.StepActionResult;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.pojo.Node;
 
 final class TracerouteUtils {
@@ -156,7 +156,7 @@ final class TracerouteUtils {
         .contains(selectedInputVrfName)) {
       return enterSrcIfaceStepBuilder
           .setDetail(enterSrcStepDetailBuilder.build())
-          .setAction(new EnterInputIfaceAction(StepActionResult.ACCEPTED, null))
+          .setAction(new EnterInputIfaceAction(StepAction.ACCEPTED, null))
           .build();
     }
 
@@ -176,7 +176,7 @@ final class TracerouteUtils {
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())
-            .setAction(new EnterInputIfaceAction(StepActionResult.DENIED_IN, null))
+            .setAction(new EnterInputIfaceAction(StepAction.DENIED_IN, null))
             .build();
       }
     }
@@ -184,7 +184,7 @@ final class TracerouteUtils {
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
-        .setAction(new EnterInputIfaceAction(StepActionResult.SENT_IN, null))
+        .setAction(new EnterInputIfaceAction(StepAction.SENT_IN, null))
         .build();
   }
 }
