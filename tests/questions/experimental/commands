@@ -62,3 +62,9 @@ test -raw tests/questions/experimental/traceroute.ref validate-template tracerou
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# test traceroute new version
+add-batfish-option debugflags=traceroute
+init-network test_traceroute
+init-snapshot networks/example/live
+test tests/questions/experimental/tracerouteListHops.ref answer traceroute startLocation="host1", ignoreAcls=false, headers={dstIps="1.0.2.2"}

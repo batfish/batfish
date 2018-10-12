@@ -149,6 +149,7 @@ import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -3064,6 +3065,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
+  }
+
+  /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
+   */
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+    DataPlane dp = loadDataPlane();
+    return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
   }
 
   /**

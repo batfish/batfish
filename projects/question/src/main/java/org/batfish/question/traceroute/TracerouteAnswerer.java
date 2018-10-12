@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -95,10 +97,20 @@ public final class TracerouteAnswerer extends Answerer {
   public AnswerElement answer() {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = getFlows(tag);
-    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory, false);
-    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
+    Multiset<Row> rows;
+    TableAnswerElement table;
+    if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
+      SortedMap<Flow, List<Trace>> flowTraces =
+          _batfish.buildFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+      rows = flowTracesToRows(flowTraces);
+      table = new TableAnswerElement(metadata());
+
+    } else {
+      _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+      FlowHistory flowHistory = _batfish.getHistory();
+      rows = flowHistoryToRows(flowHistory, false);
+      table = new TableAnswerElement(createMetadata(false));
+    }
     table.postProcessAnswer(_question, rows);
     return table;
   }
@@ -115,9 +127,12 @@ public final class TracerouteAnswerer extends Answerer {
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
     _batfish.popEnvironment();
 
+    TableAnswerElement table;
+    Multiset<Row> rows;
     FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory, true);
-    TableAnswerElement table = new TableAnswerElement(createMetadata(true));
+    rows = flowHistoryToRows(flowHistory, true);
+    table = new TableAnswerElement(createMetadata(true));
+
     table.postProcessAnswer(_question, rows);
     return table;
   }
@@ -150,6 +165,17 @@ public final class TracerouteAnswerer extends Answerer {
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
+  private static TableMetadata metadata() {
+    List<ColumnMetadata> columnMetadata;
+    columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+            new ColumnMetadata(
+                COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true));
+
+    return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
+  }
+
   /**
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for only one environment
@@ -170,7 +196,7 @@ public final class TracerouteAnswerer extends Answerer {
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for base and delta environments
    */
-  static Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
+  private static Row diffFlowHistoryToRow(FlowHistoryInfo historyInfo) {
     // there should only be two environments in this object
     checkArgument(
         historyInfo.getPaths().size() == 2,
@@ -197,6 +223,14 @@ public final class TracerouteAnswerer extends Answerer {
       for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
         rows.add(flowHistoryToRow(historyInfo));
       }
+    }
+    return rows;
+  }
+
+  public static Multiset<Row> flowTracesToRows(SortedMap<Flow, List<Trace>> flowTraces) {
+    Multiset<Row> rows = LinkedHashMultiset.create();
+    for (Map.Entry<Flow, List<Trace>> flowTrace : flowTraces.entrySet()) {
+      rows.add(Row.of(COL_FLOW, flowTrace.getKey(), COL_TRACES, flowTrace.getValue()));
     }
     return rows;
   }
