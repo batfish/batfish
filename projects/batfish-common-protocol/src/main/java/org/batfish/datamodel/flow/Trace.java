@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -15,13 +14,10 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 
 /** Represents one of the paths found for a {@link Flow} */
-public class Trace implements Serializable {
+public class Trace {
 
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
-
-  /** */
-  private static final long serialVersionUID = 1L;
 
   /** Final action taken on the last {@link Step} of the last {@link Hop} of the {@link Trace} */
   private final FlowDisposition _disposition;

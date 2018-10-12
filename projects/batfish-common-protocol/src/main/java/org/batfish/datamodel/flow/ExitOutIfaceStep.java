@@ -14,8 +14,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  */
 public class ExitOutIfaceStep extends Step {
 
-  private static final long serialVersionUID = 1L;
-
   /**
    * {@link StepDetail} containing details of the exiting of a {@link Flow} from an output {@link
    * org.batfish.datamodel.Interface}
@@ -25,8 +23,6 @@ public class ExitOutIfaceStep extends Step {
     private static final String PROP_FILTER = "filter";
     private static final String PROP_ORIGINAL_FLOW = "originalFlow";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
-
-    private static final long serialVersionUID = 1L;
 
     private @Nullable NodeInterfacePair _outputInterface;
     private @Nullable String _filter;
@@ -117,8 +113,6 @@ public class ExitOutIfaceStep extends Step {
   public static class ExitOutIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
-
-    private static final long serialVersionUID = 1L;
 
     private @Nullable StepActionResult _actionResult;
 

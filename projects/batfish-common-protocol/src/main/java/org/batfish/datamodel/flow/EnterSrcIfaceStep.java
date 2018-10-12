@@ -12,8 +12,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 public class EnterSrcIfaceStep extends Step {
 
-  private static final long serialVersionUID = 1L;
-
   /**
    * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input
    * {@link Interface}
@@ -23,8 +21,6 @@ public class EnterSrcIfaceStep extends Step {
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
     private static final String PROP_FILTER = "filter";
-
-    private static final long serialVersionUID = 1L;
 
     private @Nullable NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
@@ -100,8 +96,6 @@ public class EnterSrcIfaceStep extends Step {
   public static class EnterSrcIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
-
-    private static final long serialVersionUID = 1L;
 
     private @Nullable StepActionResult _actionResult;
 

@@ -52,7 +52,10 @@
             "disposition" : "ACCEPTED",
             "hops" : [
               {
-                "nodeName" : "host1",
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.RoutingStep",
@@ -92,7 +95,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dept1",
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -103,7 +109,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
@@ -150,7 +156,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dist1",
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -212,7 +221,10 @@
                 ]
               },
               {
-                "nodeName" : "as2core1",
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -223,7 +235,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "blocktelnet",
+                      "filter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet2/0"
@@ -270,7 +282,10 @@
                 ]
               },
               {
-                "nodeName" : "as2border1",
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -327,7 +342,10 @@
                 ]
               },
               {
-                "nodeName" : "as1border1",
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -384,7 +402,10 @@
                 ]
               },
               {
-                "nodeName" : "as1core1",
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -411,7 +432,10 @@
             "disposition" : "ACCEPTED",
             "hops" : [
               {
-                "nodeName" : "host1",
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.RoutingStep",
@@ -451,7 +475,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dept1",
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -462,7 +489,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
@@ -509,7 +536,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dist1",
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -571,7 +601,10 @@
                 ]
               },
               {
-                "nodeName" : "as2core2",
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -628,7 +661,10 @@
                 ]
               },
               {
-                "nodeName" : "as2border1",
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -685,7 +721,10 @@
                 ]
               },
               {
-                "nodeName" : "as1border1",
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -742,7 +781,10 @@
                 ]
               },
               {
-                "nodeName" : "as1core1",
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -769,7 +811,10 @@
             "disposition" : "ACCEPTED",
             "hops" : [
               {
-                "nodeName" : "host1",
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.RoutingStep",
@@ -809,7 +854,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dept1",
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -820,7 +868,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
@@ -867,7 +915,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dist2",
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -929,7 +980,10 @@
                 ]
               },
               {
-                "nodeName" : "as2core2",
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -986,7 +1040,10 @@
                 ]
               },
               {
-                "nodeName" : "as2border1",
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1043,7 +1100,10 @@
                 ]
               },
               {
-                "nodeName" : "as1border1",
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1100,7 +1160,10 @@
                 ]
               },
               {
-                "nodeName" : "as1core1",
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1127,7 +1190,10 @@
             "disposition" : "ACCEPTED",
             "hops" : [
               {
-                "nodeName" : "host1",
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.RoutingStep",
@@ -1167,7 +1233,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dept1",
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1178,7 +1247,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
@@ -1225,7 +1294,10 @@
                 ]
               },
               {
-                "nodeName" : "as2dist2",
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1287,7 +1359,10 @@
                 ]
               },
               {
-                "nodeName" : "as2core1",
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1298,7 +1373,7 @@
                     },
                     "detail" : {
                       "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep$EnterSrcIfaceDetail",
-                      "filterIn" : "blocktelnet",
+                      "filter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet3/0"
@@ -1345,7 +1420,10 @@
                 ]
               },
               {
-                "nodeName" : "as2border1",
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1402,7 +1480,10 @@
                 ]
               },
               {
-                "nodeName" : "as1border1",
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",
@@ -1459,7 +1540,10 @@
                 ]
               },
               {
-                "nodeName" : "as1core1",
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
                 "steps" : [
                   {
                     "class" : "org.batfish.datamodel.flow.EnterSrcIfaceStep",

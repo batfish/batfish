@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -15,13 +14,10 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.pojo.Node;
 
 /** Represents a hop in a particular {@link Trace} of a {@link Flow} */
-public class Hop implements Serializable {
+public class Hop {
 
   private static final String PROP_NODE = "node";
   private static final String PROP_STEPS = "steps";
-
-  /** */
-  private static final long serialVersionUID = 1L;
 
   /** Name of the node for this {@link Hop} */
   private @Nullable Node _node;
