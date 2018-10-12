@@ -1,6 +1,15 @@
 {
   "class" : "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
-  "headers" : { },
+  "headers" : {
+    "dstIps" : "ddd",
+    "srcIps" : "sss"
+  },
+  "pathConstraints" : {
+    "endLocation" : "bbb",
+    "forbiddenLocations" : "ddd",
+    "startLocation" : "aaa",
+    "transitLocations" : "ccc"
+  },
   "differential" : true,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -11,6 +20,34 @@
       "dataPlane",
       "reachability",
       "reduced reachability"
-    ]
+    ],
+    "variables" : {
+      "actions" : {
+        "description" : "Only return flows for which the disposition is from this set",
+        "optional" : true,
+        "type" : "string",
+        "value" : "success"
+      },
+      "headers" : {
+        "description" : "Packet header constraints",
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "srcIps" : "sss",
+          "dstIps" : "ddd"
+        }
+      },
+      "pathConstraints" : {
+        "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "optional" : true,
+        "type" : "pathConstraint",
+        "value" : {
+          "startLocation" : "aaa",
+          "endLocation" : "bbb",
+          "transitLocations" : "ccc",
+          "forbiddenLocations" : "ddd"
+        }
+      }
+    }
   }
 }
