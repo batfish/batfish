@@ -23,6 +23,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -311,23 +312,23 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
-   * Write the node roles data for the network with the given ID.
+   * Write the node roles data for the given ID.
    *
    * @throws IOException if there is an error
    */
-  void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException;
+  void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) throws IOException;
 
   /**
-   * Read the node roles data for the network with the given ID.
+   * Read the node roles data with the given ID.
    *
    * @throws FileNotFoundException if the roles do not exist
    * @throws IOException if there is an error reading the roles.
    */
   @Nonnull
-  String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException;
+  String loadNodeRoles(NodeRolesId nodeRolesId) throws FileNotFoundException, IOException;
 
   /** Returns true iff the network with the specified ID has node roles */
-  boolean hasNodeRoles(NetworkId networkId);
+  boolean hasNodeRoles(NodeRolesId nodeRolesId);
 
   /** Initialize an empty network */
   void initNetwork(NetworkId networkId);

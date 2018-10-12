@@ -18,7 +18,9 @@ import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
@@ -57,6 +59,15 @@ public final class WorkMgrTestUtils {
     org.batfish.datamodel.Topology envTopology =
         new org.batfish.datamodel.Topology(ImmutableSortedSet.of());
     Main.getWorkMgr().getStorage().storeTopology(envTopology, networkId, snapshotId);
+  }
+
+  public static void setSnapshotNodeRoles(
+      NodeRolesData nodeRolesData, String network, String snapshot) throws IOException {
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idManager.getNetworkId(network);
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    NodeRolesId snapshotNodeRolesId = idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    Main.getWorkMgr().getStorage().storeNodeRoles(nodeRolesData, snapshotNodeRolesId);
   }
 
   public static void initWorkManager(IdManager idManager, StorageProvider storage) {

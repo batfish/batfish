@@ -1,6 +1,8 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_INFERRED_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_INPUT;
+import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_POJO_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
@@ -42,6 +44,11 @@ public final class SnapshotResource {
     return Response.ok().entity(topology).build();
   }
 
+  @Path(RSC_INFERRED_NODE_ROLES)
+  public SnapshotNodeRolesResource getSnapshotInferredNodeRoles() {
+    return new SnapshotNodeRolesResource(_network, _snapshot, true);
+  }
+
   @Path(RSC_INPUT)
   public SnapshotInputObjectsResource getSnapshotInputObjectsResource() {
     return new SnapshotInputObjectsResource(_network, _snapshot);
@@ -55,6 +62,11 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().entity(metadata).build();
+  }
+
+  @Path(RSC_NODE_ROLES)
+  public SnapshotNodeRolesResource getSnapshotNodeRoles() {
+    return new SnapshotNodeRolesResource(_network, _snapshot, false);
   }
 
   @Path(RSC_OBJECTS)

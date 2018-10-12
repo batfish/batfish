@@ -24,6 +24,7 @@ public interface IdResolver {
       SnapshotId snapshotId,
       QuestionId questionId,
       QuestionSettingsId questionSettingsId,
+      NodeRolesId networkNodeRolesId,
       @Nullable SnapshotId referenceSnapshotId,
       @Nullable AnalysisId analysisId);
 
@@ -47,6 +48,10 @@ public interface IdResolver {
    */
   @Nonnull
   NetworkId getNetworkId(String network);
+
+  /** Retrieve the current {@link NodeRolesId} for {@code networkId}. */
+  @Nonnull
+  NodeRolesId getNetworkNodeRolesId(NetworkId networkId);
 
   /**
    * Retrieve the {@link QuestionId} assigned to {@code question} under {@code networkId} and {@code
@@ -78,6 +83,10 @@ public interface IdResolver {
   @Nonnull
   String getSnapshotName(NetworkId networkId, SnapshotId snapshotId);
 
+  /** Retrieve the {@link NodeRolesId} corresponding to the provided input IDs. */
+  @Nonnull
+  NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId);
+
   /**
    * Return {@code true} iff some {@link AnalysisId} is assigned to {@code analysis} under {@code
    * networkId}.
@@ -92,6 +101,9 @@ public interface IdResolver {
 
   /** Return {@code true} iff some {@link NetworkId} is assigned to {@code network}. */
   boolean hasNetworkId(String network);
+
+  /** Return {@code true} iff some {@link NodeRolesId} is associated with {@code networkId} */
+  boolean hasNetworkNodeRolesId(NetworkId networkId);
 
   /**
    * Return {@code true} iff some {@link QuestionId} is assigned to {@code question} under {@code

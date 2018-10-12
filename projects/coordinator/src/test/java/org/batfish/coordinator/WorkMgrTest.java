@@ -3,6 +3,8 @@ package org.batfish.coordinator;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
+import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -23,6 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -86,6 +89,8 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -606,17 +611,27 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     AnswerId baseAnswerId2 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -684,17 +699,27 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     AnswerId baseAnswerId2 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -804,11 +829,15 @@ public class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     String answerStr = BatfishObjectMapper.writeString(answer);
@@ -865,11 +894,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -920,11 +953,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -951,11 +988,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -989,7 +1030,13 @@ public class WorkMgrTest {
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -1596,11 +1643,15 @@ public class WorkMgrTest {
     String questionContent = BatfishObjectMapper.writeString(testQuestion);
     _storage.storeQuestion(questionContent, networkId, questionId, analysisId);
     _idManager.assignQuestion(question, networkId, questionId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
-    _idManager.assignQuestionSettingsId(testQuestion.getName(), networkId, questionSettingsId);
     AnswerId answerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     _storage.storeAnswer(BatfishObjectMapper.writeString(oldAnswer), answerId);
     _storage.storeAnswerMetadata(oldAnswerMetadata, answerId);
     Map<String, MajorIssueConfig> majorIssueConfigs =
@@ -1938,5 +1989,65 @@ public class WorkMgrTest {
 
     assertThat(workDetails.baseTestrig, equalTo(snapshot));
     assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+  }
+
+  @Test
+  public void testGetAnswerNotFoundAfterNodeRolesUpdate() throws IOException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    Question question = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(question);
+    String questionName = "question2Name";
+    _manager.initNetwork(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    AnswerId baseAnswerId =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+    _storage.storeAnswer(answerStr, baseAnswerId);
+    Answer answerBeforeUpdate =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                Answer.class);
+
+    // answer should be found at first
+    assertThat(answerBeforeUpdate.getStatus(), equalTo(AnswerStatus.SUCCESS));
+
+    boolean updated =
+        _manager.putNetworkNodeRoles(
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(NodeRoleDimension.builder().setName("foo").build()))
+                .build(),
+            networkName);
+
+    // updating node roles should succeed
+    assertTrue(updated);
+
+    Answer answerAfterUpdate =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                Answer.class);
+
+    // answer should no longer be available since node roles input id changed
+    assertThat(answerAfterUpdate.getStatus(), equalTo(AnswerStatus.NOTFOUND));
   }
 }
