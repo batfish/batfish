@@ -32,7 +32,25 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
+/** Converts {@link AclLineMatchExpr} to {@link BooleanExpr}. */
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
+  /**
+   * Instance used to convert initial headerspace constraints. These constraints cannot refer to
+   * {@link IpAccessList ACLs} or {@link IpSpace IpSpaces} by name, or include any source
+   * constraints (i.e. no {@link MatchSrcInterface} or {@link OriginatingFromDevice} expressions).
+   * The constraint is on the original headerspace variables (before any transformations).
+   */
+  public static final AclLineMatchExprToBooleanExpr
+      NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE =
+          new AclLineMatchExprToBooleanExpr(
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              new Field("NO SOURCES", 0),
+              ImmutableMap.of(),
+              true);
+
+  private final boolean _matchOriginalHeaderSpaceFields;
+
   private final Map<String, IpSpace> _namedIpSpaces;
 
   private final Map<String, IpAccessList> _nodeAcls;
@@ -46,6 +64,16 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
       Map<String, IpSpace> namedIpSpaces,
       Field sourceInterfaceField,
       Map<String, IntExpr> sourceInterfaceFieldValues) {
+    this(nodeAcls, namedIpSpaces, sourceInterfaceField, sourceInterfaceFieldValues, false);
+  }
+
+  public AclLineMatchExprToBooleanExpr(
+      Map<String, IpAccessList> nodeAcls,
+      Map<String, IpSpace> namedIpSpaces,
+      Field sourceInterfaceField,
+      Map<String, IntExpr> sourceInterfaceFieldValues,
+      boolean matchOriginalHeaderSpaceFields) {
+    _matchOriginalHeaderSpaceFields = matchOriginalHeaderSpaceFields;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _nodeAcls = ImmutableMap.copyOf(nodeAcls);
     _sourceInterfaceField = sourceInterfaceField;
@@ -79,7 +107,9 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
 
   @Override
   public BooleanExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    return new HeaderSpaceMatchExpr(matchHeaderSpace.getHeaderspace(), _namedIpSpaces).getExpr();
+    return new HeaderSpaceMatchExpr(
+            matchHeaderSpace.getHeaderspace(), _namedIpSpaces, _matchOriginalHeaderSpaceFields)
+        .getExpr();
   }
 
   @Override

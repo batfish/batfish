@@ -77,7 +77,6 @@ public class BfConsts {
 
   public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
-  public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
   public static final String COMMAND_DUMP_DP = "dp";
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
@@ -160,6 +159,7 @@ public class BfConsts {
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
   public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
+  public static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INPUT = "input";
@@ -179,13 +179,13 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
+  public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_STANDARD_DIR = "standard";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
-  public static final String RELPATH_TESTRIGS_DIR = "testrigs";
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";

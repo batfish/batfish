@@ -10,7 +10,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -28,7 +29,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       Q extends ReachabilityQuerySynthesizer, T extends Builder<Q, T>> {
     protected Set<String> _forbiddenTransitNodes;
 
-    protected HeaderSpace _headerSpace;
+    protected AclLineMatchExpr _headerSpace;
 
     protected Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
@@ -38,7 +39,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     public Builder() {
       _forbiddenTransitNodes = ImmutableSet.of();
-      _headerSpace = new HeaderSpace();
+      _headerSpace = AclLineMatchExprs.TRUE;
       _srcIpConstraints = ImmutableMap.of();
       _requiredTransitNodes = ImmutableSet.of();
       _srcNatted = UNCONSTRAINED;
@@ -57,7 +58,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       return getThis();
     }
 
-    public T setHeaderSpace(HeaderSpace headerSpace) {
+    public T setHeaderSpace(AclLineMatchExpr headerSpace) {
       _headerSpace = headerSpace;
       return getThis();
     }
@@ -78,7 +79,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
     }
   }
 
-  protected final @Nonnull HeaderSpace _headerSpace;
+  protected final @Nonnull AclLineMatchExpr _headerSpace;
 
   protected final @Nonnull ImmutableMap<IngressLocation, BooleanExpr> _srcIpConstraints;
 
@@ -89,7 +90,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final @Nonnull Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
-      @Nonnull HeaderSpace headerSpace,
+      @Nonnull AclLineMatchExpr headerSpace,
       @Nonnull Map<IngressLocation, BooleanExpr> srcIpConstraints,
       @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,

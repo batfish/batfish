@@ -15,12 +15,9 @@
     "variables": {
       "actions": {
         "description": "Only return flows for which the disposition is from this set",
-        "minElements": 1,
         "optional": true,
         "type": "string",
-        "value": [
-          "accept"
-        ]
+        "value": "success"
       },
       "headers": {
         "description": "Packet header constraints",

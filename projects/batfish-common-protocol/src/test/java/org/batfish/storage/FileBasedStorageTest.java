@@ -1,6 +1,7 @@
 package org.batfish.storage;
 
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
+import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -22,17 +23,22 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class FileBasedStorageTest {
+public final class FileBasedStorageTest {
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Path _containerDir;
   private BatfishLogger _logger;
@@ -109,19 +115,19 @@ public class FileBasedStorageTest {
   @Test
   public void testStoreQuestionSettingsThenLoad() throws IOException {
     NetworkId network = new NetworkId("network");
-    String questionClass = "q1";
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
     String settings = "{}";
-    _storage.storeQuestionSettings(settings, network, questionClass);
+    _storage.storeQuestionSettings(settings, network, questionSettingsId);
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), equalTo(settings));
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), equalTo(settings));
   }
 
   @Test
   public void testLoadQuestionSettingsMissing() throws IOException {
     NetworkId network = new NetworkId("network");
-    String questionClass = "q1";
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), nullValue());
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), nullValue());
   }
 
   @Test
@@ -137,5 +143,23 @@ public class FileBasedStorageTest {
     NetworkId network = new NetworkId("network");
 
     assertThat(_storage.checkNetworkExists(network), equalTo(false));
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathRejectsAbsolute() throws IOException {
+    _thrown.expect(IllegalArgumentException.class);
+    objectKeyToRelativePath("/foo/bar");
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathRejectsNonNormalized() throws IOException {
+    _thrown.expect(IllegalArgumentException.class);
+    objectKeyToRelativePath("foo/../../bar");
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathValid() throws IOException {
+    // no exception should be thrown
+    objectKeyToRelativePath("foo/bar");
   }
 }

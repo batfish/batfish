@@ -3,6 +3,7 @@ package org.batfish.question.reducedreachability;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -41,7 +42,11 @@ public class ReducedReachabilityAnswerer extends Answerer {
   @Override
   public TableAnswerElement answerDiff() {
     ReducedReachabilityQuestion question = (ReducedReachabilityQuestion) _question;
-    Set<Flow> flows = _batfish.bddReducedReachability(question.getActions());
+    DifferentialReachabilityResult result = _batfish.bddReducedReachability(question.getActions());
+
+    Set<Flow> flows =
+        Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
+
     _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
     _batfish.popEnvironment();

@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasInt2;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -151,11 +153,12 @@ public class NodJobAclTest {
     Synthesizer synthesizer = new Synthesizer(input);
 
     /* Construct NodJob */
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
-            .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
-            .build();
+    AclLineMatchExpr headerSpace =
+        match(
+            HeaderSpace.builder()
+                .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
+                .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
+                .build());
     IngressLocation ingressLocation = IngressLocation.vrf(srcNode.getHostname(), srcVrf.getName());
     Map<IngressLocation, BooleanExpr> srcIpConstraints =
         ImmutableMap.of(ingressLocation, TrueExpr.INSTANCE);
@@ -285,11 +288,12 @@ public class NodJobAclTest {
     Synthesizer synthesizer = new Synthesizer(input);
 
     /* Construct NodJob */
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
-            .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
-            .build();
+    AclLineMatchExpr headerSpace =
+        match(
+            HeaderSpace.builder()
+                .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
+                .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
+                .build());
 
     Map<IngressLocation, BooleanExpr> srcIpConstraints =
         ImmutableMap.of(
@@ -404,11 +408,12 @@ public class NodJobAclTest {
 
     /* set up synthesizer */
     Topology topology = new Topology(dataPlane.getTopologyEdges());
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setSrcIps(ImmutableList.of(srcIp))
-            .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4/32")))
-            .build();
+    AclLineMatchExpr headerSpace =
+        match(
+            HeaderSpace.builder()
+                .setSrcIps(ImmutableList.of(srcIp))
+                .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4/32")))
+                .build());
     SynthesizerInput input =
         SynthesizerInputImpl.builder()
             .setConfigurations(configs)

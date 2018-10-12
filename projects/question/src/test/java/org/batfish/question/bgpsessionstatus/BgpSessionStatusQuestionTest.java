@@ -11,8 +11,7 @@ public class BgpSessionStatusQuestionTest {
   public void testDefaultParameters() {
     BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
 
-    assertThat(question.getDataPlane(), equalTo(false));
-    assertThat(question.getIncludeEstablishedCount(), equalTo(false));
+    assertThat(question.getDataPlane(), equalTo(true));
     assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getRemoteNodes(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getName(), equalTo("bgpSessionStatusNew"));

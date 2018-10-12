@@ -13,12 +13,12 @@
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "definedStructures" : {
       "configs/lhr-border-02.cfg" : {
-        "bgp group" : {
+        "bgp peer-group" : {
           "FW" : {
             "definitionLines" : [
               198
             ],
-            "numReferrers" : -1
+            "numReferrers" : 2
           }
         },
         "crypto ipsec profile" : {
@@ -308,6 +308,14 @@
     },
     "referencedStructures" : {
       "configs/lhr-border-02.cfg" : {
+        "bgp peer-group" : {
+          "FW" : {
+            "bgp neighbor peer-group" : [
+              200,
+              202
+            ]
+          }
+        },
         "crypto ipsec profile" : {
           "ipsec-vpn-ba2e34a8-0" : {
             "interface TunnelX tunnel protection ipsec profile" : [

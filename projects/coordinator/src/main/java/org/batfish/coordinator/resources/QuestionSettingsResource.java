@@ -29,11 +29,11 @@ public class QuestionSettingsResource {
 
   private final String _network;
 
-  private final String _questionName;
+  private final String _questionClassId;
 
   public QuestionSettingsResource(String network, String questionName) {
     _network = network;
-    _questionName = questionName;
+    _questionClassId = questionName;
   }
 
   @GET
@@ -42,12 +42,12 @@ public class QuestionSettingsResource {
     try {
       settings =
           Main.getWorkMgr()
-              .getQuestionSettings(_network, _questionName.toLowerCase(), ImmutableList.of());
+              .getQuestionSettings(_network, _questionClassId.toLowerCase(), ImmutableList.of());
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
               "Failed to load question settings for network '%s', class '%s'",
-              _network, _questionName),
+              _network, _questionClassId),
           e);
     }
     return settings != null
@@ -58,7 +58,7 @@ public class QuestionSettingsResource {
   @Path("/{" + PARAM_JSON_PATH + ":.*}")
   public QuestionSettingsJsonPathResource getQuestionSettingsJsonResource(
       @PathParam(PARAM_JSON_PATH) String jsonPath) {
-    return new QuestionSettingsJsonPathResource(_network, _questionName, jsonPath);
+    return new QuestionSettingsJsonPathResource(_network, _questionClassId, jsonPath);
   }
 
   @PUT
@@ -66,12 +66,12 @@ public class QuestionSettingsResource {
   public Response putQuestionSettings(JsonNode settings) {
     try {
       Main.getWorkMgr()
-          .writeQuestionSettings(_network, _questionName, ImmutableList.of(), settings);
+          .writeQuestionSettings(_network, _questionClassId, ImmutableList.of(), settings);
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
-              "Failed to write question settings for network '%s', class '%s'",
-              _network, _questionName),
+              "Failed to write question settings for network '%s', questionClassId '%s'",
+              _network, _questionClassId),
           e);
     }
     return Response.ok().build();
