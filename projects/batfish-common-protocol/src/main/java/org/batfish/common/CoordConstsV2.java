@@ -12,7 +12,7 @@ public class CoordConstsV2 {
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
   public static final String RSC_FORK = "fork";
-  public static final String RSC_TOPOLOGY = "topology";
+  public static final String RSC_INFERRED_NODE_ROLES = "inferred_node_roles";
   public static final String RSC_INPUT = "input";
   public static final String RSC_ISSUES = "issues";
   public static final String RSC_NETWORK = "network";
@@ -24,4 +24,5 @@ public class CoordConstsV2 {
   public static final String RSC_REFERENCE_LIBRARY = "referencelibrary";
   public static final String RSC_SETTINGS = "settings";
   public static final String RSC_SNAPSHOTS = "snapshots";
+  public static final String RSC_TOPOLOGY = "topology";
 }

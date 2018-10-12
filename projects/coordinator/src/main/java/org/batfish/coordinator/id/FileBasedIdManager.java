@@ -10,6 +10,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -50,6 +51,13 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
     Path idFile = getNetworkIdPath(network);
     idFile.getParent().toFile().mkdirs();
     CommonUtil.writeFile(idFile, networkId.getId());
+  }
+
+  @Override
+  public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
+    Path idFile = getNetworkNodeRolesIdPath(networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, networkNodeRolesId.getId());
   }
 
   @Override
@@ -113,6 +121,11 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
   @Override
   public @Nonnull NetworkId generateNetworkId() {
     return new NetworkId(uuid());
+  }
+
+  @Override
+  public NodeRolesId generateNetworkNodeRolesId() {
+    return new NodeRolesId(uuid());
   }
 
   @Override
