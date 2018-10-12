@@ -42,7 +42,6 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.grizzly.http.Method;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -1230,7 +1229,7 @@ public class BfCoordWorkHelper {
   }
 
   public boolean debugV2(
-      FileWriter outWriter, Method method, String urlTail, Object entity, String mediaType)
+      FileWriter outWriter, String method, String urlTail, Object entity, MediaType mediaType)
       throws IOException {
     WebTarget webTarget = getTargetV2(Arrays.asList(urlTail.split("/", -1)));
     Invocation.Builder builder =
@@ -1240,8 +1239,8 @@ public class BfCoordWorkHelper {
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
     try (Response response =
         entity != null
-            ? builder.method(method.getMethodString(), Entity.entity(entity, mediaType))
-            : builder.method(method.getMethodString())) {
+            ? builder.method(method, Entity.entity(entity, mediaType))
+            : builder.method(method)) {
       if (response.hasEntity()) {
         String output = response.readEntity(String.class);
         if (outWriter != null) {

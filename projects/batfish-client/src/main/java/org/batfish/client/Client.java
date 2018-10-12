@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -57,7 +58,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.Command.TestComparisonMode;
@@ -109,8 +112,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
-import org.codehaus.plexus.util.IOUtil;
-import org.glassfish.grizzly.http.Method;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReader.Option;
@@ -2616,7 +2617,7 @@ public class Client extends AbstractClient implements IClient {
     }
     String urlTail = parameters.get(0);
     try {
-      return _workHelper.debugV2(outWriter, Method.DELETE, urlTail, null, null);
+      return _workHelper.debugV2(outWriter, HttpMethod.DELETE, urlTail, null, null);
     } catch (IOException e) {
       _logger.error(Throwables.getStackTraceAsString(e));
       return false;
@@ -2629,7 +2630,7 @@ public class Client extends AbstractClient implements IClient {
     }
     String urlTail = parameters.get(0);
     try {
-      return _workHelper.debugV2(outWriter, Method.GET, urlTail, null, null);
+      return _workHelper.debugV2(outWriter, HttpMethod.GET, urlTail, null, null);
     } catch (IOException e) {
       _logger.error(Throwables.getStackTraceAsString(e));
       return false;
@@ -2658,23 +2659,23 @@ public class Client extends AbstractClient implements IClient {
     }
     String urlTail = parameters.get(0);
     String entityParam = parameters.get(1);
-    String mediaType;
+    MediaType mediaType;
     Object entity;
     try (Closer closer = Closer.create()) {
       if (file) {
         InputStream inputStream = closer.register(Files.newInputStream(Paths.get(entityParam)));
         if (raw) {
-          mediaType = MediaType.APPLICATION_OCTET_STREAM;
+          mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
           entity = inputStream;
         } else {
-          mediaType = MediaType.APPLICATION_JSON;
-          entity = IOUtil.toString(inputStream);
+          mediaType = MediaType.APPLICATION_JSON_TYPE;
+          entity = IOUtils.toString(inputStream, UTF_8);
         }
       } else {
-        mediaType = MediaType.APPLICATION_JSON;
+        mediaType = MediaType.APPLICATION_JSON_TYPE;
         entity = BatfishObjectMapper.mapper().readTree(entityParam);
       }
-      return _workHelper.debugV2(outWriter, Method.POST, urlTail, entity, mediaType);
+      return _workHelper.debugV2(outWriter, HttpMethod.POST, urlTail, entity, mediaType);
     } catch (IOException e) {
       _logger.error(Throwables.getStackTraceAsString(e));
       return false;
@@ -2703,23 +2704,23 @@ public class Client extends AbstractClient implements IClient {
     }
     String urlTail = parameters.get(0);
     String entityParam = parameters.get(1);
-    String mediaType;
+    MediaType mediaType;
     Object entity;
     try (Closer closer = Closer.create()) {
       if (file) {
         InputStream inputStream = closer.register(Files.newInputStream(Paths.get(entityParam)));
         if (raw) {
-          mediaType = MediaType.APPLICATION_OCTET_STREAM;
+          mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
           entity = inputStream;
         } else {
-          mediaType = MediaType.APPLICATION_JSON;
-          entity = IOUtil.toString(inputStream);
+          mediaType = MediaType.APPLICATION_JSON_TYPE;
+          entity = IOUtils.toString(inputStream, UTF_8);
         }
       } else {
-        mediaType = MediaType.APPLICATION_JSON;
+        mediaType = MediaType.APPLICATION_JSON_TYPE;
         entity = BatfishObjectMapper.mapper().readTree(entityParam);
       }
-      return _workHelper.debugV2(outWriter, Method.PUT, urlTail, entity, mediaType);
+      return _workHelper.debugV2(outWriter, HttpMethod.PUT, urlTail, entity, mediaType);
     } catch (IOException e) {
       _logger.error(Throwables.getStackTraceAsString(e));
       return false;
