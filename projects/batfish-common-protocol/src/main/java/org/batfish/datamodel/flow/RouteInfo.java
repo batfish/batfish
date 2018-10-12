@@ -11,7 +11,7 @@ import org.batfish.datamodel.Route;
 
 /**
  * Contains information about the {@link Route}s which led to the selection of the outgoing
- * interface for the {@link ExitOutIfaceStep}
+ * interface for the {@link ExitOutputIfaceStep}
  */
 public class RouteInfo {
 

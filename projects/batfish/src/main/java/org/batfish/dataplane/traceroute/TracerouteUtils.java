@@ -22,12 +22,12 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.EnterSrcIfaceStep;
-import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceAction;
-import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceDetail;
-import org.batfish.datamodel.flow.ExitOutIfaceStep;
-import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceAction;
-import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceAction;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceAction;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepActionResult;
@@ -74,13 +74,13 @@ final class TracerouteUtils {
     ImmutableList.Builder<Step> steps = ImmutableList.builder();
 
     // creating the exit from out interface step
-    ExitOutIfaceStep.Builder exitOutStepBuilder = ExitOutIfaceStep.builder();
-    ExitOutIfaceStepDetail.Builder stepDetailBuilder = ExitOutIfaceStepDetail.builder();
+    ExitOutputIfaceStep.Builder exitOutStepBuilder = ExitOutputIfaceStep.builder();
+    ExitOutputIfaceStepDetail.Builder stepDetailBuilder = ExitOutputIfaceStepDetail.builder();
     stepDetailBuilder.setOutputInterface(
         new NodeInterfacePair(TRACEROUTE_DUMMY_NODE, TRACEROUTE_DUMMY_OUT_INTERFACE));
-    ExitOutIfaceAction exitOutIfaceAction = new ExitOutIfaceAction(SENT_OUT, null);
+    ExitOutputIfaceAction exitOutputIfaceAction = new ExitOutputIfaceAction(SENT_OUT, null);
     exitOutStepBuilder.setDetail(stepDetailBuilder.build());
-    exitOutStepBuilder.setAction(exitOutIfaceAction);
+    exitOutStepBuilder.setAction(exitOutputIfaceAction);
 
     return new Hop(new Node(TRACEROUTE_DUMMY_NODE), steps.add(exitOutStepBuilder.build()).build());
   }
@@ -117,11 +117,11 @@ final class TracerouteUtils {
    * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
    *     Hop})
    * @param dataPlane Computed {@link DataPlane} for the node
-   * @return {@link EnterSrcIfaceStep} containing {@link EnterSrcIfaceDetail} and {@link
-   *     EnterSrcIfaceAction} for the step; null if {@link EnterSrcIfaceStep} can't be created
+   * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and {@link
+   *     EnterInputIfaceAction} for the step; null if {@link EnterInputIfaceStep} can't be created
    */
   @Nullable
-  static EnterSrcIfaceStep createEnterSrcIfaceStep(
+  static EnterInputIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       @Nullable String inputIfaceName,
       @Nullable String inputVrfName,
@@ -142,8 +142,8 @@ final class TracerouteUtils {
       selectedInputVrfName = inputVrfName;
     }
 
-    EnterSrcIfaceStep.Builder enterSrcIfaceStepBuilder = EnterSrcIfaceStep.builder();
-    EnterSrcIfaceDetail.Builder enterSrcStepDetailBuilder = EnterSrcIfaceDetail.builder();
+    EnterInputIfaceStep.Builder enterSrcIfaceStepBuilder = EnterInputIfaceStep.builder();
+    EnterInputIfaceStepDetail.Builder enterSrcStepDetailBuilder = EnterInputIfaceStepDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
         .setInputVrf(selectedInputVrfName);
@@ -155,7 +155,7 @@ final class TracerouteUtils {
         .contains(selectedInputVrfName)) {
       return enterSrcIfaceStepBuilder
           .setDetail(enterSrcStepDetailBuilder.build())
-          .setAction(new EnterSrcIfaceAction(StepActionResult.ACCEPTED, null))
+          .setAction(new EnterInputIfaceAction(StepActionResult.ACCEPTED, null))
           .build();
     }
 
@@ -171,11 +171,11 @@ final class TracerouteUtils {
     if (!ignoreAcls && inFilter != null) {
       FilterResult filterResult =
           inFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
-      enterSrcStepDetailBuilder.setFilter(inFilter.getName());
+      enterSrcStepDetailBuilder.setInputFilter(inFilter.getName());
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())
-            .setAction(new EnterSrcIfaceStep.EnterSrcIfaceAction(StepActionResult.DENIED_IN, null))
+            .setAction(new EnterInputIfaceAction(StepActionResult.DENIED_IN, null))
             .build();
       }
     }
@@ -183,7 +183,7 @@ final class TracerouteUtils {
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
-        .setAction(new EnterSrcIfaceAction(StepActionResult.SENT_IN, null))
+        .setAction(new EnterInputIfaceAction(StepActionResult.SENT_IN, null))
         .build();
   }
 }

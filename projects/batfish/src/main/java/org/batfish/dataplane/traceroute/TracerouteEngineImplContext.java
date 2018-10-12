@@ -41,11 +41,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.EnterSrcIfaceStep;
-import org.batfish.datamodel.flow.EnterSrcIfaceStep.EnterSrcIfaceAction;
-import org.batfish.datamodel.flow.ExitOutIfaceStep;
-import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceAction;
-import org.batfish.datamodel.flow.ExitOutIfaceStep.ExitOutIfaceStepDetail;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceAction;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceAction;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
@@ -199,13 +199,13 @@ public class TracerouteEngineImplContext {
       return;
     }
     stepBuilder.add(
-        ExitOutIfaceStep.builder()
+        ExitOutputIfaceStep.builder()
             .setDetail(
-                ExitOutIfaceStepDetail.builder()
+                ExitOutputIfaceStepDetail.builder()
                     .setOutputInterface(
                         new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
                     .build())
-            .setAction(new ExitOutIfaceAction(StepActionResult.SENT_OUT, null))
+            .setAction(new ExitOutputIfaceAction(StepActionResult.SENT_OUT, null))
             .build());
     Hop hop = new Hop(new Node(currentNodeName), stepBuilder.build());
     transmissionContext._hopsSoFar.add(hop);
@@ -253,13 +253,13 @@ public class TracerouteEngineImplContext {
               transmissionContext._namedIpSpaces);
       if (filterResult.getAction() == LineAction.DENY) {
         stepBuilder.add(
-            ExitOutIfaceStep.builder()
+            ExitOutputIfaceStep.builder()
                 .setDetail(
-                    ExitOutIfaceStepDetail.builder()
+                    ExitOutputIfaceStepDetail.builder()
                         .setOutputInterface(
                             new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
                         .build())
-                .setAction(new ExitOutIfaceAction(StepActionResult.DENIED_OUT, null))
+                .setAction(new ExitOutputIfaceAction(StepActionResult.DENIED_OUT, null))
                 .build());
         Hop deniedOutHop = new Hop(new Node(currentNodeName), stepBuilder.build());
         transmissionContext._hopsSoFar.add(deniedOutHop);
@@ -278,14 +278,14 @@ public class TracerouteEngineImplContext {
         .get(nextHopInterfaceName)
         .containsIp(arpIp, c.getIpSpaces())) {
       stepBuilder.add(
-          ExitOutIfaceStep.builder()
+          ExitOutputIfaceStep.builder()
               .setDetail(
-                  ExitOutIfaceStepDetail.builder()
+                  ExitOutputIfaceStepDetail.builder()
                       .setOutputInterface(
                           new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
                       .build())
               .setAction(
-                  new ExitOutIfaceAction(
+                  new ExitOutputIfaceAction(
                       StepActionResult.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, null))
               .build());
       Hop neighborUnreachableOrExitsNetwork =
@@ -394,7 +394,7 @@ public class TracerouteEngineImplContext {
 
     // trace was received on a source interface of this hop
     if (inputIfaceName != null || inputVrfName != null) {
-      EnterSrcIfaceStep enterSrcIfacStep =
+      EnterInputIfaceStep enterSrcIfacStep =
           createEnterSrcIfaceStep(
               currentConfiguration,
               inputIfaceName,
@@ -407,9 +407,9 @@ public class TracerouteEngineImplContext {
       if (enterSrcIfacStep != null) {
         steps.add(enterSrcIfacStep);
         if (enterSrcIfacStep.getAction() != null) {
-          EnterSrcIfaceAction enterSrcIfaceAction =
-              (EnterSrcIfaceAction) enterSrcIfacStep.getAction();
-          if (enterSrcIfaceAction.getActionResult() == StepActionResult.ACCEPTED) {
+          EnterInputIfaceAction enterInputIfaceAction =
+              (EnterInputIfaceAction) enterSrcIfacStep.getAction();
+          if (enterInputIfaceAction.getActionResult() == StepActionResult.ACCEPTED) {
             Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
             transmissionContext._hopsSoFar.add(acceptedHop);
             Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
@@ -507,14 +507,14 @@ public class TracerouteEngineImplContext {
 
                 if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
                   clonedStepsBuilder.add(
-                      ExitOutIfaceStep.builder()
+                      ExitOutputIfaceStep.builder()
                           .setDetail(
-                              ExitOutIfaceStepDetail.builder()
+                              ExitOutputIfaceStepDetail.builder()
                                   .setOutputInterface(
                                       new NodeInterfacePair(
                                           currentNodeName, Interface.NULL_INTERFACE_NAME))
                                   .build())
-                          .setAction(new ExitOutIfaceAction(StepActionResult.NULL_ROUTED, null))
+                          .setAction(new ExitOutputIfaceAction(StepActionResult.NULL_ROUTED, null))
                           .build());
                   Hop nullRoutedHop =
                       new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
@@ -585,7 +585,6 @@ public class TracerouteEngineImplContext {
     IpAccessList outFilter = outInterface.getOutgoingFilter();
     boolean denied = false;
     if (!_ignoreAcls && outFilter != null) {
-      // TODO why pass srcInterfaceName here ?
       FilterResult filterResult =
           outFilter.filter(
               transmissionContext._transformedFlow,
@@ -594,15 +593,15 @@ public class TracerouteEngineImplContext {
               transmissionContext._namedIpSpaces);
       denied = filterResult.getAction() == LineAction.DENY;
     }
-    ExitOutIfaceStep.Builder exitOutIfaceBuilder = ExitOutIfaceStep.builder();
+    ExitOutputIfaceStep.Builder exitOutIfaceBuilder = ExitOutputIfaceStep.builder();
     exitOutIfaceBuilder.setDetail(
-        ExitOutIfaceStepDetail.builder()
+        ExitOutputIfaceStepDetail.builder()
             .setOutputInterface(new NodeInterfacePair(currentNodeName, outInterface.getName()))
             .build());
     Trace trace;
     if (denied) {
       // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(new ExitOutIfaceAction(StepActionResult.DENIED_OUT, null));
+      exitOutIfaceBuilder.setAction(new ExitOutputIfaceAction(StepActionResult.DENIED_OUT, null));
       List<Step> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(deniedOutHop);
@@ -610,7 +609,7 @@ public class TracerouteEngineImplContext {
     } else {
       // add a neighbor unreachable step and terminate the current trace
       exitOutIfaceBuilder.setAction(
-          new ExitOutIfaceAction(StepActionResult.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, null));
+          new ExitOutputIfaceAction(StepActionResult.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, null));
       List<Step> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop neighborUnreachableHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(neighborUnreachableHop);

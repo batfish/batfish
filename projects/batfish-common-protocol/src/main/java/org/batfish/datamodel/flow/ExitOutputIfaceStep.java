@@ -12,32 +12,32 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  * {@link Step} to represent the exiting of a {@link Flow} from an outgoing {@link
  * org.batfish.datamodel.Interface} on a node
  */
-public class ExitOutIfaceStep extends Step {
+public class ExitOutputIfaceStep extends Step {
 
   /**
    * {@link StepDetail} containing details of the exiting of a {@link Flow} from an output {@link
    * org.batfish.datamodel.Interface}
    */
-  public static class ExitOutIfaceStepDetail extends StepDetail {
+  public static class ExitOutputIfaceStepDetail extends StepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
-    private static final String PROP_FILTER = "filter";
+    private static final String PROP_OUTPUT_FILTER = "outputFilter";
     private static final String PROP_ORIGINAL_FLOW = "originalFlow";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
     private @Nullable NodeInterfacePair _outputInterface;
-    private @Nullable String _filter;
+    private @Nullable String _outputFilter;
     private @Nullable Flow _originalFlow;
     private @Nullable Flow _transformedFlow;
 
-    private ExitOutIfaceStepDetail(
+    private ExitOutputIfaceStepDetail(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_FILTER) @Nullable String filter,
+        @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
         @JsonProperty(PROP_ORIGINAL_FLOW) @Nullable Flow originalFlow,
         @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow,
         @JsonProperty(PROP_NAME) @Nullable String name) {
       super(firstNonNull(name, "ExitOutIface"));
       _outputInterface = outInterface;
-      _filter = filter;
+      _outputFilter = outputFilter;
       _originalFlow = originalFlow;
       _transformedFlow = transformedFlow;
     }
@@ -48,10 +48,10 @@ public class ExitOutIfaceStep extends Step {
       return _outputInterface;
     }
 
-    @JsonProperty(PROP_FILTER)
+    @JsonProperty(PROP_OUTPUT_FILTER)
     @Nullable
-    public String getFilterIOut() {
-      return _filter;
+    public String getOutputFilter() {
+      return _outputFilter;
     }
 
     @JsonProperty(PROP_ORIGINAL_FLOW)
@@ -70,17 +70,17 @@ public class ExitOutIfaceStep extends Step {
       return new Builder();
     }
 
-    /** Chained builder to create a {@link ExitOutIfaceStepDetail} object */
+    /** Chained builder to create a {@link ExitOutputIfaceStepDetail} object */
     public static class Builder {
       private NodeInterfacePair _outputInterface;
-      private String _filter;
+      private String _outputFilter;
       private Flow _originalFlow;
       private Flow _transformedFlow;
       private String _name;
 
-      public ExitOutIfaceStepDetail build() {
-        return new ExitOutIfaceStepDetail(
-            _outputInterface, _filter, _originalFlow, _transformedFlow, _name);
+      public ExitOutputIfaceStepDetail build() {
+        return new ExitOutputIfaceStepDetail(
+            _outputInterface, _outputFilter, _originalFlow, _transformedFlow, _name);
       }
 
       public Builder setName(String name) {
@@ -93,8 +93,8 @@ public class ExitOutIfaceStep extends Step {
         return this;
       }
 
-      public Builder setFilter(String filter) {
-        _filter = filter;
+      public Builder setOutputFilter(String outputFilter) {
+        _outputFilter = outputFilter;
         return this;
       }
 
@@ -109,14 +109,14 @@ public class ExitOutIfaceStep extends Step {
       }
     }
   }
-
-  public static class ExitOutIfaceAction extends StepAction {
+  
+  public static class ExitOutputIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
 
     private @Nullable StepActionResult _actionResult;
 
-    public ExitOutIfaceAction(
+    public ExitOutputIfaceAction(
         @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
         @JsonProperty(PROP_NAME) @Nullable String name) {
       super(firstNonNull(name, "ExitOutIface"));
@@ -134,9 +134,9 @@ public class ExitOutIfaceStep extends Step {
   private static final String PROP_ACTION = "action";
 
   @JsonCreator
-  public ExitOutIfaceStep(
-      @JsonProperty(PROP_DETAIL) ExitOutIfaceStepDetail stepDetail,
-      @JsonProperty(PROP_ACTION) ExitOutIfaceAction stepAction) {
+  public ExitOutputIfaceStep(
+      @JsonProperty(PROP_DETAIL) ExitOutputIfaceStepDetail stepDetail,
+      @JsonProperty(PROP_ACTION) ExitOutputIfaceAction stepAction) {
     super(stepDetail, stepAction);
   }
 
@@ -144,21 +144,21 @@ public class ExitOutIfaceStep extends Step {
     return new Builder();
   }
 
-  /** Chained builder to create a {@link ExitOutIfaceStep} object */
+  /** Chained builder to create a {@link ExitOutputIfaceStep} object */
   public static class Builder {
-    private ExitOutIfaceStepDetail _detail;
-    private ExitOutIfaceAction _action;
+    private ExitOutputIfaceStepDetail _detail;
+    private ExitOutputIfaceAction _action;
 
-    public ExitOutIfaceStep build() {
-      return new ExitOutIfaceStep(_detail, _action);
+    public ExitOutputIfaceStep build() {
+      return new ExitOutputIfaceStep(_detail, _action);
     }
 
-    public Builder setDetail(ExitOutIfaceStepDetail detail) {
+    public Builder setDetail(ExitOutputIfaceStepDetail detail) {
       _detail = detail;
       return this;
     }
 
-    public Builder setAction(ExitOutIfaceAction action) {
+    public Builder setAction(ExitOutputIfaceAction action) {
       _action = action;
       return this;
     }

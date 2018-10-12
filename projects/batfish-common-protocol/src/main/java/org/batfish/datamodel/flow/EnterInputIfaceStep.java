@@ -10,31 +10,31 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
-public class EnterSrcIfaceStep extends Step {
+public class EnterInputIfaceStep extends Step {
 
   /**
    * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input
    * {@link Interface}
    */
-  public static class EnterSrcIfaceDetail extends StepDetail {
+  public static class EnterInputIfaceStepDetail extends StepDetail {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
-    private static final String PROP_FILTER = "filter";
+    private static final String PROP_INPUT_FILTER = "inputFilter";
 
     private @Nullable NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
-    private @Nullable String _filter;
+    private @Nullable String _inputFilter;
 
     @JsonCreator
-    private EnterSrcIfaceDetail(
+    private EnterInputIfaceStepDetail(
         @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
-        @JsonProperty(PROP_FILTER) @Nullable String filter,
+        @JsonProperty(PROP_INPUT_FILTER) @Nullable String inputFilter,
         @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf,
         @JsonProperty(PROP_NAME) @Nullable String name) {
       super(firstNonNull(name, "EnterSrcIface"));
       _inputInterface = inputInterface;
-      _filter = filter;
+      _inputFilter = inputFilter;
       _inputVrf = inputVrf;
     }
 
@@ -44,10 +44,10 @@ public class EnterSrcIfaceStep extends Step {
       return _inputInterface;
     }
 
-    @JsonProperty(PROP_FILTER)
+    @JsonProperty(PROP_INPUT_FILTER)
     @Nullable
-    public String getFilter() {
-      return _filter;
+    public String getInputFilter() {
+      return _inputFilter;
     }
 
     @JsonProperty(PROP_INPUT_VRF)
@@ -60,15 +60,15 @@ public class EnterSrcIfaceStep extends Step {
       return new Builder();
     }
 
-    /** Chained builder to create a {@link EnterSrcIfaceDetail} object */
+    /** Chained builder to create a {@link EnterInputIfaceStepDetail} object */
     public static class Builder {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
-      private String _filter;
+      private String _inputFilter;
       private String _name;
 
-      public EnterSrcIfaceDetail build() {
-        return new EnterSrcIfaceDetail(_inputInterface, _filter, _inputVrf, _name);
+      public EnterInputIfaceStepDetail build() {
+        return new EnterInputIfaceStepDetail(_inputInterface, _inputFilter, _inputVrf, _name);
       }
 
       public Builder setInputInterface(NodeInterfacePair inputInterface) {
@@ -81,8 +81,8 @@ public class EnterSrcIfaceStep extends Step {
         return this;
       }
 
-      public Builder setFilter(String filter) {
-        _filter = filter;
+      public Builder setInputFilter(String inputFilter) {
+        _inputFilter = inputFilter;
         return this;
       }
 
@@ -93,14 +93,14 @@ public class EnterSrcIfaceStep extends Step {
     }
   }
 
-  public static class EnterSrcIfaceAction extends StepAction {
+  public static class EnterInputIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
 
     private @Nullable StepActionResult _actionResult;
 
     @JsonCreator
-    public EnterSrcIfaceAction(
+    public EnterInputIfaceAction(
         @JsonProperty(PROP_ACTION_RESULT) @Nullable StepActionResult result,
         @JsonProperty(PROP_NAME) @Nullable String name) {
       super(firstNonNull(name, "EnterSrcIface"));
@@ -118,9 +118,9 @@ public class EnterSrcIfaceStep extends Step {
   private static final String PROP_ACTION = "action";
 
   @JsonCreator
-  private EnterSrcIfaceStep(
-      @JsonProperty(PROP_DETAIL) EnterSrcIfaceDetail stepDetail,
-      @JsonProperty(PROP_ACTION) EnterSrcIfaceAction stepAction) {
+  private EnterInputIfaceStep(
+      @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail stepDetail,
+      @JsonProperty(PROP_ACTION) EnterInputIfaceAction stepAction) {
     super(stepDetail, stepAction);
   }
 
@@ -128,21 +128,21 @@ public class EnterSrcIfaceStep extends Step {
     return new Builder();
   }
 
-  /** Chained builder to create an {@link EnterSrcIfaceStep} object */
+  /** Chained builder to create an {@link EnterInputIfaceStep} object */
   public static class Builder {
-    private EnterSrcIfaceDetail _detail;
-    private EnterSrcIfaceAction _action;
+    private EnterInputIfaceStepDetail _detail;
+    private EnterInputIfaceAction _action;
 
-    public EnterSrcIfaceStep build() {
-      return new EnterSrcIfaceStep(_detail, _action);
+    public EnterInputIfaceStep build() {
+      return new EnterInputIfaceStep(_detail, _action);
     }
 
-    public Builder setDetail(EnterSrcIfaceDetail detail) {
+    public Builder setDetail(EnterInputIfaceStepDetail detail) {
       _detail = detail;
       return this;
     }
 
-    public Builder setAction(EnterSrcIfaceAction action) {
+    public Builder setAction(EnterInputIfaceAction action) {
       _action = action;
       return this;
     }
