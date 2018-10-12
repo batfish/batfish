@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
@@ -148,7 +149,10 @@ public class ReducedReachabilityTest {
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
     DifferentialReachabilityResult differentialReachabilityResult =
-        batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
+        batfish.bddReducedReachability(
+            ImmutableSet.of(FlowDisposition.ACCEPTED),
+            batfish.getAllSourcesInferFromLocationIpSpaceAssignment(),
+            TRUE);
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
     Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(1));

@@ -55,14 +55,18 @@ public class BDDReachabilityAnalysis {
   // stateExprs that correspond to the IngressLocations of interest
   private final ImmutableSet<StateExpr> _ingressLocationStates;
 
+  private final BDD _queryHeaderSpaceBdd;
+
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
-      Map<StateExpr, Map<StateExpr, Edge>> edges) {
+      Map<StateExpr, Map<StateExpr, Edge>> edges,
+      BDD queryHeaderSpaceBdd) {
     _bddPacket = packet;
     _edges = edges;
     _reverseEdges = computeReverseEdges(_edges);
     _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
+    _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeReverseEdges(
@@ -84,7 +88,7 @@ public class BDDReachabilityAnalysis {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
     Set<StateExpr> dirty = new HashSet<>();
 
-    reverseReachableStates.put(Query.INSTANCE, _bddPacket.getFactory().one());
+    reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
     dirty.add(Query.INSTANCE);
 
     while (!dirty.isEmpty()) {
