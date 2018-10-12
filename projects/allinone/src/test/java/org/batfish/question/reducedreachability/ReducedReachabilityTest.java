@@ -31,6 +31,7 @@ import org.batfish.datamodel.matchers.FlowMatchers;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
+import org.batfish.question.specifiers.PathConstraintsInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -117,7 +118,8 @@ public class ReducedReachabilityTest {
     Question question =
         new ReducedReachabilityQuestion(
             ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.unconstrained());
+            PacketHeaderConstraints.unconstrained(),
+            PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
     Ip dstIp = new Ip("2.2.2.2");
@@ -148,7 +150,8 @@ public class ReducedReachabilityTest {
     Question question =
         new ReducedReachabilityQuestion(
             ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
@@ -180,7 +183,8 @@ public class ReducedReachabilityTest {
     Question question =
         new ReducedReachabilityQuestion(
             ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build());
+            PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
+            PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();

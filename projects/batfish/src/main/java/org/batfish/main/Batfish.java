@@ -185,6 +185,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
@@ -4466,32 +4467,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
-   *
-   * @param dispositions Search for differences in the set of packets with the specified {@link
-   *     FlowDisposition FlowDispositions}.
-   * @param ipSpaceAssignment Assignment of IpSpaces to each enabled source.
-   * @param headerSpace Extra user-input headerspace constraint
    */
   @Override
   public DifferentialReachabilityResult bddReducedReachability(
-      Set<FlowDisposition> dispositions,
-      IpSpaceAssignment ipSpaceAssignment,
-      AclLineMatchExpr headerSpace) {
-    checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
+      DifferentialReachabilityParameters parameters) {
+    checkArgument(
+        !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
-    Set<String> forbiddenTransitNodes = ImmutableSet.of();
-    Set<String> requiredTransitNodes = ImmutableSet.of();
+    /*
+     * TODO should we have separate parameters for base and delta?
+     * E.g. suppose we add a host subnet in the delta network. This would be a source of
+     * differential reachability, but we currently won't find it because it won't be in the
+     * IpSpaceAssignment.
+     */
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                ipSpaceAssignment,
-                headerSpace,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                loadConfigurations().keySet(),
-                dispositions)
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
     popEnvironment();
 
@@ -4499,12 +4498,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                ipSpaceAssignment,
-                headerSpace,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                loadConfigurations().keySet(),
-                dispositions)
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
     popEnvironment();
 
