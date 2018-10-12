@@ -36,7 +36,7 @@ public final class IcmpCode {
 
   // For IcmpType#TIME_EXCEEDED
   public static final int TTL_EQ_ZERO_DURING_TRANSIT = 0;
-  public static final int TTL_EQ_ZERO_DURING_REASSEMBLY = 1;
+  public static final int TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY = 1;
 
   public static final int UNSET = 0xff;
 
