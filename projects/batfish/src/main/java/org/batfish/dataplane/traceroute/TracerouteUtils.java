@@ -143,7 +143,8 @@ final class TracerouteUtils {
     }
 
     EnterInputIfaceStep.Builder enterSrcIfaceStepBuilder = EnterInputIfaceStep.builder();
-    EnterInputIfaceStepDetail.Builder enterSrcStepDetailBuilder = EnterInputIfaceStepDetail.builder();
+    EnterInputIfaceStepDetail.Builder enterSrcStepDetailBuilder =
+        EnterInputIfaceStepDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
         .setInputVrf(selectedInputVrfName);
