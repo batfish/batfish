@@ -4814,6 +4814,57 @@
                   }
                 },
                 "name" : "280 permit icmp any any 5 2"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "icmpTypes" : [
+                      "11-11"
+                    ],
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "290 permit icmp any any time-exceeded ! believe this is type 11, any code"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "icmpCodes" : [
+                      "0-0"
+                    ],
+                    "icmpTypes" : [
+                      "11-11"
+                    ],
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "300 permit icmp any any ttl-exceeded  ! type 11, code 0"
               }
             ],
             "sourceName" : "BLAH-BLAH",
