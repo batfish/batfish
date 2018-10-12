@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Optional;
 import javax.ws.rs.Consumes;
@@ -60,9 +61,18 @@ public final class NetworkNodeRolesResource {
     }
     Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(dimBean.name);
     checkArgument(!dimension.isPresent(), "Duplicate dimension specified: %s", dimBean.name);
-    nodeRolesData.getNodeRoleDimensions().add(dimBean.toNodeRoleDimension());
     // if network was deleted while we were working
-    if (!Main.getWorkMgr().putNetworkNodeRoles(nodeRolesData, _network)) {
+    if (!Main.getWorkMgr()
+        .putNetworkNodeRoles(
+            NodeRolesData.builder()
+                .setDefaultDimension(nodeRolesData.getDefaultDimension())
+                .setRoleDimensions(
+                    ImmutableSortedSet.<NodeRoleDimension>naturalOrder()
+                        .addAll(nodeRolesData.getNodeRoleDimensions())
+                        .add(dimBean.toNodeRoleDimension())
+                        .build())
+                .build(),
+            _network)) {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();

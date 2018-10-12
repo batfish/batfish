@@ -7,7 +7,6 @@ import static org.batfish.coordinator.resources.NetworkNodeRolesResource.noDupli
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -23,7 +22,6 @@ import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
-import org.batfish.role.NodeRoleDimension.Type;
 import org.batfish.role.NodeRolesData;
 import org.junit.Before;
 import org.junit.Rule;
@@ -71,7 +69,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   public void testGetNodeRolesDefault() throws IOException {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
-    NodeRolesData nodeRolesData = new NodeRolesData(null, null);
+    NodeRolesData nodeRolesData = NodeRolesData.builder().build();
     Response response = getNodeRolesTarget(network).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -92,11 +90,11 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData =
-        new NodeRolesData(
-            "a",
-            ImmutableSortedSet.of(
-                new NodeRoleDimension(
-                    "a", ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of())));
+        NodeRolesData.builder()
+            .setDefaultDimension("a")
+            .setRoleDimensions(
+                ImmutableSortedSet.of(NodeRoleDimension.builder().setName("a").build()))
+            .build();
     Main.getWorkMgr().putNetworkNodeRoles(nodeRolesData, network);
     Response response = getNodeRolesTarget(network).get();
 
@@ -110,16 +108,15 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String name = "auto0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
-            new NodeRolesData(
-                null,
-                ImmutableSortedSet.of(
-                    new NodeRoleDimension(
-                        name,
-                        ImmutableSortedSet.of(new NodeRole("foo", "bar")),
-                        Type.CUSTOM,
-                        ImmutableList.of()),
-                    new NodeRoleDimension(
-                        name, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()))),
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(
+                        NodeRoleDimension.builder()
+                            .setName(name)
+                            .setRoles(ImmutableSortedSet.of(new NodeRole("foo", "bar")))
+                            .build(),
+                        NodeRoleDimension.builder().setName(name).build()))
+                .build(),
             null,
             ImmutableSet.of());
 
@@ -132,13 +129,12 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String name2 = "AuTo0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
-            new NodeRolesData(
-                null,
-                ImmutableSortedSet.of(
-                    new NodeRoleDimension(
-                        name1, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()),
-                    new NodeRoleDimension(
-                        name2, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()))),
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(
+                        NodeRoleDimension.builder().setName(name1).build(),
+                        NodeRoleDimension.builder().setName(name2).build()))
+                .build(),
             null,
             ImmutableSet.of());
 
@@ -151,13 +147,12 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String name2 = "manual0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
-            new NodeRolesData(
-                null,
-                ImmutableSortedSet.of(
-                    new NodeRoleDimension(
-                        name1, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()),
-                    new NodeRoleDimension(
-                        name2, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()))),
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(
+                        NodeRoleDimension.builder().setName(name1).build(),
+                        NodeRoleDimension.builder().setName(name2).build()))
+                .build(),
             null,
             ImmutableSet.of());
 
@@ -171,16 +166,15 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String name = "auto0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
-            new NodeRolesData(
-                null,
-                ImmutableSortedSet.of(
-                    new NodeRoleDimension(
-                        name,
-                        ImmutableSortedSet.of(new NodeRole("foo", "bar")),
-                        Type.CUSTOM,
-                        ImmutableList.of()),
-                    new NodeRoleDimension(
-                        name, ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of()))),
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(
+                        NodeRoleDimension.builder()
+                            .setName(name)
+                            .setRoles(ImmutableSortedSet.of(new NodeRole("foo", "bar")))
+                            .build(),
+                        NodeRoleDimension.builder().setName(name).build()))
+                .build(),
             null,
             ImmutableSet.of());
     Response response =
@@ -194,7 +188,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   public void testPutNodeRolesMissingNetwork() {
     String network = "someContainer";
     NodeRolesDataBean nodeRolesDataBean =
-        new NodeRolesDataBean(new NodeRolesData(null, null), null, ImmutableSet.of());
+        new NodeRolesDataBean(NodeRolesData.builder().build(), null, ImmutableSet.of());
     Response response =
         getNodeRolesTarget(network)
             .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON));
@@ -207,11 +201,11 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData =
-        new NodeRolesData(
-            "a",
-            ImmutableSortedSet.of(
-                new NodeRoleDimension(
-                    "a", ImmutableSortedSet.of(), Type.CUSTOM, ImmutableList.of())));
+        NodeRolesData.builder()
+            .setDefaultDimension("a")
+            .setRoleDimensions(
+                ImmutableSortedSet.of(NodeRoleDimension.builder().setName("a").build()))
+            .build();
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(nodeRolesData, null, ImmutableSet.of());
     Response response =

@@ -20,9 +20,61 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
 
-public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
+@ParametersAreNonnullByDefault
+public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
+
+  public static final class Builder {
+
+    private String _name;
+
+    private List<String> _roleRegexes;
+
+    private SortedSet<NodeRole> _roles;
+
+    private Type _type;
+
+    private Builder() {
+      _roleRegexes = ImmutableList.of();
+      _roles = ImmutableSortedSet.of();
+      _type = Type.CUSTOM;
+    }
+
+    public @Nonnull NodeRoleDimension build() {
+      checkArgument(_name != null, "Name of node role cannot be null");
+      checkArgument(
+          _type != Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
+          "Name for a AUTO role dimension must begin with: %s",
+          AUTO_DIMENSION_PREFIX);
+      return new NodeRoleDimension(_name, _roles, _type, _roleRegexes);
+    }
+
+    public @Nonnull Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public @Nonnull Builder setRoleRegexes(List<String> roleRegexes) {
+      _roleRegexes = ImmutableList.copyOf(roleRegexes);
+      return this;
+    }
+
+    public @Nonnull Builder setRoles(Set<NodeRole> roles) {
+      _roles = ImmutableSortedSet.copyOf(roles);
+      return this;
+    }
+
+    public @Nonnull Builder setType(Type type) {
+      _type = type;
+      return this;
+    }
+  }
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
 
   public enum Type {
     AUTO,
@@ -41,7 +93,7 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
   private static final String PROP_TYPE = "type";
 
-  @Nonnull private String _name;
+  @Nonnull private final String _name;
 
   /**
    * a list of regexes used to identify roles from node names. each regex in regexes has at least
@@ -49,27 +101,36 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * handle node names that have different formats, and to allow a node to have multple roles. this
    * value is usually populated by auto role inference and may be empty for custom role dimensions.
    */
-  @Nonnull private List<String> _roleRegexes;
+  @Nonnull private final List<String> _roleRegexes;
 
-  @Nonnull private SortedSet<NodeRole> _roles;
+  @Nonnull private final SortedSet<NodeRole> _roles;
 
-  @Nonnull private Type _type;
+  @Nonnull private final Type _type;
+
+  private NodeRoleDimension(
+      String name, SortedSet<NodeRole> roles, Type type, List<String> roleRegexes) {
+    _name = name;
+    _roles = roles;
+    _type = type;
+    _roleRegexes = roleRegexes;
+  }
 
   @JsonCreator
-  public NodeRoleDimension(
-      @Nonnull @JsonProperty(PROP_NAME) String name,
+  private static @Nonnull NodeRoleDimension create(
+      @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_ROLES) SortedSet<NodeRole> roles,
       @Nullable @JsonProperty(PROP_TYPE) Type type,
       @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes) {
     checkArgument(name != null, "Name of node role cannot be null");
-    _name = name;
-    _roles = firstNonNull(roles, ImmutableSortedSet.of());
-    _type = firstNonNull(type, Type.CUSTOM);
-    _roleRegexes = firstNonNull(roleRegexes, ImmutableList.of());
-    if (_type == Type.AUTO && !_name.startsWith(AUTO_DIMENSION_PREFIX)) {
-      throw new IllegalArgumentException(
-          "Name for a AUTO role dimension must begin with: " + AUTO_DIMENSION_PREFIX);
-    }
+    checkArgument(
+        type != Type.AUTO || name.startsWith(AUTO_DIMENSION_PREFIX),
+        "Name for a AUTO role dimension must begin with: %s",
+        AUTO_DIMENSION_PREFIX);
+    return new NodeRoleDimension(
+        name,
+        firstNonNull(roles, ImmutableSortedSet.of()),
+        firstNonNull(type, Type.CUSTOM),
+        firstNonNull(roleRegexes, ImmutableList.of()));
   }
 
   private static final Comparator<NodeRoleDimension> COMPARATOR =
@@ -85,7 +146,10 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof NodeRoleDimension)) {
       return false;
     }
@@ -128,7 +192,6 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * @return The created map
    */
   public SortedMap<String, SortedSet<String>> createNodeRolesMap(Set<String> nodeNames) {
-
     SortedMap<String, SortedSet<String>> nodeRolesMap = new TreeMap<>();
     for (String node : nodeNames) {
       for (NodeRole role : _roles) {
@@ -148,7 +211,6 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * @return The created map
    */
   public SortedMap<String, SortedSet<String>> createRoleNodesMap(Set<String> nodeNames) {
-
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
     for (NodeRole role : _roles) {
       for (String node : nodeNames) {

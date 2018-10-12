@@ -24,8 +24,12 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
     Set<String> nodes = ImmutableSet.of("a", "b");
     NodeRole nodeRole = new NodeRole(role, "a.*");
     NodeRoleDimension nodeRoleDimension =
-        new NodeRoleDimension(dimension, ImmutableSortedSet.of(nodeRole), null, null);
-    NodeRolesData data = new NodeRolesData(null, ImmutableSortedSet.of(nodeRoleDimension));
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .build();
+    NodeRolesData data =
+        NodeRolesData.builder().setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension)).build();
     NodeRolesDataBean bean = new NodeRolesDataBean(data, snapshot, nodes);
 
     assertThat(

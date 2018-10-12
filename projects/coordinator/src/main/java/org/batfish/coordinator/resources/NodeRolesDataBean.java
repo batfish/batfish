@@ -49,12 +49,14 @@ public class NodeRolesDataBean {
   }
 
   public @Nonnull NodeRolesData toNodeRolesData() {
-    return new NodeRolesData(
-        defaultDimension,
-        roleDimensions
-            .stream()
-            .map(NodeRoleDimensionBean::toNodeRoleDimension)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+    return NodeRolesData.builder()
+        .setDefaultDimension(defaultDimension)
+        .setRoleDimensions(
+            roleDimensions
+                .stream()
+                .map(NodeRoleDimensionBean::toNodeRoleDimension)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())))
+        .build();
   }
 
   @Override

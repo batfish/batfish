@@ -33,7 +33,10 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
     Set<String> nodes = ImmutableSet.of("a", "b");
     NodeRole nodeRole = new NodeRole(role, "a.*");
     NodeRoleDimension nodeRoleDimension =
-        new NodeRoleDimension(dimension, ImmutableSortedSet.of(nodeRole), null, null);
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .build();
     NodeRoleDimensionBean bean = new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes);
 
     assertThat(bean.name, equalTo(dimension));
@@ -48,6 +51,6 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
     NodeRoleDimension dim = dimBean.toNodeRoleDimension();
 
     // we should get the expected object
-    assertThat(dim, equalTo(new NodeRoleDimension("name", null, Type.CUSTOM, null)));
+    assertThat(dim, equalTo(NodeRoleDimension.builder().setName("name").build()));
   }
 }

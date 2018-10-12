@@ -2302,7 +2302,7 @@ public class WorkMgr extends AbstractCoordinator {
   public NodeRolesData getNetworkNodeRoles(String network) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
-      return new NodeRolesData(null, null);
+      return NodeRolesData.builder().build();
     }
     NodeRolesId networkNodeRolesId = _idManager.getNetworkNodeRolesId(networkId);
     try {

@@ -25,26 +25,26 @@ public class NodesSpecifierTest {
 
   private NodeRolesData initNodeRoleData() {
     NodeRoleDimension dim1 =
-        new NodeRoleDimension(
-            "dim10",
-            new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
-                .add(new NodeRole("role1", ".*"))
-                .add(new NodeRole("role2", ".*"))
-                .build(),
-            NodeRoleDimension.Type.CUSTOM,
-            null);
+        NodeRoleDimension.builder()
+            .setName("dim10")
+            .setRoles(
+                new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
+                    .add(new NodeRole("role1", ".*"))
+                    .add(new NodeRole("role2", ".*"))
+                    .build())
+            .build();
     NodeRoleDimension dim2 =
-        new NodeRoleDimension(
-            "dim20",
-            new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
-                .add(new NodeRole("role1", ".*"))
-                .add(new NodeRole("role2", ".*"))
-                .build(),
-            NodeRoleDimension.Type.CUSTOM,
-            null);
+        NodeRoleDimension.builder()
+            .setName("dim20")
+            .setRoles(
+                new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
+                    .add(new NodeRole("role1", ".*"))
+                    .add(new NodeRole("role2", ".*"))
+                    .build())
+            .build();
     SortedSet<NodeRoleDimension> roleDimensions =
         new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
-    return new NodeRolesData(null, roleDimensions);
+    return NodeRolesData.builder().setRoleDimensions(roleDimensions).build();
   }
 
   @Test
@@ -205,7 +205,8 @@ public class NodesSpecifierTest {
             .add(role3)
             .build();
 
-    NodeRoleDimension roleDimension = new NodeRoleDimension("dim", roles, null, null);
+    NodeRoleDimension roleDimension =
+        NodeRoleDimension.builder().setName("dim").setRoles(roles).build();
 
     Set<String> matchingNodes = specifier.getMatchingNodesByRole(roleDimension, nodes);
 

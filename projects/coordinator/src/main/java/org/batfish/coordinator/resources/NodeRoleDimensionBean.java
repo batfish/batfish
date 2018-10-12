@@ -61,12 +61,12 @@ public class NodeRoleDimensionBean {
   public NodeRoleDimension toNodeRoleDimension() {
     SortedSet<NodeRole> nodeRoles =
         roles == null
-            ? null
+            ? ImmutableSortedSet.of()
             : roles
                 .stream()
                 .map(NodeRoleBean::toNodeRole)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(NodeRole::compareTo));
-    return new NodeRoleDimension(name, nodeRoles, type, null);
+    return NodeRoleDimension.builder().setName(name).setRoles(nodeRoles).setType(type).build();
   }
 
   @Override

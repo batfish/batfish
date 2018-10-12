@@ -47,8 +47,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    Main.getWorkMgr()
-        .putNetworkNodeRoles(new NodeRolesData(null, ImmutableSortedSet.of()), network);
+    Main.getWorkMgr().putNetworkNodeRoles(NodeRolesData.builder().build(), network);
 
     Response response = getNodeRoleDimensionTarget(network, dimension).delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -68,11 +67,13 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    NodeRoleDimension nodeRoleDimension =
-        new NodeRoleDimension(dimension, ImmutableSortedSet.of(), null, null);
+    NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
-            new NodeRolesData(null, ImmutableSortedSet.of(nodeRoleDimension)), network);
+            NodeRolesData.builder()
+                .setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension))
+                .build(),
+            network);
     Response response = getNodeRoleDimensionTarget(network, dimension).delete();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -90,8 +91,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    Main.getWorkMgr()
-        .putNetworkNodeRoles(new NodeRolesData(null, ImmutableSortedSet.of()), network);
+    Main.getWorkMgr().putNetworkNodeRoles(NodeRolesData.builder().build(), network);
 
     Response response = getNodeRoleDimensionTarget(network, dimension).get();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -111,11 +111,13 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    NodeRoleDimension nodeRoleDimension =
-        new NodeRoleDimension(dimension, ImmutableSortedSet.of(), null, null);
+    NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
-            new NodeRolesData(null, ImmutableSortedSet.of(nodeRoleDimension)), network);
+            NodeRolesData.builder()
+                .setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension))
+                .build(),
+            network);
 
     Response response = getNodeRoleDimensionTarget(network, dimension).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

@@ -3794,12 +3794,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<String> nodeNames = loadConfigurations().keySet();
     Topology envTopology = getEnvironmentTopology();
     SortedSet<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, envTopology).inferRoles();
+    NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
-      NodeRolesData snapshotNodeRoles =
-          !autoRoles.isEmpty()
-              ? new NodeRolesData(autoRoles.first().getName(), autoRoles)
-              : new NodeRolesData(null, null);
-      _storage.storeNodeRoles(snapshotNodeRoles, snapshotNodeRolesId);
+      if (!autoRoles.isEmpty()) {
+        snapshotNodeRoles.setDefaultDimension(autoRoles.first().getName());
+        snapshotNodeRoles.setRoleDimensions(autoRoles);
+      }
+      _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles: %s", e);
     }

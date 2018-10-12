@@ -1,38 +1,81 @@
 package org.batfish.role;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Class that captures the node roles */
+@ParametersAreNonnullByDefault
 public class NodeRolesData {
+
+  public static final class Builder {
+    private String _defaultDimension;
+    private SortedSet<NodeRoleDimension> _roleDimensions;
+
+    private Builder() {
+      _roleDimensions = ImmutableSortedSet.of();
+    }
+
+    public @Nonnull NodeRolesData build() {
+      return new NodeRolesData(_defaultDimension, _roleDimensions);
+    }
+
+    public @Nonnull Builder setDefaultDimension(String defaultDimension) {
+      _defaultDimension = defaultDimension;
+      return this;
+    }
+
+    public @Nonnull Builder setRoleDimensions(SortedSet<NodeRoleDimension> roleDimensions) {
+      _roleDimensions = ImmutableSortedSet.copyOf(roleDimensions);
+      return this;
+    }
+  }
 
   private static final String PROP_DEFAULT_DIMENSION = "defaultDimension";
   private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
 
-  @Nullable private String _defaultDimension;
+  private String _defaultDimension;
 
-  @Nonnull private SortedSet<NodeRoleDimension> _roleDimensions;
+  private SortedSet<NodeRoleDimension> _roleDimensions;
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
+
+  private NodeRolesData(
+      @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
+    checkNotNull(roleDimensions);
+    _defaultDimension = defaultDimension;
+    _roleDimensions = roleDimensions;
+  }
 
   @JsonCreator
-  public NodeRolesData(
-      @JsonProperty(PROP_DEFAULT_DIMENSION) String defaultDimension,
-      @JsonProperty(PROP_ROLE_DIMENSIONS) SortedSet<NodeRoleDimension> roleDimensions) {
-    _defaultDimension = defaultDimension;
-    _roleDimensions = roleDimensions == null ? new TreeSet<>() : roleDimensions;
+  private static @Nonnull NodeRolesData create(
+      @JsonProperty(PROP_DEFAULT_DIMENSION) @Nullable String defaultDimension,
+      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable Set<NodeRoleDimension> roleDimensions) {
+    return new NodeRolesData(
+        defaultDimension,
+        ImmutableSortedSet.copyOf(firstNonNull(roleDimensions, ImmutableSortedSet.of())));
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof NodeRolesData)) {
       return false;
     }
@@ -41,7 +84,7 @@ public class NodeRolesData {
   }
 
   @JsonProperty(PROP_DEFAULT_DIMENSION)
-  public String getDefaultDimension() {
+  public @Nullable String getDefaultDimension() {
     return _defaultDimension;
   }
 
@@ -54,7 +97,8 @@ public class NodeRolesData {
    *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) throws IOException {
+  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension)
+      throws IOException {
     if (dimension == null) {
       return getNodeRoleDimension();
     }
@@ -91,7 +135,7 @@ public class NodeRolesData {
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)
-  public SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
+  public @Nonnull SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
     return _roleDimensions;
   }
 

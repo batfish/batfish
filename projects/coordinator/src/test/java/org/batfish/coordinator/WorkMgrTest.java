@@ -90,7 +90,6 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRoleDimension;
-import org.batfish.role.NodeRoleDimension.Type;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.hamcrest.CoreMatchers;
@@ -2033,8 +2032,10 @@ public class WorkMgrTest {
 
     boolean updated =
         _manager.putNetworkNodeRoles(
-            new NodeRolesData(
-                null, ImmutableSortedSet.of(new NodeRoleDimension("foo", null, Type.CUSTOM, null))),
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(NodeRoleDimension.builder().setName("foo").build()))
+                .build(),
             networkName);
 
     // updating node roles should succeed
