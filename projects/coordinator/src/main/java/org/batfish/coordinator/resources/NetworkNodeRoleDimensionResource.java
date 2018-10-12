@@ -1,7 +1,9 @@
 package org.batfish.coordinator.resources;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Optional;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
@@ -43,11 +45,20 @@ public final class NetworkNodeRoleDimensionResource {
     if (!dimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    nodeRolesData
-        .getNodeRoleDimensions()
-        .removeIf(dim -> dim.getName().equalsIgnoreCase(dimension.get().getName()));
-    // if network was deleted while we were working
-    if (!Main.getWorkMgr().putNetworkNodeRoles(nodeRolesData, _network)) {
+    if (!Main.getWorkMgr()
+        .putNetworkNodeRoles(
+            NodeRolesData.builder()
+                .setDefaultDimension(nodeRolesData.getDefaultDimension())
+                .setRoleDimensions(
+                    nodeRolesData
+                        .getNodeRoleDimensions()
+                        .stream()
+                        .filter(dim -> !dim.getName().equalsIgnoreCase(dimension.get().getName()))
+                        .collect(
+                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
+                .build(),
+            _network)) {
+      // if network was deleted while we were working
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();

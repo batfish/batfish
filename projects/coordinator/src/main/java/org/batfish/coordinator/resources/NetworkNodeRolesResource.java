@@ -61,7 +61,6 @@ public final class NetworkNodeRolesResource {
     }
     Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(dimBean.name);
     checkArgument(!dimension.isPresent(), "Duplicate dimension specified: %s", dimBean.name);
-    // if network was deleted while we were working
     if (!Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder()
@@ -73,6 +72,7 @@ public final class NetworkNodeRolesResource {
                         .build())
                 .build(),
             _network)) {
+      // if network was deleted while we were working
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();
