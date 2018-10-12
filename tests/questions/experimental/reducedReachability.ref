@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
+  "headers" : { },
   "differential" : true,
   "includeOneTableKeys" : true,
   "instance" : {

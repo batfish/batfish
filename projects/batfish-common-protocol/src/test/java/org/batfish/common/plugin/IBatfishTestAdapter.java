@@ -26,6 +26,7 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -53,6 +54,7 @@ import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
@@ -63,7 +65,10 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public DifferentialReachabilityResult bddReducedReachability(Set<FlowDisposition> actions) {
+  public DifferentialReachabilityResult bddReducedReachability(
+      Set<FlowDisposition> actions,
+      IpSpaceAssignment ipSpaceAssignment,
+      AclLineMatchExpr headerSpace) {
     throw new UnsupportedOperationException();
   }
 

@@ -27,7 +27,12 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.SpecifierContext;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.DropAclIn;
@@ -53,6 +58,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private static final BDDPacket PKT = new BDDPacket();
+
+  private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
+      new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final BDD ONE = PKT.getFactory().one();
 
   private static final Set<FlowDisposition> ALL_DISPOSITIONS =
@@ -63,6 +71,13 @@ public final class BDDReachabilityAnalysisFactoryTest {
           NO_ROUTE,
           NULL_ROUTED,
           NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
+
+
+  private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
+    SpecifierContext ctxt = batfish.specifierContext();
+    Set<Location> locations = LocationSpecifiers.ALL_LOCATIONS.resolve(ctxt);
+    return CONSTANT_UNIVERSE_IPSPACE_SPECIFIER.resolve(locations, ctxt);
+  }
 
   @Test
   public void testBDDFactory() throws IOException {
@@ -88,7 +103,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       Map<StateExpr, Map<StateExpr, Edge>> edges =
           new BDDReachabilityAnalysisFactory(PKT, configs, dataPlane.getForwardingAnalysis())
               .bddReachabilityAnalysis(
-                  IpSpaceAssignment.builder().build(),
+                  ipSpaceAssignment(batfish),
                   UniverseIpSpace.INSTANCE,
                   ImmutableSet.of(),
                   ImmutableSet.of(),
@@ -144,7 +159,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       Map<StateExpr, Map<StateExpr, Edge>> edgeMap =
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
-                  IpSpaceAssignment.builder().build(),
+                  ipSpaceAssignment(batfish),
                   UniverseIpSpace.INSTANCE,
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
@@ -195,7 +210,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       Map<StateExpr, Map<StateExpr, Edge>> edgeMap =
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
-                  IpSpaceAssignment.builder().build(),
+                  ipSpaceAssignment(batfish),
                   UniverseIpSpace.INSTANCE,
                   ImmutableSet.of(),
                   ImmutableSet.of(node),

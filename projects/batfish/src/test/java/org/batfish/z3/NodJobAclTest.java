@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasInt2;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;

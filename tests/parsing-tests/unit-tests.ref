@@ -13822,6 +13822,15 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
+            "          (null_bgp_tail",
+            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "            BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "            MED:'med'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
             "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
             "            CONNECTED:'connected'  <== mode:DEFAULT_MODE",
@@ -34779,7 +34788,12 @@
             "            HELLO:'hello'  <== mode:DEFAULT_MODE",
             "            COMMA:','  <== mode:DEFAULT_MODE",
             "            VARIABLE:'world'  <== mode:DEFAULT_MODE)",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (t_server_null",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'5'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_tacacs_server",
             "      TACACS_SERVER:'tacacs-server'  <== mode:DEFAULT_MODE",
@@ -56352,13 +56366,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 28,
+              "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 30,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
             }
@@ -57476,10 +57490,10 @@
           "bgp template peer-policy" : {
             "p1" : {
               "definitionLines" : [
-                32,
                 33,
                 34,
-                35
+                35,
+                36
               ],
               "numReferrers" : 0
             }
@@ -57487,25 +57501,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                51
+                52
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                49
+                50
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                53
+                54
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                47
+                48
               ],
               "numReferrers" : 1
             }
@@ -61275,57 +61289,57 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                33
+                34
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             }
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                44
+                45
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                45
+                46
               ]
             },
             "UNSUPP-MAP" : {
               "bgp unsuppress-map" : [
-                37
+                38
               ]
             },
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                30
+                31
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                31
+                32
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                26
+                27
               ]
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                40
+                41
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                36,
-                37
+                37,
+                38
               ]
             },
             "10.20.2.2" : {
@@ -63712,37 +63726,37 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                33
+                34
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                30
+                31
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                31
+                32
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                26
+                27
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                36,
-                37
+                37,
+                38
               ]
             },
             "10.20.2.2" : {
