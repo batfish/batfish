@@ -16,6 +16,7 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
 
@@ -55,6 +56,7 @@ public class Schema {
           .put("Prefix", getClassString(Prefix.class))
           .put("SelfDescribing", getClassString(SelfDescribingObject.class))
           .put("String", getClassString(String.class))
+          .put("Trace", getClassString(Trace.class))
           .build();
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
@@ -74,6 +76,7 @@ public class Schema {
   public static final Schema PREFIX = new Schema("Prefix");
   public static final Schema SELF_DESCRIBING = new Schema("SelfDescribing");
   public static final Schema STRING = new Schema("String");
+  public static final Schema TRACE = new Schema("Trace");
 
   /** Generates a list Schema with the give base schema */
   public static final Schema list(Schema baseSchema) {

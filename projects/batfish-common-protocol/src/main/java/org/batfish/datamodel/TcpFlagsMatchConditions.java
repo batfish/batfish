@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -28,21 +29,13 @@ public final class TcpFlagsMatchConditions
   /** Builder for {@link TcpFlags} */
   public static class Builder {
     private TcpFlags _tcpFlags;
-
     private boolean _useAck;
-
     private boolean _useCwr;
-
     private boolean _useEce;
-
     private boolean _useFin;
-
     private boolean _usePsh;
-
     private boolean _useRst;
-
     private boolean _useSyn;
-
     private boolean _useUrg;
 
     private Builder() {}
@@ -120,21 +113,15 @@ public final class TcpFlagsMatchConditions
   }
 
   private final boolean _useAck;
-
   private final boolean _useCwr;
-
   private final boolean _useEce;
-
   private final boolean _useFin;
-
   private final boolean _usePsh;
-
   private final boolean _useRst;
-
   private final boolean _useSyn;
-
   private final boolean _useUrg;
 
+  @JsonCreator
   private TcpFlagsMatchConditions(
       @JsonProperty(PROP_TCP_FLAGS) TcpFlags tcpFlags,
       @JsonProperty(PROP_USE_ACK) boolean useAck,
@@ -236,6 +223,11 @@ public final class TcpFlagsMatchConditions
   public int hashCode() {
     return Objects.hash(
         _tcpFlags, _useAck, _useCwr, _useEce, _useFin, _usePsh, _useRst, _useSyn, _useUrg);
+  }
+
+  /** Create new {@link TcpFlagsMatchConditions} that matches all of the given {@code flags}. */
+  public static TcpFlagsMatchConditions matchAllFlags(TcpFlags flags) {
+    return new TcpFlagsMatchConditions(flags, true, true, true, true, true, true, true, true);
   }
 
   /**
