@@ -158,32 +158,12 @@ public class BatfishBDDReducedReachabilityTest {
         matchSrcIp("7.7.7.7"));
   }
 
-  class NeighborUnreachableNetworkGenerator implements NetworkGenerator {
-    @Override
-    public SortedMap<String, Configuration> generateConfigs(boolean delta) {
-      Configuration node1 = _cb.setHostname(NODE1).build();
-      Vrf v1 = _vb.setOwner(node1).build();
-      _ib.setOwner(node1).setVrf(v1);
-      _ib.setName(PHYSICAL).setAddresses(NODE1_PHYSICAL_NETWORK).build();
-      if (!delta) {
-        v1.setStaticRoutes(
-            ImmutableSortedSet.of(
-                StaticRoute.builder()
-                    .setNetwork(new Prefix(DST_IP, 32))
-                    .setNextHopInterface(PHYSICAL)
-                    .setAdministrativeCost(1)
-                    .build()));
-      }
-      return ImmutableSortedMap.of(NODE1, node1);
-    }
-  }
-
   @Test
   public void testNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
-            ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+            ImmutableSet.of(NEIGHBOR_UNREACHABLE),
             batfish.getAllSourcesInferFromLocationIpSpaceAssignment(),
             TRUE);
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());

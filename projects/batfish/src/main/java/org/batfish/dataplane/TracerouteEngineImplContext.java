@@ -5,10 +5,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -23,6 +24,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -44,9 +46,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.specifier.NodeNameRegexConnectedHostsIpSpaceSpecifier;
 
 @ParametersAreNonnullByDefault
 class TracerouteEngineImplContext {
@@ -190,10 +195,11 @@ class TracerouteEngineImplContext {
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
   }
 
-  private TreeMultimap<Ip, AbstractRoute> getResolvedNextHopWithRoutes(
+  private Multimap<Ip, AbstractRoute> getResolvedNextHopWithRoutes(
       String nextHopInterfaceName,
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
-    TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
+    ImmutableMultimap.Builder<Ip, AbstractRoute> resolvedNextHopWithRoutesBuilder =
+        new ImmutableMultimap.Builder<>();
 
     // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
     // interfaces.
@@ -208,29 +214,54 @@ class TracerouteEngineImplContext {
       AbstractRoute matchingRoute = e.getKey();
       Ip nextHopIp = matchingRoute.getNextHopIp();
       if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        resolvedNextHopWithRoutes.put(nextHopIp, matchingRoute);
+        resolvedNextHopWithRoutesBuilder.put(nextHopIp, matchingRoute);
       } else {
         for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
-          resolvedNextHopWithRoutes.put(resolvedNextHopIp, matchingRoute);
+          resolvedNextHopWithRoutesBuilder.put(resolvedNextHopIp, matchingRoute);
         }
       }
     }
 
-    return resolvedNextHopWithRoutes;
+    return resolvedNextHopWithRoutesBuilder.build();
   }
 
-  private FlowDisposition computeDispositionWhenNoEdge(Interface outgoingInterface, Ip dstIp) {
+  private FlowDisposition computeDisposition(Interface outgoingInterface, Ip dstIp) {
     FlowDisposition disposition;
 
+    PrefixTrie prefixTrie =
+        new PrefixTrie(
+            new TreeSet(
+                outgoingInterface
+                    .getAllAddresses()
+                    .stream()
+                    .map(InterfaceAddress::getPrefix)
+                    .collect(Collectors.toSet())));
+
+    Prefix matchingPrefix = prefixTrie.getLongestPrefixMatch(dstIp);
+
+    boolean isDelivered = matchingPrefix != null && matchingPrefix.containsIp(dstIp);
+
     // Check if the dstip is in a host subnet (prefix <= 29)
+    boolean isHostSubnet =
+        matchingPrefix != null
+            && matchingPrefix.getPrefixLength()
+                <= NodeNameRegexConnectedHostsIpSpaceSpecifier.HOST_SUBNET_MAX_PREFIX_LENGTH;
+
+    /*
     boolean isDeliveredToSubnet =
         outgoingInterface
             .getAllAddresses()
             .stream()
             .map(InterfaceAddress::getPrefix)
-            .anyMatch(prefix -> prefix.containsIp(dstIp) && prefix.getPrefixLength() <= 29);
+            .anyMatch(
+                prefix ->
+                    prefix.containsIp(dstIp)
+                        && prefix.getPrefixLength()
+                            <= NodeNameRegexConnectedHostsIpSpaceSpecifier
+                                .HOST_SUBNET_MAX_PREFIX_LENGTH);
+                                */
 
-    if (isDeliveredToSubnet) {
+    if (isDelivered && isHostSubnet) {
       disposition = FlowDisposition.DELIVERED_TO_SUBNET;
     } else {
       boolean isDeliveredToSomewhere =
@@ -326,7 +357,7 @@ class TracerouteEngineImplContext {
 
     // For every interface with a route to the dst IP
     for (String nextHopInterfaceName : nextHopInterfaces) {
-      TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes =
+      Multimap<Ip, AbstractRoute> resolvedNextHopWithRoutes =
           getResolvedNextHopWithRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
 
       NodeInterfacePair nextHopInterface =
@@ -414,7 +445,7 @@ class TracerouteEngineImplContext {
                   }
                   if (!denied) {
                     FlowDisposition disposition =
-                        computeDispositionWhenNoEdge(outgoingInterface, dstIp);
+                        computeDisposition(outgoingInterface, dstIp);
 
                     Edge nextEdge =
                         new Edge(
