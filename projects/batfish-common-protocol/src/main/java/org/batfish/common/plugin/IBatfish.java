@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -58,6 +60,15 @@ public interface IBatfish extends IPluginConsumer {
 
   DifferentialReachabilityResult bddReducedReachability(
       DifferentialReachabilityParameters parameters);
+
+  /**
+   * Given a {@link Set} of {@link Flow}s it populates the {@link List} of {@link Trace}s for them
+   *
+   * @param flows {@link Set} of {@link Flow}s for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, ACLs encountered while building the {@link Flow}s are ignored
+   * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
+   */
+  SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls);
 
   void checkDataPlane();
 
