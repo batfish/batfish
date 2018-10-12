@@ -4,13 +4,16 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
-public class EnterInputIfaceStep extends Step {
+@JsonTypeName("EnterInputInterface")
+public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
   /**
    * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input

@@ -4,18 +4,21 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 
 /**
  * {@link Step} to represent the selection of the outgoing {@link Interface} on a node for a {@link
  * org.batfish.datamodel.Flow}
  */
-public class RoutingStep extends Step {
+@JsonTypeName("Routing")
+public class RoutingStep extends Step<RoutingStepDetail> {
 
   /**
    * {@link StepDetail} containing details of routing to direct a {@link Flow} from an input {@link

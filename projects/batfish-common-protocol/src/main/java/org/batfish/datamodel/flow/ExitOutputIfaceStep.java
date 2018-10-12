@@ -4,15 +4,18 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 
 /**
  * {@link Step} to represent the exiting of a {@link Flow} from an outgoing {@link
  * org.batfish.datamodel.Interface} on a node
  */
-public class ExitOutputIfaceStep extends Step {
+@JsonTypeName("ExitOutputInterface")
+public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
 
   /**
    * {@link StepDetail} containing details of the exiting of a {@link Flow} from an output {@link
@@ -109,7 +112,6 @@ public class ExitOutputIfaceStep extends Step {
       }
     }
   }
-
 
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
