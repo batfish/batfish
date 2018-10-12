@@ -23,6 +23,8 @@ ip access-list BLAH-BLAH
    270 permit tcp any any eq microsoft-ds 5432
    ! 5 is ICMP type redirect, 2 is Type of Service and Network
    280 permit icmp any any 5 2
+   290 permit icmp any any time-exceeded ! believe this is type 11, any code
+   300 permit icmp any any ttl-exceeded  ! type 11, code 0
 !
 ! 'extended' is the name
 ip access-list extended

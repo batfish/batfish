@@ -148,6 +148,7 @@ import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -185,6 +186,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
@@ -3051,6 +3053,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
+   */
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+    DataPlane dp = loadDataPlane();
+    return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
+  }
+
+  /**
    * Helper function to disable a blacklisted interface and update the given {@link
    * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
    */
@@ -4452,32 +4467,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
-   *
-   * @param dispositions Search for differences in the set of packets with the specified {@link
-   *     FlowDisposition FlowDispositions}.
-   * @param ipSpaceAssignment Assignment of IpSpaces to each enabled source.
-   * @param headerSpace Extra user-input headerspace constraint
    */
   @Override
   public DifferentialReachabilityResult bddReducedReachability(
-      Set<FlowDisposition> dispositions,
-      IpSpaceAssignment ipSpaceAssignment,
-      AclLineMatchExpr headerSpace) {
-    checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
+      DifferentialReachabilityParameters parameters) {
+    checkArgument(
+        !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
-    Set<String> forbiddenTransitNodes = ImmutableSet.of();
-    Set<String> requiredTransitNodes = ImmutableSet.of();
+    /*
+     * TODO should we have separate parameters for base and delta?
+     * E.g. suppose we add a host subnet in the delta network. This would be a source of
+     * differential reachability, but we currently won't find it because it won't be in the
+     * IpSpaceAssignment.
+     */
     pushBaseEnvironment();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                ipSpaceAssignment,
-                headerSpace,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                loadConfigurations().keySet(),
-                dispositions)
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
     popEnvironment();
 
@@ -4485,12 +4498,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                ipSpaceAssignment,
-                headerSpace,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                loadConfigurations().keySet(),
-                dispositions)
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
     popEnvironment();
 

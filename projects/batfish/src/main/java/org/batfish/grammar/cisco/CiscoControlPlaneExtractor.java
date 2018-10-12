@@ -5130,6 +5130,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIME_EXCEEDED;
         } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TRACKED() != null) {

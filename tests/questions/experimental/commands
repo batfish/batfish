@@ -49,7 +49,7 @@ test -raw tests/questions/experimental/prefixTracer.ref validate-template prefix
 test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate reducedReachability
-test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability
+test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts=[0], dstPorts=[0]}, nodes=".*", startLocation="somenode", explain=false
@@ -62,3 +62,9 @@ test -raw tests/questions/experimental/traceroute.ref validate-template tracerou
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# test traceroute new version
+add-batfish-option debugflags=traceroute
+init-network test_traceroute
+init-snapshot networks/example/live
+test tests/questions/experimental/tracerouteListHops.ref answer traceroute startLocation="host1", ignoreAcls=false, headers={dstIps="1.0.2.2"}
