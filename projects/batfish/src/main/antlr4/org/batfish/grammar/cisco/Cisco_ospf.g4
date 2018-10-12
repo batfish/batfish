@@ -174,7 +174,11 @@ ro_distribute_list
   (
     IN
     | OUT
-  ) NEWLINE
+  )
+  (
+    iname = interface_name
+  )?
+  NEWLINE
 ;
 
 ro_max_metric
@@ -682,4 +686,3 @@ s_router_ospfv3
       | rov3_common
    )*
 ;
-

@@ -46,6 +46,7 @@ router ospf 1
   discard-route internal
   distance 110
   distribute-list aclin in
+  distribute-list aclin in ethernet0/0
   distribute-list aclout out
   distribute-list prefix plin in
   distribute-list prefix plout out
