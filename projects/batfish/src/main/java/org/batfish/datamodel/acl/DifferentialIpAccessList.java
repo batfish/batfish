@@ -22,9 +22,8 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * <p>Constructing such an ACL is simple when they have the same context (i.e. the same sets of
  * named {@link IpAccessList ACLs} and named {@link IpSpace IP spaces}. Where it gets tricky is when
  * they have possibly different sets, possibly with the name collisions. This is a common situation
- * when comparing two versions of the same ACL (e.g. from two different {@link
- * org.batfish.common.Snapshot snapshots}. We do rename the {@code denyAcl}'s context to avoid
- * collisions.
+ * when comparing two versions of the same ACL (e.g. from two different snapshots. We do rename the
+ * {@code denyAcl}'s context to avoid collisions.
  */
 public final class DifferentialIpAccessList {
   @VisibleForTesting static final String DENY_ACL_NAME = " ~~ Deny ACL Name ~~ ";

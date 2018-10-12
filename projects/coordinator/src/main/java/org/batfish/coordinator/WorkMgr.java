@@ -71,7 +71,6 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
@@ -540,14 +539,10 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    Pair<Pair<String, String>, Pair<String, String>> settings =
-        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
     WorkDetails details =
         new WorkDetails(
-            WorkItemBuilder.getBaseTestrig(settings),
-            WorkItemBuilder.getBaseEnvironment(settings),
-            WorkItemBuilder.getDeltaTestrig(settings),
-            WorkItemBuilder.getDeltaEnvironment(settings),
+            workItem.getTestrigName(),
+            workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
             WorkItemBuilder.isDifferential(workItem),
             workType);
 
@@ -1386,10 +1381,7 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(
-              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshotId),
-          networkId,
-          snapshotId);
+          new TestrigMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
       try {
@@ -1851,26 +1843,20 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (TestrigMetadataMgr.getEnvironmentMetadata(
-              networkId,
-              _idManager.getSnapshotId(workDetails.baseTestrig, networkId),
-              workDetails.baseEnv)
+      if (TestrigMetadataMgr.getInitializationMetadata(
+              networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
           == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for %s/%s",
-                workDetails.baseTestrig, workDetails.baseEnv));
+                "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
       }
       if (workDetails.isDifferential
-          && TestrigMetadataMgr.getEnvironmentMetadata(
-                  networkId,
-                  _idManager.getSnapshotId(workDetails.deltaTestrig, networkId),
-                  workDetails.deltaEnv)
+          && TestrigMetadataMgr.getInitializationMetadata(
+                  networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
               == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for %s/%s",
-                workDetails.deltaTestrig, workDetails.deltaEnv));
+                "Initialization metadata not found for snapshot %s", workDetails.deltaTestrig));
       }
       success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
     } catch (Exception e) {
@@ -1894,9 +1880,7 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem resolvedWorkItem, WorkDetails workDetails) {
     return new WorkDetails(
         resolvedWorkItem.getTestrigName(),
-        workDetails.baseEnv,
         resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-        workDetails.deltaEnv,
         workDetails.isDifferential,
         workDetails.workType);
   }

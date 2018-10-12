@@ -1,11 +1,17 @@
 package org.batfish.config;
 
+import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.common.BfConsts.RELPATH_INPUT;
+import static org.batfish.common.BfConsts.RELPATH_PARSE_ANSWER_PATH;
+import static org.batfish.common.BfConsts.RELPATH_REFERENCE_LIBRARY_PATH;
+
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -79,6 +85,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _environmentRoutingTablesPath;
     }
 
+    @Deprecated
     public Path getEnvPath() {
       return _envPath;
     }
@@ -87,6 +94,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _externalBgpAnnouncementsPath;
     }
 
+    @Deprecated
     public String getName() {
       return _name;
     }
@@ -139,6 +147,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _environmentRoutingTablesPath = environmentRoutingTablesPath;
     }
 
+    @Deprecated
     public void setEnvPath(Path envPath) {
       _envPath = envPath;
     }
@@ -147,6 +156,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
     }
 
+    @Deprecated
     public void setName(String name) {
       _name = name;
     }
@@ -190,19 +200,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _nodeRolesPath;
 
-    private Path _parseAnswerPath;
-
     private Path _pojoTopologyPath;
 
     private Path _protocolDependencyGraphPath;
 
     private Path _protocolDependencyGraphZipPath;
 
-    private Path _referenceLibraryPath;
-
     private Path _serializeVendorPath;
-
-    private Path _testRigPath;
 
     private Path _topologyPath;
 
@@ -218,11 +222,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         return false;
       }
       TestrigSettings other = (TestrigSettings) obj;
-      return _name.equals(other._name)
-          && _environmentSettings._name.equals(other._environmentSettings._name);
+      return _name.equals(other._name);
     }
 
+    @Nonnull
     public Path getBasePath() {
+      checkState(_basePath != null, "base path is not configured");
       return _basePath;
     }
 
@@ -234,6 +239,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _inferredNodeRolesPath;
     }
 
+    public Path getInputPath() {
+      return getBasePath().resolve(RELPATH_INPUT);
+    }
+
     public SnapshotId getName() {
       return _name;
     }
@@ -242,8 +251,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _nodeRolesPath;
     }
 
+    public Path getOutputPath() {
+      return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
+    }
+
     public Path getParseAnswerPath() {
-      return _parseAnswerPath;
+      return getOutputPath().resolve(RELPATH_PARSE_ANSWER_PATH);
     }
 
     public Path getPojoTopologyPath() {
@@ -259,15 +272,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getReferenceLibraryPath() {
-      return _referenceLibraryPath;
+      return getInputPath().resolve(RELPATH_REFERENCE_LIBRARY_PATH);
     }
 
     public Path getSerializeVendorPath() {
       return _serializeVendorPath;
-    }
-
-    public Path getTestRigPath() {
-      return _testRigPath;
     }
 
     public Path getTopologyPath() {
@@ -305,10 +314,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _nodeRolesPath = nodeRolesPath;
     }
 
-    public void setParseAnswerPath(Path parseAnswerPath) {
-      _parseAnswerPath = parseAnswerPath;
-    }
-
     public void setPojoTopologyPath(Path path) {
       _pojoTopologyPath = path;
     }
@@ -321,16 +326,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
     }
 
-    public void setReferenceLibraryPath(Path path) {
-      _referenceLibraryPath = path;
-    }
-
     public void setSerializeVendorPath(Path path) {
       _serializeVendorPath = path;
-    }
-
-    public void setTestRigPath(Path path) {
-      _testRigPath = path;
     }
 
     public void setTopologyPath(Path path) {
@@ -568,8 +565,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return Arrays.asList(_config.getStringArray(ARG_DEBUG_FLAGS));
   }
 
+  @Deprecated
   public String getDeltaEnvironmentName() {
-    return _config.getString(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
+    return BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
   }
 
   public SnapshotId getDeltaTestrig() {
@@ -602,8 +600,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
   }
 
+  @Deprecated
   public String getEnvironmentName() {
-    return _config.getString(BfConsts.ARG_ENVIRONMENT_NAME);
+    return BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
   }
 
   public boolean getExitOnFirstError() {
@@ -705,10 +704,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public int getMaxRuntimeMs() {
     return _config.getInt(ARG_MAX_RUNTIME_MS);
-  }
-
-  public String getOutputEnvironmentName() {
-    return _config.getString(BfConsts.ARG_OUTPUT_ENV);
   }
 
   public boolean getPedanticRecord() {
@@ -909,14 +904,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
-    setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(
         BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
         true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
-    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
@@ -941,7 +934,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
-    setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
@@ -1039,8 +1031,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
-    addOption(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, "name of delta environment to use", "name");
-
     addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig", ARGNAME_NAME);
 
     addBooleanOption(
@@ -1059,8 +1049,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
         "use the rewritten BGP parser for Cisco NX-OS devices");
-
-    addOption(BfConsts.ARG_ENVIRONMENT_NAME, "name of environment to use", "name");
 
     addBooleanOption(
         ARG_EXIT_ON_FIRST_ERROR,
@@ -1146,8 +1134,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(ARG_MAX_RUNTIME_MS, "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
-
-    addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment", ARGNAME_NAME);
 
     addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
 
@@ -1287,13 +1273,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
     getStringListOptionValue(ARG_DEBUG_FLAGS);
-    getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     getBooleanOptionValue(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
-    getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
@@ -1315,7 +1299,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
-    getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
     getIntOptionValue(ARG_PARENT_PID);
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
@@ -1374,10 +1357,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
   }
 
-  public void setDeltaEnvironmentName(String diffEnvironmentName) {
-    _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
-  }
-
   public void setDeltaTestrig(SnapshotId testrig) {
     _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, testrig != null ? testrig.getId() : null);
   }
@@ -1397,10 +1376,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setEnableCiscoNxParser(boolean b) {
     _config.setProperty(BfConsts.ARG_ENABLE_CISCO_NX_PARSER, b);
-  }
-
-  public void setEnvironmentName(String envName) {
-    _config.setProperty(BfConsts.ARG_ENVIRONMENT_NAME, envName);
   }
 
   public void setHaltOnConvertError(boolean haltOnConvertError) {

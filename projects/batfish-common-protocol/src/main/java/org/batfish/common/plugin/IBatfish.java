@@ -65,7 +65,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkDataPlane();
 
-  void checkEnvironmentExists();
+  void checkSnapshotOutputReady();
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 

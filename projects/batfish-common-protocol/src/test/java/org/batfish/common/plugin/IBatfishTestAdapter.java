@@ -78,7 +78,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkEnvironmentExists() {
+  public void checkSnapshotOutputReady() {
     throw new UnsupportedOperationException();
   }
 

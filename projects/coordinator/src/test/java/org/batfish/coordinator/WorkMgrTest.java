@@ -122,7 +122,7 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrig, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
+        new TestrigMetadata(new Date().toInstant(), null), networkId, snapshotId);
   }
 
   @Test

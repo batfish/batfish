@@ -1,6 +1,8 @@
 package org.batfish.main;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Verify.verify;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
@@ -12,7 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -73,7 +74,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
-import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -237,8 +237,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
-  public static void applyBaseDir(
-      TestrigSettings settings, Path containerDir, SnapshotId testrig, String envName) {
+  public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {
     Path testrigDir =
         containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
@@ -247,12 +246,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setSerializeVendorPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)));
-    settings.setTestRigPath(testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT)));
-    settings.setParseAnswerPath(
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)));
-    settings.setReferenceLibraryPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
     settings.setNodeRolesPath(
         testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_ROLES_PATH)));
     settings.setInferredNodeRolesPath(
@@ -264,39 +257,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setPojoTopologyPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)));
-    if (envName != null) {
-      envSettings.setName(envName);
-      Path envPathOut =
-          testrigDir.resolve(
-              Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
-      Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
-      envSettings.setCompressedDataPlanePath(
-          envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
-      envSettings.setCompressedDataPlaneAnswerPath(
-          envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
-      envSettings.setDataPlanePath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE));
-      envSettings.setDataPlaneAnswerPath(
-          envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
-      envSettings.setParseEnvironmentBgpTablesAnswerPath(
-          envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
-      envSettings.setParseEnvironmentRoutingTablesAnswerPath(
-          envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
-      envSettings.setSerializeEnvironmentBgpTablesPath(
-          envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
-      envSettings.setSerializeEnvironmentRoutingTablesPath(
-          envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setValidateEnvironmentAnswerPath(
-          envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
-      Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
-      envSettings.setEnvPath(envDirPath);
-      envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setExternalBgpAnnouncementsPath(
-          envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
-      envSettings.setEnvironmentBgpTablesPath(
-          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
-      envSettings.setEnvironmentRoutingTablesPath(
-          envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-    }
+    Path envPathOut = testrigDir.resolve(BfConsts.RELPATH_OUTPUT);
+    Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
+    envSettings.setCompressedDataPlanePath(
+        envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
+    envSettings.setCompressedDataPlaneAnswerPath(
+        envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
+    envSettings.setDataPlanePath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE));
+    envSettings.setDataPlaneAnswerPath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+    envSettings.setParseEnvironmentBgpTablesAnswerPath(
+        envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
+    envSettings.setParseEnvironmentRoutingTablesAnswerPath(
+        envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+    envSettings.setSerializeEnvironmentBgpTablesPath(
+        envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
+    envSettings.setSerializeEnvironmentRoutingTablesPath(
+        envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
+    envSettings.setValidateEnvironmentAnswerPath(
+        envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
+    Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
+    envSettings.setSerializedTopologyPath(envPathOut.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
+    envSettings.setExternalBgpAnnouncementsPath(
+        envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+    envSettings.setEnvironmentBgpTablesPath(
+        envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+    envSettings.setEnvironmentRoutingTablesPath(
+        envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
   }
 
   static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
@@ -364,29 +350,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void initTestrigSettings(Settings settings) {
     SnapshotId testrig = settings.getTestrig();
-    String envName = settings.getEnvironmentName();
     Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
     if (testrig != null) {
-      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig, envName);
+      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig);
       SnapshotId deltaTestrig = settings.getDeltaTestrig();
-      String deltaEnvName = settings.getDeltaEnvironmentName();
       TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
-      if (deltaTestrig != null && deltaEnvName == null) {
-        deltaEnvName = envName;
-        settings.setDeltaEnvironmentName(envName);
-      } else if (deltaTestrig == null && deltaEnvName != null) {
-        deltaTestrig = testrig;
-        settings.setDeltaTestrig(testrig);
-      }
       if (deltaTestrig != null) {
-        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig, deltaEnvName);
+        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig);
       }
       if (settings.getDiffActive()) {
         settings.setActiveTestrigSettings(settings.getDeltaTestrigSettings());
       } else {
         settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
       }
-    } else if (containerDir != null) {
+    } else {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
   }
@@ -743,39 +720,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
     if (!Files.exists(envSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
-          "Missing data plane for testrig: \""
-              + testrigSettings.getName()
-              + "\", environment: \""
-              + envSettings.getName()
-              + "\"\n");
-    }
-  }
-
-  private void checkDiffEnvironmentSpecified() {
-    if (_settings.getDeltaEnvironmentName() == null) {
-      throw new CleanBatfishException(
-          "No differential environment specified for differential question");
+          "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
     }
   }
 
   public void checkDifferentialDataPlaneQuestionDependencies() {
-    checkDiffEnvironmentSpecified();
     checkDataPlane(_baseTestrigSettings);
     checkDataPlane(_deltaTestrigSettings);
   }
 
+  @Deprecated
   @Override
-  public void checkEnvironmentExists() {
-    checkEnvironmentExists(_testrigSettings);
+  public void checkSnapshotOutputReady() {
+    checkSnapshotOutputReady(_testrigSettings);
   }
 
-  public void checkEnvironmentExists(TestrigSettings testrigSettings) {
-    if (!environmentExists(testrigSettings)) {
-      throw new CleanBatfishException(
-          "Environment not initialized: \""
-              + testrigSettings.getEnvironmentSettings().getName()
-              + "\"");
-    }
+  public void checkSnapshotOutputReady(TestrigSettings testrigSettings) {
+    checkState(
+        outputExists(testrigSettings),
+        "Output directory does not exist for snapshot %s",
+        testrigSettings.getName());
   }
 
   public Set<Flow> computeCompositeNodOutput(
@@ -835,7 +799,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
-    checkEnvironmentExists();
+    checkSnapshotOutputReady();
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
     saveDataPlane(result._dataPlane, result._answerElement, false);
     return result._answerElement;
@@ -1177,14 +1141,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Files.exists(answerPath);
   }
 
-  private boolean environmentExists(TestrigSettings testrigSettings) {
-    checkBaseDirExists();
-    Path envPath = testrigSettings.getEnvironmentSettings().getEnvPath();
-    if (envPath == null) {
-      throw new CleanBatfishException(
-          "No environment specified for testrig: " + testrigSettings.getName());
-    }
-    return Files.exists(envPath);
+  private boolean outputExists(TestrigSettings testrigSettings) {
+    return testrigSettings.getOutputPath().toFile().exists();
   }
 
   private boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
@@ -1479,6 +1437,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bgpTables;
   }
 
+  @Deprecated
   public String getEnvironmentName() {
     return _testrigSettings.getEnvironmentSettings().getName();
   }
@@ -1739,10 +1698,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   NetworkSnapshot getNetworkSnapshot() {
-    return new NetworkSnapshot(
-        _settings.getContainer(),
-        new Snapshot(
-            _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName()));
+    return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
   private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
@@ -1769,7 +1725,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getTestRigPath();
+    Path trPath = _testrigSettings.getInputPath();
     Directory dir = new Directory(trPath);
     return dir;
   }
@@ -1972,7 +1928,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
     EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    if (!environmentExists(_testrigSettings)) {
+    if (!outputExists(_testrigSettings)) {
       Path envPath = envSettings.getEnvPath();
       // create environment required folders
       CommonUtil.createDirectories(envPath);
@@ -2102,8 +2058,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
     configurations =
-        _storage.loadCompressedConfigurations(
-            _settings.getContainer(), snapshot.getSnapshot().getTestrig());
+        _storage.loadCompressedConfigurations(_settings.getContainer(), snapshot.getSnapshot());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2129,8 +2084,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations =
-        _storage.loadConfigurations(_settings.getContainer(), snapshot.getSnapshot().getTestrig());
+    configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2149,7 +2103,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
         _storage.loadConfigurations(_settings.getContainer(), _testrigSettings.getName());
-    Verify.verify(
+    verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
     applyEnvironment(configurations);
@@ -2674,7 +2628,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       Warnings warnings = buildWarnings(_settings);
       String filename =
-          _settings.getActiveTestrigSettings().getTestRigPath().relativize(currentFile).toString();
+          _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, filename, warnings, configurationFormat);
@@ -3502,7 +3456,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void repairVendorConfigurations() {
     Path outputPath = _testrigSettings.getSerializeVendorPath();
     CommonUtil.deleteDirectory(outputPath);
-    Path testRigPath = _testrigSettings.getTestRigPath();
+    Path testRigPath = _testrigSettings.getInputPath();
     serializeVendorConfigs(testRigPath, outputPath);
   }
 
@@ -3523,7 +3477,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getFlatten()) {
-      Path flattenSource = _testrigSettings.getTestRigPath();
+      Path flattenSource = _testrigSettings.getInputPath();
       Path flattenDestination = _settings.getFlattenDestination();
       flatten(flattenSource, flattenDestination);
       return answer;
@@ -3554,7 +3508,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // }
 
     if (_settings.getSerializeVendor()) {
-      Path testRigPath = _testrigSettings.getTestRigPath();
+      Path testRigPath = _testrigSettings.getInputPath();
       Path outputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeVendorConfigs(testRigPath, outputPath));
       action = true;
@@ -3744,7 +3698,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getTestRigPath().relativize(path).toString();
+        String relativePathStr = _testrigSettings.getInputPath().relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
           hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));

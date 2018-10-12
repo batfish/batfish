@@ -211,10 +211,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       }
 
       _batfish.pushBaseEnvironment();
-      _batfish.checkEnvironmentExists();
+      _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
       _batfish.pushDeltaEnvironment();
-      _batfish.checkEnvironmentExists();
+      _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
       _batfish.pushBaseEnvironment();
       JsonPathAnswerer beforeAnswerer = (JsonPathAnswerer) create(_question, _batfish);

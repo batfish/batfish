@@ -341,10 +341,10 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         return super.answerDiff();
       }
       _batfish.pushBaseEnvironment();
-      _batfish.checkEnvironmentExists();
+      _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
       _batfish.pushDeltaEnvironment();
-      _batfish.checkEnvironmentExists();
+      _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
       _batfish.pushBaseEnvironment();
       NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question, _batfish);

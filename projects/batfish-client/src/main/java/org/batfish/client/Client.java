@@ -1131,7 +1131,7 @@ public class Client extends AbstractClient implements IClient {
 
     // generate the data plane
     WorkItem wItemGenDp =
-        WorkItemBuilder.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig, _currEnv);
+        WorkItemBuilder.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig);
 
     return execute(wItemGenDp, outWriter);
   }
