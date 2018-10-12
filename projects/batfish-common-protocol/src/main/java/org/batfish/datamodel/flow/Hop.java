@@ -23,9 +23,9 @@ public class Hop {
   private @Nullable Node _node;
 
   /** {@link List} of {@link Step} present for the given {@link Hop} */
-  private List<Step> _steps;
+  private List<Step<?>> _steps;
 
-  public Hop(@Nonnull Node node, @Nonnull List<Step> steps) {
+  public Hop(@Nonnull Node node, @Nonnull List<Step<?>> steps) {
     _node = node;
     _steps = steps;
   }
@@ -33,7 +33,7 @@ public class Hop {
   @JsonCreator
   private static Hop jsonCreator(
       @JsonProperty(PROP_NODE) @Nullable Node node,
-      @JsonProperty(PROP_STEPS) @Nullable List<Step> steps) {
+      @JsonProperty(PROP_STEPS) @Nullable List<Step<?>> steps) {
     checkArgument(node != null, "Hop should be have a node present");
     return new Hop(node, firstNonNull(steps, ImmutableList.of()));
   }
@@ -45,7 +45,7 @@ public class Hop {
   }
 
   @JsonProperty(PROP_STEPS)
-  public List<Step> getSteps() {
+  public List<Step<?>> getSteps() {
     return _steps;
   }
 

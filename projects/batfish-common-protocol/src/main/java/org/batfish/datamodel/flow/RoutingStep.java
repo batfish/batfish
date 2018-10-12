@@ -21,10 +21,10 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 public class RoutingStep extends Step<RoutingStepDetail> {
 
   /**
-   * {@link StepDetail} containing details of routing to direct a {@link Flow} from an input {@link
-   * Interface} to output {@link Interface}
+   * Details of {@link Step} about routing to direct a {@link Flow} from an input {@link Interface}
+   * to output {@link Interface}
    */
-  public static class RoutingStepDetail extends StepDetail {
+  public static class RoutingStepDetail {
 
     private static final String PROP_ROUTES = "routes";
 
@@ -35,10 +35,7 @@ public class RoutingStep extends Step<RoutingStepDetail> {
     private List<RouteInfo> _routes;
 
     @JsonCreator
-    public RoutingStepDetail(
-        @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
-        @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "Routing"));
+    public RoutingStepDetail(@JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes) {
       _routes = firstNonNull(routes, ImmutableList.of());
     }
 
@@ -54,15 +51,9 @@ public class RoutingStep extends Step<RoutingStepDetail> {
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
       private List<RouteInfo> _routes;
-      private String _name;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_routes, _name);
-      }
-
-      public Builder setName(String name) {
-        _name = name;
-        return this;
+        return new RoutingStepDetail(_routes);
       }
 
       public Builder setRoutes(List<RouteInfo> routes) {

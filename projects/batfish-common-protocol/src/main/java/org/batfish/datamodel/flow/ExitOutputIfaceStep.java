@@ -1,7 +1,5 @@
 package org.batfish.datamodel.flow;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -18,10 +16,10 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
 
   /**
-   * {@link StepDetail} containing details of the exiting of a {@link Flow} from an output {@link
+   * Details of the {@link Step} of exiting of a {@link Flow} from an output {@link
    * org.batfish.datamodel.Interface}
    */
-  public static class ExitOutputIfaceStepDetail extends StepDetail {
+  public static class ExitOutputIfaceStepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_OUTPUT_FILTER = "outputFilter";
     private static final String PROP_ORIGINAL_FLOW = "originalFlow";
@@ -36,9 +34,7 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
         @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
         @JsonProperty(PROP_ORIGINAL_FLOW) @Nullable Flow originalFlow,
-        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow,
-        @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "ExitOutIface"));
+        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
       _outputInterface = outInterface;
       _outputFilter = outputFilter;
       _originalFlow = originalFlow;
@@ -79,16 +75,10 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
       private String _outputFilter;
       private Flow _originalFlow;
       private Flow _transformedFlow;
-      private String _name;
 
       public ExitOutputIfaceStepDetail build() {
         return new ExitOutputIfaceStepDetail(
-            _outputInterface, _outputFilter, _originalFlow, _transformedFlow, _name);
-      }
-
-      public Builder setName(String name) {
-        _name = name;
-        return this;
+            _outputInterface, _outputFilter, _originalFlow, _transformedFlow);
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {

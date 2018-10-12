@@ -20,7 +20,7 @@ import org.batfish.datamodel.Flow;
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface")
 })
-public abstract class Step<D extends StepDetail> {
+public abstract class Step<D> {
 
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";

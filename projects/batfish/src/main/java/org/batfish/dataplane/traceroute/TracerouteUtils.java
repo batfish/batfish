@@ -1,6 +1,8 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.flow.StepAction.DENIED_IN;
+import static org.batfish.datamodel.flow.StepAction.SENT_IN;
 import static org.batfish.datamodel.flow.StepAction.SENT_OUT;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
@@ -23,10 +25,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
-import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceAction;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceAction;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
@@ -71,16 +71,14 @@ final class TracerouteUtils {
    * @return a dummy {@link Hop}
    */
   static Hop createDummyHop() {
-    ImmutableList.Builder<Step> steps = ImmutableList.builder();
+    ImmutableList.Builder<Step<?>> steps = ImmutableList.builder();
 
     // creating the exit from out interface step
     ExitOutputIfaceStep.Builder exitOutStepBuilder = ExitOutputIfaceStep.builder();
     ExitOutputIfaceStepDetail.Builder stepDetailBuilder = ExitOutputIfaceStepDetail.builder();
     stepDetailBuilder.setOutputInterface(
         new NodeInterfacePair(TRACEROUTE_DUMMY_NODE, TRACEROUTE_DUMMY_OUT_INTERFACE));
-    ExitOutputIfaceAction exitOutputIfaceAction = new ExitOutputIfaceAction(SENT_OUT, null);
-    exitOutStepBuilder.setDetail(stepDetailBuilder.build());
-    exitOutStepBuilder.setAction(exitOutputIfaceAction);
+    exitOutStepBuilder.setDetail(stepDetailBuilder.build()).setAction(SENT_OUT);
 
     return new Hop(new Node(TRACEROUTE_DUMMY_NODE), steps.add(exitOutStepBuilder.build()).build());
   }
@@ -117,8 +115,8 @@ final class TracerouteUtils {
    * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
    *     Hop})
    * @param dataPlane Computed {@link DataPlane} for the node
-   * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and {@link
-   *     EnterInputIfaceAction} for the step; null if {@link EnterInputIfaceStep} can't be created
+   * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
+   *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
   @Nullable
   static EnterInputIfaceStep createEnterSrcIfaceStep(
@@ -156,7 +154,7 @@ final class TracerouteUtils {
         .contains(selectedInputVrfName)) {
       return enterSrcIfaceStepBuilder
           .setDetail(enterSrcStepDetailBuilder.build())
-          .setAction(new EnterInputIfaceAction(StepAction.ACCEPTED, null))
+          .setAction(StepAction.ACCEPTED)
           .build();
     }
 
@@ -176,7 +174,7 @@ final class TracerouteUtils {
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())
-            .setAction(new EnterInputIfaceAction(StepAction.DENIED_IN, null))
+            .setAction(DENIED_IN)
             .build();
       }
     }
@@ -184,7 +182,7 @@ final class TracerouteUtils {
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
-        .setAction(new EnterInputIfaceAction(StepAction.SENT_IN, null))
+        .setAction(SENT_IN)
         .build();
   }
 }

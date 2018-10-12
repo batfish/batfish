@@ -1,7 +1,5 @@
 package org.batfish.datamodel.flow;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -16,10 +14,10 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
   /**
-   * {@link StepDetail} to contain the details when a {@link Flow} enters a node through an input
-   * {@link Interface}
+   * Details of the {@link Step} when a {@link Flow} enters a node through an input {@link
+   * Interface}
    */
-  public static class EnterInputIfaceStepDetail extends StepDetail {
+  public static class EnterInputIfaceStepDetail {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
@@ -33,9 +31,7 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     private EnterInputIfaceStepDetail(
         @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
         @JsonProperty(PROP_INPUT_FILTER) @Nullable String inputFilter,
-        @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf,
-        @JsonProperty(PROP_NAME) @Nullable String name) {
-      super(firstNonNull(name, "EnterSrcIface"));
+        @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf) {
       _inputInterface = inputInterface;
       _inputFilter = inputFilter;
       _inputVrf = inputVrf;
@@ -68,10 +64,9 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
       private String _inputFilter;
-      private String _name;
 
       public EnterInputIfaceStepDetail build() {
-        return new EnterInputIfaceStepDetail(_inputInterface, _inputFilter, _inputVrf, _name);
+        return new EnterInputIfaceStepDetail(_inputInterface, _inputFilter, _inputVrf);
       }
 
       public Builder setInputInterface(NodeInterfacePair inputInterface) {
@@ -86,11 +81,6 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
       public Builder setInputFilter(String inputFilter) {
         _inputFilter = inputFilter;
-        return this;
-      }
-
-      public Builder setName(String name) {
-        _name = name;
         return this;
       }
     }
