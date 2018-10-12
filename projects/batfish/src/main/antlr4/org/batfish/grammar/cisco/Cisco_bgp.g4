@@ -606,12 +606,7 @@ null_bgp_tail
             (
                BESTPATH
                (
-                  (
-                     AS_PATH
-                     (
-                        CONFED
-                     )
-                  )
+                  AS_PATH CONFED
                   | MED
                )
             )
