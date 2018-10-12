@@ -15,6 +15,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.io.Closer;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
@@ -26,6 +27,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -55,6 +57,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.Command.TestComparisonMode;
@@ -106,6 +109,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
+import org.codehaus.plexus.util.IOUtil;
+import org.glassfish.grizzly.http.Method;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReader.Option;
@@ -2419,6 +2424,14 @@ public class Client extends AbstractClient implements IClient {
         return clearScreen(options, parameters);
       case CONFIGURE_TEMPLATE:
         return configureTemplate(words, outWriter, options, parameters);
+      case DEBUG_DELETE:
+        return debugDelete(outWriter, options, parameters);
+      case DEBUG_GET:
+        return debugGet(outWriter, options, parameters);
+      case DEBUG_POST:
+        return debugPost(outWriter, options, parameters);
+      case DEBUG_PUT:
+        return debugPut(outWriter, options, parameters);
       case DEL_ANALYSIS:
         return delAnalysis(outWriter, options, parameters);
       case DEL_ANALYSIS_QUESTIONS:
@@ -2594,6 +2607,122 @@ public class Client extends AbstractClient implements IClient {
         _logger.errorf("Unsupported command %s\n", words[0]);
         _logger.error("Type 'help' to see the list of valid commands\n");
         return false;
+    }
+  }
+
+  private boolean debugDelete(FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEBUG_DELETE)) {
+      return false;
+    }
+    String urlTail = parameters.get(0);
+    try {
+      return _workHelper.debugV2(outWriter, Method.DELETE, urlTail, null, null);
+    } catch (IOException e) {
+      _logger.error(Throwables.getStackTraceAsString(e));
+      return false;
+    }
+  }
+
+  private boolean debugGet(FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEBUG_GET)) {
+      return false;
+    }
+    String urlTail = parameters.get(0);
+    try {
+      return _workHelper.debugV2(outWriter, Method.GET, urlTail, null, null);
+    } catch (IOException e) {
+      _logger.error(Throwables.getStackTraceAsString(e));
+      return false;
+    }
+  }
+
+  private boolean debugPost(FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 2, 2, 2, Command.DEBUG_POST)) {
+      return false;
+    }
+    boolean file = false;
+    boolean raw = false;
+    for (String option : options) {
+      switch (option) {
+        case "-file":
+          file = true;
+          break;
+        case "-raw":
+          raw = true;
+          break;
+        default:
+          _logger.errorf("Unknown option: %s\n", options.get(0));
+          printUsage(Command.DEBUG_POST);
+          return false;
+      }
+    }
+    String urlTail = parameters.get(0);
+    String entityParam = parameters.get(1);
+    String mediaType;
+    Object entity;
+    try (Closer closer = Closer.create()) {
+      if (file) {
+        InputStream inputStream = closer.register(Files.newInputStream(Paths.get(entityParam)));
+        if (raw) {
+          mediaType = MediaType.APPLICATION_OCTET_STREAM;
+          entity = inputStream;
+        } else {
+          mediaType = MediaType.APPLICATION_JSON;
+          entity = IOUtil.toString(inputStream);
+        }
+      } else {
+        mediaType = MediaType.APPLICATION_JSON;
+        entity = BatfishObjectMapper.mapper().readTree(entityParam);
+      }
+      return _workHelper.debugV2(outWriter, Method.POST, urlTail, entity, mediaType);
+    } catch (IOException e) {
+      _logger.error(Throwables.getStackTraceAsString(e));
+      return false;
+    }
+  }
+
+  private boolean debugPut(FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 2, 2, 2, Command.DEBUG_PUT)) {
+      return false;
+    }
+    boolean file = false;
+    boolean raw = false;
+    for (String option : options) {
+      switch (option) {
+        case "-file":
+          file = true;
+          break;
+        case "-raw":
+          raw = true;
+          break;
+        default:
+          _logger.errorf("Unknown option: %s\n", options.get(0));
+          printUsage(Command.DEBUG_PUT);
+          return false;
+      }
+    }
+    String urlTail = parameters.get(0);
+    String entityParam = parameters.get(1);
+    String mediaType;
+    Object entity;
+    try (Closer closer = Closer.create()) {
+      if (file) {
+        InputStream inputStream = closer.register(Files.newInputStream(Paths.get(entityParam)));
+        if (raw) {
+          mediaType = MediaType.APPLICATION_OCTET_STREAM;
+          entity = inputStream;
+        } else {
+          mediaType = MediaType.APPLICATION_JSON;
+          entity = IOUtil.toString(inputStream);
+        }
+      } else {
+        mediaType = MediaType.APPLICATION_JSON;
+        entity = BatfishObjectMapper.mapper().readTree(entityParam);
+      }
+      return _workHelper.debugV2(outWriter, Method.PUT, urlTail, entity, mediaType);
+    } catch (IOException e) {
+      _logger.error(Throwables.getStackTraceAsString(e));
+      return false;
     }
   }
 

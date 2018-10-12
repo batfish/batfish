@@ -6,7 +6,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +20,7 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -38,6 +42,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.grizzly.http.Method;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -1221,6 +1226,31 @@ public class BfCoordWorkHelper {
             Throwables.getStackTraceAsString(e));
       }
       return false;
+    }
+  }
+
+  public boolean debugV2(
+      FileWriter outWriter, Method method, String urlTail, Object entity, String mediaType)
+      throws IOException {
+    WebTarget webTarget = getTargetV2(Arrays.asList(urlTail.split("/", -1)));
+    Invocation.Builder builder =
+        webTarget
+            .request(MediaType.APPLICATION_JSON)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+    try (Response response =
+        entity != null
+            ? builder.method(method.getMethodString(), Entity.entity(entity, mediaType))
+            : builder.method(method.getMethodString())) {
+      if (response.hasEntity()) {
+        String output = response.readEntity(String.class);
+        if (outWriter != null) {
+          outWriter.write(output);
+        } else {
+          _logger.outputf("%s\n", output);
+        }
+      }
+      return response.getStatus() == Status.OK.getStatusCode();
     }
   }
 }
