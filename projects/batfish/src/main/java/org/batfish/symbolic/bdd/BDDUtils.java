@@ -245,9 +245,9 @@ public class BDDUtils {
    */
   public static List<SatAssignment> allSat(BDDNetFactory netFactory, BDD x, boolean expandPrefix) {
     List<SatAssignment> entries = new ArrayList<>();
-    @SuppressWarnings("unchecked")
-    List<byte[]> assignments = (List<byte[]>) x.allsat();
-    for (byte[] variables : assignments) {
+    BDD.AllSatIterator it = x.allsat();
+    while (it.hasNext()) {
+      byte[] variables = (byte[]) it.next();
       List<byte[]> concreteAssignments = new ArrayList<>();
       List<Integer> dontCare = new ArrayList<>();
 

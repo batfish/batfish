@@ -756,7 +756,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement aiRoutes(NodesSpecifier ns, DomainType domainType) {
-    Graph graph = new Graph(this);
+    /* Graph graph = new Graph(this);
     IConcreteDomain<AbstractRoute> domain = new ExactDomain(graph);
     ConcreteInterpreter interpreter = new ConcreteInterpreter(graph);
     org.batfish.symbolic.cinterpreter.QueryAnswerer qa =
@@ -764,15 +764,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
-    return answer;
-
-    /* IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
+    return answer; */
+    Graph graph = new Graph(this);
+    IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
     QueryAnswerer qa = new QueryAnswerer(graph);
     SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
-    return answer; */
+    return answer;
   }
 
   @Override

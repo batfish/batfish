@@ -2,9 +2,9 @@
   <configuration default="false" name="Allinone" type="Application" factoryName="Application" singleton="true">
     <option name="MAIN_CLASS_NAME" value="org.batfish.allinone.Main" />
     <module name="allinone" />
-    <option name="PROGRAM_PARAMETERS" value="-runmode interactive -batfishmode workservice" />
-    <option name="VM_PARAMETERS" value="-enableassertions" />
-    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-    <method />
+    <option name="PROGRAM_PARAMETERS" value="-cmdfile test" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
   </configuration>
 </component>
