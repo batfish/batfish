@@ -5,10 +5,13 @@ import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.IntegerSpace.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.junit.Before;
 import org.junit.Rule;
@@ -195,5 +198,88 @@ public class IntegerSpaceTest {
             builder().including(new SubRange(1, 20)).excluding(new SubRange(11, 20)).build())
         .addEqualityGroup(EMPTY)
         .testEquals();
+  }
+
+  @Test
+  public void testSerialization() throws IOException {
+    String serialized = BatfishObjectMapper.writeString(IntegerSpace.PORTS);
+    assertThat(
+        BatfishObjectMapper.mapper().readValue(serialized, IntegerSpace.class),
+        equalTo(IntegerSpace.PORTS));
+  }
+
+  @Test
+  public void testCreationFromString() {
+    assertThat(
+        IntegerSpace.create("10"),
+        equalTo(IntegerSpace.builder().including(Range.closed(10, 10)).build()));
+    assertThat(
+        IntegerSpace.create("10-20"),
+        equalTo(IntegerSpace.builder().including(Range.closed(10, 20)).build()));
+    assertThat(
+        IntegerSpace.create("10-20,   30 -40"),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(10, 20))
+                .including(Range.closed(30, 40))
+                .build()));
+    assertThat(
+        IntegerSpace.create("10-20,30-  40,!15"),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(10, 20))
+                .including(Range.closed(30, 40))
+                .excluding(Range.closed(15, 15))
+                .build()));
+    assertThat(
+        IntegerSpace.create("!   35 -36,10-20,30-40,!15"),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(10, 20))
+                .including(Range.closed(30, 40))
+                .excluding(Range.closed(15, 15))
+                .excluding(Range.closed(35, 36))
+                .build()));
+  }
+
+  @Test
+  public void testCreationFromStringNull() {
+    assertThat(IntegerSpace.create(null), nullValue());
+  }
+
+  @Test
+  public void testCreationFromStringInvalidEmpty() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create("");
+  }
+
+  @Test
+  public void testCreationFromStringInvalidEmptyList() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create(",");
+  }
+
+  @Test
+  public void testCreationFromStringInvalidWord() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create("a");
+  }
+
+  @Test
+  public void testCreationFromStringInvalidNotWord() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create("!a");
+  }
+
+  @Test
+  public void testCreationFromStringInvalidRange() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create("54-!54");
+  }
+
+  @Test
+  public void testCreationFromStringInvalidNegative() {
+    _expected.expect(IllegalArgumentException.class);
+    IntegerSpace.create("-1");
   }
 }
