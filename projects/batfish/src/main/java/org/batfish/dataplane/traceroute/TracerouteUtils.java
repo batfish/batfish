@@ -140,12 +140,20 @@ final class TracerouteUtils {
       selectedInputVrfName = inputVrfName;
     }
 
+    Interface inputInterface;
+    IpAccessList inputFilter = null;
+    if (inputIfaceName != null) {
+      inputInterface = node.getAllInterfaces().get(inputIfaceName);
+      inputFilter = inputInterface != null ? inputInterface.getIncomingFilter() : null;
+    }
+
     EnterInputIfaceStep.Builder enterSrcIfaceStepBuilder = EnterInputIfaceStep.builder();
     EnterInputIfaceStepDetail.Builder enterSrcStepDetailBuilder =
         EnterInputIfaceStepDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
-        .setInputVrf(selectedInputVrfName);
+        .setInputVrf(selectedInputVrfName)
+        .setInputFilter(inputFilter != null ? inputFilter.getName() : null);
 
     if (dataPlane
         .getIpVrfOwners()
@@ -165,12 +173,10 @@ final class TracerouteUtils {
     }
 
     // check input filter
-    Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
-    IpAccessList inFilter = inputInterface.getIncomingFilter();
-    if (!ignoreAcls && inFilter != null) {
+    if (!ignoreAcls && inputFilter != null) {
       FilterResult filterResult =
-          inFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
-      enterSrcStepDetailBuilder.setInputFilter(inFilter.getName());
+          inputFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
+      enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())

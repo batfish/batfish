@@ -1,8 +1,11 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
@@ -27,14 +30,22 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     private @Nullable String _inputVrf;
     private @Nullable String _inputFilter;
 
-    @JsonCreator
-    private EnterInputIfaceStepDetail(
-        @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
-        @JsonProperty(PROP_INPUT_FILTER) @Nullable String inputFilter,
-        @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf) {
+    public EnterInputIfaceStepDetail(
+        @Nonnull NodeInterfacePair inputInterface,
+        @Nullable String inputFilter,
+        @Nullable String inputVrf) {
       _inputInterface = inputInterface;
       _inputFilter = inputFilter;
       _inputVrf = inputVrf;
+    }
+
+    @JsonCreator
+    private static EnterInputIfaceStepDetail jsonCreator(
+        @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
+        @JsonProperty(PROP_INPUT_FILTER) @Nullable String inputFilter,
+        @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf) {
+      checkArgument(inputInterface != null, "Input interface should be set");
+      return new EnterInputIfaceStepDetail(inputInterface, inputFilter, inputVrf);
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
@@ -74,12 +85,12 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
         return this;
       }
 
-      public Builder setInputVrf(String inputVrf) {
+      public Builder setInputVrf(@Nullable String inputVrf) {
         _inputVrf = inputVrf;
         return this;
       }
 
-      public Builder setInputFilter(String inputFilter) {
+      public Builder setInputFilter(@Nullable String inputFilter) {
         _inputFilter = inputFilter;
         return this;
       }

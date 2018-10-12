@@ -1,8 +1,11 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -22,23 +25,28 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
   public static class ExitOutputIfaceStepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_OUTPUT_FILTER = "outputFilter";
-    private static final String PROP_ORIGINAL_FLOW = "originalFlow";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
-    private @Nullable NodeInterfacePair _outputInterface;
+    private NodeInterfacePair _outputInterface;
     private @Nullable String _outputFilter;
-    private @Nullable Flow _originalFlow;
     private @Nullable Flow _transformedFlow;
 
     private ExitOutputIfaceStepDetail(
-        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
-        @JsonProperty(PROP_ORIGINAL_FLOW) @Nullable Flow originalFlow,
-        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
+        @Nonnull NodeInterfacePair outInterface,
+        @Nullable String outputFilter,
+        @Nullable() Flow transformedFlow) {
       _outputInterface = outInterface;
       _outputFilter = outputFilter;
-      _originalFlow = originalFlow;
       _transformedFlow = transformedFlow;
+    }
+
+    @JsonCreator
+    private static ExitOutputIfaceStepDetail jsonCreator(
+        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
+        @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
+        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
+      checkArgument(outInterface != null, "Output interface should be set");
+      return new ExitOutputIfaceStepDetail(outInterface, outputFilter, transformedFlow);
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
@@ -51,12 +59,6 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     @Nullable
     public String getOutputFilter() {
       return _outputFilter;
-    }
-
-    @JsonProperty(PROP_ORIGINAL_FLOW)
-    @Nullable
-    public Flow getOriginalFlow() {
-      return _originalFlow;
     }
 
     @JsonProperty(PROP_TRANSFORMED_FLOW)
@@ -73,12 +75,10 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     public static class Builder {
       private NodeInterfacePair _outputInterface;
       private String _outputFilter;
-      private Flow _originalFlow;
       private Flow _transformedFlow;
 
       public ExitOutputIfaceStepDetail build() {
-        return new ExitOutputIfaceStepDetail(
-            _outputInterface, _outputFilter, _originalFlow, _transformedFlow);
+        return new ExitOutputIfaceStepDetail(_outputInterface, _outputFilter, _transformedFlow);
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {
@@ -86,17 +86,12 @@ public class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
         return this;
       }
 
-      public Builder setOutputFilter(String outputFilter) {
+      public Builder setOutputFilter(@Nullable String outputFilter) {
         _outputFilter = outputFilter;
         return this;
       }
 
-      public Builder setOriginalFlow(Flow originalFlow) {
-        _originalFlow = originalFlow;
-        return this;
-      }
-
-      public Builder setTransformedFlow(Flow transformedFlow) {
+      public Builder setTransformedFlow(@Nullable Flow transformedFlow) {
         _transformedFlow = transformedFlow;
         return this;
       }

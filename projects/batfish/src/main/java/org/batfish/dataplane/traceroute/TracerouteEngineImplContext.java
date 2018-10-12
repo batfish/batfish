@@ -195,12 +195,23 @@ public class TracerouteEngineImplContext {
         stepBuilder)) {
       return;
     }
+    IpAccessList outFilter =
+        _configurations
+            .get(transmissionContext._currentNode.getName())
+            .getAllInterfaces()
+            .get(nextHopInterfaceName)
+            .getOutgoingFilter();
     stepBuilder.add(
         ExitOutputIfaceStep.builder()
             .setDetail(
                 ExitOutputIfaceStepDetail.builder()
                     .setOutputInterface(
                         new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
+                    .setOutputFilter(outFilter != null ? outFilter.getName() : null)
+                    .setTransformedFlow(
+                        hopFlow(
+                            transmissionContext._originalFlow,
+                            transmissionContext._transformedFlow))
                     .build())
             .setAction(StepAction.SENT_OUT)
             .build());
@@ -255,6 +266,11 @@ public class TracerouteEngineImplContext {
                     ExitOutputIfaceStepDetail.builder()
                         .setOutputInterface(
                             new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
+                        .setOutputFilter(outFilter.getName())
+                        .setTransformedFlow(
+                            hopFlow(
+                                transmissionContext._originalFlow,
+                                transmissionContext._transformedFlow))
                         .build())
                 .setAction(StepAction.DENIED_OUT)
                 .build());
@@ -280,6 +296,11 @@ public class TracerouteEngineImplContext {
                   ExitOutputIfaceStepDetail.builder()
                       .setOutputInterface(
                           new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
+                      .setOutputFilter(outFilter != null ? outFilter.getName() : null)
+                      .setTransformedFlow(
+                          hopFlow(
+                              transmissionContext._originalFlow,
+                              transmissionContext._transformedFlow))
                       .build())
               .setAction(StepAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
               .build());
@@ -567,6 +588,15 @@ public class TracerouteEngineImplContext {
     }
   }
 
+  @Nullable
+  private static Flow hopFlow(@Nullable Flow originalFlow, @Nullable Flow transformedFlow) {
+    if (originalFlow == transformedFlow) {
+      return null;
+    } else {
+      return transformedFlow;
+    }
+  }
+
   private void updateDeniedOrUnreachableTrace(
       String currentNodeName,
       Interface outInterface,
@@ -588,6 +618,9 @@ public class TracerouteEngineImplContext {
     exitOutIfaceBuilder.setDetail(
         ExitOutputIfaceStepDetail.builder()
             .setOutputInterface(new NodeInterfacePair(currentNodeName, outInterface.getName()))
+            .setOutputFilter(outFilter != null ? outFilter.getName() : null)
+            .setTransformedFlow(
+                hopFlow(transmissionContext._originalFlow, transmissionContext._transformedFlow))
             .build());
     Trace trace;
     if (denied) {
