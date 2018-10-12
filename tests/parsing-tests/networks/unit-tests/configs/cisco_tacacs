@@ -51,6 +51,7 @@ tacacs server 7.example.com
 !
 tacacs server 8.example.com
  key hello,world
+ timeout 5
 !
 ! IOS-XR
 tacacs-server host 1.2.3.4 port 123
