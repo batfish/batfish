@@ -15,6 +15,10 @@ import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 
+/**
+ * Resource for servicing client API calls for network-wide or inferred node roles as applied to a
+ * specific snapshot. It is a subresource of {@link SnapshotResource}.
+ */
 @ParametersAreNonnullByDefault
 public final class SnapshotNodeRolesResource {
 
