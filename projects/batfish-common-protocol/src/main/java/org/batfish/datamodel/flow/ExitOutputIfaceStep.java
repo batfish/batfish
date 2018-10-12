@@ -109,7 +109,7 @@ public class ExitOutputIfaceStep extends Step {
       }
     }
   }
-  
+
   public static class ExitOutputIfaceAction extends StepAction {
 
     private static final String PROP_ACTION_RESULT = "actionResult";
