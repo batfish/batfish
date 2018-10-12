@@ -3829,6 +3829,7 @@ t_server_null
    NO?
    (
       SINGLE_CONNECTION
+      | TIMEOUT
    ) null_rest_of_line
 ;
 

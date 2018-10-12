@@ -4454,9 +4454,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *
    * @param dispositions Search for differences in the set of packets with the specified {@link
    *     FlowDisposition FlowDispositions}.
+   * @param ipSpaceAssignment Assignment of IpSpaces to each enabled source.
+   * @param headerSpace Extra user-input headerspace constraint
    */
   @Override
-  public DifferentialReachabilityResult bddReducedReachability(Set<FlowDisposition> dispositions) {
+  public DifferentialReachabilityResult bddReducedReachability(
+      Set<FlowDisposition> dispositions,
+      IpSpaceAssignment ipSpaceAssignment,
+      AclLineMatchExpr headerSpace) {
     checkArgument(!dispositions.isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
@@ -4466,8 +4471,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                getAllSourcesInferFromLocationIpSpaceAssignment(),
-                UniverseIpSpace.INSTANCE,
+                ipSpaceAssignment,
+                headerSpace,
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 loadConfigurations().keySet(),
@@ -4479,8 +4484,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
-                getAllSourcesInferFromLocationIpSpaceAssignment(),
-                UniverseIpSpace.INSTANCE,
+                ipSpaceAssignment,
+                headerSpace,
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 loadConfigurations().keySet(),
