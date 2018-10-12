@@ -96,7 +96,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
                 .setDstIps(dstIps)
                 .build());
     return new DifferentialReachabilityParameters(
-        question.getActions(),
+        question.getActions().getDispositions(),
         forbiddenTransitNodes,
         finalNodes,
         headerSpace,
