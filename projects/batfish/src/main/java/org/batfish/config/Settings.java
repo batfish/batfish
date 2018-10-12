@@ -37,8 +37,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _dataPlaneAnswerPath;
 
-    private Path _dataPlanePath;
-
     private Path _environmentBgpTablesPath;
 
     private Path _environmentRoutingTablesPath;
@@ -71,10 +69,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getDataPlaneAnswerPath() {
       return _dataPlaneAnswerPath;
-    }
-
-    public Path getDataPlanePath() {
-      return _dataPlanePath;
     }
 
     public Path getEnvironmentBgpTablesPath() {
@@ -128,10 +122,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
       _dataPlaneAnswerPath = dataPlaneAnswerPath;
-    }
-
-    public void setDataPlanePath(Path path) {
-      _dataPlanePath = path;
     }
 
     public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
@@ -210,6 +200,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     public Path getBasePath() {
       checkState(_basePath != null, "base path is not configured");
       return _basePath;
+    }
+
+    @Nonnull
+    public Path getDataPlanePath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
     }
 
     public EnvironmentSettings getEnvironmentSettings() {

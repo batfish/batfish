@@ -249,7 +249,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
     envSettings.setCompressedDataPlaneAnswerPath(
         envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
-    envSettings.setDataPlanePath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE));
     envSettings.setDataPlaneAnswerPath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
     envSettings.setParseEnvironmentBgpTablesAnswerPath(
         envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
@@ -702,8 +701,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static void checkDataPlane(TestrigSettings testrigSettings) {
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    if (!Files.exists(envSettings.getDataPlanePath())) {
+    if (!Files.exists(testrigSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
           "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
     }
@@ -797,7 +795,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path dataPlanePath =
         compressed
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            : _testrigSettings.getDataPlanePath();
 
     Path answerElementPath =
         compressed
@@ -2124,7 +2122,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path path =
         compressed
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            : _testrigSettings.getDataPlanePath();
 
     NetworkSnapshot snapshot = getNetworkSnapshot();
     DataPlane dp = cache.getIfPresent(snapshot);
@@ -3354,7 +3352,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path dataPlanePath =
         compressed
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            : _testrigSettings.getDataPlanePath();
 
     Path dataPlaneAnswerPath =
         compressed
@@ -4596,7 +4594,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     _cachedDataPlanes.put(getNetworkSnapshot(), dp);
-    serializeObject(dp, _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+    serializeObject(dp, _testrigSettings.getDataPlanePath());
     serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
   }
 
