@@ -272,7 +272,7 @@ public class TracerouteEngineImplContext {
                                 transmissionContext._originalFlow,
                                 transmissionContext._transformedFlow))
                         .build())
-                .setAction(StepAction.DENIED_OUT)
+                .setAction(StepAction.BLOCKED)
                 .build());
         Hop deniedOutHop = new Hop(new Node(currentNodeName), stepBuilder.build());
         transmissionContext._hopsSoFar.add(deniedOutHop);
@@ -302,7 +302,7 @@ public class TracerouteEngineImplContext {
                               transmissionContext._originalFlow,
                               transmissionContext._transformedFlow))
                       .build())
-              .setAction(StepAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
+              .setAction(StepAction.DROPPED)
               .build());
       Hop neighborUnreachableOrExitsNetwork =
           new Hop(new Node(currentNodeName), stepBuilder.build());
@@ -422,7 +422,7 @@ public class TracerouteEngineImplContext {
               _dataPlane);
       if (enterSrcIfacStep != null) {
         steps.add(enterSrcIfacStep);
-        if (enterSrcIfacStep.getAction() == StepAction.ACCEPTED) {
+        if (enterSrcIfacStep.getAction() == StepAction.TERMINATED) {
           Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
           transmissionContext._hopsSoFar.add(acceptedHop);
           Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
@@ -448,7 +448,7 @@ public class TracerouteEngineImplContext {
       RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
       routingStepBuilder
           .setDetail(RoutingStepDetail.builder().build())
-          .setAction(StepAction.NO_ROUTE);
+          .setAction(StepAction.DROPPED);
       steps.add(routingStepBuilder.build());
       Hop noRouteHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
       transmissionContext._hopsSoFar.add(noRouteHop);
@@ -526,7 +526,7 @@ public class TracerouteEngineImplContext {
                                       new NodeInterfacePair(
                                           currentNodeName, Interface.NULL_INTERFACE_NAME))
                                   .build())
-                          .setAction(StepAction.NULL_ROUTED)
+                          .setAction(StepAction.DROPPED)
                           .build());
                   Hop nullRoutedHop =
                       new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
@@ -625,14 +625,14 @@ public class TracerouteEngineImplContext {
     Trace trace;
     if (denied) {
       // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.DENIED_OUT);
+      exitOutIfaceBuilder.setAction(StepAction.BLOCKED);
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(deniedOutHop);
       trace = new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
     } else {
       // add a neighbor unreachable step and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
+      exitOutIfaceBuilder.setAction(StepAction.DROPPED);
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop neighborUnreachableHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(neighborUnreachableHop);

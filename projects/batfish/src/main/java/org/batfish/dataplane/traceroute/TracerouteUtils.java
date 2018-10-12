@@ -1,7 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.flow.StepAction.DENIED_IN;
+import static org.batfish.datamodel.flow.StepAction.BLOCKED;
 import static org.batfish.datamodel.flow.StepAction.SENT_IN;
 import static org.batfish.datamodel.flow.StepAction.SENT_OUT;
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
@@ -162,7 +162,7 @@ final class TracerouteUtils {
         .contains(selectedInputVrfName)) {
       return enterSrcIfaceStepBuilder
           .setDetail(enterSrcStepDetailBuilder.build())
-          .setAction(StepAction.ACCEPTED)
+          .setAction(StepAction.TERMINATED)
           .build();
     }
 
@@ -180,7 +180,7 @@ final class TracerouteUtils {
       if (filterResult.getAction() == LineAction.DENY) {
         return enterSrcIfaceStepBuilder
             .setDetail(enterSrcStepDetailBuilder.build())
-            .setAction(DENIED_IN)
+            .setAction(BLOCKED)
             .build();
       }
     }

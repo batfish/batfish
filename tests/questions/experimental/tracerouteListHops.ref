@@ -58,15 +58,9 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "0.0.0.0/0",
@@ -77,15 +71,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
@@ -101,33 +90,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -138,15 +115,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet0/0"
@@ -162,32 +133,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2dist1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -203,15 +162,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dist1",
                         "interface" : "GigabitEthernet0/0"
@@ -227,33 +180,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -264,15 +205,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet0/0"
@@ -288,32 +223,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -324,15 +247,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -348,32 +266,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -384,15 +290,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet0/0"
@@ -408,20 +308,14 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "ACCEPTED",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "TERMINATED",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1core1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   }
                 ]
@@ -438,15 +332,9 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "0.0.0.0/0",
@@ -457,15 +345,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
@@ -481,33 +364,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -518,15 +389,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet0/0"
@@ -542,32 +407,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2dist1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -583,15 +436,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dist1",
                         "interface" : "GigabitEthernet1/0"
@@ -607,32 +454,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2core2",
                         "interface" : "GigabitEthernet3/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -643,15 +478,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2core2",
                         "interface" : "GigabitEthernet1/0"
@@ -667,32 +496,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -703,15 +520,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -727,32 +539,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -763,15 +563,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet0/0"
@@ -787,20 +581,14 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "ACCEPTED",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "TERMINATED",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1core1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   }
                 ]
@@ -817,15 +605,9 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "0.0.0.0/0",
@@ -836,15 +618,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
@@ -860,33 +637,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -897,15 +662,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet1/0"
@@ -921,32 +680,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2dist2",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -962,15 +709,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dist2",
                         "interface" : "GigabitEthernet0/0"
@@ -986,32 +727,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2core2",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1022,15 +751,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2core2",
                         "interface" : "GigabitEthernet1/0"
@@ -1046,32 +769,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1082,15 +793,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -1106,32 +812,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1142,15 +836,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet0/0"
@@ -1166,20 +854,14 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "ACCEPTED",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "TERMINATED",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1core1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   }
                 ]
@@ -1196,15 +878,9 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "0.0.0.0/0",
@@ -1215,15 +891,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
@@ -1239,33 +910,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1276,15 +935,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet1/0"
@@ -1300,32 +953,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2dist2",
                         "interface" : "GigabitEthernet2/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1341,15 +982,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2dist2",
                         "interface" : "GigabitEthernet1/0"
@@ -1365,33 +1000,21 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputFilter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet3/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1402,15 +1025,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet0/0"
@@ -1426,32 +1043,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1462,15 +1067,10 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
+                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -1486,32 +1086,20 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "SENT_IN",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.RoutingStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "Routing"
-                    },
+                    "type" : "Routing",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.RoutingStep$RoutingStepDetail",
-                      "name" : "Routing",
                       "routes" : [
                         {
                           "network" : "1.0.2.0/24",
@@ -1522,15 +1110,9 @@
                     }
                   },
                   {
-                    "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceAction",
-                      "actionResult" : "SENT_OUT",
-                      "name" : "ExitOutIface"
-                    },
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.ExitOutputIfaceStep$ExitOutputIfaceStepDetail",
-                      "name" : "ExitOutIface",
                       "outputInterface" : {
                         "hostname" : "as1border1",
                         "interface" : "GigabitEthernet0/0"
@@ -1546,20 +1128,14 @@
                 },
                 "steps" : [
                   {
-                    "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep",
-                    "action" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceAction",
-                      "actionResult" : "ACCEPTED",
-                      "name" : "EnterSrcIface"
-                    },
+                    "type" : "EnterInputInterface",
+                    "action" : "TERMINATED",
                     "detail" : {
-                      "class" : "org.batfish.datamodel.flow.EnterInputIfaceStep$EnterInputIfaceStepDetail",
                       "inputInterface" : {
                         "hostname" : "as1core1",
                         "interface" : "GigabitEthernet1/0"
                       },
-                      "inputVrf" : "default",
-                      "name" : "EnterSrcIface"
+                      "inputVrf" : "default"
                     }
                   }
                 ]
