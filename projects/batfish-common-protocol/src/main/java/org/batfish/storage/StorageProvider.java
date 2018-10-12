@@ -2,19 +2,23 @@ package org.batfish.storage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -53,6 +57,33 @@ public interface StorageProvider {
   @Nullable
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the edge blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the interface blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<NodeInterfacePair> loadInterfaceBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the node blacklist for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot
@@ -303,4 +334,102 @@ public interface StorageProvider {
 
   /** Delete answer metadata for given ID */
   void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a network-wide extended object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the network-wide extended object at for the given key using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException;
+
+  /**
+   * Deletes the network-wide extended object for the given key.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot-wide extended object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the snapshot-wide extended object for the given key using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeSnapshotObject(
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException;
+
+  /**
+   * Deletes the snapshot-wide extended object for the given key.
+   *
+   * @throws FileNotFoundException if the object does not exist
+   * @throws IOException if there is an error deleting the object
+   */
+  void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Provide a stream from which a snapshot input object for the given key may be read
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Loads the JSON-serialized POJO topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Loads the JSON-serialized topology produced for a snapshot
+   *
+   * @throws IOException if there is an error reading the topology
+   */
+  @Nonnull
+  String loadTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+
+  /**
+   * Writes the topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Writes the pojo topology for the provided network and snapshot
+   *
+   * @throws IOException if there is an error writing the topology
+   */
+  void storePojoTopology(
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
 }

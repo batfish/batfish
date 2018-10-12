@@ -134,7 +134,6 @@ public class CoordConsts {
   public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
   public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
-  public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_NETWORK = "delnetwork";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_SNAPSHOT = "delsnapshot";
@@ -175,7 +174,6 @@ public class CoordConsts {
   public static final String SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS = "syncsnapshotsupdatesettings";
   public static final String SVC_RSC_SYNC_TESTRIGS_SYNC_NOW = "synctestrigssyncnow";
   public static final String SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS = "synctestrigsupdatesettings";
-  public static final String SVC_RSC_UPLOAD_ENV = "uploadenvironment";
   public static final String SVC_RSC_UPLOAD_QUESTION = "uploadquestion";
   public static final String SVC_RSC_UPLOAD_SNAPSHOT = "uploadsnapshot";
   public static final String SVC_RSC_UPLOAD_TESTRIG = "uploadtestrig";

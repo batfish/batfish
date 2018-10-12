@@ -1,5 +1,6 @@
 package org.batfish.identifiers;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,8 +36,9 @@ public abstract class Id {
     return Objects.hash(_id);
   }
 
+  @JsonValue
   @Override
-  public String toString() {
+  public final String toString() {
     return _id;
   }
 }

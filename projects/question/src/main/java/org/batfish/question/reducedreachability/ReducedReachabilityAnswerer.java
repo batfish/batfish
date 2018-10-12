@@ -1,14 +1,25 @@
 package org.batfish.question.reducedreachability;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.PacketHeaderConstraintsUtil;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -16,6 +27,12 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
+import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.IpSpaceAssignment.Entry;
+import org.batfish.specifier.IpSpaceSpecifierFactory;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.SpecifierContext;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
 public class ReducedReachabilityAnswerer extends Answerer {
@@ -41,7 +58,37 @@ public class ReducedReachabilityAnswerer extends Answerer {
   @Override
   public TableAnswerElement answerDiff() {
     ReducedReachabilityQuestion question = (ReducedReachabilityQuestion) _question;
-    Set<Flow> flows = _batfish.bddReducedReachability(question.getActions());
+    PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
+    IpSpaceSpecifierFactory flexibleIpSpaceSpecifierFactory =
+        new FlexibleInferFromLocationIpSpaceSpecifierFactory();
+    SpecifierContext ctxt = _batfish.specifierContext();
+    Set<Location> locations = ALL_LOCATIONS.resolve(ctxt);
+    IpSpaceAssignment ipSpaceAssignment =
+        flexibleIpSpaceSpecifierFactory
+            .buildIpSpaceSpecifier(headerConstraints.getSrcIps())
+            .resolve(locations, ctxt);
+    IpSpace dstIps =
+        firstNonNull(
+            AclIpSpace.union(
+                flexibleIpSpaceSpecifierFactory
+                    .buildIpSpaceSpecifier(headerConstraints.getDstIps())
+                    .resolve(locations, ctxt)
+                    .getEntries()
+                    .stream()
+                    .map(Entry::getIpSpace)
+                    .collect(ImmutableList.toImmutableList())),
+            UniverseIpSpace.INSTANCE);
+    AclLineMatchExpr headerSpace =
+        match(
+            PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
+                .setDstIps(dstIps)
+                .build());
+    DifferentialReachabilityResult result =
+        _batfish.bddReducedReachability(question.getActions(), ipSpaceAssignment, headerSpace);
+
+    Set<Flow> flows =
+        Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
+
     _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
     _batfish.popEnvironment();

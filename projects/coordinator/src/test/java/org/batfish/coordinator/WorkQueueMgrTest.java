@@ -149,7 +149,7 @@ public class WorkQueueMgrTest {
       String container, String testrig, String environment, ProcessingStatus status)
       throws IOException {
     WorkMgrTestUtils.initTestrigWithTopology(CONTAINER, testrig, ImmutableSet.of());
-    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
+    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment, null);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
     envMetadata.updateStatus(status, null);
     TestrigMetadataMgr.writeMetadata(trMetadata, container, testrig);

@@ -77,7 +77,6 @@ public class BfConsts {
 
   public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
-  public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
   public static final String COMMAND_DUMP_DP = "dp";
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
@@ -160,6 +159,7 @@ public class BfConsts {
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
   public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
+  public static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INPUT = "input";
