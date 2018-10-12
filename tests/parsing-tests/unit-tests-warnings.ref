@@ -79,14 +79,14 @@
       },
       {
         "Filename" : "cisco_bgp",
-        "Line" : 28,
+        "Line" : 29,
         "Text" : "redistribute ospf 2",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_bgp",
-        "Line" : 29,
+        "Line" : 30,
         "Text" : "redistribute ospf 2 vrf vrf1",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

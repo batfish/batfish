@@ -430,7 +430,7 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            33
+            34
           ]
         }
       },
@@ -442,7 +442,7 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            34
+            35
           ]
         }
       },
@@ -454,7 +454,7 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            30
+            31
           ]
         }
       },
@@ -466,7 +466,7 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            31
+            32
           ]
         }
       },
@@ -478,7 +478,7 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            26
+            27
           ]
         }
       },
@@ -490,8 +490,8 @@
         "Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            36,
-            37
+            37,
+            38
           ]
         }
       },
