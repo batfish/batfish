@@ -514,7 +514,7 @@ public class TracerouteEngineImplContext {
                             RoutingStepDetail.builder()
                                 .setRoutes(routesForThisNextHopInterface)
                                 .build())
-                        .setAction(StepAction.SENT_OUT)
+                        .setAction(StepAction.FORWARDED)
                         .build());
 
                 if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
