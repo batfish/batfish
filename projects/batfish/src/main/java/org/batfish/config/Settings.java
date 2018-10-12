@@ -85,11 +85,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _environmentRoutingTablesPath;
     }
 
-    @Deprecated
-    public Path getEnvPath() {
-      return _envPath;
-    }
-
     public Path getExternalBgpAnnouncementsPath() {
       return _externalBgpAnnouncementsPath;
     }
@@ -194,21 +189,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private EnvironmentSettings _environmentSettings;
 
-    private Path _inferredNodeRolesPath;
-
     private SnapshotId _name;
-
-    private Path _nodeRolesPath;
-
-    private Path _pojoTopologyPath;
-
-    private Path _protocolDependencyGraphPath;
-
-    private Path _protocolDependencyGraphZipPath;
-
-    private Path _serializeVendorPath;
-
-    private Path _topologyPath;
 
     public TestrigSettings() {
       _environmentSettings = new EnvironmentSettings();
@@ -236,7 +217,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getInferredNodeRolesPath() {
-      return _inferredNodeRolesPath;
+      return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
     }
 
     public Path getInputPath() {
@@ -248,7 +229,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getNodeRolesPath() {
-      return _nodeRolesPath;
+      return getInputPath().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     }
 
     public Path getOutputPath() {
@@ -260,15 +241,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getPojoTopologyPath() {
-      return _pojoTopologyPath;
-    }
-
-    public Path getProtocolDependencyGraphPath() {
-      return _protocolDependencyGraphPath;
-    }
-
-    public Path getProtocolDependencyGraphZipPath() {
-      return _protocolDependencyGraphZipPath;
+      return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
     }
 
     public Path getReferenceLibraryPath() {
@@ -276,11 +249,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getSerializeVendorPath() {
-      return _serializeVendorPath;
+      return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
     }
 
     public Path getTopologyPath() {
-      return _topologyPath;
+      return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH);
     }
 
     @Override
@@ -302,36 +275,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _environmentSettings = environmentSettings;
     }
 
-    public void setInferredNodeRolesPath(Path inferredNodeRolesPath) {
-      _inferredNodeRolesPath = inferredNodeRolesPath;
-    }
-
     public void setName(SnapshotId name) {
       _name = name;
-    }
-
-    public void setNodeRolesPath(Path nodeRolesPath) {
-      _nodeRolesPath = nodeRolesPath;
-    }
-
-    public void setPojoTopologyPath(Path path) {
-      _pojoTopologyPath = path;
-    }
-
-    public void setProtocolDependencyGraphPath(Path protocolDependencyGraphPath) {
-      _protocolDependencyGraphPath = protocolDependencyGraphPath;
-    }
-
-    public void setProtocolDependencyGraphZipPath(Path protocolDependencyGraphZipPath) {
-      _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
-    }
-
-    public void setSerializeVendorPath(Path path) {
-      _serializeVendorPath = path;
-    }
-
-    public void setTopologyPath(Path path) {
-      _topologyPath = path;
     }
   }
 

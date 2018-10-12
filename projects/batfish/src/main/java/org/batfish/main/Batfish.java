@@ -243,20 +243,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
-    settings.setSerializeVendorPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)));
-    settings.setNodeRolesPath(
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_ROLES_PATH)));
-    settings.setInferredNodeRolesPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
-    settings.setTopologyPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH)));
-    settings.setPojoTopologyPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)));
     Path envPathOut = testrigDir.resolve(BfConsts.RELPATH_OUTPUT);
     Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     envSettings.setCompressedDataPlanePath(
@@ -275,7 +261,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
     envSettings.setValidateEnvironmentAnswerPath(
         envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
-    Path envDirPath = envPathOut.resolve(BfConsts.RELPATH_ENV_DIR);
     envSettings.setSerializedTopologyPath(envPathOut.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
     envSettings.setExternalBgpAnnouncementsPath(
         envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
@@ -1416,7 +1401,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<String> nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
-        getEnvironmentName(),
         _idResolver.getSnapshotName(_settings.getContainer(), getTestrigName()),
         edgeBlackList,
         interfaceBlackList,
@@ -1435,11 +1419,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(inputData, answerElement);
     return bgpTables;
-  }
-
-  @Deprecated
-  public String getEnvironmentName() {
-    return _testrigSettings.getEnvironmentSettings().getName();
   }
 
   private SortedMap<String, RoutesByVrf> getEnvironmentRoutingTables(
@@ -1929,9 +1908,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
     EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
     if (!outputExists(_testrigSettings)) {
-      Path envPath = envSettings.getEnvPath();
-      // create environment required folders
-      CommonUtil.createDirectories(envPath);
+      CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }
     if (!environmentBgpTablesExist(envSettings)) {
       computeEnvironmentBgpTables();
