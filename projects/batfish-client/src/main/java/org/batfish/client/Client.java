@@ -67,7 +67,6 @@ import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
-import org.batfish.client.params.InitEnvironmentParams;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -2110,24 +2109,6 @@ public class Client extends AbstractClient implements IClient {
     ae.setNumLoaded(ae.getNumLoaded() + 1);
   }
 
-  static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
-    String jsonParamsStr = "{ " + paramsLine + " }";
-    InitEnvironmentParams parameters;
-    try {
-      parameters =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  new JSONObject(jsonParamsStr).toString(),
-                  new TypeReference<InitEnvironmentParams>() {});
-      return parameters;
-    } catch (JSONException | IOException e) {
-      throw new BatfishException(
-          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
-              + "values valid JSON?)",
-          e);
-    }
-  }
-
   private Map<String, JsonNode> parseParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
     Map<String, JsonNode> parameters;
@@ -2895,7 +2876,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean setReferenceSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_REFERENCE_SNAPSHOT)) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_REFERENCE_SNAPSHOT)) {
       return false;
     }
     _currDeltaTestrig = parameters.get(0);
@@ -2940,7 +2921,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean setSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_SNAPSHOT)) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_SNAPSHOT)) {
       return false;
     }
     if (!isSetContainer(true)) {

@@ -36,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -145,24 +144,20 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final Set<String> CONTAINER_FILENAMES = initContainerFilenames();
 
-  private static final Set<String> ENV_FILENAMES = initEnvFilenames();
+  private static final Set<String> ENV_FILENAMES =
+      ImmutableSet.of(
+          BfConsts.RELPATH_NODE_BLACKLIST_FILE,
+          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE,
+          BfConsts.RELPATH_EDGE_BLACKLIST_FILE,
+          BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES,
+          BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
+          BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
 
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
     return ImmutableSet.of(
         BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
-  }
-
-  private static Set<String> initEnvFilenames() {
-    Set<String> envFilenames = new HashSet<>();
-    envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
-    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
-    envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
-    return envFilenames;
   }
 
   private final IdManager _idManager;
@@ -1562,14 +1557,12 @@ public class WorkMgr extends AbstractCoordinator {
     return autoWorkQueue;
   }
 
-  private boolean isContainerFile(Path path) {
-    String name = path.getFileName().toString();
-    return CONTAINER_FILENAMES.contains(name);
+  private static boolean isContainerFile(Path path) {
+    return CONTAINER_FILENAMES.contains(path.getFileName().toString());
   }
 
-  private boolean isEnvFile(Path path) {
-    String name = path.getFileName().toString();
-    return ENV_FILENAMES.contains(name);
+  private static boolean isEnvFile(Path path) {
+    return ENV_FILENAMES.contains(path.getFileName().toString());
   }
 
   public boolean killWork(QueuedWork work) {

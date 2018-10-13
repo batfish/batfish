@@ -1050,13 +1050,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testParseInitEnvironmentParamsInterfaceBlacklist() {
-    String paramsLine =
-        "interfaceBlacklist=" + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
-    Client.parseInitEnvironmentParams(paramsLine);
-  }
-
-  @Test
   public void testPathRegexInvalidEnd() {
     String invalidEnd = "/pathRegex";
     _thrown.expect(BatfishException.class);
