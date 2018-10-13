@@ -37,7 +37,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -172,6 +171,7 @@ import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -1497,8 +1497,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public NodeRolesData getNodeRolesData() {
     try {
+      NetworkId networkId = _settings.getContainer();
+      if (!_idResolver.hasNetworkNodeRolesId(networkId)) {
+        return null;
+      }
+      NodeRolesId nodeRolesId = _idResolver.getNetworkNodeRolesId(networkId);
       return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(_settings.getContainer()), NodeRolesData.class);
+          .readValue(_storage.loadNodeRoles(nodeRolesId), NodeRolesData.class);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data: %s", e);
       return null;
@@ -1514,37 +1519,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer().getId())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.getNodeRoleDimension(
-          () -> getNodeRolesWrapped(_settings.getContainer()), dimension);
+      NodeRolesData nodeRolesData = getNodeRolesData();
+      return nodeRolesData.getNodeRoleDimension(dimension);
     } catch (IOException e) {
-      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      _logger.errorf("Could not read roles data: %s", e);
       return Optional.empty();
-    }
-  }
-
-  private NodeRolesData getNodeRolesWrapped(NetworkId networkId) {
-    if (!_storage.hasNodeRoles(networkId)) {
-      return new NodeRolesData(null, new Date().toInstant(), null);
-    }
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);
-    } catch (IOException e) {
-      throw new BatfishException("Error reading node roles", e);
-    }
-  }
-
-  private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, NetworkId networkId) {
-    try {
-      _storage.storeNodeRoles(nodeRolesData, networkId);
-    } catch (IOException e) {
-      throw new BatfishException("Error writing node roles", e);
     }
   }
 
@@ -2373,17 +2353,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
         questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
       } else {
-        questionSettingsId = QuestionSettingsId.DEFAULT_ID;
+        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
       }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
             _baseTestrigSettings.getName(),
             questionId,
             questionSettingsId,
+            networkNodeRolesId,
             deltaSnapshot,
             analysisId);
 
@@ -3665,27 +3650,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(
         _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
 
-    // Compute new auto role data and updates existing auto data with it
-    SortedSet<NodeRoleDimension> autoRoles =
-        new InferRoles(configurations.keySet(), envTopology).inferRoles();
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer().getId())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    try {
-      NetworkId networkId = _settings.getContainer();
-      NodeRolesData.mergeNodeRoleDimensions(
-          () -> getNodeRolesWrapped(networkId),
-          nodeRolesData -> writeNodeRolesWrapped(nodeRolesData, networkId),
-          autoRoles,
-          null,
-          true);
-    } catch (IOException e) {
-      _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
-    }
-
+    updateSnapshotNodeRoles();
     return answer;
+  }
+
+  private void updateSnapshotNodeRoles() {
+    // Compute new auto role data and updates existing auto data with it
+    NetworkId networkId = _settings.getContainer();
+    SnapshotId snapshotId = _settings.getTestrig();
+    NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
+    Set<String> nodeNames = loadConfigurations().keySet();
+    Topology envTopology = getEnvironmentTopology();
+    SortedSet<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, envTopology).inferRoles();
+    NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
+    try {
+      if (!autoRoles.isEmpty()) {
+        snapshotNodeRoles.setDefaultDimension(autoRoles.first().getName());
+        snapshotNodeRoles.setRoleDimensions(autoRoles);
+      }
+      _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);
+    } catch (IOException e) {
+      _logger.warnf("Could not update node roles: %s", e);
+    }
   }
 
   private void serializeNetworkConfigs(
@@ -4539,24 +4525,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     QuestionId questionId = _settings.getQuestionName();
     AnalysisId analysisId = _settings.getAnalysisName();
     QuestionSettingsId questionSettingsId;
-
     try {
       String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
       if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
         questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
       } else {
-        questionSettingsId = QuestionSettingsId.DEFAULT_ID;
+        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
       }
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
-
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
             _baseTestrigSettings.getName(),
             questionId,
             questionSettingsId,
+            networkNodeRolesId,
             deltaSnapshot,
             analysisId);
     _storage.storeAnswer(structuredAnswerString, baseAnswerId);

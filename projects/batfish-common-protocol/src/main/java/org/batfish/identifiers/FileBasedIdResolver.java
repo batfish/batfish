@@ -34,6 +34,8 @@ public class FileBasedIdResolver implements IdResolver {
 
   private static final String RELPATH_NETWORK_IDS = "network_ids";
 
+  private static final String RELPATH_NETWORK_NODE_ROLES_ID = "network_node_roles.id";
+
   private static final String RELPATH_QUESTION_IDS = "question_ids";
 
   private static final String RELPATH_QUESTION_SETTINGS_IDS = "question_settings_ids";
@@ -92,6 +94,7 @@ public class FileBasedIdResolver implements IdResolver {
       SnapshotId snapshotId,
       QuestionId questionId,
       QuestionSettingsId questionSettingsId,
+      NodeRolesId networkNodeRolesId,
       SnapshotId referenceSnapshotId,
       AnalysisId analysisId) {
     return new AnswerId(
@@ -101,6 +104,7 @@ public class FileBasedIdResolver implements IdResolver {
                     snapshotId,
                     questionId,
                     questionSettingsId,
+                    networkNodeRolesId,
                     ofNullable(referenceSnapshotId),
                     ofNullable(analysisId))
                 .toString()));
@@ -152,6 +156,18 @@ public class FileBasedIdResolver implements IdResolver {
 
   protected @Nonnull Path getNetworkIdsDir() {
     return _d.getStorageBase().resolve(RELPATH_NETWORK_IDS);
+  }
+
+  @Override
+  public NodeRolesId getNetworkNodeRolesId(NetworkId networkId) {
+    if (!hasNetworkNodeRolesId(networkId)) {
+      throw new IllegalArgumentException("No assigned node-roles ID");
+    }
+    return new NodeRolesId(CommonUtil.readFile(getNetworkNodeRolesIdPath(networkId)));
+  }
+
+  protected @Nonnull Path getNetworkNodeRolesIdPath(NetworkId networkId) {
+    return _d.getNetworkDir(networkId).resolve(RELPATH_NETWORK_NODE_ROLES_ID);
   }
 
   @Override
@@ -232,6 +248,11 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   @Override
+  public NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId) {
+    return new NodeRolesId(hash(ImmutableList.of(networkId, snapshotId).toString()));
+  }
+
+  @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
     return Files.exists(getAnalysisIdPath(analysis, networkId));
   }
@@ -244,6 +265,11 @@ public class FileBasedIdResolver implements IdResolver {
   @Override
   public boolean hasNetworkId(String network) {
     return Files.exists(getNetworkIdPath(network));
+  }
+
+  @Override
+  public boolean hasNetworkNodeRolesId(NetworkId networkId) {
+    return Files.exists(getNetworkNodeRolesIdPath(networkId));
   }
 
   @Override

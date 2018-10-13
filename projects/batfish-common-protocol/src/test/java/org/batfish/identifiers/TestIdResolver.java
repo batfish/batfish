@@ -15,6 +15,7 @@ public class TestIdResolver implements IdResolver {
       SnapshotId snapshotId,
       QuestionId questionId,
       QuestionSettingsId questionSettingsId,
+      NodeRolesId networkNodeRolesId,
       SnapshotId referenceSnapshotId,
       AnalysisId analysisId) {
     throw new UnsupportedOperationException();
@@ -32,6 +33,11 @@ public class TestIdResolver implements IdResolver {
 
   @Override
   public NetworkId getNetworkId(String network) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public NodeRolesId getNetworkNodeRolesId(NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
@@ -56,6 +62,11 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
+  public NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
@@ -67,6 +78,11 @@ public class TestIdResolver implements IdResolver {
 
   @Override
   public boolean hasNetworkId(String network) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasNetworkNodeRolesId(NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 

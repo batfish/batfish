@@ -1,67 +1,40 @@
 package org.batfish.coordinator.resources;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import org.batfish.coordinator.Main;
+import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
-import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Before
-  public void initContainerEnvironment() throws Exception {
-    WorkMgrTestUtils.initWorkManager(_folder);
-  }
-
   @Test
-  public void create() throws IOException {
-    String container = "someContainer";
-    String snapshot = "testrig";
-    Main.getWorkMgr().initNetwork(container, null);
-
-    // create a testrig with a topology file
-    WorkMgrTestUtils.initTestrigWithTopology(container, snapshot, ImmutableSet.of("a", "b"));
-
-    // write node roles data to in the right place
+  public void testProperties() throws IOException {
+    String snapshot = "snapshot1";
+    String dimension = "someDimension";
+    String role = "someRole";
+    Set<String> nodes = ImmutableSet.of("a", "b");
+    NodeRole nodeRole = new NodeRole(role, "a.*");
+    NodeRoleDimension nodeRoleDimension =
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .build();
     NodeRolesData data =
-        new NodeRolesData(
-            null,
-            null,
-            ImmutableSortedSet.of(
-                new NodeRoleDimension(
-                    "someDimension",
-                    ImmutableSortedSet.of(new NodeRole("someRole", "a.*")),
-                    null,
-                    null)));
-    Main.getWorkMgr().writeNodeRoles(data, container);
-
-    // we should get OK and the expected bean
-    assertThat(
-        NodeRolesDataBean.create(container),
-        equalTo(new NodeRolesDataBean(data, snapshot, ImmutableSet.of("a", "b"))));
-  }
-
-  @Test
-  public void createEmptyContainer() throws IOException {
-    String container = "someContainer";
-    Main.getWorkMgr().initNetwork(container, null);
+        NodeRolesData.builder().setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension)).build();
+    NodeRolesDataBean bean = new NodeRolesDataBean(data, snapshot, nodes);
 
     assertThat(
-        NodeRolesDataBean.create("someContainer"),
-        equalTo(
-            new NodeRolesDataBean(new NodeRolesData(null, null, null), null, ImmutableSet.of())));
+        bean.roleDimensions,
+        equalTo(ImmutableSet.of(new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes))));
+    assertThat(bean.defaultDimension, nullValue());
   }
 }
