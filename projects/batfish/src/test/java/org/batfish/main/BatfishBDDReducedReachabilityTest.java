@@ -99,11 +99,11 @@ public class BatfishBDDReducedReachabilityTest {
 
     batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     return batfish;
   }
@@ -118,7 +118,7 @@ public class BatfishBDDReducedReachabilityTest {
     assertThat(
         String.format("all traces should have disposition %s in the base environment", disposition),
         traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
     batfish.processFlows(flows, false);
@@ -126,7 +126,7 @@ public class BatfishBDDReducedReachabilityTest {
     assertThat(
         String.format("no traces should have disposition %s in the delta environment", disposition),
         traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
+    batfish.popSnapshot();
   }
 
   private static DifferentialReachabilityParameters parameters(

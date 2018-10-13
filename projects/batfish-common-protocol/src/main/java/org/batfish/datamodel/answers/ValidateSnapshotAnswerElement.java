@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Version;
 
-public class ValidateEnvironmentAnswerElement extends AnswerElement implements Serializable {
+public class ValidateSnapshotAnswerElement extends AnswerElement implements Serializable {
 
   private static final String PROP_UNDEFINED_INTERFACE_BLACKLIST_INTERFACES =
       "undefinedInterfaceBlacklistInterfaces";
@@ -40,7 +40,7 @@ public class ValidateEnvironmentAnswerElement extends AnswerElement implements S
 
   private String _version;
 
-  public ValidateEnvironmentAnswerElement() {
+  public ValidateSnapshotAnswerElement() {
     _undefinedInterfaceBlacklistInterfaces = new TreeMap<>();
     _undefinedInterfaceBlacklistNodes = new TreeSet<>();
     _undefinedNodeBlacklistNodes = new TreeSet<>();
@@ -81,10 +81,9 @@ public class ValidateEnvironmentAnswerElement extends AnswerElement implements S
 
   @Override
   public String prettyPrint() {
-    StringBuilder retString =
-        new StringBuilder("Results of environment processing and validation:\n");
+    StringBuilder retString = new StringBuilder("Results of snapshot processing and validation:\n");
     if (!_valid) {
-      retString.append("ENVIRONMENT IS INVALID!\n");
+      retString.append("SNAPSHOT IS INVALID!\n");
     }
     if (!_undefinedNodeRoleSpecifierNodes.isEmpty()) {
       retString.append(PROP_UNDEFINED_NODE_ROLE_SPECIFIER_NODES + ":\n");

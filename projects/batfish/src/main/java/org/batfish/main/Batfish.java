@@ -143,7 +143,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
-import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
+import org.batfish.datamodel.answers.ValidateSnapshotAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -608,7 +608,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
       assert initQuestionEnvSpan != null; // avoid not used warning
-      initQuestionEnvironments(diff, diffActive, dp);
+      prepareToAnswerQuestions(diff, diffActive, dp);
     }
 
     AnswerElement answerElement = null;
@@ -1439,11 +1439,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       pushBaseSnapshot();
       Environment baseEnv = getEnvironment();
       populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
-      popEnvironment();
+      popSnapshot();
       pushDeltaSnapshot();
       Environment deltaEnv = getEnvironment();
       populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
-      popEnvironment();
+      popSnapshot();
     } else {
       String flowTag = getFlowTag();
       String envTag = flowTag;
@@ -1840,7 +1840,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
+  private void prepareToAnswerQuestions(boolean dp, boolean differentialContext) {
     if (!outputExists(_testrigSettings)) {
       CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }
@@ -1861,16 +1861,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void initQuestionEnvironments(boolean diff, boolean diffActive, boolean dp) {
+  private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
       pushBaseSnapshot();
-      initQuestionEnvironment(dp, false);
-      popEnvironment();
+      prepareToAnswerQuestions(dp, false);
+      popSnapshot();
     }
     if (diff || diffActive) {
       pushDeltaSnapshot();
-      initQuestionEnvironment(dp, true);
-      popEnvironment();
+      prepareToAnswerQuestions(dp, true);
+      popSnapshot();
     }
   }
 
@@ -2224,23 +2224,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
-    return loadValidateEnvironmentAnswerElement(true);
+  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement() {
+    return loadValidateSnapshotAnswerElement(true);
   }
 
-  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement(
-      boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getValidateEnvironmentAnswerPath();
+  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement(boolean firstAttempt) {
+    Path answerPath = _testrigSettings.getValidateSnapshotAnswerPath();
     if (Files.exists(answerPath)) {
-      ValidateEnvironmentAnswerElement veae =
-          deserializeObject(answerPath, ValidateEnvironmentAnswerElement.class);
+      ValidateSnapshotAnswerElement veae =
+          deserializeObject(answerPath, ValidateSnapshotAnswerElement.class);
       if (Version.isCompatibleVersion("Service", "Old processed environment", veae.getVersion())) {
         return veae;
       }
     }
     if (firstAttempt) {
       parseConfigurationsAndApplyEnvironment();
-      return loadValidateEnvironmentAnswerElement(false);
+      return loadValidateSnapshotAnswerElement(false);
     } else {
       throw new BatfishException(
           "Version error repairing environment for validate environment answer element");
@@ -2579,7 +2578,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Map<String, Configuration> baseConfigurations = baseParameters.getConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParameters);
-    popEnvironment();
+    popSnapshot();
 
     // load delta configurations and generate delta data plane
     ResolvedReachabilityParameters deltaParameters;
@@ -2594,13 +2593,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> diffConfigurations = deltaParameters.getConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParameters);
     Topology diffTopology = getEnvironmentTopology();
-    popEnvironment();
+    popSnapshot();
 
     pushDeltaSnapshot();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popEnvironment();
+    popSnapshot();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
         new BlacklistDstIpQuerySynthesizer(
@@ -2714,18 +2713,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseSnapshot();
     DataPlane baseDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
-    popEnvironment();
+    popSnapshot();
     pushDeltaSnapshot();
     DataPlane deltaDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
-    popEnvironment();
+    popSnapshot();
 
     AnswerElement answerElement = getHistory();
     return answerElement;
   }
 
   @Override
-  public void popEnvironment() {
+  public void popSnapshot() {
     int lastIndex = _testrigSettingsStack.size() - 1;
     _testrigSettings = _testrigSettingsStack.get(lastIndex);
     _testrigSettingsStack.remove(lastIndex);
@@ -2946,11 +2945,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Helper function to disable a blacklisted interface and update the given {@link
-   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
+   * ValidateSnapshotAnswerElement} if the interface does not actually exist.
    */
   private static void blacklistInterface(
       Map<String, Configuration> configurations,
-      ValidateEnvironmentAnswerElement veae,
+      ValidateSnapshotAnswerElement veae,
       NodeInterfacePair iface) {
     String hostname = iface.getHostname();
     String ifaceName = iface.getInterface();
@@ -2975,7 +2974,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void processInterfaceBlacklist(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     for (NodeInterfacePair p : blacklistInterfaces) {
       blacklistInterface(configurations, veae, p);
@@ -2983,7 +2982,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void processNodeBlacklist(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     for (String hostname : blacklistNodes) {
       Configuration node = configurations.get(hostname);
@@ -3145,7 +3144,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
-    popEnvironment();
+    popSnapshot();
 
     pushDeltaSnapshot();
     ResolvedReachabilityParameters deltaParams;
@@ -3154,7 +3153,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
-    popEnvironment();
+    popSnapshot();
 
     return reducedReachability(baseParams, deltaParams);
   }
@@ -3177,11 +3176,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // push environment so we use the right forwarding analysis.
     pushBaseSnapshot();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
-    popEnvironment();
+    popSnapshot();
 
     pushDeltaSnapshot();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
-    popEnvironment();
+    popSnapshot();
 
     /*
     // TODO refine dstIp to exclude blacklisted destinations
@@ -3189,7 +3188,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popEnvironment();
+    popSnapshot();
     */
 
     // compute composite program and flows
@@ -3260,10 +3259,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popEnvironment();
+    popSnapshot();
     pushDeltaSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popEnvironment();
+    popSnapshot();
 
     AnswerElement answerElement = getHistory();
     return answerElement;
@@ -3320,7 +3319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Applies the current environment to the specified configurations and updates the given {@link
-   * ValidateEnvironmentAnswerElement}. Applying the environment includes:
+   * ValidateSnapshotAnswerElement}. Applying the environment includes:
    *
    * <ul>
    *   <li>Applying node and interface blacklists.
@@ -3328,7 +3327,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * </ul>
    */
   private void updateBlacklistedAndInactiveConfigs(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     processNodeBlacklist(configurations, veae);
     processInterfaceBlacklist(configurations, veae);
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
@@ -3351,11 +3350,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * </ul>
    */
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
-    ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
+    ValidateSnapshotAnswerElement veae = new ValidateSnapshotAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
     postProcessForEnvironment(configurationsWithoutEnvironment);
 
-    serializeObject(veae, _testrigSettings.getValidateEnvironmentAnswerPath());
+    serializeObject(veae, _testrigSettings.getValidateSnapshotAnswerPath());
   }
 
   private void repairEnvironmentBgpTables() {
@@ -3453,8 +3452,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       action = true;
     }
 
-    if (_settings.getValidateEnvironment()) {
-      answer.append(validateEnvironment());
+    if (_settings.getValidateSnapshot()) {
+      answer.append(validateSnapshot());
       action = true;
     }
 
@@ -3995,14 +3994,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private Set<String> resolveDeltaSources(SearchFiltersParameters parameters, String node) {
     pushDeltaSnapshot();
     Set<String> sources = resolveSources(parameters, node);
-    popEnvironment();
+    popSnapshot();
     return sources;
   }
 
   private Set<String> resolveBaseSources(SearchFiltersParameters parameters, String node) {
     pushBaseSnapshot();
     Set<String> sources = resolveSources(parameters, node);
-    popEnvironment();
+    popSnapshot();
     return sources;
   }
 
@@ -4345,7 +4344,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 parameters.getFinalNodes(),
                 parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
-    popEnvironment();
+    popSnapshot();
 
     pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
@@ -4358,7 +4357,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 parameters.getFinalNodes(),
                 parameters.getFlowDispositions())
             .getIngressLocationReachableBDDs();
-    popEnvironment();
+    popSnapshot();
 
     Set<IngressLocation> commonSources =
         Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
@@ -4502,9 +4501,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .build();
   }
 
-  private Answer validateEnvironment() {
+  private Answer validateSnapshot() {
     Answer answer = new Answer();
-    ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
+    ValidateSnapshotAnswerElement ae = loadValidateSnapshotAnswerElement();
     answer.addAnswerElement(ae);
     Topology envTopology = computeEnvironmentTopology(loadConfigurations());
     serializeAsJson(

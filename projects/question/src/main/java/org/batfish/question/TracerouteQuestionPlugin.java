@@ -50,10 +50,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) _question;
       _batfish.pushBaseSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       _batfish.pushDeltaSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getTraces().keySet()) {
@@ -64,7 +64,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         _batfish.pushBaseSnapshot();
         String baseEnvTag = _batfish.getFlowTag();
         Environment baseEnv = _batfish.getEnvironment();
-        _batfish.popEnvironment();
+        _batfish.popSnapshot();
         // String deltaEnvTag = _batfish.getDeltaTestrigSettings().getEnvName()
         // +
         // ":"
@@ -73,7 +73,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         _batfish.pushDeltaSnapshot();
         String deltaEnvTag = _batfish.getFlowTag();
         Environment deltaEnv = _batfish.getEnvironment();
-        _batfish.popEnvironment();
+        _batfish.popSnapshot();
         Set<FlowTrace> baseFlowTraces =
             history.getTraces().get(flowText).getPaths().get(baseEnvTag);
         Set<FlowTrace> deltaFlowTraces =
@@ -102,7 +102,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
           if (configurations == null) {
             _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
-            _batfish.popEnvironment();
+            _batfish.popSnapshot();
           }
           String hostname = flowBuilder.getIngressNode();
           Configuration node =
@@ -127,7 +127,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
           if (configurations == null) {
             _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
-            _batfish.popEnvironment();
+            _batfish.popSnapshot();
           }
           flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
         }

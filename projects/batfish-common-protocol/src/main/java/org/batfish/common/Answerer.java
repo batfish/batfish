@@ -49,16 +49,16 @@ public abstract class Answerer {
   public AnswerElement answerDiff() {
     _batfish.pushBaseSnapshot();
     _batfish.checkSnapshotOutputReady();
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     _batfish.pushDeltaSnapshot();
     _batfish.checkSnapshotOutputReady();
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     _batfish.pushBaseSnapshot();
     AnswerElement baseAnswer = create(_question, _batfish).answer();
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     _batfish.pushDeltaSnapshot();
     AnswerElement deltaAnswer = create(_question, _batfish).answer();
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     if (baseAnswer instanceof TableAnswerElement) {
       TableAnswerElement rawTable =
           TableDiff.diffTables(

@@ -313,7 +313,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void popEnvironment() {
+  public void popSnapshot() {
     throw new UnsupportedOperationException();
   }
 

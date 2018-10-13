@@ -174,7 +174,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
 
-  void popEnvironment();
+  void popSnapshot();
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 

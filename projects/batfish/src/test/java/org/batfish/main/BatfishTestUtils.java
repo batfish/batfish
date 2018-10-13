@@ -155,7 +155,7 @@ public class BatfishTestUtils {
           settings.getDeltaTestrigSettings().getSerializeTopologyPath(),
           batfish.computeEnvironmentTopology(deltaConfigs),
           "environment topology");
-      batfish.popEnvironment();
+      batfish.popSnapshot();
     }
     registerDataPlanePlugins(batfish);
     return batfish;

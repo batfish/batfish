@@ -108,8 +108,8 @@ public final class TestrigSettings {
     return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
   }
 
-  public Path getValidateEnvironmentAnswerPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER);
+  public Path getValidateSnapshotAnswerPath() {
+    return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_SNAPSHOT_ANSWER);
   }
 
   public Path getTopologyPath() {

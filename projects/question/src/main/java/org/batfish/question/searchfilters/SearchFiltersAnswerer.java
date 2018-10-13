@@ -76,12 +76,12 @@ public final class SearchFiltersAnswerer extends Answerer {
     _batfish.pushBaseSnapshot();
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
     Multimap<String, String> baseAcls = getSpecifiedAcls(question);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
     Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations();
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
 
@@ -351,7 +351,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
     Configuration c = _batfish.loadConfigurations().get(hostname);
     Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     return row;
   }
 

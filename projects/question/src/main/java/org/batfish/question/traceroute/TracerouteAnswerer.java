@@ -121,11 +121,11 @@ public final class TracerouteAnswerer extends Answerer {
 
     _batfish.pushBaseSnapshot();
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     TableAnswerElement table;
     Multiset<Row> rows;

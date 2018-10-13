@@ -212,18 +212,18 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
       _batfish.pushBaseSnapshot();
       _batfish.checkSnapshotOutputReady();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       _batfish.pushDeltaSnapshot();
       _batfish.checkSnapshotOutputReady();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       _batfish.pushBaseSnapshot();
       JsonPathAnswerer beforeAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement before = beforeAnswerer.answer();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       _batfish.pushDeltaSnapshot();
       JsonPathAnswerer afterAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement after = afterAnswerer.answer();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       return new JsonPathDiffAnswerElement(before, after);
     }
 

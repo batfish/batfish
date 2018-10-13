@@ -106,11 +106,11 @@ public class ReducedReachabilityTest {
 
     batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     return batfish;
   }
@@ -135,12 +135,12 @@ public class ReducedReachabilityTest {
                             ReducedReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
-                        // at least one trace in base environment is accepted
+                        // at least one trace in snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
-                        // no trace in delta environment is accepted
+                        // no trace in reference snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
@@ -168,12 +168,12 @@ public class ReducedReachabilityTest {
                             ReducedReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
-                        // at least one trace in base environment is accepted
+                        // at least one trace in snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
-                        // no trace in delta environment is accepted
+                        // no trace in reference snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
