@@ -739,31 +739,13 @@ public class WorkMgrTest {
 
     Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of());
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
     Map<String, String> answers2 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of(question1Name));
+            containerName, testrigName, null, analysisName, ImmutableSet.of(question1Name));
     Map<String, String> answers3 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of());
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
 
     assertThat(answers1.keySet(), containsInAnyOrder(question1Name, question2Name));
     assertThat(answers2.keySet(), containsInAnyOrder(question1Name));
@@ -784,14 +766,7 @@ public class WorkMgrTest {
 
     WorkItem analysisWorkItem =
         WorkItemBuilder.getWorkItemRunAnalysis(
-            "useranalysis",
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            false,
-            false);
+            "useranalysis", containerName, testrigName, null, false, false);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 
@@ -1066,14 +1041,7 @@ public class WorkMgrTest {
 
     WorkItem analysisWorkItem =
         WorkItemBuilder.getWorkItemRunAnalysis(
-            "suggestedanalysis",
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            false,
-            false);
+            "suggestedanalysis", containerName, testrigName, null, false, false);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 

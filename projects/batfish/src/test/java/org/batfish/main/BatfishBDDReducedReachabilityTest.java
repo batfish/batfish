@@ -97,11 +97,11 @@ public class BatfishBDDReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generator.generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
     batfish.popEnvironment();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
     batfish.popEnvironment();
 
@@ -111,7 +111,7 @@ public class BatfishBDDReducedReachabilityTest {
   private static void checkDispositions(
       Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.processFlows(flows, false);
     List<FlowTrace> traces =
         batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
@@ -120,7 +120,7 @@ public class BatfishBDDReducedReachabilityTest {
         traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
     batfish.popEnvironment();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.processFlows(flows, false);
     traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
     assertThat(

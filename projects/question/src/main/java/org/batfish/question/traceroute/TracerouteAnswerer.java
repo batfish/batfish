@@ -119,11 +119,11 @@ public final class TracerouteAnswerer extends Answerer {
   public AnswerElement answerDiff() {
     Set<Flow> flows = getFlows(_batfish.getDifferentialFlowTag());
 
-    _batfish.pushBaseEnvironment();
+    _batfish.pushBaseSnapshot();
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
     _batfish.popEnvironment();
 
-    _batfish.pushDeltaEnvironment();
+    _batfish.pushDeltaSnapshot();
     _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
     _batfish.popEnvironment();
 

@@ -150,7 +150,7 @@ public class BatfishTestUtils {
           "environment topology");
     }
     if (!deltaConfigs.isEmpty()) {
-      batfish.pushDeltaEnvironment();
+      batfish.pushDeltaSnapshot();
       Batfish.serializeAsJson(
           settings.getDeltaTestrigSettings().getSerializeTopologyPath(),
           batfish.computeEnvironmentTopology(deltaConfigs),

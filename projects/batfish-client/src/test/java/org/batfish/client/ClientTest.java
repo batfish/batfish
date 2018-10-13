@@ -1219,7 +1219,7 @@ public class ClientTest {
     testProcessCommandWithValidInput(
         SET_REFERENCE_SNAPSHOT,
         parameters,
-        String.format("Reference snapshot->env is now %s->env_default\n", parameters[0]));
+        String.format("Reference snapshot is now %s\n", parameters[0]));
   }
 
   @Test

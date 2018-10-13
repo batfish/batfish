@@ -12,8 +12,8 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
- * The {@link Environment Environment} contains the information about the snapshot that is external
- * to configuration -- device up/down states, BGP announcements, etc..
+ * The {@link Environment} contains the information about the snapshot that is external to
+ * configuration -- device up/down states, BGP announcements, etc..
  */
 public class Environment {
   private static final String PROP_TESTRIG_NAME = "testrigName";

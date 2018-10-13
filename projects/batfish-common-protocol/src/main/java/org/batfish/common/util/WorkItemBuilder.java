@@ -9,30 +9,18 @@ public class WorkItemBuilder {
       String questionName,
       String containerName,
       String testrigName,
-      String envName,
       String deltaTestrig,
-      String deltaEnvName,
       boolean isDifferential,
       boolean isDelta) {
     return getWorkItemAnswerQuestion(
-        questionName,
-        containerName,
-        testrigName,
-        envName,
-        deltaTestrig,
-        deltaEnvName,
-        null,
-        isDifferential,
-        isDelta);
+        questionName, containerName, testrigName, deltaTestrig, null, isDifferential, isDelta);
   }
 
   public static WorkItem getWorkItemAnswerQuestion(
       String questionName,
       String containerName,
       String testrigName,
-      String envName,
       String deltaTestrig,
-      String deltaEnvName,
       String analysisName,
       boolean isDifferential,
       boolean isDelta) {
@@ -61,11 +49,7 @@ public class WorkItemBuilder {
   }
 
   public static WorkItem getWorkItemGenerateDeltaDataPlane(
-      String containerName,
-      String testrigName,
-      String envName,
-      String deltaTestrigName,
-      String deltaEnvName) {
+      String containerName, String testrigName, String deltaTestrigName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
     wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrigName);
@@ -85,9 +69,7 @@ public class WorkItemBuilder {
       String analysisName,
       String containerName,
       String testrigName,
-      String envName,
       String deltaTestrig,
-      String deltaEnvName,
       boolean delta,
       boolean differential) {
     WorkItem wItem = new WorkItem(containerName, testrigName);

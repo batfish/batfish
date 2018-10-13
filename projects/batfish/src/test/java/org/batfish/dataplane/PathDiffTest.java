@@ -90,11 +90,11 @@ public class PathDiffTest {
     SortedMap<String, Configuration> deltaConfigs = twoNodeNetwork(false);
     Batfish batfish = BatfishTestUtils.getBatfish(baseConfigs, deltaConfigs, tmp);
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
     batfish.popEnvironment();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
     batfish.popEnvironment();
 

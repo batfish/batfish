@@ -253,11 +253,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return Arrays.asList(_config.getStringArray(ARG_DEBUG_FLAGS));
   }
 
-  @Deprecated
-  public String getDeltaEnvironmentName() {
-    return BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
-  }
-
   public SnapshotId getDeltaTestrig() {
     String name = _config.getString(BfConsts.ARG_DELTA_TESTRIG);
     return name != null ? new SnapshotId(name) : null;
@@ -286,11 +281,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getEnableCiscoNxParser() {
     return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
-  }
-
-  @Deprecated
-  public String getEnvironmentName() {
-    return BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
   }
 
   public boolean getExitOnFirstError() {

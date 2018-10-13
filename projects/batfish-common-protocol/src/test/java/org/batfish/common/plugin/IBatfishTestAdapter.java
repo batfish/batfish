@@ -323,12 +323,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void pushBaseEnvironment() {
+  public void pushBaseSnapshot() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void pushDeltaEnvironment() {
+  public void pushDeltaSnapshot() {
     throw new UnsupportedOperationException();
   }
 

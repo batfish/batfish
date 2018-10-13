@@ -144,17 +144,12 @@ public class BfConsts {
   public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
-  public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
-  public static final String RELPATH_DELTA = "delta";
-  public static final String RELPATH_DIFF_DIR = "differential";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
-  public static final String RELPATH_ENV_DIR = "env";
   public static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
-  public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
@@ -177,9 +172,7 @@ public class BfConsts {
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
-  public static final String RELPATH_STANDARD_DIR = "standard";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";

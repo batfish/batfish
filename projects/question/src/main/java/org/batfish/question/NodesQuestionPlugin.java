@@ -340,17 +340,17 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       if (question.getSummary()) {
         return super.answerDiff();
       }
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
       _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.pushDeltaSnapshot();
       _batfish.checkSnapshotOutputReady();
       _batfish.popEnvironment();
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
       NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement before = beforeAnswerer.answer();
       _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.pushDeltaSnapshot();
       NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement after = afterAnswerer.answer();
       _batfish.popEnvironment();

@@ -25,7 +25,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
@@ -255,8 +254,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -272,8 +269,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -512,8 +507,6 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -528,8 +521,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
             null,

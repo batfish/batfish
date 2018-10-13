@@ -1436,11 +1436,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String flowTag = getDifferentialFlowTag();
       String baseEnvTag = getFlowTag(_baseTestrigSettings);
       String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
-      pushBaseEnvironment();
+      pushBaseSnapshot();
       Environment baseEnv = getEnvironment();
       populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
       popEnvironment();
-      pushDeltaEnvironment();
+      pushDeltaSnapshot();
       Environment deltaEnv = getEnvironment();
       populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
       popEnvironment();
@@ -1863,12 +1863,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void initQuestionEnvironments(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
-      pushBaseEnvironment();
+      pushBaseSnapshot();
       initQuestionEnvironment(dp, false);
       popEnvironment();
     }
     if (diff || diffActive) {
-      pushDeltaEnvironment();
+      pushDeltaSnapshot();
       initQuestionEnvironment(dp, true);
       popEnvironment();
     }
@@ -1967,7 +1967,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
-    // Next, see if we have an up-to-date, environment-specific configurations on disk.
+    // Next, see if we have an up-to-date configurations on disk.
     configurations =
         _storage.loadCompressedConfigurations(_settings.getContainer(), snapshot.getSnapshot());
     if (configurations != null) {
@@ -1983,8 +1983,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Returns the configurations for given snapshot, which including any environment-specific
-   * features.
+   * Returns the configurations for given snapshot, including any environmental features such as
+   * failed links.
    */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     // Do we already have configurations in the cache?
@@ -1994,7 +1994,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
-    // Next, see if we have an up-to-date, environment-specific configurations on disk.
+    // Next, see if we have an up-to-date configurations on disk.
     configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
@@ -2568,7 +2568,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ResolvedReachabilityParameters baseParameters;
 
     // load base configurations and generate base data plane
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Topology baseTopology = getEnvironmentTopology();
     try {
       baseParameters =
@@ -2583,7 +2583,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // load delta configurations and generate delta data plane
     ResolvedReachabilityParameters deltaParameters;
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     try {
       deltaParameters =
           resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
@@ -2596,7 +2596,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Topology diffTopology = getEnvironmentTopology();
     popEnvironment();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
@@ -2711,11 +2711,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     DataPlane baseDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
     popEnvironment();
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     DataPlane deltaDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
     popEnvironment();
@@ -3000,13 +3000,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void pushBaseEnvironment() {
+  public void pushBaseSnapshot() {
     _testrigSettingsStack.add(_testrigSettings);
     _testrigSettings = _baseTestrigSettings;
   }
 
   @Override
-  public void pushDeltaEnvironment() {
+  public void pushDeltaSnapshot() {
     _testrigSettingsStack.add(_testrigSettings);
     _testrigSettings = _deltaTestrigSettings;
   }
@@ -3138,7 +3138,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement reducedReachability(ReachabilityParameters params) {
     checkDifferentialDataPlaneQuestionDependencies();
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     ResolvedReachabilityParameters baseParams;
     try {
       baseParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
@@ -3147,7 +3147,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     popEnvironment();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     ResolvedReachabilityParameters deltaParams;
     try {
       deltaParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
@@ -3175,17 +3175,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     assert baseParams.getSrcNatted().equals(deltaParams.getSrcNatted());
 
     // push environment so we use the right forwarding analysis.
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
     popEnvironment();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
     popEnvironment();
 
     /*
     // TODO refine dstIp to exclude blacklisted destinations
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
@@ -3258,10 +3258,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
@@ -3993,14 +3993,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Set<String> resolveDeltaSources(SearchFiltersParameters parameters, String node) {
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
     return sources;
   }
 
   private Set<String> resolveBaseSources(SearchFiltersParameters parameters, String node) {
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Set<String> sources = resolveSources(parameters, node);
     popEnvironment();
     return sources;
@@ -4334,7 +4334,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
      * differential reachability, but we currently won't find it because it won't be in the
      * IpSpaceAssignment.
      */
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(
@@ -4347,7 +4347,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getIngressLocationReachableBDDs();
     popEnvironment();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt)
             .bddReachabilityAnalysis(

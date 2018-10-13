@@ -180,9 +180,9 @@ public interface IBatfish extends IPluginConsumer {
 
   void processFlows(Set<Flow> flows, boolean ignoreAcls);
 
-  void pushBaseEnvironment();
+  void pushBaseSnapshot();
 
-  void pushDeltaEnvironment();
+  void pushDeltaSnapshot();
 
   @Nullable
   String readExternalBgpAnnouncementsFile();

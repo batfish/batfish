@@ -871,9 +871,7 @@ public class WorkMgr extends AbstractCoordinator {
   public @Nonnull Map<String, String> getAnalysisAnswers(
       String network,
       String snapshot,
-      String baseEnv,
       String referenceSnapshot,
-      String deltaEnv,
       String analysis,
       Set<String> analysisQuestions)
       throws JsonProcessingException, FileNotFoundException {
@@ -1405,16 +1403,6 @@ public class WorkMgr extends AbstractCoordinator {
 
     Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
-    // create empty default environment
-    Path defaultEnvironmentLeafDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_OUTPUT,
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                BfConsts.RELPATH_ENV_DIR));
-    defaultEnvironmentLeafDir.toFile().mkdirs();
-
     // things look ok, now make the move
     boolean routingTables = false;
     boolean bgpTables = false;
@@ -1568,14 +1556,7 @@ public class WorkMgr extends AbstractCoordinator {
     for (String analysis : analysisNames) {
       WorkItem analyzeWork =
           WorkItemBuilder.getWorkItemRunAnalysis(
-              analysis,
-              containerName,
-              testrigName,
-              BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-              null,
-              null,
-              false,
-              false);
+              analysis, containerName, testrigName, null, false, false);
       autoWorkQueue.add(analyzeWork);
     }
     return autoWorkQueue;
@@ -1734,21 +1715,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   public List<Container> getContainers(@Nullable String apiKey) {
     return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
-  }
-
-  public SortedSet<String> listEnvironments(String containerName, String testrigName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
-    if (!Files.exists(environmentsDir)) {
-      return new TreeSet<>();
-    }
-    SortedSet<String> environments =
-        CommonUtil.getSubdirectories(environmentsDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-    return environments;
   }
 
   public List<QueuedWork> listIncompleteWork(

@@ -48,10 +48,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       String tag = _batfish.getDifferentialFlowTag();
       Set<Flow> flows = getFlows(tag);
       TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) _question;
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
       _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.pushDeltaSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
       _batfish.popEnvironment();
       FlowHistory history = _batfish.getHistory();
@@ -61,7 +61,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         // ":"
         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
         // .getEnvName();
-        _batfish.pushBaseEnvironment();
+        _batfish.pushBaseSnapshot();
         String baseEnvTag = _batfish.getFlowTag();
         Environment baseEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
@@ -70,7 +70,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         // ":"
         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
         // .getEnvName();
-        _batfish.pushDeltaEnvironment();
+        _batfish.pushDeltaSnapshot();
         String deltaEnvTag = _batfish.getFlowTag();
         Environment deltaEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
@@ -100,7 +100,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         // TODO: better automatic source ip, considering VRFs and routing
         if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
           if (configurations == null) {
-            _batfish.pushBaseEnvironment();
+            _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
             _batfish.popEnvironment();
           }
@@ -125,7 +125,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         }
         if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
           if (configurations == null) {
-            _batfish.pushBaseEnvironment();
+            _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
             _batfish.popEnvironment();
           }
