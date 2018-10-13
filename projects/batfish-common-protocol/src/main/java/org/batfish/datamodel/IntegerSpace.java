@@ -13,6 +13,7 @@ import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -35,6 +36,10 @@ public final class IntegerSpace {
 
   private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
 
+  /*
+   * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
+   * and immutable (enforced in constructor)
+   */
   @Nonnull private final RangeSet<Integer> _rangeset;
 
   private IntegerSpace(RangeSet<Integer> rangeset) {
@@ -116,8 +121,29 @@ public final class IntegerSpace {
     return _rangeset.asRanges().size() <= 1;
   }
 
+  /** Return true iff this range is empty (contains no values) */
   public boolean isEmpty() {
     return _rangeset.isEmpty();
+  }
+
+  /** Return true iff this range is a singleton (contains exactly one value) */
+  public boolean isSingleton() {
+    return getRanges().size() == 1 && isSingletonRange(getRanges().iterator().next());
+  }
+
+  private static boolean isSingletonRange(Range<Integer> range) {
+    return range.upperEndpoint() - range.lowerEndpoint() == 1;
+  }
+
+  /**
+   * Return singleton value if this space is a singleton. Otherwise throws {@link
+   * NoSuchElementException}
+   */
+  public int singletonValue() throws NoSuchElementException {
+    if (!isSingleton()) {
+      throw new NoSuchElementException();
+    }
+    return _rangeset.asRanges().iterator().next().lowerEndpoint();
   }
 
   /** Intersect two integer spaces together. */
@@ -156,6 +182,16 @@ public final class IntegerSpace {
     return new IntegerSpace(_rangeset.complement().subRangeSet(_rangeset.span()));
   }
 
+  /** Compute the difference between two integer spaces */
+  public IntegerSpace difference(IntegerSpace other) {
+    return this.intersection(other.not(this));
+  }
+
+  /** Compute symmetric difference between two integer spaces */
+  public IntegerSpace symmetricDifference(IntegerSpace other) {
+    return this.union(other).difference(intersection(other));
+  }
+
   /** Return a builder initialized with existing integer space */
   public Builder toBuilder() {
     return new Builder(this);
@@ -185,6 +221,7 @@ public final class IntegerSpace {
       _including.addAll(space._rangeset.asRanges());
     }
 
+    /** Include a {@link SubRange} */
     public Builder including(SubRange range) {
       if (!range.isEmpty()) {
         _including.add(
@@ -193,7 +230,7 @@ public final class IntegerSpace {
       return this;
     }
 
-    /** Include a range. The {@link Range} must be {@link Range#closed} */
+    /** Include a range. The {@link Range} must be a finite range. */
     public Builder including(Range<Integer> range) {
       checkArgument(
           range.hasLowerBound() && range.hasUpperBound(), "Infinite ranges are not supported");
@@ -203,11 +240,13 @@ public final class IntegerSpace {
       return this;
     }
 
+    /** Include an {@link IntegerSpace} */
     public Builder including(IntegerSpace space) {
       space._rangeset.asRanges().forEach(this::including);
       return this;
     }
 
+    /** Exclude a {@link SubRange} */
     public Builder excluding(SubRange range) {
       if (!range.isEmpty()) {
         _excluding.add(
@@ -216,7 +255,7 @@ public final class IntegerSpace {
       return this;
     }
 
-    /** Exclude a range. The {@link Range} must be {@link Range#closed} */
+    /** Exclude a range. The {@link Range} must be finite range. */
     public Builder excluding(Range<Integer> range) {
       checkArgument(
           range.hasLowerBound() && range.hasUpperBound(), "Infinite ranges are not supported");
@@ -226,11 +265,13 @@ public final class IntegerSpace {
       return this;
     }
 
+    /** Exclude an {@link IntegerSpace} */
     public Builder excluding(IntegerSpace space) {
       space._rangeset.asRanges().forEach(this::excluding);
       return this;
     }
 
+    /** Returns a new {@link IntegerSpace} */
     public IntegerSpace build() {
       RangeSet<Integer> rangeSet = TreeRangeSet.create(_including);
       rangeSet.removeAll(_excluding);
