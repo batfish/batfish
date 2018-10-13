@@ -97,6 +97,7 @@ public final class IntegerSpace {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  /** This space as a set of included {@link Range}s */
   public Set<Range<Integer>> getRanges() {
     return _rangeset.asRanges();
   }
@@ -116,17 +117,17 @@ public final class IntegerSpace {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.integers());
   }
 
-  /** Returns true if this space is a contiguous range */
+  /** Returns true if this space is a contiguous space */
   public boolean isContiguous() {
     return _rangeset.asRanges().size() <= 1;
   }
 
-  /** Return true iff this range is empty (contains no values) */
+  /** Return true iff this space is empty (contains no values) */
   public boolean isEmpty() {
     return _rangeset.isEmpty();
   }
 
-  /** Return true iff this range is a singleton (contains exactly one value) */
+  /** Return true iff this space is a singleton (contains exactly one value) */
   public boolean isSingleton() {
     return getRanges().size() == 1 && isSingletonRange(getRanges().iterator().next());
   }
@@ -187,7 +188,7 @@ public final class IntegerSpace {
     return this.intersection(other.not(this));
   }
 
-  /** Compute symmetric difference between two integer spaces */
+  /** Compute the symmetric difference between two integer spaces */
   public IntegerSpace symmetricDifference(IntegerSpace other) {
     return this.union(other).difference(intersection(other));
   }

@@ -285,7 +285,7 @@ public class IntegerSpaceTest {
   }
 
   @Test
-  public void testCreationFromStringInvalidListWithNegaviteValues() {
+  public void testCreationFromStringInvalidListWithNegativeValues() {
     _expected.expect(IllegalArgumentException.class);
     // read: [-2..-1]
     IntegerSpace.create("-2--1");
