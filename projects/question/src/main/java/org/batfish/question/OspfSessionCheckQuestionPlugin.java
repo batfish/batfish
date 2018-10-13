@@ -17,7 +17,6 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -31,6 +30,7 @@ import org.batfish.datamodel.collections.IpPair;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfNeighbor.OspfNeighborSummary;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
@@ -217,7 +217,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
         }
       }
       Topology topology = _batfish.getEnvironmentTopology();
-      CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+      OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
       for (Configuration co : configurations.values()) {
         String hostname = co.getHostname();
         if (!includeNodes1.contains(co.getHostname())) {

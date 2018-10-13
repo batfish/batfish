@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -27,11 +27,11 @@ public class SpecifierContextImpl implements SpecifierContext {
     _batfish = batfish;
     _configs = configs;
     Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
-        CommonUtil.computeIpInterfaceOwners(CommonUtil.computeNodeInterfaces(configs), true);
-    _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIpSpaces(ipInterfaceOwners);
+        TopologyUtil.computeIpInterfaceOwners(TopologyUtil.computeNodeInterfaces(configs), true);
+    _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIpSpaces(ipInterfaceOwners);
     _vrfOwnedIps =
-        CommonUtil.computeVrfOwnedIpSpaces(
-            CommonUtil.computeIpVrfOwners(ipInterfaceOwners, configs));
+        TopologyUtil.computeVrfOwnedIpSpaces(
+            TopologyUtil.computeIpVrfOwners(ipInterfaceOwners, configs));
   }
 
   @Nonnull

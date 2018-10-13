@@ -1,10 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
-import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
-import static org.batfish.common.util.CommonUtil.initBgpTopology;
+import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
+import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedSet;
