@@ -1,15 +1,11 @@
 package org.batfish.config;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -26,166 +22,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
-
-  public static final class EnvironmentSettings {
-    private Path _serializeEnvironmentBgpTablesPath;
-
-    private Path _serializeEnvironmentRoutingTablesPath;
-
-    private Path _validateEnvironmentAnswerPath;
-
-    @Deprecated
-    public String getName() {
-      return "name";
-    }
-
-    @Deprecated
-    public void setName(String name) {}
-  }
-
-  public static final class TestrigSettings {
-
-    private Path _basePath;
-
-    private EnvironmentSettings _environmentSettings;
-
-    private SnapshotId _name;
-
-    public TestrigSettings() {
-      _environmentSettings = new EnvironmentSettings();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      } else if (!(obj instanceof TestrigSettings)) {
-        return false;
-      }
-      TestrigSettings other = (TestrigSettings) obj;
-      return _name.equals(other._name);
-    }
-
-    @Nonnull
-    public Path getBasePath() {
-      checkState(_basePath != null, "base path is not configured");
-      return _basePath;
-    }
-
-    public Path getCompressedDataPlaneAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER);
-    }
-
-    public Path getCompressedDataPlanePath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE);
-    }
-
-    @Nonnull
-    public Path getDataPlanePath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
-    }
-
-    public EnvironmentSettings getEnvironmentSettings() {
-      return _environmentSettings;
-    }
-
-    public Path getDataPlaneAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH);
-    }
-
-    public Path getEnvironmentBgpTablesPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
-    }
-
-    public Path getExternalBgpAnnouncementsPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
-    }
-
-    public Path getEnvironmentRoutingTablesPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
-    }
-
-    public Path getInferredNodeRolesPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
-    }
-
-    public Path getInputPath() {
-      return getBasePath().resolve(BfConsts.RELPATH_INPUT);
-    }
-
-    public SnapshotId getName() {
-      return _name;
-    }
-
-    public Path getNodeRolesPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    }
-
-    public Path getOutputPath() {
-      return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
-    }
-
-    public Path getParseAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
-    }
-
-    public Path getPojoTopologyPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
-    }
-
-    public Path getReferenceLibraryPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
-    }
-
-    public Path getSerializeEnvironmentBgpTablesPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
-    }
-
-    public Path getSerializeEnvironmentRoutingTablesPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES);
-    }
-
-    public Path getSerializeTopologyPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
-    }
-
-    public Path getSerializeVendorPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
-    }
-
-    public Path getValidateEnvironmentAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER);
-    }
-
-    public Path getTopologyPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_name);
-    }
-
-    public void setBasePath(Path basePath) {
-      _basePath = basePath;
-    }
-
-    public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
-      _environmentSettings = environmentSettings;
-    }
-
-    public void setName(SnapshotId name) {
-      _name = name;
-    }
-
-    public Path getParseEnvironmentBgpTablesAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
-    }
-
-    public Path getParseEnvironmentRoutingTablesAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER);
-    }
-  }
 
   public static final String ARG_CHECK_BGP_REACHABILITY = "checkbgpsessionreachability";
 

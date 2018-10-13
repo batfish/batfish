@@ -94,8 +94,7 @@ import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
+import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -1359,11 +1358,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public String getDifferentialFlowTag() {
-    // return _settings.getQuestionName() + ":" +
-    // _baseTestrigSettings.getEnvName()
-    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getEnvName()
-    // + ":" + _deltaTestrigSettings.getEnvName() + ":"
-    // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
     return DIFFERENTIAL_FLOW_TAG;
   }
 
@@ -1422,9 +1416,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public String getFlowTag(TestrigSettings testrigSettings) {
-    // return _settings.getQuestionName() + ":" + testrigSettings.getEnvName() +
-    // ":"
-    // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
       return Flow.DELTA_FLOW_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
@@ -1444,11 +1435,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     FlowHistory flowHistory = new FlowHistory();
     if (_settings.getDiffQuestion()) {
       String flowTag = getDifferentialFlowTag();
-      // String baseEnvTag = _baseTestrigSettings.getEnvName() + ":"
-      // + _baseTestrigSettings.getEnvironmentSettings().getEnvName();
       String baseEnvTag = getFlowTag(_baseTestrigSettings);
-      // String deltaName = _deltaTestrigSettings.getEnvName() + ":"
-      // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
       String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
       pushBaseEnvironment();
       Environment baseEnv = getEnvironment();
@@ -1460,8 +1447,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       popEnvironment();
     } else {
       String flowTag = getFlowTag();
-      // String name = testrigSettings.getEnvName() + ":"
-      // + testrigSettings.getEnvironmentSettings().getEnvName();
       String envTag = flowTag;
       Environment env = getEnvironment();
       populateFlowHistory(flowHistory, envTag, env, flowTag);
@@ -1877,7 +1862,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
     if (!outputExists(_testrigSettings)) {
       CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }

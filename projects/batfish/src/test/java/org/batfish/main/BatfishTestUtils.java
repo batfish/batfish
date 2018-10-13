@@ -18,7 +18,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -201,7 +200,6 @@ public class BatfishTestUtils {
     Path testrigPath = settings.getBaseTestrigSettings().getInputPath();
     settings.getBaseTestrigSettings().getOutputPath().toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-    EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
