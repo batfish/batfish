@@ -97,7 +97,7 @@ public class BatfishTestUtils {
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
-          settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          settings.getBaseTestrigSettings().getSerializeTopologyPath(),
           batfish.computeEnvironmentTopology(configurations),
           "environment topology");
     }
@@ -146,14 +146,14 @@ public class BatfishTestUtils {
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       Batfish.serializeAsJson(
-          settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          settings.getBaseTestrigSettings().getSerializeTopologyPath(),
           batfish.computeEnvironmentTopology(baseConfigs),
           "environment topology");
     }
     if (!deltaConfigs.isEmpty()) {
       batfish.pushDeltaEnvironment();
       Batfish.serializeAsJson(
-          settings.getDeltaTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          settings.getDeltaTestrigSettings().getSerializeTopologyPath(),
           batfish.computeEnvironmentTopology(deltaConfigs),
           "environment topology");
       batfish.popEnvironment();
@@ -205,7 +205,8 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(
+        bgpTablesText, settings.getBaseTestrigSettings().getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
     if (layer1TopologyText != null) {
@@ -218,7 +219,8 @@ public class BatfishTestUtils {
           ImmutableMap.of(BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH, legacyTopologyText),
           testrigPath);
     }
-    writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
+    writeTemporaryTestrigFiles(
+        routingTablesText, settings.getBaseTestrigSettings().getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
             settings,

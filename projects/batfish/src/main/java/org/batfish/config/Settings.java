@@ -1,15 +1,13 @@
 package org.batfish.config;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.common.BfConsts.RELPATH_INPUT;
-import static org.batfish.common.BfConsts.RELPATH_PARSE_ANSWER_PATH;
-import static org.batfish.common.BfConsts.RELPATH_REFERENCE_LIBRARY_PATH;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,147 +28,19 @@ import org.batfish.main.Driver.RunMode;
 public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class EnvironmentSettings {
-
-    private Path _compressedDataPlaneAnswerPath;
-
-    private Path _compressedDataPlanePath;
-
-    private Path _dataPlaneAnswerPath;
-
-    private Path _environmentBgpTablesPath;
-
-    private Path _environmentRoutingTablesPath;
-
-    private Path _envPath;
-
-    private Path _externalBgpAnnouncementsPath;
-
-    private String _name;
-
-    private Path _parseEnvironmentBgpTablesAnswerPath;
-
-    private Path _parseEnvironmentRoutingTablesAnswerPath;
-
-    private Path _serializedTopologyPath;
-
     private Path _serializeEnvironmentBgpTablesPath;
 
     private Path _serializeEnvironmentRoutingTablesPath;
 
     private Path _validateEnvironmentAnswerPath;
 
-    public Path getCompressedDataPlaneAnswerPath() {
-      return _compressedDataPlaneAnswerPath;
-    }
-
-    public Path getCompressedDataPlanePath() {
-      return _compressedDataPlanePath;
-    }
-
-    public Path getDataPlaneAnswerPath() {
-      return _dataPlaneAnswerPath;
-    }
-
-    public Path getEnvironmentBgpTablesPath() {
-      return _environmentBgpTablesPath;
-    }
-
-    public Path getEnvironmentRoutingTablesPath() {
-      return _environmentRoutingTablesPath;
-    }
-
-    public Path getExternalBgpAnnouncementsPath() {
-      return _externalBgpAnnouncementsPath;
-    }
-
     @Deprecated
     public String getName() {
-      return _name;
-    }
-
-    public Path getParseEnvironmentBgpTablesAnswerPath() {
-      return _parseEnvironmentBgpTablesAnswerPath;
-    }
-
-    public Path getParseEnvironmentRoutingTablesAnswerPath() {
-      return _parseEnvironmentRoutingTablesAnswerPath;
-    }
-
-    public Path getSerializedTopologyPath() {
-      return _serializedTopologyPath;
-    }
-
-    public Path getSerializeEnvironmentBgpTablesPath() {
-      return _serializeEnvironmentBgpTablesPath;
-    }
-
-    public Path getSerializeEnvironmentRoutingTablesPath() {
-      return _serializeEnvironmentRoutingTablesPath;
-    }
-
-    public Path getValidateEnvironmentAnswerPath() {
-      return _validateEnvironmentAnswerPath;
-    }
-
-    public void setCompressedDataPlaneAnswerPath(Path compressedDataPlaneAnswerPath) {
-      _compressedDataPlaneAnswerPath = compressedDataPlaneAnswerPath;
-    }
-
-    public void setCompressedDataPlanePath(Path compressedDataPlanePath) {
-      _compressedDataPlanePath = compressedDataPlanePath;
-    }
-
-    public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
-      _dataPlaneAnswerPath = dataPlaneAnswerPath;
-    }
-
-    public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
-      _environmentBgpTablesPath = environmentBgpTablesPath;
-    }
-
-    public void setEnvironmentRoutingTablesPath(Path environmentRoutingTablesPath) {
-      _environmentRoutingTablesPath = environmentRoutingTablesPath;
+      return "name";
     }
 
     @Deprecated
-    public void setEnvPath(Path envPath) {
-      _envPath = envPath;
-    }
-
-    public void setExternalBgpAnnouncementsPath(Path externalBgpAnnouncementsPath) {
-      _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
-    }
-
-    @Deprecated
-    public void setName(String name) {
-      _name = name;
-    }
-
-    public void setParseEnvironmentBgpTablesAnswerPath(Path parseEnvironmentBgpTablesAnswerPath) {
-      _parseEnvironmentBgpTablesAnswerPath = parseEnvironmentBgpTablesAnswerPath;
-    }
-
-    public void setParseEnvironmentRoutingTablesAnswerPath(
-        Path parseEnvironmentRoutingTablesAnswerPath) {
-      _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
-    }
-
-    public void setSerializedTopologyPath(Path serializedTopologyPath) {
-      _serializedTopologyPath = serializedTopologyPath;
-    }
-
-    public void setSerializeEnvironmentBgpTablesPath(Path serializeEnvironmentBgpTablesPath) {
-      _serializeEnvironmentBgpTablesPath = serializeEnvironmentBgpTablesPath;
-    }
-
-    public void setSerializeEnvironmentRoutingTablesPath(
-        Path serializeEnvironmentRoutingTablesPath) {
-      _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
-    }
-
-    public void setValidateEnvironmentAnswerPath(Path validateEnvironmentAnswerPath) {
-      _validateEnvironmentAnswerPath = validateEnvironmentAnswerPath;
-    }
+    public void setName(String name) {}
   }
 
   public static final class TestrigSettings {
@@ -202,6 +72,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _basePath;
     }
 
+    public Path getCompressedDataPlaneAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER);
+    }
+
+    public Path getCompressedDataPlanePath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE);
+    }
+
     @Nonnull
     public Path getDataPlanePath() {
       return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
@@ -211,12 +89,28 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _environmentSettings;
     }
 
+    public Path getDataPlaneAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH);
+    }
+
+    public Path getEnvironmentBgpTablesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getExternalBgpAnnouncementsPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    }
+
+    public Path getEnvironmentRoutingTablesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
+    }
+
     public Path getInferredNodeRolesPath() {
       return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
     }
 
     public Path getInputPath() {
-      return getBasePath().resolve(RELPATH_INPUT);
+      return getBasePath().resolve(BfConsts.RELPATH_INPUT);
     }
 
     public SnapshotId getName() {
@@ -232,7 +126,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getParseAnswerPath() {
-      return getOutputPath().resolve(RELPATH_PARSE_ANSWER_PATH);
+      return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
     }
 
     public Path getPojoTopologyPath() {
@@ -240,11 +134,27 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     public Path getReferenceLibraryPath() {
-      return getInputPath().resolve(RELPATH_REFERENCE_LIBRARY_PATH);
+      return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    }
+
+    public Path getSerializeEnvironmentBgpTablesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getSerializeEnvironmentRoutingTablesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES);
+    }
+
+    public Path getSerializeTopologyPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
     }
 
     public Path getSerializeVendorPath() {
       return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+    }
+
+    public Path getValidateEnvironmentAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER);
     }
 
     public Path getTopologyPath() {
@@ -253,13 +163,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_name == null) ? 0 : _name.hashCode());
-      result =
-          prime * result
-              + ((_environmentSettings._name == null) ? 0 : _environmentSettings._name.hashCode());
-      return result;
+      return Objects.hash(_name);
     }
 
     public void setBasePath(Path basePath) {
@@ -272,6 +176,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setName(SnapshotId name) {
       _name = name;
+    }
+
+    public Path getParseEnvironmentBgpTablesAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
+    }
+
+    public Path getParseEnvironmentRoutingTablesAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER);
     }
   }
 

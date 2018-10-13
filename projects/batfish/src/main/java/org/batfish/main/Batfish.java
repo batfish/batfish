@@ -244,31 +244,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
-    EnvironmentSettings envSettings = settings.getEnvironmentSettings();
-    Path envPathOut = testrigDir.resolve(BfConsts.RELPATH_OUTPUT);
-    Path envPathIn = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
-    envSettings.setCompressedDataPlanePath(
-        envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
-    envSettings.setCompressedDataPlaneAnswerPath(
-        envPathOut.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
-    envSettings.setDataPlaneAnswerPath(envPathOut.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
-    envSettings.setParseEnvironmentBgpTablesAnswerPath(
-        envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
-    envSettings.setParseEnvironmentRoutingTablesAnswerPath(
-        envPathOut.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
-    envSettings.setSerializeEnvironmentBgpTablesPath(
-        envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
-    envSettings.setSerializeEnvironmentRoutingTablesPath(
-        envPathOut.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
-    envSettings.setValidateEnvironmentAnswerPath(
-        envPathOut.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
-    envSettings.setSerializedTopologyPath(envPathOut.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-    envSettings.setExternalBgpAnnouncementsPath(
-        envPathIn.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
-    envSettings.setEnvironmentBgpTablesPath(
-        envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
-    envSettings.setEnvironmentRoutingTablesPath(
-        envPathIn.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
   }
 
   static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
@@ -796,13 +771,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
     Path dataPlanePath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            ? _testrigSettings.getCompressedDataPlanePath()
             : _testrigSettings.getDataPlanePath();
 
     Path answerElementPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     Cache<NetworkSnapshot, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
@@ -821,16 +796,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void computeEnvironmentBgpTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path outputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
-    Path inputPath = envSettings.getEnvironmentBgpTablesPath();
+    Path outputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
+    Path inputPath = _testrigSettings.getEnvironmentBgpTablesPath();
     serializeEnvironmentBgpTables(inputPath, outputPath);
   }
 
   private void computeEnvironmentRoutingTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path outputPath = envSettings.getSerializeEnvironmentRoutingTablesPath();
-    Path inputPath = envSettings.getEnvironmentRoutingTablesPath();
+    Path outputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
+    Path inputPath = _testrigSettings.getEnvironmentRoutingTablesPath();
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
@@ -906,12 +879,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+    Path dpPath = testrigSettings.getDataPlaneAnswerPath();
     return Files.exists(dpPath);
   }
 
   private boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path path = testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath();
+    Path path = testrigSettings.getCompressedDataPlaneAnswerPath();
     return Files.exists(path);
   }
 
@@ -1121,8 +1094,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
-    Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+  private boolean environmentBgpTablesExist(TestrigSettings testrigSettings) {
+    Path answerPath = testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
     return Files.exists(answerPath);
   }
 
@@ -1130,8 +1103,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return testrigSettings.getOutputPath().toFile().exists();
   }
 
-  private boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
-    Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
+  private boolean environmentRoutingTablesExist(TestrigSettings testrigSettings) {
+    Path answerPath = testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
     return Files.exists(answerPath);
   }
 
@@ -1437,9 +1410,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       return BatfishObjectMapper.mapper()
           .readValue(
-              CommonUtil.readFile(
-                  _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath()),
-              Topology.class);
+              CommonUtil.readFile(_testrigSettings.getSerializeTopologyPath()), Topology.class);
     } catch (IOException e) {
       throw new BatfishException("Could not getEnvironmentTopology: ", e);
     }
@@ -1910,10 +1881,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!outputExists(_testrigSettings)) {
       CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }
-    if (!environmentBgpTablesExist(envSettings)) {
+    if (!environmentBgpTablesExist(_testrigSettings)) {
       computeEnvironmentBgpTables();
     }
-    if (!environmentRoutingTablesExist(envSettings)) {
+    if (!environmentRoutingTablesExist(_testrigSettings)) {
       computeEnvironmentRoutingTables();
     }
     if (dp) {
@@ -2123,7 +2094,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Path path =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            ? _testrigSettings.getCompressedDataPlanePath()
             : _testrigSettings.getDataPlanePath();
 
     NetworkSnapshot snapshot = getNetworkSnapshot();
@@ -2153,8 +2124,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean compressed, boolean firstAttempt) {
     Path answerPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     DataPlaneAnswerElement bae = deserializeObject(answerPath, DataPlaneAnswerElement.class);
     if (!Version.isCompatibleVersion("Service", "Old data plane", bae.getVersion())) {
@@ -2182,8 +2153,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         repairEnvironmentBgpTables();
       }
       environmentBgpTables =
-          deserializeEnvironmentBgpTables(
-              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentBgpTablesPath());
+          deserializeEnvironmentBgpTables(_testrigSettings.getSerializeEnvironmentBgpTablesPath());
       _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
     }
     return environmentBgpTables;
@@ -2203,7 +2173,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       environmentRoutingTables =
           deserializeEnvironmentRoutingTables(
-              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentRoutingTablesPath());
+              _testrigSettings.getSerializeEnvironmentRoutingTablesPath());
       _cachedEnvironmentRoutingTables.put(snapshot, environmentRoutingTables);
     }
     return environmentRoutingTables;
@@ -2216,8 +2186,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
       boolean firstAttempt) {
-    Path answerPath =
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentBgpTablesAnswerPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
     if (!Files.exists(answerPath)) {
       repairEnvironmentBgpTables();
     }
@@ -2246,8 +2215,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement(
       boolean firstAttempt) {
-    Path answerPath =
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentRoutingTablesAnswerPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
     if (!Files.exists(answerPath)) {
       repairEnvironmentRoutingTables();
     }
@@ -2299,7 +2267,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement(
       boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath();
+    Path answerPath = _testrigSettings.getValidateEnvironmentAnswerPath();
     if (Files.exists(answerPath)) {
       ValidateEnvironmentAnswerElement veae =
           deserializeObject(answerPath, ValidateEnvironmentAnswerElement.class);
@@ -2951,8 +2919,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath =
-        _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
+    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
       String externalBgpAnnouncementsFileContents =
           CommonUtil.readFile(externalBgpAnnouncementsPath);
@@ -3098,8 +3065,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
-    Path externalBgpAnnouncementsPath =
-        _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
+    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
       String externalBgpAnnouncementsFileContents =
           CommonUtil.readFile(externalBgpAnnouncementsPath);
@@ -3366,13 +3332,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void repairDataPlane(boolean compressed) {
     Path dataPlanePath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            ? _testrigSettings.getCompressedDataPlanePath()
             : _testrigSettings.getDataPlanePath();
 
     Path dataPlaneAnswerPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     CommonUtil.deleteIfExists(dataPlanePath);
     CommonUtil.deleteIfExists(dataPlaneAnswerPath);
@@ -3421,23 +3387,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
     postProcessForEnvironment(configurationsWithoutEnvironment);
 
-    serializeObject(
-        veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
+    serializeObject(veae, _testrigSettings.getValidateEnvironmentAnswerPath());
   }
 
   private void repairEnvironmentBgpTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
-    Path bgpTablesOutputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
+    Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteIfExists(answerPath);
     CommonUtil.deleteDirectory(bgpTablesOutputPath);
     computeEnvironmentBgpTables();
   }
 
   private void repairEnvironmentRoutingTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    Path rtOutputPath = envSettings.getSerializeEnvironmentRoutingTablesPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
+    Path rtOutputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     CommonUtil.deleteIfExists(answerPath);
     CommonUtil.deleteDirectory(rtOutputPath);
     computeEnvironmentRoutingTables();
@@ -3480,22 +3443,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       generateStubs(inputRole, stubAs, interfaceDescriptionRegex);
       return answer;
     }
-
-    // if (_settings.getZ3()) {
-    // Map<String, Configuration> configurations = loadConfigurations();
-    // String dataPlanePath = _envSettings.getDataPlanePath();
-    // if (dataPlanePath == null) {
-    // throw new BatfishException("Missing path to data plane");
-    // }
-    // File dataPlanePathAsFile = new File(dataPlanePath);
-    // genZ3(configurations, dataPlanePathAsFile);
-    // return answer;
-    // }
-    //
-    // if (_settings.getRoleTransitQuery()) {
-    // genRoleTransitQueries();
-    // return answer;
-    // }
 
     if (_settings.getSerializeVendor()) {
       Path testRigPath = _testrigSettings.getInputPath();
@@ -3588,9 +3535,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         getEnvironmentBgpTables(inputPath, answerElement);
     serializeEnvironmentBgpTables(bgpTables, outputPath);
-    serializeObject(
-        answerElement,
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentBgpTablesAnswerPath());
+    serializeObject(answerElement, _testrigSettings.getParseEnvironmentBgpTablesAnswerPath());
     return answer;
   }
 
@@ -3621,9 +3566,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         getEnvironmentRoutingTables(inputPath, answerElement);
     serializeEnvironmentRoutingTables(routingTables, outputPath);
-    serializeObject(
-        answerElement,
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentRoutingTablesAnswerPath());
+    serializeObject(answerElement, _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath());
     return answer;
   }
 
@@ -3737,9 +3680,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     applyEnvironment(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
-        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
-        envTopology,
-        "environment topology");
+        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
 
     // Compute new auto role data and updates existing auto data with it
     SortedSet<NodeRoleDimension> autoRoles =
@@ -4598,9 +4539,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     answer.addAnswerElement(ae);
     Topology envTopology = computeEnvironmentTopology(loadConfigurations());
     serializeAsJson(
-        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
-        envTopology,
-        "environment topology");
+        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
     return answer;
   }
 
@@ -4608,7 +4547,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     _cachedDataPlanes.put(getNetworkSnapshot(), dp);
     serializeObject(dp, _testrigSettings.getDataPlanePath());
-    serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
+    serializeObject(ae, _testrigSettings.getDataPlaneAnswerPath());
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
