@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
@@ -91,35 +91,9 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return true;
   }
 
-  public static HeaderSpace toHeaderSpace(PacketHeaderConstraints headerConstraints) {
-    // Note: headerspace builder does not accept nulls, so we have to convert nulls to empty sets
-    HeaderSpace.Builder builder =
-        HeaderSpace.builder()
-            .setIpProtocols(
-                firstNonNull(headerConstraints.resolveIpProtocols(), ImmutableSortedSet.of()))
-            .setSrcPorts(firstNonNull(headerConstraints.getSrcPorts(), ImmutableSortedSet.of()))
-            .setDstPorts(firstNonNull(headerConstraints.resolveDstPorts(), ImmutableSortedSet.of()))
-            .setIcmpCodes(firstNonNull(headerConstraints.getIcmpCodes(), ImmutableSortedSet.of()))
-            .setIcmpTypes(firstNonNull(headerConstraints.getIcmpTypes(), ImmutableSortedSet.of()))
-            .setDstProtocols(
-                firstNonNull(headerConstraints.getApplications(), ImmutableSortedSet.of()));
-
-    if (headerConstraints.getDscps() != null) {
-      builder.setDscps(
-          ImmutableSortedSet.copyOf(
-              headerConstraints.getDscps().stream().flatMapToInt(SubRange::asStream).iterator()));
-    }
-    if (headerConstraints.getEcns() != null) {
-      builder.setEcns(
-          ImmutableSortedSet.copyOf(
-              headerConstraints.getEcns().stream().flatMapToInt(SubRange::asStream).iterator()));
-    }
-    return builder.build();
-  }
-
   @VisibleForTesting
   HeaderSpace getHeaderSpace() {
-    return toHeaderSpace(getHeaderConstraints());
+    return PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(getHeaderConstraints()).build();
   }
 
   @VisibleForTesting
