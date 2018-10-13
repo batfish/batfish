@@ -224,26 +224,10 @@ class TracerouteEngineImplContext {
     return resolvedNextHopWithRoutesBuilder.build();
   }
 
-  private boolean checkDeliveredToSubnet(Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
-    Stream<Prefix> matchingPrefixes =
-        outgoingInterface.getAllAddresses().stream().map(InterfaceAddress::getPrefix);
-
-    boolean isDeliveredToSubnet =
-        matchingPrefixes.anyMatch(
-            prefix ->
-                prefix.containsIp(dstIp)
-                    && prefix.getPrefixLength()
-                        <= NodeNameRegexConnectedHostsIpSpaceSpecifier
-                            .HOST_SUBNET_MAX_PREFIX_LENGTH);
-
-    if (isDeliveredToSubnet) {
-      return true;
-    }
-    return false;
-  }
-
-  private boolean checkExitsNetwork(
-      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
+  private FlowDisposition computeDisposition(
+      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp,
+      boolean hasOutgoingEdges
+  ) {
     if (fnhIp != null) {
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
           CommonUtil.computeIpInterfaceOwners(
@@ -251,7 +235,6 @@ class TracerouteEngineImplContext {
       Map<String, Map<String, IpSpace>> vrfOwnedIps =
           CommonUtil.computeVrfOwnedIpSpaces(
               CommonUtil.computeIpVrfOwners(ipInterfaceOwners, _configurations));
-
       boolean isFinalNextHopIpInNetwork =
           vrfOwnedIps
               .entrySet()
@@ -265,26 +248,30 @@ class TracerouteEngineImplContext {
                           .anyMatch(
                               vrfEntry ->
                                   vrfEntry.getValue().containsIp(fnhIp, nodeConfig.getIpSpaces())));
-      if (!isFinalNextHopIpInNetwork) {
-        return true;
+      if (isFinalNextHopIpInNetwork) {
+        return FlowDisposition.NEIGHBOR_UNREACHABLE;
+      } else if (!hasOutgoingEdges) {
+        return FlowDisposition.EXITS_NETWORK;
       }
-    } else if (outgoingInterface
-        .getAllAddresses()
-        .stream()
-        .map(InterfaceAddress::getPrefix)
-        .anyMatch(prefix -> prefix.containsIp(dstIp))) {
-      return true;
-    }
-    return false;
-  }
+      return FlowDisposition.NEIGHBOR_UNREACHABLE;
+    } else {
+      Stream<Prefix> matchingPrefixes =
+          outgoingInterface.getAllAddresses().stream().map(InterfaceAddress::getPrefix);
 
-  private FlowDisposition computeDisposition(
-      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
-    if (checkDeliveredToSubnet(outgoingInterface, fnhIp, dstIp))
-      return FlowDisposition.DELIVERED_TO_SUBNET;
-    else if (checkExitsNetwork(nodeConfig, outgoingInterface, fnhIp, dstIp))
-      return FlowDisposition.EXITS_NETWORK;
-    return FlowDisposition.NEIGHBOR_UNREACHABLE;
+      boolean isDeliveredToSubnet =
+          matchingPrefixes.anyMatch(
+              prefix ->
+                  prefix.containsIp(dstIp)
+                      && prefix.getPrefixLength()
+                          <= NodeNameRegexConnectedHostsIpSpaceSpecifier
+                              .HOST_SUBNET_MAX_PREFIX_LENGTH);
+
+      if (isDeliveredToSubnet) {
+        return FlowDisposition.DELIVERED_TO_SUBNET;
+      } else {
+        return FlowDisposition.EXITS_NETWORK;
+      }
+    }
   }
 
   private void collectFlowTraces(
@@ -436,7 +423,7 @@ class TracerouteEngineImplContext {
                   }
                   if (!denied) {
                     FlowDisposition disposition =
-                        computeDisposition(nodeConfig, outgoingInterface, finalNextHopIp, dstIp);
+                        computeDisposition(nodeConfig, outgoingInterface, finalNextHopIp, dstIp, false);
 
                     Edge nextEdge =
                         new Edge(
@@ -748,7 +735,9 @@ class TracerouteEngineImplContext {
                   .getAllInterfaces()
                   .get(nextHopInterface.getInterface()),
               finalNextHopIp,
-              dstIp);
+              dstIp,
+              true
+              );
       FlowTrace trace =
           neighborUnreachableOrExitsNetworkTrace(
               nextHopInterface, transmissionContext, disposition);
