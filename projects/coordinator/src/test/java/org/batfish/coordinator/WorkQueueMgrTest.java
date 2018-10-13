@@ -39,11 +39,7 @@ public class WorkQueueMgrTest {
 
   private static final String BASE_TESTRIG = "baseTestrig";
 
-  private static final String BASE_ENV = "baseEnv";
-
   private static final String DELTA_TESTRIG = "deltaTestrig";
-
-  private static final String DELTA_ENV = "deltaEnv";
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 

@@ -16,7 +16,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  * to configuration -- device up/down states, BGP announcements, etc..
  */
 public class Environment {
-  private static final String PROP_ENV_NAME = "envName";
   private static final String PROP_TESTRIG_NAME = "testrigName";
   private static final String PROP_EDGE_BLACKLIST = "edgeBlacklist";
   private static final String PROP_INTERFACE_BLACKLIST = "interfaceBlacklist";

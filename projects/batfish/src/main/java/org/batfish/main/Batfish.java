@@ -688,7 +688,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkDataPlane(_deltaTestrigSettings);
   }
 
-  @Deprecated
   @Override
   public void checkSnapshotOutputReady() {
     checkSnapshotOutputReady(_testrigSettings);
