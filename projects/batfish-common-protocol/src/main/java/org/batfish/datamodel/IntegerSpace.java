@@ -2,15 +2,21 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -27,10 +33,67 @@ public final class IntegerSpace {
   /** A range expressing TCP/UDP ports */
   public static final IntegerSpace PORTS = builder().including(Range.closed(0, 65535)).build();
 
+  private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
+
   @Nonnull private final RangeSet<Integer> _rangeset;
 
   private IntegerSpace(RangeSet<Integer> rangeset) {
     _rangeset = ImmutableRangeSet.copyOf(rangeset);
+  }
+
+  @JsonCreator
+  @Nullable
+  @VisibleForTesting
+  static IntegerSpace create(@Nullable String s) {
+    if (s == null) {
+      return null;
+    }
+    String[] atoms = s.trim().split(",");
+    checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
+    Builder builder = builder();
+    Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
+    return builder.build();
+  }
+
+  private static Range<Integer> parse(String s) {
+    try {
+      int i = Integer.parseUnsignedInt(s);
+      return (Range.closed(i, i));
+    } catch (NumberFormatException e) {
+      String[] endpoints = s.split("-");
+      checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
+      int low = Integer.parseUnsignedInt(endpoints[0].trim());
+      int high = Integer.parseUnsignedInt(endpoints[1].trim());
+      checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
+      return Range.closed(low, high);
+    }
+  }
+
+  private static void processStringAtom(String s, Builder builder) {
+    if (s.startsWith("!")) {
+      builder.excluding(parse(s.replaceAll("!", "")));
+    } else {
+      builder.including(parse(s));
+    }
+  }
+
+  @JsonValue
+  private String value() {
+    return String.join(
+        ",",
+        getRanges()
+            .stream()
+            .map(
+                r ->
+                    String.join(
+                        "-",
+                        ImmutableList.of(
+                            r.lowerEndpoint().toString(), String.valueOf(r.upperEndpoint() - 1))))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  public Set<Range<Integer>> getRanges() {
+    return _rangeset.asRanges();
   }
 
   /** Check that this space contains a given {@code value}. */
