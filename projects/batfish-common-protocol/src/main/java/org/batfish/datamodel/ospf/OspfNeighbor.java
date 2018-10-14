@@ -1,90 +1,46 @@
 package org.batfish.datamodel.ospf;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Objects;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 
-public class OspfNeighbor extends ComparableStructure<IpLink> {
+/** Configuration for one end of an OSPF adjacency */
+@ParametersAreNonnullByDefault
+public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor> {
 
   private static final String PROP_AREA = "area";
-
   private static final String PROP_IFACE = "iface";
-
+  private static final String PROP_NAME = "name";
   private static final String PROP_VRF = "vrf";
 
-  public static final class OspfNeighborSummary extends ComparableStructure<String> {
-
-    private static final String PROP_LOCAL_IP = "localIp";
-
-    private static final String PROP_REMOTE_IP = "remoteIp";
-
-    /** */
-    private static final long serialVersionUID = 1L;
-
-    private static final String PROP_VRF = "vrf";
-
-    private final Ip _localIp;
-
-    private final Ip _remoteIp;
-
-    private final String _vrf;
-
-    public OspfNeighborSummary(OspfNeighbor ospfNeighbor) {
-      super(ospfNeighbor.getOwner().getHostname() + ":" + ospfNeighbor._key);
-      _localIp = ospfNeighbor._key.getIp1();
-      _remoteIp = ospfNeighbor._key.getIp2();
-      _vrf = ospfNeighbor._vrf;
-    }
-
-    @JsonCreator
-    public OspfNeighborSummary(
-        @JsonProperty(PROP_NAME) String name,
-        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
-        @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
-        @JsonProperty(PROP_VRF) String vrf) {
-      super(name);
-      _localIp = localIp;
-      _remoteIp = remoteIp;
-      _vrf = vrf;
-    }
-
-    @JsonProperty(PROP_LOCAL_IP)
-    public Ip getLocalIp() {
-      return _localIp;
-    }
-
-    @JsonProperty(PROP_REMOTE_IP)
-    public Ip getRemoteIp() {
-      return _remoteIp;
-    }
-
-    @JsonProperty(PROP_VRF)
-    public String getVrf() {
-      return _vrf;
-    }
-  }
-
-  /** */
   private static final long serialVersionUID = 1L;
 
+  // TODO: don't store full Config/Interface objects, but identifiers instead.
   private long _area;
-
   private Interface _iface;
-
+  private final IpLink _link;
   private Configuration _owner;
-
   private transient OspfNeighbor _remoteOspfNeighbor;
-
   private String _vrf;
 
   @JsonCreator
-  public OspfNeighbor(@JsonProperty(PROP_NAME) IpLink ipEdge) {
-    super(ipEdge);
+  private static OspfNeighbor create(@Nullable @JsonProperty(PROP_NAME) IpLink ipEdge) {
+    return new OspfNeighbor(requireNonNull(ipEdge));
+  }
+
+  public OspfNeighbor(IpLink ipLink) {
+    _link = ipLink;
   }
 
   @JsonProperty(PROP_AREA)
@@ -97,14 +53,14 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
     return _iface;
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_NAME)
   public IpLink getIpLink() {
-    return _key;
+    return _link;
   }
 
   @JsonIgnore
   public Ip getLocalIp() {
-    return _key.getIp1();
+    return _link.getIp1();
   }
 
   @JsonIgnore
@@ -114,7 +70,7 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
 
   @JsonIgnore
   public Ip getRemoteIp() {
-    return _key.getIp2();
+    return _link.getIp2();
   }
 
   @JsonIgnore
@@ -132,11 +88,12 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
     _area = area;
   }
 
-  @JsonProperty(PROP_IFACE)
+  @Deprecated
   public void setIface(Interface iface) {
-    _iface = iface;
+    setInterface(iface);
   }
 
+  @JsonProperty(PROP_IFACE)
   public void setInterface(Interface iface) {
     _iface = iface;
   }
@@ -152,5 +109,30 @@ public class OspfNeighbor extends ComparableStructure<IpLink> {
   @JsonProperty(PROP_VRF)
   public void setVrf(String vrf) {
     _vrf = vrf;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    OspfNeighbor that = (OspfNeighbor) o;
+    return _area == that._area
+        && Objects.equals(_iface, that._iface)
+        && Objects.equals(_link, that._link)
+        && Objects.equals(_vrf, that._vrf);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_area, _iface, _link, _vrf);
+  }
+
+  @Override
+  public int compareTo(OspfNeighbor other) {
+    return Comparator.comparing(OspfNeighbor::getIpLink).compare(this, other);
   }
 }

@@ -1,41 +1,51 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents a link by a pair of IP addresses. */
+/** Represents a Layer 3 link by a pair of IP addresses. */
+@ParametersAreNonnullByDefault
 public final class IpLink implements Comparable<IpLink> {
   private static final String PROP_IP1 = "ip1";
   private static final String PROP_IP2 = "ip2";
 
-  private final Ip _ip1;
-  private final Ip _ip2;
+  @Nonnull private final Ip _ip1;
+  @Nonnull private final Ip _ip2;
 
   @JsonCreator
-  public IpLink(@JsonProperty(PROP_IP1) Ip ip1, @JsonProperty(PROP_IP2) Ip ip2) {
-    this._ip1 = ip1;
-    this._ip2 = ip2;
+  private static IpLink create(
+      @Nullable @JsonProperty(PROP_IP1) Ip ip1, @Nullable @JsonProperty(PROP_IP2) Ip ip2) {
+    return new IpLink(requireNonNull(ip1), requireNonNull(ip2));
+  }
+
+  /** Create a new IpLink based on two IP addresses. */
+  public IpLink(@Nonnull Ip ip1, @Nonnull Ip ip2) {
+    _ip1 = ip1;
+    _ip2 = ip2;
   }
 
   @JsonProperty(PROP_IP1)
+  @Nonnull
   public Ip getIp1() {
     return _ip1;
   }
 
   @JsonProperty(PROP_IP2)
+  @Nonnull
   public Ip getIp2() {
     return _ip2;
   }
 
   @Override
-  public int compareTo(@Nonnull IpLink o) {
-    int cmp = _ip1.compareTo(o._ip1);
-    if (cmp != 0) {
-      return cmp;
-    }
-    return _ip2.compareTo(o._ip2);
+  public int compareTo(@Nonnull IpLink other) {
+    return Comparator.comparing(IpLink::getIp1).thenComparing(IpLink::getIp2).compare(this, other);
   }
 
   @Override
