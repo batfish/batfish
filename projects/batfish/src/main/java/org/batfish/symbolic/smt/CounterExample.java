@@ -434,7 +434,7 @@ class CounterExample {
         SortedSet<Edge> failedLinks = buildFailedLinks(encoder);
         SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(encoder);
         Environment baseEnv =
-            new Environment("BASE", testrigName, failedLinks, null, null, null, null, envRoutes);
+            new Environment(testrigName, failedLinks, null, null, null, null, envRoutes);
         flowHistory.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
       }
     }
@@ -468,11 +468,16 @@ class CounterExample {
         SortedSet<BgpAdvertisement> envRoutesDiff = buildEnvRoutingTable(encoder);
         SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(encoder2);
         Environment baseEnv =
-            new Environment(
-                "BASE", testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
+            new Environment(testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
         Environment failedEnv =
             new Environment(
-                "DELTA", testRigName, failedLinksDiff, null, null, null, null, envRoutesDiff);
+                testRigName + "-with-delta",
+                failedLinksDiff,
+                null,
+                null,
+                null,
+                null,
+                envRoutesDiff);
         flowHistory.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
         flowHistory.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
       }

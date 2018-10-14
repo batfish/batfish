@@ -81,7 +81,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkEnvironmentExists() {
+  public void checkSnapshotOutputReady() {
     throw new UnsupportedOperationException();
   }
 
@@ -313,7 +313,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void popEnvironment() {
+  public void popSnapshot() {
     throw new UnsupportedOperationException();
   }
 
@@ -323,12 +323,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void pushBaseEnvironment() {
+  public void pushBaseSnapshot() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void pushDeltaEnvironment() {
+  public void pushDeltaSnapshot() {
     throw new UnsupportedOperationException();
   }
 

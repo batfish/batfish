@@ -67,7 +67,6 @@ import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
-import org.batfish.client.params.InitEnvironmentParams;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -132,8 +131,6 @@ public class Client extends AbstractClient implements IClient {
       new HashSet<>(Arrays.asList(">", ">=", "==", "!=", "<", "<="));
 
   private static final String DEFAULT_NETWORK_PREFIX = "np";
-
-  private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
 
   private static final String DEFAULT_QUESTION_PREFIX = "q";
 
@@ -524,11 +521,7 @@ public class Client extends AbstractClient implements IClient {
 
   private String _currContainerName = null;
 
-  private String _currDeltaEnv = null;
-
   private String _currDeltaTestrig;
-
-  private String _currEnv = null;
 
   private String _currTestrig = null;
 
@@ -659,7 +652,7 @@ public class Client extends AbstractClient implements IClient {
     } catch (JSONException e) {
       throw new BatfishException("Could not find whether question is explicitly differential", e);
     }
-    if (questionJsonDifferential && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+    if (questionJsonDifferential && _currDeltaTestrig == null) {
       _logger.output(DIFF_NOT_READY_MSG);
       return false;
     }
@@ -684,9 +677,7 @@ public class Client extends AbstractClient implements IClient {
             questionName,
             _currContainerName,
             _currTestrig,
-            _currEnv,
             _currDeltaTestrig,
-            _currDeltaEnv,
             questionJsonDifferential,
             isDelta);
     return execute(wItemAs, outWriter);
@@ -702,7 +693,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
     }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isSetDeltaEnvironment())) {
+    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
       return false;
     }
     String qTypeStr = parameters.get(0);
@@ -740,9 +731,7 @@ public class Client extends AbstractClient implements IClient {
             questionName,
             _currContainerName,
             _currTestrig,
-            _currEnv,
             _currDeltaTestrig,
-            _currDeltaEnv,
             isDifferential,
             isDelta);
 
@@ -790,8 +779,7 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException(
           "Modified question is no longer valid, likely due to invalid parameters", e);
     }
-    if (modifiedQuestion.getDifferential()
-        && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+    if (modifiedQuestion.getDifferential() && _currDeltaTestrig == null) {
       _logger.output(DIFF_NOT_READY_MSG);
       return false;
     }
@@ -1137,7 +1125,7 @@ public class Client extends AbstractClient implements IClient {
 
     // generate the data plane
     WorkItem wItemGenDp =
-        WorkItemBuilder.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig, _currEnv);
+        WorkItemBuilder.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig);
 
     return execute(wItemGenDp, outWriter);
   }
@@ -1147,13 +1135,13 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_REFERENCE_DP)) {
       return false;
     }
-    if (!isSetDeltaEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
+    if (!isDeltaReady() || !isSetTestrig() || !isSetContainer(true)) {
       return false;
     }
 
     WorkItem wItemGenDdp =
         WorkItemBuilder.getWorkItemGenerateDeltaDataPlane(
-            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig, _currDeltaEnv);
+            _currContainerName, _currTestrig, _currDeltaTestrig);
 
     return execute(wItemGenDdp, outWriter);
   }
@@ -1193,7 +1181,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
     }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isSetDeltaEnvironment())) {
+    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
       return false;
     }
     String qTypeStr = parameters.get(0).toLowerCase();
@@ -1222,33 +1210,19 @@ public class Client extends AbstractClient implements IClient {
     String analysisName = parameters.get(0);
 
     String baseTestrig;
-    String baseEnvironment;
     String deltaTestrig;
-    String deltaEnvironment;
     if (differential) {
       baseTestrig = _currTestrig;
-      baseEnvironment = _currEnv;
       deltaTestrig = _currDeltaTestrig;
-      deltaEnvironment = _currDeltaEnv;
     } else if (delta) {
       baseTestrig = _currDeltaTestrig;
-      baseEnvironment = _currDeltaEnv;
       deltaTestrig = null;
-      deltaEnvironment = null;
     } else {
       baseTestrig = _currTestrig;
-      baseEnvironment = _currEnv;
       deltaTestrig = null;
-      deltaEnvironment = null;
     }
     String answer =
-        _workHelper.getAnalysisAnswers(
-            _currContainerName,
-            baseTestrig,
-            baseEnvironment,
-            deltaTestrig,
-            deltaEnvironment,
-            analysisName);
+        _workHelper.getAnalysisAnswers(_currContainerName, baseTestrig, deltaTestrig, analysisName);
 
     if (answer == null) {
       return false;
@@ -1279,33 +1253,19 @@ public class Client extends AbstractClient implements IClient {
     String questionName = parameters.get(0);
 
     String baseTestrig;
-    String baseEnvironment;
     String deltaTestrig;
-    String deltaEnvironment;
     if (differential) {
       baseTestrig = _currTestrig;
-      baseEnvironment = _currEnv;
       deltaTestrig = _currDeltaTestrig;
-      deltaEnvironment = _currDeltaEnv;
     } else if (delta) {
       baseTestrig = _currDeltaTestrig;
-      baseEnvironment = _currDeltaEnv;
       deltaTestrig = null;
-      deltaEnvironment = null;
     } else {
       baseTestrig = _currTestrig;
-      baseEnvironment = _currEnv;
       deltaTestrig = null;
-      deltaEnvironment = null;
     }
     String answerString =
-        _workHelper.getAnswer(
-            _currContainerName,
-            baseTestrig,
-            baseEnvironment,
-            deltaTestrig,
-            deltaEnvironment,
-            questionName);
+        _workHelper.getAnswer(_currContainerName, baseTestrig, deltaTestrig, questionName);
 
     String answerStringToPrint = answerString;
     if (outWriter == null && _settings.getPrettyPrintAnswers()) {
@@ -1394,7 +1354,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
       return false;
     }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isSetDeltaEnvironment())) {
+    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
       return false;
     }
 
@@ -1715,11 +1675,9 @@ public class Client extends AbstractClient implements IClient {
 
     if (!delta) {
       _currTestrig = testrigName;
-      _currEnv = DEFAULT_ENV_NAME;
       _logger.infof("Current snapshot is now %s\n", _currTestrig);
     } else {
       _currDeltaTestrig = testrigName;
-      _currDeltaEnv = DEFAULT_ENV_NAME;
       _logger.infof("Reference snapshot is now %s\n", _currDeltaTestrig);
     }
 
@@ -1755,18 +1713,13 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean isSetDeltaEnvironment() {
+  private boolean isDeltaReady() {
     if (!_settings.getSanityCheck()) {
       return true;
     }
 
     if (_currDeltaTestrig == null) {
       _logger.errorf("Active delta snapshot is not set\n");
-      return false;
-    }
-
-    if (_currDeltaEnv == null) {
-      _logger.errorf("Active delta environment is not set\n");
       return false;
     }
     return true;
@@ -2154,24 +2107,6 @@ public class Client extends AbstractClient implements IClient {
     }
     loadedQuestions.put(questionName.toLowerCase(), questionContent);
     ae.setNumLoaded(ae.getNumLoaded() + 1);
-  }
-
-  static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
-    String jsonParamsStr = "{ " + paramsLine + " }";
-    InitEnvironmentParams parameters;
-    try {
-      parameters =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  new JSONObject(jsonParamsStr).toString(),
-                  new TypeReference<InitEnvironmentParams>() {});
-      return parameters;
-    } catch (JSONException | IOException e) {
-      throw new BatfishException(
-          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
-              + "values valid JSON?)",
-          e);
-    }
   }
 
   private Map<String, JsonNode> parseParams(String paramsLine) {
@@ -2855,14 +2790,7 @@ public class Client extends AbstractClient implements IClient {
     // answer the question
     WorkItem wItemAs =
         WorkItemBuilder.getWorkItemRunAnalysis(
-            analysisName,
-            _currContainerName,
-            _currTestrig,
-            _currEnv,
-            _currDeltaTestrig,
-            _currDeltaEnv,
-            delta,
-            differential);
+            analysisName, _currContainerName, _currTestrig, _currDeltaTestrig, delta, differential);
 
     return execute(wItemAs, outWriter);
   }
@@ -2948,12 +2876,11 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean setReferenceSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_REFERENCE_SNAPSHOT)) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_REFERENCE_SNAPSHOT)) {
       return false;
     }
     _currDeltaTestrig = parameters.get(0);
-    _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Reference snapshot->env is now %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf("Reference snapshot is now %s\n", _currDeltaTestrig);
     return true;
   }
 
@@ -2994,7 +2921,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean setSnapshot(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_SNAPSHOT)) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_SNAPSHOT)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -3002,8 +2929,7 @@ public class Client extends AbstractClient implements IClient {
     }
 
     _currTestrig = parameters.get(0);
-    _currEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
-    _logger.outputf("Current snapshot->env is now %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Current snapshot is now %s\n", _currTestrig);
     return true;
   }
 
@@ -3054,11 +2980,10 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_REFERENCE_SNAPSHOT)) {
       return false;
     }
-    if (!isSetDeltaEnvironment()) {
+    if (!isDeltaReady()) {
       return false;
     }
-    _logger.outputf(
-        "Reference snapshot->environment is %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+    _logger.outputf("Reference snapshot is %s->%s\n", _currDeltaTestrig);
     return true;
   }
 
@@ -3077,7 +3002,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isSetTestrig()) {
       return false;
     }
-    _logger.outputf("Current snapshot->environment is %s->%s\n", _currTestrig, _currEnv);
+    _logger.outputf("Current snapshot is %s\n", _currTestrig);
     return true;
   }
 
@@ -3281,12 +3206,10 @@ public class Client extends AbstractClient implements IClient {
   private void unsetTestrig(boolean doDelta) {
     if (doDelta) {
       _currDeltaTestrig = null;
-      _currDeltaEnv = null;
-      _logger.info("Reference testrig and environment are now unset\n");
+      _logger.info("Reference snapshot is now unset\n");
     } else {
       _currTestrig = null;
-      _currEnv = null;
-      _logger.info("Current testrig and environment are now unset\n");
+      _logger.info("Current snapshot is now unset\n");
     }
   }
 
@@ -3310,7 +3233,7 @@ public class Client extends AbstractClient implements IClient {
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
     if (createZip) {
-      uploadTarget = CommonUtil.createTempFile("testrigOrEnv", "zip");
+      uploadTarget = CommonUtil.createTempFile("testrig", "zip");
       ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
     }
     try {
