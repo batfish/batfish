@@ -52,9 +52,9 @@ public final class WorkMgrTestUtils {
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
     TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env", null), networkId, snapshotId);
+        new TestrigMetadata(new Date().toInstant(), null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
-    pojoTopology.setNodes(nodes.stream().map(n -> new Node(n)).collect(Collectors.toSet()));
+    pojoTopology.setNodes(nodes.stream().map(Node::new).collect(Collectors.toSet()));
     Main.getWorkMgr().getStorage().storePojoTopology(pojoTopology, networkId, snapshotId);
     org.batfish.datamodel.Topology envTopology =
         new org.batfish.datamodel.Topology(ImmutableSortedSet.of());

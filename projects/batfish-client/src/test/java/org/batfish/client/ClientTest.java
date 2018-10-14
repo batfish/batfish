@@ -1050,13 +1050,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testParseInitEnvironmentParamsInterfaceBlacklist() {
-    String paramsLine =
-        "interfaceBlacklist=" + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
-    Client.parseInitEnvironmentParams(paramsLine);
-  }
-
-  @Test
   public void testPathRegexInvalidEnd() {
     String invalidEnd = "/pathRegex";
     _thrown.expect(BatfishException.class);
@@ -1219,7 +1212,7 @@ public class ClientTest {
     testProcessCommandWithValidInput(
         SET_REFERENCE_SNAPSHOT,
         parameters,
-        String.format("Reference snapshot->env is now %s->env_default\n", parameters[0]));
+        String.format("Reference snapshot is now %s\n", parameters[0]));
   }
 
   @Test

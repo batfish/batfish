@@ -58,9 +58,6 @@ public class ParseEnvironmentRoutingTableJob
     ParserRuleContext tree = null;
     RoutingTableExtractor extractor = null;
     _logger.infof("Processing: '%s'\n", currentPath);
-    // String relativePathStr =
-    // _settings.getActiveTestrigSettings().getEnvironmentSettings().getEnvPath()
-    // .relativize(_file).toString();
     RoutingTableFormat format = RoutingTableFormatDetector.identifyRoutingTableFormat(_fileText);
     switch (format) {
       case EMPTY:
