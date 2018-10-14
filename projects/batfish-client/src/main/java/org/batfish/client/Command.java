@@ -19,11 +19,14 @@ public enum Command {
   CHECK_API_KEY("checkapikey"),
   CLEAR_SCREEN("cls"),
   CONFIGURE_TEMPLATE("configure-template"),
+  DEBUG_DELETE("debug-delete"),
+  DEBUG_GET("debug-get"),
+  DEBUG_POST("debug-post"),
+  DEBUG_PUT("debug-put"),
   DEL_ANALYSIS("del-analysis"),
   DEL_ANALYSIS_QUESTIONS("del-analysis-questions"),
   DEL_BATFISH_OPTION("del-batfish-option"),
   DEL_CONTAINER("del-container"),
-  DEL_ENVIRONMENT("del-environment"),
   DEL_NETWORK("del-network"),
   DEL_QUESTION("del-question"),
   DEL_SNAPSHOT("del-snapshot"),
@@ -58,7 +61,6 @@ public enum Command {
   INIT_CONTAINER("init-container"),
   INIT_DELTA_SNAPSHOT("init-delta-snapshot"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
-  INIT_ENVIRONMENT("init-environment"),
   INIT_NETWORK("init-network"),
   INIT_REFERENCE_SNAPSHOT("init-reference-snapshot"),
   INIT_SNAPSHOT("init-snapshot"),
@@ -66,7 +68,6 @@ public enum Command {
   KILL_WORK("kill-work"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
-  LIST_ENVIRONMENTS("list-environments"),
   LIST_INCOMPLETE_WORK("list-incomplete-work"),
   LIST_NETWORKS("list-networks"),
   LIST_QUESTIONS("list-questions"),
@@ -84,10 +85,8 @@ public enum Command {
   SET_BACKGROUND_EXECUCTION("set-background-execution"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
-  SET_DELTA_ENV("set-delta-environment"),
   SET_DELTA_SNAPSHOT("set-delta-snapshot"),
   SET_DELTA_TESTRIG("set-delta-testrig"),
-  SET_ENV("set-environment"),
   SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
   SET_NETWORK("set-network"),
@@ -197,12 +196,12 @@ public enum Command {
         ANSWER,
         new Pair<>(
             "<template-name>  [questionName=name] [param1=value1 [param2=value2] ...]",
-            "Answer the template by name for the current environment"));
+            "Answer the template by name for the current snapshot"));
     descs.put(
         ANSWER_DELTA,
         new Pair<>(
             "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
-            "Answer the template by name for the delta environment"));
+            "Answer the template by name for the delta snapshot"));
     descs.put(
         ANSWER_REFERENCE,
         new Pair<>(
@@ -221,6 +220,22 @@ public enum Command {
         new Pair<>(
             "<new-template-name> <old-template-name> [exceptions=[...],] [assertion={..}]",
             "Create a new template from the old template with provided exceptions and assertion"));
+    descs.put(
+        DEBUG_DELETE,
+        new Pair<>("<work-manager-v2-url>", "Executes DELETE method at <work-manager-v2-url>"));
+    descs.put(
+        DEBUG_GET,
+        new Pair<>("<work-manager-v2-url>", "Executes GET method at <work-manager-v2-url>"));
+    descs.put(
+        DEBUG_POST,
+        new Pair<>(
+            "[-file [-raw]] <work-manager-v2-url> <input>",
+            "Posts <input> to <work-manager-v2-url>. If -file is set, treats input as a path and sends the contents of the file at that path. If -raw is set, uses 'application/octet-stream'; else uses 'application/json'."));
+    descs.put(
+        DEBUG_PUT,
+        new Pair<>(
+            "[-file [-raw]] <work-manager-v2-url> <input>",
+            "Puts <input> at <work-manager-v2-url>. If -file is set, treats input as a path and sends the contents of the file at that path. If -raw is set, uses 'application/octet-stream'; else uses 'application/json'."));
     descs.put(DEL_ANALYSIS, new Pair<>("<analysis-name>", "Delete the analysis completely"));
     descs.put(
         DEL_ANALYSIS_QUESTIONS,
@@ -229,8 +244,6 @@ public enum Command {
     descs.put(
         DEL_BATFISH_OPTION, new Pair<>("<option-key>", "Stop passing this option to Batfish"));
     descs.put(DEL_CONTAINER, new Pair<>("<network-name>", "Delete the specified network"));
-    descs.put(
-        DEL_ENVIRONMENT, new Pair<>("<environment-name>", "Delete the specified environment"));
     descs.put(DEL_NETWORK, new Pair<>("<network-name>", "Delete the specified network"));
     descs.put(DEL_QUESTION, new Pair<>("<question-name>", "Delete the specified question"));
     descs.put(DEL_SNAPSHOT, new Pair<>("<snapshot-name>", "Delete the specified snapshot"));
@@ -238,14 +251,14 @@ public enum Command {
     descs.put(DIR, new Pair<>("<dir>", "List directory contents"));
     descs.put(ECHO, new Pair<>("<message>", "Echo the message"));
     descs.put(EXIT, new Pair<>("", "Terminate interactive client session"));
-    descs.put(GEN_DELTA_DP, new Pair<>("", "Generate dataplane for the delta environment"));
-    descs.put(GEN_DP, new Pair<>("", "Generate dataplane for the default environment"));
+    descs.put(GEN_DELTA_DP, new Pair<>("", "Generate dataplane for the delta snapshot"));
+    descs.put(GEN_DP, new Pair<>("", "Generate dataplane for the current snapshot"));
     descs.put(GEN_REFERENCE_DP, new Pair<>("", "Generate dataplane for the reference snapshot"));
     descs.put(
         GET,
         new Pair<>(
             "<question-type>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the current environment"));
+            "Answer the question by type for the current snapshot"));
     descs.put(
         GET_ANALYSIS_ANSWERS,
         new Pair<>("<analysis-name>", "Get the answers for a previously run analysis"));
@@ -272,7 +285,7 @@ public enum Command {
         GET_DELTA,
         new Pair<>(
             "<question-file>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the delta environment"));
+            "Answer the question by type for the delta snapshot"));
     descs.put(GET_NETWORK, new Pair<>("<network-name>", "Get the information of the network"));
     descs.put(GET_OBJECT, new Pair<>("<object path>", "Get the object"));
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta snapshot"));
@@ -299,67 +312,12 @@ public enum Command {
         INIT_DELTA_SNAPSHOT,
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the delta snapshot with default environment"));
+            "Initialize the delta snapshot"));
     descs.put(
         INIT_DELTA_TESTRIG,
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the delta snapshot with default environment"));
-    descs.put(
-        INIT_ENVIRONMENT,
-        new Pair<>(
-            "[sourcePath=path], [newEnvironmentName=string], [newEnvironmentPrefix=string], "
-                + "[sourceEnvironmentName=string], [nodeBlacklist=string_set], "
-                + "[interfaceBlacklist=map_of_strings_to_string_sets], [edgeBlacklist=edge_set]",
-            "    Initialize a new reference environment\n"
-                + "\n"
-                + "    Arguments:\n"
-                + "\n"
-                + "    sourcePath\n"
-                + "        Either a directory or zip containing the environment to initialize.\n"
-                + "        These files override those in the environment identified by "
-                + "'sourceEnvironmentName',\n"
-                + "        and are overridden by values passed to node/interface/edgeBlacklist.\n"
-                + "\n"
-                + "    newEnvironmentName\n"
-                + "        The name to assign the new environment. If not specified, a name is "
-                + "generated.\n"
-                + "\n"
-                + "    sourceEnvironmentName\n"
-                + "        The name of an environment in the current snapshot from which to clone "
-                + "a new environment.\n"
-                + "        Files in the source environment are overriden by those in envDirOrZip "
-                + "(if specified),\n"
-                + "        as well as by values passed to node/interface/edgeBlacklist.\n"
-                + "\n"
-                + "    nodeBlacklist\n"
-                + "        A list of nodes whose interfaces will be turned off in the new "
-                + "environment.\n"
-                + "\n"
-                + "    interfaceBlacklist\n"
-                + "        A list of interfaces that will be turned off in the new environment.\n"
-                + "\n"
-                + "    edgeBlacklist\n"
-                + "        For maximum granularity, a list of edges to be disabled in the new "
-                + "environment. This\n"
-                + "        option should rarely be used. The interfaces making up the edge will "
-                + "not necessarily\n"
-                + "        be disabled. This feature is experimental, and may not always yield "
-                + "expected results.\n"
-                + "\n"
-                + "    doDelta\n"
-                + "        Whether the sourceEnvironment and newEnvironment should be chosen "
-                + "from/created in the\n"
-                + "        current(false) or reference(true) snapshot. Defaults to false.\n"
-                + "\n"));
-    /*                + "    update\n"
-    + "        Whether to update the current base(doDelta=false)/delta(doDelta=true) "
-    + "environment\n"
-    + "        pointer after this action has completed. Regardless of the value of "
-    + "this option,\n"
-    + "        bf_session.scenarios appended with a new scenario corresponding to the "
-    + "newly-created\n"
-    + "        environment.\n"));*/
+            "Initialize the delta snapshot"));
     descs.put(
         INIT_NETWORK,
         new Pair<>(
@@ -368,25 +326,22 @@ public enum Command {
         INIT_REFERENCE_SNAPSHOT,
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the reference snapshot with default environment"));
+            "Initialize the reference snapshot"));
     descs.put(
         INIT_SNAPSHOT,
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the snapshot with default environment"));
+            "Initialize the snapshot"));
     descs.put(
         INIT_TESTRIG,
         new Pair<>(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the snapshot with default environment"));
+            "Initialize the snapshot"));
     descs.put(KILL_WORK, new Pair<>("<guid>", "Kill work with the given GUID"));
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active network"));
-    descs.put(
-        LIST_ENVIRONMENTS,
-        new Pair<>("", "List the environments under current network and snapshot"));
     descs.put(LIST_NETWORKS, new Pair<>("", "List the networks to which you have access"));
     descs.put(
         LIST_QUESTIONS, new Pair<>("", "List the questions under current network and snapshot"));
@@ -421,14 +376,8 @@ public enum Command {
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));
     descs.put(SET_CONTAINER, new Pair<>("<network-name>", "Set the current network"));
-    descs.put(SET_DELTA_ENV, new Pair<>("<environment-name>", "Set the delta environment"));
-    descs.put(
-        SET_DELTA_SNAPSHOT,
-        new Pair<>("<snapshot-name> [environment name]", "Set the delta snapshot"));
-    descs.put(
-        SET_DELTA_TESTRIG,
-        new Pair<>("<snapshot-name> [environment name]", "Set the delta snapshot"));
-    descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current environment"));
+    descs.put(SET_DELTA_SNAPSHOT, new Pair<>("<snapshot-name>", "Set the delta snapshot"));
+    descs.put(SET_DELTA_TESTRIG, new Pair<>("<snapshot-name>", "Set the delta snapshot"));
     descs.put(
         SET_FIXED_WORKITEM_ID,
         new Pair<>("<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));
@@ -437,13 +386,9 @@ public enum Command {
         new Pair<>("<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));
     descs.put(SET_NETWORK, new Pair<>("<network-name>", "Set the current network"));
     descs.put(SET_PRETTY_PRINT, new Pair<>("<true|false>", "Whether to pretty print answers"));
-    descs.put(
-        SET_REFERENCE_SNAPSHOT,
-        new Pair<>("<snapshot-name> [environment name]", "Set the reference snapshot"));
-    descs.put(
-        SET_SNAPSHOT, new Pair<>("<snapshot-name> [environment name]", "Set the current snapshot"));
-    descs.put(
-        SET_TESTRIG, new Pair<>("<snapshot-name> [environment name]", "Set the current snapshot"));
+    descs.put(SET_REFERENCE_SNAPSHOT, new Pair<>("<snapshot-name>", "Set the reference snapshot"));
+    descs.put(SET_SNAPSHOT, new Pair<>("<snapshot-name>", "Set the current snapshot"));
+    descs.put(SET_TESTRIG, new Pair<>("<snapshot-name>", "Set the current snapshot"));
     descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
     descs.put(SHOW_BATFISH_LOGLEVEL, new Pair<>("", "Show current batfish loglevel"));
     descs.put(
@@ -451,13 +396,13 @@ public enum Command {
         new Pair<>("", "Show the additional options that will be sent to batfish"));
     descs.put(SHOW_CONTAINER, new Pair<>("", "Show active network"));
     descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
-    descs.put(SHOW_DELTA_SNAPSHOT, new Pair<>("", "Show delta snapshot and environment"));
-    descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta snapshot and environment"));
+    descs.put(SHOW_DELTA_SNAPSHOT, new Pair<>("", "Show delta snapshot"));
+    descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta snapshot"));
     descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
     descs.put(SHOW_NETWORK, new Pair<>("", "Show active network"));
-    descs.put(SHOW_REFERENCE_SNAPSHOT, new Pair<>("", "Show reference snapshot and environment"));
-    descs.put(SHOW_SNAPSHOT, new Pair<>("", "Show current snapshot and environment"));
-    descs.put(SHOW_TESTRIG, new Pair<>("", "Show current snapshot and environment"));
+    descs.put(SHOW_REFERENCE_SNAPSHOT, new Pair<>("", "Show reference snapshot"));
+    descs.put(SHOW_SNAPSHOT, new Pair<>("", "Show current snapshot"));
+    descs.put(SHOW_TESTRIG, new Pair<>("", "Show current snapshot"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
     descs.put(
         SYNC_SNAPSHOTS_SYNC_NOW,

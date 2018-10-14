@@ -901,7 +901,7 @@ public final class Interface extends ComparableStructure<String> {
     return _eigrp;
   }
 
-  /** Mapping: hsrpGroupID -> HsrpGroup */
+  /** Mapping: hsrpGroupID -&gt; HsrpGroup */
   @JsonProperty(PROP_HSRP_GROUPS)
   public Map<Integer, HsrpGroup> getHsrpGroups() {
     return _hsrpGroups;
@@ -1074,6 +1074,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @JsonIgnore
+  public @Nullable Prefix getPrimaryNetwork() {
+    return _address != null ? _address.getPrefix() : null;
   }
 
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")

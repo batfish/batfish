@@ -390,11 +390,6 @@ neighbor_block_address_family
    )+ address_family_footer
 ;
 
-neighbor_block_inherit
-:
-   INHERIT PEER name = VARIABLE NEWLINE
-;
-
 neighbor_block_rb_stanza
 locals
 [java.util.Set<String> addressFamilies, java.util.Set<String> consumedAddressFamilies]
@@ -418,7 +413,6 @@ locals
    )? NEWLINE
    (
       bgp_tail
-      | neighbor_block_inherit
       | no_shutdown_rb_stanza
       | remote_as_bgp_tail
       | use_neighbor_group_bgp_tail
@@ -516,7 +510,6 @@ vrf_block_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
-      | template_peer_rb_stanza
       | template_peer_session_rb_stanza
    )*
 ;
@@ -613,10 +606,8 @@ null_bgp_tail
             (
                BESTPATH
                (
-                  AS_PATH
-                  (
-                     CONFED
-                  )
+                  AS_PATH CONFED
+                  | MED
                )
             )
             | CLIENT_TO_CLIENT
@@ -931,7 +922,6 @@ router_bgp_stanza_tail
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
    | session_group_rb_stanza
-   | template_peer_rb_stanza
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    | vrf_block_rb_stanza
@@ -988,52 +978,6 @@ subnet_bgp_tail
 template_peer_address_family
 :
    address_family_header bgp_tail* address_family_footer
-;
-
-template_peer_rb_stanza
-locals [java.util.Set<String> addressFamilies] @init {
-   $addressFamilies = new java.util.HashSet<String>();
-}
-:
-   TEMPLATE PEER name = VARIABLE NEWLINE template_peer_rb_stanza_tail
-   [$addressFamilies]
-;
-
-template_peer_rb_stanza_tail [java.util.Set<String> addressFamilies]
-locals [boolean active]
-:
-{
-   if (_input.LT(1).getType() == ADDRESS_FAMILY) {
-      String addressFamilyString = "";
-      for (int i = 1, currentType = -1; _input.LT(i).getType() != NEWLINE; i++) {
-         addressFamilyString += " " + _input.LT(i).getText();
-      }
-      if ($addressFamilies.contains(addressFamilyString)) {
-         $active = false;
-      }
-      else {
-         $addressFamilies.add(addressFamilyString);
-         $active = true;
-      }
-   }
-   else {
-      $active = true;
-   }
-}
-
-   (
-      {$active}?
-
-      (
-         bgp_tail
-         | inherit_peer_session_bgp_tail
-         | no_shutdown_rb_stanza
-         | remote_as_bgp_tail
-         | template_peer_address_family
-      ) template_peer_rb_stanza_tail [$addressFamilies]
-      | // intentional blank
-
-   )
 ;
 
 template_peer_policy_rb_stanza

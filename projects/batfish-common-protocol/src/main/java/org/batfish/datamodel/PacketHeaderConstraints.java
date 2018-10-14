@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -43,6 +44,7 @@ public class PacketHeaderConstraints {
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
   private static final String PROP_SRC_IPS = "srcIps";
   private static final String PROP_SRC_PORTS = "srcPorts";
+  private static final String PROP_TCP_FLAGS = "tcpFlags";
 
   static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
       ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.DCCP, IpProtocol.SCTP);
@@ -82,9 +84,9 @@ public class PacketHeaderConstraints {
   // TODO: allow specification of more complex applications, the existing Protocol Enum is limiting.
   @Nullable private final Set<Protocol> _applications;
 
-  private static final SubRange ALLOWED_PORTS = new SubRange(0, 65535);
+  @Nullable private final Set<TcpFlagsMatchConditions> _tcpFlags;
 
-  // TODO: add tcp flags
+  private static final SubRange ALLOWED_PORTS = new SubRange(0, 65535);
 
   @JsonCreator
   private PacketHeaderConstraints(
@@ -100,7 +102,8 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_ICMP_TYPES) Set<SubRange> icmpTypes,
       @Nullable @JsonProperty(PROP_SRC_PORTS) Set<SubRange> srcPorts,
       @Nullable @JsonProperty(PROP_DST_PORTS) Set<SubRange> dstPorts,
-      @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications)
+      @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications,
+      @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
     _dscps = dscps;
     _ecns = ecns;
@@ -115,13 +118,14 @@ public class PacketHeaderConstraints {
     _srcPorts = srcPorts;
     _dstPorts = dstPorts;
     _applications = applications;
+    _tcpFlags = tcpFlags;
     validate(this);
   }
 
   /** Create new object with all fields unconstrained */
   public static PacketHeaderConstraints unconstrained() {
     return new PacketHeaderConstraints(
-        null, null, null, null, null, null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
 
   @Nullable
@@ -198,20 +202,27 @@ public class PacketHeaderConstraints {
 
   @Nullable
   @JsonProperty(PROP_APPLICATIONS)
-  public Set<Protocol> getDstProtocols() {
+  public Set<Protocol> getApplications() {
     return _applications;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_TCP_FLAGS)
+  public Set<TcpFlagsMatchConditions> getTcpFlags() {
+    return _tcpFlags;
   }
 
   /** Return the set of allowed IP protocols */
   @Nullable
   public Set<IpProtocol> resolveIpProtocols() {
-    return resolveIpProtocols(getIpProtocols(), getSrcPorts(), getDstPorts(), getDstProtocols());
+    return resolveIpProtocols(
+        getIpProtocols(), getSrcPorts(), getDstPorts(), getApplications(), getTcpFlags());
   }
 
   /** Return the set of allowed destination port values */
   @Nullable
   public Set<SubRange> resolveDstPorts() {
-    return resolvePorts(getDstPorts(), getDstProtocols());
+    return resolvePorts(getDstPorts(), getApplications());
   }
 
   /** Check that constraints contain valid values and do not conflict with each other. */
@@ -233,7 +244,7 @@ public class PacketHeaderConstraints {
     }
     try {
       areProtocolsAndPortsCompatible(
-          ipProtocols, headerConstraints.getDstPorts(), headerConstraints.getDstProtocols());
+          ipProtocols, headerConstraints.getDstPorts(), headerConstraints.getApplications());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Destination ports/protocols are incompatible: %s", e.getMessage()));
@@ -378,6 +389,7 @@ public class PacketHeaderConstraints {
    * @param srcPorts specified source ports
    * @param dstPorts specified destination ports
    * @param applications specified destination application protocols
+   * @param tcpFlags set of TCP flags to match, if any
    * @return a set of {@link IpProtocol}s that are allowed. {@code null} means no constraints.
    * @throws IllegalArgumentException if the set of IP protocols resolves to an empty set.
    */
@@ -387,7 +399,8 @@ public class PacketHeaderConstraints {
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable Set<SubRange> srcPorts,
       @Nullable Set<SubRange> dstPorts,
-      @Nullable Set<Protocol> applications)
+      @Nullable Set<Protocol> applications,
+      @Nullable Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
     @Nullable
     Set<IpProtocol> resolvedIpProtocols = ipProtocols; // either already defined or we don't care
@@ -407,6 +420,15 @@ public class PacketHeaderConstraints {
         resolvedIpProtocols = collected;
       } else {
         resolvedIpProtocols = Sets.intersection(resolvedIpProtocols, collected);
+      }
+    }
+
+    if (tcpFlags != null) {
+      if (ipProtocols != null) {
+        resolvedIpProtocols =
+            Sets.intersection(resolvedIpProtocols, Collections.singleton(IpProtocol.TCP));
+      } else {
+        resolvedIpProtocols = Collections.singleton(IpProtocol.TCP);
       }
     }
 
@@ -485,6 +507,7 @@ public class PacketHeaderConstraints {
     private @Nullable Set<SubRange> _dstPorts;
     // Shorthands for UDP/TCP fields
     private @Nullable Set<Protocol> _applications;
+    private @Nullable Set<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
 
@@ -553,6 +576,11 @@ public class PacketHeaderConstraints {
       return this;
     }
 
+    public Builder setTcpFlags(@Nullable Set<TcpFlagsMatchConditions> tcpFlags) {
+      this._tcpFlags = tcpFlags;
+      return this;
+    }
+
     public PacketHeaderConstraints build() {
       return new PacketHeaderConstraints(
           _dscps,
@@ -567,7 +595,8 @@ public class PacketHeaderConstraints {
           _icmpTypes,
           _srcPorts,
           _dstPorts,
-          _applications);
+          _applications,
+          _tcpFlags);
     }
   }
 }

@@ -64,8 +64,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs parse trees from test-rig initialization.
    *
    * @type InitInfo onefile

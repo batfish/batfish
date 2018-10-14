@@ -80,7 +80,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * List the roles of each node.
    *
    * @type Roles multifile

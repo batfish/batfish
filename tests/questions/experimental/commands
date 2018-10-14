@@ -1,13 +1,19 @@
 load-questions questions/experimental
 
-# validate aclReachability
-test -raw tests/questions/experimental/aclReachability.ref validate-template aclReachability filters=".*", nodes=".*"
+# validate filterLineReachability
+test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", nodes=".*"
 
-# validate bgpProperties
-test -raw tests/questions/experimental/bgpProperties.ref validate-template bgpProperties nodes=".*", properties="multipath-.*"
+# validate bgpPeerConfiguration
+test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*"
+
+# validate bgpProcessConfiguration
+test -raw tests/questions/experimental/bgpProcessConfiguration.ref validate-template bgpProcessConfiguration nodes=".*", properties="multipath-.*"
+
+# validate bgpSessionCompatibility
+test -raw tests/questions/experimental/bgpSessionCompatibility.ref validate-template bgpSessionCompatibility nodes=".*", remoteNodes=".*", status=".*", type=".*"
 
 # validate bgpSessionStatus
-test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus includeEstablishedCount=true, nodes=".*", remoteNodes=".*", status=".*", type=".*"
+test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus nodes=".*", remoteNodes=".*", status=".*", type=".*"
 
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
@@ -40,13 +46,13 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachability
-test -raw tests/questions/experimental/reachability.ref validate-template reachability actions=["accept"], start="aaa", "finalNodes"="bbb", "transitNodes" = "ccc", avoidNodes="ddd", srcIps="sss", dstIps="ddd"
-
-# validate reachfilter
-test -raw tests/questions/experimental/reachfilter.ref validate-template reachfilter complementHeaderSpace=false, filters=".*", query="matchLine 0", dst="2.2.2.2", ipProtocols=["tcp"], start=".*", src="1.1.1.1", nodes=".*", srcPorts=[0], dstPorts=[0], dstProtocols=["http"]
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate reducedReachability
-test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability
+test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
+
+# validate searchfilters
+test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts=[0], dstPorts=[0]}, nodes=".*", startLocation="somenode", explain=false
 
 # validate specifiers
 test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
@@ -56,3 +62,9 @@ test -raw tests/questions/experimental/traceroute.ref validate-template tracerou
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# test traceroute new version
+add-batfish-option debugflags=traceroute
+init-network test_traceroute
+init-snapshot networks/example/live
+test tests/questions/experimental/tracerouteListHops.ref answer traceroute startLocation="host1", ignoreAcls=false, headers={dstIps="1.0.2.2"}

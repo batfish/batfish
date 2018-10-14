@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -24,8 +25,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.storage.TestStorageProvider;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,22 +43,24 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     private String _questionSettings;
 
     @Override
-    public boolean checkNetworkExists(String network) {
+    public boolean checkNetworkExists(NetworkId network) {
       return true;
     }
 
     @Override
-    public String loadQuestionSettings(String network, String className) throws IOException {
-      if (className.equals(BAD_QUESTION)) {
+    public String loadQuestionSettings(NetworkId network, QuestionSettingsId questionSettingsId)
+        throws IOException {
+      if (questionSettingsId.equals(BAD_QUESTION_SETTINGS_ID)) {
         throw new IOException("simulated exception");
       }
       return _questionSettings;
     }
 
     @Override
-    public void storeQuestionSettings(String settings, String network, String questionClass)
+    public void storeQuestionSettings(
+        String settings, NetworkId network, QuestionSettingsId questionSettingsId)
         throws IOException {
-      if (questionClass.equals(BAD_QUESTION)) {
+      if (questionSettingsId.equals(BAD_QUESTION_SETTINGS_ID)) {
         throw new IOException("simulated exception");
       }
       _questionSettings = settings;
@@ -62,6 +68,8 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   }
 
   private static final String BAD_QUESTION = "badquestion";
+
+  private static final QuestionSettingsId BAD_QUESTION_SETTINGS_ID = new QuestionSettingsId("bad");
 
   private static final String NETWORK = "network1";
 
@@ -72,6 +80,8 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   private static final String QUESTION = "qclass1";
 
   private static final int VAL = 5;
+
+  private LocalIdManager _idManager;
 
   private LocalStorageProvider _storage;
 
@@ -92,8 +102,28 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   @Before
   public void initContainerEnvironment() throws Exception {
+    _idManager =
+        new LocalIdManager() {
+          @Override
+          public QuestionSettingsId getQuestionSettingsId(
+              String questionClassId, NetworkId networkId) {
+            if (questionClassId.equals(BAD_QUESTION)) {
+              return BAD_QUESTION_SETTINGS_ID;
+            }
+            return super.getQuestionSettingsId(questionClassId, networkId);
+          }
+
+          @Override
+          public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
+            if (questionClassId.equals(BAD_QUESTION)) {
+              return true;
+            }
+            return super.hasQuestionSettingsId(questionClassId, networkId);
+          }
+        };
     _storage = new LocalStorageProvider();
-    WorkMgrTestUtils.initWorkManager(_storage);
+    WorkMgrTestUtils.initWorkManager(_idManager, _storage);
+    Main.getWorkMgr().initNetwork(NETWORK, null);
   }
 
   @Test
@@ -120,9 +150,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetQuestionSettingsJsonPathQuestionPresentDepth1Present() {
-    String settings = String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL);
-    _storage._questionSettings = settings;
+  public void testGetQuestionSettingsJsonPathQuestionPresentDepth1Present() throws IOException {
+    JsonNode settings =
+        BatfishObjectMapper.mapper()
+            .readTree(String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL));
+    Main.getWorkMgr().writeQuestionSettings(NETWORK, QUESTION, ImmutableList.of(), settings);
     Response response = getQuestionSettingsJsonPathTarget(QUESTION, PROP1).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -141,9 +173,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetQuestionSettingsJsonPathQuestionPresentDepth2Present() {
-    String settings = String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL);
-    _storage._questionSettings = settings;
+  public void testGetQuestionSettingsJsonPathQuestionPresentDepth2Present() throws IOException {
+    JsonNode settings =
+        BatfishObjectMapper.mapper()
+            .readTree(String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL));
+    Main.getWorkMgr().writeQuestionSettings(NETWORK, QUESTION, ImmutableList.of(), settings);
     Response response =
         getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, PROP2)).get();
 
@@ -206,7 +240,14 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     String settings = "{}";
     String oldKey = "foo";
     int oldVal = 1;
-    _storage._questionSettings = String.format("{\"%s\":%d}", oldKey, oldVal);
+
+    Main.getWorkMgr()
+        .writeQuestionSettings(
+            NETWORK,
+            QUESTION,
+            ImmutableList.of(),
+            BatfishObjectMapper.mapper().readTree(String.format("{\"%s\":%d}", oldKey, oldVal)));
+
     JsonNode settingsNode = BatfishObjectMapper.mapper().readTree(settings);
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     ObjectNode rootSettingsNode = new ObjectNode(factory);

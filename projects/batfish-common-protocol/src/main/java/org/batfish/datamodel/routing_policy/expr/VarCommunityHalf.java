@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 /**
  * A match expression for a 16-bit half of a community that matches when the half is matched by the
- * contained variable match expression resolved under a provided {@link Environment}
+ * contained variable match expression.
  */
 public class VarCommunityHalf implements CommunityHalfExpr {
 

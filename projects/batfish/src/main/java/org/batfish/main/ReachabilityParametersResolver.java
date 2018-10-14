@@ -1,6 +1,11 @@
 package org.batfish.main;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
@@ -13,9 +18,11 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
@@ -69,7 +76,7 @@ final class ReachabilityParametersResolver {
         new ReachabilityParametersResolver(batfish, params, snapshot);
 
     // validate actions
-    SortedSet<ForwardingAction> actions = params.getActions();
+    SortedSet<FlowDisposition> actions = params.getActions();
     if (actions.isEmpty()) {
       throw new InvalidReachabilityParametersException("No actions");
     }
@@ -106,16 +113,10 @@ final class ReachabilityParametersResolver {
         .build();
   }
 
-  private HeaderSpace resolveHeaderSpace() throws InvalidReachabilityParametersException {
-    IpSpace destinationIpSpace = resolveDestinationIpSpace();
-
-    HeaderSpace headerSpace = _params.getHeaderSpace();
-    if (headerSpace == null) {
-      headerSpace = HeaderSpace.builder().setDstIps(destinationIpSpace).build();
-    } else {
-      headerSpace.setDstIps(destinationIpSpace);
-    }
-    return headerSpace;
+  private AclLineMatchExpr resolveHeaderSpace() throws InvalidReachabilityParametersException {
+    return and(
+        firstNonNull(_params.getHeaderSpace(), AclLineMatchExprs.TRUE),
+        matchDst(resolveDestinationIpSpace()));
   }
 
   @VisibleForTesting
@@ -209,7 +210,15 @@ final class ReachabilityParametersResolver {
   }
 
   private void initConfigsAndDataPlane() {
-    boolean useCompression = _params.getUseCompression();
+    /*
+     * TODO Fix compression to use a more expressive representation of HeaderSpaces
+     * The compression code expects the headerspace to be expressed as a HeaderSpace object,
+     * but ReachabilityParameters use a more expressive representation. Until we update compression,
+     * we can't use it.
+     */
+    Preconditions.checkArgument(!_params.getUseCompression(), "Compression is currently disabled.");
+    boolean useCompression = false;
+    HeaderSpace compressionHeaderSpace = null;
 
     /*
      * TODO specialized compression is currently broken.
@@ -238,7 +247,7 @@ final class ReachabilityParametersResolver {
 
     CompressDataPlaneResult compressionResult =
         useCompression && useSpecializedCompression
-            ? _batfish.computeCompressedDataPlane(_params.getHeaderSpace())
+            ? _batfish.computeCompressedDataPlane(compressionHeaderSpace)
             : null;
 
     _configs =

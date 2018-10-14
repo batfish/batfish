@@ -127,8 +127,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists IP addresses that are assigned to multiple interfaces.
    *
    * <p>Except in cases of anycast, an IP address should be assigned to only one interface. This

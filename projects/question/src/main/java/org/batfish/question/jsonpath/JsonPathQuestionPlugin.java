@@ -210,20 +210,20 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         return answer();
       }
 
-      _batfish.pushBaseEnvironment();
-      _batfish.checkEnvironmentExists();
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
-      _batfish.checkEnvironmentExists();
-      _batfish.popEnvironment();
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
+      _batfish.checkSnapshotOutputReady();
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
+      _batfish.checkSnapshotOutputReady();
+      _batfish.popSnapshot();
+      _batfish.pushBaseSnapshot();
       JsonPathAnswerer beforeAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement before = beforeAnswerer.answer();
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
       JsonPathAnswerer afterAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement after = afterAnswerer.answer();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       return new JsonPathDiffAnswerElement(before, after);
     }
 
@@ -372,8 +372,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Runs JsonPath <a href=https://github.com/jayway/JsonPath></a> queries on the JSON data model
    * that is the output of the 'Nodes' question.
    *

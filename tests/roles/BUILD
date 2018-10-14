@@ -6,5 +6,6 @@ ref_tests(
     extra_deps = glob([
         "*.ref",
         "networks/**",
-    ]) + ["//networks"],
+        "default.json",
+    ]) + ["//networks:example"],
 )

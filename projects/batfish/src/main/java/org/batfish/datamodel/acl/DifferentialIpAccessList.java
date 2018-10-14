@@ -22,11 +22,11 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * <p>Constructing such an ACL is simple when they have the same context (i.e. the same sets of
  * named {@link IpAccessList ACLs} and named {@link IpSpace IP spaces}. Where it gets tricky is when
  * they have possibly different sets, possibly with the name collisions. This is a common situation
- * when comparing two versions of the same ACL (e.g. from two different {@link
- * org.batfish.common.Snapshot snapshots}. We do rename the {@code denyAcl}'s context to avoid
- * collisions.
+ * when comparing two versions of the same ACL (e.g. from two different snapshots. We do rename the
+ * {@code denyAcl}'s context to avoid collisions.
  */
 public final class DifferentialIpAccessList {
+  @VisibleForTesting static final String DENY_ACL_NAME = " ~~ Deny ACL Name ~~ ";
   @VisibleForTesting static final String DIFFERENTIAL_ACL_NAME = " ~~ Differential ACL Name ~~ ";
 
   @VisibleForTesting
@@ -50,13 +50,12 @@ public final class DifferentialIpAccessList {
    * IpAccessList IpAccessLists}.
    *
    * @param denyAcl The {@link IpAccessList} subtracted in the difference.
-   * @param denyNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
-   *     denyAcl}.
-   * @param denyNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param denyAcl}.
+   * @param denyNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@code denyAcl}.
+   * @param denyNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@code denyAcl}.
    * @param permitAcl The {@link IpAccessList} that is subtracted from in the difference.
-   * @param permitNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@param
+   * @param permitNamedAcls The named {@link IpAccessList IpAccessLists} in scope for {@code
    *     permitAcl}.
-   * @param permitNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@param permitAcl}.
+   * @param permitNamedIpSpaces The named {@link IpSpace IpSpaces} in scope for {@code permitAcl}.
    */
   public static DifferentialIpAccessList create(
       IpAccessList denyAcl,
@@ -70,14 +69,13 @@ public final class DifferentialIpAccessList {
     /*
      * Create a new ACL for "matched by permitAcl but not by denyAcl"
      */
-    String denyAclName = RENAMER.apply(denyAcl.getName());
     IpAccessList differentialAcl =
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
                     // reject if permitted by denyAcl
-                    .add(rejecting(new PermittedByAcl(denyAclName)))
+                    .add(rejecting(new PermittedByAcl(DENY_ACL_NAME)))
                     .addAll(permitAcl.getLines())
                     .build())
             .build();
@@ -96,8 +94,8 @@ public final class DifferentialIpAccessList {
                             Maps.immutableEntry(
                                 RENAMER.apply(entry.getKey()), aclRenamer.apply(entry.getValue())))
                     .collect(Collectors.toList()))
-            // entry for the renamed denyAcl itself
-            .put(denyAclName, aclRenamer.apply(denyAcl))
+            // include denyAcl (with a special name to avoid collisions).
+            .put(DENY_ACL_NAME, aclRenamer.apply(denyAcl))
             // include all the permitNamedAcls (no need to rename).
             .putAll(permitNamedAcls)
             .build();

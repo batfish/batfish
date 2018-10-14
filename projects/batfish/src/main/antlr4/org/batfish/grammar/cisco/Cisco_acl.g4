@@ -167,6 +167,7 @@ extended_access_list_additional_feature
 :
    ACK
    | BEYOND_SCOPE
+   | BFD_ECHO
    | COUNT
    | CWR
    | DESTINATION_UNREACHABLE
@@ -176,7 +177,7 @@ extended_access_list_additional_feature
    )
    |
    (
-      icmpv6_message_type = DEC icmpv6_message_code = DEC?
+      icmp_message_type = DEC icmp_message_code = DEC?
    )
    | ECE
    | ECHO
@@ -952,12 +953,9 @@ s_mac_access_list_extended
 s_mac_access_list_extended_tail
 :
    (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? action = access_list_action src = access_list_mac_range dst =
-   access_list_mac_range
+      (SEQ | SEQUENCE)? num = DEC
+   )?
+   action = access_list_action src = access_list_mac_range dst = access_list_mac_range
    (
       vlan = DEC
       | vlan_any = ANY

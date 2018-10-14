@@ -2,9 +2,13 @@ package org.batfish.question.specifiers;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.question.traceroute.TracerouteAnswerer;
 
+/** Produces a {@link TableAnswerElement} for a {@link SpecifiersReachabilityQuestion} */
 public final class SpecifiersReachabilityAnswerer extends Answerer {
 
   public SpecifiersReachabilityAnswerer(Question question, IBatfish batfish) {
@@ -14,6 +18,13 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     SpecifiersReachabilityQuestion question = (SpecifiersReachabilityQuestion) _question;
-    return _batfish.standard(question.getReachabilityParameters());
+    AnswerElement answer = _batfish.standard(question.getReachabilityParameters());
+    if (!(answer instanceof FlowHistory)) {
+      return answer;
+    }
+    TableAnswerElement tableAnswer =
+        new TableAnswerElement(TracerouteAnswerer.createMetadata(false));
+    TracerouteAnswerer.flowHistoryToRows((FlowHistory) answer, false).forEach(tableAnswer::addRow);
+    return tableAnswer;
   }
 }

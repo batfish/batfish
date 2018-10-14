@@ -1,10 +1,10 @@
 package org.batfish.role;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -524,8 +524,12 @@ public final class InferRoles {
       inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex), _caseSensitive));
     }
 
-    return new NodeRoleDimension(
-        dimName, inferredRoles, Type.AUTO, Collections.singletonList(regex));
+    return NodeRoleDimension.builder()
+        .setName(dimName)
+        .setRoles(inferredRoles)
+        .setType(Type.AUTO)
+        .setRoleRegexes(ImmutableList.of(regex))
+        .build();
   }
 
   // regex is a regular expression that uses one or more groups to indicate the role

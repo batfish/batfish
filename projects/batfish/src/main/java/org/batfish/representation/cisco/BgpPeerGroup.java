@@ -27,8 +27,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   protected String _defaultOriginateMap;
 
-  protected Integer _defaultOriginateMapLine;
-
   protected String _description;
 
   protected Boolean _disablePeerAsCheck;
@@ -36,8 +34,6 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _ebgpMultihop;
 
   private String _groupName;
-
-  private int _groupNameLine;
 
   protected String _inboundPrefixList;
 
@@ -66,8 +62,6 @@ public abstract class BgpPeerGroup implements Serializable {
   protected String _outboundRouteMap;
 
   private String _peerSession;
-
-  private int _peerSessionLine;
 
   protected Long _remoteAs;
 
@@ -125,10 +119,6 @@ public abstract class BgpPeerGroup implements Serializable {
     return _defaultOriginateMap;
   }
 
-  public Integer getDefaultOriginateMapLine() {
-    return _defaultOriginateMapLine;
-  }
-
   public String getDescription() {
     return _description;
   }
@@ -143,10 +133,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public String getGroupName() {
     return _groupName;
-  }
-
-  public int getGroupNameLine() {
-    return _groupNameLine;
   }
 
   public String getInboundPrefixList() {
@@ -211,13 +197,6 @@ public abstract class BgpPeerGroup implements Serializable {
       if (parent == null) {
         parent = defaultProc.getNamedPeerGroups().get(_groupName);
       }
-      if (parent == null) {
-        cv.undefined(
-            CiscoStructureType.BGP_PEER_GROUP,
-            _groupName,
-            CiscoStructureUsage.BGP_INHERITED_GROUP,
-            _groupNameLine);
-      }
     }
     return parent;
   }
@@ -230,13 +209,6 @@ public abstract class BgpPeerGroup implements Serializable {
       if (parent == null) {
         parent = defaultProc.getPeerSessions().get(_peerSession);
       }
-      if (parent == null) {
-        cv.undefined(
-            CiscoStructureType.BGP_PEER_GROUP,
-            _peerSession,
-            CiscoStructureUsage.BGP_INHERITED_SESSION,
-            _peerSessionLine);
-      }
     }
     if (parent == null) {
       parent = proc.getMasterBgpPeerGroup();
@@ -246,10 +218,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public String getPeerSession() {
     return _peerSession;
-  }
-
-  public int getPeerSessionLine() {
-    return _peerSessionLine;
   }
 
   public Long getRemoteAs() {
@@ -307,7 +275,6 @@ public abstract class BgpPeerGroup implements Serializable {
     }
     if (_defaultOriginateMap == null) {
       _defaultOriginateMap = pg.getDefaultOriginateMap();
-      _defaultOriginateMapLine = pg.getDefaultOriginateMapLine();
     }
     if (_description == null) {
       _description = pg.getDescription();
@@ -431,10 +398,6 @@ public abstract class BgpPeerGroup implements Serializable {
     _defaultOriginateMap = routeMapName;
   }
 
-  public void setDefaultOriginateMapLine(Integer defaultOriginateMapLine) {
-    _defaultOriginateMapLine = defaultOriginateMapLine;
-  }
-
   public void setDescription(String description) {
     _description = description;
   }
@@ -449,10 +412,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setGroupName(String groupName) {
     _groupName = groupName;
-  }
-
-  public void setGroupNameLine(int groupNameLine) {
-    _groupNameLine = groupNameLine;
   }
 
   public void setInboundPrefixList(String inboundPrefixList) {
@@ -505,10 +464,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setPeerSession(String peerSession) {
     _peerSession = peerSession;
-  }
-
-  public void setPeerSessionLine(int peerSessionLine) {
-    _peerSessionLine = peerSessionLine;
   }
 
   public void setRemoteAs(long remoteAS) {

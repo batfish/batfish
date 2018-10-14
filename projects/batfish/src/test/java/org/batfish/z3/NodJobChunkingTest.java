@@ -18,7 +18,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -30,6 +30,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -131,7 +132,7 @@ public class NodJobChunkingTest {
         .setAddress(new InterfaceAddress(pDest.getEndIp(), pDest.getPrefixLength()))
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
     _srcVrf1.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
     _srcVrf2.getStaticRoutes().add(bld.setNextHopIp(p2.getEndIp()).build());
 
@@ -156,7 +157,7 @@ public class NodJobChunkingTest {
             Batfish.computeSynthesizerInput(
                 _configs,
                 _dataPlane,
-                new HeaderSpace(),
+                AclLineMatchExprs.TRUE,
                 IpSpaceAssignment.empty(),
                 ImmutableSortedSet.of(),
                 ImmutableSortedSet.of(),
@@ -175,8 +176,8 @@ public class NodJobChunkingTest {
             TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
-            .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
-            .setHeaderSpace(new HeaderSpace())
+            .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
+            .setHeaderSpace(AclLineMatchExprs.TRUE)
             .setSrcIpConstraints(srcIpConstraints)
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .build();

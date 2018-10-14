@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -25,7 +27,7 @@ import org.batfish.specifier.NodeSpecifier;
 public final class ReachabilityParameters {
 
   public static class Builder {
-    private @Nonnull SortedSet<ForwardingAction> _actions = ImmutableSortedSet.of();
+    private @Nonnull SortedSet<FlowDisposition> _actions = ImmutableSortedSet.of();
 
     private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
         new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
@@ -34,7 +36,7 @@ public final class ReachabilityParameters {
 
     private @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier = null;
 
-    private @Nullable HeaderSpace _headerSpace;
+    private @Nullable AclLineMatchExpr _headerSpace;
 
     private int _maxChunkSize;
 
@@ -56,7 +58,7 @@ public final class ReachabilityParameters {
       return new ReachabilityParameters(this);
     }
 
-    public Builder setActions(SortedSet<ForwardingAction> actions) {
+    public Builder setActions(SortedSet<FlowDisposition> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
       return this;
     }
@@ -89,7 +91,7 @@ public final class ReachabilityParameters {
     }
 
     public Builder setHeaderSpace(@Nonnull HeaderSpace headerSpace) {
-      _headerSpace = headerSpace;
+      _headerSpace = new MatchHeaderSpace(headerSpace);
       return this;
     }
 
@@ -119,7 +121,7 @@ public final class ReachabilityParameters {
     }
   }
 
-  private final SortedSet<ForwardingAction> _actions;
+  private final SortedSet<FlowDisposition> _actions;
 
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
 
@@ -127,7 +129,7 @@ public final class ReachabilityParameters {
 
   private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
 
-  private final HeaderSpace _headerSpace;
+  private final AclLineMatchExpr _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -162,7 +164,7 @@ public final class ReachabilityParameters {
     return new Builder();
   }
 
-  public SortedSet<ForwardingAction> getActions() {
+  public SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 
@@ -181,7 +183,7 @@ public final class ReachabilityParameters {
     return _forbiddenTransitNodesSpecifier;
   }
 
-  public HeaderSpace getHeaderSpace() {
+  public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 

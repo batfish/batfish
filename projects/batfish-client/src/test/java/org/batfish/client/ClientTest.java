@@ -10,7 +10,6 @@ import static org.batfish.client.Command.CLEAR_SCREEN;
 import static org.batfish.client.Command.DEL_ANALYSIS;
 import static org.batfish.client.Command.DEL_ANALYSIS_QUESTIONS;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
-import static org.batfish.client.Command.DEL_ENVIRONMENT;
 import static org.batfish.client.Command.DEL_NETWORK;
 import static org.batfish.client.Command.DEL_QUESTION;
 import static org.batfish.client.Command.DEL_SNAPSHOT;
@@ -29,12 +28,10 @@ import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_REFERENCE;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
-import static org.batfish.client.Command.INIT_ENVIRONMENT;
 import static org.batfish.client.Command.INIT_NETWORK;
 import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
 import static org.batfish.client.Command.LIST_ANALYSES;
-import static org.batfish.client.Command.LIST_ENVIRONMENTS;
 import static org.batfish.client.Command.LIST_NETWORKS;
 import static org.batfish.client.Command.LIST_QUESTIONS;
 import static org.batfish.client.Command.LIST_SNAPSHOTS;
@@ -45,8 +42,6 @@ import static org.batfish.client.Command.RUN_ANALYSIS;
 import static org.batfish.client.Command.RUN_ANALYSIS_DIFFERENTIAL;
 import static org.batfish.client.Command.RUN_ANALYSIS_REFERENCE;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
-import static org.batfish.client.Command.SET_DELTA_ENV;
-import static org.batfish.client.Command.SET_ENV;
 import static org.batfish.client.Command.SET_LOGLEVEL;
 import static org.batfish.client.Command.SET_NETWORK;
 import static org.batfish.client.Command.SET_PRETTY_PRINT;
@@ -271,17 +266,6 @@ public class ClientTest {
   @Test
   public void testDelNetworkInvalidParas() throws Exception {
     testInvalidInput(DEL_NETWORK, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelEnvironmentInvalidParas() throws Exception {
-    testInvalidInput(DEL_ENVIRONMENT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelEnvironmentValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_ENVIRONMENT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -539,17 +523,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_ENVIRONMENT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testInitEnvValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
   public void testInitSnapshotReferenceInvalidParas() throws Exception {
     testInvalidInput(INIT_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
@@ -757,17 +730,6 @@ public class ClientTest {
   public void testListNetworksInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(LIST_NETWORKS, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testListEnvironmentsInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ENVIRONMENTS, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testListEnvironmentsValidParas() throws Exception {
-    checkProcessCommandErrorMessage(LIST_ENVIRONMENTS, new String[] {}, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -1088,13 +1050,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testParseInitEnvironmentParamsInterfaceBlacklist() {
-    String paramsLine =
-        "interfaceBlacklist=" + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
-    Client.parseInitEnvironmentParams(paramsLine);
-  }
-
-  @Test
   public void testPathRegexInvalidEnd() {
     String invalidEnd = "/pathRegex";
     _thrown.expect(BatfishException.class);
@@ -1247,20 +1202,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testSetDeltaEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_ENV, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testSetDeltaEnvValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testProcessCommandWithValidInput(
-        SET_DELTA_ENV,
-        parameters,
-        String.format("Active delta snapshot->environment is now null->%s\n", parameters[0]));
-  }
-
-  @Test
   public void testSetReferenceSnapshotInvalidParas() throws Exception {
     testInvalidInput(SET_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
@@ -1271,18 +1212,7 @@ public class ClientTest {
     testProcessCommandWithValidInput(
         SET_REFERENCE_SNAPSHOT,
         parameters,
-        String.format("Reference snapshot->env is now %s->env_default\n", parameters[0]));
-  }
-
-  @Test
-  public void testSetEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_ENV, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testSetEnvValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(SET_ENV, parameters, SNAPSHOT_NOT_SET);
+        String.format("Reference snapshot is now %s\n", parameters[0]));
   }
 
   @Test

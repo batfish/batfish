@@ -41,11 +41,11 @@ public class QuestionSettingsJsonPathResource {
 
   private final String _network;
 
-  private final String _questionClass;
+  private final String _questionName;
 
-  public QuestionSettingsJsonPathResource(String network, String questionClass, String jsonPath) {
+  public QuestionSettingsJsonPathResource(String network, String questionName, String jsonPath) {
     _network = network;
-    _questionClass = questionClass;
+    _questionName = questionName;
     _jsonPath = jsonPath;
   }
 
@@ -54,12 +54,13 @@ public class QuestionSettingsJsonPathResource {
     String settings;
     try {
       settings =
-          Main.getWorkMgr().getQuestionSettings(_network, _questionClass, getComponents(_jsonPath));
+          Main.getWorkMgr()
+              .getQuestionSettings(_network, _questionName.toLowerCase(), getComponents(_jsonPath));
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
               "Failed to load question settings for network '%s', class '%s', path '%s'",
-              _network, _questionClass, _jsonPath),
+              _network, _questionName, _jsonPath),
           e);
     }
     return settings != null
@@ -72,12 +73,13 @@ public class QuestionSettingsJsonPathResource {
   public Response putQuestionSettings(JsonNode settings) {
     try {
       Main.getWorkMgr()
-          .writeQuestionSettings(_network, _questionClass, getComponents(_jsonPath), settings);
+          .writeQuestionSettings(
+              _network, _questionName.toLowerCase(), getComponents(_jsonPath), settings);
     } catch (IOException e) {
       throw new InternalServerErrorException(
           String.format(
               "Failed to write question settings for network '%s', class '%s', path '%s'",
-              _network, _questionClass, _jsonPath),
+              _network, _questionName, _jsonPath),
           e);
     }
     return Response.ok().build();

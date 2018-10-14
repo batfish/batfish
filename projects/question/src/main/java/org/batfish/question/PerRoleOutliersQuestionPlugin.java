@@ -174,7 +174,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-  /**
+  /*
    * Runs outlier detection on a per-role basis and then does a global ranking of the results.
    *
    * @type PerRoleOutliers multifile

@@ -1,40 +1,54 @@
 package org.batfish.bddreachability;
 
-import java.util.List;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.z3.expr.StateExpr;
 
+/** An edge in the graph modeling network behavior. */
+@ParametersAreNonnullByDefault
 final class Edge {
-  final @Nonnull BDD _constraint;
-  final @Nonnull StateExpr _postState;
-  final @Nonnull StateExpr _preState;
-  final @Nullable List<BDDSourceNat> _sourceNats;
+  private final @Nonnull StateExpr _postState;
+  private final @Nonnull StateExpr _preState;
+  private final @Nonnull Function<BDD, BDD> _traverseBackward;
+  private final @Nonnull Function<BDD, BDD> _traverseForward;
 
-  Edge(@Nonnull StateExpr preState, @Nonnull StateExpr postState, @Nonnull BDD constraint) {
-    _constraint = constraint;
-    _postState = postState;
+  Edge(StateExpr preState, StateExpr postState, BDD constraint) {
     _preState = preState;
-    _sourceNats = null;
+    _postState = postState;
+    _traverseBackward = constraint::and;
+    _traverseForward = constraint::and;
   }
 
   Edge(
-      @Nonnull StateExpr preState,
-      @Nonnull StateExpr postState,
-      @Nonnull BDD constraint,
-      @Nullable List<BDDSourceNat> sourceNats) {
-    _constraint = constraint;
+      StateExpr preState,
+      StateExpr postState,
+      Function<BDD, BDD> traverseBackward,
+      Function<BDD, BDD> traverseForward) {
     _postState = postState;
     _preState = preState;
-    _sourceNats = sourceNats;
+    _traverseBackward = traverseBackward;
+    _traverseForward = traverseForward;
   }
 
-  public @Nonnull BDD getConstraint() {
-    return _constraint;
+  @Nonnull
+  StateExpr getPostState() {
+    return _postState;
   }
 
-  public @Nullable List<BDDSourceNat> getSourceNats() {
-    return _sourceNats;
+  @Nonnull
+  StateExpr getPreState() {
+    return _preState;
+  }
+
+  @Nonnull
+  BDD traverseBackward(BDD bdd) {
+    return _traverseBackward.apply(bdd);
+  }
+
+  @Nonnull
+  BDD traverseForward(BDD bdd) {
+    return _traverseForward.apply(bdd);
   }
 }

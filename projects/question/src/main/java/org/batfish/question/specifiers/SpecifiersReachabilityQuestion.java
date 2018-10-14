@@ -2,28 +2,26 @@ package org.batfish.question.specifiers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleLocationSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifierFactory;
-import org.batfish.specifier.NameRegexNodeSpecifierFactory;
-import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
@@ -31,118 +29,61 @@ import org.batfish.specifier.NodeSpecifierFactory;
  * IpSpaceSpecifier ipSpace} specifiers.
  */
 public final class SpecifiersReachabilityQuestion extends Question {
-  private static final String DEFAULT_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
-      FlexibleUniverseIpSpaceSpecifierFactory.NAME;
-
-  private static final String DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
-      FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
-
-  private static final String DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY =
-      FlexibleLocationSpecifierFactory.NAME;
-
   private static final String PROP_ACTIONS = "actions";
+  private static final String PROP_HEADER_CONSTRAINT = "headers";
+  private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
 
-  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY =
-      "destinationIpSpaceSpecifierFactory";
+  private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
+      LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
+  private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
+      NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
-  private static final String PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT =
-      "destinationIpSpaceSpecifierInput";
+  @Nonnull private final DispositionSpecifier _actions;
+  @Nonnull private final PacketHeaderConstraints _headerConstraints;
+  @Nonnull private final PathConstraintsInput _pathConstraints;
 
-  private static final String PROP_DST_PORTS = "dstPorts";
-
-  private static final String PROP_DST_PROTOCOLS = "dstProtocols";
-
-  private static final String PROP_FINAL_NODES_SPECIFIER_FACTORY = "finalNodesSpecifierFactory";
-
-  private static final String PROP_FINAL_NODES_SPECIFIER_INPUT = "finalNodesSpecifierInput";
-
-  private static final String PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_INPUT =
-      "forbiddenTransitNodesNodeSpecifierInput";
-
-  private static final String PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_FACTORY =
-      "forbiddenTransitNodesNodeSpecifierFactory";
-
-  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY =
-      "sourceIpSpaceSpecifierFactory";
-
-  private static final String PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT = "sourceIpSpaceSpecifierInput";
-
-  private static final String PROP_SOURCE_LOCATION_SPECIFIER_FACTORY =
-      "sourceLocationSpecifierFactory";
-
-  private static final String PROP_SOURCE_LOCATION_SPECIFIER_INPUT = "sourceLocationSpecifierInput";
-
-  private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_FACTORY =
-      "requiredTransitNodesNodeSpecifierFactory";
-
-  private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT =
-      "requiredTransitNodesNodeSpecifierInput";
-
-  private static @Nullable NodeSpecifier getNodeSpecifier(
-      @Nullable String factoryName, @Nullable String input, @Nullable NodeSpecifier def) {
-    if (factoryName == null && input == null) {
-      return def;
-    }
-    NodeSpecifierFactory factory =
-        (factoryName == null)
-            ? new NameRegexNodeSpecifierFactory()
-            : NodeSpecifierFactory.load(factoryName);
-    return factory.buildNodeSpecifier(input);
+  /**
+   * Create a new reachability question. {@code null} values result in default parameter values.
+   *
+   * @param actions set of actions/flow dispositions to search for (default is {@code success})
+   * @param headerConstraints header constraints that constrain the search space of valid flows.
+   *     Default is unconstrained.
+   * @param pathConstraints path constraints dictating where a flow can originate/terminate/transit.
+   *     Default is unconstrained.
+   */
+  @JsonCreator
+  public SpecifiersReachabilityQuestion(
+      @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
+      @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
+      @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
+    _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
+    _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
+    _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
-  private SortedSet<ForwardingAction> _actions;
+  SpecifiersReachabilityQuestion() {
+    this(
+        DispositionSpecifier.SUCCESS_SPECIFIER,
+        PacketHeaderConstraints.unconstrained(),
+        PathConstraintsInput.unconstrained());
+  }
 
-  private String _destinationIpSpaceSpecifierFactory;
-
-  private String _destinationIpSpaceSpecifierInput;
-
-  private SortedSet<SubRange> _dstPorts;
-
-  private SortedSet<Protocol> _dstProtocols;
-
-  private String _finalNodesNodeSpecifierFactory;
-
-  private String _finalNodesNodeSpecifierInput;
-
-  private String _forbiddenTransitNodesNodeSpecifierFactory;
-
-  private String _forbiddenTransitNodesNodeSpecifierInput;
-
-  private String _sourceIpSpaceSpecifierFactory;
-
-  private String _sourceIpSpaceSpecifierInput;
-
-  private String _sourceLocationSpecifierFactory;
-
-  private String _sourceLocationSpecifierInput;
-
-  private String _requiredTransitNodesNodeSpecifierFactory;
-
-  private String _requiredTransitNodesNodeSpecifierInput;
-
-  public SpecifiersReachabilityQuestion() {}
-
+  @Nonnull
   @JsonProperty(PROP_ACTIONS)
-  public SortedSet<ForwardingAction> getActions() {
-    return firstNonNull(_actions, ImmutableSortedSet.of(ForwardingAction.ACCEPT));
+  public DispositionSpecifier getActions() {
+    return _actions;
   }
 
-  IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
-    return IpSpaceSpecifierFactory.load(
-            firstNonNull(
-                _destinationIpSpaceSpecifierFactory,
-                DEFAULT_DESTINATION_IP_SPACE_SPECIFIER_FACTORY))
-        .buildIpSpaceSpecifier(_destinationIpSpaceSpecifierInput);
+  @Nonnull
+  @JsonProperty(PROP_HEADER_CONSTRAINT)
+  public PacketHeaderConstraints getHeaderConstraints() {
+    return _headerConstraints;
   }
 
-  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY)
-  public @Nullable String getDestinationIpSpaceSpecifierFactory() {
-    return _destinationIpSpaceSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT)
-  public @Nullable String getDestinationIpSpaceSpecifierInput() {
-    return _destinationIpSpaceSpecifierInput;
+  @JsonProperty(PROP_PATH_CONSTRAINT)
+  @Nonnull
+  private PathConstraintsInput getPathConstraintsInput() {
+    return _pathConstraints;
   }
 
   @Override
@@ -150,44 +91,60 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return true;
   }
 
-  @JsonProperty(PROP_DST_PORTS)
-  public SortedSet<SubRange> getDstPorts() {
-    return _dstPorts;
-  }
+  public static HeaderSpace toHeaderSpace(PacketHeaderConstraints headerConstraints) {
+    // Note: headerspace builder does not accept nulls, so we have to convert nulls to empty sets
+    HeaderSpace.Builder builder =
+        HeaderSpace.builder()
+            .setIpProtocols(
+                firstNonNull(headerConstraints.resolveIpProtocols(), ImmutableSortedSet.of()))
+            .setSrcPorts(firstNonNull(headerConstraints.getSrcPorts(), ImmutableSortedSet.of()))
+            .setDstPorts(firstNonNull(headerConstraints.resolveDstPorts(), ImmutableSortedSet.of()))
+            .setIcmpCodes(firstNonNull(headerConstraints.getIcmpCodes(), ImmutableSortedSet.of()))
+            .setIcmpTypes(firstNonNull(headerConstraints.getIcmpTypes(), ImmutableSortedSet.of()))
+            .setDstProtocols(
+                firstNonNull(headerConstraints.getApplications(), ImmutableSortedSet.of()));
 
-  @JsonProperty(PROP_DST_PROTOCOLS)
-  public SortedSet<Protocol> getDstProtocols() {
-    return _dstProtocols;
-  }
-
-  NodeSpecifier getFinalNodesSpecifier() {
-    return getNodeSpecifier(
-        _finalNodesNodeSpecifierFactory,
-        _finalNodesNodeSpecifierInput,
-        AllNodesNodeSpecifier.INSTANCE);
-  }
-
-  @JsonProperty(PROP_FINAL_NODES_SPECIFIER_FACTORY)
-  public String getFinalNodesSpecifierFactory() {
-    return _finalNodesNodeSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_FINAL_NODES_SPECIFIER_INPUT)
-  public String getFinalNodesSpecifierInput() {
-    return _finalNodesNodeSpecifierInput;
-  }
-
-  NodeSpecifier getForbiddenTransitNodesSpecifier() {
-    return getNodeSpecifier(
-        _forbiddenTransitNodesNodeSpecifierFactory, _forbiddenTransitNodesNodeSpecifierInput, null);
+    if (headerConstraints.getDscps() != null) {
+      builder.setDscps(
+          ImmutableSortedSet.copyOf(
+              headerConstraints.getDscps().stream().flatMapToInt(SubRange::asStream).iterator()));
+    }
+    if (headerConstraints.getEcns() != null) {
+      builder.setEcns(
+          ImmutableSortedSet.copyOf(
+              headerConstraints.getEcns().stream().flatMapToInt(SubRange::asStream).iterator()));
+    }
+    return builder.build();
   }
 
   @VisibleForTesting
   HeaderSpace getHeaderSpace() {
-    return HeaderSpace.builder()
-        .setDstPorts(firstNonNull(_dstPorts, ImmutableList.of()))
-        .setDstProtocols(firstNonNull(_dstProtocols, ImmutableList.of()))
-        .build();
+    return toHeaderSpace(getHeaderConstraints());
+  }
+
+  @VisibleForTesting
+  PathConstraints getPathConstraints() {
+    PathConstraints.Builder builder =
+        PathConstraints.builder()
+            .withStartLocation(
+                LOCATION_SPECIFIER_FACTORY.buildLocationSpecifier(
+                    _pathConstraints.getStartLocation()))
+            .withEndLocation(
+                NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getEndLocation()));
+    /*
+     * Explicit check for null, because null expands into ALL nodes, which is usually not the
+     * desired behavior for waypointing constraints
+     */
+
+    if (_pathConstraints.getTransitLocations() != null) {
+      builder.through(
+          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getTransitLocations()));
+    }
+    if (_pathConstraints.getForbiddenLocations() != null) {
+      builder.avoid(
+          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getForbiddenLocations()));
+    }
+    return builder.build();
   }
 
   @Override
@@ -195,144 +152,61 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return "specifiersReachability";
   }
 
+  private IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
+    return IpSpaceSpecifierFactory.load(FlexibleUniverseIpSpaceSpecifierFactory.NAME)
+        .buildIpSpaceSpecifier(_headerConstraints.getDstIps());
+  }
+
+  private IpSpaceSpecifier getSourceIpSpaceSpecifier() {
+    return IpSpaceSpecifierFactory.load(FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME)
+        .buildIpSpaceSpecifier(_headerConstraints.getSrcIps());
+  }
+
   ReachabilityParameters getReachabilityParameters() {
+    PathConstraints pathConstraints = getPathConstraints();
     return ReachabilityParameters.builder()
-        .setActions(getActions())
+        .setActions(ImmutableSortedSet.copyOf(getActions().getDispositions()))
         .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())
-        .setFinalNodesSpecifier(getFinalNodesSpecifier())
-        .setForbiddenTransitNodesSpecifier(getForbiddenTransitNodesSpecifier())
+        .setFinalNodesSpecifier(pathConstraints.getEndLocation())
+        .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
         .setHeaderSpace(getHeaderSpace())
-        .setRequiredTransitNodesSpecifier(getRequiredTransitNodesSpecifier())
-        .setSourceLocationSpecifier(getSourceLocationSpecifier())
+        .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
+        .setSourceLocationSpecifier(pathConstraints.getStartLocation())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
         .setSpecialize(true)
         .build();
   }
 
-  NodeSpecifier getRequiredTransitNodesSpecifier() {
-    return getNodeSpecifier(
-        _requiredTransitNodesNodeSpecifierFactory, _requiredTransitNodesNodeSpecifierInput, null);
-  }
-
-  IpSpaceSpecifier getSourceIpSpaceSpecifier() {
-    return IpSpaceSpecifierFactory.load(
-            firstNonNull(_sourceIpSpaceSpecifierFactory, DEFAULT_SOURCE_IP_SPACE_SPECIFIER_FACTORY))
-        .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
-  }
-
-  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
-  public String getSourceIpSpaceSpecifierFactory() {
-    return _sourceIpSpaceSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT)
-  public String getSourceIpSpaceSpecifierInput() {
-    return _sourceIpSpaceSpecifierInput;
+  @VisibleForTesting
+  static Builder builder() {
+    return new Builder();
   }
 
   @VisibleForTesting
-  LocationSpecifier getSourceLocationSpecifier() {
-    return LocationSpecifierFactory.load(
-            firstNonNull(
-                _sourceLocationSpecifierFactory, DEFAULT_SOURCE_LOCATION_SPECIFIER_FACTORY))
-        .buildLocationSpecifier(_sourceLocationSpecifierInput);
-  }
+  static final class Builder {
+    private DispositionSpecifier _actions;
+    private PacketHeaderConstraints _headerConstraints;
+    private PathConstraintsInput _pathConstraints;
 
-  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
-  public String getSourceLocationSpecifierFactory() {
-    return _sourceLocationSpecifierFactory;
-  }
+    private Builder() {}
 
-  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT)
-  public String getSourceLocationSpecifierInput() {
-    return _sourceLocationSpecifierInput;
-  }
+    public Builder setActions(DispositionSpecifier actions) {
+      _actions = actions;
+      return this;
+    }
 
-  @JsonProperty(PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_FACTORY)
-  public String getTransitNodesSpecifierFactory() {
-    return _requiredTransitNodesNodeSpecifierFactory;
-  }
+    public Builder setHeaderConstraints(PacketHeaderConstraints headerConstraints) {
+      _headerConstraints = headerConstraints;
+      return this;
+    }
 
-  @JsonProperty(PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT)
-  public String getTransitNodesSpecifierInput() {
-    return _requiredTransitNodesNodeSpecifierInput;
-  }
+    public Builder setPathConstraints(PathConstraintsInput pathConstraintsInput) {
+      _pathConstraints = pathConstraintsInput;
+      return this;
+    }
 
-  @JsonProperty(PROP_ACTIONS)
-  public void setActions(Iterable<ForwardingAction> actionSet) {
-    _actions = ImmutableSortedSet.copyOf(actionSet);
-  }
-
-  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_FACTORY)
-  public void setDestinationIpSpaceSpecifierFactory(String ipSpaceSpecifierFactory) {
-    _destinationIpSpaceSpecifierFactory = ipSpaceSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_DESTINATION_IP_SPACE_SPECIFIER_INPUT)
-  public void setDestinationIpSpaceSpecifierInput(String ipSpaceSpecifierInput) {
-    _destinationIpSpaceSpecifierInput = ipSpaceSpecifierInput;
-  }
-
-  @JsonProperty(PROP_DST_PORTS)
-  public void setDstPorts(SortedSet<SubRange> dstPorts) {
-    _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
-  }
-
-  @JsonProperty(PROP_DST_PROTOCOLS)
-  public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
-    _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
-  }
-
-  @JsonProperty(PROP_FINAL_NODES_SPECIFIER_FACTORY)
-  public void setFinalNodesSpecifierFactory(String finalNodesNodeSpecifierFactory) {
-    _finalNodesNodeSpecifierFactory = finalNodesNodeSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_FINAL_NODES_SPECIFIER_INPUT)
-  public void setFinalNodesSpecifierInput(String finalNodesNodeSpecifierInput) {
-    _finalNodesNodeSpecifierInput = finalNodesNodeSpecifierInput;
-  }
-
-  @JsonProperty(PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_FACTORY)
-  public void setForbiddenTransitNodesNodeSpecifierFactory(
-      String forbiddenTransitNodesNodeSpecifierFactory) {
-    _forbiddenTransitNodesNodeSpecifierFactory = forbiddenTransitNodesNodeSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_FORBIDDEN_TRANSIT_NODES_NODE_SPECIFIER_INPUT)
-  public void setForbiddenTransitNodesNodeSpecifierInput(
-      String forbiddenTransitNodesNodeSpecifierInput) {
-    _forbiddenTransitNodesNodeSpecifierInput = forbiddenTransitNodesNodeSpecifierInput;
-  }
-
-  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
-  public void setSourceIpSpaceSpecifierFactory(String ipSpaceSpecifierFactory) {
-    _sourceIpSpaceSpecifierFactory = ipSpaceSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_INPUT)
-  public void setSourceIpSpaceSpecifierInput(String ipSpaceSpecifierInput) {
-    _sourceIpSpaceSpecifierInput = ipSpaceSpecifierInput;
-  }
-
-  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
-  public void setSourceLocationSpecifierFactory(String locationSpecifierFactory) {
-    _sourceLocationSpecifierFactory = locationSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_INPUT)
-  public void setSourceLocationSpecifierInput(String locationSpecifierInput) {
-    _sourceLocationSpecifierInput = locationSpecifierInput;
-  }
-
-  @JsonProperty(PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_FACTORY)
-  public void setRequiredTransitNodesNodeSpecifierFactory(
-      String requiredTransitNodesNodeSpecifierFactory) {
-    _requiredTransitNodesNodeSpecifierFactory = requiredTransitNodesNodeSpecifierFactory;
-  }
-
-  @JsonProperty(PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT)
-  public void setRequiredTransitNodesNodeSpecifierInput(String transitNodesNodeSpecifierInput) {
-    _requiredTransitNodesNodeSpecifierInput = transitNodesNodeSpecifierInput;
+    public SpecifiersReachabilityQuestion build() {
+      return new SpecifiersReachabilityQuestion(_actions, _headerConstraints, _pathConstraints);
+    }
   }
 }

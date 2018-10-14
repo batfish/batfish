@@ -66,27 +66,27 @@
       {
         "Filename" : "cisco_acl",
         "Line" : 10,
-        "Text" : "60 permit tcp any any eq mlag ttl eq 255",
+        "Text" : "ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "matching ttl in extended access list"
+        "Comment" : "clause in extended access list"
       },
       {
         "Filename" : "cisco_acl",
         "Line" : 11,
-        "Text" : "70 permit udp any any eq mlag ttl eq 255",
+        "Text" : "ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "matching ttl in extended access list"
+        "Comment" : "clause in extended access list"
       },
       {
         "Filename" : "cisco_bgp",
-        "Line" : 28,
+        "Line" : 29,
         "Text" : "redistribute ospf 2",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_bgp",
-        "Line" : 29,
+        "Line" : 30,
         "Text" : "redistribute ospf 2 vrf vrf1",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -254,7 +254,7 @@
       },
       {
         "Filename" : "cisco_vrf",
-        "Line" : 7,
+        "Line" : 9,
         "Text" : "ip route 0.0.0.0/0 1.2.3.4",
         "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

@@ -45,18 +45,15 @@ public class BfConsts {
   public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
   public static final String ARG_CONTAINER = "container";
-  public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
   public static final String ARG_DIFFERENTIAL = "differential";
   public static final String ARG_DISABLE_UNRECOGNIZED = "disableunrecognized";
   public static final String ARG_ENABLE_CISCO_NX_PARSER = "enable_cisco_nx_parser";
-  public static final String ARG_ENVIRONMENT_NAME = "env";
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
   public static final String ARG_LOG_LEVEL = "loglevel";
-  public static final String ARG_OUTPUT_ENV = "outputenv";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
@@ -77,14 +74,11 @@ public class BfConsts {
 
   public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
-  public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
   public static final String COMMAND_DUMP_DP = "dp";
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
   public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
-  public static final String COMMAND_QUERY = "query";
-  public static final String COMMAND_REPORT = "report";
-  public static final String COMMAND_VALIDATE_ENVIRONMENT = "venv";
+  public static final String COMMAND_VALIDATE_SNAPSHOT = "venv";
 
   /*
    * JSON key names
@@ -117,6 +111,7 @@ public class BfConsts {
   public static final String PROP_METRICS = "metrics";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NUM_EXCLUDED_ROWS = "numExcludedRows";
   public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_QUESTION = "question";
@@ -149,25 +144,23 @@ public class BfConsts {
   public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
-  public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
-  public static final String RELPATH_DELTA = "delta";
-  public static final String RELPATH_DIFF_DIR = "differential";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
-  public static final String RELPATH_ENV_DIR = "env";
   public static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
-  public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
+  public static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
+  public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
   public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
   public static final String RELPATH_ORIGINAL_DIR = "original";
+  public static final String RELPATH_OUTPUT = "output";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
@@ -178,14 +171,12 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
-  public static final String RELPATH_STANDARD_DIR = "standard";
+  public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
-  public static final String RELPATH_TESTRIGS_DIR = "testrigs";
-  public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
+  public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";
   public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";

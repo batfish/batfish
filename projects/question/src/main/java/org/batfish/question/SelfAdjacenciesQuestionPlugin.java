@@ -133,8 +133,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs cases where two interfaces on the same node are in the same subnet.
    *
    * <p>This occurrence likely indicates an error in IP address assignment.

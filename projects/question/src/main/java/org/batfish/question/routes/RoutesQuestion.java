@@ -56,7 +56,7 @@ public class RoutesQuestion extends Question {
 
   private static final String PROP_VRFS = "vrfs";
 
-  private static final String QUESTION_NAME = "routes2";
+  private static final String QUESTION_NAME = "routes";
 
   @Nullable private Prefix _network;
 

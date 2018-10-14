@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -42,9 +44,14 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.question.ReachFilterParameters;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
+import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
+import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -58,7 +65,13 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public DifferentialReachabilityResult bddReducedReachability(
+      DifferentialReachabilityParameters parameters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
     throw new UnsupportedOperationException();
   }
 
@@ -68,7 +81,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkEnvironmentExists() {
+  public void checkSnapshotOutputReady() {
     throw new UnsupportedOperationException();
   }
 
@@ -83,12 +96,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public DifferentialReachFilterResult differentialReachFilter(
+  public DifferentialSearchFiltersResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      ReachFilterParameters reachFilterParameters) {
+      SearchFiltersParameters searchFiltersParameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -104,7 +117,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getContainerName() {
+  public NetworkId getContainerName() {
     throw new UnsupportedOperationException();
   }
 
@@ -202,7 +215,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getTestrigName() {
+  public SnapshotId getTestrigName() {
     throw new UnsupportedOperationException();
   }
 
@@ -300,7 +313,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void popEnvironment() {
+  public void popSnapshot() {
     throw new UnsupportedOperationException();
   }
 
@@ -310,18 +323,18 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void pushBaseEnvironment() {
+  public void pushBaseSnapshot() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void pushDeltaEnvironment() {
+  public void pushDeltaSnapshot() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Optional<Flow> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters params) {
+  public Optional<SearchFiltersResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFiltersParameters params) {
     throw new UnsupportedOperationException();
   }
 
@@ -436,7 +449,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
     throw new UnsupportedOperationException();
   }
 

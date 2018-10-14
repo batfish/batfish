@@ -76,7 +76,7 @@ class CounterExample {
     return new Ip(Long.parseLong(evaluate(e)));
   }
 
-  Flow buildFlow(SymbolicPacket pkt, String router) {
+  Flow buildFlow(SymbolicPacket pkt, String routerName) {
     Ip srcIp = ipVal(pkt.getSrcIp());
     Ip dstIp = ipVal(pkt.getDstIp());
     Integer srcPort = intVal(pkt.getSrcPort());
@@ -94,7 +94,7 @@ class CounterExample {
     Integer tcpFlagsFin = isTrue(pkt.getTcpFin()) ? 0 : 1;
 
     Flow.Builder b = new Flow.Builder();
-    b.setIngressNode(router);
+    b.setIngressNode(routerName);
     b.setSrcIp(srcIp);
     b.setDstIp(dstIp);
     b.setSrcPort(srcPort);
@@ -114,34 +114,34 @@ class CounterExample {
     return b.build();
   }
 
-  private Edge fromGraphEdge(GraphEdge ge) {
-    String w = ge.getRouter();
-    String x = ge.getStart() == null ? "none" : ge.getStart().getName();
-    String y = ge.getPeer();
-    String z = ge.getEnd() == null ? "none" : ge.getEnd().getName();
-    return new Edge(w, x, y, z);
+  private Edge fromGraphEdge(GraphEdge graphEdge) {
+    String node1 = graphEdge.getRouter();
+    String int1 = graphEdge.getStart() == null ? "none" : graphEdge.getStart().getName();
+    String node2 = graphEdge.getPeer();
+    String int2 = graphEdge.getEnd() == null ? "none" : graphEdge.getEnd().getName();
+    return new Edge(node1, int1, node2, int2);
   }
 
-  SortedSet<Edge> buildFailedLinks(Encoder enc) {
-    Set<GraphEdge> failed = new HashSet<>();
-    Graph g = enc.getMainSlice().getGraph();
+  SortedSet<Edge> buildFailedLinks(Encoder encoder) {
+    Set<GraphEdge> failedGraphEdges = new HashSet<>();
+    Graph g = encoder.getMainSlice().getGraph();
     for (List<GraphEdge> edges : g.getEdgeMap().values()) {
-      for (GraphEdge ge : edges) {
-        ArithExpr e = enc.getSymbolicFailures().getFailedVariable(ge);
+      for (GraphEdge graphEdge : edges) {
+        ArithExpr e = encoder.getSymbolicFailures().getFailedVariable(graphEdge);
         assert e != null;
         if (intVal(e) != 0) {
           // Don't add both directions?
-          GraphEdge other = g.getOtherEnd().get(ge);
-          if (other == null || !failed.contains(other)) {
-            failed.add(ge);
+          GraphEdge other = g.getOtherEnd().get(graphEdge);
+          if (other == null || !failedGraphEdges.contains(other)) {
+            failedGraphEdges.add(graphEdge);
           }
         }
       }
     }
     // Convert to Batfish Edge type
     SortedSet<Edge> failedEdges = new TreeSet<>();
-    for (GraphEdge ge : failed) {
-      failedEdges.add(fromGraphEdge(ge));
+    for (GraphEdge graphEdge : failedGraphEdges) {
+      failedEdges.add(fromGraphEdge(graphEdge));
     }
     return failedEdges;
   }
@@ -149,29 +149,29 @@ class CounterExample {
   SortedSet<BgpAdvertisement> buildEnvRoutingTable(Encoder enc) {
     SortedSet<BgpAdvertisement> routes = new TreeSet<>();
     EncoderSlice slice = enc.getMainSlice();
-    LogicalGraph lg = slice.getLogicalGraph();
+    LogicalGraph logicalGraph = slice.getLogicalGraph();
 
-    for (Entry<LogicalEdge, SymbolicRoute> entry : lg.getEnvironmentVars().entrySet()) {
-      LogicalEdge lge = entry.getKey();
+    for (Entry<LogicalEdge, SymbolicRoute> entry : logicalGraph.getEnvironmentVars().entrySet()) {
+      LogicalEdge logicalEdge = entry.getKey();
       SymbolicRoute record = entry.getValue();
       // If there is an external advertisement
       if (boolVal(record.getPermitted())) {
         // If we actually use it
-        GraphEdge ge = lge.getEdge();
-        String router = ge.getRouter();
+        GraphEdge ge = logicalEdge.getEdge();
+        String routerName = ge.getRouter();
         SymbolicDecisions decisions = slice.getSymbolicDecisions();
-        BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
+        BoolExpr ctrFwd = decisions.getControlForwarding().get(routerName, ge);
         assert ctrFwd != null;
 
         if (boolVal(ctrFwd)) {
-          SymbolicRoute r = decisions.getBestNeighbor().get(router);
+          SymbolicRoute symbolicRoute = decisions.getBestNeighbor().get(routerName);
           SymbolicPacket pkt = slice.getSymbolicPacket();
-          Flow f = buildFlow(pkt, router);
-          Prefix pfx = buildPrefix(r, f);
-          int pathLength = intVal(r.getMetric());
+          Flow flow = buildFlow(pkt, routerName);
+          Prefix pfx = buildPrefix(symbolicRoute, flow);
+          int pathLength = intVal(symbolicRoute.getMetric());
 
           // Create dummy information
-          BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
+          BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(logicalEdge.getEdge());
           String srcNode = "as" + n.getRemoteAs();
           Ip zeroIp = new Ip(0);
           Ip dstIp = n.getLocalIp();
@@ -187,7 +187,7 @@ class CounterExample {
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
-          for (Entry<CommunityVar, BoolExpr> entry2 : r.getCommunities().entrySet()) {
+          for (Entry<CommunityVar, BoolExpr> entry2 : symbolicRoute.getCommunities().entrySet()) {
             CommunityVar cvar = entry2.getKey();
             BoolExpr expr = entry2.getValue();
             if (cvar.getType() == Type.EXACT && boolVal(expr)) {
@@ -203,7 +203,7 @@ class CounterExample {
                   srcNode,
                   "default",
                   zeroIp,
-                  router,
+                  routerName,
                   "default",
                   dstIp,
                   RoutingProtocol.BGP,
@@ -227,11 +227,11 @@ class CounterExample {
   /*
    * Build an individual flow hop along a path
    */
-  private FlowTraceHop buildFlowTraceHop(GraphEdge ge, String route) {
-    String node1 = ge.getRouter();
-    String int1 = ge.getStart().getName();
-    String node2 = ge.getPeer() == null ? "(none)" : ge.getPeer();
-    String int2 = ge.getEnd() == null ? "null_interface" : ge.getEnd().getName();
+  private FlowTraceHop buildFlowTraceHop(GraphEdge graphEdge, String route) {
+    String node1 = graphEdge.getRouter();
+    String int1 = graphEdge.getStart().getName();
+    String node2 = graphEdge.getPeer() == null ? "(none)" : graphEdge.getPeer();
+    String int2 = graphEdge.getEnd() == null ? "null_interface" : graphEdge.getEnd().getName();
     Edge edge = new Edge(node1, int1, node2, int2);
     SortedSet<String> routes = new TreeSet<>();
     routes.add(route);
@@ -241,54 +241,54 @@ class CounterExample {
   /*
    * Reconstruct the actual route used to forward the packet.
    */
-  String buildRoute(Prefix pfx, Protocol proto, GraphEdge ge) {
+  String buildRoute(Prefix pfx, Protocol proto, GraphEdge graphEdge) {
     String type;
-    String nhip;
-    String nhint;
+    String nextHopIP;
+    String nextHopInt;
     if (proto.isConnected()) {
       type = "ConnectedRoute";
-      nhip = "AUTO/NONE(-1l)";
-      nhint = ge.getStart().getName();
+      nextHopIP = "AUTO/NONE(-1l)";
+      nextHopInt = graphEdge.getStart().getName();
     } else {
       type = StringUtils.capitalize(proto.name().toLowerCase()) + "Route";
-      nhip = ge.getStart().getAddress().getIp().toString();
-      nhint = "dynamic";
+      nextHopIP = graphEdge.getStart().getAddress().getIp().toString();
+      nextHopInt = "dynamic";
     }
-    return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx, nhip, nhint);
+    return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx, nextHopIP, nextHopInt);
   }
 
   /*
    * Create a route from a graph edge
    */
-  String buildRoute(EncoderSlice slice, GraphEdge ge) {
-    String router = ge.getRouter();
+  String buildRoute(EncoderSlice slice, GraphEdge graphEdge) {
+    String router = graphEdge.getRouter();
     SymbolicDecisions decisions = slice.getSymbolicDecisions();
-    SymbolicRoute r = decisions.getBestNeighbor().get(router);
+    SymbolicRoute symbolicRoute = decisions.getBestNeighbor().get(router);
     SymbolicPacket pkt = slice.getSymbolicPacket();
-    Flow f = buildFlow(pkt, router);
-    Prefix pfx = buildPrefix(r, f);
-    Protocol proto = buildProcotol(r, slice, router);
-    return buildRoute(pfx, proto, ge);
+    Flow flow = buildFlow(pkt, router);
+    Prefix pfx = buildPrefix(symbolicRoute, flow);
+    Protocol proto = buildProcotol(symbolicRoute, slice, router);
+    return buildRoute(pfx, proto, graphEdge);
   }
 
   /*
    * Reconstruct the prefix from a symbolic record
    */
-  Prefix buildPrefix(SymbolicRoute r, Flow f) {
-    Integer pfxLen = intVal(r.getPrefixLength());
-    return new Prefix(f.getDstIp(), pfxLen);
+  Prefix buildPrefix(SymbolicRoute symbolicRoute, Flow flow) {
+    Integer pfxLen = intVal(symbolicRoute.getPrefixLength());
+    return new Prefix(flow.getDstIp(), pfxLen);
   }
 
   /*
    * Reconstruct the protocol from a symbolic record
    */
-  Protocol buildProcotol(SymbolicRoute r, EncoderSlice slice, String router) {
+  Protocol buildProcotol(SymbolicRoute symbolicRoute, EncoderSlice slice, String router) {
     Protocol proto;
-    if (r.getProtocolHistory().getBitVec() == null) {
+    if (symbolicRoute.getProtocolHistory().getBitVec() == null) {
       proto = slice.getProtocols().get(router).get(0);
     } else {
-      Integer idx = intVal(r.getProtocolHistory().getBitVec());
-      proto = r.getProtocolHistory().value(idx);
+      Integer idx = intVal(symbolicRoute.getProtocolHistory().getBitVec());
+      proto = symbolicRoute.getProtocolHistory().value(idx);
     }
     return proto;
   }
@@ -296,112 +296,122 @@ class CounterExample {
   /*
    * Build flow information for a given hop along a path
    */
-  Tuple<Flow, FlowTrace> buildFlowTrace(Encoder enc, String router) {
-    EncoderSlice slice = enc.getMainSlice();
+  Tuple<Flow, FlowTrace> buildFlowTrace(Encoder encoder, String routerName) {
+    EncoderSlice slice = encoder.getMainSlice();
     SymbolicPacket pkt = slice.getSymbolicPacket();
     SymbolicDecisions decisions = slice.getSymbolicDecisions();
-    Flow f = buildFlow(pkt, router);
+    Flow flow = buildFlow(pkt, routerName);
 
-    SortedSet<String> visited = new TreeSet<>();
+    SortedSet<String> visitedRouters = new TreeSet<>();
     List<FlowTraceHop> hops = new ArrayList<>();
 
-    String current = router;
+    String currentRouterName = routerName;
     while (true) {
-      visited.add(current);
+      visitedRouters.add(currentRouterName);
       // Get the forwarding variables
-      Map<GraphEdge, BoolExpr> dfwd = decisions.getDataForwarding().get(current);
-      Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(current);
-      Map<GraphEdge, BoolExpr> across = enc.getMainSlice().getForwardsAcross().get(current);
+      Map<GraphEdge, BoolExpr> dfwd = decisions.getDataForwarding().get(currentRouterName);
+      Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(currentRouterName);
+      Map<GraphEdge, BoolExpr> across =
+          encoder.getMainSlice().getForwardsAcross().get(currentRouterName);
       // Find the route used
-      SymbolicRoute r = decisions.getBestNeighbor().get(current);
-      Protocol proto = buildProcotol(r, slice, current);
-      Prefix pfx = buildPrefix(r, f);
+      SymbolicRoute symbolicRoute = decisions.getBestNeighbor().get(currentRouterName);
+      Protocol proto = buildProcotol(symbolicRoute, slice, currentRouterName);
+      Prefix pfx = buildPrefix(symbolicRoute, flow);
       // pick the next router
       boolean found = false;
       for (Entry<GraphEdge, BoolExpr> entry : dfwd.entrySet()) {
-        GraphEdge ge = entry.getKey();
-        BoolExpr dexpr = entry.getValue();
-        BoolExpr cexpr = cfwd.get(ge);
-        BoolExpr aexpr = across.get(ge);
-        String route = buildRoute(pfx, proto, ge);
-        if (isTrue(dexpr)) {
-          hops.add(buildFlowTraceHop(ge, route));
-          if (ge.getPeer() != null && visited.contains(ge.getPeer())) {
-            FlowTrace ft = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
-            return new Tuple<>(f, ft);
+        GraphEdge graphEdge = entry.getKey();
+        BoolExpr dataForwardingExpr = entry.getValue();
+        BoolExpr controlExpr = cfwd.get(graphEdge);
+        BoolExpr aclExpr = across.get(graphEdge);
+        String route = buildRoute(pfx, proto, graphEdge);
+        // forwarded to the next router
+        if (isTrue(dataForwardingExpr)) {
+          hops.add(buildFlowTraceHop(graphEdge, route));
+          // if visited the router before, then a loop detected
+          if (graphEdge.getPeer() != null && visitedRouters.contains(graphEdge.getPeer())) {
+            FlowTrace flowTrace = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
+            return new Tuple<>(flow, flowTrace);
           }
-          if (isFalse(aexpr)) {
-            Interface i = ge.getEnd();
-            IpAccessList acl = i.getIncomingFilter();
-            FilterResult fr = acl.filter(f, null, ImmutableMap.of(), ImmutableMap.of());
+
+          // if acl denies the flow, DENY_IN detected
+          if (isFalse(aclExpr)) {
+            Interface interf = graphEdge.getEnd();
+            IpAccessList acl = interf.getIncomingFilter();
+            FilterResult filterResult =
+                acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
             String line = "default deny";
-            if (fr.getMatchLine() != null) {
-              line = acl.getLines().get(fr.getMatchLine()).getName();
+            if (filterResult.getMatchLine() != null) {
+              line = acl.getLines().get(filterResult.getMatchLine()).getName();
             }
             String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line);
-            FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
-            return new Tuple<>(f, ft);
+            FlowTrace flowTrace = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
+            return new Tuple<>(flow, flowTrace);
           }
-          boolean isLoopback = slice.getGraph().isLoopback(ge);
+
+          boolean isLoopback = slice.getGraph().isLoopback(graphEdge);
           if (isLoopback) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
-            return new Tuple<>(f, ft);
+            return new Tuple<>(flow, ft);
           }
-          if (ge.getPeer() == null) {
-            boolean isBgpPeering = slice.getGraph().getEbgpNeighbors().get(ge) != null;
+          if (graphEdge.getPeer() == null) {
+            boolean isBgpPeering = slice.getGraph().getEbgpNeighbors().get(graphEdge) != null;
             if (isBgpPeering) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
-              return new Tuple<>(f, ft);
+              return new Tuple<>(flow, ft);
             } else {
-              FlowTrace ft =
+              // the peer is not a BGP peer
+              FlowTrace flowTrace =
                   new FlowTrace(
                       FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
                       hops,
                       "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
-              return new Tuple<>(f, ft);
+              return new Tuple<>(flow, flowTrace);
             }
           }
-          if (slice.getGraph().isHost(ge.getPeer())) {
+          if (slice.getGraph().isHost(graphEdge.getPeer())) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
-            return new Tuple<>(f, ft);
+            return new Tuple<>(flow, ft);
           }
 
-          current = ge.getPeer();
+          currentRouterName = graphEdge.getPeer();
           found = true;
           break;
 
-        } else if (isTrue(cexpr)) {
-          hops.add(buildFlowTraceHop(ge, route));
-          Interface i = ge.getStart();
-          IpAccessList acl = i.getOutgoingFilter();
-          FilterResult fr = acl.filter(f, null, ImmutableMap.of(), ImmutableMap.of());
-          IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
+        } else if (isTrue(controlExpr)) {
+          // dataForwardingExpr is False but controlExpr is True
+          hops.add(buildFlowTraceHop(graphEdge, route));
+          Interface interf = graphEdge.getStart();
+          IpAccessList acl = interf.getOutgoingFilter();
+          FilterResult filterResult = acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
+          IpAccessListLine line = acl.getLines().get(filterResult.getMatchLine());
           String note = String.format("DENIED_OUT{%s}{%s}", acl.getName(), line.getName());
-          FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_OUT, hops, note);
-          return new Tuple<>(f, ft);
+          FlowTrace flowTrace = new FlowTrace(FlowDisposition.DENIED_OUT, hops, note);
+          return new Tuple<>(flow, flowTrace);
         }
       }
+      // if not found the next hop router
       if (!found) {
-        BoolExpr permitted = r.getPermitted();
+        BoolExpr permitted = symbolicRoute.getPermitted();
         if (boolVal(permitted)) {
           // Check if there is an accepting interface
-          for (GraphEdge ge : slice.getGraph().getEdgeMap().get(current)) {
-            Interface i = ge.getStart();
-            Ip ip = i.getAddress().getIp();
-            if (ip.equals(f.getDstIp())) {
+          for (GraphEdge graphEdge : slice.getGraph().getEdgeMap().get(currentRouterName)) {
+            Interface interf = graphEdge.getStart();
+            Ip ip = interf.getAddress().getIp();
+            if (ip.equals(flow.getDstIp())) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
-              return new Tuple<>(f, ft);
+              return new Tuple<>(flow, ft);
             }
           }
-          FlowTrace ft =
+          FlowTrace flowTrace =
               new FlowTrace(
                   FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
                   hops,
                   "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
-          return new Tuple<>(f, ft);
+          return new Tuple<>(flow, flowTrace);
         }
-        FlowTrace ft = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");
-        return new Tuple<>(f, ft);
+        FlowTrace flowTrace = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");
+        return new Tuple<>(flow, flowTrace);
       }
     }
   }
@@ -413,22 +423,22 @@ class CounterExample {
   FlowHistory buildFlowHistory(
       String testrigName,
       Collection<String> sourceRouters,
-      Encoder enc,
+      Encoder encoder,
       Map<String, Boolean> reach) {
 
-    FlowHistory fh = new FlowHistory();
+    FlowHistory flowHistory = new FlowHistory();
     for (String source : sourceRouters) {
       Boolean sourceVar = reach.get(source);
       if (!sourceVar) {
-        Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, source);
-        SortedSet<Edge> failedLinks = buildFailedLinks(enc);
-        SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(enc);
+        Tuple<Flow, FlowTrace> tup = buildFlowTrace(encoder, source);
+        SortedSet<Edge> failedLinks = buildFailedLinks(encoder);
+        SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(encoder);
         Environment baseEnv =
-            new Environment("BASE", testrigName, failedLinks, null, null, null, null, envRoutes);
-        fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
+            new Environment(testrigName, failedLinks, null, null, null, null, envRoutes);
+        flowHistory.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
       }
     }
-    return fh;
+    return flowHistory;
   }
 
   /*
@@ -438,12 +448,12 @@ class CounterExample {
   FlowHistory buildFlowHistoryDiff(
       String testRigName,
       Collection<String> sourceRouters,
-      Encoder enc,
-      Encoder enc2,
+      Encoder encoder,
+      Encoder encoder2,
       Map<String, BoolExpr> reach,
       Map<String, BoolExpr> reach2) {
 
-    FlowHistory fh = new FlowHistory();
+    FlowHistory flowHistory = new FlowHistory();
     assert (reach2 != null);
     for (String source : sourceRouters) {
       BoolExpr sourceVar1 = reach.get(source);
@@ -451,22 +461,27 @@ class CounterExample {
       String val1 = evaluate(sourceVar1);
       String val2 = evaluate(sourceVar2);
       if (!Objects.equals(val1, val2)) {
-        Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, source);
-        Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, source);
-        SortedSet<Edge> failedLinksDiff = buildFailedLinks(enc);
-        SortedSet<Edge> failedLinksBase = buildFailedLinks(enc2);
-        SortedSet<BgpAdvertisement> envRoutesDiff = buildEnvRoutingTable(enc);
-        SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(enc2);
+        Tuple<Flow, FlowTrace> diff = buildFlowTrace(encoder, source);
+        Tuple<Flow, FlowTrace> base = buildFlowTrace(encoder2, source);
+        SortedSet<Edge> failedLinksDiff = buildFailedLinks(encoder);
+        SortedSet<Edge> failedLinksBase = buildFailedLinks(encoder2);
+        SortedSet<BgpAdvertisement> envRoutesDiff = buildEnvRoutingTable(encoder);
+        SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(encoder2);
         Environment baseEnv =
-            new Environment(
-                "BASE", testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
+            new Environment(testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
         Environment failedEnv =
             new Environment(
-                "DELTA", testRigName, failedLinksDiff, null, null, null, null, envRoutesDiff);
-        fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
-        fh.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
+                testRigName + "-with-delta",
+                failedLinksDiff,
+                null,
+                null,
+                null,
+                null,
+                envRoutesDiff);
+        flowHistory.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
+        flowHistory.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
       }
     }
-    return fh;
+    return flowHistory;
   }
 }

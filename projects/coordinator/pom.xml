@@ -27,15 +27,28 @@
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
                   <ignoredUnusedDeclaredDependency>
+                    javax.activation:activation
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>
+                    javax.xml.bind:jaxb-api
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>
+                    org.glassfish.jersey.inject:jersey-hk2
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>
                     org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
+                  <ignoredUnusedDeclaredDependency>
+                    org.lastnpe.eea:guava-eea
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
+                  <ignoredUnusedDeclaredDependency>
+                    org.lastnpe.eea:jdk-eea
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
+                  <ignoredUnusedDeclaredDependency>
+                    org.slf4j:slf4j-jdk14
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.xerial:sqlite-jdbc
+                  <ignoredUnusedDeclaredDependency>
+                    org.xerial:sqlite-jdbc
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
@@ -177,6 +190,24 @@
       <artifactId>jersey-media-multipart</artifactId>
     </dependency>
 
+    <!-- Runtime dependencies for Jersey. -->
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -202,6 +233,12 @@
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
       <scope>test</scope>
     </dependency>
 

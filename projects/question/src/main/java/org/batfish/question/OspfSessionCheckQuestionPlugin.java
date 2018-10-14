@@ -272,8 +272,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Checks if OSPF sessions are correctly configured.
    *
    * <p>Details coming

@@ -1,19 +1,28 @@
 package org.batfish.question.multipath;
 
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpType;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.bddreachability.TestNetwork;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.Schema;
@@ -49,23 +58,24 @@ public class MultipathConsistencyTest {
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
 
-    Flow testFlow =
-        Flow.builder()
-            .setIngressNode("~Configuration_0~")
-            .setIngressVrf("default")
-            .setSrcIp(new Ip("2.0.0.0"))
-            .setDstIp(new Ip("2.1.0.0"))
-            .setIpProtocol(IpProtocol.HOPOPT)
-            .setState(FlowState.NEW)
-            .setTag("BASE")
-            .setDstPort(1234)
-            .setIcmpCode(0)
-            .setIcmpType(0)
-            .build();
+    assertThat(ae.getRows(), hasSize(1));
 
     assertThat(
         ae.getRows().getData().iterator().next(),
-        hasColumn(COL_FLOW, equalTo(testFlow), Schema.FLOW));
+        hasColumn(
+            COL_FLOW,
+            allOf(
+                ImmutableList.of(
+                    hasDstIp(new Ip("2.1.0.0")),
+                    hasDstPort(1234),
+                    hasIcmpCode(0),
+                    hasIcmpType(0),
+                    hasIngressNode("~Configuration_0~"),
+                    hasIngressVrf("default"),
+                    hasIpProtocol(IpProtocol.HOPOPT),
+                    hasSrcIp(oneOf(new Ip("2.0.0.0"), new Ip("1.0.0.0"))),
+                    hasTag("BASE"))),
+            Schema.FLOW));
 
     assertThat(
         ae.getRows().getData().iterator().next(),

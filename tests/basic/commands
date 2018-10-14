@@ -21,9 +21,9 @@ test -compareall tests/basic/init-candidate.ref init-delta-snapshot networks/exa
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
 # Everything below here is to be converted into regular unit tests in some form.
-test tests/basic/aclReachability.ref get aclReachability
+test tests/basic/filterLineReachability.ref get filterLineReachability
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
-test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*", includeEstablishedCount=true
+test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*"
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
@@ -49,26 +49,22 @@ test tests/basic/outliers-verbose.ref get outliers verbose=True
 # takes toooo long. need to constrain to be useful.
 # test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
-# init-environment
-test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
-test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
-# failure case with non-existent interface -- but the stack trace returned in the answer is bad mojo the test
-#test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
-
 # disable-as-reuse
 init-snapshot tests/basic/networks/dc-as-reuse basic-dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
 
 # iptables
-test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/example-iptables
-test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
-test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes="z1-firewall", actions=["ACCEPT"]
-test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPT"]
+test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/iptables-firewall
+test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DENIED_OUT"]
+test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes="z1-firewall", actions=["ACCEPTED"]
+test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPTED"]
 
 # z3 timeout - 1 millisecond
 add-batfish-option z3timeout 1
-init-snapshot networks/fattree-examples/fattree2
+add-batfish-option debugflags useNodReachability
+init-snapshot tests/basic/networks/fattree2
 test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
+add-batfish-option debugflags ""
 
 # data-plane related diff tests
 test -compareall tests/basic/init-with-ba.ref init-snapshot networks/example/live-with-bgp-announcements example-with-ba

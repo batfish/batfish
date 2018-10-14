@@ -37,6 +37,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -85,7 +86,7 @@ public class TracerouteTest {
   public void testGetFlows_interfaceSource() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false, "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -116,7 +117,7 @@ public class TracerouteTest {
   public void testGetFlows_interfaceLinkSourceNoSourceIp() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false, "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     thrown.expect(IllegalArgumentException.class);
@@ -127,9 +128,9 @@ public class TracerouteTest {
   public void testGetFlows_interfaceLinkSource() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false,
             "enter(node1)",
-            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build());
+            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
+            false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -162,9 +163,9 @@ public class TracerouteTest {
   public void testGetFlows_dst() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            false,
             String.format("%s[%s]", NODE1, LOOPBACK),
-            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build());
+            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
+            false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -210,7 +211,7 @@ public class TracerouteTest {
     batfish.computeDataPlane(false);
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
-    TracerouteQuestion question = new TracerouteQuestion(false, ".*", header);
+    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
 
     // without ignoreAcls we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -225,7 +226,7 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question = new TracerouteQuestion(true, ".*", header);
+    question = new TracerouteQuestion(".*", header, true);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
@@ -236,5 +237,44 @@ public class TracerouteTest {
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
                 Schema.set(Schema.FLOW_TRACE))));
+  }
+
+  @Test
+  public void testIgnoreAclsNew() throws IOException {
+    SortedMap<String, Configuration> configs = aclNetwork();
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.computeDataPlane(false);
+
+    batfish.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
+
+    PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
+    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
+
+    // without ignoreAcls we get DENIED_OUT
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(TraceMatchers.hasDisposition(FlowDisposition.DENIED_OUT)),
+                Schema.set(Schema.TRACE))));
+
+    // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+    question = new TracerouteQuestion(".*", header, true);
+    answerer = new TracerouteAnswerer(question, batfish);
+    answer = (TableAnswerElement) answerer.answer();
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(
+                    TraceMatchers.hasDisposition(
+                        FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
+                Schema.set(Schema.TRACE))));
   }
 }

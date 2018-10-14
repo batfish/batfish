@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
@@ -20,7 +20,7 @@ import org.batfish.specifier.IpSpaceAssignment;
 public final class ResolvedReachabilityParameters {
 
   public static class Builder {
-    private SortedSet<ForwardingAction> _actions;
+    private SortedSet<FlowDisposition> _actions;
 
     private Map<String, Configuration> _configurations;
 
@@ -30,7 +30,7 @@ public final class ResolvedReachabilityParameters {
 
     private Set<String> _forbiddenTransitNodes;
 
-    private HeaderSpace _headerSpace;
+    private AclLineMatchExpr _headerSpace;
 
     private int _maxChunkSize;
 
@@ -48,7 +48,7 @@ public final class ResolvedReachabilityParameters {
       return new ResolvedReachabilityParameters(this);
     }
 
-    public Builder setActions(SortedSet<ForwardingAction> actions) {
+    public Builder setActions(SortedSet<FlowDisposition> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
       return this;
     }
@@ -73,7 +73,7 @@ public final class ResolvedReachabilityParameters {
       return this;
     }
 
-    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(AclLineMatchExpr headerSpace) {
       _headerSpace = headerSpace;
       return this;
     }
@@ -109,7 +109,7 @@ public final class ResolvedReachabilityParameters {
     }
   }
 
-  private final SortedSet<ForwardingAction> _actions;
+  private final SortedSet<FlowDisposition> _actions;
 
   private final Map<String, Configuration> _configurations;
 
@@ -119,7 +119,7 @@ public final class ResolvedReachabilityParameters {
 
   private Set<String> _forbiddenTransitNodes;
 
-  private final HeaderSpace _headerSpace;
+  private final AclLineMatchExpr _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -133,8 +133,7 @@ public final class ResolvedReachabilityParameters {
 
   private final boolean _useCompression;
 
-  private ResolvedReachabilityParameters(Builder builder)
-      throws InvalidReachabilityParametersException {
+  private ResolvedReachabilityParameters(Builder builder) {
     _actions = builder._actions;
     _configurations = builder._configurations;
     _dataPlane = builder._dataPlane;
@@ -153,7 +152,7 @@ public final class ResolvedReachabilityParameters {
     return new Builder();
   }
 
-  public SortedSet<ForwardingAction> getActions() {
+  public SortedSet<FlowDisposition> getActions() {
     return _actions;
   }
 
@@ -173,7 +172,7 @@ public final class ResolvedReachabilityParameters {
     return _forbiddenTransitNodes;
   }
 
-  public HeaderSpace getHeaderSpace() {
+  public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 

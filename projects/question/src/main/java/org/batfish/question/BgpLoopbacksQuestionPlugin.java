@@ -170,7 +170,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
 
-  /**
+  /*
    * Lists which loopback interfaces are being announced into BGP.
    *
    * <p>When running BGP without an IGP, one may wish to announce loopback interface IPs into BGP.

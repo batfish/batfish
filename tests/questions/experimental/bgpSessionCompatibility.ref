@@ -1,0 +1,43 @@
+{
+  "class" : "org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityQuestion",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
+  "status" : ".*",
+  "type" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Return the status of configured BGP sessions, independent of remote peer configurations",
+    "instanceName" : "qname",
+    "tags" : [
+      "bgp",
+      "status"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include sessions whose first node matches this name or regex",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "remoteNodes" : {
+        "description" : "Include sessions whose second node matches this name or regex",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "status" : {
+        "description" : "Only include sessions for which status matches this regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "type" : {
+        "description" : "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      }
+    }
+  }
+}

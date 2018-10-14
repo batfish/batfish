@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.main.Driver.RunMode;
 import org.junit.Test;
@@ -69,7 +70,7 @@ public class SettingsTest {
         new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
 
     // Delta testrig present
     settings =
@@ -79,7 +80,7 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/delta/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/delta/output/tid.log"));
 
     // Delta testrig present, but the question is differential
     settings =
@@ -93,6 +94,12 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/testrigs/main/tid.log"));
+    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+  }
+
+  @Test
+  public void testDebugSettings() {
+    Settings settings = new Settings(new String[] {"-debugflags=blah"});
+    assertThat(settings.getDebugFlags(), equalTo(ImmutableList.of("blah")));
   }
 }

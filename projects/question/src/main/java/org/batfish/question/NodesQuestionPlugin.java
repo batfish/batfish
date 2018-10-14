@@ -340,20 +340,20 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       if (question.getSummary()) {
         return super.answerDiff();
       }
-      _batfish.pushBaseEnvironment();
-      _batfish.checkEnvironmentExists();
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
-      _batfish.checkEnvironmentExists();
-      _batfish.popEnvironment();
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
+      _batfish.checkSnapshotOutputReady();
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
+      _batfish.checkSnapshotOutputReady();
+      _batfish.popSnapshot();
+      _batfish.pushBaseSnapshot();
       NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement before = beforeAnswerer.answer();
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
       NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement after = afterAnswerer.answer();
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       return new NodesDiffAnswerElement(before, after);
     }
   }
@@ -468,8 +468,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs the configuration of nodes in the network.
    *
    * <p>This question may be used to extract the configuration of the node in the Batfish datamodel

@@ -3,13 +3,11 @@ package org.batfish.common.util;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -41,7 +39,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -174,19 +171,6 @@ public class CommonUtil {
 
   public static <C extends Collection<?>> C nullIfEmpty(C collection) {
     return collection == null ? null : collection.isEmpty() ? null : collection;
-  }
-
-  /** Compare two nullable comparable objects. null is considered less than non-null. */
-  public static <T extends Comparable<T>> int compareNullable(@Nullable T a, @Nullable T b) {
-    if (a == b) {
-      return 0;
-    } else if (a == null) {
-      return -1;
-    } else if (b == null) {
-      return 1;
-    } else {
-      return a.compareTo(b);
-    }
   }
 
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
@@ -782,16 +766,6 @@ public class CommonUtil {
     return differenceSet;
   }
 
-  public static String extractBits(long l, int start, int end) {
-    StringBuilder s = new StringBuilder();
-    for (int pos = end; pos >= start; pos--) {
-      long mask = 1L << pos;
-      long bit = l & mask;
-      s.append((bit != 0) ? '1' : '0');
-    }
-    return s.toString();
-  }
-
   public static <T> void forEachWithIndex(Iterable<T> ts, BiConsumer<Integer, T> biConsumer) {
     int i = 0;
     for (T t : ts) {
@@ -908,14 +882,6 @@ public class CommonUtil {
       }
     }
     return null;
-  }
-
-  public static FileTime getLastModifiedTime(Path path) {
-    try {
-      return Files.getLastModifiedTime(path);
-    } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
-    }
   }
 
   public static SortedSet<Path> getSubdirectories(Path directory) {
@@ -1488,7 +1454,7 @@ public class CommonUtil {
   public static String readFile(Path file) {
     String text = null;
     try {
-      text = new String(Files.readAllBytes(file), "UTF-8");
+      text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new BatfishException("Failed to read file: " + file, e);
     }
@@ -1501,7 +1467,7 @@ public class CommonUtil {
       if (is == null) {
         throw new BatfishException("Error opening resource: '" + resourcePath + "'");
       }
-      String output = IOUtils.toString(is);
+      String output = IOUtils.toString(is, StandardCharsets.UTF_8);
       return output;
     } catch (IOException e) {
       throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
@@ -1607,13 +1573,6 @@ public class CommonUtil {
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
-  }
-
-  public static <K, V1, V2> Multimap<K, V2> toImmutableMultimap(
-      Multimap<K, V1> multimap, Function<Collection<V1>, Set<V2>> valuesFunction) {
-    ImmutableMultimap.Builder<K, V2> builder = ImmutableMultimap.builder();
-    multimap.asMap().forEach((k, vs) -> builder.putAll(k, valuesFunction.apply(vs)));
-    return builder.build();
   }
 
   public static <K1, K2 extends Comparable<? super K2>, V1, V2>

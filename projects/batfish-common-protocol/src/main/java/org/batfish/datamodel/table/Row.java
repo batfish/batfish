@@ -122,7 +122,7 @@ public class Row implements Comparable<Row>, Serializable {
       checkArgument(
           SchemaUtils.isValidObject(object, expectedSchema),
           String.format(
-              "Cannot convert '%s' to Schema '%s' of column '%s", object, expectedSchema, column));
+              "Cannot convert '%s' to Schema '%s' of column '%s'", object, expectedSchema, column));
       super.put(column, object);
       return this;
     }

@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
 @Provider
@@ -23,10 +24,13 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
         String stackTrace = Throwables.getStackTraceAsString(exception);
         return Response.fromResponse(r).entity(stackTrace).build();
       }
+    } else if (exception instanceof IllegalArgumentException) {
+      return Response.status(Status.BAD_REQUEST.getStatusCode())
+          .entity(Throwables.getStackTraceAsString(exception))
+          .build();
     }
 
-    exception.printStackTrace();
     String stackTrace = Throwables.getStackTraceAsString(exception);
-    return Response.status(500).entity(stackTrace).build();
+    return Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(stackTrace).build();
   }
 }

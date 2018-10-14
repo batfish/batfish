@@ -48,12 +48,12 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       String tag = _batfish.getDifferentialFlowTag();
       Set<Flow> flows = getFlows(tag);
       TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) _question;
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
       _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
-      _batfish.popEnvironment();
+      _batfish.popSnapshot();
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getTraces().keySet()) {
@@ -61,19 +61,19 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         // ":"
         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
         // .getEnvName();
-        _batfish.pushBaseEnvironment();
+        _batfish.pushBaseSnapshot();
         String baseEnvTag = _batfish.getFlowTag();
         Environment baseEnv = _batfish.getEnvironment();
-        _batfish.popEnvironment();
+        _batfish.popSnapshot();
         // String deltaEnvTag = _batfish.getDeltaTestrigSettings().getEnvName()
         // +
         // ":"
         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
         // .getEnvName();
-        _batfish.pushDeltaEnvironment();
+        _batfish.pushDeltaSnapshot();
         String deltaEnvTag = _batfish.getFlowTag();
         Environment deltaEnv = _batfish.getEnvironment();
-        _batfish.popEnvironment();
+        _batfish.popSnapshot();
         Set<FlowTrace> baseFlowTraces =
             history.getTraces().get(flowText).getPaths().get(baseEnvTag);
         Set<FlowTrace> deltaFlowTraces =
@@ -100,9 +100,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         // TODO: better automatic source ip, considering VRFs and routing
         if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
           if (configurations == null) {
-            _batfish.pushBaseEnvironment();
+            _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
-            _batfish.popEnvironment();
+            _batfish.popSnapshot();
           }
           String hostname = flowBuilder.getIngressNode();
           Configuration node =
@@ -125,9 +125,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         }
         if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
           if (configurations == null) {
-            _batfish.pushBaseEnvironment();
+            _batfish.pushBaseSnapshot();
             configurations = _batfish.loadConfigurations();
-            _batfish.popEnvironment();
+            _batfish.popSnapshot();
           }
           flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
         }
@@ -140,8 +140,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Perform a traceroute.
    *
    * <p>This question performs a virtual traceroute in the network from a starting node. The

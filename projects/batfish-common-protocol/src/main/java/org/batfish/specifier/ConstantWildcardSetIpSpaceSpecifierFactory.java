@@ -13,10 +13,10 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 
 /**
  * An {@link IpSpaceSpecifierFactory} for a {@link ConstantIpSpaceSpecifier} where the {@link
- * IpSpace} is a string representation of an {@link IpWildcardSetIpSpace}. Expects inputs in the
- * format {@code w1,w2,...wn-wn+1,wn+2,...}. Wildcards to the left of - are whitelisted (at least 1
- * is required). Wildcards to the right of the dash (-), if present, are blacklisted. Can also use
- * backslash (\) instead of dash.
+ * org.batfish.datamodel.IpSpace} is a string representation of an {@link IpWildcardSetIpSpace}.
+ * Expects inputs in the format {@code w1,w2,...wn-wn+1,wn+2,...}. Wildcards to the left of - are
+ * whitelisted (at least 1 is required). Wildcards to the right of the dash (-), if present, are
+ * blacklisted. Can also use backslash (\) instead of dash.
  */
 @AutoService(IpSpaceSpecifierFactory.class)
 public final class ConstantWildcardSetIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {

@@ -1,34 +1,31 @@
 package org.batfish.question.specifiers;
 
-import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
+import static org.batfish.datamodel.answers.Schema.FLOW;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
-import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
-import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.specifier.AllInterfacesLocationSpecifierFactory;
-import org.batfish.specifier.ConstantUniverseIpSpaceSpecifierFactory;
-import org.batfish.specifier.NameRegexInterfaceLocationSpecifierFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,82 +66,58 @@ public class SpecifiersReachabilityTest {
    */
   @Test
   public void testInferSrcIpFromLocation() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput(LOOPBACK);
+    SpecifiersReachabilityQuestion question =
+        SpecifiersReachabilityQuestion.builder()
+            .setPathConstraints(
+                PathConstraintsInput.builder()
+                    .setStartLocation(String.format("%s[%s]", NODE1, LOOPBACK))
+                    .build())
+            .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
+    assertThat(tableAnswerElement.getRowsList().size(), equalTo(1));
     assertThat(
-        flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE1), hasSrcIp(NODE1_LOOPBACK_IP)))));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE2), hasSrcIp(NODE2_LOOPBACK_IP)))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW, allOf(hasIngressNode(NODE1), hasSrcIp(NODE1_LOOPBACK_IP)), FLOW))));
   }
 
   /**
-   * Test that we get a result with DROP disposition from each interface. With the default source
-   * IpSpace specifier, the srcIp should be that of the source interface. The dstIp should not be
-   * one of those configured in the network.
+   * Test that we get a result with NO_ROUTE disposition from each interface. With the default
+   * source IpSpace specifier, the srcIp should be that of the source interface. The dstIp should
+   * not be one of those configured in the network.
    */
   @Test
-  public void testDrop() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput(LOOPBACK);
-    question.setActions(ImmutableSortedSet.of(ForwardingAction.DROP));
+  public void testNoRoute() {
+    SpecifiersReachabilityQuestion question =
+        SpecifiersReachabilityQuestion.builder()
+            .setPathConstraints(
+                PathConstraintsInput.builder()
+                    .setStartLocation(String.format("%s[%s]", NODE1, LOOPBACK))
+                    .build())
+            .setActions(new DispositionSpecifier(ImmutableSortedSet.of(FlowDisposition.NO_ROUTE)))
+            .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
+    assertThat(tableAnswerElement.getRowsList().size(), equalTo(1));
     assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE1),
-                    hasSrcIp(NODE1_LOOPBACK_IP),
-                    not(hasDstIp(NODE1_FAST_ETHERNET_IP)),
-                    not(hasDstIp(NODE1_LOOPBACK_IP)),
-                    not(hasDstIp(NODE2_FAST_ETHERNET_IP)),
-                    not(hasDstIp(NODE2_LOOPBACK_IP))))));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE2),
-                    hasSrcIp(NODE2_LOOPBACK_IP),
-                    not(hasDstIp(NODE1_FAST_ETHERNET_IP)),
-                    not(hasDstIp(NODE1_LOOPBACK_IP)),
-                    not(hasDstIp(NODE2_FAST_ETHERNET_IP)),
-                    not(hasDstIp(NODE2_LOOPBACK_IP))))));
-  }
-
-  /**
-   * Test that a different source IpSpace specifier produces different source IPs. If an input is
-   * given without a factory, {@link SpecifiersReachabilityQuestion} uses {@link
-   * org.batfish.specifier.ConstantWildcardSetIpSpaceSpecifierFactory} by default.
-   */
-  @Test
-  public void testConstantWildcard() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setSourceIpSpaceSpecifierInput("5.5.5.5");
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE1), hasSrcIp(new Ip("5.5.5.5"))))));
-    assertThat(
-        flowHistoryInfos,
-        hasItem(hasFlow(allOf(hasIngressNode(NODE2), hasSrcIp(new Ip("5.5.5.5"))))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW,
+                    allOf(
+                        hasIngressNode(NODE1),
+                        hasSrcIp(NODE1_LOOPBACK_IP),
+                        not(hasDstIp(NODE1_FAST_ETHERNET_IP)),
+                        not(hasDstIp(NODE1_LOOPBACK_IP)),
+                        not(hasDstIp(NODE2_FAST_ETHERNET_IP)),
+                        not(hasDstIp(NODE2_LOOPBACK_IP))),
+                    FLOW))));
   }
 
   /**
@@ -153,32 +126,44 @@ public class SpecifiersReachabilityTest {
    */
   @Test
   public void testForbiddenTransitNodes() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierFactory(AllInterfacesLocationSpecifierFactory.NAME);
-    question.setForbiddenTransitNodesNodeSpecifierInput(".*");
+    SpecifiersReachabilityQuestion question =
+        SpecifiersReachabilityQuestion.builder()
+            .setPathConstraints(
+                PathConstraintsInput.builder()
+                    .setStartLocation(".*")
+                    .setForbiddenLocations(".*")
+                    .build())
+            .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
+    assertThat(tableAnswerElement.getRowsList().size(), equalTo(2));
     assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE1),
-                    hasSrcIp(anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP))),
-                    hasDstIp(
-                        anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP)))))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW,
+                    allOf(
+                        hasIngressNode(NODE1),
+                        hasSrcIp(
+                            anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP))),
+                        hasDstIp(
+                            anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP)))),
+                    FLOW))));
     assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE2),
-                    hasSrcIp(anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP))),
-                    hasDstIp(
-                        anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP)))))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW,
+                    allOf(
+                        hasIngressNode(NODE2),
+                        hasSrcIp(
+                            anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP))),
+                        hasDstIp(
+                            anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP)))),
+                    FLOW))));
   }
 
   /**
@@ -187,32 +172,41 @@ public class SpecifiersReachabilityTest {
    */
   @Test
   public void testRequiredTransitNodes() {
-    SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setDestinationIpSpaceSpecifierFactory(ConstantUniverseIpSpaceSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
-    question.setSourceLocationSpecifierInput(LOOPBACK);
-    question.setRequiredTransitNodesNodeSpecifierInput(".*");
+    SpecifiersReachabilityQuestion question =
+        SpecifiersReachabilityQuestion.builder()
+            .setPathConstraints(
+                PathConstraintsInput.builder()
+                    .setStartLocation(String.format("%s[%s]", ".*", LOOPBACK))
+                    .setTransitLocations(".*")
+                    .build())
+            .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
-    assertThat(answer, instanceOf(FlowHistory.class));
-    Collection<FlowHistoryInfo> flowHistoryInfos = ((FlowHistory) answer).getTraces().values();
-    assertThat(flowHistoryInfos, hasSize(2));
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
+    assertThat(tableAnswerElement.getRowsList().size(), equalTo(2));
     assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE1),
-                    hasSrcIp(NODE1_LOOPBACK_IP),
-                    hasDstIp(
-                        anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP)))))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW,
+                    allOf(
+                        hasIngressNode(NODE1),
+                        hasSrcIp(NODE1_LOOPBACK_IP),
+                        hasDstIp(
+                            anyOf(equalTo(NODE2_FAST_ETHERNET_IP), equalTo(NODE2_LOOPBACK_IP)))),
+                    FLOW))));
     assertThat(
-        flowHistoryInfos,
-        hasItem(
-            hasFlow(
-                allOf(
-                    hasIngressNode(NODE2),
-                    hasSrcIp(NODE2_LOOPBACK_IP),
-                    hasDstIp(
-                        anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP)))))));
+        tableAnswerElement,
+        hasRows(
+            hasItem(
+                hasColumn(
+                    COL_FLOW,
+                    allOf(
+                        hasIngressNode(NODE2),
+                        hasSrcIp(NODE2_LOOPBACK_IP),
+                        hasDstIp(
+                            anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP)))),
+                    FLOW))));
   }
 }

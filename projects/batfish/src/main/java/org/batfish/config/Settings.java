@@ -15,404 +15,13 @@ import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
-
-  public static final class EnvironmentSettings {
-
-    private Path _compressedDataPlaneAnswerPath;
-
-    private Path _compressedDataPlanePath;
-
-    private Path _dataPlaneAnswerPath;
-
-    private Path _dataPlanePath;
-
-    private Path _deltaCompiledConfigurationsDir;
-
-    private Path _deltaConfigurationsDir;
-
-    private Path _deltaVendorConfigurationsDir;
-
-    private Path _edgeBlacklistPath;
-
-    private Path _environmentBasePath;
-
-    private Path _environmentBgpTablesPath;
-
-    private Path _environmentRoutingTablesPath;
-
-    private Path _envPath;
-
-    private Path _externalBgpAnnouncementsPath;
-
-    private Path _interfaceBlacklistPath;
-
-    private String _name;
-
-    private Path _nodeBlacklistPath;
-
-    private Path _parseEnvironmentBgpTablesAnswerPath;
-
-    private Path _parseEnvironmentRoutingTablesAnswerPath;
-
-    private Path _precomputedRoutesPath;
-
-    private Path _serializedTopologyPath;
-
-    private Path _serializeEnvironmentBgpTablesPath;
-
-    private Path _serializeEnvironmentRoutingTablesPath;
-
-    private Path _validateEnvironmentAnswerPath;
-
-    public Path getCompressedDataPlaneAnswerPath() {
-      return _compressedDataPlaneAnswerPath;
-    }
-
-    public Path getCompressedDataPlanePath() {
-      return _compressedDataPlanePath;
-    }
-
-    public Path getDataPlaneAnswerPath() {
-      return _dataPlaneAnswerPath;
-    }
-
-    public Path getDataPlanePath() {
-      return _dataPlanePath;
-    }
-
-    public Path getDeltaCompiledConfigurationsDir() {
-      return _deltaCompiledConfigurationsDir;
-    }
-
-    public Path getDeltaConfigurationsDir() {
-      return _deltaConfigurationsDir;
-    }
-
-    public Path getDeltaVendorConfigurationsDir() {
-      return _deltaVendorConfigurationsDir;
-    }
-
-    public Path getEdgeBlacklistPath() {
-      return _edgeBlacklistPath;
-    }
-
-    public Path getEnvironmentBasePath() {
-      return _environmentBasePath;
-    }
-
-    public Path getEnvironmentBgpTablesPath() {
-      return _environmentBgpTablesPath;
-    }
-
-    public Path getEnvironmentRoutingTablesPath() {
-      return _environmentRoutingTablesPath;
-    }
-
-    public Path getEnvPath() {
-      return _envPath;
-    }
-
-    public Path getExternalBgpAnnouncementsPath() {
-      return _externalBgpAnnouncementsPath;
-    }
-
-    public Path getInterfaceBlacklistPath() {
-      return _interfaceBlacklistPath;
-    }
-
-    public String getName() {
-      return _name;
-    }
-
-    public Path getNodeBlacklistPath() {
-      return _nodeBlacklistPath;
-    }
-
-    public Path getParseEnvironmentBgpTablesAnswerPath() {
-      return _parseEnvironmentBgpTablesAnswerPath;
-    }
-
-    public Path getParseEnvironmentRoutingTablesAnswerPath() {
-      return _parseEnvironmentRoutingTablesAnswerPath;
-    }
-
-    public Path getPrecomputedRoutesPath() {
-      return _precomputedRoutesPath;
-    }
-
-    public Path getSerializedTopologyPath() {
-      return _serializedTopologyPath;
-    }
-
-    public Path getSerializeEnvironmentBgpTablesPath() {
-      return _serializeEnvironmentBgpTablesPath;
-    }
-
-    public Path getSerializeEnvironmentRoutingTablesPath() {
-      return _serializeEnvironmentRoutingTablesPath;
-    }
-
-    public Path getValidateEnvironmentAnswerPath() {
-      return _validateEnvironmentAnswerPath;
-    }
-
-    public void setCompressedDataPlaneAnswerPath(Path compressedDataPlaneAnswerPath) {
-      _compressedDataPlaneAnswerPath = compressedDataPlaneAnswerPath;
-    }
-
-    public void setCompressedDataPlanePath(Path compressedDataPlanePath) {
-      _compressedDataPlanePath = compressedDataPlanePath;
-    }
-
-    public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
-      _dataPlaneAnswerPath = dataPlaneAnswerPath;
-    }
-
-    public void setDataPlanePath(Path path) {
-      _dataPlanePath = path;
-    }
-
-    public void setDeltaCompiledConfigurationsDir(Path deltaCompiledConfigurationsDir) {
-      _deltaCompiledConfigurationsDir = deltaCompiledConfigurationsDir;
-    }
-
-    public void setDeltaConfigurationsDir(Path deltaConfigurationsDir) {
-      _deltaConfigurationsDir = deltaConfigurationsDir;
-    }
-
-    public void setDeltaVendorConfigurationsDir(Path deltaVendorConfigurationsDir) {
-      _deltaVendorConfigurationsDir = deltaVendorConfigurationsDir;
-    }
-
-    public void setEdgeBlacklistPath(Path edgeBlacklistPath) {
-      _edgeBlacklistPath = edgeBlacklistPath;
-    }
-
-    public void setEnvironmentBasePath(Path environmentBasePath) {
-      _environmentBasePath = environmentBasePath;
-    }
-
-    public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
-      _environmentBgpTablesPath = environmentBgpTablesPath;
-    }
-
-    public void setEnvironmentRoutingTablesPath(Path environmentRoutingTablesPath) {
-      _environmentRoutingTablesPath = environmentRoutingTablesPath;
-    }
-
-    public void setEnvPath(Path envPath) {
-      _envPath = envPath;
-    }
-
-    public void setExternalBgpAnnouncementsPath(Path externalBgpAnnouncementsPath) {
-      _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
-    }
-
-    public void setInterfaceBlacklistPath(Path interfaceBlacklistPath) {
-      _interfaceBlacklistPath = interfaceBlacklistPath;
-    }
-
-    public void setName(String name) {
-      _name = name;
-    }
-
-    public void setNodeBlacklistPath(Path nodeBlacklistPath) {
-      _nodeBlacklistPath = nodeBlacklistPath;
-    }
-
-    public void setParseEnvironmentBgpTablesAnswerPath(Path parseEnvironmentBgpTablesAnswerPath) {
-      _parseEnvironmentBgpTablesAnswerPath = parseEnvironmentBgpTablesAnswerPath;
-    }
-
-    public void setParseEnvironmentRoutingTablesAnswerPath(
-        Path parseEnvironmentRoutingTablesAnswerPath) {
-      _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
-    }
-
-    public void setPrecomputedRoutesPath(Path writeRoutesPath) {
-      _precomputedRoutesPath = writeRoutesPath;
-    }
-
-    public void setSerializedTopologyPath(Path serializedTopologyPath) {
-      _serializedTopologyPath = serializedTopologyPath;
-    }
-
-    public void setSerializeEnvironmentBgpTablesPath(Path serializeEnvironmentBgpTablesPath) {
-      _serializeEnvironmentBgpTablesPath = serializeEnvironmentBgpTablesPath;
-    }
-
-    public void setSerializeEnvironmentRoutingTablesPath(
-        Path serializeEnvironmentRoutingTablesPath) {
-      _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
-    }
-
-    public void setValidateEnvironmentAnswerPath(Path validateEnvironmentAnswerPath) {
-      _validateEnvironmentAnswerPath = validateEnvironmentAnswerPath;
-    }
-  }
-
-  public static final class TestrigSettings {
-
-    private Path _basePath;
-
-    private EnvironmentSettings _environmentSettings;
-
-    private Path _inferredNodeRolesPath;
-
-    private String _name;
-
-    private Path _nodeRolesPath;
-
-    private Path _parseAnswerPath;
-
-    private Path _pojoTopologyPath;
-
-    private Path _protocolDependencyGraphPath;
-
-    private Path _protocolDependencyGraphZipPath;
-
-    private Path _referenceLibraryPath;
-
-    private Path _serializeVendorPath;
-
-    private Path _testRigPath;
-
-    private Path _topologyPath;
-
-    public TestrigSettings() {
-      _environmentSettings = new EnvironmentSettings();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      } else if (!(obj instanceof TestrigSettings)) {
-        return false;
-      }
-      TestrigSettings other = (TestrigSettings) obj;
-      return _name.equals(other._name)
-          && _environmentSettings._name.equals(other._environmentSettings._name);
-    }
-
-    public Path getBasePath() {
-      return _basePath;
-    }
-
-    public EnvironmentSettings getEnvironmentSettings() {
-      return _environmentSettings;
-    }
-
-    public Path getInferredNodeRolesPath() {
-      return _inferredNodeRolesPath;
-    }
-
-    public String getName() {
-      return _name;
-    }
-
-    public Path getNodeRolesPath() {
-      return _nodeRolesPath;
-    }
-
-    public Path getParseAnswerPath() {
-      return _parseAnswerPath;
-    }
-
-    public Path getPojoTopologyPath() {
-      return _pojoTopologyPath;
-    }
-
-    public Path getProtocolDependencyGraphPath() {
-      return _protocolDependencyGraphPath;
-    }
-
-    public Path getProtocolDependencyGraphZipPath() {
-      return _protocolDependencyGraphZipPath;
-    }
-
-    public Path getReferenceLibraryPath() {
-      return _referenceLibraryPath;
-    }
-
-    public Path getSerializeVendorPath() {
-      return _serializeVendorPath;
-    }
-
-    public Path getTestRigPath() {
-      return _testRigPath;
-    }
-
-    public Path getTopologyPath() {
-      return _topologyPath;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_name == null) ? 0 : _name.hashCode());
-      result =
-          prime * result
-              + ((_environmentSettings._name == null) ? 0 : _environmentSettings._name.hashCode());
-      return result;
-    }
-
-    public void setBasePath(Path basePath) {
-      _basePath = basePath;
-    }
-
-    public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
-      _environmentSettings = environmentSettings;
-    }
-
-    public void setInferredNodeRolesPath(Path inferredNodeRolesPath) {
-      _inferredNodeRolesPath = inferredNodeRolesPath;
-    }
-
-    public void setName(String name) {
-      _name = name;
-    }
-
-    public void setNodeRolesPath(Path nodeRolesPath) {
-      _nodeRolesPath = nodeRolesPath;
-    }
-
-    public void setParseAnswerPath(Path parseAnswerPath) {
-      _parseAnswerPath = parseAnswerPath;
-    }
-
-    public void setPojoTopologyPath(Path path) {
-      _pojoTopologyPath = path;
-    }
-
-    public void setProtocolDependencyGraphPath(Path protocolDependencyGraphPath) {
-      _protocolDependencyGraphPath = protocolDependencyGraphPath;
-    }
-
-    public void setProtocolDependencyGraphZipPath(Path protocolDependencyGraphZipPath) {
-      _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
-    }
-
-    public void setReferenceLibraryPath(Path path) {
-      _referenceLibraryPath = path;
-    }
-
-    public void setSerializeVendorPath(Path path) {
-      _serializeVendorPath = path;
-    }
-
-    public void setTestRigPath(Path path) {
-      _testRigPath = path;
-    }
-
-    public void setTopologyPath(Path path) {
-      _topologyPath = path;
-    }
-  }
 
   public static final String ARG_CHECK_BGP_REACHABILITY = "checkbgpsessionreachability";
 
@@ -587,8 +196,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public boolean debugFlagEnabled(String flag) {
-    List<String> debugFlags = getStringListOptionValue(ARG_DEBUG_FLAGS);
-    return debugFlags != null && debugFlags.contains(flag);
+    return getDebugFlags().contains(flag);
   }
 
   public boolean flattenOnTheFly() {
@@ -599,8 +207,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _activeTestrigSettings;
   }
 
-  public String getAnalysisName() {
-    return _config.getString(BfConsts.ARG_ANALYSIS_NAME);
+  public @Nullable AnalysisId getAnalysisName() {
+    String id = _config.getString(BfConsts.ARG_ANALYSIS_NAME);
+    return id != null ? new AnalysisId(id) : null;
   }
 
   public boolean getAnalyze() {
@@ -619,12 +228,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _baseTestrigSettings;
   }
 
-  public boolean getCompileEnvironment() {
-    return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
-  }
-
-  public String getContainer() {
-    return _config.getString(BfConsts.ARG_CONTAINER);
+  public NetworkId getContainer() {
+    String id = _config.getString(BfConsts.ARG_CONTAINER);
+    return id != null ? new NetworkId(id) : null;
   }
 
   public String getCoordinatorHost() {
@@ -644,15 +250,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   public List<String> getDebugFlags() {
-    return getStringListOptionValue(ARG_DEBUG_FLAGS);
+    return Arrays.asList(_config.getStringArray(ARG_DEBUG_FLAGS));
   }
 
-  public String getDeltaEnvironmentName() {
-    return _config.getString(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
-  }
-
-  public String getDeltaTestrig() {
-    return _config.getString(BfConsts.ARG_DELTA_TESTRIG);
+  public SnapshotId getDeltaTestrig() {
+    String name = _config.getString(BfConsts.ARG_DELTA_TESTRIG);
+    return name != null ? new SnapshotId(name) : null;
   }
 
   public TestrigSettings getDeltaTestrigSettings() {
@@ -678,10 +281,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getEnableCiscoNxParser() {
     return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
-  }
-
-  public String getEnvironmentName() {
-    return _config.getString(BfConsts.ARG_ENVIRONMENT_NAME);
   }
 
   public boolean getExitOnFirstError() {
@@ -737,14 +336,15 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     if (getTaskId() == null) {
       return null;
     }
-    String tr = getTestrig();
+    String tr = getTestrig().getId();
     if (getDeltaTestrig() != null && !getDifferential()) {
-      tr = getDeltaTestrig();
+      tr = getDeltaTestrig().getId();
     }
     return getStorageBase()
-        .resolve(getContainer())
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(getContainer().getId())
+        .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
         .resolve(tr)
+        .resolve(BfConsts.RELPATH_OUTPUT)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }
@@ -784,10 +384,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_MAX_RUNTIME_MS);
   }
 
-  public String getOutputEnvironmentName() {
-    return _config.getString(BfConsts.ARG_OUTPUT_ENV);
-  }
-
   public boolean getPedanticRecord() {
     return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
   }
@@ -810,16 +406,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
   }
 
-  public String getQuestionName() {
-    return _config.getString(BfConsts.ARG_QUESTION_NAME);
+  public @Nullable QuestionId getQuestionName() {
+    String name = _config.getString(BfConsts.ARG_QUESTION_NAME);
+    return name != null ? new QuestionId(name) : null;
   }
 
   public boolean getRedFlagRecord() {
     return !_config.getBoolean(BfConsts.ARG_RED_FLAG_SUPPRESS);
-  }
-
-  public boolean getReport() {
-    return _config.getBoolean(BfConsts.COMMAND_REPORT);
   }
 
   public RunMode getRunMode() {
@@ -908,8 +501,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_TASK_PLUGIN);
   }
 
-  public String getTestrig() {
-    return _config.getString(BfConsts.ARG_TESTRIG);
+  public SnapshotId getTestrig() {
+    String name = _config.getString(BfConsts.ARG_TESTRIG);
+    return name != null ? new SnapshotId(name) : null;
   }
 
   @Override
@@ -942,8 +536,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
   }
 
-  public boolean getValidateEnvironment() {
-    return _config.getBoolean(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
+  public boolean getValidateSnapshot() {
+    return _config.getBoolean(BfConsts.COMMAND_VALIDATE_SNAPSHOT);
   }
 
   public boolean getVerboseParse() {
@@ -984,17 +578,16 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+    setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
-    setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(
         BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
         true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
-    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
@@ -1019,7 +612,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
-    setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
@@ -1055,13 +647,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
-    setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
     setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
-    setDefaultProperty(BfConsts.COMMAND_REPORT, false);
-    setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
+    setDefaultProperty(BfConsts.COMMAND_VALIDATE_SNAPSHOT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
     setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
@@ -1119,13 +709,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
-    addOption(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, "name of delta environment to use", "name");
-
     addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig", ARGNAME_NAME);
 
     addBooleanOption(
         BfConsts.ARG_DIFF_ACTIVE,
-        "make differential environment the active one for questions about a single environment");
+        "make differential snapshot the active one for questions about a single snapshot");
 
     addBooleanOption(
         BfConsts.ARG_DIFFERENTIAL,
@@ -1139,8 +727,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
         "use the rewritten BGP parser for Cisco NX-OS devices");
-
-    addOption(BfConsts.ARG_ENVIRONMENT_NAME, "name of environment to use", "name");
 
     addBooleanOption(
         ARG_EXIT_ON_FIRST_ERROR,
@@ -1227,8 +813,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
-    addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment", ARGNAME_NAME);
-
     addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
 
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
@@ -1312,10 +896,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
-    addBooleanOption(
-        BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
-        "compile configurations for differential environment");
-
     addBooleanOption(BfConsts.COMMAND_DUMP_DP, "compute and serialize data plane");
 
     addBooleanOption(
@@ -1323,10 +903,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "serialize vendor configs");
 
-    addBooleanOption(BfConsts.COMMAND_REPORT, "generate report based on answered questions");
-
     addBooleanOption(
-        BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
+        BfConsts.COMMAND_VALIDATE_SNAPSHOT, "validate a snapshot that has been initialized");
 
     addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
 
@@ -1367,19 +945,17 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
-    getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     getStringOptionValue(BfConsts.ARG_CONTAINER);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
-    getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
+    getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     getBooleanOptionValue(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
-    getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
@@ -1401,7 +977,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
-    getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
     getIntOptionValue(ARG_PARENT_PID);
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
@@ -1410,7 +985,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
-    getBooleanOptionValue(BfConsts.COMMAND_REPORT);
     getStringOptionValue(ARG_RUN_MODE);
     getBooleanOptionValue(ARG_SEQUENTIAL);
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
@@ -1439,7 +1013,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
     getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-    getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
+    getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_SNAPSHOT);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     getIntegerOptionValue(ARG_Z3_TIMEOUT);
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
@@ -1461,12 +1035,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
   }
 
-  public void setDeltaEnvironmentName(String diffEnvironmentName) {
-    _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
-  }
-
-  public void setDeltaTestrig(String deltaTestrig) {
-    _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+  public void setDeltaTestrig(SnapshotId testrig) {
+    _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, testrig != null ? testrig.getId() : null);
   }
 
   public void setDiffActive(boolean diffActive) {
@@ -1484,10 +1054,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setEnableCiscoNxParser(boolean b) {
     _config.setProperty(BfConsts.ARG_ENABLE_CISCO_NX_PARSER, b);
-  }
-
-  public void setEnvironmentName(String envName) {
-    _config.setProperty(BfConsts.ARG_ENVIRONMENT_NAME, envName);
   }
 
   public void setHaltOnConvertError(boolean haltOnConvertError) {
@@ -1530,10 +1096,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {
     _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
-  }
-
-  public void setReport(boolean report) {
-    _config.setProperty(BfConsts.COMMAND_REPORT, report);
   }
 
   public void setRunMode(RunMode runMode) {
@@ -1590,8 +1152,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_THROW_ON_PARSER_ERROR, throwOnParserError);
   }
 
-  public void setValidateEnvironment(boolean validateEnvironment) {
-    _config.setProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, validateEnvironment);
+  public void setValidateSnapshot(boolean validate) {
+    _config.setProperty(BfConsts.COMMAND_VALIDATE_SNAPSHOT, validate);
   }
 
   public void setVerboseParse(boolean verboseParse) {
@@ -1606,7 +1168,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(ARG_DATAPLANE_ENGINE_NAME, name);
   }
 
-  public void setQuestionName(String questionName) {
-    _config.setProperty(BfConsts.ARG_QUESTION_NAME, questionName);
+  public void setQuestionName(QuestionId questionName) {
+    _config.setProperty(
+        BfConsts.ARG_QUESTION_NAME, questionName != null ? questionName.getId() : null);
   }
 }

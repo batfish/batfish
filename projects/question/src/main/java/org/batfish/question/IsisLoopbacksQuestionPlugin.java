@@ -208,8 +208,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists which loopbacks interfaces are being announced into ISIS.
    *
    * <p>When running ISIS, it is a good practice to announce loopbacks interface IPs into ISIS. This

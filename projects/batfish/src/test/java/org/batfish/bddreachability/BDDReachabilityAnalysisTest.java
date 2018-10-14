@@ -6,15 +6,13 @@ import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.LINK_2_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.POST_SOURCE_NAT_ACL_DEST_PORT;
-import static org.batfish.bddreachability.TestNetwork.SOURCE_NAT_ACL_IP;
 import static org.batfish.common.bdd.BDDMatchers.intersects;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -22,27 +20,22 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
@@ -65,12 +58,9 @@ public final class BDDReachabilityAnalysisTest {
 
   private static final BDDPacket PKT = new BDDPacket();
 
-  private static final String FLOW_TAG = "FLOW_TAG";
-
   private BDDReachabilityAnalysis _graph;
   private BDDReachabilityAnalysisFactory _graphFactory;
   private TestNetwork _net;
-  private Batfish _batfish;
 
   private BDDOps _bddOps;
 
@@ -115,10 +105,10 @@ public final class BDDReachabilityAnalysisTest {
   @Before
   public void setup() throws IOException {
     _net = new TestNetwork();
-    _batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
+    Batfish batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
-    _batfish.computeDataPlane(false);
-    DataPlane dataPlane = _batfish.loadDataPlane();
+    batfish.computeDataPlane(false);
+    DataPlane dataPlane = batfish.loadDataPlane();
     _graphFactory =
         new BDDReachabilityAnalysisFactory(PKT, _net._configs, dataPlane.getForwardingAnalysis());
 
@@ -186,7 +176,11 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private BDD bddTransition(StateExpr preState, StateExpr postState) {
-    return _graphFactory.getBDDTransitions().get(preState).get(postState);
+    return _graph.getEdges().get(preState).get(postState).traverseForward(PKT.getFactory().one());
+  }
+
+  private Edge edge(StateExpr preState, StateExpr postState) {
+    return _graph.getEdges().get(preState).get(postState);
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -195,10 +189,6 @@ public final class BDDReachabilityAnalysisTest {
 
   private static BDD dstPortBDD(int destPort) {
     return PKT.getDstPort().value(destPort);
-  }
-
-  private static BDD srcIpBDD(Ip ip) {
-    return new IpSpaceToBDD(PKT.getFactory(), PKT.getSrcIp()).toBDD(ip);
   }
 
   private BDD or(BDD... bdds) {
@@ -259,7 +249,7 @@ public final class BDDReachabilityAnalysisTest {
   public void testBDDTransitions_PreInInterface_NodeDropAclIn() {
     NodeDropAclIn dstDropAclIn = new NodeDropAclIn(_dstName);
     assertThat(bddTransition(_dstPreInInterface1, dstDropAclIn), equalTo(dstIpBDD(_dstIface2Ip)));
-    assertThat(bddTransition(_dstPreInInterface2, dstDropAclIn), nullValue());
+    assertThat(edge(_dstPreInInterface2, dstDropAclIn), nullValue());
   }
 
   @Test
@@ -284,7 +274,7 @@ public final class BDDReachabilityAnalysisTest {
     BDD preOutEdge2 = bddTransition(_srcPreOutVrf, _srcPreOutEdge2);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
 
-    assertThat(nodeDropNullRoute, nullValue());
+    assertThat(nodeDropNullRoute, isZero());
 
     assertThat(nodeInterfaceNeighborUnreachable1, equalTo(_link1SrcIpBDD));
     assertThat(nodeInterfaceNeighborUnreachable2, equalTo(_link2SrcIpBDD.and(postNatAclBDD)));
@@ -336,9 +326,9 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PreOutEdgePostNat_NodeDropAclOut() {
-    assertThat(bddTransition(_dstPreOutEdgePostNat1, new NodeDropAclOut(_dstName)), nullValue());
-    assertThat(bddTransition(_dstPreOutEdgePostNat2, new NodeDropAclOut(_dstName)), nullValue());
-    assertThat(bddTransition(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
+    assertThat(edge(_dstPreOutEdgePostNat1, new NodeDropAclOut(_dstName)), nullValue());
+    assertThat(edge(_dstPreOutEdgePostNat2, new NodeDropAclOut(_dstName)), nullValue());
+    assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, new NodeDropAclOut(_srcName)),
         equalTo(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT).not()));
@@ -355,83 +345,21 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testGraph_terminalStates() {
-    Set<StateExpr> terminalStates = _graph.getLeafStates();
-    assertThat(
-        terminalStates,
-        equalTo(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE, NeighborUnreachable.INSTANCE)));
-  }
-
-  @Test
-  public void testBDDNetworkGraph_sourceNat_match() {
-    IpSpaceAssignment assignment =
-        IpSpaceAssignment.builder()
-            .assign(
-                new InterfaceLocation(_net._srcNode.getHostname(), _net._link1Src.getName()),
-                SOURCE_NAT_ACL_IP.toIpSpace())
-            .build();
-
-    BDDReachabilityAnalysis graph =
-        _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
-
-    BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD = BDDAcl.create(PKT, _net._link2SrcSourceNatAcl).getBdd();
-    assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
-
-    OriginateVrf originateVrf = new OriginateVrf(_srcName, Configuration.DEFAULT_VRF_NAME);
-
-    /*
-     * ... and we detect a violation for the intersection.
-     */
-    List<MultipathInconsistency> inconsistencies = graph.computeMultipathInconsistencies();
-    assertThat(inconsistencies, hasSize(1));
-    MultipathInconsistency inconsistency = inconsistencies.get(0);
-    assertThat(inconsistency.getOriginateState(), equalTo(originateVrf));
-    assertThat(
-        inconsistency.getFinalStates(), equalTo(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE)));
-  }
-
-  @Test
-  public void testBDDNetworkGraph_sourceNat_noMatch() {
-    IpSpaceAssignment assignment =
-        IpSpaceAssignment.builder()
-            .assign(
-                new InterfaceLocation(_net._srcNode.getHostname(), _net._link1Src.getName()),
-                Ip.MAX.toIpSpace())
-            .build();
-
-    BDDReachabilityAnalysis graph =
-        _graphFactory.bddReachabilityAnalysis(assignment, _dstIface2Ip.toIpSpace());
-
-    BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
-    BDD srcIpBDD = srcIpBDD(Ip.MAX);
-    BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
-
-    List<MultipathInconsistency> inconsistencies = graph.computeMultipathInconsistencies();
-    assertThat(inconsistencies, hasSize(1));
-    MultipathInconsistency inconsistency = inconsistencies.get(0);
-    assertThat(
-        inconsistency.getFinalStates(), equalTo(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE)));
-    assertThat(inconsistency.getBDD(), equalTo(dstIpBDD.and(srcIpBDD).and(postNatAclBDD)));
-
-    Flow flow = graph.multipathInconsistencyToFlow(inconsistency, FLOW_TAG);
-    assertThat(flow, hasDstIp(_dstIface2Ip));
-  }
-
-  @Test
   public void testDefaultAcceptBDD() {
     BDDPacket pkt = new BDDPacket();
-    OriginateVrf originateVrf = new OriginateVrf("host", "vrf");
+    String hostname = "host";
+    OriginateVrf originateVrf = new OriginateVrf(hostname, "vrf");
     BDD one = pkt.getFactory().one();
     BDDReachabilityAnalysis graph =
         new BDDReachabilityAnalysis(
             pkt,
-            ImmutableMap.of(originateVrf, one),
+            ImmutableSet.of(originateVrf),
             ImmutableMap.of(
                 originateVrf,
-                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))));
+                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))),
+            one);
     assertThat(
-        graph.getIngressLocationAcceptBDDs(),
+        graph.getIngressLocationReachableBDDs(),
         equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));
   }
 }

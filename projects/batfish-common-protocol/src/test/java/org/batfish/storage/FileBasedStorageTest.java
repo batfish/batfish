@@ -1,13 +1,13 @@
 package org.batfish.storage;
 
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
+import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,16 +21,24 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class FileBasedStorageTest {
+public final class FileBasedStorageTest {
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Path _containerDir;
   private BatfishLogger _logger;
@@ -46,8 +54,8 @@ public class FileBasedStorageTest {
 
   @Test
   public void roundTripConfigurationsSucceeds() {
-    String network = "network";
-    String snapshot = "snapshot";
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
 
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
@@ -61,7 +69,9 @@ public class FileBasedStorageTest {
 
   @Test
   public void loadMissingConfigurationsReturnsNull() {
-    assertThat(_storage.loadConfigurations("nonexistent", "nonexistent"), nullValue());
+    assertThat(
+        _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
+        nullValue());
   }
 
   @Test
@@ -73,8 +83,8 @@ public class FileBasedStorageTest {
         Version.isCompatibleVersion("current", "old test", oldConvertAnswer.getVersion()),
         equalTo(false));
 
-    String network = "network";
-    String snapshot = "snapshot";
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
     _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
@@ -85,54 +95,71 @@ public class FileBasedStorageTest {
   @Test
   public void testMajorIssueConfigRoundTrip() throws IOException {
     String majorIssue = "majorIssue";
-    String network = "network";
+    IssueSettingsId issueSettingsId = new IssueSettingsId("issueSettingsId");
+    NetworkId network = new NetworkId("network");
     MinorIssueConfig minorIssueConfig = new MinorIssueConfig("minorIssue", 100, "www.google.com");
     MajorIssueConfig majorIssueConfig =
         new MajorIssueConfig(majorIssue, ImmutableList.of(minorIssueConfig));
 
-    _storage.storeMajorIssueConfig(network, majorIssue, majorIssueConfig);
-    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), equalTo(majorIssueConfig));
+    _storage.storeMajorIssueConfig(network, issueSettingsId, majorIssueConfig);
+    assertThat(_storage.loadMajorIssueConfig(network, issueSettingsId), equalTo(majorIssueConfig));
   }
 
   @Test
   public void testLoadMissingMajorIssueConfig() {
-    String majorIssue = "majorIssue";
-    String network = "network";
-    assertThat(
-        _storage.loadMajorIssueConfig(network, majorIssue),
-        equalTo(new MajorIssueConfig(majorIssue, ImmutableMap.of())));
+    IssueSettingsId majorIssue = new IssueSettingsId("majorIssue");
+    NetworkId network = new NetworkId("network");
+    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), nullValue());
   }
 
   @Test
   public void testStoreQuestionSettingsThenLoad() throws IOException {
-    String network = "network";
-    String questionClass = "q1";
+    NetworkId network = new NetworkId("network");
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
     String settings = "{}";
-    _storage.storeQuestionSettings(settings, network, questionClass);
+    _storage.storeQuestionSettings(settings, network, questionSettingsId);
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), equalTo(settings));
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), equalTo(settings));
   }
 
   @Test
   public void testLoadQuestionSettingsMissing() throws IOException {
-    String network = "network";
-    String questionClass = "q1";
+    NetworkId network = new NetworkId("network");
+    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
 
-    assertThat(_storage.loadQuestionSettings(network, questionClass), nullValue());
+    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), nullValue());
   }
 
   @Test
   public void testCheckNetworkExistsTrue() {
-    String network = "network";
-    _storage.getNetworkDir(network).toFile().mkdirs();
+    NetworkId network = new NetworkId("network");
+    _storage.getDirectoryProvider().getNetworkDir(network).toFile().mkdirs();
 
     assertThat(_storage.checkNetworkExists(network), equalTo(true));
   }
 
   @Test
   public void testCheckNetworkExistsFalse() {
-    String network = "network";
+    NetworkId network = new NetworkId("network");
 
     assertThat(_storage.checkNetworkExists(network), equalTo(false));
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathRejectsAbsolute() throws IOException {
+    _thrown.expect(IllegalArgumentException.class);
+    objectKeyToRelativePath("/foo/bar");
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathRejectsNonNormalized() throws IOException {
+    _thrown.expect(IllegalArgumentException.class);
+    objectKeyToRelativePath("foo/../../bar");
+  }
+
+  @Test
+  public void testObjectKeyToRelativePathValid() throws IOException {
+    // no exception should be thrown
+    objectKeyToRelativePath("foo/bar");
   }
 }

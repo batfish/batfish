@@ -108,18 +108,22 @@ public class PacketHeaderConstraintsTest {
 
   @Test
   public void testResolveIpProtocols() {
-    assertThat(resolveIpProtocols(null, null, null, null), nullValue());
+    assertThat(resolveIpProtocols(null, null, null, null, null), nullValue());
     assertThat(
-        resolveIpProtocols(ImmutableSet.of(IpProtocol.TCP), null, null, null),
+        resolveIpProtocols(ImmutableSet.of(IpProtocol.TCP), null, null, null, null),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
     assertThat(
-        resolveIpProtocols(null, ImmutableSet.of(new SubRange(22, 80)), null, null),
+        resolveIpProtocols(null, ImmutableSet.of(new SubRange(22, 80)), null, null, null),
         equalTo(IP_PROTOCOLS_WITH_PORTS));
     assertThat(
-        resolveIpProtocols(null, null, ImmutableSet.of(new SubRange(22, 80)), null),
+        resolveIpProtocols(null, null, ImmutableSet.of(new SubRange(22, 80)), null, null),
         equalTo(IP_PROTOCOLS_WITH_PORTS));
     assertThat(
-        resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH)),
+        resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), null),
+        equalTo(ImmutableSet.of(IpProtocol.TCP)));
+    assertThat(
+        resolveIpProtocols(
+            null, null, null, null, Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG)),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
   }
 
@@ -127,7 +131,8 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsTcpAndUdp() {
     thrown.expect(IllegalArgumentException.class);
     // both tcp and udp at the same time in src/dst
-    resolveIpProtocols(Collections.singleton(IpProtocol.TCP), null, null, ImmutableSet.of(DNS));
+    resolveIpProtocols(
+        Collections.singleton(IpProtocol.TCP), null, null, ImmutableSet.of(DNS), null);
   }
 
   @Test
@@ -137,6 +142,7 @@ public class PacketHeaderConstraintsTest {
         Collections.singleton(IpProtocol.ICMP),
         Collections.singleton(new SubRange(10, 10)),
         null,
+        null,
         null);
   }
 
@@ -144,7 +150,18 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsIcmpAndTcp() {
     thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
-        Collections.singleton(IpProtocol.ICMP), null, null, Collections.singleton(SSH));
+        Collections.singleton(IpProtocol.ICMP), null, null, Collections.singleton(SSH), null);
+  }
+
+  @Test
+  public void testResolveIpProtocolsTcpFlagsAndUdp() {
+    thrown.expect(IllegalArgumentException.class);
+    resolveIpProtocols(
+        Collections.singleton(IpProtocol.UDP),
+        null,
+        null,
+        null,
+        Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG));
   }
 
   @Test
@@ -183,7 +200,7 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getDstProtocols(), nullValue());
+    assertThat(constraints.getApplications(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }
@@ -204,7 +221,7 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getIcmpTypes(), nullValue());
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDstPorts(), nullValue());
-    assertThat(constraints.getDstProtocols(), nullValue());
+    assertThat(constraints.getApplications(), nullValue());
     assertThat(constraints.resolveIpProtocols(), nullValue());
     assertThat(constraints.resolveDstPorts(), nullValue());
   }

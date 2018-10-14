@@ -1,16 +1,19 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Verify.verify;
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -19,6 +22,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
@@ -46,8 +50,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -60,7 +62,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -72,7 +73,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
-import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -93,8 +93,7 @@ import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
+import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -105,10 +104,9 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -122,7 +120,11 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclExplainer;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -135,19 +137,17 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.NodAnswerElement;
-import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
-import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
-import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
+import org.batfish.datamodel.answers.ValidateSnapshotAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -165,16 +165,30 @@ import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.FileBasedIdResolver;
+import org.batfish.identifiers.IdResolver;
+import org.batfish.identifiers.IssueSettingsId;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
+import org.batfish.identifiers.QuestionId;
+import org.batfish.identifiers.QuestionSettingsId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.question.ReachFilterParameters;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
+import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
+import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -200,16 +214,12 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.AclLine;
-import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
-import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.NodSatJob;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -228,68 +238,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
-  public static void applyBaseDir(
-      TestrigSettings settings, Path containerDir, String testrig, String envName) {
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig));
+  public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {
+    Path testrigDir =
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
-    EnvironmentSettings envSettings = settings.getEnvironmentSettings();
-    settings.setSerializeVendorPath(
-        testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
-    settings.setTestRigPath(testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
-    settings.setParseAnswerPath(testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
-    settings.setReferenceLibraryPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)));
-    settings.setNodeRolesPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
-    settings.setInferredNodeRolesPath(
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
-    settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
-    settings.setPojoTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
-    if (envName != null) {
-      envSettings.setName(envName);
-      Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR).resolve(envName);
-      envSettings.setEnvironmentBasePath(envPath);
-      envSettings.setCompressedDataPlanePath(
-          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
-      envSettings.setCompressedDataPlaneAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
-      envSettings.setDataPlanePath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
-      envSettings.setDataPlaneAnswerPath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
-      envSettings.setParseEnvironmentBgpTablesAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
-      envSettings.setParseEnvironmentRoutingTablesAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
-      envSettings.setSerializeEnvironmentBgpTablesPath(
-          envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
-      envSettings.setSerializeEnvironmentRoutingTablesPath(
-          envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setValidateEnvironmentAnswerPath(
-          envPath.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
-      Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
-      envSettings.setEnvPath(envDirPath);
-      envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-      envSettings.setInterfaceBlacklistPath(
-          envDirPath.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-      envSettings.setEdgeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
-      envSettings.setSerializedTopologyPath(envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
-      envSettings.setDeltaConfigurationsDir(
-          envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
-      envSettings.setExternalBgpAnnouncementsPath(
-          envDirPath.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
-      envSettings.setEnvironmentBgpTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
-      envSettings.setEnvironmentRoutingTablesPath(
-          envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-      envSettings.setPrecomputedRoutesPath(envPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
-      envSettings.setDeltaCompiledConfigurationsDir(
-          envPath.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-      envSettings.setDeltaVendorConfigurationsDir(
-          envPath.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
-    }
   }
 
   static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
@@ -356,30 +309,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static void initTestrigSettings(Settings settings) {
-    String testrig = settings.getTestrig();
-    String envName = settings.getEnvironmentName();
-    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
+    SnapshotId testrig = settings.getTestrig();
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
     if (testrig != null) {
-      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig, envName);
-      String deltaTestrig = settings.getDeltaTestrig();
-      String deltaEnvName = settings.getDeltaEnvironmentName();
+      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig);
+      SnapshotId deltaTestrig = settings.getDeltaTestrig();
       TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
-      if (deltaTestrig != null && deltaEnvName == null) {
-        deltaEnvName = envName;
-        settings.setDeltaEnvironmentName(envName);
-      } else if (deltaTestrig == null && deltaEnvName != null) {
-        deltaTestrig = testrig;
-        settings.setDeltaTestrig(testrig);
-      }
       if (deltaTestrig != null) {
-        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig, deltaEnvName);
+        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig);
       }
       if (settings.getDiffActive()) {
         settings.setActiveTestrigSettings(settings.getDeltaTestrigSettings());
       } else {
         settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
       }
-    } else if (containerDir != null) {
+    } else {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
   }
@@ -480,6 +424,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
 
+  private IdResolver _idResolver;
+
   private BatfishLogger _logger;
 
   private Settings _settings;
@@ -504,7 +450,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
       Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
-      @Nullable StorageProvider alternateStorageProvider) {
+      @Nullable StorageProvider alternateStorageProvider,
+      @Nullable IdResolver alternateIdResolver) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -527,27 +474,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateStorageProvider != null
             ? alternateStorageProvider
             : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
+    _idResolver =
+        alternateIdResolver != null
+            ? alternateIdResolver
+            : new FileBasedIdResolver(_settings.getStorageBase());
   }
 
   private Answer analyze() {
     try {
       Answer answer = new Answer();
       AnswerSummary summary = new AnswerSummary();
-      String analysisName = _settings.getAnalysisName();
-      String containerName = _settings.getContainer();
+      AnalysisId analysisName = _settings.getAnalysisName();
+      NetworkId containerName = _settings.getContainer();
       RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-      _storage
-          .listAnalysisQuestions(containerName, analysisName)
+      _idResolver
+          .listQuestions(containerName, analysisName)
           .forEach(
               questionName -> {
-                _settings.setQuestionName(questionName);
+                QuestionId questionId =
+                    _idResolver.getQuestionId(questionName, containerName, analysisName);
+                _settings.setQuestionName(questionId);
                 Answer currentAnswer;
                 try (ActiveSpan analysisQuestionSpan =
                     GlobalTracer.get()
                         .buildSpan("Getting answer to analysis question")
                         .startActive()) {
                   assert analysisQuestionSpan != null; // make span not show up as unused
-                  analysisQuestionSpan.setTag("analysis-name", analysisName);
+                  analysisQuestionSpan.setTag("analysis-name", analysisName.getId());
                   currentAnswer = answer();
                 }
                 // Ensuring that question was parsed successfully
@@ -629,8 +582,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (GlobalTracer.get().activeSpan() != null) {
       ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
       activeSpan
-          .setTag("container-name", getContainerName())
-          .setTag("testrig_name", getTestrigName());
+          .setTag("container-name", getContainerName().getId())
+          .setTag("testrig_name", getTestrigName().getId());
       if (question.getInstance() != null) {
         activeSpan.setTag("question-name", question.getInstance().getInstanceName());
       }
@@ -655,7 +608,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
       assert initQuestionEnvSpan != null; // avoid not used warning
-      initQuestionEnvironments(diff, diffActive, dp);
+      prepareToAnswerQuestions(diff, diffActive, dp);
     }
 
     AnswerElement answerElement = null;
@@ -700,25 +653,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .sum());
   }
 
-  /**
-   * Generates job to identify whether a given ACL line is unmatchable (i.e. it has unsatisfiable
-   * match condition).
-   *
-   * @param c Configuration containing ACL to check for unmatchable line
-   * @param aclName Name of ACL to check for unmatchable line
-   * @param lineToCheck Line number in the given ACL to check for matchability
-   * @return The {@link NodSatJob} to run to see if the given line is unmatchable
-   */
-  @VisibleForTesting
-  public NodSatJob<AclLine> generateUnmatchableAclLineJob(
-      Configuration c, String aclName, int lineToCheck) {
-    String hostname = c.getHostname();
-    Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-    AclLineIndependentSatisfiabilityQuerySynthesizer query =
-        new AclLineIndependentSatisfiabilityQuerySynthesizer(hostname, aclName, lineToCheck);
-    return new NodSatJob<>(_settings, aclSynthesizer, query, true);
-  }
-
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
         settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -743,72 +677,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static void checkDataPlane(TestrigSettings testrigSettings) {
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    if (!Files.exists(envSettings.getDataPlanePath())) {
+    if (!Files.exists(testrigSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
-          "Missing data plane for testrig: \""
-              + testrigSettings.getName()
-              + "\", environment: \""
-              + envSettings.getName()
-              + "\"\n");
-    }
-  }
-
-  public void checkDiffEnvironmentExists() {
-    checkDiffEnvironmentSpecified();
-    checkEnvironmentExists(_deltaTestrigSettings);
-  }
-
-  private void checkDiffEnvironmentSpecified() {
-    if (_settings.getDeltaEnvironmentName() == null) {
-      throw new CleanBatfishException(
-          "No differential environment specified for differential question");
+          "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
     }
   }
 
   public void checkDifferentialDataPlaneQuestionDependencies() {
-    checkDiffEnvironmentSpecified();
     checkDataPlane(_baseTestrigSettings);
     checkDataPlane(_deltaTestrigSettings);
   }
 
   @Override
-  public void checkEnvironmentExists() {
-    checkEnvironmentExists(_testrigSettings);
+  public void checkSnapshotOutputReady() {
+    checkSnapshotOutputReady(_testrigSettings);
   }
 
-  public void checkEnvironmentExists(TestrigSettings testrigSettings) {
-    if (!environmentExists(testrigSettings)) {
-      throw new CleanBatfishException(
-          "Environment not initialized: \""
-              + testrigSettings.getEnvironmentSettings().getName()
-              + "\"");
-    }
-  }
-
-  private void checkQuestionsDirExists() {
-    checkBaseDirExists();
-    Path questionsDir = _testrigSettings.getBasePath().resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (!Files.exists(questionsDir)) {
-      throw new CleanBatfishException(
-          "questions dir does not exist: \"" + questionsDir.getFileName() + "\"");
-    }
-  }
-
-  private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
-    Answer answer = new Answer();
-    EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
-    Path deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
-    Path vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
-    if (deltaConfigurationsDir != null) {
-      if (Files.exists(deltaConfigurationsDir)) {
-        answer.append(serializeVendorConfigs(envSettings.getEnvPath(), vendorConfigsDir));
-        answer.append(serializeIndependentConfigs(vendorConfigsDir));
-      }
-      return answer;
-    } else {
-      throw new BatfishException("Delta configurations directory cannot be null");
-    }
+  public void checkSnapshotOutputReady(TestrigSettings testrigSettings) {
+    checkState(
+        outputExists(testrigSettings),
+        "Output directory does not exist for snapshot %s",
+        testrigSettings.getName());
   }
 
   public Set<Flow> computeCompositeNodOutput(
@@ -868,7 +757,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
-    checkEnvironmentExists();
+    checkSnapshotOutputReady();
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
     saveDataPlane(result._dataPlane, result._answerElement, false);
     return result._answerElement;
@@ -880,13 +769,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
     Path dataPlanePath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            ? _testrigSettings.getCompressedDataPlanePath()
+            : _testrigSettings.getDataPlanePath();
 
     Path answerElementPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     Cache<NetworkSnapshot, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
@@ -905,16 +794,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void computeEnvironmentBgpTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path outputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
-    Path inputPath = envSettings.getEnvironmentBgpTablesPath();
+    Path outputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
+    Path inputPath = _testrigSettings.getEnvironmentBgpTablesPath();
     serializeEnvironmentBgpTables(inputPath, outputPath);
   }
 
   private void computeEnvironmentRoutingTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path outputPath = envSettings.getSerializeEnvironmentRoutingTablesPath();
-    Path inputPath = envSettings.getEnvironmentRoutingTablesPath();
+    Path outputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
+    Path inputPath = _testrigSettings.getEnvironmentRoutingTablesPath();
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
@@ -926,21 +813,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return topology;
   }
 
-  public <KeyT, ResultT> void computeNodFirstUnsatOutput(
-      List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
-    _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
-    _logger.resetTimer();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings,
-        _logger,
-        jobs,
-        output,
-        new NodFirstUnsatAnswerElement(),
-        true,
-        "NOD First-UNSAT");
-    _logger.printElapsedTime();
-  }
-
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     _logger.resetTimer();
@@ -949,14 +821,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
     _logger.printElapsedTime();
     return flows;
-  }
-
-  public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
-    _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
-    _logger.resetTimer();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
-    _logger.printElapsedTime();
   }
 
   @VisibleForTesting
@@ -1013,12 +877,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+    Path dpPath = testrigSettings.getDataPlaneAnswerPath();
     return Files.exists(dpPath);
   }
 
   private boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path path = testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath();
+    Path path = testrigSettings.getCompressedDataPlaneAnswerPath();
     return Files.exists(path);
   }
 
@@ -1228,23 +1092,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
-    Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+  private boolean environmentBgpTablesExist(TestrigSettings testrigSettings) {
+    Path answerPath = testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
     return Files.exists(answerPath);
   }
 
-  private boolean environmentExists(TestrigSettings testrigSettings) {
-    checkBaseDirExists();
-    Path envPath = testrigSettings.getEnvironmentSettings().getEnvPath();
-    if (envPath == null) {
-      throw new CleanBatfishException(
-          "No environment specified for testrig: " + testrigSettings.getName());
-    }
-    return Files.exists(envPath);
+  private boolean outputExists(TestrigSettings testrigSettings) {
+    return testrigSettings.getOutputPath().toFile().exists();
   }
 
-  private boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
-    Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
+  private boolean environmentRoutingTablesExist(TestrigSettings testrigSettings) {
+    Path answerPath = testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
     return Files.exists(answerPath);
   }
 
@@ -1481,7 +1339,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getContainerName() {
+  public NetworkId getContainerName() {
     return _settings.getContainer();
   }
 
@@ -1499,22 +1357,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public String getDifferentialFlowTag() {
-    // return _settings.getQuestionName() + ":" +
-    // _baseTestrigSettings.getEnvName()
-    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getEnvName()
-    // + ":" + _deltaTestrigSettings.getEnvName() + ":"
-    // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
     return DIFFERENTIAL_FLOW_TAG;
-  }
-
-  @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges = Collections.emptySortedSet();
-    Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
-    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
-      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
-    }
-    return blacklistEdges;
   }
 
   @Override
@@ -1524,8 +1367,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<String> nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
-        getEnvironmentName(),
-        getTestrigName(),
+        _idResolver.getSnapshotName(_settings.getContainer(), getTestrigName()),
         edgeBlackList,
         interfaceBlackList,
         nodeBlackList,
@@ -1545,10 +1387,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bgpTables;
   }
 
-  public String getEnvironmentName() {
-    return _testrigSettings.getEnvironmentSettings().getName();
-  }
-
   private SortedMap<String, RoutesByVrf> getEnvironmentRoutingTables(
       Path inputPath, ParseEnvironmentRoutingTablesAnswerElement answerElement) {
     if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
@@ -1565,9 +1403,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       return BatfishObjectMapper.mapper()
           .readValue(
-              CommonUtil.readFile(
-                  _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath()),
-              Topology.class);
+              CommonUtil.readFile(_testrigSettings.getSerializeTopologyPath()), Topology.class);
     } catch (IOException e) {
       throw new BatfishException("Could not getEnvironmentTopology: ", e);
     }
@@ -1579,9 +1415,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public String getFlowTag(TestrigSettings testrigSettings) {
-    // return _settings.getQuestionName() + ":" + testrigSettings.getEnvName() +
-    // ":"
-    // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
       return Flow.DELTA_FLOW_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
@@ -1601,24 +1434,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     FlowHistory flowHistory = new FlowHistory();
     if (_settings.getDiffQuestion()) {
       String flowTag = getDifferentialFlowTag();
-      // String baseEnvTag = _baseTestrigSettings.getEnvName() + ":"
-      // + _baseTestrigSettings.getEnvironmentSettings().getEnvName();
       String baseEnvTag = getFlowTag(_baseTestrigSettings);
-      // String deltaName = _deltaTestrigSettings.getEnvName() + ":"
-      // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
       String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
-      pushBaseEnvironment();
+      pushBaseSnapshot();
       Environment baseEnv = getEnvironment();
       populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
-      popEnvironment();
-      pushDeltaEnvironment();
+      popSnapshot();
+      pushDeltaSnapshot();
       Environment deltaEnv = getEnvironment();
       populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
-      popEnvironment();
+      popSnapshot();
     } else {
       String flowTag = getFlowTag();
-      // String name = testrigSettings.getEnvName() + ":"
-      // + testrigSettings.getEnvironmentSettings().getEnvName();
       String envTag = flowTag;
       Environment env = getEnvironment();
       populateFlowHistory(flowHistory, envTag, env, flowTag);
@@ -1628,29 +1455,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges =
+        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistEdges == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistEdges;
+  }
+
+  @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    SortedSet<NodeInterfacePair> blacklistInterfaces = Collections.emptySortedSet();
-    Path interfaceBlacklistPath =
-        _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
-    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
-      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
+    SortedSet<NodeInterfacePair> blacklistInterfaces =
+        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistInterfaces == null) {
+      return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
+  }
+
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes =
+        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+    if (blacklistNodes == null) {
+      return Collections.emptySortedSet();
+    }
+    return blacklistNodes;
   }
 
   @Override
   public BatfishLogger getLogger() {
     return _logger;
-  }
-
-  @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
-    SortedSet<String> blacklistNodes = Collections.emptySortedSet();
-    Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
-    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
-      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
-    }
-    return blacklistNodes;
   }
 
   /**
@@ -1660,15 +1496,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public NodeRolesData getNodeRolesData() {
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.read(nodeRoleDataPath);
+      NetworkId networkId = _settings.getContainer();
+      if (!_idResolver.hasNetworkNodeRolesId(networkId)) {
+        return null;
+      }
+      NodeRolesId nodeRolesId = _idResolver.getNetworkNodeRolesId(networkId);
+      return BatfishObjectMapper.mapper()
+          .readValue(_storage.loadNodeRoles(nodeRolesId), NodeRolesData.class);
     } catch (IOException e) {
-      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      _logger.errorf("Could not read roles data: %s", e);
       return null;
     }
   }
@@ -1682,15 +1519,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
+      NodeRolesData nodeRolesData = getNodeRolesData();
+      return nodeRolesData.getNodeRoleDimension(dimension);
     } catch (IOException e) {
-      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      _logger.errorf("Could not read roles data: %s", e);
       return Optional.empty();
     }
   }
@@ -1702,7 +1535,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    return _storage.loadMajorIssueConfig(_settings.getContainer(), majorIssueType);
+    IssueSettingsId id = _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
+    if (id == null) {
+      return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
+    }
+    MajorIssueConfig loaded = _storage.loadMajorIssueConfig(_settings.getContainer(), id);
+    return loaded != null ? loaded : new MajorIssueConfig(majorIssueType, ImmutableMap.of());
   }
 
   @Override
@@ -1748,7 +1586,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path libraryPath =
         _settings
             .getStorageBase()
-            .resolve(_settings.getContainer())
+            .resolve(_settings.getContainer().getId())
             .resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
     try {
       return ReferenceLibrary.read(libraryPath);
@@ -1774,10 +1612,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   NetworkSnapshot getNetworkSnapshot() {
-    return new NetworkSnapshot(
-        _settings.getContainer(),
-        new Snapshot(
-            _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName()));
+    return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
   private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
@@ -1804,13 +1639,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getTestRigPath();
+    Path trPath = _testrigSettings.getInputPath();
     Directory dir = new Directory(trPath);
     return dir;
   }
 
   @Override
-  public String getTestrigName() {
+  public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
   }
 
@@ -2005,17 +1840,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private void initQuestionEnvironment(boolean dp, boolean differentialContext) {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    if (!environmentExists(_testrigSettings)) {
-      Path envPath = envSettings.getEnvPath();
-      // create environment required folders
-      CommonUtil.createDirectories(envPath);
+  private void prepareToAnswerQuestions(boolean dp, boolean differentialContext) {
+    if (!outputExists(_testrigSettings)) {
+      CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }
-    if (!environmentBgpTablesExist(envSettings)) {
+    if (!environmentBgpTablesExist(_testrigSettings)) {
       computeEnvironmentBgpTables();
     }
-    if (!environmentRoutingTablesExist(envSettings)) {
+    if (!environmentRoutingTablesExist(_testrigSettings)) {
       computeEnvironmentRoutingTables();
     }
     if (dp) {
@@ -2029,16 +1861,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void initQuestionEnvironments(boolean diff, boolean diffActive, boolean dp) {
+  private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
-      pushBaseEnvironment();
-      initQuestionEnvironment(dp, false);
-      popEnvironment();
+      pushBaseSnapshot();
+      prepareToAnswerQuestions(dp, false);
+      popSnapshot();
     }
     if (diff || diffActive) {
-      pushDeltaEnvironment();
-      initQuestionEnvironment(dp, true);
-      popEnvironment();
+      pushDeltaSnapshot();
+      prepareToAnswerQuestions(dp, true);
+      popSnapshot();
     }
   }
 
@@ -2135,10 +1967,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
-    // Next, see if we have an up-to-date, environment-specific configurations on disk.
+    // Next, see if we have an up-to-date configurations on disk.
     configurations =
-        _storage.loadCompressedConfigurations(
-            _settings.getContainer(), snapshot.getSnapshot().getTestrig());
+        _storage.loadCompressedConfigurations(_settings.getContainer(), snapshot.getSnapshot());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2152,8 +1983,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Returns the configurations for given snapshot, which including any environment-specific
-   * features.
+   * Returns the configurations for given snapshot, including any environmental features such as
+   * failed links.
    */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     // Do we already have configurations in the cache?
@@ -2163,9 +1994,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
-    // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations =
-        _storage.loadConfigurations(_settings.getContainer(), snapshot.getSnapshot().getTestrig());
+    // Next, see if we have an up-to-date configurations on disk.
+    configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2184,7 +2014,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
         _storage.loadConfigurations(_settings.getContainer(), _testrigSettings.getName());
-    Verify.verify(
+    verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
     applyEnvironment(configurations);
@@ -2227,8 +2057,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Path path =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            ? _testrigSettings.getCompressedDataPlanePath()
+            : _testrigSettings.getDataPlanePath();
 
     NetworkSnapshot snapshot = getNetworkSnapshot();
     DataPlane dp = cache.getIfPresent(snapshot);
@@ -2257,8 +2087,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean compressed, boolean firstAttempt) {
     Path answerPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     DataPlaneAnswerElement bae = deserializeObject(answerPath, DataPlaneAnswerElement.class);
     if (!Version.isCompatibleVersion("Service", "Old data plane", bae.getVersion())) {
@@ -2286,8 +2116,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         repairEnvironmentBgpTables();
       }
       environmentBgpTables =
-          deserializeEnvironmentBgpTables(
-              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentBgpTablesPath());
+          deserializeEnvironmentBgpTables(_testrigSettings.getSerializeEnvironmentBgpTablesPath());
       _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
     }
     return environmentBgpTables;
@@ -2307,7 +2136,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       environmentRoutingTables =
           deserializeEnvironmentRoutingTables(
-              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentRoutingTablesPath());
+              _testrigSettings.getSerializeEnvironmentRoutingTablesPath());
       _cachedEnvironmentRoutingTables.put(snapshot, environmentRoutingTables);
     }
     return environmentRoutingTables;
@@ -2320,8 +2149,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
       boolean firstAttempt) {
-    Path answerPath =
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentBgpTablesAnswerPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
     if (!Files.exists(answerPath)) {
       repairEnvironmentBgpTables();
     }
@@ -2350,8 +2178,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement(
       boolean firstAttempt) {
-    Path answerPath =
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentRoutingTablesAnswerPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
     if (!Files.exists(answerPath)) {
       repairEnvironmentRoutingTables();
     }
@@ -2397,23 +2224,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
-    return loadValidateEnvironmentAnswerElement(true);
+  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement() {
+    return loadValidateSnapshotAnswerElement(true);
   }
 
-  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement(
-      boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath();
+  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement(boolean firstAttempt) {
+    Path answerPath = _testrigSettings.getValidateSnapshotAnswerPath();
     if (Files.exists(answerPath)) {
-      ValidateEnvironmentAnswerElement veae =
-          deserializeObject(answerPath, ValidateEnvironmentAnswerElement.class);
+      ValidateSnapshotAnswerElement veae =
+          deserializeObject(answerPath, ValidateSnapshotAnswerElement.class);
       if (Version.isCompatibleVersion("Service", "Old processed environment", veae.getVersion())) {
         return veae;
       }
     }
     if (firstAttempt) {
       parseConfigurationsAndApplyEnvironment();
-      return loadValidateEnvironmentAnswerElement(false);
+      return loadValidateSnapshotAnswerElement(false);
     } else {
       throw new BatfishException(
           "Version error repairing environment for validate environment answer element");
@@ -2513,18 +2339,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   void outputAnswerMetadata(Answer answer) {
-    String question = _settings.getQuestionName();
-    if (question == null) {
+    QuestionId questionId = _settings.getQuestionName();
+    if (questionId == null) {
       return;
     }
-    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId;
+    try {
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            networkNodeRolesId,
+            deltaSnapshot,
+            analysisId);
+
     _storage.storeAnswerMetadata(
-        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        question,
-        deltaSnapshot,
-        _settings.getAnalysisName());
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
   }
 
   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -2692,7 +2540,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       Warnings warnings = buildWarnings(_settings);
       String filename =
-          _settings.getActiveTestrigSettings().getTestRigPath().relativize(currentFile).toString();
+          _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, filename, warnings, configurationFormat);
@@ -2719,7 +2567,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ResolvedReachabilityParameters baseParameters;
 
     // load base configurations and generate base data plane
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Topology baseTopology = getEnvironmentTopology();
     try {
       baseParameters =
@@ -2730,11 +2578,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Map<String, Configuration> baseConfigurations = baseParameters.getConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParameters);
-    popEnvironment();
+    popSnapshot();
 
     // load delta configurations and generate delta data plane
     ResolvedReachabilityParameters deltaParameters;
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     try {
       deltaParameters =
           resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
@@ -2745,13 +2593,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> diffConfigurations = deltaParameters.getConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParameters);
     Topology diffTopology = getEnvironmentTopology();
-    popEnvironment();
+    popSnapshot();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popEnvironment();
+    popSnapshot();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
         new BlacklistDstIpQuerySynthesizer(
@@ -2800,7 +2648,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(
               ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
-          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
+          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, TRUE);
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
       CompositeNodJob job =
@@ -2862,21 +2710,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     DataPlane baseDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
-    popEnvironment();
-    pushDeltaEnvironment();
+    popSnapshot();
+    pushDeltaSnapshot();
     DataPlane deltaDataPlane = loadDataPlane();
     getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
-    popEnvironment();
+    popSnapshot();
 
     AnswerElement answerElement = getHistory();
     return answerElement;
   }
 
   @Override
-  public void popEnvironment() {
+  public void popSnapshot() {
     int lastIndex = _testrigSettingsStack.size() - 1;
     _testrigSettings = _testrigSettingsStack.get(lastIndex);
     _testrigSettingsStack.remove(lastIndex);
@@ -3038,8 +2886,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath =
-        _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
+    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
       String externalBgpAnnouncementsFileContents =
           CommonUtil.readFile(externalBgpAnnouncementsPath);
@@ -3084,12 +2931,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
+   */
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+    DataPlane dp = loadDataPlane();
+    return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
+  }
+
+  /**
    * Helper function to disable a blacklisted interface and update the given {@link
-   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
+   * ValidateSnapshotAnswerElement} if the interface does not actually exist.
    */
   private static void blacklistInterface(
       Map<String, Configuration> configurations,
-      ValidateEnvironmentAnswerElement veae,
+      ValidateSnapshotAnswerElement veae,
       NodeInterfacePair iface) {
     String hostname = iface.getHostname();
     String ifaceName = iface.getInterface();
@@ -3114,7 +2974,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void processInterfaceBlacklist(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     for (NodeInterfacePair p : blacklistInterfaces) {
       blacklistInterface(configurations, veae, p);
@@ -3122,7 +2982,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void processNodeBlacklist(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     for (String hostname : blacklistNodes) {
       Configuration node = configurations.get(hostname);
@@ -3139,13 +2999,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void pushBaseEnvironment() {
+  public void pushBaseSnapshot() {
     _testrigSettingsStack.add(_testrigSettings);
     _testrigSettings = _baseTestrigSettings;
   }
 
   @Override
-  public void pushDeltaEnvironment() {
+  public void pushDeltaSnapshot() {
     _testrigSettingsStack.add(_testrigSettings);
     _testrigSettings = _deltaTestrigSettings;
   }
@@ -3172,8 +3032,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
-    Path externalBgpAnnouncementsPath =
-        _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
+    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
       String externalBgpAnnouncementsFileContents =
           CommonUtil.readFile(externalBgpAnnouncementsPath);
@@ -3278,23 +3137,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement reducedReachability(ReachabilityParameters params) {
     checkDifferentialDataPlaneQuestionDependencies();
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     ResolvedReachabilityParameters baseParams;
     try {
       baseParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
-    popEnvironment();
+    popSnapshot();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     ResolvedReachabilityParameters deltaParams;
     try {
       deltaParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
-    popEnvironment();
+    popSnapshot();
 
     return reducedReachability(baseParams, deltaParams);
   }
@@ -3315,21 +3174,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     assert baseParams.getSrcNatted().equals(deltaParams.getSrcNatted());
 
     // push environment so we use the right forwarding analysis.
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
-    popEnvironment();
+    popSnapshot();
 
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
-    popEnvironment();
+    popSnapshot();
 
     /*
     // TODO refine dstIp to exclude blacklisted destinations
-    pushDeltaEnvironment();
+    pushDeltaSnapshot();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popEnvironment();
+    popSnapshot();
     */
 
     // compute composite program and flows
@@ -3398,12 +3257,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseEnvironment();
+    pushBaseSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popEnvironment();
-    pushDeltaEnvironment();
+    popSnapshot();
+    pushDeltaSnapshot();
     getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popEnvironment();
+    popSnapshot();
 
     AnswerElement answerElement = getHistory();
     return answerElement;
@@ -3440,13 +3299,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void repairDataPlane(boolean compressed) {
     Path dataPlanePath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+            ? _testrigSettings.getCompressedDataPlanePath()
+            : _testrigSettings.getDataPlanePath();
 
     Path dataPlaneAnswerPath =
         compressed
-            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getDataPlaneAnswerPath();
 
     CommonUtil.deleteIfExists(dataPlanePath);
     CommonUtil.deleteIfExists(dataPlaneAnswerPath);
@@ -3460,7 +3319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Applies the current environment to the specified configurations and updates the given {@link
-   * ValidateEnvironmentAnswerElement}. Applying the environment includes:
+   * ValidateSnapshotAnswerElement}. Applying the environment includes:
    *
    * <ul>
    *   <li>Applying node and interface blacklists.
@@ -3468,7 +3327,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * </ul>
    */
   private void updateBlacklistedAndInactiveConfigs(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     processNodeBlacklist(configurations, veae);
     processInterfaceBlacklist(configurations, veae);
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
@@ -3491,27 +3350,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * </ul>
    */
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
-    ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
+    ValidateSnapshotAnswerElement veae = new ValidateSnapshotAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
     postProcessForEnvironment(configurationsWithoutEnvironment);
 
-    serializeObject(
-        veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
+    serializeObject(veae, _testrigSettings.getValidateSnapshotAnswerPath());
   }
 
   private void repairEnvironmentBgpTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
-    Path bgpTablesOutputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
+    Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteIfExists(answerPath);
     CommonUtil.deleteDirectory(bgpTablesOutputPath);
     computeEnvironmentBgpTables();
   }
 
   private void repairEnvironmentRoutingTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    Path rtOutputPath = envSettings.getSerializeEnvironmentRoutingTablesPath();
+    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
+    Path rtOutputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     CommonUtil.deleteIfExists(answerPath);
     CommonUtil.deleteDirectory(rtOutputPath);
     computeEnvironmentRoutingTables();
@@ -3520,43 +3376,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void repairVendorConfigurations() {
     Path outputPath = _testrigSettings.getSerializeVendorPath();
     CommonUtil.deleteDirectory(outputPath);
-    Path testRigPath = _testrigSettings.getTestRigPath();
+    Path testRigPath = _testrigSettings.getInputPath();
     serializeVendorConfigs(testRigPath, outputPath);
-  }
-
-  private AnswerElement report() {
-    ReportAnswerElement answerElement = new ReportAnswerElement();
-    checkQuestionsDirExists();
-    Path questionsDir =
-        _settings.getActiveTestrigSettings().getBasePath().resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
-    try (DirectoryStream<Path> questions = Files.newDirectoryStream(questionsDir)) {
-      questions.forEach(
-          questionDirPath ->
-              answers.put(
-                  questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
-                  !questionDirPath.getFileName().startsWith(".")
-                          && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
-                      ? CommonUtil.readFile(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
-                      : ""));
-    } catch (IOException e1) {
-      throw new BatfishException(
-          "Could not create directory stream for '" + questionsDir + "'", e1);
-    }
-    ObjectMapper mapper = BatfishObjectMapper.mapper();
-    for (Entry<Path, String> entry : answers.entrySet()) {
-      Path answerPath = entry.getKey();
-      String answerText = entry.getValue();
-      if (!answerText.equals("")) {
-        try {
-          answerElement.getJsonAnswers().add(mapper.readTree(answerText));
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Error mapping JSON content of '" + answerPath + "' to object", e);
-        }
-      }
-    }
-    return answerElement;
   }
 
   public Answer run() {
@@ -3570,18 +3391,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return answer;
     }
 
-    if (_settings.getReport()) {
-      answer.addAnswerElement(report());
-      return answer;
-    }
-
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
       return answer;
     }
 
     if (_settings.getFlatten()) {
-      Path flattenSource = _testrigSettings.getTestRigPath();
+      Path flattenSource = _testrigSettings.getInputPath();
       Path flattenDestination = _settings.getFlattenDestination();
       flatten(flattenSource, flattenDestination);
       return answer;
@@ -3595,24 +3411,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return answer;
     }
 
-    // if (_settings.getZ3()) {
-    // Map<String, Configuration> configurations = loadConfigurations();
-    // String dataPlanePath = _envSettings.getDataPlanePath();
-    // if (dataPlanePath == null) {
-    // throw new BatfishException("Missing path to data plane");
-    // }
-    // File dataPlanePathAsFile = new File(dataPlanePath);
-    // genZ3(configurations, dataPlanePathAsFile);
-    // return answer;
-    // }
-    //
-    // if (_settings.getRoleTransitQuery()) {
-    // genRoleTransitQueries();
-    // return answer;
-    // }
-
     if (_settings.getSerializeVendor()) {
-      Path testRigPath = _testrigSettings.getTestRigPath();
+      Path testRigPath = _testrigSettings.getInputPath();
       Path outputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeVendorConfigs(testRigPath, outputPath));
       action = true;
@@ -3630,11 +3430,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
       answer.addAnswerElement(initInfoAnswerElement);
-      action = true;
-    }
-
-    if (_settings.getCompileEnvironment()) {
-      answer.append(compileEnvironmentConfigurations(_testrigSettings));
       action = true;
     }
 
@@ -3657,8 +3452,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       action = true;
     }
 
-    if (_settings.getValidateEnvironment()) {
-      answer.append(validateEnvironment());
+    if (_settings.getValidateSnapshot()) {
+      answer.append(validateSnapshot());
       action = true;
     }
 
@@ -3707,9 +3502,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         getEnvironmentBgpTables(inputPath, answerElement);
     serializeEnvironmentBgpTables(bgpTables, outputPath);
-    serializeObject(
-        answerElement,
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentBgpTablesAnswerPath());
+    serializeObject(answerElement, _testrigSettings.getParseEnvironmentBgpTablesAnswerPath());
     return answer;
   }
 
@@ -3740,9 +3533,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         getEnvironmentRoutingTables(inputPath, answerElement);
     serializeEnvironmentRoutingTables(routingTables, outputPath);
-    serializeObject(
-        answerElement,
-        _testrigSettings.getEnvironmentSettings().getParseEnvironmentRoutingTablesAnswerPath());
+    serializeObject(answerElement, _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath());
     return answer;
   }
 
@@ -3807,7 +3598,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getTestRigPath().relativize(path).toString();
+        String relativePathStr = _testrigSettings.getInputPath().relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
           hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
@@ -3846,7 +3637,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _testrigSettings.getName(), configurations, testrigTopology);
+            _idResolver.getSnapshotName(_settings.getContainer(), _testrigSettings.getName()),
+            configurations,
+            testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
@@ -3854,25 +3647,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     applyEnvironment(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
-        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
-        envTopology,
-        "environment topology");
+        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
 
-    // Compute new auto role data and updates existing auto data with it
-    SortedSet<NodeRoleDimension> autoRoles =
-        new InferRoles(configurations.keySet(), envTopology).inferRoles();
-    Path nodeRoleDataPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer())
-            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    try {
-      NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
-    } catch (IOException e) {
-      _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
-    }
-
+    updateSnapshotNodeRoles();
     return answer;
+  }
+
+  private void updateSnapshotNodeRoles() {
+    // Compute new auto role data and updates existing auto data with it
+    NetworkId networkId = _settings.getContainer();
+    SnapshotId snapshotId = _settings.getTestrig();
+    NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
+    Set<String> nodeNames = loadConfigurations().keySet();
+    Topology envTopology = getEnvironmentTopology();
+    SortedSet<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, envTopology).inferRoles();
+    NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
+    try {
+      if (!autoRoles.isEmpty()) {
+        snapshotNodeRoles.setDefaultDimension(autoRoles.first().getName());
+        snapshotNodeRoles.setRoleDimensions(autoRoles);
+      }
+      _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);
+    } catch (IOException e) {
+      _logger.warnf("Could not update node roles: %s", e);
+    }
   }
 
   private void serializeNetworkConfigs(
@@ -4019,12 +3817,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return e.getInvalidParametersAnswer();
     }
 
-    Set<ForwardingAction> actions = reachabilityParameters.getActions();
+    Set<FlowDisposition> actions = reachabilityParameters.getActions();
 
     Map<String, Configuration> configurations = parameters.getConfigurations();
     DataPlane dataPlane = parameters.getDataPlane();
     Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
-    HeaderSpace headerSpace = parameters.getHeaderSpace();
+    AclLineMatchExpr headerSpace = parameters.getHeaderSpace();
     Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
@@ -4093,23 +3891,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @Override
-  public DifferentialReachFilterResult differentialReachFilter(
+  public DifferentialSearchFiltersResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      ReachFilterParameters reachFilterParameters) {
+      SearchFiltersParameters searchFiltersParameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    HeaderSpace headerSpace = reachFilterParameters.resolveHeaderspace(specifierContext());
+    HeaderSpace headerSpace = searchFiltersParameters.resolveHeaderspace(specifierContext());
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     // resolve specified source interfaces that exist in both configs.
     Set<String> commonSources =
         Sets.intersection(
-            resolveBaseSources(reachFilterParameters, baseConfig.getHostname()),
-            resolveDeltaSources(reachFilterParameters, deltaConfig.getHostname()));
+            resolveBaseSources(searchFiltersParameters, baseConfig.getHostname()),
+            resolveDeltaSources(searchFiltersParameters, deltaConfig.getHostname()));
 
     Set<String> inactiveInterfaces =
         Sets.union(
@@ -4131,40 +3929,83 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
+            .and(mgr.isValidValue());
     BDD deltaAclBDD =
         BDDAcl.create(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
+            .and(mgr.isValidValue());
 
     String hostname = baseConfig.getHostname();
 
     BDD increasedBDD = baseAclBDD.not().and(deltaAclBDD);
-    Flow increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD).orElse(null);
+    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD);
 
     BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
-    Flow decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD).orElse(null);
+    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD);
 
-    return new DifferentialReachFilterResult(increasedFlow, decreasedFlow);
+    boolean explain = searchFiltersParameters.getGenerateExplanations();
+
+    /*
+     * Only generate an explanation if the differential headerspace is non-empty (i.e. we found a
+     * flow).
+     */
+    Optional<SearchFiltersResult> increasedResult =
+        increasedFlow.map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    !explain
+                        ? null
+                        : AclExplainer.explainDifferential(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            baseAcl,
+                            baseConfig.getIpAccessLists(),
+                            baseConfig.getIpSpaces(),
+                            deltaAcl,
+                            deltaConfig.getIpAccessLists(),
+                            deltaConfig.getIpSpaces())));
+
+    Optional<SearchFiltersResult> decreasedResult =
+        decreasedFlow.map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    !explain
+                        ? null
+                        : AclExplainer.explainDifferential(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            deltaAcl,
+                            deltaConfig.getIpAccessLists(),
+                            deltaConfig.getIpSpaces(),
+                            baseAcl,
+                            baseConfig.getIpAccessLists(),
+                            baseConfig.getIpSpaces())));
+
+    return new DifferentialSearchFiltersResult(
+        increasedResult.orElse(null), decreasedResult.orElse(null));
   }
 
-  private Set<String> resolveDeltaSources(ReachFilterParameters parameters, String node) {
-    pushDeltaEnvironment();
+  private Set<String> resolveDeltaSources(SearchFiltersParameters parameters, String node) {
+    pushDeltaSnapshot();
     Set<String> sources = resolveSources(parameters, node);
-    popEnvironment();
+    popSnapshot();
     return sources;
   }
 
-  private Set<String> resolveBaseSources(ReachFilterParameters parameters, String node) {
-    pushBaseEnvironment();
+  private Set<String> resolveBaseSources(SearchFiltersParameters parameters, String node) {
+    pushBaseSnapshot();
     Set<String> sources = resolveSources(parameters, node);
-    popEnvironment();
+    popSnapshot();
     return sources;
   }
 
-  private Set<String> resolveSources(ReachFilterParameters parameters, String node) {
+  private Set<String> resolveSources(SearchFiltersParameters parameters, String node) {
     LocationVisitor<String> locationToSource =
         new LocationVisitor<String>() {
           @Override
@@ -4202,8 +4043,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<Flow> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters parameters) {
+  public Optional<SearchFiltersResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
     Set<String> inactiveInterfaces =
@@ -4215,15 +4056,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
 
-    BDD headerSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, node.getIpSpaces())
-            .toBDD(parameters.resolveHeaderspace(specifierContext()));
+    HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext());
+    BDD headerSpaceBDD = new HeaderSpaceToBDD(bddPacket, node.getIpSpaces()).toBDD(headerSpace);
     BDD bdd =
         BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
             .getBdd()
             .and(headerSpaceBDD)
-            .and(mgr.isSane());
-    return getFlow(bddPacket, mgr, node.getHostname(), bdd);
+            .and(mgr.isValidValue());
+
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd)
+        .map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    parameters.getGenerateExplanations()
+                        ? AclExplainer.explain(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            acl,
+                            node.getIpAccessLists(),
+                            node.getIpSpaces())
+                        : null));
   }
 
   @Override
@@ -4302,34 +4156,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
-    return singleReachability(
-        reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
-  }
-
-  private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
-    _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    _logger.resetTimer();
-
-    _logger.info("Synthesizing Z3 ACL logic...");
-    Synthesizer s =
-        new Synthesizer(
-            SynthesizerInputImpl.builder()
-                .setConfigurations(Collections.singletonMap(hostname, config))
-                .setEnabledAcls(Collections.singletonMap(hostname, ImmutableSet.of(aclName)))
-                .setSimplify(_settings.getSimplify())
-                .build());
-
-    List<String> warnings = s.getWarnings();
-    int numWarnings = warnings.size();
-    if (numWarnings == 0) {
-      _logger.info("OK\n");
-    } else {
-      for (String warning : warnings) {
-        _logger.warn(warning);
-      }
+    if (debugFlagEnabled("useNodReachability")) {
+      return singleReachability(
+          reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
     }
-    _logger.printElapsedTime();
-    return s;
+    return bddSingleReachability(reachabilityParameters);
   }
 
   public Synthesizer synthesizeDataPlane() {
@@ -4341,36 +4172,148 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        new HeaderSpace(),
+        TRUE,
         ImmutableSet.of(),
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
         false);
   }
 
+  public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
+    ResolvedReachabilityParameters params;
+    try {
+      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+
+    checkArgument(
+        params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
+        "Requiring or forbidding Source NAT is currently unsupported");
+
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    Map<IngressLocation, BDD> reachableBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                params.getSourceIpAssignment(),
+                params.getHeaderSpace(),
+                params.getForbiddenTransitNodes(),
+                params.getRequiredTransitNodes(),
+                params.getFinalNodes(),
+                params.getActions())
+            .getIngressLocationReachableBDDs();
+
+    String flowTag = getFlowTag();
+    Set<Flow> flows =
+        reachableBDDs
+            .entrySet()
+            .stream()
+            .flatMap(
+                entry -> {
+                  IngressLocation loc = entry.getKey();
+                  BDD headerSpace = entry.getValue();
+                  Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
+                  if (!optionalFlow.isPresent()) {
+                    return Stream.of();
+                  }
+                  Flow.Builder flow = optionalFlow.get();
+                  flow.setIngressNode(loc.getNode());
+                  flow.setTag(flowTag);
+                  switch (loc.getType()) {
+                    case INTERFACE_LINK:
+                      flow.setIngressInterface(loc.getInterface());
+                      break;
+                    case VRF:
+                      flow.setIngressVrf(loc.getVrf());
+                      break;
+                    default:
+                      throw new BatfishException(
+                          "Unexpected IngressLocation Type: " + loc.getType().name());
+                  }
+                  return Stream.of(flow.build());
+                })
+            .collect(ImmutableSet.toImmutableSet());
+
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin().processFlows(flows, dp, false);
+
+    AnswerElement answerElement = getHistory();
+    return answerElement;
+  }
+
   @Override
   public Set<Flow> bddMultipathConsistency() {
-    BDDReachabilityAnalysis bddReachabilityAnalysis = getBddReachabilityAnalysis(new BDDPacket());
-    return bddReachabilityAnalysis.multipathInconsistencies(getFlowTag());
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
+    Set<String> finalNodes = loadConfigurations().keySet();
+    Set<FlowDisposition> dropDispositions =
+        ImmutableSet.of(
+            FlowDisposition.DENIED_IN,
+            FlowDisposition.DENIED_OUT,
+            FlowDisposition.NO_ROUTE,
+            FlowDisposition.NULL_ROUTED);
+    Set<String> forbiddenTransitNodes = ImmutableSet.of();
+    Set<String> requiredTransitNodes = ImmutableSet.of();
+    Map<IngressLocation, BDD> acceptedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                finalNodes,
+                ImmutableSet.of(FlowDisposition.ACCEPTED))
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> droppedBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                finalNodes,
+                dropDispositions)
+            .getIngressLocationReachableBDDs();
+    Map<IngressLocation, BDD> neighborUnreachableBDDs =
+        bddReachabilityAnalysisFactory
+            .bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                UniverseIpSpace.INSTANCE,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                finalNodes,
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .getIngressLocationReachableBDDs();
+
+    String flowTag = getFlowTag();
+    return Streams.concat(
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, droppedBDDs).stream(),
+            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
+                .stream(),
+            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
+                .stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
-  private BDDReachabilityAnalysis getBddReachabilityAnalysis(BDDPacket pkt) {
-    Map<String, Configuration> configurations = loadConfigurations();
-    DataPlane dataPlane = loadDataPlane();
-    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, configurations);
+  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, loadConfigurations());
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
                 AllInterfaceLinksLocationSpecifier.INSTANCE)
             .resolve(specifierContext);
-    IpSpaceAssignment sourceIpAssignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+    return InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+  }
 
-    BDDReachabilityAnalysisFactory analysisFactory =
-        new BDDReachabilityAnalysisFactory(pkt, configurations, forwardingAnalysis);
-    return analysisFactory.bddReachabilityAnalysis(sourceIpAssignment);
+  @Nonnull
+  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(BDDPacket pkt) {
+    return new BDDReachabilityAnalysisFactory(
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis());
   }
 
   /**
@@ -4378,52 +4321,91 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * reduced by the change from base to delta snapshot.
    */
   @Override
-  public Set<Flow> bddReducedReachability() {
+  public DifferentialReachabilityResult bddReducedReachability(
+      DifferentialReachabilityParameters parameters) {
+    checkArgument(
+        !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
-    pushBaseEnvironment();
-    BDDReachabilityAnalysis baseReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
+    /*
+     * TODO should we have separate parameters for base and delta?
+     * E.g. suppose we add a host subnet in the delta network. This would be a source of
+     * differential reachability, but we currently won't find it because it won't be in the
+     * IpSpaceAssignment.
+     */
+    pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
-        baseReachabilityAnalysis.getIngressLocationAcceptBDDs();
-    popEnvironment();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
+            .getIngressLocationReachableBDDs();
+    popSnapshot();
 
-    pushDeltaEnvironment();
-    BDDReachabilityAnalysis deltaReachabilityAnalysis = getBddReachabilityAnalysis(pkt);
+    pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
-        deltaReachabilityAnalysis.getIngressLocationAcceptBDDs();
-    popEnvironment();
+        getBddReachabilityAnalysisFactory(pkt)
+            .bddReachabilityAnalysis(
+                parameters.getIpSpaceAssignment(),
+                parameters.getHeaderSpace(),
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions())
+            .getIngressLocationReachableBDDs();
+    popSnapshot();
 
     Set<IngressLocation> commonSources =
         Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
-    ImmutableSet.Builder<Flow> flows = ImmutableSet.builder();
-    for (IngressLocation source : commonSources) {
-      BDD reduced = baseAcceptBDDs.get(source).and(deltaAcceptBDDs.get(source).not());
-      if (reduced.isZero()) {
-        continue;
-      }
-      Flow.Builder flow =
-          pkt.getFlow(reduced)
-              .orElseGet(
-                  () -> {
-                    throw new BatfishException("Error getting flow from BDD");
-                  });
+    String flowTag = getDifferentialFlowTag();
 
-      // set flow parameters
-      flow.setTag(getDifferentialFlowTag());
-      flow.setIngressNode(source.getNode());
-      switch (source.getType()) {
-        case VRF:
-          flow.setIngressVrf(source.getVrf());
-          break;
-        case INTERFACE_LINK:
-          flow.setIngressInterface(source.getInterface());
-          break;
-        default:
-          throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
-      }
-      flows.add(flow.build());
-    }
-    return flows.build();
+    Set<Flow> decreasedFlows =
+        getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
+    Set<Flow> increasedFlows =
+        getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
+    return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
+  }
+
+  private static Set<Flow> getDifferentialFlows(
+      BDDPacket pkt,
+      Set<IngressLocation> commonSources,
+      Map<IngressLocation, BDD> includeBDDs,
+      Map<IngressLocation, BDD> excludeBDDs,
+      String flowTag) {
+    return commonSources
+        .stream()
+        .flatMap(
+            source -> {
+              BDD difference = includeBDDs.get(source).and(excludeBDDs.get(source).not());
+
+              if (difference.isZero()) {
+                return Stream.of();
+              }
+
+              Flow.Builder flow =
+                  pkt.getFlow(difference)
+                      .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
+
+              // set flow parameters
+              flow.setTag(flowTag);
+              flow.setIngressNode(source.getNode());
+              switch (source.getType()) {
+                case VRF:
+                  flow.setIngressVrf(source.getVrf());
+                  break;
+                case INTERFACE_LINK:
+                  flow.setIngressInterface(source.getInterface());
+                  break;
+                default:
+                  throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
+              }
+              return Stream.of(flow.build());
+            })
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
@@ -4444,7 +4426,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      HeaderSpace headerSpace,
+      AclLineMatchExpr headerSpace,
       Set<String> nonTransitNodes,
       Set<String> transitNodes,
       IpSpaceAssignment ipSpaceAssignment,
@@ -4482,7 +4464,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static SynthesizerInputImpl computeSynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      HeaderSpace headerSpace,
+      AclLineMatchExpr headerSpace,
       IpSpaceAssignment ipSpaceAssignment,
       Set<String> transitNodes,
       Set<String> nonTransitNodes,
@@ -4519,34 +4501,53 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .build();
   }
 
-  private Answer validateEnvironment() {
+  private Answer validateSnapshot() {
     Answer answer = new Answer();
-    ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
+    ValidateSnapshotAnswerElement ae = loadValidateSnapshotAnswerElement();
     answer.addAnswerElement(ae);
     Topology envTopology = computeEnvironmentTopology(loadConfigurations());
     serializeAsJson(
-        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
-        envTopology,
-        "environment topology");
+        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
     return answer;
   }
 
   @Override
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     _cachedDataPlanes.put(getNetworkSnapshot(), dp);
-    serializeObject(dp, _testrigSettings.getEnvironmentSettings().getDataPlanePath());
-    serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
+    serializeObject(dp, _testrigSettings.getDataPlanePath());
+    serializeObject(ae, _testrigSettings.getDataPlaneAnswerPath());
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
-    String deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
-    _storage.storeAnswer(
-        structuredAnswerString,
-        _settings.getContainer(),
-        _baseTestrigSettings.getName(),
-        _settings.getQuestionName(),
-        deltaSnapshot,
-        _settings.getAnalysisName());
+    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    NetworkId networkId = _settings.getContainer();
+    QuestionId questionId = _settings.getQuestionName();
+    AnalysisId analysisId = _settings.getAnalysisName();
+    QuestionSettingsId questionSettingsId;
+    try {
+      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
+      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      } else {
+        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Failed to retrieve question settings ID", e);
+    }
+    NodeRolesId networkNodeRolesId =
+        _idResolver.hasNetworkNodeRolesId(networkId)
+            ? _idResolver.getNetworkNodeRolesId(networkId)
+            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+    AnswerId baseAnswerId =
+        _idResolver.getBaseAnswerId(
+            networkId,
+            _baseTestrigSettings.getName(),
+            questionId,
+            questionSettingsId,
+            networkNodeRolesId,
+            deltaSnapshot,
+            analysisId);
+    _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
@@ -4555,9 +4556,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path jsonPath =
           _settings
               .getStorageBase()
-              .resolve(_settings.getContainer())
-              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-              .resolve(_settings.getTestrig())
+              .resolve(_settings.getContainer().getId())
+              .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
+              .resolve(_settings.getTestrig().getId())
+              .resolve(BfConsts.RELPATH_OUTPUT)
               .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);
     }
@@ -4608,15 +4610,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass) {
+  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
+    String questionClassId = question.getName();
+    NetworkId networkId = _settings.getContainer();
+    if (!_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+      return null;
+    }
     try {
-      return _storage.loadQuestionSettings(
-          _settings.getContainer(), questionClass.getCanonicalName());
+      QuestionSettingsId questionSettingsId =
+          _idResolver.getQuestionSettingsId(questionClassId, networkId);
+      return _storage.loadQuestionSettings(_settings.getContainer(), questionSettingsId);
     } catch (IOException e) {
       throw new BatfishException(
-          String.format(
-              "Failed to read question settings for class: '%s'", questionClass.getCanonicalName()),
-          e);
+          String.format("Failed to read question settings for question: '%s'", questionClassId), e);
     }
   }
 

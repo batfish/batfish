@@ -36,10 +36,10 @@ import org.batfish.datamodel.acl.TrueExpr;
  * interest. The intuition of specialization is to remove parts of the ACL that are irrelevant for
  * the headerspace of interest.
  *
- * <p>The superclass {@link IpAccessListSpecializer} walks over the {@link IpAccessList ACL} and its
- * {@link AclLineMatchExpr match expressions}, downcalling at the match expression leaves. For each
- * leaf, we compute the space matched by that expression (as a BDD) and compare with the space of
- * interest. There are three cases:
+ * <p>The superclass {@link IpAccessListSpecializer} walks over the {@link
+ * org.batfish.datamodel.IpAccessList ACL} and its {@link AclLineMatchExpr match expressions},
+ * downcalling at the match expression leaves. For each leaf, we compute the space matched by that
+ * expression (as a BDD) and compare with the space of interest. There are three cases:
  *
  * <ol>
  *   <li>The two spaces are disjoint. Then the expression is not relevant to the space of interest,

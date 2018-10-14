@@ -5,6 +5,7 @@ import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.isNonForwarding;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -1269,6 +1270,7 @@ public class FlatJuniperGrammarTest {
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface("nextint")
             .setNextHopIp(new Ip("10.0.0.1"))
+            .setAdministrativeCost(1)
             .build();
 
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
@@ -2620,6 +2622,11 @@ public class FlatJuniperGrammarTest {
 
     assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
     assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                hasItem(allOf(hasPrefix(Prefix.parse("3.0.0.0/8")), isNonForwarding(true))))));
   }
 
   @Test

@@ -11,9 +11,15 @@ import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_AF_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_PEER_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_SESSION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_UNDECLARED_PEER;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_UNDECLARED_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
@@ -55,7 +61,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SE
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
@@ -73,10 +81,14 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_FILTER6_LIST;
@@ -85,6 +97,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
@@ -100,6 +113,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_AF_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_SESSION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACCESS_LIST;
@@ -146,7 +162,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
@@ -210,6 +225,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_SET_COMMUNITY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
@@ -219,6 +235,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_F
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
@@ -567,7 +584,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
-import org.batfish.grammar.cisco.CiscoParser.If_service_policy_control_subscriberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
@@ -657,7 +673,6 @@ import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
-import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_inheritContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
@@ -921,6 +936,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_switchportContext;
+import org.batfish.grammar.cisco.CiscoParser.S_system_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
@@ -997,7 +1013,6 @@ import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Template_peer_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
@@ -1006,6 +1021,7 @@ import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
 import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
@@ -1741,14 +1757,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String name = ctx.name.getText();
-    // String af = ctx.bgp_address_family().getText();
     NamedBgpPeerGroup afGroup = proc.getAfGroups().get(name);
     if (afGroup == null) {
-      proc.addNamedPeerGroup(name, ctx.name.getStart().getLine());
+      proc.addNamedPeerGroup(name);
       afGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(afGroup);
     _currentNamedPeerGroup = afGroup;
+    defineStructure(BGP_AF_GROUP, name, ctx);
   }
 
   @Override
@@ -2234,10 +2250,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitStandby_group_timers(Standby_group_timersContext ctx) {
-    int helloTime =
-        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME : toInteger(ctx.hello_time);
-    int holdTime =
-        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME : toInteger(ctx.hold_time);
+    int helloTime;
+    int holdTime;
+    if (_no) {
+      helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
+      holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
+    } else {
+      helloTime =
+          ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
+      holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
+    }
     _currentInterfaces.forEach(
         i -> {
           HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
@@ -2485,8 +2507,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
         } else {
-          String message = "Ignoring reference to undeclared peer group: '" + ip + "'";
-          _w.redFlag(message);
+          _configuration.referenceStructure(
+              BGP_UNDECLARED_PEER, ip.toString(), BGP_NEIGHBOR_WITHOUT_REMOTE_AS, ctx.ip.getLine());
           pushPeer(_dummyPeerGroup);
         }
       } else {
@@ -2501,8 +2523,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
         } else {
-          String message = "Ignoring reference to undeclared peer group: '" + ip6 + "'";
-          _w.redFlag(message);
+          _configuration.referenceStructure(
+              BGP_UNDECLARED_PEER,
+              ip6.toString(),
+              BGP_NEIGHBOR_WITHOUT_REMOTE_AS,
+              ctx.ip6.getLine());
           pushPeer(_dummyPeerGroup);
         }
       } else {
@@ -2511,16 +2536,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpv6PeerGroup = pg6;
     } else if (ctx.peergroup != null) {
       String name = ctx.peergroup.getText();
-      int definitionLine = ctx.peergroup.getLine();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
         if (create || _format == ARISTA) {
-          proc.addNamedPeerGroup(name, definitionLine);
+          proc.addNamedPeerGroup(name);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+          _configuration.referenceStructure(
+              BGP_PEER_GROUP, name, BGP_NEIGHBOR_STATEMENT, ctx.peergroup.getLine());
         } else {
-          int line = ctx.peergroup.getLine();
-          _configuration.getUndefinedPeerGroups().put(name, line);
-          _w.redFlag("reference to undeclared peer group: '" + name + "'");
+          _configuration.referenceStructure(
+              BGP_UNDECLARED_PEER_GROUP,
+              name,
+              BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED,
+              ctx.peergroup.getLine());
         }
       }
       pushPeer(_currentNamedPeerGroup);
@@ -2533,13 +2561,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     if (_currentNamedPeerGroup == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
+      proc.addNamedPeerGroup(name);
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(_currentNamedPeerGroup);
+    defineStructure(BGP_NEIGHBOR_GROUP, name, ctx);
   }
 
   @Override
@@ -2566,7 +2594,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentServiceObject =
         _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
-    defineStructure(CiscoStructureType.SERVICE_OBJECT, name, ctx);
+    defineStructure(SERVICE_OBJECT, name, ctx);
   }
 
   @Override
@@ -2857,10 +2885,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .getLines()
           .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
       _configuration.referenceStructure(
-          CiscoStructureType.SERVICE_OBJECT,
-          name,
-          CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT,
-          ctx.name.getStart().getLine());
+          SERVICE_OBJECT, name, SERVICE_OBJECT_GROUP_SERVICE_OBJECT, ctx.name.getStart().getLine());
     } else if (ctx.service_specifier() != null) {
       _currentServiceObjectGroup.getLines().add(_currentServiceObject);
       _currentServiceObject = null;
@@ -4107,13 +4132,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterSession_group_rb_stanza(Session_group_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     _currentPeerSession = proc.getPeerSessions().get(name);
     if (_currentPeerSession == null) {
-      proc.addPeerSession(name, definitionLine);
+      proc.addPeerSession(name);
       _currentPeerSession = proc.getPeerSessions().get(name);
     }
+    defineStructure(BGP_SESSION_GROUP, name, ctx);
     pushPeer(_currentPeerSession);
   }
 
@@ -4171,39 +4196,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     if (_currentNamedPeerGroup == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
+      proc.addNamedPeerGroup(name);
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(_currentNamedPeerGroup);
-  }
-
-  @Override
-  public void enterTemplate_peer_rb_stanza(Template_peer_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    int definitionLine = ctx.name.getLine();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-    if (_currentNamedPeerGroup == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-    }
-    pushPeer(_currentNamedPeerGroup);
+    defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
   }
 
   @Override
   public void enterTemplate_peer_session_rb_stanza(Template_peer_session_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     _currentPeerSession = proc.getPeerSessions().get(name);
     if (_currentPeerSession == null) {
-      proc.addPeerSession(name, definitionLine);
+      proc.addPeerSession(name);
       _currentPeerSession = proc.getPeerSessions().get(name);
     }
+    defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
     pushPeer(_currentPeerSession);
   }
 
@@ -4463,13 +4475,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitBgp_listen_range_rb_stanza(Bgp_listen_range_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        BGP_PEER_GROUP, name, BGP_LISTEN_RANGE_PEER_GROUP, ctx.name.getStart().getLine());
     BgpProcess proc = currentVrf().getBgpProcess();
     if (ctx.IP_PREFIX() != null) {
       Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
       pg.setGroupName(name);
-      pg.setGroupNameLine(line);
       if (ctx.bgp_asn() != null) {
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
@@ -4478,7 +4490,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Prefix6 prefix6 = new Prefix6(ctx.IPV6_PREFIX().getText());
       DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
       pg.setGroupName(name);
-      pg.setGroupNameLine(line);
       if (ctx.bgp_asn() != null) {
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
@@ -4576,7 +4587,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String dstName = ctx.destination.getText();
     int dstLine = ctx.destination.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
-    defineStructure(CiscoStructureType.SECURITY_ZONE_PAIR, name, ctx);
+    defineStructure(SECURITY_ZONE_PAIR, name, ctx);
     _currentSecurityZonePair =
         _configuration
             .getSecurityZonePairs()
@@ -4865,10 +4876,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentPeerGroup.setDefaultOriginate(true);
     if (ctx.map != null) {
       String mapName = ctx.map.getText();
-      int line = ctx.map.getStart().getLine();
       _currentPeerGroup.setDefaultOriginateMap(mapName);
-      _currentPeerGroup.setDefaultOriginateMapLine(line);
-      _configuration.referenceStructure(ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, line);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -5036,31 +5046,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
-        }
-        if (feature.DSCP() != null) {
+        } else if (feature.CWR() != null) {
+          tcpFlags.add(
+              TcpFlagsMatchConditions.builder()
+                  .setTcpFlags(TcpFlags.builder().setCwr(true).build())
+                  .setUseCwr(true)
+                  .build());
+        } else if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
-        }
-        if (feature.ECE() != null) {
+        } else if (feature.ECE() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setEce(true).build())
                   .setUseEce(true)
                   .build());
-        }
-        if (feature.ECHO_REPLY() != null) {
+        } else if (feature.ECHO_REPLY() != null) {
           icmpType = IcmpType.ECHO_REPLY;
           icmpCode = 0; /* Forced to 0 by RFC-792. */
-        }
-        if (feature.ECHO() != null) {
+        } else if (feature.ECHO() != null) {
           icmpType = IcmpType.ECHO_REQUEST;
           icmpCode = 0; /* Forced to 0 by RFC-792. */
-        }
-        if (feature.ECN() != null) {
+        } else if (feature.ECN() != null) {
           int ecn = toInteger(feature.ecn);
           ecns.add(ecn);
-        }
-        if (feature.ESTABLISHED() != null) {
+        } else if (feature.ESTABLISHED() != null) {
           // must contain ACK or RST
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -5072,95 +5082,80 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setRst(true).build())
                   .setUseRst(true)
                   .build());
-        }
-        if (feature.FIN() != null) {
+        } else if (feature.FIN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setFin(true).build())
                   .setUseFin(true)
                   .build());
-        }
-        if (feature.FRAGMENTS() != null) {
-          _w.addWarning(
-              ctx, getFullText(ctx), _parser, "matching fragments in extended access list");
-          return UnimplementedAccessListServiceSpecifier.INSTANCE;
-        }
-        if (feature.HOST_UNKNOWN() != null) {
+        } else if (feature.HOST_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
-        }
-        if (feature.HOST_UNREACHABLE() != null) {
+        } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
-        }
-        if (feature.NETWORK_UNKNOWN() != null) {
+        } else if (feature.NETWORK_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
-        }
-        if (feature.NET_UNREACHABLE() != null) {
+        } else if (feature.NET_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.NETWORK_UNREACHABLE;
-        }
-        if (feature.PARAMETER_PROBLEM() != null) {
+        } else if (feature.PACKET_TOO_BIG() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
+        } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
-        }
-        if (feature.PORT_UNREACHABLE() != null) {
+        } else if (feature.PORT_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.PORT_UNREACHABLE;
-        }
-        if (feature.PSH() != null) {
+        } else if (feature.PSH() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setPsh(true).build())
                   .setUsePsh(true)
                   .build());
-        }
-        if (feature.REDIRECT() != null) {
+        } else if (feature.REDIRECT() != null) {
           icmpType = IcmpType.REDIRECT_MESSAGE;
-        }
-        if (feature.RST() != null) {
+        } else if (feature.RST() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setRst(true).build())
                   .setUseRst(true)
                   .build());
-        }
-        if (feature.SOURCE_QUENCH() != null) {
+        } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
           icmpCode = 0; /* Forced to 0 by RFC 792. */
-        }
-        if (feature.SYN() != null) {
+        } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setSyn(true).build())
                   .setUseSyn(true)
                   .build());
-        }
-        if (feature.TIME_EXCEEDED() != null) {
+        } else if (feature.TIME_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
-        }
-        if (feature.TTL() != null) {
-          _w.addWarning(ctx, getFullText(ctx), _parser, "matching ttl in extended access list");
-          return UnimplementedAccessListServiceSpecifier.INSTANCE;
-        }
-        if (feature.TTL_EXCEEDED() != null) {
+        } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
-        }
-        if (feature.TRACEROUTE() != null) {
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+        } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
-        }
-        if (feature.TRACKED() != null) {
+        } else if (feature.TRACKED() != null) {
           states.add(FlowState.ESTABLISHED);
-        }
-        if (feature.UNREACHABLE() != null) {
+        } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        }
-        if (feature.URG() != null) {
+        } else if (feature.URG() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setUrg(true).build())
                   .setUseUrg(true)
                   .build());
+        } else if (feature.icmp_message_type != null) {
+          icmpType = toInteger(feature.icmp_message_type);
+          if (feature.icmp_message_code != null) {
+            icmpCode = toInteger(feature.icmp_message_code);
+          }
+        } else {
+          _w.addWarning(ctx, getFullText(feature), _parser, "clause in extended access list");
+          return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
       return SimpleExtendedAccessListServiceSpecifier.builder()
@@ -5526,24 +5521,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     CiscoStructureUsage usage = null;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
-        currentInterface.setIncomingFilterLine(line);
         usage = INTERFACE_INCOMING_FILTER;
       }
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
-        currentInterface.setOutgoingFilterLine(line);
         usage = INTERFACE_OUTGOING_FILTER;
       }
     } else {
       throw new BatfishException("bad direction");
     }
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -5703,13 +5695,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
-    int policyLine = ctx.name.getLine();
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setRoutingPolicy(policyName);
-      currentInterface.setRoutingPolicyLine(policyLine);
     }
     _configuration.referenceStructure(
-        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, policyLine);
+        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
   }
 
   @Override
@@ -5848,15 +5838,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIf_service_policy_control_subscriber(
-      If_service_policy_control_subscriberContext ctx) {
-    // TODO: do something with this.
-    String mapname = ctx.policy_map.getText();
-    _configuration.referenceStructure(
-        POLICY_MAP, mapname, INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER, ctx.getStart().getLine());
-  }
-
-  @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
     if (ctx.NO() == null) {
       for (Interface currentInterface : _currentInterfaces) {
@@ -5941,6 +5922,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_switchport_mode(If_switchport_modeContext ctx) {
+    if (ctx.if_switchport_mode_monitor() != null) {
+      // This does not actually change the switchport mode, rather it just
+      // configures buffer settings. See, e.g.,
+      // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/system_mgmt/503_U5_1/b_3k_System_Mgmt_Config_503_u5_1/b_3k_System_Mgmt_Config_503_u5_1_chapter_010000.html
+      return;
+    }
+
     SwitchportMode mode;
     if (ctx.ACCESS() != null) {
       mode = SwitchportMode.ACCESS;
@@ -6157,15 +6145,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitInherit_peer_policy_bgp_tail(Inherit_peer_policy_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String groupName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        BGP_TEMPLATE_PEER_POLICY,
+        groupName,
+        BGP_INHERITED_PEER_POLICY,
+        ctx.name.getStart().getLine());
     if (_currentIpPeerGroup != null) {
       _currentIpPeerGroup.setGroupName(groupName);
-      _currentIpPeerGroup.setGroupNameLine(line);
     } else if (_currentNamedPeerGroup != null) {
       // May not hit this since parser for peer-policy does not have
       // recursion.
       _currentNamedPeerGroup.setGroupName(groupName);
-      _currentNamedPeerGroup.setGroupNameLine(line);
     } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       // Intentional identity comparison above
       throw new BatfishException("Invalid peer context for inheritance");
@@ -6177,14 +6167,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitInherit_peer_session_bgp_tail(Inherit_peer_session_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
-    String groupName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    String sessionName = ctx.name.getText();
+    _configuration.referenceStructure(
+        BGP_TEMPLATE_PEER_SESSION,
+        sessionName,
+        BGP_INHERITED_SESSION,
+        ctx.name.getStart().getLine());
     if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setPeerSession(groupName);
-      _currentIpPeerGroup.setPeerSessionLine(line);
+      _currentIpPeerGroup.setPeerSession(sessionName);
     } else if (_currentNamedPeerGroup != null) {
-      _currentNamedPeerGroup.setPeerSession(groupName);
-      _currentNamedPeerGroup.setPeerSessionLine(line);
+      _currentNamedPeerGroup.setPeerSession(sessionName);
     } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       // Intentional identity comparison above
       throw new BatfishException("Invalid peer context for inheritance");
@@ -6769,26 +6761,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitNeighbor_block_inherit(Neighbor_block_inheritContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String groupName = ctx.name.getText();
-    if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setGroupName(groupName);
-    } else if (_currentIpv6PeerGroup != null) {
-      _currentIpv6PeerGroup.setGroupName(groupName);
-    } else if (_currentDynamicIpPeerGroup != null) {
-      _currentDynamicIpPeerGroup.setGroupName(groupName);
-    } else if (_currentDynamicIpv6PeerGroup != null) {
-      _currentDynamicIpv6PeerGroup.setGroupName(groupName);
-    } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      // Intentional identity comparison above
-      throw new BatfishException("Invalid peer context for inheritance");
-    } else {
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitNeighbor_block_rb_stanza(Neighbor_block_rb_stanzaContext ctx) {
     resetPeerGroups();
     if (_inBlockNeighbor) {
@@ -7311,7 +7283,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitPeer_group_assignment_rb_stanza(Peer_group_assignment_rb_stanzaContext ctx) {
     String peerGroupName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     if (ctx.address != null) {
       Ip address = toIp(ctx.address);
@@ -7321,7 +7292,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ipPeerGroup = proc.getIpPeerGroups().get(address);
       }
       ipPeerGroup.setGroupName(peerGroupName);
-      ipPeerGroup.setGroupNameLine(line);
     } else if (ctx.address6 != null) {
       Ip6 address6 = toIp6(ctx.address6);
       Ipv6BgpPeerGroup ipv6PeerGroup = proc.getIpv6PeerGroups().get(address6);
@@ -7330,23 +7300,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ipv6PeerGroup = proc.getIpv6PeerGroups().get(address6);
       }
       ipv6PeerGroup.setGroupName(peerGroupName);
-      ipv6PeerGroup.setGroupNameLine(line);
     }
+    _configuration.referenceStructure(
+        BGP_PEER_GROUP, peerGroupName, BGP_NEIGHBOR_PEER_GROUP, ctx.name.getStart().getLine());
   }
 
   @Override
   public void exitPeer_group_creation_rb_stanza(Peer_group_creation_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     if (proc.getNamedPeerGroups().get(name) == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
+      proc.addNamedPeerGroup(name);
       if (ctx.PASSIVE() != null) {
         // dell: won't otherwise specify activation so just activate here
         NamedBgpPeerGroup npg = proc.getNamedPeerGroups().get(name);
         npg.setActive(true);
       }
     }
+    defineStructure(BGP_PEER_GROUP, name, ctx);
   }
 
   @Override
@@ -8509,6 +8480,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_system_service_policy(S_system_service_policyContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.policy_map.getText(),
+        SYSTEM_SERVICE_POLICY,
+        ctx.policy_map.getStart().getLine());
+  }
+
+  @Override
   public void exitS_switchport(S_switchportContext ctx) {
     if (ctx.ACCESS() != null) {
       _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
@@ -8993,14 +8973,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitTemplate_peer_rb_stanza(Template_peer_rb_stanzaContext ctx) {
-    _currentIpPeerGroup = null;
-    _currentIpv6PeerGroup = null;
-    _currentNamedPeerGroup = null;
-    popPeer();
-  }
-
-  @Override
   public void exitTemplate_peer_session_rb_stanza(Template_peer_session_rb_stanzaContext ctx) {
     _currentIpPeerGroup = null;
     _currentIpv6PeerGroup = null;
@@ -9052,6 +9024,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitUse_neighbor_group_bgp_tail(Use_neighbor_group_bgp_tailContext ctx) {
     String groupName = ctx.name.getText();
+    _configuration.referenceStructure(
+        BGP_NEIGHBOR_GROUP, groupName, BGP_USE_NEIGHBOR_GROUP, ctx.name.getStart().getLine());
     if (_currentIpPeerGroup != null) {
       _currentIpPeerGroup.setGroupName(groupName);
     } else if (_currentIpv6PeerGroup != null) {
@@ -9064,16 +9038,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
+    String groupName = ctx.name.getText();
+    _configuration.referenceStructure(
+        BGP_AF_GROUP, groupName, BGP_USE_AF_GROUP, ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
   public void exitUse_session_group_bgp_tail(Use_session_group_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String groupName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(BGP_SESSION_GROUP, groupName, BGP_USE_SESSION_GROUP, line);
     if (_currentIpPeerGroup != null) {
       _currentIpPeerGroup.setPeerSession(groupName);
-      _currentIpPeerGroup.setPeerSessionLine(line);
     } else if (_currentNamedPeerGroup != null) {
       _currentNamedPeerGroup.setPeerSession(groupName);
-      _currentNamedPeerGroup.setPeerSessionLine(line);
     } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       // Intentional identity comparison above
       throw new BatfishException("Invalid peer context for inheritance");
@@ -9920,6 +9901,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NamedPort toNamedPort(PortContext ctx) {
     if (ctx.AOL() != null) {
       return NamedPort.AOL;
+    } else if (ctx.BFD() != null) {
+      return NamedPort.BFD_CONTROL;
+    } else if (ctx.BFD_ECHO() != null) {
+      return NamedPort.BFD_ECHO;
     } else if (ctx.BGP() != null) {
       return NamedPort.BGP;
     } else if (ctx.BIFF() != null) {

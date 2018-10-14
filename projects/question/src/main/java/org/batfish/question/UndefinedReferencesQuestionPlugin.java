@@ -133,8 +133,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Outputs cases where undefined structures (e.g., ACL, routemaps) are referenced.
    *
    * <p>Such occurrences indicate configuration errors and can have serious consequences with some

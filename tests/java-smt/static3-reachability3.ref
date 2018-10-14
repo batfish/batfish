@@ -7,7 +7,6 @@
         "Flow<ingressNode:host1 ingressVrf:default srcIp:0.0.0.0 dstIp:192.168.8.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
           "environments" : {
             "BASE" : {
-              "envName" : "BASE",
               "testrigName" : "tr-smt-static3"
             }
           },

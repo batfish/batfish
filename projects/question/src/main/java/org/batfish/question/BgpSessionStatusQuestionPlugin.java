@@ -319,7 +319,8 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  /**
+  // <question_page_comment>
+  /*
    * Returns the status of BGP sessions.
    *
    * <p>Based on config data, determines the status of IBGP and EBGP sessions

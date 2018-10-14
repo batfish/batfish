@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -41,9 +43,14 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.question.ReachFilterParameters;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.reachfilter.DifferentialReachFilterResult;
+import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
+import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -51,22 +58,32 @@ import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
 
-  Set<Flow> bddReducedReachability();
+  DifferentialReachabilityResult bddReducedReachability(
+      DifferentialReachabilityParameters parameters);
+
+  /**
+   * Given a {@link Set} of {@link Flow}s it populates the {@link List} of {@link Trace}s for them
+   *
+   * @param flows {@link Set} of {@link Flow}s for which {@link Trace}s are to be found
+   * @param ignoreAcls if true, ACLs encountered while building the {@link Flow}s are ignored
+   * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
+   */
+  SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls);
 
   void checkDataPlane();
 
-  void checkEnvironmentExists();
+  void checkSnapshotOutputReady();
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);
 
-  DifferentialReachFilterResult differentialReachFilter(
+  DifferentialSearchFiltersResult differentialReachFilter(
       Configuration baseConfig,
       IpAccessList baseAcl,
       Configuration deltaConfig,
       IpAccessList deltaAcl,
-      ReachFilterParameters reachFilterParameters);
+      SearchFiltersParameters searchFiltersParameters);
 
   ReferenceLibrary getReferenceLibraryData();
 
@@ -76,7 +93,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   Answerer createAnswerer(@Nonnull Question question);
 
-  String getContainerName();
+  NetworkId getContainerName();
 
   DataPlanePlugin getDataPlanePlugin();
 
@@ -120,7 +137,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Directory getTestrigFileTree();
 
-  String getTestrigName();
+  SnapshotId getTestrigName();
 
   void initBgpAdvertisements(Map<String, Configuration> configurations);
 
@@ -157,15 +174,15 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
 
-  void popEnvironment();
+  void popSnapshot();
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
   void processFlows(Set<Flow> flows, boolean ignoreAcls);
 
-  void pushBaseEnvironment();
+  void pushBaseSnapshot();
 
-  void pushDeltaEnvironment();
+  void pushDeltaSnapshot();
 
   @Nullable
   String readExternalBgpAnnouncementsFile();
@@ -191,8 +208,8 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  Optional<Flow> reachFilter(
-      Configuration node, IpAccessList acl, ReachFilterParameters parameters);
+  Optional<SearchFiltersResult> reachFilter(
+      Configuration node, IpAccessList acl, SearchFiltersParameters parameters);
 
   AnswerElement smtBlackhole(HeaderQuestion q);
 
@@ -225,5 +242,5 @@ public interface IBatfish extends IPluginConsumer {
   Set<Flow> bddMultipathConsistency();
 
   @Nullable
-  String loadQuestionSettings(@Nonnull Class<? extends Question> questionClass);
+  String loadQuestionSettings(@Nonnull Question question);
 }

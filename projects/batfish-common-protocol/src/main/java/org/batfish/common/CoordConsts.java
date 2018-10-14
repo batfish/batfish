@@ -75,7 +75,6 @@ public class CoordConsts {
   public static final String SVC_KEY_ASSERTION = "assertion";
   public static final String SVC_KEY_AUTO_ANALYZE = "autoanalyze";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
-  public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
@@ -83,11 +82,8 @@ public class CoordConsts {
   public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
   public static final String SVC_KEY_DEL_ANALYSIS_QUESTIONS = "delanalysisquestions";
   public static final String SVC_KEY_DEL_WORKER = "delworker";
-  public static final String SVC_KEY_DELTA_ENV_NAME = "deltaenvname";
   public static final String SVC_KEY_DELTA_SNAPSHOT_NAME = "deltasnapshotname";
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
-  public static final String SVC_KEY_ENV_NAME = "envname";
-  public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";
   public static final String SVC_KEY_EXCEPTIONS = "exceptions";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
@@ -134,7 +130,6 @@ public class CoordConsts {
   public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
   public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
-  public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_NETWORK = "delnetwork";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_SNAPSHOT = "delsnapshot";
@@ -160,7 +155,6 @@ public class CoordConsts {
   public static final String SVC_RSC_KILL_WORK = "killwork";
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
-  public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
   public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_NETWORKS = "listnetworks";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
@@ -175,7 +169,6 @@ public class CoordConsts {
   public static final String SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS = "syncsnapshotsupdatesettings";
   public static final String SVC_RSC_SYNC_TESTRIGS_SYNC_NOW = "synctestrigssyncnow";
   public static final String SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS = "synctestrigsupdatesettings";
-  public static final String SVC_RSC_UPLOAD_ENV = "uploadenvironment";
   public static final String SVC_RSC_UPLOAD_QUESTION = "uploadquestion";
   public static final String SVC_RSC_UPLOAD_SNAPSHOT = "uploadsnapshot";
   public static final String SVC_RSC_UPLOAD_TESTRIG = "uploadtestrig";

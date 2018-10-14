@@ -1,13 +1,16 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.TestrigMetadata.PROP_CREATION_TIMESTAMP;
+import static org.batfish.datamodel.TestrigMetadata.PROP_INITIALIZATION_METADATA;
+import static org.batfish.datamodel.TestrigMetadata.PROP_PARENT_SNAPSHOT_ID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
-import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
+import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
+import org.batfish.identifiers.SnapshotId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -17,16 +20,12 @@ public class TestrigMetadataTest {
   @Test
   public void serialization() {
     TestrigMetadata metadata =
-        new TestrigMetadata(
-            Instant.ofEpochMilli(758949005001L), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+        new TestrigMetadata(Instant.ofEpochMilli(758949005001L), new SnapshotId("blah"));
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(metadata);
-    assertThat(jsonNode.get("creationTimestamp").asText(), equalTo("1994-01-19T03:10:05.001Z"));
+    assertThat(jsonNode.get(PROP_CREATION_TIMESTAMP).asText(), equalTo("1994-01-19T03:10:05.001Z"));
+    assertThat(jsonNode.get(PROP_PARENT_SNAPSHOT_ID).asText(), equalTo("blah"));
     assertThat(
-        jsonNode
-            .get("environments")
-            .get(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
-            .get("currentStatus")
-            .asText(),
+        jsonNode.get(PROP_INITIALIZATION_METADATA).get("currentStatus").asText(),
         equalTo(ProcessingStatus.UNINITIALIZED.toString()));
   }
 }

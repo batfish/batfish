@@ -117,6 +117,23 @@ if_hsrp_track
    NO? TRACK null_rest_of_line
 ;
 
+if_hsrp6
+:
+   HSRP group = DEC IPV6 NEWLINE
+   (
+      if_hsrp6_ip_address
+      | if_hsrp_null
+      | if_hsrp_preempt
+      | if_hsrp_priority
+      | if_hsrp_track
+   )*
+;
+
+if_hsrp6_ip_address
+:
+   IP ip = IPV6_ADDRESS NEWLINE
+;
+
 if_ip_access_group
 :
    (
@@ -1052,12 +1069,15 @@ if_port_security_null
 
 if_service_policy
 :
-   SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
-;
-
-if_service_policy_control_subscriber
-:
-   SERVICE_POLICY TYPE CONTROL SUBSCRIBER policy_map = variable NEWLINE
+   SERVICE_POLICY
+   (
+      TYPE (
+         CONTROL SUBSCRIBER
+         | QUEUING
+      )
+   )?
+   (INPUT | OUTPUT)?
+   policy_map = variable NEWLINE
 ;
 
 if_shutdown
@@ -1093,7 +1113,7 @@ standby_group
 
 standby_group_authentication
 :
-  AUTHENTICATION auth = DEC
+  AUTHENTICATION auth = variable
 ;
 
 standby_group_ip
@@ -1103,7 +1123,17 @@ standby_group_ip
 
 standby_group_preempt
 :
-  PREEMPT
+  PREEMPT standby_group_preempt_delay?
+;
+
+standby_group_preempt_delay
+:
+  DELAY
+  (
+     MINIMUM min_secs = DEC
+     | RELOAD reload_secs = DEC
+     | SYNC sync_secs = DEC
+  )+
 ;
 
 standby_group_priority
@@ -1113,7 +1143,15 @@ standby_group_priority
 
 standby_group_timers
 :
-  TIMERS MSEC hello_time = DEC hold_time = DEC
+  TIMERS
+  (
+     MSEC hello_ms = DEC
+     | hello_sec = DEC
+  )
+  (
+     MSEC hold_ms = DEC
+     | hold_sec = DEC
+  )
 ;
 
 standby_group_track
@@ -1165,10 +1203,16 @@ if_switchport_mode
          )
       )
       | FEX_FABRIC
+      | if_switchport_mode_monitor
       | TAP
       | TOOL
       | TRUNK
    ) NEWLINE
+;
+
+if_switchport_mode_monitor
+:
+   MONITOR BUFFER_LIMIT limit=DEC (BYTES | KBYTES | MBYTES | PACKETS)
 ;
 
 if_switchport_private_vlan_association
@@ -1448,6 +1492,7 @@ if_inner
    | if_description
    | if_flow_sampler
    | if_hsrp
+   | if_hsrp6
    | if_ip_proxy_arp
    | if_ip_verify
    | if_ip_access_group
@@ -1500,7 +1545,6 @@ if_inner
    | if_private_vlan
    | if_service_instance
    | if_service_policy
-   | if_service_policy_control_subscriber
    | if_shutdown
    | if_spanning_tree
    | if_speed_auto

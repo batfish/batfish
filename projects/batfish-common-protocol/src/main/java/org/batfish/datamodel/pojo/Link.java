@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.datamodel.InterfaceType;
 
 public class Link extends BfObject {
 
@@ -68,6 +69,36 @@ public class Link extends BfObject {
   @JsonProperty(PROP_TYPE)
   public LinkType getType() {
     return _type;
+  }
+
+  /** Determines and returns {@link LinkType} from the {@link InterfaceType} of the two ends */
+  public static LinkType interfaceTypesToLinkType(
+      InterfaceType iface1type, InterfaceType iface2type) {
+
+    if (iface1type != iface2type) {
+      return LinkType.UNKNOWN;
+    }
+
+    switch (iface1type) {
+      case PHYSICAL:
+        return LinkType.PHYSICAL;
+
+      case AGGREGATED:
+      case REDUNDANT:
+      case TUNNEL:
+      case VLAN:
+      case VPN:
+        return LinkType.VIRTUAL;
+
+        // loopback and null shouldn't really happen; lets call it unknown
+      case LOOPBACK:
+      case NULL:
+      case UNKNOWN:
+        return LinkType.UNKNOWN;
+
+      default:
+        throw new IllegalArgumentException(String.format("Unknown InterfaceType: %s", iface1type));
+    }
   }
 
   @JsonProperty(PROP_TYPE)

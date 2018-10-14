@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.pojo.Link.LinkType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,7 +48,7 @@ public class LinkTest {
 
   @Test
   public void serialization() {
-    Link link = new Link("src", "dst", LinkType.PHYSICAL);
+    Link link = new Link("src", "dst");
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
     link.setProperties(properties);
@@ -58,7 +57,6 @@ public class LinkTest {
     assertThat(jsonNode.get("id").asText(), equalTo(Link.getId("src", "dst")));
     assertThat(jsonNode.get("srcId").asText(), equalTo("src"));
     assertThat(jsonNode.get("dstId").asText(), equalTo("dst"));
-    assertThat(jsonNode.get("type").asText(), equalTo("PHYSICAL"));
     assertThat(jsonNode.get("properties").get("key").asText(), equalTo("value"));
   }
 }

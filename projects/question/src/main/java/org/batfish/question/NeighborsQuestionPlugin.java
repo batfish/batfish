@@ -988,8 +988,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
   }
 
   // <question_page_comment>
-
-  /**
+  /*
    * Lists neighbor relationships in the testrig.
    *
    * <p>Details coming

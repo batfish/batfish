@@ -1,16 +1,20 @@
 package org.batfish.z3;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -20,8 +24,8 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -32,6 +36,9 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
@@ -71,6 +78,7 @@ public class ReducedReachabilityTest {
               StaticRoute.builder()
                   .setNetwork(Prefix.parse("2.2.2.2/32"))
                   .setNextHopInterface(PHYSICAL)
+                  .setAdministrativeCost(1)
                   .build()));
     }
 
@@ -85,6 +93,7 @@ public class ReducedReachabilityTest {
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                 .setNextHopInterface(PHYSICAL)
+                .setAdministrativeCost(1)
                 .build()));
 
     return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -95,13 +104,13 @@ public class ReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     return batfish;
   }
@@ -121,7 +130,7 @@ public class ReducedReachabilityTest {
     AnswerElement answer =
         batfish.reducedReachability(
             ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(ForwardingAction.ACCEPT))
+                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
                 .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
                 .setHeaderSpace(
                     HeaderSpace.builder().setDstIps(NODE2_ALTERNATE_IP.toIpSpace()).build())
@@ -139,10 +148,24 @@ public class ReducedReachabilityTest {
         contains(hasFlow(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP)))));
   }
 
+  private static DifferentialReachabilityParameters parameters(Batfish batfish) {
+    return new DifferentialReachabilityParameters(
+        ImmutableSet.of(FlowDisposition.ACCEPTED),
+        ImmutableSet.of(),
+        batfish.loadConfigurations().keySet(),
+        TRUE,
+        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
+            ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+        ImmutableSet.of());
+  }
+
   @Test
   public void testBDDReducedReachability() throws IOException {
     Batfish batfish = initBatfish();
-    Set<Flow> flows = batfish.bddReducedReachability();
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(1));
     assertThat(flows, contains(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP))));
   }

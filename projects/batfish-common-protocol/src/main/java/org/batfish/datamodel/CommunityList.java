@@ -258,8 +258,8 @@ public class CommunityList extends CommunitySetExpr {
    * Returns true iff a given {@code community} is permitted/accepted by this {@link CommunityList}
    * under the provided {@code environment}.
    *
-   * @throws {@link UnsupportedOperationException} if {@code environment} is {@code null} and this
-   *     is a dynamic {@link CommunityList}.
+   * @throws UnsupportedOperationException if {@code environment} is {@code null} and this is a
+   *     dynamic {@link CommunityList}.
    */
   @Override
   public boolean matchCommunity(@Nullable Environment environment, long community) {

@@ -1,38 +1,33 @@
 package org.batfish.z3;
 
+import static org.batfish.z3.AclLineMatchExprToBooleanExpr.NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE;
+
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.Debug;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.DropAcl;
 import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDrop;
-import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
@@ -47,7 +42,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       extends ReachabilityQuerySynthesizer.Builder<
           StandardReachabilityQuerySynthesizer, StandardReachabilityQuerySynthesizer.Builder> {
 
-    protected Set<ForwardingAction> _actions;
+    protected Set<FlowDisposition> _actions;
 
     protected Set<String> _finalNodes;
 
@@ -74,7 +69,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     }
 
     @Override
-    public Builder setActions(Set<ForwardingAction> actions) {
+    public Builder setActions(Set<FlowDisposition> actions) {
       _actions = actions;
       return this;
     }
@@ -90,13 +85,13 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     return new Builder();
   }
 
-  protected final Set<ForwardingAction> _actions;
+  protected final Set<FlowDisposition> _actions;
 
   protected final Set<String> _finalNodes;
 
   protected StandardReachabilityQuerySynthesizer(
-      @Nonnull Set<ForwardingAction> actions,
-      @Nonnull HeaderSpace headerSpace,
+      @Nonnull Set<FlowDisposition> actions,
+      @Nonnull AclLineMatchExpr headerSpace,
       @Nonnull Set<String> finalNodes,
       @Nonnull Map<IngressLocation, BooleanExpr> srcIpConstraints,
       @Nonnull SrcNattedConstraint srcNatted,
@@ -110,9 +105,9 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   /** Create query condition for action at final node(s) */
   protected List<StateExpr> computeFinalActions() {
     ImmutableList.Builder<StateExpr> finalActionsBuilder = ImmutableList.builder();
-    for (ForwardingAction action : _actions) {
+    for (FlowDisposition action : _actions) {
       switch (action) {
-        case ACCEPT:
+        case ACCEPTED:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr accept = new NodeAccept(finalNode);
@@ -123,33 +118,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           }
           break;
 
-        case DEBUG:
-          finalActionsBuilder.add(Debug.INSTANCE);
-          break;
-
-        case DROP:
-          if (!_finalNodes.isEmpty()) {
-            for (String finalNode : _finalNodes) {
-              StateExpr drop = new NodeDrop(finalNode);
-              finalActionsBuilder.add(drop);
-            }
-          } else {
-            finalActionsBuilder.add(Drop.INSTANCE);
-          }
-          break;
-
-        case DROP_ACL:
-          if (!_finalNodes.isEmpty()) {
-            for (String finalNode : _finalNodes) {
-              StateExpr drop = new NodeDropAcl(finalNode);
-              finalActionsBuilder.add(drop);
-            }
-          } else {
-            finalActionsBuilder.add(DropAcl.INSTANCE);
-          }
-          break;
-
-        case DROP_ACL_IN:
+        case DENIED_IN:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclIn(finalNode);
@@ -160,7 +129,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           }
           break;
 
-        case DROP_ACL_OUT:
+        case DENIED_OUT:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclOut(finalNode);
@@ -171,7 +140,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           }
           break;
 
-        case DROP_NO_ROUTE:
+        case NO_ROUTE:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNoRoute(finalNode);
@@ -182,7 +151,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           }
           break;
 
-        case DROP_NULL_ROUTE:
+        case NULL_ROUTED:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNullRoute(finalNode);
@@ -203,10 +172,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
             finalActionsBuilder.add(NeighborUnreachable.INSTANCE);
           }
           break;
-
-        case FORWARD:
         default:
-          throw new BatfishException("unsupported action");
+          throw new BatfishException("Unimplemented disposition: " + action.toString());
       }
     }
     return finalActionsBuilder.build();
@@ -239,7 +206,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
+                    NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE.toBooleanExpr(_headerSpace),
                     getSrcNattedConstraint(),
                     transitNodesConstraint)))
         .build();

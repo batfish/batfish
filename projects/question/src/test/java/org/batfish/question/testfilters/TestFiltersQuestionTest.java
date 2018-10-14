@@ -17,7 +17,7 @@ public class TestFiltersQuestionTest {
 
   /**
    * Check that if a simple string is the specifier input, that maps to the expected
-   * FilterSpecifier. (That this happens is being assumed by ReachFilterAnswerer, which it ideally
+   * FilterSpecifier. (That this happens is being assumed by SearchFiltersAnswerer, which it ideally
    * shouldn't but in the meanwhile this test helps.)
    */
   @Test
