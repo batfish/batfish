@@ -1,6 +1,6 @@
 package org.batfish.datamodel.ospf;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,7 +36,8 @@ public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor
 
   @JsonCreator
   private static OspfNeighbor create(@Nullable @JsonProperty(PROP_NAME) IpLink ipEdge) {
-    return new OspfNeighbor(requireNonNull(ipEdge));
+    checkArgument(ipEdge != null);
+    return new OspfNeighbor(ipEdge);
   }
 
   public OspfNeighbor(IpLink ipLink) {

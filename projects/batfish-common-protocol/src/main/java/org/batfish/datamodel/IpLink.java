@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,7 +22,9 @@ public final class IpLink implements Comparable<IpLink> {
   @JsonCreator
   private static IpLink create(
       @Nullable @JsonProperty(PROP_IP1) Ip ip1, @Nullable @JsonProperty(PROP_IP2) Ip ip2) {
-    return new IpLink(requireNonNull(ip1), requireNonNull(ip2));
+    checkArgument(ip1 != null);
+    checkArgument(ip2 != null);
+    return new IpLink(ip1, ip2);
   }
 
   /** Create a new IpLink based on two IP addresses. */
