@@ -24,10 +24,13 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -224,52 +227,115 @@ class TracerouteEngineImplContext {
     return resolvedNextHopWithRoutesBuilder.build();
   }
 
-  private FlowDisposition computeDisposition(
-      Configuration nodeConfig, Interface outgoingInterface, Ip fnhIp, Ip dstIp,
-      boolean hasOutgoingEdges
-  ) {
-    if (fnhIp != null) {
-      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
-          CommonUtil.computeIpInterfaceOwners(
-              CommonUtil.computeNodeInterfaces(_configurations), true);
-      Map<String, Map<String, IpSpace>> vrfOwnedIps =
-          CommonUtil.computeVrfOwnedIpSpaces(
-              CommonUtil.computeIpVrfOwners(ipInterfaceOwners, _configurations));
-      boolean isFinalNextHopIpInNetwork =
-          vrfOwnedIps
-              .entrySet()
-              .stream()
-              .anyMatch(
-                  nodeEntry ->
-                      nodeEntry
-                          .getValue()
-                          .entrySet()
-                          .stream()
-                          .anyMatch(
-                              vrfEntry ->
-                                  vrfEntry.getValue().containsIp(fnhIp, nodeConfig.getIpSpaces())));
+  private Map<String, Map<String, IpSpace>> computeVrfOwnedIps() {
+    Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
+        CommonUtil.computeIpInterfaceOwners(
+            CommonUtil.computeNodeInterfaces(_configurations), true);
+    Map<String, Map<String, IpSpace>> vrfOwnedIps =
+        CommonUtil.computeVrfOwnedIpSpaces(
+            CommonUtil.computeIpVrfOwners(ipInterfaceOwners, _configurations));
+    return vrfOwnedIps;
+  }
+
+  private boolean isArpIpInSnapshot(Ip arpIp, Map<String, Map<String, IpSpace>> vrfOwnedIps) {
+    return vrfOwnedIps
+        .entrySet()
+        .stream()
+        .anyMatch(
+            nodeEntry ->
+                nodeEntry
+                    .getValue()
+                    .entrySet()
+                    .stream()
+                    .anyMatch(
+                        vrfEntry ->
+                            vrfEntry
+                                .getValue()
+                                .containsIp(
+                                    arpIp, _configurations.get(nodeEntry.getKey()).getIpSpaces())));
+  }
+
+  private boolean hasMissingDevicesOnInterface(
+      Interface outgoingInterface, Map<String, Map<String, IpSpace>> vrfOwnedIps) {
+    BDDPacket bddPacket = new BDDPacket();
+
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(bddPacket.getFactory(), bddPacket.getDstIp());
+
+    BDD universeIpBDD =
+        vrfOwnedIps
+            .entrySet()
+            .stream()
+            .flatMap(
+                nodeEntry ->
+                    nodeEntry
+                        .getValue()
+                        .values()
+                        .stream()
+                        .map(ipSpace -> ipSpace.accept(ipSpaceToBDD)))
+            .reduce((bdd1, bdd2) -> bdd1.or(bdd2))
+            .get();
+
+    return outgoingInterface
+        .getAllAddresses()
+        .stream()
+        .map(InterfaceAddress::getPrefix)
+        .map(Prefix::toIpSpace)
+        .map(prefixIpSpace -> prefixIpSpace.accept(ipSpaceToBDD))
+        .anyMatch(
+            prefixBDD ->
+                // compute prefixIpSpace set-minus universeIpSpace
+                !prefixBDD.and(universeIpBDD.not()).isZero());
+  }
+
+  private FlowDisposition computeDisposition(Interface outgoingInterface, Ip fnhIp, Ip dstIp) {
+    // compute all ips owned by devices in the snapshot
+    Map<String, Map<String, IpSpace>> vrfOwnedIps = computeVrfOwnedIps();
+    if (fnhIp != null) { // arp for next hop ip;
+      boolean isFinalNextHopIpInNetwork = isArpIpInSnapshot(fnhIp, vrfOwnedIps);
       if (isFinalNextHopIpInNetwork) {
         return FlowDisposition.NEIGHBOR_UNREACHABLE;
-      } else if (!hasOutgoingEdges) {
-        return FlowDisposition.EXITS_NETWORK;
-      }
-      return FlowDisposition.NEIGHBOR_UNREACHABLE;
-    } else {
-      Stream<Prefix> matchingPrefixes =
-          outgoingInterface.getAllAddresses().stream().map(InterfaceAddress::getPrefix);
-
-      boolean isDeliveredToSubnet =
-          matchingPrefixes.anyMatch(
-              prefix ->
-                  prefix.containsIp(dstIp)
-                      && prefix.getPrefixLength()
-                          <= NodeNameRegexConnectedHostsIpSpaceSpecifier
-                              .HOST_SUBNET_MAX_PREFIX_LENGTH);
-
-      if (isDeliveredToSubnet) {
-        return FlowDisposition.DELIVERED_TO_SUBNET;
       } else {
-        return FlowDisposition.EXITS_NETWORK;
+        boolean hasMissingDevice = hasMissingDevicesOnInterface(outgoingInterface, vrfOwnedIps);
+        if (hasMissingDevice) {
+          return FlowDisposition.EXITS_NETWORK;
+        } else {
+          return FlowDisposition.NEIGHBOR_UNREACHABLE;
+        }
+      }
+    } else { // arp for dst ip
+      // we assume that each pair of InterfaceAddresses configured for the interface
+      // do not overlap
+      boolean isDstIpInNetwork = isArpIpInSnapshot(dstIp, vrfOwnedIps);
+      if (isDstIpInNetwork) {
+        return FlowDisposition.NEIGHBOR_UNREACHABLE;
+      }
+
+      List<Prefix> matchingPrefixes =
+          outgoingInterface
+              .getAllAddresses()
+              .stream()
+              .map(InterfaceAddress::getPrefix)
+              .filter(prefix -> prefix.containsIp(dstIp))
+              .collect(
+                  Collectors.toList());
+      if (!matchingPrefixes.isEmpty()) {
+        boolean isHostSubnet = matchingPrefixes.stream().anyMatch(
+              prefix ->
+                  prefix.getPrefixLength()
+                      <= NodeNameRegexConnectedHostsIpSpaceSpecifier
+                          .HOST_SUBNET_MAX_PREFIX_LENGTH);
+        if (isHostSubnet) {
+          return FlowDisposition.DELIVERED_TO_SUBNET;
+        } else {
+          return FlowDisposition.EXITS_NETWORK;
+        }
+      } else { // dst ip not in any interface
+        boolean hasMissingDevice = hasMissingDevicesOnInterface(outgoingInterface, vrfOwnedIps);
+        if (hasMissingDevice) {
+          return FlowDisposition.EXITS_NETWORK;
+        } else {
+          return FlowDisposition.NEIGHBOR_UNREACHABLE;
+        }
       }
     }
   }
@@ -423,7 +489,7 @@ class TracerouteEngineImplContext {
                   }
                   if (!denied) {
                     FlowDisposition disposition =
-                        computeDisposition(nodeConfig, outgoingInterface, finalNextHopIp, dstIp, false);
+                        computeDisposition(outgoingInterface, finalNextHopIp, dstIp);
 
                     Edge nextEdge =
                         new Edge(
@@ -729,15 +795,11 @@ class TracerouteEngineImplContext {
       FlowDisposition disposition =
           computeDisposition(
               _configurations
-                  .get(nextHopInterface.getHostname()),
-             _configurations
                   .get(nextHopInterface.getHostname())
                   .getAllInterfaces()
                   .get(nextHopInterface.getInterface()),
               finalNextHopIp,
-              dstIp,
-              true
-              );
+              dstIp);
       FlowTrace trace =
           neighborUnreachableOrExitsNetworkTrace(
               nextHopInterface, transmissionContext, disposition);
