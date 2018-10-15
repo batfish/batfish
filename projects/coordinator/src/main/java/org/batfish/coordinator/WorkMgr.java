@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,6 +70,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
@@ -144,20 +146,24 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final Set<String> CONTAINER_FILENAMES = initContainerFilenames();
 
-  private static final Set<String> ENV_FILENAMES =
-      ImmutableSet.of(
-          BfConsts.RELPATH_NODE_BLACKLIST_FILE,
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE,
-          BfConsts.RELPATH_EDGE_BLACKLIST_FILE,
-          BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES,
-          BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
-          BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+  private static final Set<String> ENV_FILENAMES = initEnvFilenames();
 
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
     return ImmutableSet.of(
         BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
+  }
+
+  private static Set<String> initEnvFilenames() {
+    Set<String> envFilenames = new HashSet<>();
+    envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+    envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+    envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
+    envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    return envFilenames;
   }
 
   private final IdManager _idManager;
@@ -534,10 +540,14 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    Pair<Pair<String, String>, Pair<String, String>> settings =
+        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
     WorkDetails details =
         new WorkDetails(
-            workItem.getTestrigName(),
-            workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
+            WorkItemBuilder.getBaseTestrig(settings),
+            WorkItemBuilder.getBaseEnvironment(settings),
+            WorkItemBuilder.getDeltaTestrig(settings),
+            WorkItemBuilder.getDeltaEnvironment(settings),
             WorkItemBuilder.isDifferential(workItem),
             workType);
 
@@ -866,7 +876,9 @@ public class WorkMgr extends AbstractCoordinator {
   public @Nonnull Map<String, String> getAnalysisAnswers(
       String network,
       String snapshot,
+      String baseEnv,
       String referenceSnapshot,
+      String deltaEnv,
       String analysis,
       Set<String> analysisQuestions)
       throws JsonProcessingException, FileNotFoundException {
@@ -1385,7 +1397,10 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
+          new TestrigMetadata(
+              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshotId),
+          networkId,
+          snapshotId);
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
       try {
@@ -1397,6 +1412,16 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
+
+    // create empty default environment
+    Path defaultEnvironmentLeafDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_OUTPUT,
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                BfConsts.RELPATH_ENV_DIR));
+    defaultEnvironmentLeafDir.toFile().mkdirs();
 
     // things look ok, now make the move
     boolean routingTables = false;
@@ -1551,18 +1576,27 @@ public class WorkMgr extends AbstractCoordinator {
     for (String analysis : analysisNames) {
       WorkItem analyzeWork =
           WorkItemBuilder.getWorkItemRunAnalysis(
-              analysis, containerName, testrigName, null, false, false);
+              analysis,
+              containerName,
+              testrigName,
+              BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+              null,
+              null,
+              false,
+              false);
       autoWorkQueue.add(analyzeWork);
     }
     return autoWorkQueue;
   }
 
-  private static boolean isContainerFile(Path path) {
-    return CONTAINER_FILENAMES.contains(path.getFileName().toString());
+  private boolean isContainerFile(Path path) {
+    String name = path.getFileName().toString();
+    return CONTAINER_FILENAMES.contains(name);
   }
 
-  private static boolean isEnvFile(Path path) {
-    return ENV_FILENAMES.contains(path.getFileName().toString());
+  private boolean isEnvFile(Path path) {
+    String name = path.getFileName().toString();
+    return ENV_FILENAMES.contains(name);
   }
 
   public boolean killWork(QueuedWork work) {
@@ -1710,6 +1744,21 @@ public class WorkMgr extends AbstractCoordinator {
     return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
   }
 
+  public SortedSet<String> listEnvironments(String containerName, String testrigName) {
+    Path testrigDir = getdirSnapshot(containerName, testrigName);
+    Path environmentsDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
+    if (!Files.exists(environmentsDir)) {
+      return new TreeSet<>();
+    }
+    SortedSet<String> environments =
+        CommonUtil.getSubdirectories(environmentsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
+    return environments;
+  }
+
   public List<QueuedWork> listIncompleteWork(
       String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
@@ -1786,20 +1835,26 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (TestrigMetadataMgr.getInitializationMetadata(
-              networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
+      if (TestrigMetadataMgr.getEnvironmentMetadata(
+              networkId,
+              _idManager.getSnapshotId(workDetails.baseTestrig, networkId),
+              workDetails.baseEnv)
           == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.baseTestrig, workDetails.baseEnv));
       }
       if (workDetails.isDifferential
-          && TestrigMetadataMgr.getInitializationMetadata(
-                  networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
+          && TestrigMetadataMgr.getEnvironmentMetadata(
+                  networkId,
+                  _idManager.getSnapshotId(workDetails.deltaTestrig, networkId),
+                  workDetails.deltaEnv)
               == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.deltaTestrig));
+                "Snapshot/environment metadata not found for %s/%s",
+                workDetails.deltaTestrig, workDetails.deltaEnv));
       }
       success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
     } catch (Exception e) {
@@ -1823,7 +1878,9 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem resolvedWorkItem, WorkDetails workDetails) {
     return new WorkDetails(
         resolvedWorkItem.getTestrigName(),
+        workDetails.baseEnv,
         resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
+        workDetails.deltaEnv,
         workDetails.isDifferential,
         workDetails.workType);
   }

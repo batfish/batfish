@@ -53,6 +53,35 @@ public class FileBasedStorageDirectoryProvider {
         .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
   }
 
+  public @Nonnull Path getDeltaAnswerDir(
+      NetworkId network,
+      SnapshotId snapshot,
+      QuestionId question,
+      SnapshotId referenceSnapshot,
+      @Nullable AnalysisId analysis) {
+    Path snapshotDir = getSnapshotDir(network, snapshot);
+    return analysis != null
+        ? snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
+            .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+            .resolve(analysis.getId())
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+            .resolve(question.getId())
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_DELTA)
+            .resolve(referenceSnapshot.getId())
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        : snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
+            .resolve(BfConsts.RELPATH_ANSWERS_DIR)
+            .resolve(question.getId())
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_DIFF_DIR)
+            .resolve(referenceSnapshot.getId())
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+  }
+
   public @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
     return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
@@ -84,6 +113,26 @@ public class FileBasedStorageDirectoryProvider {
 
   public @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
     return getNetworkDir(network).resolve(BfConsts.RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
+  }
+
+  public @Nonnull Path getStandardAnswerDir(
+      NetworkId network, SnapshotId snapshot, QuestionId question, @Nullable AnalysisId analysis) {
+    Path snapshotDir = getSnapshotDir(network, snapshot);
+    return analysis != null
+        ? snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
+            .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+            .resolve(analysis.getId())
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+            .resolve(question.getId())
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        : snapshotDir
+            .resolve(BfConsts.RELPATH_OUTPUT)
+            .resolve(BfConsts.RELPATH_ANSWERS_DIR)
+            .resolve(question.getId())
+            .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+            .resolve(BfConsts.RELPATH_STANDARD_DIR);
   }
 
   public @Nonnull Path getStorageBase() {

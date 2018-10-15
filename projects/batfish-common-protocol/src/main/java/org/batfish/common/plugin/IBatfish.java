@@ -72,7 +72,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkDataPlane();
 
-  void checkSnapshotOutputReady();
+  void checkEnvironmentExists();
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
@@ -174,15 +174,15 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
 
-  void popSnapshot();
+  void popEnvironment();
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
   void processFlows(Set<Flow> flows, boolean ignoreAcls);
 
-  void pushBaseSnapshot();
+  void pushBaseEnvironment();
 
-  void pushDeltaSnapshot();
+  void pushDeltaEnvironment();
 
   @Nullable
   String readExternalBgpAnnouncementsFile();

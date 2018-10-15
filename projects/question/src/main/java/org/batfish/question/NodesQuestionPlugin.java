@@ -340,20 +340,20 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       if (question.getSummary()) {
         return super.answerDiff();
       }
-      _batfish.pushBaseSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushBaseSnapshot();
+      _batfish.pushBaseEnvironment();
+      _batfish.checkEnvironmentExists();
+      _batfish.popEnvironment();
+      _batfish.pushDeltaEnvironment();
+      _batfish.checkEnvironmentExists();
+      _batfish.popEnvironment();
+      _batfish.pushBaseEnvironment();
       NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement before = beforeAnswerer.answer();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
+      _batfish.popEnvironment();
+      _batfish.pushDeltaEnvironment();
       NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question, _batfish);
       NodesAnswerElement after = afterAnswerer.answer();
-      _batfish.popSnapshot();
+      _batfish.popEnvironment();
       return new NodesDiffAnswerElement(before, after);
     }
   }

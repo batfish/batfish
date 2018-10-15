@@ -47,18 +47,18 @@ public abstract class Answerer {
    * <p>Answerers that want a custom differential answer, should override this function.
    */
   public AnswerElement answerDiff() {
-    _batfish.pushBaseSnapshot();
-    _batfish.checkSnapshotOutputReady();
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
-    _batfish.checkSnapshotOutputReady();
-    _batfish.popSnapshot();
-    _batfish.pushBaseSnapshot();
+    _batfish.pushBaseEnvironment();
+    _batfish.checkEnvironmentExists();
+    _batfish.popEnvironment();
+    _batfish.pushDeltaEnvironment();
+    _batfish.checkEnvironmentExists();
+    _batfish.popEnvironment();
+    _batfish.pushBaseEnvironment();
     AnswerElement baseAnswer = create(_question, _batfish).answer();
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
+    _batfish.popEnvironment();
+    _batfish.pushDeltaEnvironment();
     AnswerElement deltaAnswer = create(_question, _batfish).answer();
-    _batfish.popSnapshot();
+    _batfish.popEnvironment();
     if (baseAnswer instanceof TableAnswerElement) {
       TableAnswerElement rawTable =
           TableDiff.diffTables(

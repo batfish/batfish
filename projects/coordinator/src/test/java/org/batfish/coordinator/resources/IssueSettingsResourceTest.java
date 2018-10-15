@@ -33,7 +33,7 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initNetworkEnvironment() throws Exception {
+  public void initContainerEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

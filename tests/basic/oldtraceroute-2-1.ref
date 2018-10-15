@@ -5,6 +5,7 @@
       "Flow<ingressNode:host2 ingressVrf:default srcIp:2.128.1.101 dstIp:1.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
         "environments" : {
           "BASE" : {
+            "envName" : "env_default",
             "testrigName" : "basic-example"
           }
         },

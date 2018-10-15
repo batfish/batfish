@@ -104,13 +104,13 @@ public class ReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseSnapshot();
+    batfish.pushBaseEnvironment();
     batfish.computeDataPlane(true);
-    batfish.popSnapshot();
+    batfish.popEnvironment();
 
-    batfish.pushDeltaSnapshot();
+    batfish.pushDeltaEnvironment();
     batfish.computeDataPlane(true);
-    batfish.popSnapshot();
+    batfish.popEnvironment();
 
     return batfish;
   }

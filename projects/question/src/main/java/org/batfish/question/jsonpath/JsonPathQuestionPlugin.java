@@ -210,20 +210,20 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         return answer();
       }
 
-      _batfish.pushBaseSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushBaseSnapshot();
+      _batfish.pushBaseEnvironment();
+      _batfish.checkEnvironmentExists();
+      _batfish.popEnvironment();
+      _batfish.pushDeltaEnvironment();
+      _batfish.checkEnvironmentExists();
+      _batfish.popEnvironment();
+      _batfish.pushBaseEnvironment();
       JsonPathAnswerer beforeAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement before = beforeAnswerer.answer();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
+      _batfish.popEnvironment();
+      _batfish.pushDeltaEnvironment();
       JsonPathAnswerer afterAnswerer = (JsonPathAnswerer) create(_question, _batfish);
       JsonPathAnswerElement after = afterAnswerer.answer();
-      _batfish.popSnapshot();
+      _batfish.popEnvironment();
       return new JsonPathDiffAnswerElement(before, after);
     }
 
