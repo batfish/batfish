@@ -276,11 +276,13 @@ public class Graph {
 
     if (proto.isOspf()) {
       OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
-      for (OspfArea area : ospf.getAreas().values()) {
-        for (String ifaceName : area.getInterfaces()) {
-          Interface iface = conf.getInterfaces().get(ifaceName);
-          if (iface.getActive() && iface.getOspfEnabled()) {
-            acc.add(iface.getAddress().getPrefix());
+      if (ospf != null) {
+        for (OspfArea area : ospf.getAreas().values()) {
+          for (String ifaceName : area.getInterfaces()) {
+            Interface iface = conf.getInterfaces().get(ifaceName);
+            if (iface.getActive() && iface.getOspfEnabled()) {
+              acc.add(iface.getAddress().getPrefix());
+            }
           }
         }
       }

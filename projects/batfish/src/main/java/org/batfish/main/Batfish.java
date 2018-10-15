@@ -94,6 +94,7 @@ import org.batfish.common.topology.Layer3Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.compiler.NVCompiler;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
@@ -151,6 +152,7 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -4821,5 +4823,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return null;
     }
     return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
+  }
+
+  @Override
+  public AnswerElement compileToIr() {
+    NVCompiler c = new NVCompiler(this);
+    return new StringAnswerElement(c.compile());
   }
 }

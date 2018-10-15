@@ -425,6 +425,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public AnswerElement compileToIr() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     throw new UnsupportedOperationException();
   }

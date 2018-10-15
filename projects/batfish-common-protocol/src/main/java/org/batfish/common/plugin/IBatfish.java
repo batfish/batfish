@@ -216,6 +216,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
+  AnswerElement compileToIr();
+
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 
   Set<Flow> bddMultipathConsistency();
