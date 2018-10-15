@@ -42,7 +42,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Utility functions for computing BGP topology */
-public class BgpTopologyUtils {
+public final class BgpTopologyUtils {
   /**
    * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
    * BgpSessionProperties}s. See {@link #initBgpTopology(Map, Map, boolean, boolean,
@@ -328,4 +328,6 @@ public class BgpTopologyUtils {
         .collect(ImmutableSet.toImmutableSet())
         .isEmpty();
   }
+
+  private BgpTopologyUtils() {}
 }

@@ -105,4 +105,6 @@ public class OspfTopologyUtils {
       }
     }
   }
+
+  private OspfTopologyUtils() {}
 }
