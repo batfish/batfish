@@ -3635,6 +3635,6 @@ public class CiscoGrammarTest {
   }
 
   private static String computeZoneName(int securityLevel, @Nonnull String interfaceName) {
-    return computeSecurityLevelZoneName(Integer.toString(securityLevel), interfaceName);
+    return computeSecurityLevelZoneName(securityLevel, interfaceName);
   }
 }

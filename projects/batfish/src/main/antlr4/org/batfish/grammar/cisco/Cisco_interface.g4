@@ -1291,7 +1291,7 @@ if_zone_member
 
 if_security_level
 :
-   SECURITY_LEVEL level = variable_permissive NEWLINE
+   SECURITY_LEVEL level = DEC NEWLINE
 ;
 
 ifdhcp_null

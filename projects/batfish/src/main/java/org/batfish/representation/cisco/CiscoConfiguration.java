@@ -3859,7 +3859,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   public static String computeSecurityLevelZoneName(
-      @Nonnull String securityLevel, @Nonnull String interfaceName) {
+      int securityLevel, @Nonnull String interfaceName) {
     return String.format("SECURITY_LEVEL_%s_%s", securityLevel, interfaceName);
   }
 
