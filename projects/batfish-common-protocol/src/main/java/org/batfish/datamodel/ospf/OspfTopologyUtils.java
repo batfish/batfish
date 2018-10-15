@@ -14,7 +14,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Utility functions for computing OSPF topology */
-public class OspfTopologyUtils {
+public final class OspfTopologyUtils {
   public static void initRemoteOspfNeighbors(
       Map<String, Configuration> configurations, Topology topology) {
     for (Entry<String, Configuration> e : configurations.entrySet()) {
