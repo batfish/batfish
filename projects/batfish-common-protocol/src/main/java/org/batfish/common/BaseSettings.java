@@ -100,7 +100,9 @@ public abstract class BaseSettings {
         b = false;
       } else {
         throw new CleanBatfishException(
-            "Error parsing command line: Invalid boolean value: \"" + value + "\"");
+            String.format(
+                "Error parsing command line: Invalid boolean value for key \"%s\": \"%s\"",
+                key, value));
       }
       _config.setProperty(key, b);
     }
