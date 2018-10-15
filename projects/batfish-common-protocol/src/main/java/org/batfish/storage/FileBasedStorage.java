@@ -843,6 +843,9 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return _d.getSnapshotDir(networkId, snapshotId)
         .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
+        .resolve(BfConsts.RELPATH_ENV_DIR)
         .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
   }
 

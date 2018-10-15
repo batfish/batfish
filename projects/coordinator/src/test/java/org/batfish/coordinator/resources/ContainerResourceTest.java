@@ -31,7 +31,7 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initContainer() throws Exception {
+  public void initContainerEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

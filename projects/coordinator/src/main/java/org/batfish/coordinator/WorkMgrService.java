@@ -35,6 +35,7 @@ import org.apache.commons.io.FileExistsException;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
@@ -549,7 +550,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
+   * @param baseEnv The name of the environment on which the analysis was run
    * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
+   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @param questionName The name of the question
    * @return TODO: document JSON response
@@ -564,9 +567,11 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
@@ -585,6 +590,7 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
       checkStringParam(questionName, "Question name");
 
@@ -643,7 +649,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
+   * @param baseEnv The name of the environment on which the analysis was run
    * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
+   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @return TODO: document JSON response
    */
@@ -657,9 +665,11 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
@@ -677,6 +687,7 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
@@ -707,7 +718,9 @@ public class WorkMgrService {
               .getAnalysisAnswers(
                   networkNameParam,
                   snapshotNameParam,
+                  baseEnv,
                   referenceSnapshotParam,
+                  deltaEnv,
                   analysisName,
                   ImmutableSet.of());
 
@@ -894,7 +907,9 @@ public class WorkMgrService {
               .getAnalysisAnswers(
                   networkNameParam,
                   snapshotNameParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   referenceSnapshotParam,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
                   analysisAnswersOptions.keySet());
 
@@ -924,7 +939,9 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the question was asked
    * @param snapshotName The name of the snapshot on which the question was asked
+   * @param baseEnv The name of the environment on which the question was asked
    * @param referenceSnapshot The name of the reference snapshot on which the question was asked
+   * @param deltaEnv The name of the reference environment on which the question was asked
    * @param questionName The name of the question
    * @return TODO: document JSON response
    */
@@ -938,9 +955,11 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
@@ -957,6 +976,7 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);

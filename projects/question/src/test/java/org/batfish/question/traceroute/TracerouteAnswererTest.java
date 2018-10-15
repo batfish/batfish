@@ -85,7 +85,7 @@ public class TracerouteAnswererTest {
 
     Flow flow =
         Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
-    Environment environment = new Environment(null, null, null, null, null, null, null);
+    Environment environment = new Environment(null, null, null, null, null, null, null, null);
 
     FlowHistory flowHistory = new FlowHistory();
     flowHistory.addFlowTrace(
@@ -139,7 +139,7 @@ public class TracerouteAnswererTest {
     FlowHistoryInfo historyInfo =
         new FlowHistoryInfo(
             flow,
-            ImmutableMap.of("env", new Environment(null, null, null, null, null, null, null)),
+            ImmutableMap.of("env", new Environment(null, null, null, null, null, null, null, null)),
             ImmutableMap.of("env", traces));
 
     Row row = TracerouteAnswerer.flowHistoryToRow(historyInfo);

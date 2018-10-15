@@ -111,12 +111,12 @@ public class ReducedReachabilityAnswerer extends Answerer {
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
 
-    _batfish.pushBaseSnapshot();
+    _batfish.pushBaseEnvironment();
     _batfish.processFlows(flows, false);
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
+    _batfish.popEnvironment();
+    _batfish.pushDeltaEnvironment();
     _batfish.processFlows(flows, false);
-    _batfish.popSnapshot();
+    _batfish.popEnvironment();
 
     FlowHistory flowHistory = _batfish.getHistory();
     Multiset<Row> rows = flowHistoryToRows(flowHistory);

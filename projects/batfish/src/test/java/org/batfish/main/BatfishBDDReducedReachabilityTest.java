@@ -97,13 +97,13 @@ public class BatfishBDDReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generator.generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseSnapshot();
+    batfish.pushBaseEnvironment();
     batfish.computeDataPlane(true);
-    batfish.popSnapshot();
+    batfish.popEnvironment();
 
-    batfish.pushDeltaSnapshot();
+    batfish.pushDeltaEnvironment();
     batfish.computeDataPlane(true);
-    batfish.popSnapshot();
+    batfish.popEnvironment();
 
     return batfish;
   }
@@ -111,22 +111,22 @@ public class BatfishBDDReducedReachabilityTest {
   private static void checkDispositions(
       Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
 
-    batfish.pushBaseSnapshot();
+    batfish.pushBaseEnvironment();
     batfish.processFlows(flows, false);
     List<FlowTrace> traces =
         batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
     assertThat(
         String.format("all traces should have disposition %s in the base environment", disposition),
         traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popSnapshot();
+    batfish.popEnvironment();
 
-    batfish.pushDeltaSnapshot();
+    batfish.pushDeltaEnvironment();
     batfish.processFlows(flows, false);
     traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
     assertThat(
         String.format("no traces should have disposition %s in the delta environment", disposition),
         traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popSnapshot();
+    batfish.popEnvironment();
   }
 
   private static DifferentialReachabilityParameters parameters(

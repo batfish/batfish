@@ -354,7 +354,12 @@ public class BfCoordWorkHelper {
 
   @Nullable
   String getAnalysisAnswers(
-      String containerName, String baseTestrig, String deltaTestrig, String analysisName) {
+      String containerName,
+      String baseTestrig,
+      String baseEnvironment,
+      String deltaTestrig,
+      String deltaEnvironment,
+      String analysisName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
 
@@ -364,8 +369,10 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, baseTestrig);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, baseEnvironment);
       if (deltaTestrig != null) {
         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME, deltaTestrig);
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_ENV_NAME, deltaEnvironment);
       }
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ANALYSIS_NAME, analysisName);
 
@@ -391,7 +398,12 @@ public class BfCoordWorkHelper {
 
   @Nullable
   String getAnswer(
-      String containerName, String baseTestrig, String deltaTestrig, String questionName) {
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      String questionName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANSWER);
 
@@ -401,8 +413,10 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, baseTestrig);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, baseEnv);
       if (deltaTestrig != null) {
         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME, deltaTestrig);
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_ENV_NAME, deltaEnv);
       }
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION_NAME, questionName);
 
@@ -872,6 +886,44 @@ public class BfCoordWorkHelper {
       }
 
       return containerList;
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
+      return null;
+    }
+  }
+
+  @Nullable
+  String[] listEnvironments(String containerName, String testrigName) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_ENVIRONMENT_LIST)) {
+        _logger.errorf("environment list key not found in: %s\n", jObj);
+        return null;
+      }
+
+      JSONArray environmentArray = jObj.getJSONArray(CoordConsts.SVC_KEY_ENVIRONMENT_LIST);
+
+      String[] environmentList = new String[environmentArray.length()];
+
+      for (int index = 0; index < environmentArray.length(); index++) {
+        environmentList[index] = environmentArray.getString(index);
+      }
+
+      return environmentList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");

@@ -7,6 +7,7 @@
         "Flow<ingressNode:r0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
           "environments" : {
             "BASE" : {
+              "envName" : "BASE",
               "testrigName" : "tr-smt-ospf5"
             },
             "DELTA" : {
@@ -24,7 +25,8 @@
                   "node2interface" : "Serial1"
                 }
               ],
-              "testrigName" : "tr-smt-ospf5-with-delta"
+              "envName" : "DELTA",
+              "testrigName" : "tr-smt-ospf5"
             }
           },
           "flow" : {

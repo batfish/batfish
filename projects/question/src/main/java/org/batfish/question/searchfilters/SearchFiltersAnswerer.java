@@ -73,15 +73,15 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   private void differentialAnswer(SearchFiltersQuestion question) {
-    _batfish.pushBaseSnapshot();
+    _batfish.pushBaseEnvironment();
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
     Multimap<String, String> baseAcls = getSpecifiedAcls(question);
-    _batfish.popSnapshot();
+    _batfish.popEnvironment();
 
-    _batfish.pushDeltaSnapshot();
+    _batfish.pushDeltaEnvironment();
     Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations();
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
-    _batfish.popSnapshot();
+    _batfish.popEnvironment();
 
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
 
@@ -345,13 +345,13 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
     if (base) {
-      _batfish.pushBaseSnapshot();
+      _batfish.pushBaseEnvironment();
     } else {
-      _batfish.pushDeltaSnapshot();
+      _batfish.pushDeltaEnvironment();
     }
     Configuration c = _batfish.loadConfigurations().get(hostname);
     Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
-    _batfish.popSnapshot();
+    _batfish.popEnvironment();
     return row;
   }
 
