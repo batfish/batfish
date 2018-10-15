@@ -141,6 +141,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String TASK_ID = "taskid";
 
+  private static final String DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
+  private static final String DEPRECATED_ARG_ENVIRONMENT_NAME = "env";
+  private static final String DEPRECATED_ARG_OUTPUT_ENV = "outputenv";
+  private static final String DEPRECATED_ARG_DESC =
+      "(ignored, provided for backwards compatibility)";
+
   private TestrigSettings _activeTestrigSettings;
 
   private TestrigSettings _baseTestrigSettings;
@@ -914,6 +920,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_DATAPLANE_ENGINE_NAME,
         "name of the dataplane generation engine to use.",
         "dataplane engine name");
+
+    // deprecated and ignored
+    addOption(DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
+    addOption(DEPRECATED_ARG_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
+    addOption(DEPRECATED_ARG_OUTPUT_ENV, DEPRECATED_ARG_DESC, "name");
   }
 
   public void parseCommandLine(String[] args) {
