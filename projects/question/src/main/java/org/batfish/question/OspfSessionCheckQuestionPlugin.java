@@ -1,10 +1,14 @@
 package org.batfish.question;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,6 +18,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -28,7 +35,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpPair;
 import org.batfish.datamodel.ospf.OspfNeighbor;
-import org.batfish.datamodel.ospf.OspfNeighbor.OspfNeighborSummary;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -355,5 +361,77 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
   @Override
   protected OspfSessionCheckQuestion createQuestion() {
     return new OspfSessionCheckQuestion();
+  }
+
+  @ParametersAreNonnullByDefault
+  private static final class OspfNeighborSummary
+      implements Serializable, Comparable<OspfNeighborSummary> {
+
+    private static final String PROP_NAME = "name";
+    private static final String PROP_LOCAL_IP = "localIp";
+    private static final String PROP_REMOTE_IP = "remoteIp";
+    private static final String PROP_VRF = "vrf";
+    private static final long serialVersionUID = 1L;
+
+    private final String _name;
+    private final Ip _localIp;
+    private final Ip _remoteIp;
+    private final String _vrf;
+
+    OspfNeighborSummary(OspfNeighbor ospfNeighbor) {
+      _name = ospfNeighbor.getOwner().getHostname() + ":" + ospfNeighbor.getIpLink();
+      _localIp = ospfNeighbor.getLocalIp();
+      _remoteIp = ospfNeighbor.getRemoteIp();
+      _vrf = ospfNeighbor.getVrf();
+    }
+
+    OspfNeighborSummary(String name, Ip localIp, Ip remoteIp, String vrf) {
+      _name = name;
+      _localIp = localIp;
+      _remoteIp = remoteIp;
+      _vrf = vrf;
+    }
+
+    @JsonCreator
+    private static OspfNeighborSummary create(
+        @Nullable @JsonProperty(PROP_NAME) String name,
+        @Nullable @JsonProperty(PROP_LOCAL_IP) Ip localIp,
+        @Nullable @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
+        @Nullable @JsonProperty(PROP_VRF) String vrf) {
+      return new OspfNeighborSummary(
+          requireNonNull(name),
+          requireNonNull(localIp),
+          requireNonNull(remoteIp),
+          requireNonNull(vrf));
+    }
+
+    @JsonProperty(PROP_LOCAL_IP)
+    public Ip getLocalIp() {
+      return _localIp;
+    }
+
+    @JsonProperty(PROP_NAME)
+    public String getName() {
+      return _name;
+    }
+
+    @JsonProperty(PROP_REMOTE_IP)
+    public Ip getRemoteIp() {
+      return _remoteIp;
+    }
+
+    @JsonProperty(PROP_VRF)
+    public String getVrf() {
+      return _vrf;
+    }
+
+    @Override
+    public int compareTo(@Nonnull OspfNeighborSummary other) {
+      return Comparator.comparing(OspfNeighborSummary::getName)
+          .thenComparing(OspfNeighborSummary::getLocalIp)
+          .thenComparing(OspfNeighborSummary::getRemoteIp)
+          .thenComparing(OspfNeighborSummary::getVrf)
+          .compare(this, other);
+    }
   }
 }

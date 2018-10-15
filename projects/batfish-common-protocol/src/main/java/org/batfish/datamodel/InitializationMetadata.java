@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class EnvironmentMetadata {
+public class InitializationMetadata {
 
   public enum ProcessingStatus {
     UNINITIALIZED,
@@ -32,7 +32,7 @@ public class EnvironmentMetadata {
   private List<String> _statusHistory;
 
   @JsonCreator
-  public EnvironmentMetadata(
+  public InitializationMetadata(
       @JsonProperty(PROP_CURRENT_STATUS) ProcessingStatus status,
       @Nullable @JsonProperty(PROP_ERR_MESSAGE) String errMessage,
       @JsonProperty(PROP_STATUS_HISTORY) List<String> statusHistory) {

@@ -25,7 +25,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
@@ -84,7 +83,7 @@ public class WorkMgrServiceTest {
     _snapshotId = new SnapshotId(_snapshotName + "_id");
   }
 
-  private void initNetworkEnvironment() throws Exception {
+  private void initNetwork() {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(
@@ -109,17 +108,17 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getEmptyNetwork() throws Exception {
-    initNetworkEnvironment();
+  public void getEmptyNetwork() {
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
-  public void getNonExistNetwork() throws Exception {
+  public void getNonExistNetwork() {
     String networkName = "non-existing-folder";
-    initNetworkEnvironment();
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", null, networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
@@ -127,8 +126,8 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getNetworkWithBadVersion() throws Exception {
-    initNetworkEnvironment();
+  public void getNetworkWithBadVersion() {
+    initNetwork();
     Response response = _service.getNetwork("100", "invalid version", null, _networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -137,7 +136,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyNetwork() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
     Container network =
@@ -149,7 +148,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testConfigureAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     // test init and add questions to analysis
     String questionName = "q1";
     String analysisName = "analysis";
@@ -198,7 +197,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
@@ -255,8 +254,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -272,8 +269,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -295,7 +290,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getQuestionTemplates() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     Question testQuestion = createTestQuestion("testquestion", "test description");
     ObjectMapper mapper = BatfishObjectMapper.mapper();
     // serializing the question in the temp questions folder
@@ -364,17 +359,17 @@ public class WorkMgrServiceTest {
   // TODO Remove these tests after container and testrig keys are removed
 
   @Test
-  public void getEmptyContainer() throws Exception {
-    initNetworkEnvironment();
+  public void getEmptyContainer() {
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
-  public void getNonExistContainer() throws Exception {
+  public void getNonExistContainer() {
     String networkName = "non-existing-folder";
-    initNetworkEnvironment();
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", networkName, null);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
@@ -382,8 +377,8 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getContainerWithBadVersion() throws Exception {
-    initNetworkEnvironment();
+  public void getContainerWithBadVersion() {
+    initNetwork();
     Response response = _service.getNetwork("100", "invalid version", _networkName, null);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -396,7 +391,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
     String entityStr = response.getEntity().toString();
@@ -408,7 +403,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testConfigureAnalysisInContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     // test init and add questions to analysis
     String questionName = "q1";
     String analysisName = "a1";
@@ -457,7 +452,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswerInContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
@@ -512,8 +507,6 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -528,8 +521,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
             null,
@@ -550,7 +541,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswersMetrics() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
@@ -620,7 +611,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswersRows() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
@@ -713,7 +704,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
@@ -779,7 +770,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAdHoc() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String question = "question1";
     Question questionObj = new TestQuestion();
@@ -830,7 +821,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerRowsAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysis = "analysis1";
     String question = "question1";
@@ -921,7 +912,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerRowsAdHoc() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String question = "question1";
     QuestionId questionId = new QuestionId(question + "_id");
