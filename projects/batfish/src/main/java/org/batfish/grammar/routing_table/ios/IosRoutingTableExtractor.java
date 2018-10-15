@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -64,7 +64,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
     _parser = parser;
     _w = w;
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(configurations, true);
+    Map<Ip, String> ipOwnersSimple = TopologyUtil.computeIpOwnersSimple(configurations, true);
     _ipOwners = ipOwnersSimple;
   }
 

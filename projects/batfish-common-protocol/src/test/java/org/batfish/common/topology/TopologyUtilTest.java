@@ -1,15 +1,18 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
@@ -39,6 +42,16 @@ public final class TopologyUtilTest {
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     _ib = _nf.interfaceBuilder();
+  }
+
+  /** Make an interface with the specified parameters */
+  private Interface iface(String interfaceName, String ip, boolean active, boolean blacklisted) {
+    return _nf.interfaceBuilder()
+        .setName(interfaceName)
+        .setActive(active)
+        .setAddress(new InterfaceAddress(ip))
+        .setBlacklisted(blacklisted)
+        .build();
   }
 
   @Test
@@ -396,5 +409,35 @@ public final class TopologyUtilTest {
             new Layer3Edge(c3Name, c3i6Name, c1Name, vlan4Name),
             new Layer3Edge(c2Name, vlan1Name, c3Name, c3i5Name),
             new Layer3Edge(c3Name, c3i5Name, c2Name, vlan1Name)));
+  }
+
+  /**
+   * Tests that inactive and blacklisted interfaces are properly included or excluded from the
+   * output of {@link TopologyUtil#computeIpInterfaceOwners(Map, boolean)}
+   */
+  @Test
+  public void testIpInterfaceOwnersActiveInclusion() {
+    Map<String, Set<Interface>> nodeInterfaces =
+        ImmutableMap.of(
+            "node",
+            ImmutableSet.of(
+                iface("active", "1.1.1.1/32", true, false),
+                iface("shut", "1.1.1.1/32", false, false),
+                iface("active-black", "1.1.1.1/32", true, true),
+                iface("shut-black", "1.1.1.1/32", false, true)));
+
+    assertThat(
+        computeIpInterfaceOwners(nodeInterfaces, true),
+        equalTo(
+            ImmutableMap.of(
+                new Ip("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
+
+    assertThat(
+        computeIpInterfaceOwners(nodeInterfaces, false),
+        equalTo(
+            ImmutableMap.of(
+                new Ip("1.1.1.1"),
+                ImmutableMap.of(
+                    "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
   }
 }

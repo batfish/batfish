@@ -23,7 +23,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -35,6 +34,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusPlugin;
@@ -226,7 +226,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       }
 
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-          CommonUtil.initBgpTopology(configurations, ipOwners, true);
+          BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
 
       Builder<BgpSessionInfo> bgpSessionInfoBuilder = new Builder<>(Comparator.naturalOrder());
       NetworkConfigurations nc = NetworkConfigurations.of(configurations);
