@@ -16,10 +16,4 @@ public class BgpSessionCompatibilityQuestionTest {
     assertThat(question.getRemoteNodes(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getName(), equalTo("bgpSessionCompatibility"));
   }
-
-  @Test
-  public void testDoesNotMatchNullStatus() {
-    BgpSessionCompatibilityQuestion question = new BgpSessionCompatibilityQuestion();
-    assertThat(question.matchesStatus(null), equalTo(false));
-  }
 }
