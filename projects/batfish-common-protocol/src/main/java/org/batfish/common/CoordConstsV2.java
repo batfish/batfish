@@ -9,6 +9,7 @@ public class CoordConstsV2 {
   /** The HTTP Header containing the client's version. */
   public static final String HTTP_HEADER_BATFISH_VERSION = "X-Batfish-Version";
 
+  public static final String RSC_ANALYSES = "analyses";
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
   public static final String RSC_FORK = "fork";

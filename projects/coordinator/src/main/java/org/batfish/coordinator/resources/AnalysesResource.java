@@ -1,6 +1,7 @@
 package org.batfish.coordinator.resources;
 
-import java.util.List;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -9,27 +10,27 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.Main;
 
-/** Resource for servicing snapshot-related client API calls at snapshot-global level */
 @ParametersAreNonnullByDefault
 @Produces(MediaType.APPLICATION_JSON)
-public final class SnapshotsResource {
+public final class AnalysesResource {
 
   private final String _network;
 
-  public SnapshotsResource(String network) {
+  public AnalysesResource(String network) {
     _network = network;
   }
 
-  @Path("/{snapshot}")
-  public SnapshotResource getSnapshotResource(@PathParam("snapshot") String snapshot) {
-    return new SnapshotResource(_network, snapshot);
+  @Path("/{analysis}")
+  public @Nonnull AnalysisResource getAnalysisResource(@PathParam("analysis") String analysis) {
+    return new AnalysisResource(_network, analysis);
   }
 
   @GET
-  public Response listSnapshots() {
-    List<String> result = Main.getWorkMgr().listSnapshots(_network);
+  public @Nonnull Response listAnalyses() {
+    SortedSet<String> result = Main.getWorkMgr().listAnalyses(_network, AnalysisType.ALL);
     if (result == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

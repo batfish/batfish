@@ -545,29 +545,34 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Create, update, or truncate an analysis with provided questions or and/or question names
+   * Create, update, or truncate an analysis with provided questions or and/or question names.
    *
-   * @param containerName The container in which the analysis resides
+   * @param network The container in which the analysis resides
    * @param newAnalysis Whether or not to create a new analysis. Incompatible with {@code
    *     delQuestionsStr}.
-   * @param aName The name of the analysis
+   * @param analysis The name of the analysis
    * @param questionsToAdd The questions to be added to or initially populate the analysis.
    * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
    *     with {@code newAnalysis}.
    * @param suggested An optional Boolean indicating whether analysis is suggested (default: false).
+   * @throws IllegalArgumentException if network does not exist; or if {@code newAnalysis} is {@code
+   *     false} and analysis does not exist; or if a question to delete does not exist; or if a
+   *     question to add already exists.
    */
   public void configureAnalysis(
-      String containerName,
+      String network,
       boolean newAnalysis,
-      String aName,
+      String analysis,
       Map<String, String> questionsToAdd,
       List<String> questionsToDelete,
       @Nullable Boolean suggested) {
-    NetworkId networkId = _idManager.getNetworkId(containerName);
+    NetworkId networkId = _idManager.getNetworkId(network);
     this.configureAnalysisValidityCheck(
-        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete);
+        network, newAnalysis, analysis, questionsToAdd, questionsToDelete);
     AnalysisId analysisId =
-        newAnalysis ? _idManager.generateAnalysisId() : _idManager.getAnalysisId(aName, networkId);
+        newAnalysis
+            ? _idManager.generateAnalysisId()
+            : _idManager.getAnalysisId(analysis, networkId);
 
     // Create metadata if it's a new analysis, or update it if suggested is not null
     if (newAnalysis || suggested != null) {
@@ -575,7 +580,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (newAnalysis) {
         metadata = new AnalysisMetadata(Instant.now(), (suggested != null) && suggested);
       } else if (!_storage.hasAnalysisMetadata(
-          networkId, _idManager.getAnalysisId(aName, networkId))) {
+          networkId, _idManager.getAnalysisId(analysis, networkId))) {
         // Configuring an old analysis with no metadata file; create one. Know suggested != null
         metadata = new AnalysisMetadata(Instant.MIN, suggested);
       } else {
@@ -584,7 +589,7 @@ public class WorkMgr extends AbstractCoordinator {
           metadata.setSuggested(suggested);
         } catch (IOException e) {
           throw new BatfishException(
-              "Unable to read metadata file for analysis '" + aName + "'", e);
+              "Unable to read metadata file for analysis '" + analysis + "'", e);
         }
       }
       // Write metadata to file
@@ -607,10 +612,17 @@ public class WorkMgr extends AbstractCoordinator {
       _idManager.assignQuestion(qName, networkId, questionId, analysisId);
     }
     if (newAnalysis) {
-      _idManager.assignAnalysis(aName, networkId, analysisId);
+      _idManager.assignAnalysis(analysis, networkId, analysisId);
     }
   }
 
+  /**
+   * Checks validity of configureAnalysis call.
+   *
+   * @throws IllegalArgumentException if network does not exist; or if {@code newAnalysis} is {@code
+   *     false} and analysis does not exist; or if a question to delete does not exist; or if a
+   *     question to add already exists.
+   */
   private void configureAnalysisValidityCheck(
       String containerName,
       boolean newAnalysis,
@@ -623,11 +635,11 @@ public class WorkMgr extends AbstractCoordinator {
     // 2. questionsToDelete is not empty
     if (newAnalysis) {
       if (_idManager.hasAnalysisId(analysisName, networkId)) {
-        throw new BatfishException(
+        throw new IllegalArgumentException(
             String.format(
                 "Analysis '%s' already exists for container '%s'", analysisName, containerName));
       } else if (!questionsToDelete.isEmpty()) {
-        throw new BatfishException("Cannot delete questions from a new analysis");
+        throw new IllegalArgumentException("Cannot delete questions from a new analysis");
       }
     } else {
       // Reasons to throw error for an existing analysis:
@@ -635,14 +647,14 @@ public class WorkMgr extends AbstractCoordinator {
       // 2. questionsToDelete includes a question that doesn't exist in the analysis
       // 3. questionsToAdd includes a question that already exists and won't be deleted
       if (!_idManager.hasAnalysisId(analysisName, networkId)) {
-        throw new BatfishException(
+        throw new IllegalArgumentException(
             String.format(
                 "Analysis '%s' does not exist for container '%s'", analysisName, containerName));
       }
       AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
       for (String qName : questionsToDelete) {
         if (!_idManager.hasQuestionId(qName, networkId, analysisId)) {
-          throw new BatfishException(
+          throw new IllegalArgumentException(
               String.format("Question '%s' does not exist for analysis '%s'", qName, analysisName));
         }
       }
@@ -650,7 +662,7 @@ public class WorkMgr extends AbstractCoordinator {
         String qName = entry.getKey();
         if (!questionsToDelete.contains(qName)
             && _idManager.hasQuestionId(qName, networkId, analysisId)) {
-          throw new BatfishException(
+          throw new IllegalArgumentException(
               String.format(
                   "Question '%s' already exists for analysis '%s'", entry.getKey(), analysisName));
         }
@@ -658,12 +670,27 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  public void delAnalysis(String network, String aName) {
+  /**
+   * Delete the specified analysis under the specified network. Returns {@code true} if deletion is
+   * successful. Returns {@code false} if either network or analysis does not exist.
+   */
+  public boolean delAnalysis(@Nonnull String network, @Nonnull String analysis) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
-    _idManager.deleteAnalysis(aName, networkId);
+    if (!_idManager.hasAnalysisId(analysis, networkId)) {
+      return false;
+    }
+    _idManager.deleteAnalysis(analysis, networkId);
+    return true;
   }
 
-  public boolean delNetwork(String network) {
+  /**
+   * Delete the specified network. Returns {@code true} if deletion is successful. Returns {@code
+   * false} if network does not exist.
+   */
+  public boolean delNetwork(@Nonnull String network) {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
@@ -675,7 +702,7 @@ public class WorkMgr extends AbstractCoordinator {
    * Delete the specified snapshot under the specified network. Returns {@code true} if deletion is
    * successful. Returns {@code false} if either network or snapshot does not exist.
    */
-  public boolean delSnapshot(String network, String snapshot) {
+  public boolean delSnapshot(@Nonnull String network, @Nonnull String snapshot) {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
@@ -687,9 +714,31 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delQuestion(String network, String qName) {
+  /**
+   * Delete the specified question under the specified network and analysis. If {@code analysis} is
+   * {@code null}, deletes an ad-hoc question. Returns {@code true} if deletion is successful.
+   * Returns {@code false} if network, (non-null) analysis, or question does not exist.
+   */
+  public boolean delQuestion(
+      @Nonnull String network, @Nonnull String question, @Nullable String analysis) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
-    _idManager.deleteQuestion(qName, networkId, null);
+    AnalysisId analysisId;
+    if (analysis != null) {
+      if (!_idManager.hasAnalysisId(analysis, networkId)) {
+        return false;
+      }
+      analysisId = _idManager.getAnalysisId(analysis, networkId);
+    } else {
+      analysisId = null;
+    }
+    if (!_idManager.hasQuestionId(question, networkId, analysisId)) {
+      return false;
+    }
+    _idManager.deleteQuestion(question, networkId, analysisId);
+    return true;
   }
 
   public String getAnswer(
@@ -1329,11 +1378,29 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
-  public String getQuestion(String network, String questionName, @Nullable String analysisName) {
+  /**
+   * Get content of given question under network and analysis. Gets ad-hoc question content if
+   * analysis is {@code null}. Returns {@code null} if network, analysis (when non-null), or
+   * question does not exist.
+   */
+  public @Nullable String getQuestion(String network, String question, @Nullable String analysis) {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
-    AnalysisId analysisId =
-        analysisName != null ? _idManager.getAnalysisId(analysisName, networkId) : null;
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    AnalysisId analysisId;
+    if (analysis != null) {
+      if (!_idManager.hasAnalysisId(analysis, networkId)) {
+        return null;
+      }
+      analysisId = _idManager.getAnalysisId(analysis, networkId);
+    } else {
+      analysisId = null;
+    }
+    if (!_idManager.hasQuestionId(question, networkId, analysisId)) {
+      return null;
+    }
+    QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
     return _storage.loadQuestion(networkId, questionId, analysisId);
   }
 
@@ -1670,9 +1737,12 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param network Container name
    * @param analysisType {@link AnalysisType} requested
-   * @return {@link Set} of container names
+   * @return {@link Set} of container names, or {@code null} if network does not exist.
    */
-  public SortedSet<String> listAnalyses(String network, AnalysisType analysisType) {
+  public @Nullable SortedSet<String> listAnalyses(String network, AnalysisType analysisType) {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
     SortedSet<String> analyses =
         _idManager
@@ -1696,9 +1766,19 @@ public class WorkMgr extends AbstractCoordinator {
         || analysisType == AnalysisType.USER && !suggested);
   }
 
-  public SortedSet<String> listAnalysisQuestions(String network, String analysisName) {
+  /**
+   * List questions for the given network and analysis. Returns list of questions if successful, or
+   * {@code null} if network or analysis does not exist.
+   */
+  public SortedSet<String> listAnalysisQuestions(String network, String analysis) {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    if (!_idManager.hasAnalysisId(analysis, networkId)) {
+      return null;
+    }
+    AnalysisId analysisId = _idManager.getAnalysisId(analysis, networkId);
     return ImmutableSortedSet.copyOf(_idManager.listQuestions(networkId, analysisId));
   }
 
@@ -1726,7 +1806,14 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
   }
 
-  public SortedSet<String> listQuestions(String network, boolean verbose) {
+  /**
+   * List questions for the given network. If {@code verbose} is {@code true}, include hidden
+   * questions. Returns list of questions if successful, or {@code null} if network does not exist.
+   */
+  public @Nullable SortedSet<String> listQuestions(String network, boolean verbose) {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
     Set<String> questions = _idManager.listQuestions(networkId, null);
     if (!verbose) {
@@ -1739,7 +1826,11 @@ public class WorkMgr extends AbstractCoordinator {
     return ImmutableSortedSet.copyOf(questions);
   }
 
-  public List<String> listSnapshots(String network) {
+  /** Returns list of snapshots for given network, or {@code null} if network does not exist. */
+  public @Nullable List<String> listSnapshots(@Nonnull String network) {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
     List<String> testrigs =
         _idManager
@@ -1923,8 +2014,16 @@ public class WorkMgr extends AbstractCoordinator {
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
   }
 
-  public void uploadQuestion(String network, String question, String questionJson) {
+  /**
+   * Uploads the given ad-hoc question to the given network. Returns {@code true} if successful.
+   * Returns {@code false} if network does not exist.
+   */
+  public boolean uploadQuestion(String network, String question, String questionJson) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
     uploadQuestion(network, question, questionJson, true);
+    return true;
   }
 
   @VisibleForTesting
