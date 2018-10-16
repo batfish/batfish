@@ -352,7 +352,8 @@ public class PacketHeaderConstraints {
               .stream()
               .map(Protocol::getPort)
               .map(IntegerSpace::of)
-              .collect(IntegerSpace.toIntegerSpace());
+              .reduce(IntegerSpace::union)
+              .orElse(IntegerSpace.EMPTY);
 
       // for each subrange, run all resolved ports through it, to see if a match occurs
       checkArgument(
@@ -452,7 +453,8 @@ public class PacketHeaderConstraints {
           .stream()
           .map(Protocol::getPort)
           .map(IntegerSpace::of)
-          .collect(IntegerSpace.toIntegerSpace());
+          .reduce(IntegerSpace::union)
+          .orElse(IntegerSpace.EMPTY);
     }
 
     // Intersect. Protocols are the limiting factor, but they must belong to at least one space
@@ -460,7 +462,8 @@ public class PacketHeaderConstraints {
         .stream()
         .map(Protocol::getPort)
         .map(IntegerSpace::of)
-        .collect(IntegerSpace.toIntegerSpace())
+        .reduce(IntegerSpace::union)
+        .orElse(IntegerSpace.EMPTY)
         .intersection(ports);
   }
 

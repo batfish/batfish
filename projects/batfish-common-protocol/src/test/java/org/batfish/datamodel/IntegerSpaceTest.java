@@ -13,7 +13,6 @@ import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.junit.Before;
@@ -353,14 +352,6 @@ public class IntegerSpaceTest {
   }
 
   @Test
-  public void testCollector() {
-    assertThat(Stream.of(PORTS).collect(IntegerSpace.toIntegerSpace()), equalTo(PORTS));
-    assertThat(
-        Stream.of(PORTS, IntegerSpace.of(11111111)).collect(IntegerSpace.toIntegerSpace()),
-        equalTo(PORTS.union(IntegerSpace.of(11111111))));
-  }
-
-  @Test
   public void testConversionToSubrange() {
     assertThat(IntegerSpace.of(1).getSubRanges(), equalTo(ImmutableSet.of(new SubRange(1, 1))));
     assertThat(PORTS.getSubRanges(), equalTo(ImmutableSet.of(new SubRange(0, 65535))));
@@ -372,7 +363,7 @@ public class IntegerSpaceTest {
     SubRange r1 = new SubRange(1, 1);
     SubRange r2 = new SubRange(4, 5);
     assertThat(
-        IntegerSpace.of(r1, r2),
+        IntegerSpace.unionOf(r1, r2),
         equalTo(IntegerSpace.builder().including(r1).including(r2).build()));
   }
 }

@@ -239,7 +239,7 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.resolveIpProtocols(), equalTo(ImmutableSet.of(IpProtocol.TCP)));
     assertThat(
         constraints.resolveDstPorts(),
-        equalTo(IntegerSpace.of(new SubRange(22, 22), new SubRange(80, 80))));
+        equalTo(IntegerSpace.unionOf(new SubRange(22, 22), new SubRange(80, 80))));
   }
 
   @Test

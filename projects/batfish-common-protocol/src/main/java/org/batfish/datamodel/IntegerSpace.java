@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collector;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -37,9 +36,6 @@ public final class IntegerSpace {
   public static final IntegerSpace PORTS = builder().including(Range.closed(0, 65535)).build();
 
   private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
-  private static final Collector<IntegerSpace, ?, IntegerSpace> SPACE_COLLECTOR =
-      Collector.of(
-          IntegerSpace::builder, Builder::including, Builder::combine, IntegerSpace.Builder::build);
 
   /*
    * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
@@ -218,7 +214,7 @@ public final class IntegerSpace {
   }
 
   /** Create a new integer space from a {@link SubRange} */
-  public static IntegerSpace of(SubRange... ranges) {
+  public static IntegerSpace unionOf(SubRange... ranges) {
     Builder b = builder();
     for (SubRange range : ranges) {
       b.including(range);
@@ -311,16 +307,6 @@ public final class IntegerSpace {
       rangeSet.removeAll(_excluding);
       return new IntegerSpace(rangeSet);
     }
-
-    Builder combine(Builder b) {
-      _including.addAll(b._including);
-      _excluding.addAll(b._excluding);
-      return this;
-    }
-  }
-
-  public static Collector<IntegerSpace, ?, IntegerSpace> toIntegerSpace() {
-    return SPACE_COLLECTOR;
   }
 
   @Override
