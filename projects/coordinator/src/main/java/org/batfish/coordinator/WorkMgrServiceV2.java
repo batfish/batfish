@@ -1,12 +1,18 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
+
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -16,7 +22,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.coordinator.resources.ContainerResource;
+import org.batfish.coordinator.resources.NetworkResource;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -58,6 +64,14 @@ public class WorkMgrServiceV2 {
     return Response.ok(containers).build();
   }
 
+  @GET
+  @Path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
+  public @Nonnull Response getQuestionTemplates(@QueryParam(QP_VERBOSE) boolean verbose) {
+    Map<String, String> questionTemplates = Main.getQuestionTemplates(verbose);
+    checkNotNull(questionTemplates, "Question templates not configured");
+    return Response.ok().entity(questionTemplates).build();
+  }
+
   /**
    * Redirect to /networks if the user does not supply a network ID. Deprecated in favor of {@link
    * #redirectNetwork() redirectNetwork}.
@@ -85,13 +99,13 @@ public class WorkMgrServiceV2 {
    */
   @Path(CoordConstsV2.RSC_CONTAINERS + "/{id}")
   @Deprecated
-  public ContainerResource getContainerResource(@PathParam("id") String id) {
+  public NetworkResource getContainerResource(@PathParam("id") String id) {
     return getNetworkResource(id);
   }
 
   /** Relocate the request to ContainerResource. */
   @Path(CoordConstsV2.RSC_NETWORKS + "/{id}")
-  public ContainerResource getNetworkResource(@PathParam("id") String id) {
-    return new ContainerResource(_apiKey, id);
+  public NetworkResource getNetworkResource(@PathParam("id") String id) {
+    return new NetworkResource(_apiKey, id);
   }
 }

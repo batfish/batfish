@@ -23,7 +23,7 @@ import org.batfish.role.NodeRolesData;
 
 /**
  * The {@link NetworkNodeRolesResource} is a resource for servicing client API calls for
- * network-wide node roles. It is a subresource of {@link ContainerResource}.
+ * network-wide node roles. It is a subresource of {@link NetworkResource}.
  *
  * <p>This resource provides information about the roles of a container using GET.
  */
