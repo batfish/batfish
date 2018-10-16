@@ -11,7 +11,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
-import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.SessionStatus;
+import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {

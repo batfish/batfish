@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -72,9 +73,12 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
               BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
               if (bpc instanceof BgpPassivePeerConfig) {
                 return null;
+              } else if (!(bpc instanceof BgpActivePeerConfig)) {
+                throw new BatfishException(
+                    "Unsupported type of BGP peer config (not active or passive)");
               }
               BgpActivePeerConfig bgpPeerConfig = (BgpActivePeerConfig) bpc;
-              SessionType type = getSessionType(bgpPeerConfig);
+              SessionType type = BgpSessionProperties.getSessionType(bgpPeerConfig);
               if (!question.matchesType(type)) {
                 return null;
               }
@@ -82,7 +86,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
               // Local IP and interface
               Ip localIp = bgpPeerConfig.getLocalIp();
               NodeInterfacePair localInterface =
-                      getInterface(configurations.get(neighbor.getHostname()), localIp);
+                  getInterface(configurations.get(neighbor.getHostname()), localIp);
 
               ConfiguredSessionStatus configuredStatus =
                   getConfiguredStatus(

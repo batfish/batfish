@@ -18,6 +18,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
@@ -32,7 +33,31 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
 
+  public enum SessionStatus {
+    ESTABLISHED,
+    NOT_ESTABLISHED,
+    NOT_COMPATIBLE
+  }
+
   public static final String COL_ESTABLISHED_STATUS = "Established_Status";
+
+  private static boolean isCompatible(ConfiguredSessionStatus configuredStatus) {
+    switch (configuredStatus) {
+      case UNIQUE_MATCH:
+      case DYNAMIC_LISTEN:
+        return true;
+      case LOCAL_IP_UNKNOWN_STATICALLY:
+      case NO_LOCAL_IP:
+      case NO_REMOTE_AS:
+      case INVALID_LOCAL_IP:
+      case UNKNOWN_REMOTE:
+      case HALF_OPEN:
+      case MULTIPLE_REMOTES:
+        return false;
+      default:
+        throw new BatfishException("Unrecognized configured status: " + configuredStatus);
+    }
+  }
 
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
@@ -86,28 +111,37 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             edge -> {
               BgpPeerConfigId id = edge.source();
               BgpPeerConfig bgpPeerConfig = getBgpPeerConfig(configurations, id);
-              if (bgpPeerConfig == null) {
-                return null;
-              }
-              SessionType type = getSessionType(bgpPeerConfig);
-              if (!question.matchesType(type)) {
-                return null;
-              }
 
-              // Remote AS
-              SelfDescribingObject remoteAsEntry = null;
+              // Remote AS, session type, established status
+              SessionType type;
+              SelfDescribingObject remoteAsEntry;
+              SessionStatus establishedStatus =
+                  establishedBgpTopology.edges().contains(edge)
+                      ? SessionStatus.ESTABLISHED
+                      : SessionStatus.NOT_ESTABLISHED;
               if (bgpPeerConfig instanceof BgpPassivePeerConfig) {
+                type = SessionType.UNSET;
                 remoteAsEntry =
                     new SelfDescribingObject(
                         Schema.list(Schema.LONG),
                         ((BgpPassivePeerConfig) bgpPeerConfig).getRemoteAs());
               } else if (bgpPeerConfig instanceof BgpActivePeerConfig) {
+                BgpActivePeerConfig activePeerConfig = (BgpActivePeerConfig) bgpPeerConfig;
+                type = BgpSessionProperties.getSessionType(activePeerConfig);
                 remoteAsEntry =
-                    new SelfDescribingObject(
-                        Schema.LONG, ((BgpActivePeerConfig) bgpPeerConfig).getRemoteAs());
+                    new SelfDescribingObject(Schema.LONG, activePeerConfig.getRemoteAs());
+                if (establishedStatus == null
+                    && !isCompatible(
+                        getConfiguredStatus(
+                            id, activePeerConfig, type, allInterfaceIps, configuredBgpTopology))) {
+                  establishedStatus = SessionStatus.NOT_COMPATIBLE;
+                }
               } else {
                 throw new BatfishException(
                     "Unsupported type of BGP peer config (not active or passive)");
+              }
+              if (!question.matchesType(type) || !question.matchesStatus(establishedStatus)) {
+                return null;
               }
 
               // Local IP and interface
@@ -115,30 +149,22 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
               NodeInterfacePair localInterface =
                   getInterface(configurations.get(id.getHostname()), localIp);
 
-              ConfiguredSessionStatus configuredStatus =
-                  getConfiguredStatus(
-                      id, bgpPeerConfig, type, allInterfaceIps, configuredBgpTopology);
-
-              // Established status
-              SessionStatus establishedStatus = SessionStatus.NOT_ESTABLISHED;
-              if (!isCompatible(configuredStatus)) {
-                establishedStatus = SessionStatus.NOT_COMPATIBLE;
-              } else if (establishedBgpTopology.edges().contains(edge)) {
-                establishedStatus = SessionStatus.ESTABLISHED;
-              }
-              if (!question.matchesStatus(establishedStatus)) {
-                return null;
-              }
+              // Remote IP/prefix
+              Prefix remotePrefix = id.getRemotePeerPrefix();
+              SelfDescribingObject remotePrefixEntry =
+                  remotePrefix.getPrefixLength() == 32
+                      ? new SelfDescribingObject(Schema.IP, remotePrefix.getStartIp())
+                      : new SelfDescribingObject(Schema.PREFIX, remotePrefix);
 
               return Row.builder(createMetadata(question).toColumnMap())
                   .put(COL_ESTABLISHED_STATUS, establishedStatus)
                   .put(COL_LOCAL_INTERFACE, localInterface)
                   .put(COL_LOCAL_AS, bgpPeerConfig.getLocalAs())
-                  .put(COL_LOCAL_IP, bgpPeerConfig.getLocalIp())
+                  .put(COL_LOCAL_IP, localIp)
                   .put(COL_NODE, new Node(id.getHostname()))
                   .put(COL_REMOTE_AS, remoteAsEntry)
                   .put(COL_REMOTE_NODE, new Node(edge.target().getHostname()))
-                  .put(COL_REMOTE_IP, getRemoteIpEntry(id.getRemotePeerPrefix()))
+                  .put(COL_REMOTE_IP, remotePrefixEntry)
                   .put(COL_SESSION_TYPE, type)
                   .put(COL_VRF, id.getVrfName())
                   .build();

@@ -5,10 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
-import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.SessionStatus;
+import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
 import org.junit.Test;
 
-public class BgpSessionStatusQuestionTest {
+public class BgpSessionQuestionTest {
   @Test
   public void testDefaultParameters() {
     BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
