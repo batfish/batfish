@@ -1,13 +1,15 @@
 package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_CONFIGURED_STATUS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_LOCAL_AS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_LOCAL_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_NODE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_REMOTE_NODE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_REMOTE_PREFIX;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_SESSION_TYPE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_VRF_NAME;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_VRF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -16,10 +18,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
@@ -36,7 +40,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
+import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
 import org.junit.Test;
 
 public class BgpSessionCompatibilityAnswererTest {
@@ -44,34 +48,60 @@ public class BgpSessionCompatibilityAnswererTest {
   /*
   Setup for all tests:
   node1 peers with node2.
-  node1 has iface1 with IP 1.1.1.1 and vrf1 with BGP process from 1.1.1.1 to 2.2.2.2 (AS 1 to AS 2).
-  node2 has iface2 with IP 2.2.2.2 and vrf2 with BGP process from 2.2.2.2 to 1.1.1.1 (AS 2 to AS 1).
-  This results in two BGP sessions, represented by ROW_1 and ROW_2.
+  node1 has a static BGP process from 1.1.1.1 to 2.2.2.2 (AS 1 to AS 2).
+  node2 has a static BGP process from 2.2.2.2 to 1.1.1.1 (AS 2 to AS 1).
+  node3 has a static BGP process from 3.3.3.3 to 3.3.3.4 (AS 3 to AS 3).
+  node4 has a dynamic BGP process from 3.3.3.4 to 3.3.3.0/30 (AS 3 to AS 3).
+  This results in three rows, represented by ROW_1, ROW_2, and ROW_3. The dynamic peer should not generate a row.
    */
 
   private final IBatfish _batfish;
+
+  private static final Ip IP1 = new Ip("1.1.1.1");
+  private static final Ip IP2 = new Ip("2.2.2.2");
+  private static final Ip IP3 = new Ip("3.3.3.3");
+  private static final Ip IP4 = new Ip("3.3.3.4");
+
   private static final Row ROW_1 =
       Row.builder()
-          .put(COL_CONFIGURED_STATUS, SessionStatus.UNIQUE_MATCH)
-          .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("node1", "iface1"))
-          .put(COL_LOCAL_IP, new Ip("1.1.1.1"))
+          .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
+          .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("node1", "iface"))
+          .put(COL_LOCAL_IP, IP1)
+          .put(COL_LOCAL_AS, 1L)
           .put(COL_NODE, new Node("node1"))
+          .put(COL_REMOTE_AS, 2L)
           .put(COL_REMOTE_NODE, new Node("node2"))
-          .put(COL_REMOTE_PREFIX, new Prefix(new Ip("2.2.2.2"), 32))
+          .put(COL_REMOTE_IP, IP2)
           .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
-          .put(COL_VRF_NAME, "vrf1")
+          .put(COL_VRF, "vrf")
           .build();
 
   private static final Row ROW_2 =
       Row.builder()
-          .put(COL_CONFIGURED_STATUS, SessionStatus.UNIQUE_MATCH)
-          .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("node2", "iface2"))
-          .put(COL_LOCAL_IP, new Ip("2.2.2.2"))
+          .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
+          .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("node2", "iface"))
+          .put(COL_LOCAL_IP, IP2)
+          .put(COL_LOCAL_AS, 2L)
           .put(COL_NODE, new Node("node2"))
+          .put(COL_REMOTE_AS, 1L)
           .put(COL_REMOTE_NODE, new Node("node1"))
-          .put(COL_REMOTE_PREFIX, new Prefix(new Ip("1.1.1.1"), 32))
+          .put(COL_REMOTE_IP, IP1)
           .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
-          .put(COL_VRF_NAME, "vrf2")
+          .put(COL_VRF, "vrf")
+          .build();
+
+  private static final Row ROW_3 =
+      Row.builder()
+          .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
+          .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("node3", "iface"))
+          .put(COL_LOCAL_IP, IP3)
+          .put(COL_LOCAL_AS, 3L)
+          .put(COL_NODE, new Node("node3"))
+          .put(COL_REMOTE_AS, 3L)
+          .put(COL_REMOTE_NODE, new Node("node4"))
+          .put(COL_REMOTE_IP, IP4)
+          .put(COL_SESSION_TYPE, SessionType.IBGP)
+          .put(COL_VRF, "vrf")
           .build();
 
   public BgpSessionCompatibilityAnswererTest() {
@@ -79,53 +109,15 @@ public class BgpSessionCompatibilityAnswererTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
-    Ip ip1 = new Ip("1.1.1.1");
-    Ip ip2 = new Ip("2.2.2.2");
-
-    Configuration node1 = cb.setHostname("node1").build();
-    Interface iface1 = new Interface("iface1", node1, InterfaceType.PHYSICAL);
-    iface1.setAllAddresses(ImmutableList.of(new InterfaceAddress(ip1, new Ip("255.255.255.255"))));
-
-    BgpActivePeerConfig peerConfig1 =
-        BgpActivePeerConfig.builder()
-            .setLocalAs(1L)
-            .setRemoteAs(2L)
-            .setLocalIp(ip1)
-            .setPeerAddress(ip2)
-            .build();
-
-    BgpProcess bgpProcess1 = new BgpProcess();
-    bgpProcess1.setNeighbors(ImmutableSortedMap.of(new Prefix(ip2, 32), peerConfig1));
-
-    Vrf vrf1 = new Vrf("vrf1");
-    vrf1.setBgpProcess(bgpProcess1);
-
-    node1.setVrfs(ImmutableMap.of("vrf1", vrf1));
-    node1.setInterfaces(ImmutableSortedMap.of("iface1", iface1));
-
-    Configuration node2 = cb.setHostname("node2").build();
-    Interface iface2 = new Interface("iface2", node2, InterfaceType.PHYSICAL);
-    iface2.setAllAddresses(ImmutableList.of(new InterfaceAddress(ip2, new Ip("255.255.255.255"))));
-
-    BgpActivePeerConfig peerConfig2 =
-        BgpActivePeerConfig.builder()
-            .setLocalAs(2L)
-            .setRemoteAs(1L)
-            .setLocalIp(ip2)
-            .setPeerAddress(ip1)
-            .build();
-
-    BgpProcess bgpProcess2 = new BgpProcess();
-    bgpProcess2.setNeighbors(ImmutableSortedMap.of(new Prefix(ip1, 32), peerConfig2));
-
-    Vrf vrf2 = new Vrf("vrf2");
-    vrf2.setBgpProcess(bgpProcess2);
-
-    node2.setVrfs(ImmutableMap.of("vrf2", vrf2));
-    node2.setInterfaces(ImmutableSortedMap.of("iface2", iface2));
+    Configuration node1 = createConfiguration(cb, "node1", IP1, IP2, 1L, 2L);
+    Configuration node2 = createConfiguration(cb, "node2", IP2, IP1, 2L, 1L);
+    Configuration node3 = createConfiguration(cb, "node3", IP3, IP4, 3L, 3L);
+    Configuration node4 =
+        createConfigurationWithDynamicSession(
+            cb, "node4", IP4, new Prefix(IP3, 24), 3L, ImmutableList.of(3L));
 
     SortedMap<String, Configuration> configurations =
-        ImmutableSortedMap.of("node1", node1, "node2", node2);
+        ImmutableSortedMap.of("node1", node1, "node2", node2, "node3", node3, "node4", node4);
 
     _batfish =
         new IBatfishTestAdapter() {
@@ -136,11 +128,75 @@ public class BgpSessionCompatibilityAnswererTest {
         };
   }
 
+  private static Configuration createConfiguration(
+      Configuration.Builder cb,
+      String nodeName,
+      Ip localIp,
+      Ip remoteIp,
+      Long localAs,
+      Long remoteAs) {
+
+    Configuration node = cb.setHostname(nodeName).build();
+    Interface iface = new Interface("iface", node, InterfaceType.PHYSICAL);
+    iface.setAllAddresses(
+        ImmutableList.of(new InterfaceAddress(localIp, Ip.numSubnetBitsToSubnetMask(32))));
+
+    BgpActivePeerConfig peerConfig =
+        BgpActivePeerConfig.builder()
+            .setLocalAs(localAs)
+            .setRemoteAs(remoteAs)
+            .setLocalIp(localIp)
+            .setPeerAddress(remoteIp)
+            .build();
+
+    BgpProcess bgpProcess = new BgpProcess();
+    bgpProcess.setNeighbors(ImmutableSortedMap.of(new Prefix(remoteIp, 32), peerConfig));
+
+    Vrf vrf1 = new Vrf("vrf");
+    vrf1.setBgpProcess(bgpProcess);
+
+    node.setVrfs(ImmutableMap.of("vrf", vrf1));
+    node.setInterfaces(ImmutableSortedMap.of("iface", iface));
+    return node;
+  }
+
+  private static Configuration createConfigurationWithDynamicSession(
+      Configuration.Builder cb,
+      String nodeName,
+      Ip localIp,
+      Prefix remotePrefix,
+      Long localAs,
+      List<Long> remoteAsList) {
+
+    Configuration node = cb.setHostname(nodeName).build();
+    Interface iface = new Interface("iface", node, InterfaceType.PHYSICAL);
+    iface.setAllAddresses(
+        ImmutableList.of(new InterfaceAddress(localIp, Ip.numSubnetBitsToSubnetMask(32))));
+
+    BgpPassivePeerConfig peerConfig =
+        BgpPassivePeerConfig.builder()
+            .setLocalAs(localAs)
+            .setRemoteAs(remoteAsList)
+            .setLocalIp(localIp)
+            .setPeerPrefix(remotePrefix)
+            .build();
+
+    BgpProcess bgpProcess = new BgpProcess();
+    bgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(remotePrefix, peerConfig));
+
+    Vrf vrf1 = new Vrf("vrf");
+    vrf1.setBgpProcess(bgpProcess);
+
+    node.setVrfs(ImmutableMap.of("vrf", vrf1));
+    node.setInterfaces(ImmutableSortedMap.of("iface", iface));
+    return node;
+  }
+
   @Test
   public void testAnswer() {
     BgpSessionCompatibilityQuestion q = new BgpSessionCompatibilityQuestion();
     Multiset<Row> rows = getQuestionResults(q);
-    assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1, ROW_2)));
+    assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1, ROW_2, ROW_3)));
   }
 
   @Test
@@ -163,26 +219,30 @@ public class BgpSessionCompatibilityAnswererTest {
   public void testLimitStatus() {
     // Both sessions have status UNIQUE_MATCH
     BgpSessionCompatibilityQuestion q =
-        new BgpSessionCompatibilityQuestion(null, null, SessionStatus.UNIQUE_MATCH.name(), null);
+        new BgpSessionCompatibilityQuestion(
+            null, null, ConfiguredSessionStatus.UNIQUE_MATCH.name(), null);
     Multiset<Row> rows = getQuestionResults(q);
-    assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1, ROW_2)));
+    assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1, ROW_2, ROW_3)));
 
-    q = new BgpSessionCompatibilityQuestion(null, null, SessionStatus.UNKNOWN_REMOTE.name(), null);
+    q =
+        new BgpSessionCompatibilityQuestion(
+            null, null, ConfiguredSessionStatus.UNKNOWN_REMOTE.name(), null);
     rows = getQuestionResults(q);
     assertThat(rows, equalTo(ImmutableMultiset.of()));
   }
 
   @Test
   public void testLimitType() {
-    // Both sessions have type EBGP_SINGLEHOP
+    // First two static sessions have type EBGP_SINGLEHOP
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(null, null, null, SessionType.EBGP_SINGLEHOP.name());
     Multiset<Row> rows = getQuestionResults(q);
     assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1, ROW_2)));
 
-    q = new BgpSessionCompatibilityQuestion(null, null, null, SessionType.EBGP_MULTIHOP.name());
+    // Third static session has type IBGP
+    q = new BgpSessionCompatibilityQuestion(null, null, null, SessionType.IBGP.name());
     rows = getQuestionResults(q);
-    assertThat(rows, equalTo(ImmutableMultiset.of()));
+    assertThat(rows, equalTo(ImmutableMultiset.of(ROW_3)));
   }
 
   private Multiset<Row> getQuestionResults(BgpSessionCompatibilityQuestion q) {

@@ -3,11 +3,14 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.util.BatfishObjectMapper;
 
 @ParametersAreNonnullByDefault
 public class SelfDescribingObject {
@@ -47,6 +50,12 @@ public class SelfDescribingObject {
   @JsonProperty(PROP_VALUE)
   public Object getValue() {
     return _value;
+  }
+
+  @JsonIgnore
+  public Object getTypedValue() {
+    JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(_value);
+    return SchemaUtils.convertType(jsonNode, _schema);
   }
 
   @Override

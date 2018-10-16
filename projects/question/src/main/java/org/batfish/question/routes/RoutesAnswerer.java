@@ -1,7 +1,7 @@
 package org.batfish.question.routes;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;

@@ -12,14 +12,10 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
- * The {@link Environment Environment} is an Object representation of the environment for BatFish
- * service.
- *
- * <p>Each {@link Environment Environment} contains a name and all informations of the environment
- * {@link #_envName}.
+ * The {@link Environment} contains the information about the snapshot that is external to
+ * configuration -- device up/down states, BGP announcements, etc..
  */
 public class Environment {
-  private static final String PROP_ENV_NAME = "envName";
   private static final String PROP_TESTRIG_NAME = "testrigName";
   private static final String PROP_EDGE_BLACKLIST = "edgeBlacklist";
   private static final String PROP_INTERFACE_BLACKLIST = "interfaceBlacklist";
@@ -28,7 +24,6 @@ public class Environment {
   private static final String PROP_ENVIRONMENT_ROUTING_TABLES = "routingTables";
   private static final String PROP_EXTERNAL_BGP_ANNOUNCEMENTS = "externalBgpAnnouncements";
 
-  private final String _envName;
   private final String _testrigName;
   private final SortedSet<Edge> _edgeBlacklist;
   private final SortedSet<NodeInterfacePair> _interfaceBlacklist;
@@ -39,7 +34,6 @@ public class Environment {
 
   @JsonCreator
   public Environment(
-      @JsonProperty(PROP_ENV_NAME) String envName,
       @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
       @JsonProperty(PROP_EDGE_BLACKLIST) @Nullable SortedSet<Edge> edgeBlacklist,
       @JsonProperty(PROP_INTERFACE_BLACKLIST) @Nullable
@@ -50,7 +44,6 @@ public class Environment {
           SortedMap<String, String> routingTables,
       @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS) @Nullable
           SortedSet<BgpAdvertisement> externalBgpAnnouncements) {
-    this._envName = envName;
     this._testrigName = testrigName;
     this._edgeBlacklist = edgeBlacklist;
     this._interfaceBlacklist = interfaceBlacklist;
@@ -58,11 +51,6 @@ public class Environment {
     this._bgpTables = bgpTables;
     this._routingTables = routingTables;
     this._externalBgpAnnouncements = externalBgpAnnouncements;
-  }
-
-  @JsonProperty(PROP_ENV_NAME)
-  public String getEnvName() {
-    return _envName;
   }
 
   @JsonProperty(PROP_TESTRIG_NAME)
@@ -103,7 +91,6 @@ public class Environment {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(Environment.class)
-        .add(PROP_ENV_NAME, _envName)
         .add(PROP_TESTRIG_NAME, _testrigName)
         .add(PROP_EDGE_BLACKLIST, _edgeBlacklist)
         .add(PROP_INTERFACE_BLACKLIST, _interfaceBlacklist)
@@ -120,8 +107,7 @@ public class Environment {
       return false;
     }
     Environment other = (Environment) o;
-    return Objects.equals(_envName, other._envName)
-        && Objects.equals(_edgeBlacklist, other._edgeBlacklist)
+    return Objects.equals(_edgeBlacklist, other._edgeBlacklist)
         && Objects.equals(_interfaceBlacklist, other._interfaceBlacklist)
         && Objects.equals(_nodeBlacklist, other._nodeBlacklist)
         && Objects.equals(_bgpTables, other._bgpTables)
@@ -132,7 +118,6 @@ public class Environment {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _envName,
         _edgeBlacklist,
         _interfaceBlacklist,
         _nodeBlacklist,

@@ -1,9 +1,9 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.initBgpTopology;
+import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;

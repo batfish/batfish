@@ -1,12 +1,15 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_INFERRED_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_INPUT;
+import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_POJO_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
 
 import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -33,7 +36,7 @@ public final class SnapshotResource {
   @Path(RSC_POJO_TOPOLOGY)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
-  public Response get() throws IOException {
+  public Response getPojoTopology() throws IOException {
     org.batfish.datamodel.pojo.Topology topology =
         Main.getWorkMgr().getPojoTopology(_network, _snapshot);
     if (topology == null) {
@@ -42,9 +45,22 @@ public final class SnapshotResource {
     return Response.ok().entity(topology).build();
   }
 
+  @Path(RSC_INFERRED_NODE_ROLES)
+  public SnapshotNodeRolesResource getSnapshotInferredNodeRoles() {
+    return new SnapshotNodeRolesResource(_network, _snapshot, true);
+  }
+
   @Path(RSC_INPUT)
   public SnapshotInputObjectsResource getSnapshotInputObjectsResource() {
     return new SnapshotInputObjectsResource(_network, _snapshot);
+  }
+
+  @DELETE
+  public Response deleteSnapshot() {
+    if (!Main.getWorkMgr().delSnapshot(_network, _snapshot)) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok().build();
   }
 
   @GET
@@ -55,6 +71,11 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().entity(metadata).build();
+  }
+
+  @Path(RSC_NODE_ROLES)
+  public SnapshotNodeRolesResource getSnapshotNodeRoles() {
+    return new SnapshotNodeRolesResource(_network, _snapshot, false);
   }
 
   @Path(RSC_OBJECTS)

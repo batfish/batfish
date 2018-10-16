@@ -3,51 +3,33 @@ package org.batfish.coordinator.resources;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.io.IOException;
-import java.time.Instant;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.batfish.coordinator.Main;
+import javax.annotation.Nullable;
 import org.batfish.role.NodeRolesData;
 
 /** A bean for node roles information. */
 public class NodeRolesDataBean {
 
   public String defaultDimension;
-  public Instant lastModifiedTime;
   public Set<NodeRoleDimensionBean> roleDimensions;
 
   @JsonCreator
   private NodeRolesDataBean() {}
 
   public NodeRolesDataBean(
-      @Nonnull NodeRolesData nodeRolesData, String snapshot, Set<String> nodes) {
+      @Nonnull NodeRolesData nodeRolesData, @Nullable String snapshot, @Nonnull Set<String> nodes) {
     defaultDimension = nodeRolesData.getDefaultDimension();
-    lastModifiedTime = nodeRolesData.getLastModifiedTime();
     roleDimensions =
         nodeRolesData
             .getNodeRoleDimensions()
             .stream()
             .map(dim -> new NodeRoleDimensionBean(dim, snapshot, nodes))
             .collect(Collectors.toSet());
-  }
-
-  /**
-   * creates a {@link NodeRolesDataBean} for the container using the set of nodes found in the
-   * latest testrig
-   */
-  static NodeRolesDataBean create(@Nonnull String container) throws IOException {
-    NodeRolesData nodeRolesData = Main.getWorkMgr().getNodeRolesData(container);
-    Optional<String> snapshot = Main.getWorkMgr().getLatestTestrig(container);
-    Set<String> nodes =
-        snapshot.isPresent()
-            ? Main.getWorkMgr().getNodes(container, snapshot.get())
-            : new TreeSet<>();
-    return new NodeRolesDataBean(nodeRolesData, snapshot.orElse(null), nodes);
   }
 
   @Override
@@ -66,11 +48,21 @@ public class NodeRolesDataBean {
     return Objects.hash(defaultDimension, roleDimensions);
   }
 
+  public @Nonnull NodeRolesData toNodeRolesData() {
+    return NodeRolesData.builder()
+        .setDefaultDimension(defaultDimension)
+        .setRoleDimensions(
+            roleDimensions
+                .stream()
+                .map(NodeRoleDimensionBean::toNodeRoleDimension)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())))
+        .build();
+  }
+
   @Override
   public String toString() {
     return toStringHelper(getClass())
         .add("defaultDimension", defaultDimension)
-        .add("lastModifiedTime", lastModifiedTime)
         .add("roleDimensions", roleDimensions)
         .toString();
   }

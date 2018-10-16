@@ -1398,7 +1398,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
       return IcmpCode.SOURCE_ROUTE_FAILED;
     } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
-      return IcmpCode.TTL_EQ_ZERO_DURING_REASSEMBLY;
+      return IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
       return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {

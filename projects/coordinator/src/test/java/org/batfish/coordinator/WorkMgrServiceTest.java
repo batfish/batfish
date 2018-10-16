@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -23,7 +25,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
@@ -54,7 +55,6 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONArray;
@@ -83,7 +83,7 @@ public class WorkMgrServiceTest {
     _snapshotId = new SnapshotId(_snapshotName + "_id");
   }
 
-  private void initNetworkEnvironment() throws Exception {
+  private void initNetwork() {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(
@@ -108,17 +108,17 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getEmptyNetwork() throws Exception {
-    initNetworkEnvironment();
+  public void getEmptyNetwork() {
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
-  public void getNonExistNetwork() throws Exception {
+  public void getNonExistNetwork() {
     String networkName = "non-existing-folder";
-    initNetworkEnvironment();
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", null, networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
@@ -126,8 +126,8 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getNetworkWithBadVersion() throws Exception {
-    initNetworkEnvironment();
+  public void getNetworkWithBadVersion() {
+    initNetwork();
     Response response = _service.getNetwork("100", "invalid version", null, _networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -136,7 +136,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyNetwork() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
     Container network =
@@ -148,7 +148,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testConfigureAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     // test init and add questions to analysis
     String questionName = "q1";
     String analysisName = "analysis";
@@ -197,14 +197,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String question2Name = "question2Name";
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
@@ -226,7 +224,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(ImmutableList.of()));
@@ -250,8 +254,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -267,8 +269,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -290,7 +290,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getQuestionTemplates() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     Question testQuestion = createTestQuestion("testquestion", "test description");
     ObjectMapper mapper = BatfishObjectMapper.mapper();
     // serializing the question in the temp questions folder
@@ -359,17 +359,17 @@ public class WorkMgrServiceTest {
   // TODO Remove these tests after container and testrig keys are removed
 
   @Test
-  public void getEmptyContainer() throws Exception {
-    initNetworkEnvironment();
+  public void getEmptyContainer() {
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
 
   @Test
-  public void getNonExistContainer() throws Exception {
+  public void getNonExistContainer() {
     String networkName = "non-existing-folder";
-    initNetworkEnvironment();
+    initNetwork();
     Response response = _service.getNetwork("100", "0.0.0", networkName, null);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
@@ -377,8 +377,8 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getContainerWithBadVersion() throws Exception {
-    initNetworkEnvironment();
+  public void getContainerWithBadVersion() {
+    initNetwork();
     Response response = _service.getNetwork("100", "invalid version", _networkName, null);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
@@ -391,7 +391,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void getNonEmptyContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
     String entityStr = response.getEntity().toString();
@@ -403,7 +403,7 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testConfigureAnalysisInContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     // test init and add questions to analysis
     String questionName = "q1";
     String analysisName = "a1";
@@ -452,14 +452,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswerInContainer() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String question2Name = "question2Name";
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
@@ -481,7 +479,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new StringAnswerElement("foo"));
@@ -503,8 +507,6 @@ public class WorkMgrServiceTest {
             null,
             _snapshotName,
             null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
             null,
             null,
             null,
@@ -519,8 +521,6 @@ public class WorkMgrServiceTest {
             _networkName,
             null,
             _snapshotName,
-            null,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
             null,
             null,
             null,
@@ -541,14 +541,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswersMetrics() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String analysisQuestionsStr =
         BatfishObjectMapper.writePrettyString(ImmutableList.of(questionName));
 
@@ -571,7 +569,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
@@ -607,14 +611,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnalysisAnswersRows() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     Map<String, AnswerRowsOptions> analysisAnswersOptions =
         ImmutableMap.of(
@@ -650,7 +652,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(
@@ -696,14 +704,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysisName = "analysis1";
     String questionName = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionName + "_settings_id");
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
 
     String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
     File analysisFile = _networksFolder.newFile(analysisName);
@@ -724,7 +730,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
@@ -758,18 +770,24 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerMetricsAdHoc() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String question = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
 
     Main.getWorkMgr().uploadQuestion(_networkName, question, questionContent);
     QuestionId questionId = idm().getQuestionId(question, _networkId, null);
     AnswerId answerId =
-        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+        idm()
+            .getBaseAnswerId(
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                null);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
@@ -803,14 +821,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerRowsAnalysis() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String analysis = "analysis1";
     String question = "question1";
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(questionObj.getName() + "_id");
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -851,7 +867,13 @@ public class WorkMgrServiceTest {
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
-                _networkId, _snapshotId, questionId, questionSettingsId, null, analysisId);
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                analysisId);
 
     Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
@@ -890,14 +912,12 @@ public class WorkMgrServiceTest {
 
   @Test
   public void testGetAnswerRowsAdHoc() throws Exception {
-    initNetworkEnvironment();
+    initNetwork();
     initSnapshot();
     String question = "question1";
     QuestionId questionId = new QuestionId(question + "_id");
     Question questionObj = new TestQuestion();
     String questionContent = BatfishObjectMapper.writeString(questionObj);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
-    idm().assignQuestionSettingsId(questionObj.getName(), _networkId, questionSettingsId);
     String columnName = "col";
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
@@ -923,7 +943,15 @@ public class WorkMgrServiceTest {
     Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
     idm().assignQuestion(question, _networkId, questionId, null);
     AnswerId answerId =
-        idm().getBaseAnswerId(_networkId, _snapshotId, questionId, questionSettingsId, null, null);
+        idm()
+            .getBaseAnswerId(
+                _networkId,
+                _snapshotId,
+                questionId,
+                DEFAULT_QUESTION_SETTINGS_ID,
+                DEFAULT_NETWORK_NODE_ROLES_ID,
+                null,
+                null);
     Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
         .getStorage()

@@ -151,6 +151,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObj
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeSecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
@@ -223,6 +224,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -230,6 +232,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -247,6 +250,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -280,6 +284,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
@@ -359,6 +364,24 @@ public class CiscoGrammarTest {
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
         .build();
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, FlowState.NEW);
+  }
+
+  private static Flow createEstablishedFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, FlowState.ESTABLISHED);
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
+    fb.setState(state);
+    fb.setTag("test");
+    return fb.build();
   }
 
   @Test
@@ -2171,9 +2194,9 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        CommonUtil.initBgpTopology(configurations, ipOwners, false);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
 
     // Edge one direction
     assertThat(
@@ -2207,8 +2230,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    CommonUtil.initBgpTopology(configurations, ipOwners, false);
+    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
+    BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
     org.batfish.datamodel.BgpProcess aristaDisabled =
         configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
     org.batfish.datamodel.BgpProcess aristaEnabled =
@@ -2261,8 +2284,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    CommonUtil.initBgpTopology(configurations, ipOwners, false);
+    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
+    BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
@@ -3347,13 +3370,15 @@ public class CiscoGrammarTest {
     Configuration iosRecovery = configurations.get(hostname);
     Map<String, Interface> iosRecoveryInterfaces = iosRecovery.getAllInterfaces();
     Set<String> iosRecoveryInterfaceNames = iosRecoveryInterfaces.keySet();
-    Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
-    Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
 
     assertThat("Loopback0", in(iosRecoveryInterfaceNames));
     assertThat("Loopback1", in(iosRecoveryInterfaceNames));
     assertThat("Loopback2", not(in(iosRecoveryInterfaceNames)));
     assertThat("Loopback3", in(iosRecoveryInterfaceNames));
+
+    Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
+    Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
+
     assertThat(new InterfaceAddress("10.0.0.1/32"), not(in(l3Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.2/32"), in(l3Prefixes));
     assertThat("Loopback4", in(iosRecoveryInterfaceNames));
@@ -3518,6 +3543,74 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaSecurityLevel() throws IOException {
+    String hostname = "asa-security-level";
+    String explicit100Interface = "GigabitEthernet0/1";
+    String explicit100Ip = "3.0.0.3";
+    String insideInterface = "GigabitEthernet0/2";
+    String insideIp = "3.0.1.3";
+    String explicit45Interface = "GigabitEthernet0/3";
+    String explicit45Ip = "3.0.2.3";
+    String outsideInterface = "GigabitEthernet0/4";
+    String outsideIp = "3.0.3.3";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    // Confirm zones are created for each interface
+    assertThat(
+        c, hasZone(computeZoneName(100, explicit100Interface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
+    assertThat(
+        c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(0, outsideInterface), hasMemberInterfaces(hasSize(1))));
+
+    IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
+    IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();
+    IpAccessList aclExplicit45 = getInterface(c, explicit45Interface).getOutgoingFilter();
+    IpAccessList aclOutside = getInterface(c, outsideInterface).getOutgoingFilter();
+
+    // No traffic between interface with same level
+    assertThat(aclInside, rejects(createFlow(explicit100Ip, insideIp), explicit100Interface, c));
+    assertThat(aclExplicit100, rejects(createFlow(insideIp, explicit100Ip), insideInterface, c));
+
+    // Allow traffic from 100 to others
+    assertThat(aclExplicit45, accepts(createFlow(insideIp, explicit45Ip), insideInterface, c));
+    assertThat(aclOutside, accepts(createFlow(insideIp, outsideIp), insideInterface, c));
+
+    // Mid level is accepted by higher, but not lower
+    assertThat(aclInside, rejects(createFlow(explicit45Ip, insideIp), explicit45Interface, c));
+    assertThat(aclOutside, accepts(createFlow(explicit45Ip, outsideIp), explicit45Interface, c));
+
+    // No traffic from outside
+    assertThat(aclInside, rejects(createFlow(outsideIp, insideIp), outsideInterface, c));
+    assertThat(aclExplicit45, rejects(createFlow(outsideIp, explicit45Ip), outsideInterface, c));
+
+    // All established flows are accepted
+    assertThat(
+        aclExplicit45,
+        accepts(createEstablishedFlow(outsideIp, explicit45Ip), outsideInterface, c));
+    assertThat(aclInside, accepts(createEstablishedFlow(outsideIp, insideIp), outsideInterface, c));
+    assertThat(
+        aclInside, accepts(createEstablishedFlow(explicit45Ip, insideIp), explicit45Interface, c));
+    assertThat(
+        aclInside,
+        accepts(createEstablishedFlow(explicit100Ip, insideIp), explicit100Interface, c));
+  }
+
+  // Finds first interface with the given name, checking all declared names
+  private Interface getInterface(Configuration c, String name) {
+    Optional<Interface> match =
+        c.getAllInterfaces()
+            .values()
+            .stream()
+            .filter(iface -> iface.getDeclaredNames().contains(name))
+            .findFirst();
+    assertThat(match.isPresent(), is(true));
+    return match.get();
+  }
+
+  @Test
   public void testAsaStaticRoute() throws IOException {
     Configuration c = parseConfig("asa-static-route");
 
@@ -3541,5 +3634,9 @@ public class CiscoGrammarTest {
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(3)
                             .build())))));
+  }
+
+  private static String computeZoneName(int securityLevel, @Nonnull String interfaceName) {
+    return computeSecurityLevelZoneName(securityLevel, interfaceName);
   }
 }

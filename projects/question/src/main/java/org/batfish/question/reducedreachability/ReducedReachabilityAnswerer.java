@@ -29,6 +29,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleLocationSpecifierFactory;
@@ -95,8 +96,9 @@ public class ReducedReachabilityAnswerer extends Answerer {
             PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
                 .setDstIps(dstIps)
                 .build());
+
     return new DifferentialReachabilityParameters(
-        question.getActions().getDispositions(),
+        ReachabilityParameters.filterDispositions(question.getActions().getDispositions()),
         forbiddenTransitNodes,
         finalNodes,
         headerSpace,
@@ -111,12 +113,12 @@ public class ReducedReachabilityAnswerer extends Answerer {
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
 
-    _batfish.pushBaseEnvironment();
+    _batfish.pushBaseSnapshot();
     _batfish.processFlows(flows, false);
-    _batfish.popEnvironment();
-    _batfish.pushDeltaEnvironment();
+    _batfish.popSnapshot();
+    _batfish.pushDeltaSnapshot();
     _batfish.processFlows(flows, false);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     FlowHistory flowHistory = _batfish.getHistory();
     Multiset<Row> rows = flowHistoryToRows(flowHistory);

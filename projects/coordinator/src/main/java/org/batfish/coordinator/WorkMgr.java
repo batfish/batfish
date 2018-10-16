@@ -37,9 +37,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,7 +72,6 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
@@ -125,6 +122,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -149,24 +147,20 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final Set<String> CONTAINER_FILENAMES = initContainerFilenames();
 
-  private static final Set<String> ENV_FILENAMES = initEnvFilenames();
+  private static final Set<String> ENV_FILENAMES =
+      ImmutableSet.of(
+          BfConsts.RELPATH_NODE_BLACKLIST_FILE,
+          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE,
+          BfConsts.RELPATH_EDGE_BLACKLIST_FILE,
+          BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES,
+          BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
+          BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
 
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initContainerFilenames() {
     return ImmutableSet.of(
         BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
-  }
-
-  private static Set<String> initEnvFilenames() {
-    Set<String> envFilenames = new HashSet<>();
-    envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
-    envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
-    envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
-    return envFilenames;
   }
 
   private final IdManager _idManager;
@@ -384,7 +378,7 @@ public class WorkMgr extends AbstractCoordinator {
               "Snapshot name should be supplied for 'NODE' autoCompletion");
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
-                  query, getNodes(container, testrig), getNodeRolesData(container));
+                  query, getNodes(container, testrig), getNetworkNodeRoles(container));
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case NODE_PROPERTY:
@@ -543,14 +537,10 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    Pair<Pair<String, String>, Pair<String, String>> settings =
-        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
     WorkDetails details =
         new WorkDetails(
-            WorkItemBuilder.getBaseTestrig(settings),
-            WorkItemBuilder.getBaseEnvironment(settings),
-            WorkItemBuilder.getDeltaTestrig(settings),
-            WorkItemBuilder.getDeltaEnvironment(settings),
+            workItem.getTestrigName(),
+            workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
             WorkItemBuilder.isDifferential(workItem),
             workType);
 
@@ -684,9 +674,20 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delSnapshot(String network, String snapshot) {
+  /**
+   * Delete the specified snapshot under the specified network. Returns {@code true} if deletion is
+   * successful. Returns {@code false} if either network or snapshot does not exist.
+   */
+  public boolean delSnapshot(String network, String snapshot) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
     _idManager.deleteSnapshot(snapshot, networkId);
+    return true;
   }
 
   public void delQuestion(String network, String qName) {
@@ -712,12 +713,14 @@ public class WorkMgr extends AbstractCoordinator {
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
           getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
+      NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
               snapshotId,
               questionId,
               questionSettingsId,
+              networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
@@ -753,18 +756,18 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+  private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
     String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
     return getOrDefaultQuestionSettingsId(questionClassId, networkId);
   }
 
-  private QuestionSettingsId getOrDefaultQuestionSettingsId(
+  private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
       String questionClassId, NetworkId networkId) {
     return _idManager.hasQuestionSettingsId(questionClassId, networkId)
         ? _idManager.getQuestionSettingsId(questionClassId, networkId)
-        : QuestionSettingsId.DEFAULT_ID;
+        : QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
   }
 
   private @Nonnull AnswerId computeFinalAnswerAndId(
@@ -877,9 +880,7 @@ public class WorkMgr extends AbstractCoordinator {
   public @Nonnull Map<String, String> getAnalysisAnswers(
       String network,
       String snapshot,
-      String baseEnv,
       String referenceSnapshot,
-      String deltaEnv,
       String analysis,
       Set<String> analysisQuestions)
       throws JsonProcessingException, FileNotFoundException {
@@ -927,12 +928,14 @@ public class WorkMgr extends AbstractCoordinator {
           referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
       QuestionSettingsId questionSettingsId =
           getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
+      NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
       AnswerId baseAnswerId =
           _idManager.getBaseAnswerId(
               networkId,
               snapshotId,
               questionId,
               questionSettingsId,
+              networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
@@ -960,6 +963,12 @@ public class WorkMgr extends AbstractCoordinator {
           Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
+  }
+
+  private @Nonnull NodeRolesId getOrDefaultNodeRolesId(NetworkId networkId) {
+    return _idManager.hasNetworkNodeRolesId(networkId)
+        ? _idManager.getNetworkNodeRolesId(networkId)
+        : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
   }
 
   @VisibleForTesting
@@ -1183,16 +1192,17 @@ public class WorkMgr extends AbstractCoordinator {
 
   /**
    * Gets the set of nodes in this container and testrig. Extracts the set based on the topology
-   * file that is generated as part of the testrig initialization.
+   * file that is generated as part of the testrig initialization. Returns {@code null} if the
+   * network or the snapshot does not exist.
    *
-   * @param container The container
-   * @param testrig The testrig
-   * @return The set of nodes
    * @throws IOException If the contents of the topology file cannot be mapped to the topology
    *     object
    */
-  public Set<String> getNodes(String container, String testrig) throws IOException {
-    Topology topology = getPojoTopology(container, testrig);
+  public @Nullable Set<String> getNodes(String network, String snapshot) throws IOException {
+    Topology topology = getPojoTopology(network, snapshot);
+    if (topology == null) {
+      return null;
+    }
     return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
   }
 
@@ -1379,10 +1389,7 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(
-              Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, parentSnapshotId),
-          networkId,
-          snapshotId);
+          new TestrigMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
       try {
@@ -1394,16 +1401,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
-
-    // create empty default environment
-    Path defaultEnvironmentLeafDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_OUTPUT,
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                BfConsts.RELPATH_ENV_DIR));
-    defaultEnvironmentLeafDir.toFile().mkdirs();
 
     // things look ok, now make the move
     boolean routingTables = false;
@@ -1421,25 +1418,6 @@ public class WorkMgr extends AbstractCoordinator {
           bgpTables = true;
         }
       } else if (isContainerFile(subFile)) {
-        // derive and write the new container level file from the input
-        if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
-          roleData = true;
-          try {
-            NodeRolesData testrigData =
-                BatfishObjectMapper.mapper()
-                    .readValue(CommonUtil.readFile(subFile), NodeRolesData.class);
-            NodeRolesData.mergeNodeRoleDimensions(
-                () -> getNodeRolesDataWrapped(networkName),
-                nodeRolesData -> writeNodeRolesWrapped(nodeRolesData, networkName),
-                testrigData.getNodeRoleDimensions(),
-                testrigData.getDefaultDimension(),
-                false);
-          } catch (IOException e) {
-            // lets not stop the upload because that file is busted.
-            // TODO: figure out a way to surface this error to the user
-            _logger.errorf("Could not process node role data: %s", e);
-          }
-        }
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
           try {
@@ -1598,14 +1576,6 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 
-  private void writeNodeRolesWrapped(NodeRolesData nodeRolesData, String networkName) {
-    try {
-      writeNodeRoles(nodeRolesData, networkName);
-    } catch (IOException e) {
-      throw new BatfishException("error writing node roles", e);
-    }
-  }
-
   List<WorkItem> getAutoWorkQueue(String containerName, String testrigName) {
     List<WorkItem> autoWorkQueue = new LinkedList<>();
 
@@ -1616,27 +1586,18 @@ public class WorkMgr extends AbstractCoordinator {
     for (String analysis : analysisNames) {
       WorkItem analyzeWork =
           WorkItemBuilder.getWorkItemRunAnalysis(
-              analysis,
-              containerName,
-              testrigName,
-              BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-              null,
-              null,
-              false,
-              false);
+              analysis, containerName, testrigName, null, false, false);
       autoWorkQueue.add(analyzeWork);
     }
     return autoWorkQueue;
   }
 
-  private boolean isContainerFile(Path path) {
-    String name = path.getFileName().toString();
-    return CONTAINER_FILENAMES.contains(name);
+  private static boolean isContainerFile(Path path) {
+    return CONTAINER_FILENAMES.contains(path.getFileName().toString());
   }
 
-  private boolean isEnvFile(Path path) {
-    String name = path.getFileName().toString();
-    return ENV_FILENAMES.contains(name);
+  private static boolean isEnvFile(Path path) {
+    return ENV_FILENAMES.contains(path.getFileName().toString());
   }
 
   public boolean killWork(QueuedWork work) {
@@ -1784,21 +1745,6 @@ public class WorkMgr extends AbstractCoordinator {
     return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
   }
 
-  public SortedSet<String> listEnvironments(String containerName, String testrigName) {
-    Path testrigDir = getdirSnapshot(containerName, testrigName);
-    Path environmentsDir =
-        testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_ENVIRONMENTS_DIR));
-    if (!Files.exists(environmentsDir)) {
-      return new TreeSet<>();
-    }
-    SortedSet<String> environments =
-        CommonUtil.getSubdirectories(environmentsDir)
-            .stream()
-            .map(dir -> dir.getFileName().toString())
-            .collect(toCollection(TreeSet::new));
-    return environments;
-  }
-
   public List<QueuedWork> listIncompleteWork(
       String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
@@ -1875,26 +1821,20 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (TestrigMetadataMgr.getEnvironmentMetadata(
-              networkId,
-              _idManager.getSnapshotId(workDetails.baseTestrig, networkId),
-              workDetails.baseEnv)
+      if (TestrigMetadataMgr.getInitializationMetadata(
+              networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
           == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for %s/%s",
-                workDetails.baseTestrig, workDetails.baseEnv));
+                "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
       }
       if (workDetails.isDifferential
-          && TestrigMetadataMgr.getEnvironmentMetadata(
-                  networkId,
-                  _idManager.getSnapshotId(workDetails.deltaTestrig, networkId),
-                  workDetails.deltaEnv)
+          && TestrigMetadataMgr.getInitializationMetadata(
+                  networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
               == null) {
         throw new BatfishException(
             String.format(
-                "Snapshot/environment metadata not found for %s/%s",
-                workDetails.deltaTestrig, workDetails.deltaEnv));
+                "Initialization metadata not found for snapshot %s", workDetails.deltaTestrig));
       }
       success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
     } catch (Exception e) {
@@ -1918,9 +1858,7 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem resolvedWorkItem, WorkDetails workDetails) {
     return new WorkDetails(
         resolvedWorkItem.getTestrigName(),
-        workDetails.baseEnv,
         resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-        workDetails.deltaEnv,
         workDetails.isDifferential,
         workDetails.workType);
   }
@@ -1944,6 +1882,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
     params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
+    params.put(BfConsts.ARG_SNAPSHOT_NAME, snapshot);
 
     // referenceSnapshot
     String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
@@ -2333,35 +2272,45 @@ public class WorkMgr extends AbstractCoordinator {
     return TestrigMetadataMgr.readMetadata(networkId, snapshotId);
   }
 
-  public void writeNodeRoles(NodeRolesData nodeRolesData, String network) throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(network);
-    _storage.storeNodeRoles(nodeRolesData, networkId);
-  }
-
   /**
    * Reads the {@link NodeRolesData} object for the provided network. If none exists, initializes a
    * new object.
    *
-   * @param network The name of the network
-   * @return The read data
    * @throws IOException If there is an error
    */
-  public NodeRolesData getNodeRolesData(String network) throws IOException {
+  public NodeRolesData getNetworkNodeRoles(String network) throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
-    if (_storage.hasNodeRoles(networkId)) {
+    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
+      return NodeRolesData.builder().build();
+    }
+    NodeRolesId networkNodeRolesId = _idManager.getNetworkNodeRolesId(networkId);
+    try {
       return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(networkId), NodeRolesData.class);
-    } else {
-      return new NodeRolesData(null, new Date().toInstant(), null);
+          .readValue(_storage.loadNodeRoles(networkNodeRolesId), NodeRolesData.class);
+    } catch (IOException e) {
+      throw new IOException("Failed to read network node roles", e);
     }
   }
 
-  private NodeRolesData getNodeRolesDataWrapped(String network) {
-    try {
-      return getNodeRolesData(network);
-    } catch (IOException e) {
-      throw new BatfishException("error reading node roles", e);
+  /**
+   * Returns the {@link NodeRolesData} object containing only inferred roles for the provided
+   * network and snapshot, or {@code null} if either the network or snapshot does not exist.
+   *
+   * @throws IOException If there is an error
+   */
+  public @Nullable NodeRolesData getSnapshotNodeRoles(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
     }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    return BatfishObjectMapper.mapper()
+        .readValue(_storage.loadNodeRoles(snapshotNodeRolesId), NodeRolesData.class);
   }
 
   /**
@@ -2574,5 +2523,23 @@ public class WorkMgr extends AbstractCoordinator {
     String topologyStr = _storage.loadTopology(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
         .readValue(topologyStr, org.batfish.datamodel.Topology.class);
+  }
+
+  /**
+   * Writes the nodeRolesData for the given network. Returns {@code true} if successful. Returns
+   * {@code false} if network does not exist.
+   *
+   * @throws IOException if there is an error
+   */
+  public boolean putNetworkNodeRoles(NodeRolesData nodeRolesData, String network)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
+    _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
+    return true;
   }
 }
