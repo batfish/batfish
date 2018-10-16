@@ -1448,7 +1448,10 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  /** Assert there is only one subdir in the specified snapshot and return that subdir */
+  /**
+   * Helper function to assert there is only one subdir in the specified snapshot dir and return
+   * that subdir
+   */
   private static Path getSnapshotSubdir(Path srcDir) {
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     /*
