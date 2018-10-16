@@ -2,9 +2,11 @@ package org.batfish.coordinator.resources;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.batfish.common.CoordConstsV2.RSC_ANALYSES;
 import static org.batfish.common.CoordConstsV2.RSC_FORK;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
+import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
@@ -27,23 +29,29 @@ import org.batfish.common.Container;
 import org.batfish.coordinator.Main;
 
 /**
- * The {@link ContainerResource} is a resource for servicing client API calls at container level.
+ * The {@link NetworkResource} is a resource for servicing client API calls at container level.
  *
- * <p>The ContainerResource provides information about a specified container, and provides the
- * ability to delete a specified container for authenticated clients.
+ * <p>The NetworkResource provides information about a specified container, and provides the ability
+ * to delete a specified container for authenticated clients.
  *
- * <p>The ContainerResource also provides the access entry for other subResources.
+ * <p>The NetworkResource also provides the access entry for other subResources.
  */
 @Produces(MediaType.APPLICATION_JSON)
-public class ContainerResource {
+public class NetworkResource {
 
   private BatfishLogger _logger = Main.getLogger();
 
   private String _name;
 
-  public ContainerResource(String apiKey, String name) {
+  public NetworkResource(String apiKey, String name) {
     checkAccessToContainer(apiKey, name);
     _name = name;
+  }
+
+  /** Relocate the request to {@link AnalysesResource} */
+  @Path(RSC_ANALYSES)
+  public AnalysesResource getAnalysesResource() {
+    return new AnalysesResource(_name);
   }
 
   /** Returns information about the given {@link Container}, provided this user can access it. */
@@ -66,6 +74,12 @@ public class ContainerResource {
     return new NetworkNodeRolesResource(_name);
   }
 
+  /** Relocate the request to {@link QuestionsResource}. */
+  @Path(RSC_QUESTIONS)
+  public QuestionsResource getAdHocQuestionsResource() {
+    return new QuestionsResource(_name, null);
+  }
+
   /** Relocate the request to {@link ReferenceLibraryResource}. */
   @Path(RSC_REFERENCE_LIBRARY)
   public ReferenceLibraryResource getReferenceLibraryResource() {
@@ -78,15 +92,13 @@ public class ContainerResource {
     return new NetworkSettingsResource(_name);
   }
 
-  /** Delete a specified container with name: {@link #_name}. */
+  /** Delete a specified network with name: {@link #_name}. */
   @DELETE
-  public Response deleteContainer() {
-    _logger.infof("WMS2: delNetwork '%s'\n", _name);
-    if (Main.getWorkMgr().delNetwork(_name)) {
-      return Response.noContent().build();
-    } else {
-      return Response.serverError().build();
+  public Response deleteNetwork() {
+    if (!Main.getWorkMgr().delNetwork(_name)) {
+      return Response.status(Status.NOT_FOUND).build();
     }
+    return Response.ok().build();
   }
 
   /** Check if {@code container} exists and {@code apiKey} has access to it. */
