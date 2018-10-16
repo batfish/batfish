@@ -505,6 +505,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_SNAPSHOT)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delSnapshot(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -526,7 +527,12 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam);
+      if (!Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam)) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not delete non-existent snapshot:%s in network:%s",
+                snapshotNameParam, networkNameParam));
+      }
 
       return successResponse(new JSONObject().put("result", "true"));
 

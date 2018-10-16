@@ -102,7 +102,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkMgr}. */
-public class WorkMgrTest {
+public final class WorkMgrTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -1761,9 +1761,7 @@ public class WorkMgrTest {
     _manager.initNetwork(network, null);
 
     // should not be able to delete non-existent snapshot
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(containsString(snapshot));
-    _manager.delSnapshot(network, snapshot);
+    assertFalse(_manager.delSnapshot(network, snapshot));
   }
 
   @Test

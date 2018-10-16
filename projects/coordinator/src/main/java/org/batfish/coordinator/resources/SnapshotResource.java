@@ -9,6 +9,7 @@ import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
 
 import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -35,7 +36,7 @@ public final class SnapshotResource {
   @Path(RSC_POJO_TOPOLOGY)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
-  public Response get() throws IOException {
+  public Response getPojoTopology() throws IOException {
     org.batfish.datamodel.pojo.Topology topology =
         Main.getWorkMgr().getPojoTopology(_network, _snapshot);
     if (topology == null) {
@@ -52,6 +53,14 @@ public final class SnapshotResource {
   @Path(RSC_INPUT)
   public SnapshotInputObjectsResource getSnapshotInputObjectsResource() {
     return new SnapshotInputObjectsResource(_network, _snapshot);
+  }
+
+  @DELETE
+  public Response deleteSnapshot() {
+    if (!Main.getWorkMgr().delSnapshot(_network, _snapshot)) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok().build();
   }
 
   @GET
