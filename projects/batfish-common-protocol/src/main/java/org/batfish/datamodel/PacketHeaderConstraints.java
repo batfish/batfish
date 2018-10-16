@@ -6,11 +6,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -53,55 +52,53 @@ public class PacketHeaderConstraints {
    * All fields are nullable to allow being "not set", and therefore, unconstrained
    */
   // Ip fields, unlikely to be specified
-  @Nullable private final Set<SubRange> _dscps;
-
-  @Nullable private final Set<SubRange> _ecns;
-
-  @Nullable private final Set<SubRange> _packetLengths;
-
+  @Nullable private final IntegerSpace _dscps;
+  @Nullable private final IntegerSpace _ecns;
+  @Nullable private final IntegerSpace _packetLengths;
   @Nullable private final Set<FlowState> _flowStates;
-
-  @Nullable private final Set<SubRange> _fragmentOffsets;
+  @Nullable private final IntegerSpace _fragmentOffsets;
 
   // Ip fields, likely to be specified
   @Nullable private final Set<IpProtocol> _ipProtocols;
-
   @Nullable private final String _srcIp;
-
   @Nullable private final String _dstIp;
 
   // ICMP fields
-  @Nullable private final Set<SubRange> _icmpCode;
-
-  @Nullable private final Set<SubRange> _icmpType;
+  @Nullable private final IntegerSpace _icmpCode;
+  @Nullable private final IntegerSpace _icmpType;
 
   // UDP/TCP fields
-  @Nullable private final Set<SubRange> _srcPorts;
-
-  @Nullable private final Set<SubRange> _dstPorts;
+  @Nullable private final IntegerSpace _srcPorts;
+  @Nullable private final IntegerSpace _dstPorts;
 
   // Shorthands for UDP/TCP fields
   // TODO: allow specification of more complex applications, the existing Protocol Enum is limiting.
   @Nullable private final Set<Protocol> _applications;
-
   @Nullable private final Set<TcpFlagsMatchConditions> _tcpFlags;
 
-  private static final SubRange ALLOWED_PORTS = new SubRange(0, 65535);
+  @VisibleForTesting
+  static final IntegerSpace VALID_DSCP =
+      IntegerSpace.builder().including(Range.closed(0, 63)).build();
+
+  private static final IntegerSpace VALID_ECN =
+      IntegerSpace.builder().including(Range.closed(0, 3)).build();
+  private static final IntegerSpace VALID_ICMP_CODE_TYPE =
+      IntegerSpace.builder().including(Range.closed(0, 255)).build();
 
   @JsonCreator
   private PacketHeaderConstraints(
-      @Nullable @JsonProperty(PROP_DSCPS) Set<SubRange> dscps,
-      @Nullable @JsonProperty(PROP_ECNS) Set<SubRange> ecns,
-      @Nullable @JsonProperty(PROP_PACKET_LENGTHS) Set<SubRange> packetLengths,
+      @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace dscps,
+      @Nullable @JsonProperty(PROP_ECNS) IntegerSpace ecns,
+      @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace packetLengths,
       @Nullable @JsonProperty(PROP_FLOW_STATES) Set<FlowState> flowStates,
-      @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) Set<SubRange> fragmentOffsets,
+      @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace fragmentOffsets,
       @Nullable @JsonProperty(PROP_IP_PROTOCOLS) Set<IpProtocol> ipProtocols,
       @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
       @Nullable @JsonProperty(PROP_DST_IPS) String dstIps,
-      @Nullable @JsonProperty(PROP_ICMP_CODES) Set<SubRange> icmpCodes,
-      @Nullable @JsonProperty(PROP_ICMP_TYPES) Set<SubRange> icmpTypes,
-      @Nullable @JsonProperty(PROP_SRC_PORTS) Set<SubRange> srcPorts,
-      @Nullable @JsonProperty(PROP_DST_PORTS) Set<SubRange> dstPorts,
+      @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace icmpCodes,
+      @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace icmpTypes,
+      @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace srcPorts,
+      @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace dstPorts,
       @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications,
       @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
@@ -130,19 +127,19 @@ public class PacketHeaderConstraints {
 
   @Nullable
   @JsonProperty(PROP_DSCPS)
-  public Set<SubRange> getDscps() {
+  public IntegerSpace getDscps() {
     return _dscps;
   }
 
   @Nullable
   @JsonProperty(PROP_ECNS)
-  public Set<SubRange> getEcns() {
+  public IntegerSpace getEcns() {
     return _ecns;
   }
 
   @Nullable
   @JsonProperty(PROP_PACKET_LENGTHS)
-  public Set<SubRange> getPacketLengths() {
+  public IntegerSpace getPacketLengths() {
     return _packetLengths;
   }
 
@@ -154,7 +151,7 @@ public class PacketHeaderConstraints {
 
   @Nullable
   @JsonProperty(PROP_FRAGMENT_OFFSETS)
-  public Set<SubRange> getFragmentOffsets() {
+  public IntegerSpace getFragmentOffsets() {
     return _fragmentOffsets;
   }
 
@@ -178,25 +175,25 @@ public class PacketHeaderConstraints {
 
   @Nullable
   @JsonProperty(PROP_ICMP_CODES)
-  public Set<SubRange> getIcmpCodes() {
+  public IntegerSpace getIcmpCodes() {
     return _icmpCode;
   }
 
   @Nullable
   @JsonProperty(PROP_ICMP_TYPES)
-  public Set<SubRange> getIcmpTypes() {
+  public IntegerSpace getIcmpTypes() {
     return _icmpType;
   }
 
   @Nullable
   @JsonProperty(PROP_SRC_PORTS)
-  public Set<SubRange> getSrcPorts() {
+  public IntegerSpace getSrcPorts() {
     return _srcPorts;
   }
 
   @Nullable
   @JsonProperty(PROP_DST_PORTS)
-  public Set<SubRange> getDstPorts() {
+  public IntegerSpace getDstPorts() {
     return _dstPorts;
   }
 
@@ -221,7 +218,7 @@ public class PacketHeaderConstraints {
 
   /** Return the set of allowed destination port values */
   @Nullable
-  public Set<SubRange> resolveDstPorts() {
+  public IntegerSpace resolveDstPorts() {
     return resolvePorts(getDstPorts(), getApplications());
   }
 
@@ -252,92 +249,77 @@ public class PacketHeaderConstraints {
     // TODO: validate other fields: fragment offsets, packet lengths, etc.
   }
 
-  private static void validatePortValues(@Nullable Set<SubRange> ports)
+  private static void validatePortValues(@Nullable IntegerSpace ports)
       throws IllegalArgumentException {
-    // Reject empty lists and empty port ranges
+    // Unconstrained is OK
     if (ports == null) {
       return;
     }
-    if (ports.isEmpty() || ports.stream().allMatch(SubRange::isEmpty)) {
-      throw new IllegalArgumentException("Empty port ranges are not allowed");
-    }
-    Optional<SubRange> invalidRange =
-        ports.stream().filter(portRange -> !ALLOWED_PORTS.contains(portRange)).findFirst();
+    // Reject empty port ranges
+    checkArgument(!ports.isEmpty(), "Empty port ranges are not allowed");
     checkArgument(
-        !invalidRange.isPresent(),
-        "Port range %s is outside of the allowed range %s",
-        invalidRange,
-        ALLOWED_PORTS);
+        ports.difference(IntegerSpace.PORTS).isEmpty(), "Invalid port range specified: %s", ports);
   }
 
   private static void validateIcmpFields(@Nonnull PacketHeaderConstraints headerConstraints)
       throws IllegalArgumentException {
+    // TODO: more stringent validation, not all values 0-255 are valid ICMP codes/types
     Set<IpProtocol> ipProtocols = headerConstraints.getIpProtocols();
-    Set<SubRange> icmpTypes = headerConstraints.getIcmpTypes();
+    IntegerSpace icmpTypes = headerConstraints.getIcmpTypes();
     if (icmpTypes != null) {
       checkArgument(!icmpTypes.isEmpty(), "Set of ICMP types cannot be empty");
       checkArgument(
           ipProtocols == null || ipProtocols.equals(ImmutableSet.of(IpProtocol.ICMP)),
           "ICMP types specified when ICMP protocol is forbidden in IpProtocols");
-      Optional<SubRange> invalidRange =
-          icmpTypes.stream().filter(types -> !isValidIcmpTypeOrCode(types)).findFirst();
-      checkArgument(!invalidRange.isPresent(), "Invalid ICMP type range: %s", invalidRange);
+      checkArgument(isValidIcmpTypeOrCode(icmpTypes), "Invalid ICMP type range: %s", icmpTypes);
     }
 
-    Set<SubRange> icmpCodes = headerConstraints.getIcmpCodes();
+    IntegerSpace icmpCodes = headerConstraints.getIcmpCodes();
     if (icmpCodes != null) {
       checkArgument(!icmpCodes.isEmpty(), "Set of ICMP codes cannot be empty");
       checkArgument(
           ipProtocols == null || ipProtocols.equals(ImmutableSet.of(IpProtocol.ICMP)),
           "ICMP codes specified when ICMP protocol is forbidden in IpProtocols");
-      Optional<SubRange> invalidRange =
-          icmpCodes.stream().filter(codes -> !isValidIcmpTypeOrCode(codes)).findFirst();
-      checkArgument(!invalidRange.isPresent(), "Invalid ICMP code range: %s", invalidRange);
+      checkArgument(isValidIcmpTypeOrCode(icmpCodes), "Invalid ICMP code range: %s", icmpCodes);
     }
   }
 
   private static void validateIpFields(@Nonnull PacketHeaderConstraints headerConstraints)
       throws IllegalArgumentException {
-    Set<SubRange> dscps = headerConstraints.getDscps();
+    IntegerSpace dscps = headerConstraints.getDscps();
     if (dscps != null) {
       checkArgument(!dscps.isEmpty(), "Empty set of DSCP values is not allowed");
-      Optional<SubRange> invalidRange =
-          dscps.stream().filter(dscp -> !isValidDscp(dscp)).findFirst();
-      checkArgument(!invalidRange.isPresent(), "Invalid value for DSCP: %s", invalidRange);
+      checkArgument(isValidDscp(dscps), "Invalid DSCP values specified: %s", dscps);
     }
 
-    Set<SubRange> ecns = headerConstraints.getEcns();
+    IntegerSpace ecns = headerConstraints.getEcns();
     if (ecns != null) {
       checkArgument(!ecns.isEmpty(), "Empty set of ECN values is not allowed");
-      Optional<SubRange> invalidRange = ecns.stream().filter(ecn -> !isValidEcn(ecn)).findFirst();
-      checkArgument(!invalidRange.isPresent(), "Invalid value for ECN: %s", invalidRange);
+      checkArgument(isValidEcn(ecns), "Invalid value for ECN: %s", ecns);
     }
   }
 
   /** Check if the subrange represents valid IP DSCP values. */
   @VisibleForTesting
-  static boolean isValidDscp(@Nonnull SubRange dscp) {
-    SubRange allowed = new SubRange(0, 63); // 6 bits in header
-    return !dscp.isEmpty() && allowed.contains(dscp);
+  static boolean isValidDscp(@Nonnull IntegerSpace dscp) {
+    return !dscp.isEmpty() && VALID_DSCP.contains(dscp);
   }
 
   /** Check if the subrange represents valid IP ECN values. */
   @VisibleForTesting
-  static boolean isValidEcn(@Nonnull SubRange ecn) {
-    SubRange allowed = new SubRange(0, 3); // 2 bits in header
-    return !ecn.isEmpty() && allowed.contains(ecn);
+  static boolean isValidEcn(@Nonnull IntegerSpace ecn) {
+    return !ecn.isEmpty() && VALID_ECN.contains(ecn);
   }
 
   @VisibleForTesting
-  static boolean isValidIcmpTypeOrCode(@Nonnull SubRange icmpType) {
-    SubRange allowed = new SubRange(0, 255); // 8 bits in header
-    return !icmpType.isEmpty() && allowed.contains(icmpType);
+  static boolean isValidIcmpTypeOrCode(@Nonnull IntegerSpace icmpType) {
+    return !icmpType.isEmpty() && VALID_ICMP_CODE_TYPE.contains(icmpType);
   }
 
   @VisibleForTesting
   static boolean areProtocolsAndPortsCompatible(
       @Nullable Set<IpProtocol> ipProtocols,
-      @Nullable Set<SubRange> ports,
+      @Nullable IntegerSpace ports,
       @Nullable Set<Protocol> protocols)
       throws IllegalArgumentException {
 
@@ -365,15 +347,17 @@ public class PacketHeaderConstraints {
     // Intersection of ports given and ports resolved from higher-level protocols should
     // not be empty
     if (ports != null && protocols != null) {
-      Set<Integer> resolvedPorts =
-          protocols.stream().map(Protocol::getPort).collect(ImmutableSet.toImmutableSet());
+      IntegerSpace resolvedPorts =
+          protocols
+              .stream()
+              .map(Protocol::getPort)
+              .map(IntegerSpace::of)
+              .reduce(IntegerSpace::union)
+              .orElse(IntegerSpace.EMPTY);
 
       // for each subrange, run all resolved ports through it, to see if a match occurs
       checkArgument(
-          ports
-              .stream()
-              .flatMap(subrange -> resolvedPorts.stream().map(subrange::includes))
-              .anyMatch(Predicate.isEqual(true)),
+          ports.contains(resolvedPorts),
           "Given ports (%s) and protocols (%s) do not overlap",
           ports,
           protocols);
@@ -397,8 +381,8 @@ public class PacketHeaderConstraints {
   @VisibleForTesting
   static Set<IpProtocol> resolveIpProtocols(
       @Nullable Set<IpProtocol> ipProtocols,
-      @Nullable Set<SubRange> srcPorts,
-      @Nullable Set<SubRange> dstPorts,
+      @Nullable IntegerSpace srcPorts,
+      @Nullable IntegerSpace dstPorts,
       @Nullable Set<Protocol> applications,
       @Nullable Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
@@ -451,8 +435,8 @@ public class PacketHeaderConstraints {
    */
   @Nullable
   @VisibleForTesting
-  static Set<SubRange> resolvePorts(
-      @Nullable Set<SubRange> ports, @Nullable Set<Protocol> protocols) {
+  static IntegerSpace resolvePorts(
+      @Nullable IntegerSpace ports, @Nullable Set<Protocol> protocols) {
     // Don't care
     if (ports == null && protocols == null) {
       return null;
@@ -468,17 +452,19 @@ public class PacketHeaderConstraints {
       return protocols
           .stream()
           .map(Protocol::getPort)
-          .map(port -> new SubRange(port, port))
-          .collect(ImmutableSet.toImmutableSet());
+          .map(IntegerSpace::of)
+          .reduce(IntegerSpace::union)
+          .orElse(IntegerSpace.EMPTY);
     }
 
-    // Intersect. Protocols are the limiting factor, but they must belong to at least one subrange
+    // Intersect. Protocols are the limiting factor, but they must belong to at least one space
     return protocols
         .stream()
         .map(Protocol::getPort)
-        .filter(port -> ports.stream().map(r -> r.includes(port)).anyMatch(Predicate.isEqual(true)))
-        .map(port -> new SubRange(port, port))
-        .collect(ImmutableSet.toImmutableSet());
+        .map(IntegerSpace::of)
+        .reduce(IntegerSpace::union)
+        .orElse(IntegerSpace.EMPTY)
+        .intersection(ports);
   }
 
   public static Builder builder() {
@@ -490,38 +476,38 @@ public class PacketHeaderConstraints {
      * All fields are nullable to allow being "not set", and therefore, unconstrained
      */
     // Ip fields, unlikely to be specified
-    private @Nullable Set<SubRange> _dscps;
-    private @Nullable Set<SubRange> _ecns;
-    private @Nullable Set<SubRange> _packetLengths;
+    private @Nullable IntegerSpace _dscps;
+    private @Nullable IntegerSpace _ecns;
+    private @Nullable IntegerSpace _packetLengths;
     private @Nullable Set<FlowState> _flowStates;
-    private @Nullable Set<SubRange> _fragmentOffsets;
+    private @Nullable IntegerSpace _fragmentOffsets;
     // Ip fields, likely to be specified
     private @Nullable Set<IpProtocol> _ipProtocols;
     private @Nullable String _srcIps;
     private @Nullable String _dstIps;
     // ICMP fields
-    private @Nullable Set<SubRange> _icmpCodes;
-    private @Nullable Set<SubRange> _icmpTypes;
+    private @Nullable IntegerSpace _icmpCodes;
+    private @Nullable IntegerSpace _icmpTypes;
     // UDP/TCP fields
-    private @Nullable Set<SubRange> _srcPorts;
-    private @Nullable Set<SubRange> _dstPorts;
+    private @Nullable IntegerSpace _srcPorts;
+    private @Nullable IntegerSpace _dstPorts;
     // Shorthands for UDP/TCP fields
     private @Nullable Set<Protocol> _applications;
     private @Nullable Set<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
 
-    public Builder setDscps(@Nullable Set<SubRange> dscps) {
+    public Builder setDscps(@Nullable IntegerSpace dscps) {
       this._dscps = dscps;
       return this;
     }
 
-    public Builder setEcns(@Nullable Set<SubRange> ecns) {
+    public Builder setEcns(@Nullable IntegerSpace ecns) {
       this._ecns = ecns;
       return this;
     }
 
-    public Builder setPacketLengths(@Nullable Set<SubRange> packetLengths) {
+    public Builder setPacketLengths(@Nullable IntegerSpace packetLengths) {
       this._packetLengths = packetLengths;
       return this;
     }
@@ -531,7 +517,7 @@ public class PacketHeaderConstraints {
       return this;
     }
 
-    public Builder setFragmentOffsets(@Nullable Set<SubRange> fragmentOffsets) {
+    public Builder setFragmentOffsets(@Nullable IntegerSpace fragmentOffsets) {
       this._fragmentOffsets = fragmentOffsets;
       return this;
     }
@@ -551,22 +537,22 @@ public class PacketHeaderConstraints {
       return this;
     }
 
-    public Builder setIcmpCodes(@Nullable Set<SubRange> icmpCodes) {
+    public Builder setIcmpCodes(@Nullable IntegerSpace icmpCodes) {
       this._icmpCodes = icmpCodes;
       return this;
     }
 
-    public Builder setIcmpTypes(@Nullable Set<SubRange> icmpTypes) {
+    public Builder setIcmpTypes(@Nullable IntegerSpace icmpTypes) {
       this._icmpTypes = icmpTypes;
       return this;
     }
 
-    public Builder setSrcPorts(@Nullable Set<SubRange> srcPorts) {
+    public Builder setSrcPorts(@Nullable IntegerSpace srcPorts) {
       this._srcPorts = srcPorts;
       return this;
     }
 
-    public Builder setDstPorts(@Nullable Set<SubRange> dstPorts) {
+    public Builder setDstPorts(@Nullable IntegerSpace dstPorts) {
       this._dstPorts = dstPorts;
       return this;
     }
