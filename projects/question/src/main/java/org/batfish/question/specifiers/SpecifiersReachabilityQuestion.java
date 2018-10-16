@@ -175,7 +175,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
             .stream()
             .filter(disposition -> FlowDisposition.LOOP != disposition)
             .collect(Collectors.toSet());
-    checkArgument(!actions.isEmpty());
+    checkArgument(!actions.isEmpty(), "No valid reachability actions specified");
     return ReachabilityParameters.builder()
         .setActions(ImmutableSortedSet.copyOf(actions))
         .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())

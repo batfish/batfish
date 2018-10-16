@@ -105,7 +105,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
             .stream()
             .filter(disposition -> FlowDisposition.LOOP != disposition)
             .collect(Collectors.toSet());
-    checkArgument(!actions.isEmpty());
+    checkArgument(!actions.isEmpty(), "No valid reachability actions specified");
     return new DifferentialReachabilityParameters(
         actions,
         forbiddenTransitNodes,
