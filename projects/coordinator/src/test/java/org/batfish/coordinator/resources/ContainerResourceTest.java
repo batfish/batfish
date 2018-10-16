@@ -66,7 +66,8 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
             snapshotName,
             ImmutableList.of(),
             ImmutableList.of(),
-            ImmutableList.of("node1"));
+            ImmutableList.of("node1"),
+            null);
 
     Response response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
     // Confirm missing network causes not found
@@ -96,10 +97,15 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
 
     ForkSnapshotBean forkSnapshotBeanNoName =
         new ForkSnapshotBean(
-            baseSnapshotName, null, ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
+            baseSnapshotName,
+            null,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            null);
     ForkSnapshotBean forkSnapshotBeanNoBaseName =
         new ForkSnapshotBean(
-            null, snapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
+            null, snapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of(), null);
 
     Response response =
         getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
