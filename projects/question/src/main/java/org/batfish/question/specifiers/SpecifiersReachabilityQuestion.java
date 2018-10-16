@@ -1,17 +1,13 @@
 package org.batfish.question.specifiers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
@@ -169,15 +165,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
   ReachabilityParameters getReachabilityParameters() {
     PathConstraints pathConstraints = getPathConstraints();
 
-    Set<FlowDisposition> actions =
-        getActions()
-            .getDispositions()
-            .stream()
-            .filter(disposition -> FlowDisposition.LOOP != disposition)
-            .collect(Collectors.toSet());
-    checkArgument(!actions.isEmpty(), "No valid reachability actions specified");
     return ReachabilityParameters.builder()
-        .setActions(ImmutableSortedSet.copyOf(actions))
+        .setActions(
+            ImmutableSortedSet.copyOf(
+                ReachabilityParameters.filterDispositions(getActions().getDispositions())))
         .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())
         .setFinalNodesSpecifier(pathConstraints.getEndLocation())
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())

@@ -1,7 +1,6 @@
 package org.batfish.question.reducedreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 
 import com.google.common.collect.ImmutableList;
@@ -11,12 +10,10 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.IpSpace;
@@ -32,6 +29,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleLocationSpecifierFactory;
@@ -98,16 +96,9 @@ public class ReducedReachabilityAnswerer extends Answerer {
             PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
                 .setDstIps(dstIps)
                 .build());
-    Set<FlowDisposition> actions =
-        question
-            .getActions()
-            .getDispositions()
-            .stream()
-            .filter(disposition -> FlowDisposition.LOOP != disposition)
-            .collect(Collectors.toSet());
-    checkArgument(!actions.isEmpty(), "No valid reachability actions specified");
+
     return new DifferentialReachabilityParameters(
-        actions,
+        ReachabilityParameters.filterDispositions(question.getActions().getDispositions()),
         forbiddenTransitNodes,
         finalNodes,
         headerSpace,
