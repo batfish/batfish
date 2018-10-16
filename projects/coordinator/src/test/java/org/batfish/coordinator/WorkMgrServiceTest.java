@@ -289,6 +289,7 @@ public class WorkMgrServiceTest {
   }
 
   @Test
+  @Deprecated
   public void getQuestionTemplates() throws Exception {
     initNetwork();
     Question testQuestion = createTestQuestion("testquestion", "test description");
