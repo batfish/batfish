@@ -72,7 +72,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
           NULL_ROUTED,
           NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
 
-
   private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
     SpecifierContext ctxt = batfish.specifierContext();
     Set<Location> locations = LocationSpecifiers.ALL_LOCATIONS.resolve(ctxt);

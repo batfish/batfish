@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface ForwardingAnalysis {
 
@@ -11,7 +12,7 @@ public interface ForwardingAnalysis {
   Map<Edge, IpSpace> getArpTrueEdge();
 
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
-  Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
+  Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork();
 
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
   Map<String, Map<String, IpSpace>> getDeliveredToSubnet();
@@ -20,7 +21,9 @@ public interface ForwardingAnalysis {
   Map<String, Map<String, IpSpace>> getExitsNetwork();
 
   /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
-  Map<String, Map<String, IpSpace>> getNeighborUnreachable2();
+  Map<String, Map<String, IpSpace>> getNeighborUnreachable();
+
+  Map<String, Set<String>> getInterfacesWithMissingDevices();
 
   /**
    * Mapping: hostname -&gt; vrfName -&gt; nullRoutedIps <br>
@@ -34,4 +37,6 @@ public interface ForwardingAnalysis {
    * A routable IP is a destination IP for which there is a longest-prefix-match route.
    */
   Map<String, Map<String, IpSpace>> getRoutableIps();
+
+  boolean isIpInSnapshot(Ip ip);
 }

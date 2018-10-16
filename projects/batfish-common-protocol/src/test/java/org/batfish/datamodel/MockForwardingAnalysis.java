@@ -112,12 +112,12 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
+  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork() {
     return _neighborUnreachable;
   }
 
   @Override
-  public Map<String, Map<String, IpSpace>> getNeighborUnreachable2() {
+  public Map<String, Map<String, IpSpace>> getNeighborUnreachable() {
     return ImmutableMap.of();
   }
 
@@ -139,5 +139,15 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getDeliveredToSubnet() {
     return ImmutableMap.of();
+  }
+
+  @Override
+  public Map<String, Set<String>> getInterfacesWithMissingDevices() {
+    return null;
+  }
+
+  @Override
+  public boolean isIpInSnapshot(Ip ip) {
+    return false;
   }
 }

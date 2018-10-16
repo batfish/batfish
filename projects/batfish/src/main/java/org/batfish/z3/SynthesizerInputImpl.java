@@ -286,7 +286,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
       _neighborUnreachable =
-          computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
+          computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachableOrExitsNetwork());
       _nullRoutedIps = computeNullRoutedIps(forwardingAnalysis.getNullRoutedIps());
       _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();

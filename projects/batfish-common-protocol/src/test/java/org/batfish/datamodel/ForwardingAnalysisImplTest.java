@@ -543,7 +543,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace())));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeNeighborUnreachable();
+        forwardingAnalysisImpl.computeNeighborUnreachableOrExitsNetwork();
 
     /* Should contain both IPs. */
     assertThat(
@@ -783,7 +783,7 @@ public class ForwardingAnalysisImplTest {
         new ForwardingAnalysisImpl(configs, ribs, fibs, new Topology(ImmutableSortedSet.of()));
 
     Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable =
-        forwardingAnalysisImpl.getNeighborUnreachable();
+        forwardingAnalysisImpl.getNeighborUnreachableOrExitsNetwork();
 
     assertThat(
         neighborUnreachable,

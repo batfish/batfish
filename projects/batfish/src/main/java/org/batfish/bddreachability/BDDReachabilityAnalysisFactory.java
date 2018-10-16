@@ -295,7 +295,7 @@ public final class BDDReachabilityAnalysisFactory {
       computeNeighborUnreachableOrExitsNetworkBDDs(
           ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return toImmutableMap(
-        forwardingAnalysis.getNeighborUnreachable(),
+        forwardingAnalysis.getNeighborUnreachableOrExitsNetwork(),
         Entry::getKey,
         nodeEntry ->
             toImmutableMap(
@@ -322,7 +322,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Map<String, Map<String, BDD>> computeNeighborUnreachableBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    return computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable2(), ipSpaceToBDD);
+    return computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable(), ipSpaceToBDD);
   }
 
   private Map<String, Map<String, BDD>> computerDeliveredToSubnetBDDs(
@@ -477,10 +477,9 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateRules_NodeInterfaceDisposition_Disposition(
       BiFunction<String, String, StateExpr> nodeInterfaceDispositionConstructor,
       StateExpr dispositionNode,
-      Set<String> finalNodes
-      ) {
-      return finalNodes
-       .stream()
+      Set<String> finalNodes) {
+    return finalNodes
+        .stream()
         .map(_configs::get)
         .flatMap(c -> c.getAllInterfaces().values().stream())
         .map(
@@ -501,15 +500,13 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_NodeInterfaceDeliveredToSubnet_DeliveredToSubnet(
-      Set<String> finalNodes
-  ) {
+      Set<String> finalNodes) {
     return generateRules_NodeInterfaceDisposition_Disposition(
         NodeInterfaceDeliveredToSubnet::new, DeliveredToSubnet.INSTANCE, finalNodes);
   }
 
   private Stream<Edge> generateRules_NodeInterfaceExitsNetwork_ExitsNetwork(
-      Set<String> finalNodes
-  ) {
+      Set<String> finalNodes) {
     return generateRules_NodeInterfaceDisposition_Disposition(
         NodeInterfaceExitsNetwork::new, ExitsNetwork.INSTANCE, finalNodes);
   }

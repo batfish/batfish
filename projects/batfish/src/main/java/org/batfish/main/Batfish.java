@@ -4436,7 +4436,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE))
             .getIngressLocationReachableBDDs();
 
-     Map<IngressLocation, BDD> deliveredToSubnetBDDs =
+    Map<IngressLocation, BDD> deliveredToSubnetBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,

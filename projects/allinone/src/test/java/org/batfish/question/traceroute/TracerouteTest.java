@@ -971,4 +971,56 @@ public class TracerouteTest {
                 everyItem(hasDisposition(FlowDisposition.EXITS_NETWORK)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
+
+  @Test
+  public void testNextHopIpVSDstIp() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setProxyArp(true)
+            .build();
+    Interface i2 =
+        nf.interfaceBuilder()
+            .setOwner(c1)
+            .setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress("2.0.0.1/24"))
+            .setProxyArp(true)
+            .build();
+    vrf1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("10.0.0.0/25"))
+                .setNextHopInterface(i1.getName())
+                .setNextHopIp(new Ip("192.168.0.1"))
+                .setAdministrativeCost(1)
+                .build(),
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("192.168.0.1/24"))
+                .setNextHopInterface(i2.getName())
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("10.0.0.2").build(),
+            false);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    return;
+  }
 }
