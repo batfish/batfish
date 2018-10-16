@@ -2,8 +2,8 @@ package org.batfish.z3;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.emptySet;
-import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
-import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;

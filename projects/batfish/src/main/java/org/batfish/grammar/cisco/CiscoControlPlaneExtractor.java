@@ -582,6 +582,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
@@ -5773,6 +5774,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
+  private static final int TRUST_SECURITY_LEVEL = 100;
+  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
+  private static final int NO_TRUST_SECURITY_LEVEL = 0;
+
   @Override
   public void exitIf_nameif(If_nameifContext ctx) {
     String alias = ctx.name.getText();
@@ -5788,12 +5794,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
       Interface iface = _currentInterfaces.get(0);
       iface.setDeclaredNames(
-          new ImmutableSortedSet.Builder<String>(naturalOrder())
+          ImmutableSortedSet.<String>naturalOrder()
               .addAll(iface.getDeclaredNames())
               .add(alias)
               .build());
       iface.setAlias(alias);
+
+      switch (alias) {
+        case TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+          break;
+        case NO_TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+          break;
+        default:
+          // don't set a level
+      }
     }
+  }
+
+  @Override
+  public void exitIf_security_level(If_security_levelContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Security level can only be configured in single-interface context");
+      return;
+    }
+    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
+  }
+
+  private void setIfaceSecurityLevel(Interface iface, int level) {
+    iface.setSecurityLevel(level);
+    String zoneName = CiscoConfiguration.computeSecurityLevelZoneName(level, iface.getName());
+    iface.setSecurityZone(zoneName);
+    _configuration.getSecurityZones().put(zoneName, new SecurityZone(zoneName));
   }
 
   @Override

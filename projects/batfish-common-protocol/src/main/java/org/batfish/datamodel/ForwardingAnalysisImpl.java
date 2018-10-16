@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
@@ -58,7 +58,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
-    _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIps(configurations, false);
+    _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);

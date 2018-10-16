@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp.schedule;
 
-import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.initBgpTopology;
+import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

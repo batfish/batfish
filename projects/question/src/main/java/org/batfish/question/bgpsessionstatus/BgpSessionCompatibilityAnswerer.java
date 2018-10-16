@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -21,6 +21,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -58,11 +59,11 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
     Set<String> remoteNodes = question.getRemoteNodes().getMatchingNodes(_batfish);
 
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
-        CommonUtil.initBgpTopology(configurations, ipOwners, true);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
 
     return configuredBgpTopology
         .nodes()

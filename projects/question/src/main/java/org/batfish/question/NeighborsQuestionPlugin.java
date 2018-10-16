@@ -23,7 +23,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -41,6 +41,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRoleDimension;
@@ -931,9 +933,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
-            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
         _remoteBgpNeighborsInitialized = true;
       }
     }
@@ -949,8 +951,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteOspfNeighbors(
         Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-        CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+        OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
         _remoteOspfNeighborsInitialized = true;
       }
     }
@@ -958,7 +959,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteRipNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteRipNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
         batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         _remoteRipNeighborsInitialized = true;
       }
