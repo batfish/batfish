@@ -1,12 +1,18 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
+
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -56,6 +62,14 @@ public class WorkMgrServiceV2 {
     _logger.info("WMS2:getNetworks\n");
     List<Container> containers = Main.getWorkMgr().getContainers(_apiKey);
     return Response.ok(containers).build();
+  }
+
+  @GET
+  @Path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
+  public @Nonnull Response getQuestionTemplates(@QueryParam(QP_VERBOSE) boolean verbose) {
+    Map<String, String> questionTemplates = Main.getQuestionTemplates(verbose);
+    checkNotNull(questionTemplates, "Question templates not configured");
+    return Response.ok().entity(questionTemplates).build();
   }
 
   /**

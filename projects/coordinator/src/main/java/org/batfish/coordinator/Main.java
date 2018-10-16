@@ -84,9 +84,16 @@ public class Main {
 
   @Nullable
   public static Map<String, String> getQuestionTemplates() {
+    return getQuestionTemplates(false);
+  }
 
+  /**
+   * Returns content of question templates, keyed by name. If {@code verbose} is {@code true},
+   * includes hidden templates. Returns {@code null} if question templates not configured.
+   */
+  @Nullable
+  public static Map<String, String> getQuestionTemplates(boolean verbose) {
     List<Path> questionTemplateDir = _settings.getQuestionTemplateDirs();
-
     if (questionTemplateDir == null || questionTemplateDir.isEmpty()) {
       return null;
     }
@@ -97,8 +104,14 @@ public class Main {
         .filter(Objects::nonNull)
         .filter(dir -> !dir.toString().isEmpty())
         .forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
-
+    if (!verbose) {
+      questionTemplates.keySet().removeIf(Main::isHiddenQuestionTemplate);
+    }
     return questionTemplates;
+  }
+
+  static boolean isHiddenQuestionTemplate(String name) {
+    return name.startsWith("__");
   }
 
   @VisibleForTesting

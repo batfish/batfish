@@ -9,6 +9,8 @@ public class CoordConstsV2 {
   /** The HTTP Header containing the client's version. */
   public static final String HTTP_HEADER_BATFISH_VERSION = "X-Batfish-Version";
 
+  public static final String QP_VERBOSE = "verbose";
+
   public static final String RSC_ANALYSES = "analyses";
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
@@ -21,6 +23,7 @@ public class CoordConstsV2 {
   public static final String RSC_NODE_ROLES = "noderoles";
   public static final String RSC_OBJECTS = "objects";
   public static final String RSC_POJO_TOPOLOGY = "pojo_topology";
+  public static final String RSC_QUESTION_TEMPLATES = "question_templates";
   public static final String RSC_QUESTIONS = "questions";
   public static final String RSC_REFERENCE_LIBRARY = "referencelibrary";
   public static final String RSC_SETTINGS = "settings";
