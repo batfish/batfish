@@ -19,10 +19,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -737,8 +739,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getNetworkObjectsDir(networkId).resolve(encodedKey);
   }
 
   @Override
@@ -765,8 +767,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getSnapshotObjectPath(
       NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
+  }
+
+  private static @Nonnull String toBase64(String key) {
+    return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override
