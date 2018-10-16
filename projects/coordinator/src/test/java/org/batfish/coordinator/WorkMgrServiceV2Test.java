@@ -141,7 +141,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
 
-    // when not versbose, hidden template should be absent
+    // when not verbose, hidden template should be absent
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(Map.class), equalTo(ImmutableMap.of(templateName, templateText)));
@@ -155,7 +155,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
 
-    // when verbose, hidden template should show up
+    // when verbose, hidden template should be present
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(Map.class),
