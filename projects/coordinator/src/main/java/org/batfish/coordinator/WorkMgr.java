@@ -671,6 +671,10 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
+  /**
+   * Delete the specified snapshot under the specified network. Returns {@code true} if deletion is
+   * successful. Returns {@code false} if either network or snapshot does not exist.
+   */
   public boolean delSnapshot(String network, String snapshot) {
     if (!_idManager.hasNetworkId(network)) {
       return false;
