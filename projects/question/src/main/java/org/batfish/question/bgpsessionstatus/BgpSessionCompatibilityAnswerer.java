@@ -1,46 +1,39 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionInfo.getBgpSessionInfo;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus.UNIQUE_MATCH;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.TopologyUtil;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-public class BgpSessionCompatibilityAnswerer extends Answerer {
+public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
 
   public static final String COL_CONFIGURED_STATUS = "Configured_Status";
-  public static final String COL_LOCAL_INTERFACE = "Local_Interface";
-  public static final String COL_LOCAL_IP = "Local_IP";
-  public static final String COL_NODE = "Node";
-  public static final String COL_REMOTE_NODE = "Remote_Node";
-  public static final String COL_REMOTE_PREFIX = "Remote_Prefix";
-  public static final String COL_SESSION_TYPE = "Session_Type";
-  public static final String COL_VRF_NAME = "VRF";
 
   /** Answerer for the BGP session compatibility question. */
   public BgpSessionCompatibilityAnswerer(Question question, IBatfish batfish) {
@@ -50,15 +43,9 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     BgpSessionCompatibilityQuestion question = (BgpSessionCompatibilityQuestion) _question;
-    Multiset<BgpSessionInfo> sessions = rawAnswer(question);
     TableAnswerElement answer =
         new TableAnswerElement(BgpSessionCompatibilityAnswerer.createMetadata(question));
-    answer.postProcessAnswer(
-        question,
-        sessions
-            .stream()
-            .map(BgpSessionCompatibilityAnswerer::toRow)
-            .collect(Collectors.toCollection(HashMultiset::create)));
+    answer.postProcessAnswer(question, getRows(question));
     return answer;
   }
 
@@ -66,11 +53,11 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
    * Return the answer for {@link BgpSessionCompatibilityQuestion} -- a set of BGP sessions and
    * their compatibility.
    */
-  public Multiset<BgpSessionInfo> rawAnswer(BgpSessionCompatibilityQuestion question) {
-    Multiset<BgpSessionInfo> sessions = HashMultiset.create();
+  @Override
+  public List<Row> getRows(BgpSessionQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes1 = question.getNodes().getMatchingNodes(_batfish);
-    Set<String> includeNodes2 = question.getRemoteNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> remoteNodes = question.getRemoteNodes().getMatchingNodes(_batfish);
 
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
@@ -78,27 +65,63 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
 
-    sessions.addAll(
-        configuredBgpTopology
-            .nodes()
-            .stream()
-            .map(
-                neighbor ->
-                    getBgpSessionInfo(
-                        question,
-                        configurations,
-                        includeNodes1,
-                        includeNodes2,
-                        ipOwners,
-                        allInterfaceIps,
-                        configuredBgpTopology,
-                        null,
-                        neighbor))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(ImmutableList.toImmutableList()));
+    return configuredBgpTopology
+        .nodes()
+        .stream()
+        .filter(neighbor -> nodes.contains(neighbor.getHostname()))
+        .map(
+            neighbor -> {
+              BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
+              if (bpc instanceof BgpPassivePeerConfig) {
+                return null;
+              } else if (!(bpc instanceof BgpActivePeerConfig)) {
+                throw new BatfishException(
+                    "Unsupported type of BGP peer config (not active or passive)");
+              }
+              BgpActivePeerConfig bgpPeerConfig = (BgpActivePeerConfig) bpc;
+              SessionType type = BgpSessionProperties.getSessionType(bgpPeerConfig);
+              if (!question.matchesType(type)) {
+                return null;
+              }
 
-    return sessions;
+              // Local IP and interface
+              Ip localIp = bgpPeerConfig.getLocalIp();
+              NodeInterfacePair localInterface =
+                  getInterface(configurations.get(neighbor.getHostname()), localIp);
+
+              ConfiguredSessionStatus configuredStatus =
+                  getConfiguredStatus(
+                      neighbor, bgpPeerConfig, type, allInterfaceIps, configuredBgpTopology);
+
+              if (!question.matchesStatus(configuredStatus)) {
+                return null;
+              }
+
+              Node remoteNode = null;
+              if (configuredStatus == UNIQUE_MATCH) {
+                String remoteNodeName =
+                    configuredBgpTopology.adjacentNodes(neighbor).iterator().next().getHostname();
+                if (!remoteNodes.contains(remoteNodeName)) {
+                  return null;
+                }
+                remoteNode = new Node(remoteNodeName);
+              }
+
+              return Row.builder(createMetadata(question).toColumnMap())
+                  .put(COL_CONFIGURED_STATUS, configuredStatus)
+                  .put(COL_LOCAL_INTERFACE, localInterface)
+                  .put(COL_LOCAL_AS, bgpPeerConfig.getLocalAs())
+                  .put(COL_LOCAL_IP, bgpPeerConfig.getLocalIp())
+                  .put(COL_NODE, new Node(neighbor.getHostname()))
+                  .put(COL_REMOTE_AS, bgpPeerConfig.getRemoteAs())
+                  .put(COL_REMOTE_NODE, remoteNode)
+                  .put(COL_REMOTE_IP, neighbor.getRemotePeerPrefix().getStartIp())
+                  .put(COL_SESSION_TYPE, type)
+                  .put(COL_VRF, neighbor.getVrfName())
+                  .build();
+            })
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   public static TableMetadata createMetadata(Question question) {
@@ -107,13 +130,9 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_NODE, Schema.NODE, "The node where this session is configured", true, false),
             new ColumnMetadata(
-                COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
+                COL_VRF, Schema.STRING, "The VRF in which this session is configured", true, false),
             new ColumnMetadata(
-                COL_VRF_NAME,
-                Schema.STRING,
-                "The VRF in which this session is configured",
-                true,
-                false),
+                COL_LOCAL_AS, Schema.LONG, "The local AS of the session", false, false),
             new ColumnMetadata(
                 COL_LOCAL_INTERFACE,
                 Schema.INTERFACE,
@@ -121,9 +140,12 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                 false,
                 true),
             new ColumnMetadata(
-                COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
+                COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
             new ColumnMetadata(
-                COL_REMOTE_PREFIX, Schema.PREFIX, "Remote prefix for this session", true, false),
+                COL_REMOTE_AS, Schema.LONG, "The remote AS of the session", false, false),
+            new ColumnMetadata(
+                COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
+            new ColumnMetadata(COL_REMOTE_IP, Schema.IP, "Remote IP for this session", true, false),
             new ColumnMetadata(
                 COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
             new ColumnMetadata(
@@ -132,30 +154,11 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     String textDesc =
         String.format(
             "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
-            COL_NODE, COL_VRF_NAME, COL_REMOTE_PREFIX, COL_CONFIGURED_STATUS);
+            COL_NODE, COL_VRF, COL_REMOTE_IP, COL_CONFIGURED_STATUS);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
     return new TableMetadata(columnMetadata, textDesc);
-  }
-
-  /**
-   * Creates a {@link Row} object from the corresponding {@link BgpSessionInfo} object.
-   *
-   * @param info The input object
-   * @return The output row
-   */
-  public static Row toRow(@Nonnull BgpSessionInfo info) {
-    RowBuilder row = Row.builder();
-    row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
-        .put(COL_LOCAL_INTERFACE, info.getLocalInterface())
-        .put(COL_LOCAL_IP, info.getLocalIp())
-        .put(COL_NODE, new Node(info.getNodeName()))
-        .put(COL_REMOTE_NODE, info.getRemoteNode() == null ? null : new Node(info.getRemoteNode()))
-        .put(COL_REMOTE_PREFIX, info.getRemotePrefix())
-        .put(COL_SESSION_TYPE, info.getSessionType())
-        .put(COL_VRF_NAME, info.getVrfName());
-    return row.build();
   }
 }
