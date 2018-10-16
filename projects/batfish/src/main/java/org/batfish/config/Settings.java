@@ -465,6 +465,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(ARG_DISABLE_Z3_SIMPLIFICATION);
   }
 
+  public String getSnapshotName() {
+    return _config.getString(BfConsts.ARG_SNAPSHOT_NAME);
+  }
+
   public boolean getSslDisable() {
     return _config.getBoolean(BfConsts.ARG_SSL_DISABLE);
   }
@@ -633,6 +637,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
+    setDefaultProperty(BfConsts.ARG_SNAPSHOT_NAME, null);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
@@ -702,7 +707,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_CHECK_BGP_REACHABILITY,
         "whether to check BGP session reachability during data plane computation");
 
-    addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
+    addOption(BfConsts.ARG_CONTAINER, "ID of network", ARGNAME_NAME);
 
     addOption(
         ARG_COORDINATOR_HOST,
@@ -857,6 +862,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
+    addOption(BfConsts.ARG_SNAPSHOT_NAME, "name of snapshot", ARGNAME_NAME);
+
     addBooleanOption(
         BfConsts.ARG_SSL_DISABLE, "whether to disable SSL during communication with coordinator");
 
@@ -876,7 +883,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(BfConsts.ARG_TASK_PLUGIN, "fully-qualified name of task plugin class", ARGNAME_NAME);
 
-    addOption(BfConsts.ARG_TESTRIG, "name of testrig", ARGNAME_NAME);
+    addOption(BfConsts.ARG_TESTRIG, "ID of snapshot", ARGNAME_NAME);
 
     addBooleanOption(ARG_THROW_ON_LEXER_ERROR, "throw exception immediately on lexer error");
 
@@ -1007,6 +1014,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+    getStringOptionValue(BfConsts.ARG_SNAPSHOT_NAME);
     getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
     getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
@@ -1182,5 +1190,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public void setQuestionName(QuestionId questionName) {
     _config.setProperty(
         BfConsts.ARG_QUESTION_NAME, questionName != null ? questionName.getId() : null);
+  }
+
+  public void setSnapshotName(String snapshotName) {
+    _config.setProperty(BfConsts.ARG_SNAPSHOT_NAME, snapshotName);
   }
 }

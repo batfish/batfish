@@ -671,9 +671,20 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public void delSnapshot(String network, String snapshot) {
+  /**
+   * Delete the specified snapshot under the specified network. Returns {@code true} if deletion is
+   * successful. Returns {@code false} if either network or snapshot does not exist.
+   */
+  public boolean delSnapshot(String network, String snapshot) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return false;
+    }
     _idManager.deleteSnapshot(snapshot, networkId);
+    return true;
   }
 
   public void delQuestion(String network, String qName) {
@@ -1847,6 +1858,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
     params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
+    params.put(BfConsts.ARG_SNAPSHOT_NAME, snapshot);
 
     // referenceSnapshot
     String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);

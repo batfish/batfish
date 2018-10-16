@@ -58,6 +58,7 @@ public class BfConsts {
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+  public static final String ARG_SNAPSHOT_NAME = "snapshotname";
   public static final String ARG_SSL_DISABLE = "ssldisable";
   public static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
   public static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";

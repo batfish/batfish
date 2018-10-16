@@ -79,10 +79,6 @@ public interface IdResolver {
   @Nonnull
   SnapshotId getSnapshotId(String snapshot, NetworkId networkId);
 
-  /** Retrieve the name of the snapshot with the given ID */
-  @Nonnull
-  String getSnapshotName(NetworkId networkId, SnapshotId snapshotId);
-
   /** Retrieve the {@link NodeRolesId} corresponding to the provided input IDs. */
   @Nonnull
   NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId);
