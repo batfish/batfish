@@ -1407,6 +1407,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
     try {
       _logger.infof("WMS:getQuestionTemplates %s\n", apiKey);
