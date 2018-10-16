@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
+import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
 
 /** Based on node configurations, determines the compatibility of IBGP and EBGP sessions. */
 public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
@@ -22,7 +22,7 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
    *     is '.*' (all nodes).
    * @param remoteNodes Regular expression to match the nodes names for the other end of the
    *     sessions. Default is '.*' (all nodes).
-   * @param status Regular expression to match status type (see {@link SessionStatus})
+   * @param status Regular expression to match status type (see {@link ConfiguredSessionStatus})
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   @JsonCreator
@@ -42,25 +42,5 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
   @Override
   public String getName() {
     return "bgpSessionCompatibility";
-  }
-
-  @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
-    return _nodes;
-  }
-
-  @JsonProperty(PROP_REMOTE_NODES)
-  public NodesSpecifier getRemoteNodes() {
-    return _remoteNodes;
-  }
-
-  @JsonProperty(PROP_STATUS)
-  private String getStatus() {
-    return _status.toString();
-  }
-
-  @JsonProperty(PROP_TYPE)
-  private String getType() {
-    return _type.toString();
   }
 }
