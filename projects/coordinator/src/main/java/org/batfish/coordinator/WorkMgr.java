@@ -556,8 +556,9 @@ public class WorkMgr extends AbstractCoordinator {
    *     with {@code newAnalysis}.
    * @param suggested An optional Boolean indicating whether analysis is suggested (default: false).
    * @throws IllegalArgumentException if network does not exist; or if {@code newAnalysis} is {@code
-   *     false} and analysis does not exist; or if a question to delete does not exist; or if a
-   *     question to add already exists.
+   *     false} and analysis does not exist; or if {@code newAnalysis} is {@code true} and analysis
+   *     already exists; or if a question to delete does not exist; or if a question to add already
+   *     exists.
    */
   public void configureAnalysis(
       String network,
@@ -620,8 +621,9 @@ public class WorkMgr extends AbstractCoordinator {
    * Checks validity of configureAnalysis call.
    *
    * @throws IllegalArgumentException if network does not exist; or if {@code newAnalysis} is {@code
-   *     false} and analysis does not exist; or if a question to delete does not exist; or if a
-   *     question to add already exists.
+   *     false} and analysis does not exist; or if {@code newAnalysis} is {@code true} and analysis
+   *     already exists; or if a question to delete does not exist; or if a question to add already
+   *     exists.
    */
   private void configureAnalysisValidityCheck(
       String containerName,
@@ -1770,7 +1772,7 @@ public class WorkMgr extends AbstractCoordinator {
    * List questions for the given network and analysis. Returns list of questions if successful, or
    * {@code null} if network or analysis does not exist.
    */
-  public SortedSet<String> listAnalysisQuestions(String network, String analysis) {
+  public @Nullable SortedSet<String> listAnalysisQuestions(String network, String analysis) {
     if (!_idManager.hasNetworkId(network)) {
       return null;
     }
