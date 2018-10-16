@@ -5,7 +5,8 @@ public enum StepAction {
   BLOCKED,
   DROPPED,
   FORWARDED,
+  RECEIVED,
   SENT_IN,
   SENT_OUT,
-  TERMINATED
+  TERMINATED,
 }

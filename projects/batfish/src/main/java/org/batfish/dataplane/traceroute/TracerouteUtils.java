@@ -8,11 +8,10 @@ import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACE
 import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FilterResult;
@@ -30,9 +29,9 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
-import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.pojo.Node;
 
+@ParametersAreNonnullByDefault
 final class TracerouteUtils {
 
   /**
@@ -93,13 +92,13 @@ final class TracerouteUtils {
    * @return true if ARP request will get a response
    */
   static boolean isArpSuccessful(
-      Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
-    return (arpIp != null
+      @Nullable Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
+    return arpIp != null
         && forwardingAnalysis
             .getArpReplies()
             .get(node.getHostname())
             .get(iface)
-            .containsIp(arpIp, node.getIpSpaces()));
+            .containsIp(arpIp, node.getIpSpaces());
   }
 
   /**
@@ -118,70 +117,40 @@ final class TracerouteUtils {
    * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
-  @Nullable
   static EnterInputIfaceStep createEnterSrcIfaceStep(
       Configuration node,
-      @Nullable String inputIfaceName,
-      @Nullable String inputVrfName,
+      String inputIfaceName,
       boolean ignoreAcls,
       Flow currentFlow,
       Map<String, IpAccessList> aclDefinitions,
       NavigableMap<String, IpSpace> namedIpSpaces,
       DataPlane dataPlane) {
-    // Can't create EnterSrcIface step if both input VRF and input interface are not set
-    if (inputIfaceName == null && inputVrfName == null) {
-      return null;
-    }
-    String selectedInputVrfName;
-    // prefer input interface's VRF if both input interface and input VRF are set
-    if (inputIfaceName != null && node.getAllInterfaces().get(inputIfaceName) != null) {
-      selectedInputVrfName = node.getAllInterfaces().get(inputIfaceName).getVrfName();
-    } else {
-      selectedInputVrfName = inputVrfName;
-    }
-
-    Interface inputInterface;
-    IpAccessList inputFilter = null;
-    if (inputIfaceName != null) {
-      inputInterface = node.getAllInterfaces().get(inputIfaceName);
-      inputFilter = inputInterface != null ? inputInterface.getIncomingFilter() : null;
-    }
+    Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
+    checkArgument(
+        inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
 
     EnterInputIfaceStep.Builder enterSrcIfaceStepBuilder = EnterInputIfaceStep.builder();
     EnterInputIfaceStepDetail.Builder enterSrcStepDetailBuilder =
         EnterInputIfaceStepDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
-        .setInputVrf(selectedInputVrfName)
-        .setInputFilter(inputFilter != null ? inputFilter.getName() : null);
+        .setInputVrf(inputInterface.getVrfName());
 
-    if (dataPlane
-        .getIpVrfOwners()
-        .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
-        .getOrDefault(node.getHostname(), ImmutableSet.of())
-        .contains(selectedInputVrfName)) {
-      return enterSrcIfaceStepBuilder
-          .setDetail(enterSrcStepDetailBuilder.build())
-          .setAction(StepAction.TERMINATED)
-          .build();
-    }
-
-    // If not accepted then add this step and go to the routing step
-    // (input interface should be present to go to the next step)
-    if (inputIfaceName == null) {
-      return null;
-    }
-
-    // check input filter
-    if (!ignoreAcls && inputFilter != null) {
-      FilterResult filterResult =
-          inputFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
+    // If inbound filter is present, add the detail and verify it permits the flow.
+    IpAccessList inputFilter = inputInterface.getIncomingFilter();
+    if (inputFilter != null) {
       enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
-      if (filterResult.getAction() == LineAction.DENY) {
-        return enterSrcIfaceStepBuilder
-            .setDetail(enterSrcStepDetailBuilder.build())
-            .setAction(BLOCKED)
-            .build();
+      // check input filter
+      if (!ignoreAcls) {
+        FilterResult filterResult =
+            inputFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
+        enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
+        if (filterResult.getAction() == LineAction.DENY) {
+          return enterSrcIfaceStepBuilder
+              .setDetail(enterSrcStepDetailBuilder.build())
+              .setAction(BLOCKED)
+              .build();
+        }
       }
     }
 
