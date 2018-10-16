@@ -1528,9 +1528,9 @@ public class WorkMgr extends AbstractCoordinator {
       byte[] decoded = BaseEncoding.base64().decode(forkSnapshotBean.zipFile);
       Path zipFile =
           CommonUtil.createTempDirectory("zip").resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-      FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString());
-      fileOutputStream.write(decoded);
-      fileOutputStream.close();
+      try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString())) {
+        fileOutputStream.write(decoded);
+      }
 
       Path unzipDir = CommonUtil.createTempDirectory("upload");
       UnzipUtility.unzip(zipFile, unzipDir);
