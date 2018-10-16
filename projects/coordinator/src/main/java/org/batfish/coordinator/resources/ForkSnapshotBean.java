@@ -12,7 +12,7 @@ public class ForkSnapshotBean {
   private static final String PROP_DEACTIVATE_INTERFACES = "deactivateInterfaces";
   private static final String PROP_DEACTIVATE_LINKS = "deactivateLinks";
   private static final String PROP_DEACTIVATE_NODES = "deactivateNodes";
-  private static final String PROP_FILE = "file";
+  private static final String PROP_ZIP_FILE = "zipFile";
 
   /** Name of the snapshot to copy */
   @JsonProperty(PROP_SNAPSHOT_BASE)
@@ -38,8 +38,8 @@ public class ForkSnapshotBean {
    * Base64 encoded zip file, containing files to write to new snapshot input dir (same format as
    * initial snapshot-upload-zips)
    */
-  @JsonProperty(PROP_FILE)
-  public String file;
+  @JsonProperty(PROP_ZIP_FILE)
+  public String zipFile;
 
   @JsonCreator
   private ForkSnapshotBean() {}
@@ -50,12 +50,12 @@ public class ForkSnapshotBean {
       List<NodeInterfacePair> deactivateInterfacesList,
       List<Edge> deactivateLinksList,
       List<String> deactivateNodesList,
-      String fileInput) {
+      String file) {
     baseSnapshot = baseSnapshotName;
     newSnapshot = newSnapshotName;
     deactivateInterfaces = deactivateInterfacesList;
     deactivateLinks = deactivateLinksList;
     deactivateNodes = deactivateNodesList;
-    file = fileInput;
+    zipFile = file;
   }
 }

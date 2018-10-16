@@ -1521,8 +1521,8 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
-    if (forkSnapshotBean.file != null) {
-      byte[] decoded = BaseEncoding.base64().decode(forkSnapshotBean.file);
+    if (forkSnapshotBean.zipFile != null) {
+      byte[] decoded = BaseEncoding.base64().decode(forkSnapshotBean.zipFile);
       Path zipFile =
           CommonUtil.createTempDirectory("zip").resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
       FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString());
