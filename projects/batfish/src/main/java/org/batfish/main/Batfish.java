@@ -62,6 +62,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -4250,6 +4251,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getBddReachabilityAnalysisFactory(pkt);
     IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
     Set<String> finalNodes = loadConfigurations().keySet();
+    BDDReachabilityAnalysis analysis =
+        bddReachabilityAnalysisFactory.bddReachabilityAnalysis(srcIpSpaceAssignment);
+    analysis.detectLoops();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,

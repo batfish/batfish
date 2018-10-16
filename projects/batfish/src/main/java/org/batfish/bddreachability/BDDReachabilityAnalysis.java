@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.z3.IngressLocation;
@@ -124,6 +125,80 @@ public class BDDReachabilityAnalysis {
     }
 
     return ImmutableMap.copyOf(reverseReachableStates);
+  }
+
+  public void detectLoops() {
+    BDD one = _bddPacket.getFactory().one();
+    BDD zero = _bddPacket.getFactory().zero();
+    Map<StateExpr, BDD> reachableInNRounds =
+        toImmutableMap(_ingressLocationStates, Function.identity(), k -> one);
+
+    long numEdges = true ? 2000 : _edges.values().stream().mapToLong(m -> m.values().size()).sum();
+    long time = System.currentTimeMillis();
+    for (int round = 0; !reachableInNRounds.isEmpty() && round < numEdges; round++) {
+      reachableInNRounds = propagate(reachableInNRounds);
+    }
+    time = System.currentTimeMillis() - time;
+
+    if (!reachableInNRounds.isEmpty()) {
+      /*
+       * Loop! At least one of the entries in reachableInNRounds is part of a loop. The others are
+       * offshoots of a loop. We want to distinguish between them. One way is to do DFS from each
+       * to try to find itself. Another is to
+       */
+      long confirmTime = System.currentTimeMillis();
+      Map<StateExpr, BDD> confirmedLoops =
+          reachableInNRounds
+              .entrySet()
+              .stream()
+              .filter(entry -> confirmLoop(entry.getKey(), entry.getValue(), numEdges))
+              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+      confirmTime = System.currentTimeMillis() - confirmTime;
+      return;
+    } else {
+      return;
+    }
+  }
+
+  public Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
+    BDD zero = _bddPacket.getFactory().zero();
+    Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
+    bdds.forEach(
+        (source, sourceBdd) ->
+            _edges
+                .getOrDefault(source, ImmutableMap.of())
+                .forEach(
+                    (target, edge) -> {
+                      BDD targetBdd = newReachableInNRounds.getOrDefault(target, zero);
+                      BDD newTragetBdd = targetBdd.or(edge.traverseForward(sourceBdd));
+                      if (!newTragetBdd.isZero()) {
+                        newReachableInNRounds.put(target, newTragetBdd);
+                      }
+                    }));
+    return newReachableInNRounds;
+  }
+
+  private boolean confirmLoop(StateExpr stateExpr, BDD bdd, long rounds) {
+    Map<StateExpr, BDD> bdds = propagate(ImmutableMap.of(stateExpr, bdd));
+
+    BDD zero = _bddPacket.getFactory().zero();
+    for (int i = 0; i < rounds; i++) {
+      if (bdds.isEmpty()) {
+        return false;
+      }
+      bdds = propagate(bdds);
+      BDD bdd1 = bdds.getOrDefault(stateExpr, zero);
+      if (!bdd1.and(bdd).isZero()) {
+        // non-empty intersection, so there's a loop.
+        // if bdd1 is contained in bdd, then it's an infinite loop
+        // if it's a partial intersection, it could be a non-infinite loop (though we don't
+        // currently support the transformations necessary to make those).
+        return true;
+      }
+    }
+
+    return false;
+    // throw new BatfishException("Shouldn't happen!");
   }
 
   public BDDPacket getBDDPacket() {
