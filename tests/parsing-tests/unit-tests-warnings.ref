@@ -64,6 +64,27 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "cadant_acl",
+        "Line" : 22,
+        "Text" : "123",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cadant_acl",
+        "Line" : 24,
+        "Text" : "133",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cadant_acl",
+        "Line" : 24,
+        "Text" : "nd-type",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
         "Filename" : "cisco_acl",
         "Line" : 10,
         "Text" : "ttl eq 255",
@@ -183,6 +204,90 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 10,
+        "Text" : "router",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 11,
+        "Text" : "nd",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 12,
+        "Text" : "nd",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 13,
+        "Text" : "141",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 14,
+        "Text" : "142",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 15,
+        "Text" : "neighbor",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 20,
+        "Text" : "mld-query",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 21,
+        "Text" : "mld-report",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 22,
+        "Text" : "mld-reduction",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 23,
+        "Text" : "mldv2",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 9,
+        "Text" : "hoplimit",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco_ipv6_access_list",
+        "Line" : 9,
+        "Text" : "router",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
         "Filename" : "cisco_ospf",
         "Line" : 23,
         "Text" : "area 0.0.0.0 filter-list prefix filterName in",
@@ -258,6 +363,48 @@
         "Text" : "ip route 0.0.0.0/0 1.2.3.4",
         "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 11,
+        "Text" : "133",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 12,
+        "Text" : "134",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 13,
+        "Text" : "135",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 14,
+        "Text" : "136",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 15,
+        "Text" : "141",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "foundry_access_list",
+        "Line" : 16,
+        "Text" : "142",
+        "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "clause in IPv6 extended access list"
       },
       {
         "Filename" : "ios_xr_bgp_neighbor_group",
@@ -366,10 +513,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 46 results",
+      "notes" : "Found 67 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 46
+      "numResults" : 67
     }
   }
 ]
