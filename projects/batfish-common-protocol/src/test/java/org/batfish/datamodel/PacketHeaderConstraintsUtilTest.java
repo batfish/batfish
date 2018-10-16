@@ -32,9 +32,13 @@ public class PacketHeaderConstraintsUtilTest {
   public void testToHeaderSpaceConversion() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setSrcPorts(ImmutableSortedSet.of(new SubRange(1, 3), new SubRange(5, 6)))
-            .setDstPorts(Collections.singleton(new SubRange(11, 12)))
-            .setEcns(Collections.singleton(new SubRange(1, 3)))
+            .setSrcPorts(
+                IntegerSpace.builder()
+                    .including(new SubRange(1, 3))
+                    .including(new SubRange(5, 6))
+                    .build())
+            .setDstPorts(IntegerSpace.of(new SubRange(11, 12)))
+            .setEcns(IntegerSpace.of(new SubRange(1, 3)))
             .setIpProtocols(Collections.singleton(IpProtocol.TCP))
             .build();
 
@@ -61,7 +65,7 @@ public class PacketHeaderConstraintsUtilTest {
   public void testSetIcmpValueMultiple() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setIcmpCodes(ImmutableSet.of(new SubRange(0, 10)))
+            .setIcmpCodes(IntegerSpace.of(new SubRange(0, 10)))
             .build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
@@ -71,7 +75,7 @@ public class PacketHeaderConstraintsUtilTest {
   @Test
   public void testSetDscpValueMultiple() {
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder().setDscps(ImmutableSet.of(new SubRange(0, 10))).build();
+        PacketHeaderConstraints.builder().setDscps(PacketHeaderConstraints.VALID_DSCP).build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setDscpValue(phc, builder);
@@ -81,7 +85,7 @@ public class PacketHeaderConstraintsUtilTest {
   public void testSetSrcPortMultiple() {
     Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder().setSrcPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+        PacketHeaderConstraints.builder().setSrcPorts(IntegerSpace.of(new SubRange(1, 10))).build();
     thrown.expect(IllegalArgumentException.class);
     setSrcPort(phc, builder);
   }
@@ -89,7 +93,7 @@ public class PacketHeaderConstraintsUtilTest {
   @Test
   public void testSetDstPortMultiple() {
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder().setDstPorts(ImmutableSet.of(new SubRange(1, 10))).build();
+        PacketHeaderConstraints.builder().setDstPorts(IntegerSpace.of(new SubRange(1, 10))).build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setDstPort(phc, builder);
@@ -99,7 +103,7 @@ public class PacketHeaderConstraintsUtilTest {
   public void testSetMultiplePacketLengths() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setPacketLengths(ImmutableSet.of(new SubRange(1, 10)))
+            .setPacketLengths(IntegerSpace.of(new SubRange(1, 10)))
             .build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
@@ -120,9 +124,7 @@ public class PacketHeaderConstraintsUtilTest {
     Builder builder =
         Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder()
-            .setEcns(Collections.singleton(new SubRange(1, 1)))
-            .build();
+        PacketHeaderConstraints.builder().setEcns(IntegerSpace.of(1)).build();
     setEcnValue(phc, builder);
     assertThat(builder.build().getEcn(), equalTo(1));
   }
@@ -130,7 +132,7 @@ public class PacketHeaderConstraintsUtilTest {
   @Test
   public void testSetEcnValuesMultiple() {
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder().setEcns(ImmutableSet.of(new SubRange(0, 3))).build();
+        PacketHeaderConstraints.builder().setEcns(IntegerSpace.of(new SubRange(0, 3))).build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setEcnValue(phc, builder);
@@ -142,7 +144,7 @@ public class PacketHeaderConstraintsUtilTest {
         Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setFragmentOffsets(Collections.singleton(new SubRange(2, 2)))
+            .setFragmentOffsets(IntegerSpace.of(new SubRange(2, 2)))
             .build();
     setFragmentOffsets(phc, builder);
     assertThat(builder.build().getFragmentOffset(), equalTo(2));
@@ -152,7 +154,7 @@ public class PacketHeaderConstraintsUtilTest {
   public void testSetFragmentOffsetsMultiple() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setFragmentOffsets(ImmutableSet.of(new SubRange(0, 10)))
+            .setFragmentOffsets(IntegerSpace.of(new SubRange(0, 10)))
             .build();
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);

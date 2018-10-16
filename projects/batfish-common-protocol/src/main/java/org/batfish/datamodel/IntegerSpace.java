@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -100,6 +101,15 @@ public final class IntegerSpace {
   /** This space as a set of included {@link Range}s */
   public Set<Range<Integer>> getRanges() {
     return _rangeset.asRanges();
+  }
+
+  /** Return this space as a set of included {@link SubRange}s */
+  public Set<SubRange> getSubRanges() {
+    return _rangeset
+        .asRanges()
+        .stream()
+        .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Check that this space contains a given {@code value}. */
@@ -201,6 +211,25 @@ public final class IntegerSpace {
   /** Create a new integer space from a {@link SubRange} */
   public static IntegerSpace of(SubRange range) {
     return builder().including(range).build();
+  }
+
+  /** Create a new integer space from a {@link SubRange} */
+  public static IntegerSpace unionOf(SubRange... ranges) {
+    Builder b = builder();
+    for (SubRange range : ranges) {
+      b.including(range);
+    }
+    return b.build();
+  }
+
+  /** Create a new integer space from a {@link Range} */
+  public static IntegerSpace of(Range<Integer> range) {
+    return builder().including(range).build();
+  }
+
+  /** Create a new singleton integer space from an integer value */
+  public static IntegerSpace of(int value) {
+    return builder().including(Range.singleton(value)).build();
   }
 
   public static Builder builder() {
