@@ -164,8 +164,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   ReachabilityParameters getReachabilityParameters() {
     PathConstraints pathConstraints = getPathConstraints();
+
     return ReachabilityParameters.builder()
-        .setActions(ImmutableSortedSet.copyOf(getActions().getDispositions()))
+        .setActions(
+            ImmutableSortedSet.copyOf(
+                ReachabilityParameters.filterDispositions(getActions().getDispositions())))
         .setDestinationIpSpaceSpecifier(getDestinationIpSpaceSpecifier())
         .setFinalNodesSpecifier(pathConstraints.getEndLocation())
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())

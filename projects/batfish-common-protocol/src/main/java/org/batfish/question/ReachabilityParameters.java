@@ -1,7 +1,11 @@
 package org.batfish.question;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
@@ -214,5 +218,22 @@ public final class ReachabilityParameters {
 
   public boolean getUseCompression() {
     return _useCompression;
+  }
+
+  /**
+   * Filter a set of dispositions only to the ones reachability questions support.
+   *
+   * @throws IllegalArgumentException if the set of supported dispositions is empty.
+   */
+  @Nonnull
+  public static Set<FlowDisposition> filterDispositions(Set<FlowDisposition> dispositions) {
+    checkArgument(!dispositions.isEmpty(), "Invalid empty set of actions specified");
+    Set<FlowDisposition> result =
+        dispositions
+            .stream()
+            .filter(disposition -> FlowDisposition.LOOP != disposition)
+            .collect(Collectors.toSet());
+    checkArgument(!result.isEmpty(), "Unsupported set of actions specified: %s", dispositions);
+    return result;
   }
 }
