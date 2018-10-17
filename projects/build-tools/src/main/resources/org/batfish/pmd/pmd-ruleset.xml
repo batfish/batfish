@@ -63,6 +63,15 @@
      <exclude name="SimpleDateFormatNeedsLocale"/>
      <exclude name="UseLocaleWithCaseConversions"/>
   </rule>
+
+  <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">
+    <properties>
+      <!-- Ignore @JsonProperty methods -->
+      <property name="violationSuppressXPath"
+                value="//MethodDeclaration/../Annotation/SingleMemberAnnotation/Name[@Image='JsonProperty']" />
+    </properties>
+  </rule>
+
   <!--
   <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
     <properties>
