@@ -1514,10 +1514,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return Integer.parseInt(token.getText());
   }
 
-  private static long toLong(TerminalNode node) {
-    return toLong(node.getSymbol());
-  }
-
   private static long toLong(Token token) {
     return Long.parseLong(token.getText());
   }
@@ -1856,7 +1852,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
+        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication());
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }

@@ -76,7 +76,7 @@ public class NamedStructureEquivalenceSet<T>
   }
 
   @JsonProperty(PROP_REPRESENTATIVE_ELEMENT)
-  private void setRepresentativeElement(@SuppressWarnings("unused") String representativeElement) {
+  private void setRepresentativeElement(String representativeElement) {
     // No body because this is a virtual property computed from nodes
   }
 
