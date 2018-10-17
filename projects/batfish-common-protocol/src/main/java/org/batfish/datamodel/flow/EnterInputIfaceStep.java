@@ -32,9 +32,7 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     private @Nullable String _inputFilter;
 
     private EnterInputIfaceStepDetail(
-        @Nonnull NodeInterfacePair inputInterface,
-        @Nullable String inputFilter,
-        @Nullable String inputVrf) {
+        NodeInterfacePair inputInterface, @Nullable String inputFilter, @Nullable String inputVrf) {
       _inputInterface = inputInterface;
       _inputFilter = inputFilter;
       _inputVrf = inputVrf;
@@ -117,8 +115,8 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
   private static EnterInputIfaceStep jsonCreator(
       @Nullable @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
-    checkArgument(action != null, "Missing action");
-    checkArgument(detail != null, "Missing detail");
+    checkArgument(action != null, "Missing %s", PROP_ACTION);
+    checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new EnterInputIfaceStep(detail, action);
   }
 
