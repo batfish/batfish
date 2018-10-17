@@ -309,7 +309,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "SENT_IN",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -317,6 +317,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
                   }
                 ]
               }
@@ -582,7 +586,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "SENT_IN",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -590,6 +594,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
                   }
                 ]
               }
@@ -855,7 +863,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "SENT_IN",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -863,6 +871,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
                   }
                 ]
               }
@@ -1129,7 +1141,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "SENT_IN",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -1137,6 +1149,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
                   }
                 ]
               }
