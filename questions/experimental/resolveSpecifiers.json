@@ -7,7 +7,7 @@
   "nodeSpecifierInput": "${nodes}",
   "queryType": "${specifierType}",
   "instance": {
-    "description": "Find the locations and IpSpaces specified by the input specifiers",
+    "description": "Show the resolved values for specifiers",
     "instanceName": "resolveSpecifiers",
     "tags": [
       "specifiers"

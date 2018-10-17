@@ -7,7 +7,7 @@
   "filterSpecifierInput" : "filterSpecifierInput",
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Find the locations and IpSpaces specified by the input specifiers",
+    "description" : "Show the resolved values for specifiers",
     "instanceName" : "qname",
     "tags" : [
       "specifiers"
