@@ -76,7 +76,7 @@ filterSpec =
 
 A specification for interfaces in the network.
 
-* `hasSubnet` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `hasSubnet(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
+* `connectedTo` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `connectedTo(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
 
 * `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
 
@@ -88,7 +88,7 @@ A specification for interfaces in the network.
 
 ```
 interfaceSpec =
-    hasSubnet(<ipSpec>)
+    connectedTo(<ipSpec>)
     | vrf(<javaRegex>)
     | zone(<javaRegex>)
     | <javaRegex>
