@@ -132,6 +132,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String DEPRECATED_ARG_OUTPUT_ENV = "outputenv";
   private static final String DEPRECATED_ARG_DESC =
       "(ignored, provided for backwards compatibility)";
+  private static final String DEPRECATED_ARG_GENERATE_STUBS = "gs";
+  private static final String DEPRECATED_ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
+  private static final String DEPRECTATED_ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX =
+      "gsidregex";
+  private static final String DEPRECATED_ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
 
   private TestrigSettings _activeTestrigSettings;
 
@@ -883,6 +888,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
     addOption(DEPRECATED_ARG_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
     addOption(DEPRECATED_ARG_OUTPUT_ENV, DEPRECATED_ARG_DESC, "name");
+    addBooleanOption(DEPRECATED_ARG_GENERATE_STUBS, DEPRECATED_ARG_DESC);
+    addOption(DEPRECATED_ARG_GENERATE_STUBS_INPUT_ROLE, DEPRECATED_ARG_DESC, "role");
+    addOption(
+        DEPRECTATED_ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, DEPRECATED_ARG_DESC, "regex");
+    addOption(DEPRECATED_ARG_GENERATE_STUBS_REMOTE_AS, DEPRECATED_ARG_DESC, "as");
   }
 
   public void parseCommandLine(String[] args) {
