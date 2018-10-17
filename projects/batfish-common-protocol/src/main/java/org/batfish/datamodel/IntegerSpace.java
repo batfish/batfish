@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -48,39 +49,10 @@ public final class IntegerSpace {
   }
 
   @JsonCreator
-  @Nullable
   @VisibleForTesting
+  @Nonnull
   static IntegerSpace create(@Nullable String s) {
-    if (s == null) {
-      return null;
-    }
-    String[] atoms = s.trim().split(",");
-    checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
-    Builder builder = builder();
-    Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
-    return builder.build();
-  }
-
-  private static Range<Integer> parse(String s) {
-    try {
-      int i = Integer.parseUnsignedInt(s);
-      return (Range.closed(i, i));
-    } catch (NumberFormatException e) {
-      String[] endpoints = s.split("-");
-      checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
-      int low = Integer.parseUnsignedInt(endpoints[0].trim());
-      int high = Integer.parseUnsignedInt(endpoints[1].trim());
-      checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
-      return Range.closed(low, high);
-    }
-  }
-
-  private static void processStringAtom(String s, Builder builder) {
-    if (s.startsWith("!")) {
-      builder.excluding(parse(s.replaceAll("!", "")));
-    } else {
-      builder.including(parse(s));
-    }
+    return firstNonNull(IntegerSpace.Builder.create(s), builder()).build();
   }
 
   @JsonValue
@@ -301,11 +273,57 @@ public final class IntegerSpace {
       return this;
     }
 
+    /**
+     * Returns true if this builder has exclusions only, no positive space.
+     *
+     * <p>Serves as utility function to determine if special handling for such negative-only cases
+     * is required (otherwise empty spaces will be built)
+     */
+    public boolean hasExclusionsOnly() {
+      return _including.isEmpty() && !_excluding.isEmpty();
+    }
+
     /** Returns a new {@link IntegerSpace} */
     public IntegerSpace build() {
       RangeSet<Integer> rangeSet = TreeRangeSet.create(_including);
       rangeSet.removeAll(_excluding);
       return new IntegerSpace(rangeSet);
+    }
+
+    @JsonCreator
+    @Nullable
+    @VisibleForTesting
+    static Builder create(@Nullable String s) {
+      if (s == null) {
+        return null;
+      }
+      String[] atoms = s.trim().split(",");
+      checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
+      Builder builder = builder();
+      Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
+      return builder;
+    }
+
+    private static Range<Integer> parse(String s) {
+      try {
+        int i = Integer.parseUnsignedInt(s);
+        return (Range.closed(i, i));
+      } catch (NumberFormatException e) {
+        String[] endpoints = s.split("-");
+        checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
+        int low = Integer.parseUnsignedInt(endpoints[0].trim());
+        int high = Integer.parseUnsignedInt(endpoints[1].trim());
+        checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
+        return Range.closed(low, high);
+      }
+    }
+
+    private static void processStringAtom(String s, Builder builder) {
+      if (s.startsWith("!")) {
+        builder.excluding(parse(s.replaceAll("!", "")));
+      } else {
+        builder.including(parse(s));
+      }
     }
   }
 

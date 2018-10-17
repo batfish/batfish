@@ -84,39 +84,88 @@ public class PacketHeaderConstraints {
       IntegerSpace.builder().including(Range.closed(0, 3)).build();
   private static final IntegerSpace VALID_ICMP_CODE_TYPE =
       IntegerSpace.builder().including(Range.closed(0, 255)).build();
+  private static final IntegerSpace VALID_PACKET_LENGTH =
+      IntegerSpace.builder().including(Range.closed(0, 65535)).build(); // 16 bits
+  private static final IntegerSpace VALID_FRAGMENT_OFFSET =
+      IntegerSpace.builder().including(Range.closed(0, 8191)).build(); // 13 bits
 
   @JsonCreator
-  private PacketHeaderConstraints(
-      @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace dscps,
-      @Nullable @JsonProperty(PROP_ECNS) IntegerSpace ecns,
-      @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace packetLengths,
+  @VisibleForTesting
+  static PacketHeaderConstraints create(
+      @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace.Builder dscps,
+      @Nullable @JsonProperty(PROP_ECNS) IntegerSpace.Builder ecns,
+      @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
       @Nullable @JsonProperty(PROP_FLOW_STATES) Set<FlowState> flowStates,
-      @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace fragmentOffsets,
+      @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace.Builder fragmentOffsets,
       @Nullable @JsonProperty(PROP_IP_PROTOCOLS) Set<IpProtocol> ipProtocols,
       @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
       @Nullable @JsonProperty(PROP_DST_IPS) String dstIps,
-      @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace icmpCodes,
-      @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace icmpTypes,
-      @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace srcPorts,
-      @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace dstPorts,
+      @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace.Builder icmpCodes,
+      @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace.Builder icmpTypes,
+      @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace.Builder srcPorts,
+      @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace.Builder dstPorts,
       @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications,
       @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
+    return new PacketHeaderConstraints(
+        processBuilder(dscps, VALID_DSCP),
+        processBuilder(ecns, VALID_ECN),
+        processBuilder(packetLengths, VALID_PACKET_LENGTH),
+        flowStates,
+        processBuilder(fragmentOffsets, VALID_FRAGMENT_OFFSET),
+        ipProtocols,
+        srcIps,
+        dstIps,
+        processBuilder(icmpCodes, VALID_ICMP_CODE_TYPE),
+        processBuilder(icmpTypes, VALID_ICMP_CODE_TYPE),
+        processBuilder(srcPorts, IntegerSpace.PORTS),
+        processBuilder(dstPorts, IntegerSpace.PORTS),
+        applications,
+        tcpFlags);
+  }
+
+  private PacketHeaderConstraints(
+      @Nullable IntegerSpace dscps,
+      @Nullable IntegerSpace ecns,
+      @Nullable IntegerSpace packetLengths,
+      @Nullable Set<FlowState> flowStates,
+      @Nullable IntegerSpace fragmentOffsets,
+      @Nullable Set<IpProtocol> ipProtocols,
+      @Nullable String srcIp,
+      @Nullable String dstIp,
+      @Nullable IntegerSpace icmpCode,
+      @Nullable IntegerSpace icmpType,
+      @Nullable IntegerSpace srcPorts,
+      @Nullable IntegerSpace dstPorts,
+      @Nullable Set<Protocol> applications,
+      @Nullable Set<TcpFlagsMatchConditions> tcpFlags) {
     _dscps = dscps;
     _ecns = ecns;
     _packetLengths = packetLengths;
     _flowStates = flowStates;
     _fragmentOffsets = fragmentOffsets;
     _ipProtocols = ipProtocols;
-    _srcIp = srcIps;
-    _dstIp = dstIps;
-    _icmpCode = icmpCodes;
-    _icmpType = icmpTypes;
+    _srcIp = srcIp;
+    _dstIp = dstIp;
+    _icmpCode = icmpCode;
+    _icmpType = icmpType;
     _srcPorts = srcPorts;
     _dstPorts = dstPorts;
     _applications = applications;
     _tcpFlags = tcpFlags;
     validate(this);
+  }
+
+  @Nullable
+  private static IntegerSpace processBuilder(
+      @Nullable IntegerSpace.Builder field, @Nonnull IntegerSpace validRange) {
+    if (field == null) {
+      return null;
+    }
+    if (field.hasExclusionsOnly()) {
+      return field.including(validRange).build();
+    }
+    return field.build();
   }
 
   /** Create new object with all fields unconstrained */
