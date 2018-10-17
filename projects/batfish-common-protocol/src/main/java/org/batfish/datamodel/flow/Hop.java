@@ -14,18 +14,18 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.pojo.Node;
 
 /** Represents a hop in a particular {@link Trace} of a {@link Flow} */
-public class Hop {
+public final class Hop {
 
   private static final String PROP_NODE = "node";
   private static final String PROP_STEPS = "steps";
 
   /** Name of the node for this {@link Hop} */
-  private @Nullable Node _node;
+  @Nonnull private Node _node;
 
   /** {@link List} of {@link Step} present for the given {@link Hop} */
   private List<Step<?>> _steps;
 
-  public Hop(@Nonnull Node node, @Nonnull List<Step<?>> steps) {
+  public Hop(Node node, List<Step<?>> steps) {
     _node = node;
     _steps = steps;
   }
@@ -38,8 +38,8 @@ public class Hop {
     return new Hop(node, firstNonNull(steps, ImmutableList.of()));
   }
 
+  @Nonnull
   @JsonProperty(PROP_NODE)
-  @Nullable
   public Node getNode() {
     return _node;
   }
@@ -50,11 +50,10 @@ public class Hop {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof Hop)) {
+    } else if (!(o instanceof Hop)) {
       return false;
     }
     Hop other = (Hop) o;

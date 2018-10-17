@@ -8,12 +8,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 
 /** {@link InboundStep} represents processing when a flow is directed to the local device. */
 @JsonTypeName("Inbound")
-@ParametersAreNonnullByDefault
 public final class InboundStep extends Step<InboundStepDetail> {
 
   /* Currently empty, what goes here? Inbound filter? */
@@ -31,7 +29,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
   private static InboundStep jsonCreator(
       @Nullable @JsonProperty(PROP_DETAIL) InboundStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
-    checkArgument(action != null, "Missing action");
+    checkArgument(action != null, "Missing %s", PROP_ACTION);
     return new InboundStep(detail, action);
   }
 
@@ -40,7 +38,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
   }
 
   /** Chained builder to create a {@link InboundStep} object */
-  public static class Builder {
+  public static final class Builder {
     private @Nullable InboundStepDetail _detail;
     private @Nullable StepAction _action;
 

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
 
 /**
@@ -20,7 +19,6 @@ import org.batfish.datamodel.Flow;
   @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
 })
-@ParametersAreNonnullByDefault
 public abstract class Step<D> {
 
   private static final String PROP_DETAIL = "detail";
