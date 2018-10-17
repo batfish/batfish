@@ -2,10 +2,10 @@ package org.batfish.common.util;
 
 import static org.glassfish.jersey.internal.guava.Predicates.not;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -21,26 +21,29 @@ import org.batfish.datamodel.flow.Trace;
  * determinism, we choose dispositions, nodes, and traces in a consistent order.
  */
 public class TracePruner {
-  private final Multimap<FlowDisposition, Trace> _dispositionTraces;
-  private final Multimap<String, Trace> _nodeTraces;
+  // Invariant: the traces in these maps are in input order
+  private final Map<FlowDisposition, List<Trace>> _dispositionTraces;
+  private final Map<String, List<Trace>> _nodeTraces;
   private final List<Trace> _traces;
-  private final SortedSet<FlowDisposition> _unusedDispositions;
-  private final SortedSet<String> _unusedNodes;
+  private final SortedSet<FlowDisposition> _unpickedDispositions;
+  private final SortedSet<String> _unpickedNodes;
 
   private TracePruner(List<Trace> traces) {
     _traces = traces;
-    _dispositionTraces = HashMultimap.create();
-    _nodeTraces = HashMultimap.create();
+    _dispositionTraces = new HashMap<>();
+    _nodeTraces = new HashMap<>();
 
     for (Trace trace : traces) {
-      _dispositionTraces.put(trace.getDisposition(), trace);
+      _dispositionTraces
+          .computeIfAbsent(trace.getDisposition(), key -> new ArrayList<>())
+          .add(trace);
       for (Hop hop : trace.getHops()) {
-        _nodeTraces.put(hop.getNode().getName(), trace);
+        _nodeTraces.computeIfAbsent(hop.getNode().getName(), key -> new ArrayList<>()).add(trace);
       }
     }
 
-    _unusedDispositions = new TreeSet<>(_dispositionTraces.keySet());
-    _unusedNodes = new TreeSet<>(_nodeTraces.keySet());
+    _unpickedDispositions = new TreeSet<>(_dispositionTraces.keySet());
+    _unpickedNodes = new TreeSet<>(_nodeTraces.keySet());
   }
 
   public static List<Trace> prune(List<Trace> traces, int maxSize) {
@@ -54,9 +57,9 @@ public class TracePruner {
     List<Trace> usedTraces = new ArrayList<>();
 
     while (usedTraces.size() < maxSize) {
-      if (!_unusedDispositions.isEmpty()) {
+      if (!_unpickedDispositions.isEmpty()) {
         usedTraces.add(chooseTraceByDisposition(usedTraces));
-      } else if (!_unusedNodes.isEmpty()) {
+      } else if (!_unpickedNodes.isEmpty()) {
         usedTraces.add(chooseTraceByNode(usedTraces));
       } else {
         _traces
@@ -73,25 +76,30 @@ public class TracePruner {
 
   private Trace chooseTraceByDisposition(List<Trace> usedTraces) {
     Trace t =
-        _unusedDispositions
+        _unpickedDispositions
             .stream()
             .flatMap(disposition -> _dispositionTraces.get(disposition).stream())
             .filter(not(usedTraces::contains))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused disposition"));
-    _unusedDispositions.remove(t.getDisposition());
+    updateUnpickedMaps(t);
     return t;
   }
 
   private Trace chooseTraceByNode(List<Trace> usedTraces) {
     Trace t =
-        _unusedDispositions
+        _unpickedNodes
             .stream()
-            .flatMap(disposition -> _dispositionTraces.get(disposition).stream())
+            .flatMap(node -> _nodeTraces.get(node).stream())
             .filter(not(usedTraces::contains))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused node"));
-    t.getHops().stream().map(hop -> hop.getNode().getName()).forEach(_unusedNodes::remove);
+    updateUnpickedMaps(t);
     return t;
+  }
+
+  private void updateUnpickedMaps(Trace t) {
+    _unpickedDispositions.remove(t.getDisposition());
+    t.getHops().stream().map(hop -> hop.getNode().getName()).forEach(_unpickedNodes::remove);
   }
 }

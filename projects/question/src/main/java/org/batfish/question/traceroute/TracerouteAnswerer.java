@@ -15,6 +15,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
@@ -63,6 +64,9 @@ public final class TracerouteAnswerer extends Answerer {
   public static final String COL_FLOW = "Flow";
   public static final String COL_TRACES = "Traces";
   private static final int TRACEROUTE_PORT = 33434;
+
+  // maximum number of traces per-flow to include in the output
+  private static final int MAX_FLOW_TRACES = 32;
 
   private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
@@ -230,7 +234,8 @@ public final class TracerouteAnswerer extends Answerer {
   public static Multiset<Row> flowTracesToRows(SortedMap<Flow, List<Trace>> flowTraces) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (Map.Entry<Flow, List<Trace>> flowTrace : flowTraces.entrySet()) {
-      rows.add(Row.of(COL_FLOW, flowTrace.getKey(), COL_TRACES, flowTrace.getValue()));
+      List<Trace> traces = TracePruner.prune(flowTrace.getValue(), MAX_FLOW_TRACES);
+      rows.add(Row.of(COL_FLOW, flowTrace.getKey(), COL_TRACES, traces));
     }
     return rows;
   }
