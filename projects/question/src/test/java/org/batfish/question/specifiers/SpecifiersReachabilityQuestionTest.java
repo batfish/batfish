@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -79,7 +80,7 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testInvalidApplicationsSpecification() {
     ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
-    ImmutableSortedSet<SubRange> dstPorts = ImmutableSortedSet.of(new SubRange(1, 2));
+    IntegerSpace dstPorts = IntegerSpace.of(new SubRange(1, 2));
 
     exception.expect(IllegalArgumentException.class);
     SpecifiersReachabilityQuestion.builder()

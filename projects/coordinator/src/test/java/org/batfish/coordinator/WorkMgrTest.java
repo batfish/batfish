@@ -310,8 +310,7 @@ public final class WorkMgrTest {
 
   @Test
   public void listQuestionWithNonExistContainer() {
-    _thrown.expect(IllegalArgumentException.class);
-    _manager.listQuestions("container", false);
+    assertThat(_manager.listQuestions("container", false), nullValue());
   }
 
   @Test
@@ -449,7 +448,7 @@ public final class WorkMgrTest {
     assertFalse(_idManager.hasQuestionId("question1", networkId, analysisId));
     assertFalse(_idManager.hasQuestionId("question2", networkId, analysisId));
     assertTrue(_idManager.hasQuestionId("question3", networkId, analysisId));
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Question 'question1' does not exist for analysis 'analysis'"));
     questionsToDelete = ImmutableList.of("question1");
     _manager.configureAnalysis(

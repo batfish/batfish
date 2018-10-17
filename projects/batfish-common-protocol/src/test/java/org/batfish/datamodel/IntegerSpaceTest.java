@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
@@ -348,5 +349,21 @@ public class IntegerSpaceTest {
     assertThat(s2.singletonValue(), equalTo(1));
     _expected.expect(NoSuchElementException.class);
     twoValues.singletonValue();
+  }
+
+  @Test
+  public void testConversionToSubrange() {
+    assertThat(IntegerSpace.of(1).getSubRanges(), equalTo(ImmutableSet.of(new SubRange(1, 1))));
+    assertThat(PORTS.getSubRanges(), equalTo(ImmutableSet.of(new SubRange(0, 65535))));
+    assertThat(EMPTY.getSubRanges(), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testStaticCreators() {
+    SubRange r1 = new SubRange(1, 1);
+    SubRange r2 = new SubRange(4, 5);
+    assertThat(
+        IntegerSpace.unionOf(r1, r2),
+        equalTo(IntegerSpace.builder().including(r1).including(r2).build()));
   }
 }

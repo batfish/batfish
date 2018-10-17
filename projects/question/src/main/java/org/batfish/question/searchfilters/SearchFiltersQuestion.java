@@ -9,12 +9,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.FilterSpecifier;
@@ -181,10 +181,7 @@ public final class SearchFiltersQuestion extends Question {
   @VisibleForTesting
   @Nonnull
   HeaderSpace getHeaderSpace() {
-    return HeaderSpace.builder()
-        .setDstPorts(firstNonNull(_headerConstraints.resolveDstPorts(), ImmutableSet.of()))
-        .setIpProtocols(firstNonNull(_headerConstraints.resolveIpProtocols(), ImmutableSet.of()))
-        .setSrcPorts(firstNonNull(_headerConstraints.getSrcPorts(), ImmutableSet.of()))
+    return PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(_headerConstraints)
         .setNegate(_complementHeaderSpace)
         .build();
   }
