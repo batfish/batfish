@@ -32,6 +32,9 @@ import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -47,6 +50,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -501,7 +506,8 @@ public final class WorkMgrTest {
     _manager.initNetwork(networkName, null);
     uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -521,7 +527,7 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes));
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes, null));
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
 
@@ -551,7 +557,79 @@ public final class WorkMgrTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
     _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotFileUpload() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    String fileName = "file.type";
+    String fileContents = "new";
+
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+
+    // Create zip with a new file to add to the forked snapshot
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContents);
+
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+
+    // Confirm the new file exists in the forked snapshot, with the right contents
+    String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
+    assertThat(readFileContents, equalTo(fileContents));
+  }
+
+  @Test
+  public void testForkSnapshotFileUploadOverwrite() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    String fileName = "file.type";
+    String fileContents = "contents";
+    String fileContentsNew = "new";
+
+    _manager.initNetwork(networkName, null);
+    // Create base snapshot with a file: fileName, containing: fileContents
+    uploadTestSnapshot(networkName, snapshotBaseName, fileName, fileContents);
+
+    // Create zip with a file to overwrite the original file in the forked snapshot
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContentsNew);
+
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+
+    // Confirm the file was overwritten with the new contents
+    String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
+    assertThat(readFileContents, equalTo(fileContentsNew));
+  }
+
+  private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
+      throws IOException {
+    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    return FileUtils.readFileToByteArray(zipPath.toFile());
+  }
+
+  private String readSnapshotConfig(String network, String snapshot, String fileName)
+      throws IOException {
+    StringWriter writer = new StringWriter();
+    InputStream inputStream =
+        _manager.getSnapshotInputObject(
+            network, snapshot, Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString());
+    assertThat(inputStream, not(nullValue()));
+    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
+    return writer.toString();
   }
 
   @Test
@@ -567,7 +645,8 @@ public final class WorkMgrTest {
     _thrown.expectMessage(
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
   }
 
   @Test
@@ -580,7 +659,8 @@ public final class WorkMgrTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
     _manager.forkSnapshot(
-        networkName, new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null));
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
   }
 
   @Test
@@ -1872,6 +1952,11 @@ public final class WorkMgrTest {
   private void uploadTestSnapshot(String network, String snapshot, String fileName)
       throws IOException {
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, _folder);
+  }
+
+  private void uploadTestSnapshot(String network, String snapshot, String fileName, String content)
+      throws IOException {
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, content, _folder);
   }
 
   @Test

@@ -91,6 +91,15 @@ public final class WorkMgrTestUtils {
   public static void uploadTestSnapshot(
       String network, String snapshot, String fileName, String content, TemporaryFolder folder)
       throws IOException {
+    Path tmpSnapshotZip = createSnapshotZip(snapshot, fileName, content, folder);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream, false);
+    }
+  }
+
+  /** Creates a snapshot zip with the specified config and returns the path to that zip */
+  public static Path createSnapshotZip(
+      String snapshot, String fileName, String content, TemporaryFolder folder) {
     Path tmpSnapshotSrcDir = folder.getRoot().toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
     Path tmpSnapshotConfig =
@@ -102,8 +111,6 @@ public final class WorkMgrTestUtils {
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, content);
     ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    return tmpSnapshotZip;
   }
 }
