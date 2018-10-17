@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -22,15 +23,14 @@ public final class InboundStep extends Step<InboundStepDetail> {
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
-  private InboundStep(InboundStepDetail detail, StepAction action) {
-    super(detail, action);
+  private InboundStep(@Nullable InboundStepDetail detail, StepAction action) {
+    super(firstNonNull(detail, new InboundStepDetail()), action);
   }
 
   @JsonCreator
   private static InboundStep jsonCreator(
       @Nullable @JsonProperty(PROP_DETAIL) InboundStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
-    checkArgument(detail != null, "Missing detail");
     checkArgument(action != null, "Missing action");
     return new InboundStep(detail, action);
   }
@@ -41,7 +41,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
 
   /** Chained builder to create a {@link InboundStep} object */
   public static class Builder {
-    private InboundStepDetail _detail = new InboundStepDetail();
+    private @Nullable InboundStepDetail _detail;
     private @Nullable StepAction _action;
 
     public InboundStep build() {
