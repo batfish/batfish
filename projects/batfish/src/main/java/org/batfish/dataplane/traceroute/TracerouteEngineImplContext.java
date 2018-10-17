@@ -109,10 +109,6 @@ public class TracerouteEngineImplContext {
     }
   }
 
-  static final String TRACEROUTE_DUMMY_OUT_INTERFACE = "traceroute_dummy_out_interface";
-
-  static final String TRACEROUTE_DUMMY_NODE = "traceroute_dummy_node";
-
   private final Map<String, Configuration> _configurations;
   private final DataPlane _dataPlane;
   private final Map<String, Map<String, Fib>> _fibs;
