@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.PacketHeaderConstraints.IP_PROTOCOLS_WITH_PORTS;
 import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPortsCompatible;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
@@ -15,6 +16,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -350,5 +354,30 @@ public class PacketHeaderConstraintsTest {
         .setApplications(ImmutableSet.of(Protocol.DNS))
         .setDstPorts(IntegerSpace.of(new SubRange(1, 2)))
         .build();
+  }
+
+  @Test
+  public void testCreationExcludedPortsOnly() throws IOException {
+    PacketHeaderConstraints phc =
+        BatfishObjectMapper.mapper()
+            .readValue("{\"dstPorts\": \"!22,!40-50\"}", PacketHeaderConstraints.class);
+    assertThat(
+        phc.resolveDstPorts(),
+        equalTo(
+            IntegerSpace.builder()
+                .including(PORTS)
+                .excluding(Range.singleton(22))
+                .excluding(Range.closed(40, 50))
+                .build()));
+  }
+
+  @Test
+  public void testStringCreationPorts() throws IOException {
+    PacketHeaderConstraints phc =
+        BatfishObjectMapper.mapper()
+            .readValue("{\"dstPorts\": \"11,!22,!40-50\"}", PacketHeaderConstraints.class);
+    assertThat(
+        phc.resolveDstPorts(),
+        equalTo(IntegerSpace.builder().including(Range.singleton(11)).build()));
   }
 }
