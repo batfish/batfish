@@ -1930,6 +1930,7 @@ public class WorkMgrService {
       JSONArray retArray = new JSONArray();
 
       List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
+      checkArgument(snapshotList != null, String.format("Network '%s' not found", networkName));
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
