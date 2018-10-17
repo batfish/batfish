@@ -3,7 +3,6 @@ package org.batfish.coordinator;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
-import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshotZip;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
@@ -30,7 +29,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.BaseEncoding;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -575,11 +573,11 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotBaseName);
 
     // Create zip with a new file to add to the forked snapshot
-    String encodedFile = createBase64EncodedSnapshotZip(snapshotNewName, fileName, fileContents);
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContents);
 
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, encodedFile));
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -603,11 +601,11 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotBaseName, fileName, fileContents);
 
     // Create zip with a file to overwrite the original file in the forked snapshot
-    String encodedFile = createBase64EncodedSnapshotZip(snapshotNewName, fileName, fileContentsNew);
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContentsNew);
 
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, encodedFile));
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -617,10 +615,10 @@ public final class WorkMgrTest {
     assertThat(readFileContents, equalTo(fileContentsNew));
   }
 
-  private String createBase64EncodedSnapshotZip(
-      String snapshot, String fileName, String fileContents) throws IOException {
-    Path zipPath = createSnapshotZip(snapshot, fileName, fileContents, _folder);
-    return BaseEncoding.base64().encode(FileUtils.readFileToByteArray(zipPath.toFile()));
+  private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
+      throws IOException {
+    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    return FileUtils.readFileToByteArray(zipPath.toFile());
   }
 
   private String readSnapshotConfig(String network, String snapshot, String fileName)

@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
-import com.google.common.io.BaseEncoding;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -1594,11 +1593,10 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
-      byte[] decoded = BaseEncoding.base64().decode(forkSnapshotBean.zipFile);
       Path zipFile =
           CommonUtil.createTempDirectory("zip").resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
       try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString())) {
-        fileOutputStream.write(decoded);
+        fileOutputStream.write(forkSnapshotBean.zipFile);
       }
 
       Path unzipDir = CommonUtil.createTempDirectory("upload");
