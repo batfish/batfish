@@ -6,8 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class LocationIpSpaceSpecifierTest {
-  @Rule
-  public ExpectedException _expectedException = ExpectedException.none();
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Test
   public void testNoLocations() {
