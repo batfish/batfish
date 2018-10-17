@@ -3,6 +3,7 @@ package org.batfish.question.specifiers;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,30 +72,35 @@ public final class SpecifiersQuestion extends Question {
     _queryType = queryType;
   }
 
+  @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
     checkNotNull(_filterSpecifierFactory, PROP_FILTER_SPECIFIER_FACTORY + " is null");
     return FilterSpecifierFactory.load(_filterSpecifierFactory)
         .buildFilterSpecifier(_filterSpecifierInput);
   }
 
+  @JsonIgnore
   public InterfaceSpecifier getInterfaceSpecifier() {
     checkNotNull(_interfaceSpecifierFactory, PROP_INTERFACE_SPECIFIER_FACTORY + " is null");
     return InterfaceSpecifierFactory.load(_interfaceSpecifierFactory)
         .buildInterfaceSpecifier(_interfaceSpecifierInput);
   }
 
+  @JsonIgnore
   public IpSpaceSpecifier getIpSpaceSpecifier() {
     checkNotNull(_ipSpaceSpecifierFactory, PROP_IP_SPACE_SPECIFIER_FACTORY + " is null");
     return IpSpaceSpecifierFactory.load(_ipSpaceSpecifierFactory)
         .buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
   }
 
+  @JsonIgnore
   public LocationSpecifier getLocationSpecifier() {
     checkNotNull(_locationSpecifierFactory, PROP_LOCATION_SPECIFIER_FACTORY + " is null");
     return LocationSpecifierFactory.load(_locationSpecifierFactory)
         .buildLocationSpecifier(_locationSpecifierInput);
   }
 
+  @JsonIgnore
   public NodeSpecifier getNodeSpecifier() {
     checkNotNull(_nodeSpecifierFactory, PROP_NODE_SPECIFIER_FACTORY + " is null");
     return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);
