@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
@@ -21,30 +25,38 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
+  // mapping: node name -&gt; interface name -&gt; ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
   private final Map<Edge, IpSpace> _arpTrueEdge;
 
+  // mapping: edge -&gt; dst ips for which end up forwarding to this edge and arp for the dst ip itself and get response
   private final Map<Edge, IpSpace> _arpTrueEdgeDestIp;
 
+  // mapping: edge -&gt; dst ip for which end up forwarding to this edge arp for some other ip and get response
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
 
   private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
 
+  // mapping: node name -&gt; interface name -&gt; dst ips which are routed to the interface
   private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
 
-  private final Map<String, Map<String, IpSpace>> _neighborUnreachable;
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; dst ips
+  // for which arp dst ip itself but would not be replied
+  private final Map<String, Map<String, Map<String, IpSpace>>> _arpNoReplyDestIp;
 
-  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpDestIp;
-
-  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; dst ips
+  // for which arp another ip but would not be replied
+  private final Map<String, Map<String, Map<String, IpSpace>>> _arpNoReplyNextHopIp;
 
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; a set of
+  // routes in which the arp ip is dst ip
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWhereDstIpCanBeArpIp;
 
@@ -52,28 +64,52 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>> _routesWithNextHop;
 
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // a set of routes that with next hop ip but no arp replies
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWithNextHopIpArpFalse;
+
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // a set of routes that with external next hop ip (i.e., ips not in snapshot) but no arp replies
+  private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      _routesWithExternalNextHopIpArpFalse;
+
+  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // a set of routes that with external next hop ip (i.e., ips not in snapshot) but no arp replies
+  private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      _routesWithInternalNextHopIpArpFalse;
 
   private final Map<Edge, Set<AbstractRoute>> _routesWithNextHopIpArpTrue;
 
   private final Map<String, Map<String, IpSpace>> _someoneReplies;
 
-  // mapping: hostname -&gt; interfacename -&gt; ip space
-  private Map<String, Map<String, IpSpace>> _deliveredToSubnet;
+  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up with neighbor unreachable
+  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-  private Map<String, Map<String, IpSpace>> _exitsNetwork;
+  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up delivered to subnet
+  private Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
 
-  // mapping: hostname -&gt; set of interfacenames
+  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up exiting the network
+  private Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
+
+  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up with insufficient info
+  private Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
+
+  // mapping: hostname -&gt; set of interfacenames that is not full
   private Map<String, Set<String>> _interfacesWithMissingDevices;
 
+  private final Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
+
+  private final IpSpace _snapshotOwnedIps;
+
+  // cache some BDDs for convenience
   private IpSpaceToBDD _ipSpaceToBDD;
 
-  private final Map<String, Map<String, BDD>> _hostSubnetBDDs;
+  private Map<String, Map<String, BDD>> _interfaceHostSubnetIpBDDs;
 
-  private final BDD _vrfOwnedIpBDD;
+  private BDD _vrfOwnedIpBDD;
 
-  private final BDD _snapshotOwnedIpBDD;
+  private BDD _snapshotOwnedIpBDD;
 
   public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
@@ -83,8 +119,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     BDDPacket bddPacket = new BDDPacket();
     _ipSpaceToBDD = new IpSpaceToBDD(bddPacket.getFactory(), bddPacket.getDstIp());
     _vrfOwnedIpBDD = computeVrfOwnedIpBDD(configurations);
-    _hostSubnetBDDs = computeHostSubnetBDDs(configurations);
-    _snapshotOwnedIpBDD = computeSnapshotOwnedIps();
+    _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
+    _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
+    _snapshotOwnedIps = computeSnapshotOwnedIps(configurations);
+    _snapshotOwnedIpBDD = computeSnapshotOwnedIpsBDD();
     _interfacesWithMissingDevices = computeInterfacesWithMissingDevices(configurations);
     _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIps(configurations, false);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
@@ -94,17 +132,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpReplies = computeArpReplies(configurations, ribs);
     _someoneReplies = computeSomeoneReplies(topology);
     _routesWithNextHopIpArpFalse = computeRoutesWithNextHopIpArpFalse(fibs);
-    _neighborUnreachableArpNextHopIp = computeNeighborUnreachableArpNextHopIp(ribs);
+    _routesWithExternalNextHopIpArpFalse = computeRoutesWithExternalNextHopIpArpFalse();
+    _routesWithInternalNextHopIpArpFalse = computeRoutesWithInternalNextHopIpArpFalse();
+    _arpNoReplyNextHopIp = computeArpNoReplyNextHopIp(ribs);
     _routesWithNextHopIpArpTrue = computeRoutesWithNextHopIpArpTrue(fibs, topology);
     _arpTrueEdgeNextHopIp = computeArpTrueEdgeNextHopIp(configurations, ribs);
     _routesWhereDstIpCanBeArpIp = computeRoutesWhereDstIpCanBeArpIp(fibs);
-    _neighborUnreachableArpDestIp = computeNeighborUnreachableArpDestIp(ribs);
+    _arpNoReplyDestIp = computeArpNoReplyDestIp(ribs);
     _neighborUnreachableOrExitsNetwork = computeNeighborUnreachableOrExitsNetwork();
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(fibs, topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
     _arpTrueEdge = computeArpTrueEdge();
-    _deliveredToSubnet = computeDeliveredToSubnet(configurations);
-    _exitsNetwork = computeExitsNetwork(configurations);
+    _deliveredToSubnet = computeDeliveredToSubnet();
+    _exitsNetwork = computeExitsNetwork(configurations, ribs);
+    _insufficientInfo = computeInsufficientInfo(configurations, ribs);
     _neighborUnreachable = computeNeighborUnreachable();
   }
 
@@ -136,19 +177,23 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpReplies = arpReplies;
     _someoneReplies = someoneReplies;
     _routesWithNextHopIpArpFalse = routesWithNextHopIpArpFalse;
-    _neighborUnreachableArpNextHopIp = neighborUnreachableArpNextHopIp;
+    _arpNoReplyNextHopIp = neighborUnreachableArpNextHopIp;
     _routesWithNextHopIpArpTrue = routesWithNextHopIpArpTrue;
     _arpTrueEdgeNextHopIp = arpTrueEdgeNextHopIp;
     _routesWhereDstIpCanBeArpIp = routesWhereDstIpCanBeArpIp;
-    _neighborUnreachableArpDestIp = neighborUnreachableArpDestIp;
+    _arpNoReplyDestIp = neighborUnreachableArpDestIp;
     _neighborUnreachableOrExitsNetwork = neighborUnreachable;
     _routesWithDestIpEdge = routesWithDestIpEdge;
     _arpTrueEdgeDestIp = arpTrueEdgeDestIp;
     _arpTrueEdge = arpTrueEdge;
+    _routesWithExternalNextHopIpArpFalse = null;
+    _routesWithInternalNextHopIpArpFalse = null;
+    _interfaceHostSubnetIps = null;
+    _snapshotOwnedIps = null;
     _neighborUnreachable = null;
-    _hostSubnetBDDs = null;
-    _vrfOwnedIpBDD = null;
-    _snapshotOwnedIpBDD = null;
+    _deliveredToSubnet = null;
+    _insufficientInfo = null;
+    _exitsNetwork = null;
   }
 
   /**
@@ -341,8 +386,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableOrExitsNetwork() {
     Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable =
         new HashMap<>();
-    computeNeighborUnreachableHelper(neighborUnreachable, _neighborUnreachableArpDestIp);
-    computeNeighborUnreachableHelper(neighborUnreachable, _neighborUnreachableArpNextHopIp);
+    computeNeighborUnreachableHelper(neighborUnreachable, _arpNoReplyDestIp);
+    computeNeighborUnreachableHelper(neighborUnreachable, _arpNoReplyNextHopIp);
     return neighborUnreachable
         .entrySet()
         .stream()
@@ -374,7 +419,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpDestIp(
+  Map<String, Map<String, Map<String, IpSpace>>> computeArpNoReplyDestIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWhereDstIpCanBeArpIp
         .entrySet()
@@ -429,7 +474,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpNextHopIp(
+  Map<String, Map<String, Map<String, IpSpace>>> computeArpNoReplyNextHopIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithNextHopIpArpFalse
         .entrySet()
@@ -570,6 +615,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @VisibleForTesting
   IpSpace computeRouteMatchConditions(Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
     Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
+    // get the union of IpSpace that match one of the routes
     return AclIpSpace.permitting(
             routes
                 .stream()
@@ -676,6 +722,76 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 return fib.getRoutesByNextHopInterface();
                               }));
                 }));
+  }
+
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      computeRoutesWithExternalNextHopIpArpFalse() {
+    return _routesWithNextHopIpArpFalse
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWithNextHopByHostnameEntry ->
+                    routesWithNextHopByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                routesWithNextHopByVrfEntry ->
+                                    routesWithNextHopByVrfEntry
+                                        .getValue()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(
+                                            ImmutableMap.toImmutableMap(
+                                                Entry::getKey /* outInterface */,
+                                                routesWithNextHopByOutInterfaceEntry ->
+                                                    routesWithNextHopByOutInterfaceEntry
+                                                        .getValue()
+                                                        .stream()
+                                                        .filter(
+                                                            abstractRoute ->
+                                                                !isIpInSnapshot(
+                                                                    abstractRoute.getNextHopIp()))
+                                                        .collect(Collectors.toSet())))))));
+  }
+
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      computeRoutesWithInternalNextHopIpArpFalse() {
+    return _routesWithNextHopIpArpFalse
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWithNextHopByHostnameEntry ->
+                    routesWithNextHopByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                routesWithNextHopByVrfEntry ->
+                                    routesWithNextHopByVrfEntry
+                                        .getValue()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(
+                                            ImmutableMap.toImmutableMap(
+                                                Entry::getKey /* outInterface */,
+                                                routesWithNextHopByOutInterfaceEntry ->
+                                                    routesWithNextHopByOutInterfaceEntry
+                                                        .getValue()
+                                                        .stream()
+                                                        .filter(
+                                                            abstractRoute ->
+                                                                isIpInSnapshot(
+                                                                    abstractRoute.getNextHopIp()))
+                                                        .collect(Collectors.toSet())))))));
   }
 
   @VisibleForTesting
@@ -842,12 +958,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<String, Map<String, IpSpace>> getDeliveredToSubnet() {
+  public Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
     return _deliveredToSubnet;
   }
 
-  @Override
-  public boolean isIpInSnapshot(Ip ip) {
+  private boolean isIpInSnapshot(Ip ip) {
     return ip.toIpSpace().accept(_ipSpaceToBDD).and(_snapshotOwnedIpBDD).isZero();
   }
 
@@ -870,262 +985,300 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or);
   }
 
-  BDD computeHostSubnetBDDPerPrefix(Prefix subnetPrefix, IpSpaceToBDD ipSpaceToBDD) {
-    BDD subnetBDD = subnetPrefix.toIpSpace().accept(ipSpaceToBDD);
-    if (subnetPrefix.getPrefixLength() >= 31) {
-      return subnetBDD;
-    }
-    BDD firstIpNegBdd = subnetPrefix.getStartIp().toIpSpace().accept(ipSpaceToBDD).not();
-    BDD endIpNegBdd = subnetPrefix.getEndIp().toIpSpace().accept(ipSpaceToBDD).not();
-    return subnetBDD.and(firstIpNegBdd).and(endIpNegBdd);
-  }
-
-  BDD computeHostSubnetBDDPerInterface(Interface iface) {
-    return iface
-        .getAllAddresses()
-        .stream()
-        .map(ifaceAddress -> computeHostSubnetBDDPerPrefix(ifaceAddress.getPrefix(), _ipSpaceToBDD))
-        .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or);
-  }
-
-  Map<String, Map<String, BDD>> computeHostSubnetBDDs(Map<String, Configuration> configurations) {
-    return configurations
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* node name */,
-                nodeEntry ->
-                    nodeEntry
-                        .getValue()
-                        .getAllInterfaces()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* interface name */,
-                                ifaceEntry ->
-                                    computeHostSubnetBDDPerInterface(ifaceEntry.getValue())))));
-  }
-
-  BDD computeSnapshotOwnedIps() {
-    return _hostSubnetBDDs
-        .entrySet()
-        .stream()
-        .flatMap(nodeEntry -> nodeEntry.getValue().entrySet().stream().map(Entry::getValue))
-        .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or);
-  }
-
-  IpSpace computeDeliveredToSubnetPerInterface(
-      String hostname, String interfaceName, Configuration configuration) {
-    return null;
-    // TODO: complete this function
-    /*
-    Interface outgoingInterface = configuration.getAllInterfaces().get(interfaceName);
-    // compute all dst IPs that delivered to a host subnet
-    AclIpSpace.Builder ipSpaceBuilder = AclIpSpace.builder();
-    ipSpaceBuilder.thenPermitting(
-        outgoingInterface
-            .getAllAddresses()
-            .stream()
-            .map(InterfaceAddress::getPrefix)
-            .filter(prefix -> prefix.getPrefixLength() <= NodeNameRegexConnectedHostsIpSpaceSpecifier
-                .HOST_SUBNET_MAX_PREFIX_LENGTH)
-            .map(Prefix::toIpSpace));
-
-    // compute all dst IPs routed to this interface
-    // IpSpace ipsRoutedOutThisInterface = _ipsRoutedOutInterfaces.get(hostname).get(interfaceName);
-
-    // dst IPs that are delivered to subnet through this interface should be
-    // the intersection of the two IpSpaces above
-    return AclIpSpace.intersection(
-            _neighborUnreachableOrExitsNetwork
-                .get(hostname)
-                .get(outgoingInterface.getVrfName())
-                .get(interfaceName),
-            _snapshotOwnedIps.complement(),
-            ipSpaceBuilder.build());
-    */
-  }
-
-  Map<String, IpSpace> computeDeliveredToSubnetPerHost(
-      String hostname, Configuration configuration) {
-    return configuration
-        .getAllInterfaces()
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* interface name */,
-                entry -> {
-                  String interfaceName = entry.getKey();
-                  return computeDeliveredToSubnetPerInterface(
-                      hostname, interfaceName, configuration);
-                }));
-  }
-
-  Map<String, Map<String, IpSpace>> computeDeliveredToSubnet(
-      Map<String, Configuration> configurations) {
-    return configurations
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                entry -> {
-                  String hostname = entry.getKey();
-                  Configuration configuration = entry.getValue();
-                  return computeDeliveredToSubnetPerHost(hostname, configuration);
-                }));
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getExitsNetwork() {
-    return _exitsNetwork;
-  }
-
-  IpSpace computeExitsNetworkPerInterface(
-      String hostname, String interfaceName, Configuration configuration) {
-
-    return null;
-    // TODO: complete this function
-    /*
-    Interface outgoingInterface = configuration.getAllInterfaces().get(interfaceName);
-
-    // IP space for interfaces with prefix length > 29
-    IpSpace ipSpaceExitsViaInfraIface =
-        AclIpSpace.permitting(
-                outgoingInterface
-                    .getAllAddresses()
-                    .stream()
-                    .map(InterfaceAddress::getPrefix)
-                    .filter(
-                        prefix ->
-                            prefix.getPrefixLength()
-                                > NodeNameRegexConnectedHostsIpSpaceSpecifier
-                                    .HOST_SUBNET_MAX_PREFIX_LENGTH)
-                    .map(Prefix::toIpSpace))
-            .build();
-
-    IpSpace ipSpace1 =
-        AclIpSpace.intersection(
-            _neighborUnreachableOrExitsNetwork
-                .get(hostname)
-                .get(outgoingInterface.getVrfName())
-                .get(interfaceName),
-            _snapshotOwnedIps.complement(),
-            ipSpaceExitsViaInfraIface);
-
-    if (hasMissingDevicesOnInterface(outgoingInterface)) {
-      IpSpace ipSpaceNotInIfaces =
-          AclIpSpace.permitting(
-                  outgoingInterface
-                      .getAllAddresses()
-                      .stream()
-                      .map(InterfaceAddress::getPrefix)
-                      .map(Prefix::toIpSpace)
-          ).build().complement();
-
-      IpSpace ipSpace2 =
-          AclIpSpace.intersection(
-              _neighborUnreachableOrExitsNetwork
-                  .get(hostname)
-                  .get(outgoingInterface.getVrfName())
-                  .get(interfaceName),
-              _snapshotOwnedIps.complement(),
-              ipSpaceNotInIfaces);
-
-       IpSpace ipSpace3Post =
-          AclIpSpace.intersection(
-              _neighborUnreachableOrExitsNetwork
-                .get(hostname)
-                .get(outgoingInterface.getVrfName())
-                .get(interfaceName),
-              _snapshotOwnedIps.complement());
-
-       //IpSpace ipSpace3 = getDstIpSpaceForNHIpSpace(ipSpace3Post);
-
-      //return AclIpSpace.union(ipSpace1, ipSpace2, ipSpace3);
-      return AclIpSpace.union(ipSpace1, ipSpace2);
-    }
-    return ipSpace1;
-    */
-  }
-
-  Map<String, IpSpace> computeExitsNetworkPerHost(String hostname, Configuration configuration) {
-    return configuration
-        .getAllInterfaces()
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* interface name */,
-                entry -> {
-                  String interfaceName = entry.getKey();
-                  return computeExitsNetworkPerInterface(hostname, interfaceName, configuration);
-                }));
-  }
-
-  Map<String, Map<String, IpSpace>> computeExitsNetwork(Map<String, Configuration> configurations) {
-    return configurations
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                entry -> {
-                  String hostname = entry.getKey();
-                  Configuration configuration = entry.getValue();
-                  return computeExitsNetworkPerHost(hostname, configuration);
-                }));
-  }
-
-  Map<String, Map<String, IpSpace>> computeNeighborUnreachable() {
-    return _neighborUnreachableOrExitsNetwork
+  Map<String, Map<String, BDD>> computeInterfaceHostSubnetIpBDDs() {
+    return _interfaceHostSubnetIps
         .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey /* host name */,
+                nodeEntry ->
+                    nodeEntry
+                        .getValue()
+                        .values()
+                        .stream()
+                        .flatMap(entry -> entry.entrySet().stream())
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey,
+                                ifaceEntry -> ifaceEntry.getValue().accept(_ipSpaceToBDD)))));
+  }
+
+  IpSpace computeSnapshotOwnedIps(Map<String, Configuration> configurations) {
+    Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
+        CommonUtil.computeIpInterfaceOwners(CommonUtil.computeNodeInterfaces(configurations), true);
+    Map<String, Map<String, IpSpace>> vrfOwnedIps =
+        CommonUtil.computeVrfOwnedIpSpaces(
+            CommonUtil.computeIpVrfOwners(ipInterfaceOwners, configurations));
+
+    IpSpace vrfOwnedIpSpace =
+        AclIpSpace.permitting(
+                vrfOwnedIps.values().stream().flatMap(entry -> entry.values().stream()))
+            .build();
+
+    IpSpace interfaceHostSubnetIpSpace = AclIpSpace.permitting(
+            _interfaceHostSubnetIps
+                .entrySet()
+                .stream()
+                .flatMap(
+                    nodeEntry ->
+                        nodeEntry
+                            .getValue()
+                            .entrySet()
+                            .stream()
+                            .flatMap(
+                                vrfEntry ->
+                                    vrfEntry.getValue().entrySet().stream().map(Entry::getValue))))
+        .build();
+
+    return AclIpSpace.union(vrfOwnedIpSpace, interfaceHostSubnetIpSpace);
+  }
+
+  BDD computeSnapshotOwnedIpsBDD() {
+    return _snapshotOwnedIps.accept(_ipSpaceToBDD);
+  }
+
+  private static Map<String, Map<String, Map<String, IpSpace>>> union(
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
+    return merge(ipSpaces1, ipSpaces2, AclIpSpace::union);
+  }
+
+  private static Map<String, Map<String, Map<String, IpSpace>>> difference(
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
+    return merge(ipSpaces1, ipSpaces2, AclIpSpace::difference);
+  }
+
+  private static Map<String, Map<String, Map<String, IpSpace>>> intersection(
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
+    return merge(ipSpaces1, ipSpaces2, AclIpSpace::intersection);
+  }
+
+  private static Map<String, Map<String, Map<String, IpSpace>>> merge(
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2,
+      BiFunction<IpSpace, IpSpace, IpSpace> op) {
+    // union of exits network no next-hop IP and arp fails unowned
+    return toImmutableMap(
+        ipSpaces1,
+        Entry::getKey, /* hostname */
+        nodeEntry -> {
+          Map<String, Map<String, IpSpace>> nodeIpSpace2 = ipSpaces2.get(nodeEntry.getKey());
+          return toImmutableMap(
+              nodeEntry.getValue(),
+              Entry::getKey, /* vrf */
+              vrfEntry -> {
+                Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
+                return toImmutableMap(
+                    vrfEntry.getValue(),
+                    Entry::getKey, /* interface */
+                    ifaceEntry ->
+                        op.apply(ifaceEntry.getValue(), vrfIpSpaces2.get(ifaceEntry.getKey())));
+              });
+        });
+  }
+
+  private static Map<String, Map<String, Map<String, IpSpace>>> computeInterfaceHostSubnetIps(
+      Map<String, Configuration> configs) {
+    return toImmutableMap(
+        configs,
+        Entry::getKey, /* hostname */
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey, /* vrf */
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue().getInterfaces(),
+                        Entry::getKey, /* interface */
+                        ifaceEntry ->
+                            firstNonNull(
+                                AclIpSpace.union(
+                                    ifaceEntry
+                                        .getValue()
+                                        .getAllAddresses()
+                                        .stream()
+                                        .map(InterfaceAddress::getPrefix)
+                                        .map(
+                                            prefix ->
+                                            AclIpSpace.rejecting(prefix.getStartIp().toIpSpace())
+                                            .thenRejecting(prefix.getStartIp().toIpSpace())
+                                            .thenPermitting(prefix.toIpSpace()).build()
+                                        )
+                                        .collect(ImmutableList.toImmutableList())),
+                                EmptyIpSpace.INSTANCE))));
+  }
+
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet() {
+    return intersection(_arpNoReplyDestIp, _interfaceHostSubnetIps);
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
+    return _exitsNetwork;
+  }
+
+  IpSpace computeExitsNetworkPerInterface(String hostname, String vrfName,
+      String interfaceName,
+      GenericRib<AbstractRoute> rib
+  ) {
+
+    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
+    // case 1: no nhip, dst ip is external, interface is not full
+    IpSpace ipSpace1 = AclIpSpace.intersection(
+        _arpNoReplyDestIp.get(hostname).get(vrfName).get(interfaceName),
+        _snapshotOwnedIps.complement()
+    );
+
+    // case 2: nhip and dst ip are external, interface is not full
+    Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
+        _routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
+    IpSpace dstIpsWithExternalNextHopIpArpFalse =
+        computeRouteMatchConditions(routesWithExternalNextHopIpArpFalse, rib);
+    IpSpace ipSpace2 = AclIpSpace.intersection(
+        dstIpsWithExternalNextHopIpArpFalse,
+        _snapshotOwnedIps.complement()
+    );
+
+    return AclIpSpace.union(ipSpace1, ipSpace2);
+  }
+
+  Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork(Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs
+      ) {
+    Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork = new HashMap<>();
+    configurations
+        .entrySet()
+        .stream()
+        .forEach(
+            nodeEntry -> {
+              String hostname = nodeEntry.getKey();
+              Map<String, Map<String, IpSpace>> exitsNetworkPerHost =
+                  exitsNetwork.putIfAbsent(hostname, new HashMap<>());
+              nodeEntry
+                  .getValue()
+                  .getAllInterfaces()
+                  .entrySet()
+                  .stream()
+                  .forEach(
+                      ifaceEntry -> {
+                        String ifaceName = ifaceEntry.getKey();
+                        Interface iface = ifaceEntry.getValue();
+                        String vrfName = iface.getVrfName();
+                        Map<String, IpSpace> exitsNetworkPerVrf =
+                            exitsNetworkPerHost.putIfAbsent(vrfName, new HashMap<>());
+                        GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
+                        exitsNetworkPerVrf.putIfAbsent(
+                            ifaceName,
+                            computeExitsNetworkPerInterface(hostname, vrfName, ifaceName, rib));
+                      });
+            });
+    return exitsNetwork;
+  }
+
+  IpSpace computeInsufficientInfoPerInterface(String hostname, String vrfName, String interfaceName,
+      GenericRib<AbstractRoute> rib) {
+    // If interface is full (no missing devices), it cannot be insufficient info
+    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
+    // case 1: arp for dst ip, dst ip is internal
+    IpSpace ipSpace1 = AclIpSpace.intersection(_arpNoReplyDestIp.get(hostname).get(vrfName).get(interfaceName),
+    _snapshotOwnedIps);
+
+    // case 2: arp for nhip, nhip is external, dst ip is internal
+    IpSpace dstIpsWithExternalNextHopIpArpFalse = computeRouteMatchConditions(_routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
+    rib);
+     IpSpace ipSpace2 = AclIpSpace.intersection(dstIpsWithExternalNextHopIpArpFalse,
+      _snapshotOwnedIps);
+
+    // case 3: arp for nhip, nhip is internal
+    IpSpace ipSpace3 = computeRouteMatchConditions(_routesWithInternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
+    rib);
+
+    return AclIpSpace.union(ipSpace1, ipSpace2, ipSpace3);
+  }
+
+  Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    Map<String, Map<String, Map<String, IpSpace>>> insufficientInfo = new HashMap<>();
+    configurations
+        .entrySet()
+        .stream()
+        .forEach(
+            nodeEntry -> {
+              String hostname = nodeEntry.getKey();
+              Map<String, Map<String, IpSpace>> exitsNetworkPerHost =
+                  insufficientInfo.putIfAbsent(hostname, new HashMap<>());
+              nodeEntry
+                  .getValue()
+                  .getAllInterfaces()
+                  .entrySet()
+                  .stream()
+                  .forEach(
+                      ifaceEntry -> {
+                        String ifaceName = ifaceEntry.getKey();
+                        Interface iface = ifaceEntry.getValue();
+                        String vrfName = iface.getVrfName();
+                        Map<String, IpSpace> exitsNetworkPerVrf =
+                            exitsNetworkPerHost.putIfAbsent(vrfName, new HashMap<>());
+                        GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
+                        exitsNetworkPerVrf.putIfAbsent(
+                            ifaceName,
+                            computeInsufficientInfoPerInterface(hostname, vrfName, ifaceName, rib));
+                      });
+            });
+    return insufficientInfo;
+  }
+
+  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
+    return _neighborUnreachableOrExitsNetwork
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
                 nodeEntry -> {
                   String hostname = nodeEntry.getKey();
-                  ImmutableMap.Builder<String, IpSpace> mapBuilder = new ImmutableMap.Builder<>();
-                  nodeEntry
+                  return nodeEntry
                       .getValue()
-                      .values()
+                      .entrySet()
                       .stream()
-                      .forEach(
-                          ifaceIpspaceMap ->
-                              ifaceIpspaceMap
-                                  .entrySet()
-                                  .stream()
-                                  .forEach(
-                                      entry -> {
-                                        String ifaceName = entry.getKey();
-                                        IpSpace ipSpace = entry.getValue();
-                                        AclIpSpace.Builder aclIpSpaceBuilder = AclIpSpace.builder();
-                                        aclIpSpaceBuilder.thenRejecting(
-                                            _deliveredToSubnet.get(hostname).get(ifaceName));
-                                        aclIpSpaceBuilder.thenRejecting(
-                                            _exitsNetwork.get(hostname).get(ifaceName));
-                                        aclIpSpaceBuilder.thenPermitting(ipSpace);
-                                        mapBuilder.put(ifaceName, aclIpSpaceBuilder.build());
-                                      }));
-                  return mapBuilder.build();
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey,
+                              vrfEntry ->
+                                  vrfEntry
+                                      .getValue()
+                                      .entrySet()
+                                      .stream()
+                                      .collect(
+                                          ImmutableMap.toImmutableMap(
+                                              Entry::getKey,
+                                              ifaceEntry ->
+                                                  _interfacesWithMissingDevices
+                                                          .get(hostname)
+                                                          .contains(ifaceEntry.getKey())
+                                                      ? EmptyIpSpace.INSTANCE
+                                                      : ifaceEntry.getValue()))));
                 }));
   }
 
   @Override
-  public Map<String, Map<String, IpSpace>> getNeighborUnreachable() {
+  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }
 
-  public BDD getSnapshotOwnedIpBDD() {
-    return _snapshotOwnedIpBDD;
-  }
-
   private boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
-    return !_hostSubnetBDDs.get(hostname).get(ifaceName).and(_vrfOwnedIpBDD.not()).isZero();
+    return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_vrfOwnedIpBDD.not()).isZero();
   }
 
   private Map<String, Set<String>> computeInterfacesWithMissingDevices(
@@ -1153,5 +1306,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @Override
   public Map<String, Set<String>> getInterfacesWithMissingDevices() {
     return _interfacesWithMissingDevices;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
+    return _insufficientInfo;
   }
 }
