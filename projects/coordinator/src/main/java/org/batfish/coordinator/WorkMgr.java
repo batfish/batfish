@@ -25,6 +25,7 @@ import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -61,6 +62,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1438,21 +1440,11 @@ public class WorkMgr extends AbstractCoordinator {
       Path srcDir,
       boolean autoAnalyze,
       @Nullable SnapshotId parentSnapshotId) {
-    /*
-     * Sanity check what we got:
-     *    There should be just one top-level folder.
-     */
-    SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
-    if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
-      throw new BatfishException(
-          "Unexpected packaging of snapshot. There should be just one top-level folder");
-    }
+    Path subDir = getSnapshotSubdir(srcDir);
+    SortedSet<Path> subFileList = CommonUtil.getEntries(subDir);
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
-
-    Path srcSubdir = srcDirEntries.iterator().next();
-    SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
     Path containerDir = getdirNetwork(networkName);
     Path testrigDir =
@@ -1525,6 +1517,23 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
+   * Helper function to assert there is only one subdir in the specified snapshot dir and return
+   * that subdir
+   */
+  private static Path getSnapshotSubdir(Path srcDir) {
+    SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
+    /*
+     * Sanity check what we got:
+     *    There should be just one top-level folder.
+     */
+    if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
+      throw new BatfishException(
+          "Unexpected packaging of snapshot. There should be just one top-level folder");
+    }
+    return srcDirEntries.iterator().next();
+  }
+
+  /**
    * Copy a snapshot and make modifications to the copy.
    *
    * @param networkName Name of the network containing the original snapshot
@@ -1580,6 +1589,22 @@ public class WorkMgr extends AbstractCoordinator {
       throw new IllegalArgumentException(
           String.format(
               "Base snapshot %s is not properly formatted, try re-uploading.", baseSnapshotName));
+    }
+
+    // Write user-specified files to the forked snapshot input dir, overwriting existing ones
+    if (forkSnapshotBean.zipFile != null) {
+      Path zipFile =
+          CommonUtil.createTempDirectory("zip").resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+      try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString())) {
+        fileOutputStream.write(forkSnapshotBean.zipFile);
+      }
+
+      Path unzipDir = CommonUtil.createTempDirectory("upload");
+      UnzipUtility.unzip(zipFile, unzipDir);
+
+      // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
+      // into existing top-level dir
+      FileUtils.copyDirectory(getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
     }
 
     // Add user-specified failures to new blacklists
