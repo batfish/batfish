@@ -45,14 +45,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
 
-  private static final String ARG_GENERATE_STUBS = "gs";
-
-  private static final String ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
-
-  private static final String ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "gsidregex";
-
-  private static final String ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
-
   private static final String ARG_HELP = "help";
 
   private static final String ARG_HISTOGRAM = "histogram";
@@ -113,11 +105,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
-  private static final String ARGNAME_AS = "as";
-
   private static final String ARGNAME_HOSTNAME = "hostname";
-
-  private static final String ARGNAME_JAVA_REGEX = "java-regex";
 
   private static final String ARGNAME_LOG_LEVEL = "level-name";
 
@@ -128,8 +116,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String ARGNAME_PATH = "path";
 
   private static final String ARGNAME_PORT = "port";
-
-  private static final String ARGNAME_ROLE = "role";
 
   private static final String ARGNAME_STRINGS = "string..";
 
@@ -299,22 +285,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public Path getFlattenDestination() {
     return Paths.get(_config.getString(ARG_FLATTEN_DESTINATION));
-  }
-
-  public boolean getGenerateStubs() {
-    return _config.getBoolean(ARG_GENERATE_STUBS);
-  }
-
-  public String getGenerateStubsInputRole() {
-    return _config.getString(ARG_GENERATE_STUBS_INPUT_ROLE);
-  }
-
-  public String getGenerateStubsInterfaceDescriptionRegex() {
-    return _config.getString(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-  }
-
-  public int getGenerateStubsRemoteAs() {
-    return _config.getInt(ARG_GENERATE_STUBS_REMOTE_AS);
   }
 
   public boolean getHaltOnConvertError() {
@@ -602,10 +572,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
     setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
-    setDefaultProperty(ARG_GENERATE_STUBS, false);
-    setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
-    setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
-    setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
     setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
@@ -758,21 +724,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
-
-    addBooleanOption(ARG_GENERATE_STUBS, "generate stubs");
-
-    addOption(
-        ARG_GENERATE_STUBS_INPUT_ROLE, "input role for which to generate stubs", ARGNAME_ROLE);
-
-    addOption(
-        ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX,
-        "java regex to extract hostname of generated stub from description of adjacent interface",
-        ARGNAME_JAVA_REGEX);
-
-    addOption(
-        ARG_GENERATE_STUBS_REMOTE_AS,
-        "autonomous system number of stubs to be generated",
-        ARGNAME_AS);
 
     addBooleanOption(
         BfConsts.ARG_HALT_ON_CONVERT_ERROR,
@@ -978,10 +929,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
     getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
-    getBooleanOptionValue(ARG_GENERATE_STUBS);
-    getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
-    getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-    getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);

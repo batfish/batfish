@@ -15,8 +15,6 @@ import javax.annotation.Nullable;
 public class MockDataPlane implements DataPlane {
 
   public static class Builder {
-    private Table<String, String, Set<BgpRoute>> _bgpRoutes;
-
     private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
     private Map<String, Configuration> _configurations;
@@ -46,10 +44,6 @@ public class MockDataPlane implements DataPlane {
 
     public MockDataPlane build() {
       return new MockDataPlane(this);
-    }
-
-    public void setBgpRoutes(Table<String, String, Set<BgpRoute>> bgpRoutes) {
-      this._bgpRoutes = bgpRoutes;
     }
 
     public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {

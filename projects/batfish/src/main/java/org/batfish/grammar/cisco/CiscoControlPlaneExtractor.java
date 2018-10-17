@@ -10718,10 +10718,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _w.redFlag("Object group defined multiple times: '" + name + "'");
   }
 
-  private void warnUndefinedObjectGroupReferenced(String name) {
-    _w.redFlag("Referenced object group was not defined: '" + name + "'");
-  }
-
   @Nullable
   private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
       Service_group_protocolContext protocol) {

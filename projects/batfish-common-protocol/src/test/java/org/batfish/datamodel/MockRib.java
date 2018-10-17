@@ -17,8 +17,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
 
     private Set<AbstractRoute> _mergeRouteTrues;
 
-    private Map<Prefix, Set<Ip>> _nextHopIpsByPrefix;
-
     private SortedSet<Prefix> _prefixes;
 
     private IpSpace _routableIps;
@@ -31,7 +29,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
       _longestPrefixMatchResults = ImmutableMap.of();
       _matchingIps = ImmutableMap.of();
       _mergeRouteTrues = ImmutableSet.of();
-      _nextHopIpsByPrefix = ImmutableMap.of();
       _routePreferenceComparator = Comparator.naturalOrder();
       _routes = ImmutableSet.of();
     }
@@ -53,11 +50,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
 
     public Builder setMergeRouteTrues(Set<AbstractRoute> mergeRouteTrues) {
       _mergeRouteTrues = mergeRouteTrues;
-      return this;
-    }
-
-    public Builder setNextHopIpsByPrefix(Map<Prefix, Set<Ip>> nextHopIpsByPrefix) {
-      _nextHopIpsByPrefix = nextHopIpsByPrefix;
       return this;
     }
 
@@ -96,8 +88,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
 
   private final Set<AbstractRoute> _mergeRouteTrues;
 
-  private final Map<Prefix, Set<Ip>> _nextHopIpsByPrefix;
-
   private final SortedSet<Prefix> _prefixes;
 
   private final IpSpace _routableIps;
@@ -110,7 +100,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
     _matchingIps = builder._matchingIps;
     _mergeRouteTrues = builder._mergeRouteTrues;
-    _nextHopIpsByPrefix = builder._nextHopIpsByPrefix;
     _prefixes = builder._prefixes;
     _routableIps = builder._routableIps;
     _routePreferenceComparator = builder._routePreferenceComparator;

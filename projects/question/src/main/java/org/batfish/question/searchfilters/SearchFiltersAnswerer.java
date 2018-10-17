@@ -33,7 +33,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -360,9 +359,5 @@ public final class SearchFiltersAnswerer extends Answerer {
     for (String node : nodes) {
       table.addRow(Row.builder(table.getMetadata().toColumnMap()).put(COL_NODE, node).build());
     }
-  }
-
-  private Set<SubRange> makeSetSubrangeFromInt(int number) {
-    return ImmutableSet.of(new SubRange(number));
   }
 }

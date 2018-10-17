@@ -2189,18 +2189,18 @@ public class WorkMgr extends AbstractCoordinator {
             .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
             .collect(ImmutableList.toImmutableList());
 
-    Stream<Row> sortedStream =
-        options.getSortOrder().isEmpty()
-            ? filteredRows.stream()
-            : filteredRows.stream().sorted(buildComparator(rawColumnMap, options.getSortOrder()));
-    Stream<Row> projectedStream;
+    Stream<Row> rowStream = filteredRows.stream();
+    if (!options.getSortOrder().isEmpty()) {
+      // sort using specified sort order
+      rowStream = rowStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+    }
     TableAnswerElement table;
     if (options.getColumns().isEmpty()) {
-      projectedStream = sortedStream;
       table = new TableAnswerElement(rawTable.getMetadata());
     } else {
-      projectedStream =
-          sortedStream.map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
+      // project to desired columns
+      rowStream =
+          rowStream.map(rawRow -> Row.builder().putAll(rawRow, options.getColumns()).build());
       Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
       columnMap.keySet().retainAll(options.getColumns());
       List<ColumnMetadata> columnMetadata =
@@ -2209,13 +2209,12 @@ public class WorkMgr extends AbstractCoordinator {
           new TableAnswerElement(
               new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc()));
     }
-    Stream<Row> uniquifiedStream = projectedStream;
     if (options.getUniqueRows()) {
-      uniquifiedStream = uniquifiedStream.distinct();
+      // uniquify if desired
+      rowStream = rowStream.distinct();
     }
-    Stream<Row> truncatedStream =
-        uniquifiedStream.skip(options.getRowOffset()).limit(options.getMaxRows());
-    truncatedStream.forEach(table::addRow);
+    // offset, truncate, and add to table
+    rowStream.skip(options.getRowOffset()).limit(options.getMaxRows()).forEach(table::addRow);
     table.setSummary(rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
     table.getSummary().setNumResults(filteredRows.size());
     return table;

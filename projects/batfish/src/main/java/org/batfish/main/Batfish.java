@@ -661,16 +661,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
-  private void checkBaseDirExists() {
-    Path baseDir = _testrigSettings.getBasePath();
-    if (baseDir == null) {
-      throw new BatfishException("Test rig directory not set");
-    }
-    if (!Files.exists(baseDir)) {
-      throw new CleanBatfishException("Test rig does not exist: \"" + baseDir.getFileName() + "\"");
-    }
-  }
-
   @Override
   public void checkDataPlane() {
     checkDataPlane(_testrigSettings);
@@ -1142,179 +1132,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       CommonUtil.writeFile(outputFile, flatConfigText);
       _logger.debug("OK\n");
     }
-  }
-
-  @SuppressWarnings("unused")
-  private void generateStubs(String inputRole, int stubAs, String interfaceDescriptionRegex) {
-    // Map<String, Configuration> configs = loadConfigurations();
-    // Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
-    // Map<String, Configuration> stubConfigurations = new TreeMap<>();
-    //
-    // _logger.info("\n*** GENERATING STUBS ***\n");
-    // _logger.resetTimer();
-    //
-    // // load old node-roles to be updated at end
-    // RoleSet stubRoles = new RoleSet();
-    // stubRoles.add(STUB_ROLE);
-    // Path nodeRolesPath = _settings.getNodeRolesPath();
-    // _logger.info("Deserializing old node-roles mappings: \"" +
-    // nodeRolesPath
-    // + "\" ...");
-    // NodeRoleMap nodeRoles = deserializeObject(nodeRolesPath,
-    // NodeRoleMap.class);
-    // _logger.info("OK\n");
-    //
-    // // create origination policy common to all stubs
-    // String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
-    // PolicyMap stubOriginationPolicy = new PolicyMap(
-    // stubOriginationPolicyName);
-    // PolicyMapClause clause = new PolicyMapClause();
-    // stubOriginationPolicy.getClauses().add(clause);
-    // String stubOriginationRouteFilterListName =
-    // "~STUB_ORIGINATION_ROUTE_FILTER~";
-    // RouteFilterList rf = new RouteFilterList(
-    // stubOriginationRouteFilterListName);
-    // RouteFilterLine rfl = new RouteFilterLine(LineAction.PERMIT,
-    // Prefix.ZERO,
-    // new SubRange(0, 0));
-    // rf.addLine(rfl);
-    // PolicyMapMatchRouteFilterListLine matchLine = new
-    // PolicyMapMatchRouteFilterListLine(
-    // Collections.singleton(rf));
-    // clause.getMatchLines().add(matchLine);
-    // clause.setAction(PolicyMapAction.PERMIT);
-    //
-    // Set<String> skipWarningNodes = new HashSet<>();
-    //
-    // for (Configuration config : configs.values()) {
-    // if (!config.getRoles().contains(inputRole)) {
-    // continue;
-    // }
-    // for (BgpPeerConfig neighbor : config.getBgpProcess().getNeighbors()
-    // .values()) {
-    // if (!neighbor.getRemoteAs().equals(stubAs)) {
-    // continue;
-    // }
-    // Prefix neighborPrefix = neighbor.getIp();
-    // if (neighborPrefix.getPrefixLength() != 32) {
-    // throw new BatfishException(
-    // "do not currently handle generating stubs based on dynamic bgp
-    // sessions");
-    // }
-    // Ip neighborAddress = neighborPrefix.getIp();
-    // int edgeAs = neighbor.getLocalAs();
-    // /*
-    // * Now that we have the ip address of the stub, we want to find the
-    // * interface that connects to it. We will extract the hostname for
-    // * the stub from the description of this interface using the
-    // * supplied regex.
-    // */
-    // boolean found = false;
-    // for (Interface iface : config.getInterfaces().values()) {
-    // Prefix prefix = iface.getIp();
-    // if (prefix == null || !prefix.contains(neighborAddress)) {
-    // continue;
-    // }
-    // // the neighbor address falls within the network assigned to this
-    // // interface, so now we check the description
-    // String description = iface.getDescription();
-    // Matcher matcher = pattern.matcher(description);
-    // if (matcher.find()) {
-    // String hostname = matcher.group(1);
-    // if (configs.containsKey(hostname)) {
-    // Configuration duplicateConfig = configs.get(hostname);
-    // if (!duplicateConfig.getRoles().contains(STUB_ROLE)
-    // || duplicateConfig.getRoles().size() != 1) {
-    // throw new BatfishException(
-    // "A non-generated node with hostname: \""
-    // + hostname
-    // + "\" already exists in network under analysis");
-    // }
-    // else {
-    // if (!skipWarningNodes.contains(hostname)) {
-    // _logger
-    // .warn("WARNING: Overwriting previously generated node: \""
-    // + hostname + "\"\n");
-    // skipWarningNodes.add(hostname);
-    // }
-    // }
-    // }
-    // found = true;
-    // Configuration stub = stubConfigurations.get(hostname);
-    //
-    // // create stub if it doesn't exist yet
-    // if (stub == null) {
-    // stub = new Configuration(hostname);
-    // stubConfigurations.put(hostname, stub);
-    // // create flow sink interface for stub with common deatils
-    // String flowSinkName = "TenGibabitEthernet100/100";
-    // Interface flowSink = new Interface(flowSinkName, stub);
-    // flowSink.setAddress(Prefix.ZERO);
-    // flowSink.setActive(true);
-    // flowSink.setBandwidth(10E9d);
-    //
-    // stub.getInterfaces().put(flowSinkName, flowSink);
-    // stub.setBgpProcess(new BgpProcess());
-    // stub.getPolicyMaps().put(stubOriginationPolicyName,
-    // stubOriginationPolicy);
-    // stub.getRouteFilterLists()
-    // .put(stubOriginationRouteFilterListName, rf);
-    // stub.setConfigurationFormat(ConfigurationFormat.CISCO);
-    // stub.setRoles(stubRoles);
-    // nodeRoles.put(hostname, stubRoles);
-    // }
-    //
-    // // create interface that will on which peering will occur
-    // Map<String, Interface> stubInterfaces = stub.getInterfaces();
-    // String stubInterfaceName = "TenGigabitEthernet0/"
-    // + (stubInterfaces.size() - 1);
-    // Interface stubInterface = new Interface(stubInterfaceName,
-    // stub);
-    // stubInterfaces.put(stubInterfaceName, stubInterface);
-    // stubInterface.setAddress(
-    // new Prefix(neighborAddress, prefix.getPrefixLength()));
-    // stubInterface.setActive(true);
-    // stubInterface.setBandwidth(10E9d);
-    //
-    // // create neighbor within bgp process
-    // BgpPeerConfig edgeNeighbor = new BgpPeerConfig(prefix, stub);
-    // edgeNeighbor.getOriginationPolicies()
-    // .add(stubOriginationPolicy);
-    // edgeNeighbor.setRemoteAs(edgeAs);
-    // edgeNeighbor.setLocalAs(stubAs);
-    // edgeNeighbor.setSendCommunity(true);
-    // edgeNeighbor.setDefaultMetric(0);
-    // stub.getBgpProcess().getNeighbors()
-    // .put(edgeNeighbor.getIp(), edgeNeighbor);
-    // break;
-    // }
-    // else {
-    // throw new BatfishException(
-    // "Unable to derive stub hostname from interface description: \""
-    // + description + "\" using regex: \""
-    // + interfaceDescriptionRegex + "\"");
-    // }
-    // }
-    // if (!found) {
-    // throw new BatfishException(
-    // "Could not determine stub hostname corresponding to ip: \""
-    // + neighborAddress.toString()
-    // + "\" listed as neighbor on router: \""
-    // + config.getHostname() + "\"");
-    // }
-    // }
-    // }
-    // // write updated node-roles mappings to disk
-    // _logger.info("Serializing updated node-roles mappings: \"" +
-    // nodeRolesPath
-    // + "\" ...");
-    // serializeObject(nodeRoles, nodeRolesPath);
-    // _logger.info("OK\n");
-    // _logger.printElapsedTime();
-    //
-    // // write stubs to disk
-    // serializeIndependentConfigs(stubConfigurations,
-    // _testrigSettings.getSerializeIndependentPath());
   }
 
   @Deprecated
@@ -2416,19 +2233,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private SortedSet<Edge> parseEdgeBlacklist(Path edgeBlacklistPath) {
-    String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
-    SortedSet<Edge> edges;
-    try {
-      edges =
-          BatfishObjectMapper.mapper()
-              .readValue(edgeBlacklistText, new TypeReference<SortedSet<Edge>>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Failed to parse edge blacklist", e);
-    }
-    return edges;
-  }
-
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
       SortedMap<Path, String> inputData, ParseEnvironmentBgpTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
@@ -2497,33 +2301,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Parse environment routing tables");
     _logger.printElapsedTime();
     return routingTables;
-  }
-
-  private SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
-    String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
-    SortedSet<NodeInterfacePair> ifaces;
-    try {
-      ifaces =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  interfaceBlacklistText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Failed to parse interface blacklist", e);
-    }
-    return ifaces;
-  }
-
-  private SortedSet<String> parseNodeBlacklist(Path nodeBlacklistPath) {
-    String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
-    SortedSet<String> nodes;
-    try {
-      nodes =
-          BatfishObjectMapper.mapper()
-              .readValue(nodeBlacklistText, new TypeReference<SortedSet<String>>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Failed to parse node blacklist", e);
-    }
-    return nodes;
   }
 
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
@@ -3400,14 +3177,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path flattenSource = _testrigSettings.getInputPath();
       Path flattenDestination = _settings.getFlattenDestination();
       flatten(flattenSource, flattenDestination);
-      return answer;
-    }
-
-    if (_settings.getGenerateStubs()) {
-      String inputRole = _settings.getGenerateStubsInputRole();
-      String interfaceDescriptionRegex = _settings.getGenerateStubsInterfaceDescriptionRegex();
-      int stubAs = _settings.getGenerateStubsRemoteAs();
-      generateStubs(inputRole, stubAs, interfaceDescriptionRegex);
       return answer;
     }
 

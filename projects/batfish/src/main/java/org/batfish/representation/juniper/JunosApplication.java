@@ -238,7 +238,7 @@ public enum JunosApplication implements Application {
   }
 
   private BaseApplication init() {
-    BaseApplication baseApplication = new BaseApplication(name());
+    BaseApplication baseApplication = new BaseApplication();
     Map<String, Term> terms = baseApplication.getTerms();
 
     Integer portRangeStart = null;
