@@ -1,12 +1,11 @@
 package org.batfish.datamodel.flow;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
 
 /**
@@ -14,40 +13,38 @@ import org.batfish.datamodel.Flow;
  * goes through while traversing {@link Hop}s to reach the destination
  */
 @JsonSchemaDescription("Represents an operation within a hop")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = EnterInputIfaceStep.class, name = "EnterInputInterface"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface")
 })
+@ParametersAreNonnullByDefault
 public abstract class Step<D> {
 
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
   /** Metadata about the {@link Step} */
-  protected @Nullable final D _detail;
+  @Nonnull private final D _detail;
 
   /** The action which was taken at the end of this step */
-  protected @Nullable final StepAction _action;
+  @Nonnull private final StepAction _action;
 
-  @JsonCreator
-  Step(
-      @JsonProperty(PROP_DETAIL) @Nullable D detail,
-      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
+  Step(D detail, StepAction action) {
     _detail = detail;
     _action = action;
   }
 
   @JsonProperty(PROP_DETAIL)
-  @Nullable
-  public D getDetail() {
+  @Nonnull
+  public final D getDetail() {
     return _detail;
   }
 
   @JsonProperty(PROP_ACTION)
-  @Nullable
-  public StepAction getAction() {
+  @Nonnull
+  public final StepAction getAction() {
     return _action;
   }
 }
