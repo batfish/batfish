@@ -1304,11 +1304,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<String, Set<String>> getInterfacesWithMissingDevices() {
-    return _interfacesWithMissingDevices;
-  }
-
-  @Override
   public Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
     return _insufficientInfo;
   }

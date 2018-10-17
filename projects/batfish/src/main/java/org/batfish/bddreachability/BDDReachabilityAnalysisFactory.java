@@ -31,7 +31,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -49,6 +48,7 @@ import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.ExitsNetwork;
+import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
@@ -57,7 +57,9 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
@@ -112,7 +114,6 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
 
-  // node name -> node
   private final Map<String, Configuration> _configs;
 
   private final ForwardingAnalysis _forwardingAnalysis;
@@ -126,22 +127,13 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private final Map<String, Map<String, Map<String, BDD>>> _neighborUnreachableOrExitsNetworkBDDs;
 
-  /*
-   * node --> interface --> set of packets that get routed out the interface but do not
-   * reach the neighbor
-   */
-  private final Map<String, Map<String, BDD>> _neighborUnreachableBDDs;
+  private final Map<String, Map<String, Map<String, BDD>>> _neighborUnreachableBDDs;
 
-  /*
-   * node --> interface --> set of packets that get routed out the interface and delivered to a
-   * subnet
-   */
-  private final Map<String, Map<String, BDD>> _deliveredToSubnetBDDs;
+  private final Map<String, Map<String, Map<String, BDD>>> _deliveredToSubnetBDDs;
 
-  /*
-   * node --> interface --> set of packets that get routed out the interface and exits the network
-   */
-  private final Map<String, Map<String, BDD>> _exitsNetworkBDDs;
+  private final Map<String, Map<String, Map<String, BDD>>> _exitsNetworkBDDs;
+
+  private final Map<String, Map<String, Map<String, BDD>>> _insufficientInfoBDDs;
 
   private final BDD _one;
 
@@ -182,6 +174,7 @@ public final class BDDReachabilityAnalysisFactory {
     _neighborUnreachableBDDs = computeNeighborUnreachableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
     _deliveredToSubnetBDDs = computerDeliveredToSubnetBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
     _exitsNetworkBDDs = computerExitsNetworkBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
+    _insufficientInfoBDDs = computerInsufficientInfo(forwardingAnalysis, _dstIpSpaceToBDD);
     _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
     _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
     _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
@@ -279,23 +272,10 @@ public final class BDDReachabilityAnalysisFactory {
         entry -> entry.getValue().accept(ipSpaceToBDD));
   }
 
-  private static Map<String, Map<String, BDD>> computeDeliveredToSubnetBDDs(
-      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+  private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
+      Map<String, Map<String, Map<String, IpSpace>>> ipSpaceMap, IpSpaceToBDD ipSpaceToBDD) {
     return toImmutableMap(
-        forwardingAnalysis.getDeliveredToSubnet(),
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD)));
-  }
-
-  private static Map<String, Map<String, Map<String, BDD>>>
-      computeNeighborUnreachableOrExitsNetworkBDDs(
-          ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        forwardingAnalysis.getNeighborUnreachableOrExitsNetwork(),
+        ipSpaceMap,
         Entry::getKey,
         nodeEntry ->
             toImmutableMap(
@@ -308,31 +288,31 @@ public final class BDDReachabilityAnalysisFactory {
                         ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
   }
 
-  private Map<String, Map<String, BDD>> computeDispositionBDDs(
-      Map<String, Map<String, IpSpace>> ipSpaceMap, IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        ipSpaceMap,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD)));
+  private static Map<String, Map<String, Map<String, BDD>>>
+      computeNeighborUnreachableOrExitsNetworkBDDs(
+          ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+    return computeDispositionBDDs(
+        forwardingAnalysis.getNeighborUnreachableOrExitsNetwork(), ipSpaceToBDD);
   }
 
-  private Map<String, Map<String, BDD>> computeNeighborUnreachableBDDs(
+  private Map<String, Map<String, Map<String, BDD>>> computeNeighborUnreachableBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable(), ipSpaceToBDD);
   }
 
-  private Map<String, Map<String, BDD>> computerDeliveredToSubnetBDDs(
+  private Map<String, Map<String, Map<String, BDD>>> computerDeliveredToSubnetBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return computeDispositionBDDs(forwardingAnalysis.getDeliveredToSubnet(), ipSpaceToBDD);
   }
 
-  private Map<String, Map<String, BDD>> computerExitsNetworkBDDs(
+  private Map<String, Map<String, Map<String, BDD>>> computerExitsNetworkBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return computeDispositionBDDs(forwardingAnalysis.getExitsNetwork(), ipSpaceToBDD);
+  }
+
+  private Map<String, Map<String, Map<String, BDD>>> computerInsufficientInfo(
+      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+    return computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), ipSpaceToBDD);
   }
 
   private Stream<Edge> generateRootEdges(Map<StateExpr, BDD> rootBdds) {
@@ -361,6 +341,8 @@ public final class BDDReachabilityAnalysisFactory {
                   return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
                 case EXITS_NETWORK:
                   return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE, _one);
+                case INSUFFICIENT_INFO:
+                  return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE, _one);
                 case NO_ROUTE:
                   return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE, _one);
                 case NULL_ROUTED:
@@ -429,6 +411,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
         generateRules_NodeInterfaceDeliveredToSubnet_DeliveredToSubnet(finalNodes),
         generateRules_NodeInterfaceExitsNetwork_ExitsNetwork(finalNodes),
+        generateRules_NodeInterfaceInsufficientInfo_InsufficientInfo(finalNodes),
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_PostInVrf(),
         generateRules_PostInVrf_NodeAccept(),
@@ -439,11 +422,12 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdgePostNat_PreInInterface(),
         generateRules_PreOutVrf_NodeDropAclOut(),
         generateRules_PreOutVrf_NodeDropNullRoute(),
-        // generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable(),
-        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable2(),
-        generateRules_PreOutVrf_PreOutEdge(),
+        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachableOrExitsNetwork(),
+        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable(),
         generateRules_PreOutVrf_NodeInterfaceDeliveredToSubnet(),
-        generateRules_PreOutVrf_NodeInterfaceExitsNetwork());
+        generateRules_PreOutVrf_NodeInterfaceExitsNetwork(),
+        generateRules_PreOutVrf_NodeInterfaceInsufficientInfo(),
+        generateRules_PreOutVrf_PreOutEdge());
   }
 
   private Stream<Edge> generateRules_NodeAccept_Accept(Set<String> finalNodes) {
@@ -509,6 +493,12 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes) {
     return generateRules_NodeInterfaceDisposition_Disposition(
         NodeInterfaceExitsNetwork::new, ExitsNetwork.INSTANCE, finalNodes);
+  }
+
+  private Stream<Edge> generateRules_NodeInterfaceInsufficientInfo_InsufficientInfo(
+      Set<String> finalNodes) {
+    return generateRules_NodeInterfaceDisposition_Disposition(
+        NodeInterfaceInsufficientInfo::new, InsufficientInfo.INSTANCE, finalNodes);
   }
 
   private Stream<Edge> generateRules_PostInVrf_NodeAccept() {
@@ -800,7 +790,7 @@ public final class BDDReachabilityAnalysisFactory {
                         }));
   }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable() {
+  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachableOrExitsNetwork() {
     return _neighborUnreachableOrExitsNetworkBDDs
         .entrySet()
         .stream()
@@ -837,7 +827,7 @@ public final class BDDReachabilityAnalysisFactory {
                                       : Stream.of(
                                           new Edge(
                                               new PreOutVrf(node, vrf),
-                                              new NodeInterfaceNeighborUnreachable(node, iface),
+                                              new NodeInterfaceNeighborUnreachableOrExitsNetwork(node, iface),
                                               edgeBdd::and,
                                               eraseSourceAfter(edgeBdd, node)));
                                 });
@@ -846,9 +836,9 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceDisposition(
-      Map<String, Map<String, BDD>> bddMap,
+      Map<String, Map<String, Map<String, BDD>>> bddMap,
       BiFunction<String, String, StateExpr> dispositionNodeConstructor) {
-    return bddMap
+        return bddMap
         .entrySet()
         .stream()
         .flatMap(
@@ -859,29 +849,41 @@ public final class BDDReachabilityAnalysisFactory {
                   .entrySet()
                   .stream()
                   .flatMap(
-                      ifaceEntry -> {
-                        String ifaceName = ifaceEntry.getKey();
-                        BDD ipSpaceBDD = ifaceEntry.getValue();
-                        Interface iface = _configs.get(node).getAllInterfaces().get(ifaceName);
-                        String outAcl = iface.getOutgoingFilterName();
-                        BDD outAclPermitBDD =
-                            outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
-                        BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
+                      vrfEntry -> {
+                        String vrf = vrfEntry.getKey();
+                        return vrfEntry
+                            .getValue()
+                            .entrySet()
+                            .stream()
+                            .flatMap(
+                                ifaceEntry -> {
+                                  String iface = ifaceEntry.getKey();
+                                  BDD ipSpaceBDD = ifaceEntry.getValue();
+                                  String outAcl =
+                                      _configs
+                                          .get(node)
+                                          .getAllInterfaces()
+                                          .get(iface)
+                                          .getOutgoingFilterName();
+                                  BDD outAclPermitBDD =
+                                      outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
+                                  BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
 
-                        return edgeBdd.isZero()
-                            ? Stream.of()
-                            : Stream.of(
-                                new Edge(
-                                    new PreOutVrf(node, iface.getVrfName()),
-                                    dispositionNodeConstructor.apply(node, ifaceName),
-                                    edgeBdd::and,
-                                    eraseSourceAfter(edgeBdd, node)));
+                                  return edgeBdd.isZero()
+                                      ? Stream.of()
+                                      : Stream.of(
+                                          new Edge(
+                                              new PreOutVrf(node, vrf),
+                                              dispositionNodeConstructor.apply(node, iface),
+                                              edgeBdd::and,
+                                              eraseSourceAfter(edgeBdd, node)));
+                                });
                       });
             });
   }
 
   /*
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable2() {
+  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable() {
     return _neighborUnreachableBDDs
         .entrySet()
         .stream()
@@ -985,7 +987,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
   */
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable2() {
+  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable() {
     return generateRules_PreOutVrf_NodeInterfaceDisposition(
         _neighborUnreachableBDDs, NodeInterfaceNeighborUnreachable::new);
   }
@@ -998,6 +1000,11 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceDeliveredToSubnet() {
     return generateRules_PreOutVrf_NodeInterfaceDisposition(
         _deliveredToSubnetBDDs, NodeInterfaceDeliveredToSubnet::new);
+  }
+
+  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceInsufficientInfo() {
+    return generateRules_PreOutVrf_NodeInterfaceDisposition(
+        _insufficientInfoBDDs, NodeInterfaceInsufficientInfo::new);
   }
 
   private Stream<Edge> generateRules_PreOutVrf_PreOutEdge() {
@@ -1325,15 +1332,19 @@ public final class BDDReachabilityAnalysisFactory {
     return _neighborUnreachableOrExitsNetworkBDDs;
   }
 
-  public Map<String, Map<String, BDD>> getNeighborUnreachableBDDs() {
+  public Map<String, Map<String, Map<String, BDD>>> getNeighborUnreachableBDDs() {
     return _neighborUnreachableBDDs;
   }
 
-  public Map<String, Map<String, BDD>> getDeliveredToSubnetBDDs() {
+  public Map<String, Map<String, Map<String, BDD>>> getDeliveredToSubnetBDDs() {
     return _deliveredToSubnetBDDs;
   }
 
-  public Map<String, Map<String, BDD>> getExitsNetworkBDDs() {
+  public Map<String, Map<String, Map<String, BDD>>> getExitsNetworkBDDs() {
     return _exitsNetworkBDDs;
+  }
+
+  public Map<String, Map<String, Map<String, BDD>>> getInsufficientInfoBDDs() {
+    return _insufficientInfoBDDs;
   }
 }

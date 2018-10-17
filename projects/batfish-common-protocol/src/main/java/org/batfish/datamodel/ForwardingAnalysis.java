@@ -38,7 +38,4 @@ public interface ForwardingAnalysis {
    * A routable IP is a destination IP for which there is a longest-prefix-match route.
    */
   Map<String, Map<String, IpSpace>> getRoutableIps();
-
-  /** Mapping: hostname -&gt; set of interfaces that have missing devices */
-  Map<String, Set<String>> getInterfacesWithMissingDevices();
 }

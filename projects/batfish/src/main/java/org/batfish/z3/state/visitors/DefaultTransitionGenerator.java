@@ -45,6 +45,7 @@ import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.ExitsNetwork;
+import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
@@ -55,7 +56,9 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
@@ -404,6 +407,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {}
 
+  // TODO: complete this function
+  @Override
+  public void visitInsufficientInfo(InsufficientInfo.State state) {}
+
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
     // PostInForMe
@@ -622,12 +629,23 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
+  public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
+      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {
+    // TODO: add implementation
+  }
+
+  @Override
   public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
     // TODO: add implementation
   }
 
   @Override
   public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
+    // TODO: add implementation
+  }
+
+  @Override
+  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {
     // TODO: add implementation
   }
 
