@@ -14,18 +14,18 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 
 /** Represents one of the paths found for a {@link Flow} */
-public class Trace {
+public final class Trace {
 
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
 
   /** Final action taken on the last {@link Step} of the last {@link Hop} of the {@link Trace} */
-  private final FlowDisposition _disposition;
+  @Nonnull private final FlowDisposition _disposition;
 
   /** List of {@link Hop}s making up {@link Trace} */
-  private final List<Hop> _hops;
+  @Nonnull private final List<Hop> _hops;
 
-  public Trace(@Nonnull FlowDisposition disposition, @Nonnull List<Hop> hops) {
+  public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
     _hops = hops;
   }
@@ -34,7 +34,7 @@ public class Trace {
   private static Trace jsonCreator(
       @JsonProperty(PROP_DISPOSITION) @Nullable FlowDisposition disposition,
       @JsonProperty(PROP_HOPS) @Nullable List<Hop> hops) {
-    checkArgument(disposition != null, "Disposition should be set for a trace");
+    checkArgument(disposition != null, "Missing %s", PROP_DISPOSITION);
     return new Trace(disposition, firstNonNull(hops, ImmutableList.of()));
   }
 
@@ -50,11 +50,13 @@ public class Trace {
   }
 
   @JsonProperty(PROP_DISPOSITION)
+  @Nonnull
   public FlowDisposition getDisposition() {
     return _disposition;
   }
 
   @JsonProperty(PROP_HOPS)
+  @Nonnull
   public List<Hop> getHops() {
     return _hops;
   }

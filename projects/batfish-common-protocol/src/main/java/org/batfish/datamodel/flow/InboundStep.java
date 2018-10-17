@@ -38,7 +38,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
   }
 
   /** Chained builder to create a {@link InboundStep} object */
-  public static class Builder {
+  public static final class Builder {
     private @Nullable InboundStepDetail _detail;
     private @Nullable StepAction _action;
 

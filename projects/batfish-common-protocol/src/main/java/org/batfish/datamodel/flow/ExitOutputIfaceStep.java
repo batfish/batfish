@@ -50,20 +50,20 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
       return new ExitOutputIfaceStepDetail(outInterface, outputFilter, transformedFlow);
     }
 
-    @Nonnull
     @JsonProperty(PROP_OUTPUT_INTERFACE)
+    @Nonnull
     public NodeInterfacePair getOutputInterface() {
       return _outputInterface;
     }
 
-    @Nullable
     @JsonProperty(PROP_OUTPUT_FILTER)
+    @Nullable
     public String getOutputFilter() {
       return _outputFilter;
     }
 
-    @Nullable
     @JsonProperty(PROP_TRANSFORMED_FLOW)
+    @Nullable
     public Flow getTransformedFlow() {
       return _transformedFlow;
     }
@@ -108,7 +108,7 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
   }
 
   /** Chained builder to create a {@link ExitOutputIfaceStep} object */
-  public static class Builder {
+  public static final class Builder {
     private @Nullable ExitOutputIfaceStepDetail _detail;
     private @Nullable StepAction _action;
 
