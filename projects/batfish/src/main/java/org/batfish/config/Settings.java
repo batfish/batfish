@@ -119,6 +119,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARGNAME_STRINGS = "string..";
 
+  private static final String DEPRECATED_ARG_DESC =
+      "(ignored, provided for backwards compatibility)";
+
   private static final String EXECUTABLE_NAME = "batfish";
 
   private static final String CAN_EXECUTE = "canexecute";
@@ -126,17 +129,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String DIFFERENTIAL_QUESTION = "diffquestion";
 
   public static final String TASK_ID = "taskid";
-
-  private static final String DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
-  private static final String DEPRECATED_ARG_ENVIRONMENT_NAME = "env";
-  private static final String DEPRECATED_ARG_OUTPUT_ENV = "outputenv";
-  private static final String DEPRECATED_ARG_DESC =
-      "(ignored, provided for backwards compatibility)";
-  private static final String DEPRECATED_ARG_GENERATE_STUBS = "gs";
-  private static final String DEPRECATED_ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
-  private static final String DEPRECTATED_ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX =
-      "gsidregex";
-  private static final String DEPRECATED_ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
 
   private TestrigSettings _activeTestrigSettings;
 
@@ -885,14 +877,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "dataplane engine name");
 
     // deprecated and ignored
-    addOption(DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
-    addOption(DEPRECATED_ARG_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
-    addOption(DEPRECATED_ARG_OUTPUT_ENV, DEPRECATED_ARG_DESC, "name");
-    addBooleanOption(DEPRECATED_ARG_GENERATE_STUBS, DEPRECATED_ARG_DESC);
-    addOption(DEPRECATED_ARG_GENERATE_STUBS_INPUT_ROLE, DEPRECATED_ARG_DESC, "role");
-    addOption(
-        DEPRECTATED_ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, DEPRECATED_ARG_DESC, "regex");
-    addOption(DEPRECATED_ARG_GENERATE_STUBS_REMOTE_AS, DEPRECATED_ARG_DESC, "as");
+    for (String deprecatedStringArg :
+        new String[] {"deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv"}) {
+      addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
+    }
+    for (String deprecatedBooleanArg : new String[] {"gs"}) {
+      addBooleanOption(deprecatedBooleanArg, DEPRECATED_ARG_DESC);
+    }
   }
 
   public void parseCommandLine(String[] args) {
