@@ -8,12 +8,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 
 /** {@link InboundStep} represents processing when a flow is directed to the local device. */
 @JsonTypeName("Inbound")
-@ParametersAreNonnullByDefault
 public final class InboundStep extends Step<InboundStepDetail> {
 
   /* Currently empty, what goes here? Inbound filter? */

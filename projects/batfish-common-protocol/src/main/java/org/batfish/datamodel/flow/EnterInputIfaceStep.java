@@ -1,6 +1,7 @@
 package org.batfish.datamodel.flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,23 +15,23 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 @JsonTypeName("EnterInputInterface")
-public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
+public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
   /**
    * Details of the {@link Step} when a {@link Flow} enters a node through an input {@link
    * Interface}
    */
-  public static class EnterInputIfaceStepDetail {
+  public static final class EnterInputIfaceStepDetail {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
     private static final String PROP_INPUT_FILTER = "inputFilter";
 
-    private @Nullable NodeInterfacePair _inputInterface;
+    private @Nonnull NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
     private @Nullable String _inputFilter;
 
-    public EnterInputIfaceStepDetail(
+    private EnterInputIfaceStepDetail(
         @Nonnull NodeInterfacePair inputInterface,
         @Nullable String inputFilter,
         @Nullable String inputVrf) {
@@ -49,7 +50,7 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
-    @Nullable
+    @Nonnull
     public NodeInterfacePair getInputInterface() {
       return _inputInterface;
     }
@@ -71,12 +72,13 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     }
 
     /** Chained builder to create a {@link EnterInputIfaceStepDetail} object */
-    public static class Builder {
+    public static final class Builder {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
       private String _inputFilter;
 
       public EnterInputIfaceStepDetail build() {
+        checkState(_inputInterface != null, "Must call setInputInterface before building");
         return new EnterInputIfaceStepDetail(_inputInterface, _inputFilter, _inputVrf);
       }
 
@@ -94,40 +96,54 @@ public class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
         _inputFilter = inputFilter;
         return this;
       }
+
+      /** Only for use by {@link EnterInputIfaceStepDetail#builder()}. */
+      private Builder() {}
     }
   }
 
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
-  @JsonCreator
-  private EnterInputIfaceStep(
-      @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail detail,
-      @JsonProperty(PROP_ACTION) StepAction action) {
-    super(detail, action);
-  }
-
   public static Builder builder() {
     return new Builder();
   }
 
+  private EnterInputIfaceStep(EnterInputIfaceStepDetail detail, StepAction action) {
+    super(detail, action);
+  }
+
+  @JsonCreator
+  private static EnterInputIfaceStep jsonCreator(
+      @Nullable @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail detail,
+      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+    checkArgument(action != null, "Missing action");
+    checkArgument(detail != null, "Missing detail");
+    return new EnterInputIfaceStep(detail, action);
+  }
+
   /** Chained builder to create an {@link EnterInputIfaceStep} object */
-  public static class Builder {
-    private EnterInputIfaceStepDetail _detail;
-    private StepAction _action;
+  public static final class Builder {
+    @Nullable private EnterInputIfaceStepDetail _detail;
+    @Nullable private StepAction _action;
 
     public EnterInputIfaceStep build() {
+      checkState(_action != null, "setAction must be called before building");
+      checkState(_detail != null, "setDetail must be called before building");
       return new EnterInputIfaceStep(_detail, _action);
     }
 
-    public Builder setDetail(EnterInputIfaceStepDetail detail) {
+    public Builder setDetail(@Nullable EnterInputIfaceStepDetail detail) {
       _detail = detail;
       return this;
     }
 
-    public Builder setAction(StepAction action) {
+    public Builder setAction(@Nullable StepAction action) {
       _action = action;
       return this;
     }
+
+    /** Only for use by {@link EnterInputIfaceStep#builder()}. */
+    private Builder() {}
   }
 }
