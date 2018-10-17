@@ -36,6 +36,7 @@ import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
 import org.junit.Test;
 
+/** End-to-end tests of {@link SpecifiersAnswerer}. */
 public class SpecifiersAnswererTest {
 
   Configuration _c1;
@@ -131,10 +132,31 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveIpSpaceTest() {
+  public void resolveIpSpaceTestDefault() {
+    SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
+
+    assertThat(
+        resolveIpSpace(question, _context).getRows().getData(),
+        equalTo(
+            ImmutableMultiset.of(
+                Row.of(
+                    COL_LOCATIONS,
+                    ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
+                        .toString(),
+                    COL_IP_SPACE,
+                    _iface1.getAddress().getIp().toIpSpace().toString()),
+                Row.of(
+                    COL_LOCATIONS,
+                    ImmutableSet.of(new InterfaceLocation(_c2.getHostname(), _iface2.getName()))
+                        .toString(),
+                    COL_IP_SPACE,
+                    _iface2.getAddress().getIp().toIpSpace().toString()))));
+  }
+
+  @Test
+  public void resolveIpSpaceTestIpSpace() {
     String prefix = "3.3.3.3/24";
 
-    // question with ips specification
     SpecifiersQuestion questionWithIp = new SpecifiersQuestion(QueryType.LOCATION);
     questionWithIp.setIpSpaceSpecifierInput(prefix);
 
@@ -154,7 +176,10 @@ public class SpecifiersAnswererTest {
                         .including(new IpWildcard(prefix))
                         .build()
                         .toString()))));
+  }
 
+  @Test
+  public void resolveIpSpaceTestLocation() {
     SpecifiersQuestion questionWithLocation = new SpecifiersQuestion(QueryType.LOCATION);
     questionWithLocation.setLocationSpecifierInput(_c1.getHostname());
 

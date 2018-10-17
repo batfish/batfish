@@ -122,9 +122,6 @@ public final class SpecifiersAnswerer extends Answerer {
 
     checkArgument(
         question.getLocationSpecifierInput() == null || question.getIpSpaceSpecifierInput() == null,
-        "Input for one of locations and ips should be provided");
-    checkArgument(
-        question.getLocationSpecifierInput() != null || question.getIpSpaceSpecifierInput() != null,
         "Input for both locations and ips should not be provided");
 
     List<ColumnMetadata> columns =
