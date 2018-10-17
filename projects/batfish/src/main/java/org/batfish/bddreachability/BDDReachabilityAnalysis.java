@@ -151,7 +151,8 @@ public class BDDReachabilityAnalysis {
           reachableInNRounds
               .entrySet()
               .stream()
-              .filter(entry -> confirmLoop(entry.getKey(), entry.getValue(), numEdges))
+              // .filter(entry -> confirmLoop(entry.getKey(), entry.getValue(), numEdges))
+              .filter(entry -> confirmLoopFW(entry.getKey(), entry.getValue()))
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
       confirmTime = System.currentTimeMillis() - confirmTime;
       return;
@@ -199,6 +200,56 @@ public class BDDReachabilityAnalysis {
 
     return false;
     // throw new BatfishException("Shouldn't happen!");
+  }
+
+  /**
+   * Run Floyd-Warshall from one step past the initial state. Each round, check if the initial state
+   * has been reached yet.
+   */
+  private boolean confirmLoopFW(StateExpr stateExpr, BDD bdd) {
+    Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
+    Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
+
+    int rounds = 0;
+    BDD zero = _bddPacket.getFactory().zero();
+    while (!dirty.isEmpty()) {
+      rounds += 1;
+      Set<StateExpr> newDirty = new HashSet<>();
+
+      dirty.forEach(
+          preState -> {
+            Map<StateExpr, Edge> preStateOutEdges = _edges.get(preState);
+            if (preStateOutEdges == null) {
+              // preState has no out-edges
+              return;
+            }
+
+            BDD preStateBDD = reachable.get(preState);
+            preStateOutEdges.forEach(
+                (postState, edge) -> {
+                  BDD result = edge.traverseBackward(preStateBDD);
+                  if (result.isZero()) {
+                    return;
+                  }
+
+                  // update postState BDD reverse-reachable from leaf
+                  BDD oldReach = reachable.getOrDefault(postState, zero);
+                  BDD newReach = oldReach == null ? result : oldReach.or(result);
+                  if (oldReach == null || !oldReach.equals(newReach)) {
+                    reachable.put(postState, newReach);
+                    newDirty.add(postState);
+                  }
+                });
+          });
+
+      dirty = newDirty;
+      if (dirty.contains(stateExpr)) {
+        if (!reachable.get(stateExpr).and(bdd).isZero()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public BDDPacket getBDDPacket() {
