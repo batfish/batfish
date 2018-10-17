@@ -179,8 +179,6 @@ public class TracerouteEngineImplTest {
     Flow flow1 = fb.setIngressInterface(i1.getName()).setIngressVrf(vrf1.getName()).build();
     Flow flow2 = fb.setIngressInterface(i2.getName()).setIngressVrf(vrf2.getName()).build();
 
-    System.out.print("aha");
-
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
         TracerouteEngineImpl.getInstance()
