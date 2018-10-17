@@ -1,0 +1,70 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "filterSpecifierInput": "${filters}",
+  "interfaceSpecifierInput": "${interfaces}",
+  "ipSpaceSpecifierInput": "${ips}",
+  "locationSpecifierInput": "${locations}",
+  "nodeSpecifierInput": "${nodes}",
+  "queryType": "${specifierType}",
+  "instance": {
+    "description": "Find the locations and IpSpaces specified by the input specifiers",
+    "instanceName": "resolveSpecifiers",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "filters": {
+        "description": "Input to the FilterSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "interfaces": {
+        "description": "Input to the interfaceSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "ips": {
+        "description": "Input to the IpSpaceSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "locations": {
+        "description": "Input to the LocationSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "nodes": {
+        "description": "Input to the NodeSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "specifierType": {
+        "description" : "The type of specifier to resolve.",
+        "values": [
+          {
+            "name": "filter",
+            "description": "Resolves filterSpecifier using the input to 'nodes' and 'filters'"
+          },
+          {
+            "name": "interface",
+            "description": "Resolves interfaceSpecifier using the input to 'nodes' and interfaces'"
+          },
+          {
+            "name": "ip_space",
+            "description": "Resolves ipSpaceSpecifier using the input to 'ips' and 'locations'"
+          },
+          {
+            "name": "location",
+            "description": "Resolves locationSpecifier using the input to 'locations'"
+          },
+          {
+            "name": "node",
+            "description": "Resolves nodeSpecifier using the input to 'nodes'"
+          }
+        ],
+        "optional": false,
+        "type": "string"
+      }
+    }
+  }
+}

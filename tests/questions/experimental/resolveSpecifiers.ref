@@ -1,0 +1,94 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "FILTER",
+  "differential" : false,
+  "filterSpecifier" : { },
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filterSpecifierInput" : "filterSpecifierInput",
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Find the locations and IpSpaces specified by the input specifiers",
+    "instanceName" : "qname",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "filters" : {
+        "description" : "Input to the FilterSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "filterSpecifierInput"
+      },
+      "interfaces" : {
+        "description" : "Input to the interfaceSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "interfaceSpecifierInput"
+      },
+      "ips" : {
+        "description" : "Input to the IpSpaceSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "1.1.1.1/24"
+      },
+      "locations" : {
+        "description" : "Input to the LocationSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "locationSpecifierInput"
+      },
+      "nodes" : {
+        "description" : "Input to the NodeSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "nodeSpecifierInput"
+      },
+      "specifierType" : {
+        "allowedValues" : [
+          "filter",
+          "interface",
+          "ip_space",
+          "location",
+          "node"
+        ],
+        "description" : "The type of specifier to resolve.",
+        "optional" : false,
+        "type" : "string",
+        "value" : "filter",
+        "values" : [
+          {
+            "description" : "Resolves filterSpecifier using the input to 'nodes' and 'filters'",
+            "name" : "filter"
+          },
+          {
+            "description" : "Resolves interfaceSpecifier using the input to 'nodes' and interfaces'",
+            "name" : "interface"
+          },
+          {
+            "description" : "Resolves ipSpaceSpecifier using the input to 'ips' and 'locations'",
+            "name" : "ip_space"
+          },
+          {
+            "description" : "Resolves locationSpecifier using the input to 'locations'",
+            "name" : "location"
+          },
+          {
+            "description" : "Resolves nodeSpecifier using the input to 'nodes'",
+            "name" : "node"
+          }
+        ]
+      }
+    }
+  },
+  "interfaceSpecifier" : { },
+  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
+  "interfaceSpecifierInput" : "interfaceSpecifierInput",
+  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "ipSpaceSpecifierInput" : "1.1.1.1/24",
+  "locationSpecifier" : { },
+  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "locationSpecifierInput" : "locationSpecifierInput",
+  "nodeSpecifier" : { },
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
+  "nodeSpecifierInput" : "nodeSpecifierInput"
+}

@@ -51,11 +51,11 @@ test -raw tests/questions/experimental/reachability.ref validate-template reacha
 # validate reducedReachability
 test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
+# validate resolveSpecifiers
+test -raw tests/questions/experimental/resolveSpecifiers.ref validate-template resolveSpecifiers specifierType="filter", filters="filterSpecifierInput", interfaces="interfaceSpecifierInput", ips="1.1.1.1/24", locations="locationSpecifierInput", nodes="nodeSpecifierInput"
+
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
-
-# validate specifiers
-test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
 
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null

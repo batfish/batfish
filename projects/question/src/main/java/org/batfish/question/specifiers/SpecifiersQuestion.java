@@ -10,10 +10,10 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
+import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
 import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -54,9 +54,7 @@ public final class SpecifiersQuestion extends Question {
 
   private String _filterSpecifierFactory = FlexibleFilterSpecifierFactory.NAME;
   private String _interfaceSpecifierFactory = FlexibleInterfaceSpecifierFactory.NAME;
-  private String _ipSpaceSpecifierFactory =
-      InferFromLocationIpSpaceSpecifierFactory
-          .NAME; // reasonable default (perhaps we need a unique entry factory)?
+  private String _ipSpaceSpecifierFactory = FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
   private String _locationSpecifierFactory = FlexibleLocationSpecifierFactory.NAME;
   private String _nodeSpecifierFactory = FlexibleNodeSpecifierFactory.NAME;
 
