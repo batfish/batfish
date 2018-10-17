@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 import java.util.Set;
@@ -50,6 +51,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
   @Override
   public IpSpaceAssignment resolve(Set<Location> key, SpecifierContext ctxt) {
     Set<Location> locations = _locationSpecifier.resolve(ctxt);
+    checkArgument(!locations.isEmpty(), "No such locations");
     IpSpace ipSpace =
         AclIpSpace.union(
             InferFromLocationIpSpaceSpecifier.INSTANCE

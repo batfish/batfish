@@ -5,6 +5,7 @@ import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.IntegerSpace.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSet;
@@ -246,7 +247,8 @@ public class IntegerSpaceTest {
 
   @Test
   public void testCreationFromStringNull() {
-    assertThat(IntegerSpace.create(null), nullValue());
+    assertThat(IntegerSpace.create(null), equalTo(EMPTY));
+    assertThat(IntegerSpace.Builder.create(null), nullValue());
   }
 
   @Test
@@ -365,5 +367,12 @@ public class IntegerSpaceTest {
     assertThat(
         IntegerSpace.unionOf(r1, r2),
         equalTo(IntegerSpace.builder().including(r1).including(r2).build()));
+  }
+
+  @Test
+  public void testStaticBuilderCreators() {
+    Builder b = Builder.create("10-20");
+    assertThat(b, not(nullValue()));
+    assertThat(b.build(), equalTo(IntegerSpace.of(Range.closed(10, 20))));
   }
 }
