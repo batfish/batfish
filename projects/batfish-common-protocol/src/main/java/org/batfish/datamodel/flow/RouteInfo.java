@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -13,17 +14,17 @@ import org.batfish.datamodel.Route;
  * Contains information about the {@link Route}s which led to the selection of the outgoing
  * interface for the {@link ExitOutputIfaceStep}
  */
-public class RouteInfo {
+public final class RouteInfo {
 
   private static final String PROP_TYPE = "type";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
   /** Type of the route like BGP, OSPF etc. */
-  private final String _type;
+  private @Nonnull final String _type;
 
   /** Network of this route */
-  private final Prefix _network;
+  private @Nonnull final Prefix _network;
 
   /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
@@ -39,17 +40,19 @@ public class RouteInfo {
       @JsonProperty(PROP_TYPE) @Nullable String type,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp) {
-    checkArgument(type != null, "Route type should be present");
-    checkArgument(network != null, "Network should exist in a route");
+    checkArgument(type != null, "Missing %s", PROP_TYPE);
+    checkArgument(network != null, "Missing %s", PROP_NETWORK);
     return new RouteInfo(type, network, nextHopIp);
   }
 
   @JsonProperty(PROP_TYPE)
+  @Nonnull
   public String getType() {
     return _type;
   }
 
   @JsonProperty(PROP_NETWORK)
+  @Nonnull
   public Prefix getNetwork() {
     return _network;
   }
