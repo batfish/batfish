@@ -14,14 +14,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -321,8 +325,54 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
   }
 
+  /** Tests ingressInterface with an incoming ACL. */
+  @Test
+  public void testDeniedInVsAccept() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Interface.Builder ib =
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setVrf(nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build());
+
+    // This interface has no incoming filter.
+    Interface ifaceAllowIn = ib.setAddress(new InterfaceAddress("2.0.0.2/24")).build();
+
+    // This interface has an incoming filter that denies everything.
+    Interface ifaceDenyIn =
+        ib.setIncomingFilter(
+                nf.aclBuilder().setOwner(c).setName("in").setLines(ImmutableList.of()).build())
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .build();
+
+    Batfish b = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
+    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
+    b.computeDataPlane(false);
+
+    Flow.Builder fb =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setTag("denied")
+            .setDstIp(ifaceDenyIn.getAddress().getIp());
+
+    Flow flowDenied = fb.setIngressInterface(ifaceDenyIn.getName()).build();
+    Flow flowAllowed = fb.setIngressInterface(ifaceAllowIn.getName()).build();
+
+    SortedMap<Flow, List<Trace>> flowTraces =
+        b.buildFlows(ImmutableSet.of(flowDenied, flowAllowed), false);
+
+    /* Flow coming in through ifaceDenyIn should be blocked by ACL. */
+    Trace trace = Iterables.getOnlyElement(flowTraces.get(flowDenied));
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_IN));
+
+    /* Flow coming in through ifaceAllowIn should be allowed in and then accepted. */
+    trace = Iterables.getOnlyElement(flowTraces.get(flowAllowed));
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.ACCEPTED));
+  }
+
   /** When ingress node is non-existent, don't crash with null-pointer. */
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testTracerouteOutsideNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -332,11 +382,11 @@ public class TracerouteEngineImplTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
-    TracerouteEngineImpl.getInstance()
-        .buildFlows(
-            dp,
-            ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
-            dp.getFibs(),
-            false);
+    Set<Flow> flows =
+        ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build());
+    Map<String, Map<String, Fib>> fibs = dp.getFibs();
+
+    _thrown.expect(IllegalArgumentException.class);
+    TracerouteEngineImpl.getInstance().buildFlows(dp, flows, fibs, false);
   }
 }
