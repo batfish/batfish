@@ -1,7 +1,5 @@
 package org.batfish.common.util;
 
-import static org.glassfish.jersey.internal.guava.Predicates.not;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +62,7 @@ public class TracePruner {
       } else {
         _traces
             .stream()
-            .filter(not(usedTraces::contains))
+            .filter(trace -> !usedTraces.contains(trace))
             .limit(maxSize - usedTraces.size())
             .forEach(usedTraces::add);
         break;
@@ -79,7 +77,7 @@ public class TracePruner {
         _unpickedDispositions
             .stream()
             .flatMap(disposition -> _dispositionTraces.get(disposition).stream())
-            .filter(not(usedTraces::contains))
+            .filter(trace -> !usedTraces.contains(trace))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused disposition"));
     updateUnpickedMaps(t);
@@ -91,7 +89,7 @@ public class TracePruner {
         _unpickedNodes
             .stream()
             .flatMap(node -> _nodeTraces.get(node).stream())
-            .filter(not(usedTraces::contains))
+            .filter(trace -> !usedTraces.contains(trace))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused node"));
     updateUnpickedMaps(t);
