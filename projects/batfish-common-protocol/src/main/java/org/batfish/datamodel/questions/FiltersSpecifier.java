@@ -51,8 +51,6 @@ public class FiltersSpecifier {
   public FiltersSpecifier(String expression) {
     _expression = expression;
 
-    String[] parts = expression.split(":");
-
     String upperExpression = expression.toUpperCase();
     Type parsedType = null;
     for (Type type : Type.values()) {

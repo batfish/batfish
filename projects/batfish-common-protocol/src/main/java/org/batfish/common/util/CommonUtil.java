@@ -220,14 +220,6 @@ public class CommonUtil {
     }
   }
 
-  /** @throws IllegalArgumentException if the given number is over 2^16-1. */
-  @SuppressWarnings("https://github.com/batfish/batfish/issues/2103")
-  private static void checkLongWithin16Bit(long l) {
-    if (l > 0xFFFFL) {
-      throw new IllegalArgumentException("AS Number larger than 16-bit");
-    }
-  }
-
   /**
    * Convert a BGP community string to its numeric representation. Only 16-bit AS numbers and
    * community values are supported.
