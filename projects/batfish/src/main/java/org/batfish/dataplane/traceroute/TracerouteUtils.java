@@ -6,7 +6,6 @@ import static org.batfish.datamodel.flow.StepAction.SENT_IN;
 
 import java.util.Map;
 import java.util.NavigableMap;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -67,13 +66,12 @@ final class TracerouteUtils {
    * @return true if ARP request will get a response
    */
   static boolean isArpSuccessful(
-      @Nullable Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
-    return arpIp != null
-        && forwardingAnalysis
-            .getArpReplies()
-            .get(node.getHostname())
-            .get(iface)
-            .containsIp(arpIp, node.getIpSpaces());
+      Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
+    return forwardingAnalysis
+        .getArpReplies()
+        .get(node.getHostname())
+        .get(iface)
+        .containsIp(arpIp, node.getIpSpaces());
   }
 
   /**
