@@ -7,6 +7,8 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.InboundStep;
+import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -229,7 +233,6 @@ public class TracerouteEngineImplContext {
         processHop(
             edge.getNode2(),
             edge.getInt2(),
-            null,
             transmissionContext,
             transmissionContext._transformedFlow,
             visitedHops);
@@ -336,7 +339,6 @@ public class TracerouteEngineImplContext {
               Set<Hop> visitedHops = Collections.emptySet();
               List<Hop> hops = new ArrayList<>();
               String ingressInterfaceName = flow.getIngressInterface();
-              String ingressVrfName = flow.getIngressVrf();
               if (ingressInterfaceName != null) {
                 Hop dummyHop = createDummyHop();
                 hops.add(dummyHop);
@@ -358,7 +360,6 @@ public class TracerouteEngineImplContext {
                   processHop(
                       ingressNodeName,
                       ingressInterfaceName,
-                      ingressVrfName,
                       transmissionContext,
                       flow,
                       visitedHops);
@@ -374,13 +375,7 @@ public class TracerouteEngineImplContext {
                         flow,
                         new ArrayList<>(),
                         flow);
-                processHop(
-                    ingressNodeName,
-                    ingressInterfaceName,
-                    ingressVrfName,
-                    transmissionContext,
-                    flow,
-                    visitedHops);
+                processHop(ingressNodeName, null, transmissionContext, flow, visitedHops);
               }
             });
     return new TreeMap<>(flowTraces);
@@ -389,7 +384,6 @@ public class TracerouteEngineImplContext {
   private void processHop(
       String currentNodeName,
       @Nullable String inputIfaceName,
-      @Nullable String inputVrfName,
       TransmissionContext oldTransmissionContext,
       Flow currentFlow,
       Set<Hop> visitedHops) {
@@ -409,23 +403,22 @@ public class TracerouteEngineImplContext {
     Ip dstIp = currentFlow.getDstIp();
 
     // trace was received on a source interface of this hop
-    if (inputIfaceName != null || inputVrfName != null) {
-      EnterInputIfaceStep enterSrcIfacStep =
+    if (inputIfaceName != null) {
+      EnterInputIfaceStep enterIfaceStep =
           createEnterSrcIfaceStep(
               currentConfiguration,
               inputIfaceName,
-              inputVrfName,
               _ignoreAcls,
               currentFlow,
               aclDefinitions,
               namedIpSpaces,
               _dataPlane);
-      if (enterSrcIfacStep != null) {
-        steps.add(enterSrcIfacStep);
-        if (enterSrcIfacStep.getAction() == StepAction.TERMINATED) {
-          Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
-          transmissionContext._hopsSoFar.add(acceptedHop);
-          Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
+      if (enterIfaceStep != null) {
+        steps.add(enterIfaceStep);
+        if (enterIfaceStep.getAction() == StepAction.BLOCKED) {
+          Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
+          transmissionContext._hopsSoFar.add(deniedHop);
+          Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
           transmissionContext._flowTraces.add(trace);
           return;
         }
@@ -438,6 +431,26 @@ public class TracerouteEngineImplContext {
       vrfName = currentFlow.getIngressVrf();
     } else {
       vrfName = currentConfiguration.getAllInterfaces().get(inputIfaceName).getVrfName();
+    }
+
+    // Accept if the flow is destined for this vrf on this host.
+    if (_dataPlane
+        .getIpVrfOwners()
+        .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
+        .getOrDefault(currentConfiguration.getHostname(), ImmutableSet.of())
+        .contains(vrfName)) {
+      InboundStep inboundStep =
+          InboundStep.builder()
+              .setAction(StepAction.RECEIVED)
+              .setDetail(new InboundStepDetail())
+              .build();
+      steps.add(inboundStep);
+
+      Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
+      transmissionContext._hopsSoFar.add(acceptedHop);
+      Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
+      transmissionContext._flowTraces.add(trace);
+      return;
     }
 
     // .. and what the next hops are based on the FIB.
