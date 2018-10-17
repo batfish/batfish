@@ -19,8 +19,11 @@ public class AbstractDomainFactory {
       case REACHABILITY:
         config = new BDDNetConfig(true);
         netFactory = new BDDNetFactory(graph, config);
-        // return ReachabilityUnderDomain.create(graph, netFactory);
-        return new ReachabilityOverDomain(graph, netFactory);
+        // return ReachabilityDonutDomain.create(graph, netFactory);
+        long t = System.currentTimeMillis();
+        ReachabilityUnderDomain domain = new ReachabilityUnderDomain(graph, netFactory);
+        System.out.println("Create BDD transfer functions: " + (System.currentTimeMillis() - t));
+        return domain;
       default:
         throw new BatfishException("Invalid domain type: " + dtype);
     }

@@ -159,12 +159,16 @@ public class BDDNetFactory {
   public BDDNetFactory(Graph g, BDDNetConfig config) {
     this(
         new ArrayList<>(g.getRouters()),
-        new ArrayList<>(g.getAllCommunities()),
-        new ArrayList<>(BDDUtils.findAllLocalPrefs(g)),
-        new ArrayList<>(BDDUtils.findAllMeds(g)),
-        new ArrayList<>(BDDUtils.findAllAdminDistances(g)),
-        new ArrayList<>(BDDUtils.findAllNextHopIps(g)),
-        conservativeMaxCost(g),
+        (config.getKeepCommunities() ? new ArrayList<>(g.getAllCommunities()) : new ArrayList<>()),
+        (config.getKeepLp() ? new ArrayList<>(BDDUtils.findAllLocalPrefs(g)) : new ArrayList<>()),
+        (config.getKeepMed() ? new ArrayList<>(BDDUtils.findAllMeds(g)) : new ArrayList<>()),
+        (config.getKeepAd()
+            ? new ArrayList<>(BDDUtils.findAllAdminDistances(g))
+            : new ArrayList<>()),
+        (config.getKeepNextHopIp()
+            ? new ArrayList<>(BDDUtils.findAllNextHopIps(g))
+            : new ArrayList<>()),
+        (config.getKeepMetric() ? conservativeMaxCost(g) : 0),
         config);
   }
 
@@ -179,7 +183,6 @@ public class BDDNetFactory {
       BDDNetConfig config) {
 
     _allRouters = routers;
-    _allAds = adminDistances;
     _maxCost = maxCost;
 
     _allIps = ips;
@@ -203,6 +206,11 @@ public class BDDNetFactory {
       if (cvar.getType() != Type.REGEX) {
         _allCommunities.add(cvar);
       }
+    }
+
+    _allAds = adminDistances;
+    if (_allAds.isEmpty()) {
+      _allAds.add(0L);
     }
 
     _allMetricTypes = new ArrayList<>();
@@ -246,7 +254,7 @@ public class BDDNetFactory {
     }
 
     _factory = JFactory.init(numNodes, cacheSize);
-    _factory.disableReorder();
+    _factory.enableReorder();
     _factory.setCacheRatio(32);
     // _factory.setIncreaseFactor(4);
 

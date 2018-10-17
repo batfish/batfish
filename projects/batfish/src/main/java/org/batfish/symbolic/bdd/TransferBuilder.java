@@ -1025,16 +1025,21 @@ class TransferBuilder {
    */
   @Nullable
   public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
-    _ignoredNetworks = ignoredNetworks;
-    _commDeps = _graph.getCommunityDependencies();
-    BDDRoute o = _netFactory.createRoute();
-    // addCommunityAssumptions(o);
 
     // We need a policy no matter what when iBGP or OSPF import (to update cost)
     boolean needPolicyWhenNull =
         (_edge != null)
             && (_edge.isAbstract()
                 || (_protocol == RoutingProtocol.OSPF && _edgeType == EdgeType.IMPORT));
+
+    if (_statements == null && !needPolicyWhenNull) {
+      return null;
+    }
+
+    _ignoredNetworks = ignoredNetworks;
+    _commDeps = _graph.getCommunityDependencies();
+    BDDRoute o = _netFactory.createRoute();
+    // addCommunityAssumptions(o);
 
     TransferResult<BDDTransferFunction, BDD> result;
     if (_statements == null && needPolicyWhenNull) {
@@ -1045,11 +1050,9 @@ class TransferBuilder {
               .setReturnValue(t)
               .setReturnAssignedValue(_netFactory.one())
               .setFallthroughValue(_netFactory.one());
-    } else if (_statements != null) {
+    } else {
       TransferParam<BDDRoute> p = new TransferParam<>(o, false);
       result = compute(_statements, p);
-    } else {
-      return null;
     }
 
     if (_edge != null) {
@@ -1058,7 +1061,6 @@ class TransferBuilder {
 
     // System.out.println("RESULT FOR: " + _edge + "," + (_edgeType == EdgeType.IMPORT));
     // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
-
     return result;
   }
 }

@@ -56,7 +56,6 @@ public class AbstractInterpreter {
    * starting values for the fixed point computation.
    */
   private void initializeOriginatedPrefixes(
-      Map<String, Set<Prefix>> originatedBGP,
       Map<String, Set<Prefix>> originatedOSPF,
       Map<String, Set<Tuple<Prefix, String>>> originatedConnected,
       Map<String, Map<String, Set<Prefix>>> originatedStatic) {
@@ -64,9 +63,6 @@ public class AbstractInterpreter {
     for (String router : _graph.getRouters()) {
       Configuration conf = _graph.getConfigurations().get(router);
       Vrf vrf = conf.getDefaultVrf();
-      if (vrf.getBgpProcess() != null) {
-        originatedBGP.put(router, Graph.getOriginatedNetworks(conf, Protocol.BGP));
-      }
       if (vrf.getOspfProcess() != null) {
         originatedOSPF.put(router, Graph.getOriginatedNetworks(conf, Protocol.OSPF));
       }
@@ -93,23 +89,6 @@ public class AbstractInterpreter {
 
       originatedConnected.put(router, conn);
     }
-  }
-
-  private <T> boolean withdrawn(
-      IAbstractDomain<T> domain,
-      Table3<String, String, GraphEdge, T> perNeighbor,
-      String router,
-      RoutingProtocol proto,
-      GraphEdge edge,
-      T newValue) {
-    String protoName = proto.protocolName();
-    T existing = perNeighbor.get(router, protoName, edge);
-    perNeighbor.put(router, protoName, edge, newValue);
-    if (existing == null) {
-      return false;
-    }
-    T both = domain.merge(existing, newValue);
-    return (!both.equals(newValue));
   }
 
   public <T> void computeFixedPoint(
@@ -288,16 +267,6 @@ public class AbstractInterpreter {
               }
               tmpBgp = domain.aggregate(neighborConf, transformers, tmpBgp);
 
-              /* boolean anyWithdraw =
-                  withdrawn(
-                      domain,
-                      state.getPerNeighborRoutes(),
-                      neighbor,
-                      RoutingProtocol.BGP,
-                      rev,
-                      tmpBgp);
-              assert (!anyWithdraw); */
-              // TODO: if withdraw, recompute rib from all neighbors rather than just this one
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
 
               // tempTime = System.currentTimeMillis();
@@ -346,11 +315,13 @@ public class AbstractInterpreter {
    * reachable sets at each router for every iteration.
    */
   public <T> AbstractState<T> computeFixedPoint(IAbstractDomain<T> domain) {
-    Map<String, Set<Prefix>> origBgp = new HashMap<>();
+    long t = System.currentTimeMillis();
+    long createValues = 0;
+
     Map<String, Set<Prefix>> origOspf = new HashMap<>();
     Map<String, Set<Tuple<Prefix, String>>> origConn = new HashMap<>();
     Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
-    initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
+    initializeOriginatedPrefixes(origOspf, origConn, origStatic);
 
     // The up-to-date collection of messages from each protocol
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
@@ -362,10 +333,8 @@ public class AbstractInterpreter {
     Table3<String, String, GraphEdge, T> perNeighbor = new Table3<>();
 
     Set<String> initialRouters = new HashSet<>();
-    long t = System.currentTimeMillis();
     for (String router : _graph.getRouters()) {
       Configuration conf = _graph.getConfigurations().get(router);
-      Set<Prefix> bgpPrefixes = origBgp.get(router);
       Set<Prefix> ospfPrefixes = origOspf.get(router);
       Set<Tuple<Prefix, String>> connPrefixes = origConn.get(router);
       Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
@@ -385,9 +354,6 @@ public class AbstractInterpreter {
         connectedPrefixes.add(tup.getFirst());
       }
 
-      if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
-        initialRouters.add(router);
-      }
       if (staticPrefixes != null && !staticPrefixes.isEmpty()) {
         initialRouters.add(router);
       }
@@ -395,11 +361,13 @@ public class AbstractInterpreter {
         initialRouters.add(router);
       }
 
+      long start = System.currentTimeMillis();
       T bgp = domain.bot();
       T ospf = domain.selectBest(domain.value(conf, RoutingProtocol.OSPF, ospfPrefixes));
       T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connectedPrefixes));
       T local = domain.selectBest(domain.value(conf, RoutingProtocol.LOCAL, localPrefixes));
       T stat = domain.bot();
+      createValues += (System.currentTimeMillis() - start);
       if (staticPrefixes != null) {
         for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
           String neighbor = e.getKey();
@@ -422,6 +390,7 @@ public class AbstractInterpreter {
     AbstractState<T> state = new AbstractState<>(reachable, perNeighbor, nonDynamic);
 
     System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
+    System.out.println("  Create initial BDD values: " + createValues);
     computeFixedPoint(domain, state, initialRouters);
     return state;
   }

@@ -43,43 +43,43 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private Map<CommunityVar, Integer> _communityIndexOffset;
 
-  private BDDFiniteDomain<Long> _adminDist;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
 
-  private BDDFiniteDomain<Long> _adminDistTemp;
-
-  private SortedMap<CommunityVar, BDD> _communities;
-
-  private SortedMap<CommunityVar, BDD> _communitiesTemp;
-
-  private BDDFiniteDomain<Integer> _localPref;
-
-  private BDDFiniteDomain<Integer> _localPrefTemp;
-
-  private BDDFiniteDomain<Long> _med;
-
-  private BDDFiniteDomain<Long> _medTemp;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistoryTemp;
 
   private BDDInteger _metric;
 
   private BDDInteger _metricTemp;
 
+  private BDDFiniteDomain<Long> _med;
+
+  private BDDFiniteDomain<Long> _medTemp;
+
+  private BDDFiniteDomain<Long> _adminDist;
+
+  private BDDFiniteDomain<Long> _adminDistTemp;
+
+  private BDDFiniteDomain<Integer> _localPref;
+
+  private BDDFiniteDomain<Integer> _localPrefTemp;
+
+  private SortedMap<CommunityVar, BDD> _communities;
+
+  private SortedMap<CommunityVar, BDD> _communitiesTemp;
+
   private BDDFiniteDomain<OspfType> _ospfMetric;
 
   private BDDFiniteDomain<OspfType> _ospfMetricTemp;
 
-  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
+  private final BDDInteger _prefixLength;
 
-  private final BDDFiniteDomain<RoutingProtocol> _protocolHistoryTemp;
+  private final BDDInteger _prefix;
 
   private BDDFiniteDomain<String> _dstRouter;
 
   private BDDFiniteDomain<String> _srcRouter;
 
   private BDDFiniteDomain<String> _routerTemp;
-
-  private final BDDInteger _prefix;
-
-  private final BDDInteger _prefixLength;
 
   private BDD _fromRRClient;
 
