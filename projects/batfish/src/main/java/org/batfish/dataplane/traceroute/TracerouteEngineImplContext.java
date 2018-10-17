@@ -1,6 +1,5 @@
 package org.batfish.dataplane.traceroute;
 
-import static org.batfish.dataplane.traceroute.TracerouteUtils.createDummyHop;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
@@ -109,10 +108,6 @@ public class TracerouteEngineImplContext {
       return transmissionContext;
     }
   }
-
-  static final String TRACEROUTE_DUMMY_OUT_INTERFACE = "traceroute_dummy_out_interface";
-
-  static final String TRACEROUTE_DUMMY_NODE = "traceroute_dummy_node";
 
   private final Map<String, Configuration> _configurations;
   private final DataPlane _dataPlane;
@@ -340,30 +335,18 @@ public class TracerouteEngineImplContext {
               List<Hop> hops = new ArrayList<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
-                Hop dummyHop = createDummyHop();
-                hops.add(dummyHop);
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
                         Maps.newHashMap(),
-                        dummyHop.getNode(),
+                        new Node(ingressNodeName),
                         currentFlowTraces,
                         hops,
                         Maps.newTreeMap(),
                         flow,
                         new ArrayList<>(),
                         flow);
-                if (isArpSuccessful(
-                    flow.getDstIp(),
-                    _forwardingAnalysis,
-                    _configurations.get(ingressNodeName),
-                    ingressInterfaceName)) {
-                  processHop(
-                      ingressNodeName,
-                      ingressInterfaceName,
-                      transmissionContext,
-                      flow,
-                      visitedHops);
-                }
+                processHop(
+                    ingressNodeName, ingressInterfaceName, transmissionContext, flow, visitedHops);
               } else {
                 TransmissionContext transmissionContext =
                     new TransmissionContext(

@@ -3,14 +3,9 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.BLOCKED;
 import static org.batfish.datamodel.flow.StepAction.SENT_IN;
-import static org.batfish.datamodel.flow.StepAction.SENT_OUT;
-import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_NODE;
-import static org.batfish.dataplane.traceroute.TracerouteEngineImplContext.TRACEROUTE_DUMMY_OUT_INTERFACE;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Map;
 import java.util.NavigableMap;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -25,11 +20,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
-import org.batfish.datamodel.pojo.Node;
 
 @ParametersAreNonnullByDefault
 final class TracerouteUtils {
@@ -65,24 +57,6 @@ final class TracerouteUtils {
   }
 
   /**
-   * Creates a dummy {@link Hop} for starting a trace when ingressInterface is provided
-   *
-   * @return a dummy {@link Hop}
-   */
-  static Hop createDummyHop() {
-    ImmutableList.Builder<Step<?>> steps = ImmutableList.builder();
-
-    // creating the exit from out interface step
-    ExitOutputIfaceStep.Builder exitOutStepBuilder = ExitOutputIfaceStep.builder();
-    ExitOutputIfaceStepDetail.Builder stepDetailBuilder = ExitOutputIfaceStepDetail.builder();
-    stepDetailBuilder.setOutputInterface(
-        new NodeInterfacePair(TRACEROUTE_DUMMY_NODE, TRACEROUTE_DUMMY_OUT_INTERFACE));
-    exitOutStepBuilder.setDetail(stepDetailBuilder.build()).setAction(SENT_OUT);
-
-    return new Hop(new Node(TRACEROUTE_DUMMY_NODE), steps.add(exitOutStepBuilder.build()).build());
-  }
-
-  /**
    * Returns true if the next node and interface responds for ARP request for given arpIp
    *
    * @param arpIp ARP for given {@link Ip}
@@ -92,13 +66,12 @@ final class TracerouteUtils {
    * @return true if ARP request will get a response
    */
   static boolean isArpSuccessful(
-      @Nullable Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
-    return arpIp != null
-        && forwardingAnalysis
-            .getArpReplies()
-            .get(node.getHostname())
-            .get(iface)
-            .containsIp(arpIp, node.getIpSpaces());
+      Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
+    return forwardingAnalysis
+        .getArpReplies()
+        .get(node.getHostname())
+        .get(iface)
+        .containsIp(arpIp, node.getIpSpaces());
   }
 
   /**
