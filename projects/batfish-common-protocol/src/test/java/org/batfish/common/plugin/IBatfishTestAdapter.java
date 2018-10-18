@@ -43,7 +43,6 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
@@ -143,11 +142,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public String getFlowTag() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public GrammarSettings getGrammarSettings() {
     throw new UnsupportedOperationException();
   }
 
@@ -435,11 +429,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
     throw new UnsupportedOperationException();
   }
 
