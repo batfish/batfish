@@ -35,7 +35,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   public static AsPath ofSingletonAsSets(List<Long> asNums) {
-    return createAsPath(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
+    return of(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
   }
 
   private final List<AsSet> _asSets;
@@ -49,14 +49,16 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   @JsonCreator
   private static AsPath jsonCreator(@Nullable ImmutableList<AsSet> value) {
-    return createAsPath(firstNonNull(value, ImmutableList.of()));
+    return of(firstNonNull(value, ImmutableList.of()));
   }
 
-  public static AsPath createAsPath(AsSet asSet) {
-    return AsPath.createAsPath(ImmutableList.of(asSet));
+  /** Create and return a new {@link AsPath} of length 1 using the given {@link AsSet}. */
+  public static AsPath of(AsSet asSet) {
+    return AsPath.of(ImmutableList.of(asSet));
   }
 
-  public static AsPath createAsPath(List<AsSet> asSets) {
+  /** Create and return a new {@link AsPath} of the given {@link AsSet AsSets}. */
+  public static AsPath of(List<AsSet> asSets) {
     ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
     try {
       return VALUES_CACHE.get(immutableValue, () -> new AsPath(immutableValue));

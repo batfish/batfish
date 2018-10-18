@@ -65,7 +65,7 @@ public class BgpRoute extends AbstractRoute {
           getNetwork(),
           getNextHopIp(),
           getAdmin(),
-          AsPath.createAsPath(_asPath),
+          AsPath.of(_asPath),
           _communities,
           _discard,
           _localPreference,

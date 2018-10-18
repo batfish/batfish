@@ -57,7 +57,7 @@ public class BgpBestPathRibTest {
     assertThat(_bpRib.getBestAsPaths().size(), equalTo(1));
     assertThat(
         _bpRib.getBestAsPaths().get(r1.getNetwork()),
-        equalTo(AsPath.createAsPath(ImmutableList.of(AsSet.of(1L, 2L)))));
+        equalTo(AsPath.of(ImmutableList.of(AsSet.of(1L, 2L)))));
 
     // Test better AS path wins
     _bpRib.mergeRoute(r2);
@@ -65,7 +65,7 @@ public class BgpBestPathRibTest {
     assertThat(_bpRib.getBestAsPaths().size(), equalTo(1));
     assertThat(
         _bpRib.getBestAsPaths().get(r1.getNetwork()),
-        equalTo(AsPath.createAsPath(ImmutableList.of(AsSet.of(1L)))));
+        equalTo(AsPath.of(ImmutableList.of(AsSet.of(1L)))));
   }
 
   // TODO: test the rest of the tie breaking more thoroughly

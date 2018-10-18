@@ -55,9 +55,9 @@ public final class NamedAsPathSet extends AsPathSetExpr {
       if (environment.getUseOutputAttributes()
           && environment.getOutputRoute() instanceof BgpRoute.Builder) {
         BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-        inputAsPath = AsPath.createAsPath(bgpRouteBuilder.getAsPath());
+        inputAsPath = AsPath.of(bgpRouteBuilder.getAsPath());
       } else if (environment.getReadFromIntermediateBgpAttributes()) {
-        inputAsPath = AsPath.createAsPath(environment.getIntermediateBgpAttributes().getAsPath());
+        inputAsPath = AsPath.of(environment.getIntermediateBgpAttributes().getAsPath());
       } else if (environment.getOriginalRoute() instanceof BgpRoute) {
         BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
         inputAsPath = bgpRoute.getAsPath();

@@ -183,7 +183,7 @@ class CounterExample {
           for (int i = 0; i < pathLength; i++) {
             b.add(AsSet.of(-1L));
           }
-          AsPath path = AsPath.createAsPath(b.build());
+          AsPath path = AsPath.of(b.build());
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
