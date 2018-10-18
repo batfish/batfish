@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -152,5 +154,22 @@ public class TracerouteAnswererTest {
                 flow,
                 TracerouteAnswerer.COL_TRACES,
                 historyInfo.getPaths().values().stream().findAny())));
+  }
+
+  @Test
+  public void testMaxTraces() {
+    List<Trace> traces =
+        ImmutableList.of(
+            new Trace(FlowDisposition.ACCEPTED, ImmutableList.of()),
+            new Trace(FlowDisposition.DENIED_OUT, ImmutableList.of()));
+    Flow flow =
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+
+    Multiset<Row> rows =
+        TracerouteAnswerer.flowTracesToRows(ImmutableSortedMap.of(flow, traces), 2);
+    assertThat(rows, hasSize(2));
+
+    rows = TracerouteAnswerer.flowTracesToRows(ImmutableSortedMap.of(flow, traces), 1);
+    assertThat(rows, hasSize(1));
   }
 }

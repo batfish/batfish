@@ -63,10 +63,8 @@ public final class TracerouteAnswerer extends Answerer {
 
   public static final String COL_FLOW = "Flow";
   public static final String COL_TRACES = "Traces";
+  public static final String COL_TRACE_COUNT = "TraceCount";
   private static final int TRACEROUTE_PORT = 33434;
-
-  // maximum number of traces per-flow to include in the output
-  private static final int MAX_FLOW_TRACES = 32;
 
   private final Map<String, Configuration> _configurations;
   private final IpSpaceRepresentative _ipSpaceRepresentative;
@@ -99,18 +97,19 @@ public final class TracerouteAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer() {
+    TracerouteQuestion question = (TracerouteQuestion) _question;
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = getFlows(tag);
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
       SortedMap<Flow, List<Trace>> flowTraces =
-          _batfish.buildFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-      rows = flowTracesToRows(flowTraces);
+          _batfish.buildFlows(flows, question.getIgnoreAcls());
+      rows = flowTracesToRows(flowTraces, question.getMaxTraces());
       table = new TableAnswerElement(metadata());
 
     } else {
-      _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
+      _batfish.processFlows(flows, question.getIgnoreAcls());
       FlowHistory flowHistory = _batfish.getHistory();
       rows = flowHistoryToRows(flowHistory, false);
       table = new TableAnswerElement(createMetadata(false));
@@ -175,7 +174,13 @@ public final class TracerouteAnswerer extends Answerer {
         ImmutableList.of(
             new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
             new ColumnMetadata(
-                COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true));
+                COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true),
+            new ColumnMetadata(
+                COL_TRACE_COUNT,
+                Schema.INTEGER,
+                "The total number traces for this flow",
+                false,
+                true));
 
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
@@ -231,11 +236,20 @@ public final class TracerouteAnswerer extends Answerer {
     return rows;
   }
 
-  public static Multiset<Row> flowTracesToRows(SortedMap<Flow, List<Trace>> flowTraces) {
+  public static Multiset<Row> flowTracesToRows(
+      SortedMap<Flow, List<Trace>> flowTraces, int maxTraces) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (Map.Entry<Flow, List<Trace>> flowTrace : flowTraces.entrySet()) {
-      List<Trace> traces = TracePruner.prune(flowTrace.getValue(), MAX_FLOW_TRACES);
-      rows.add(Row.of(COL_FLOW, flowTrace.getKey(), COL_TRACES, traces));
+      List<Trace> traces = flowTrace.getValue();
+      List<Trace> prunedTraces = TracePruner.prune(traces, maxTraces);
+      rows.add(
+          Row.of(
+              COL_FLOW,
+              flowTrace.getKey(),
+              COL_TRACES,
+              prunedTraces,
+              COL_TRACE_COUNT,
+              traces.size()));
     }
     return rows;
   }
