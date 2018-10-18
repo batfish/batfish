@@ -54,16 +54,10 @@ public class SnapshotMetadataMgr {
   public static synchronized void updateInitializationStatus(
       NetworkId networkId, SnapshotId snapshotId, ProcessingStatus status, String errMessage)
       throws IOException {
-    SnapshotMetadata snapshotMetadata = readMetadata(networkId, snapshotId);
-    InitializationMetadata initializationMetadata = snapshotMetadata.getInitializationMetadata();
-    InitializationMetadata newInitializationMetadata =
-        initializationMetadata.updateStatus(status, errMessage);
-    SnapshotMetadata newSnapshotMetadata =
-        new SnapshotMetadata(
-            snapshotMetadata.getCreationTimestamp(),
-            newInitializationMetadata,
-            snapshotMetadata.getParentSnapshotId());
-    writeMetadata(newSnapshotMetadata, networkId, snapshotId);
+    writeMetadata(
+        readMetadata(networkId, snapshotId).updateStatus(status, errMessage),
+        networkId,
+        snapshotId);
   }
 
   public static void writeMetadata(SnapshotMetadata metadata, String network, String snapshot)

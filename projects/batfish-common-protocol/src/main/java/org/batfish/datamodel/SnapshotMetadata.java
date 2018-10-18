@@ -6,8 +6,8 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,12 +22,6 @@ public final class SnapshotMetadata {
   @VisibleForTesting static final String PROP_INITIALIZATION_METADATA = "initializationMetadata";
   @VisibleForTesting static final String PROP_PARENT_SNAPSHOT_ID = "parentSnapshotId";
 
-  private final Instant _creationTimestamp;
-
-  private final InitializationMetadata _initializationMetadata;
-
-  private final SnapshotId _parentSnapshotId;
-
   @JsonCreator
   private static @Nonnull SnapshotMetadata create(
       @JsonProperty(PROP_CREATION_TIMESTAMP) @Nullable Instant creationTimestamp,
@@ -37,6 +31,12 @@ public final class SnapshotMetadata {
     return new SnapshotMetadata(
         requireNonNull(creationTimestamp), requireNonNull(initializationMetadata), parentSnapshot);
   }
+
+  private final Instant _creationTimestamp;
+
+  private final InitializationMetadata _initializationMetadata;
+
+  private final SnapshotId _parentSnapshotId;
 
   public SnapshotMetadata(
       Instant creationTimestamp,
@@ -51,7 +51,21 @@ public final class SnapshotMetadata {
     _creationTimestamp = creationTimestamp;
     _parentSnapshotId = parentSnapshotId;
     _initializationMetadata =
-        new InitializationMetadata(ProcessingStatus.UNINITIALIZED, null, new LinkedList<>());
+        new InitializationMetadata(ProcessingStatus.UNINITIALIZED, null, ImmutableList.of());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof SnapshotMetadata)) {
+      return false;
+    }
+    SnapshotMetadata rhs = (SnapshotMetadata) obj;
+    return _creationTimestamp.equals(rhs._creationTimestamp)
+        && _initializationMetadata.equals(rhs._initializationMetadata)
+        && Objects.equals(_parentSnapshotId, rhs._parentSnapshotId);
   }
 
   @JsonProperty(PROP_CREATION_TIMESTAMP)
@@ -70,20 +84,6 @@ public final class SnapshotMetadata {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof SnapshotMetadata)) {
-      return false;
-    }
-    SnapshotMetadata rhs = (SnapshotMetadata) obj;
-    return _creationTimestamp.equals(rhs._creationTimestamp)
-        && _initializationMetadata.equals(rhs._initializationMetadata)
-        && Objects.equals(_parentSnapshotId, rhs._parentSnapshotId);
-  }
-
-  @Override
   public int hashCode() {
     return Objects.hash(_creationTimestamp, _initializationMetadata, _parentSnapshotId);
   }
@@ -96,5 +96,12 @@ public final class SnapshotMetadata {
         .add(PROP_INITIALIZATION_METADATA, _initializationMetadata)
         .add(PROP_PARENT_SNAPSHOT_ID, _parentSnapshotId)
         .toString();
+  }
+
+  public @Nonnull SnapshotMetadata updateStatus(ProcessingStatus status, String errMessage) {
+    return new SnapshotMetadata(
+        _creationTimestamp,
+        _initializationMetadata.updateStatus(status, errMessage),
+        _parentSnapshotId);
   }
 }
