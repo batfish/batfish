@@ -2793,6 +2793,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void identifyDeviceTypes(Collection<Configuration> configurations) {
     for (Configuration c : configurations) {
+      if (c.getDeviceType() != null) {
+        continue;
+      }
       // Set device type to host iff the configuration format is HOST
       if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
         c.setDeviceType(DeviceType.HOST);
