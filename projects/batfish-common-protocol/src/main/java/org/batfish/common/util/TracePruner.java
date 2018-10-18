@@ -1,9 +1,12 @@
 package org.batfish.common.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -23,6 +26,7 @@ public class TracePruner {
   private final Map<FlowDisposition, List<Trace>> _dispositionTraces;
   private final Map<String, List<Trace>> _nodeTraces;
   private final List<Trace> _traces;
+  private final Set<Trace> _pickedTraces;
   private final SortedSet<FlowDisposition> _unpickedDispositions;
   private final SortedSet<String> _unpickedNodes;
 
@@ -30,6 +34,7 @@ public class TracePruner {
     _traces = traces;
     _dispositionTraces = new HashMap<>();
     _nodeTraces = new HashMap<>();
+    _pickedTraces = Collections.newSetFromMap(new IdentityHashMap<>());
 
     for (Trace trace : traces) {
       _dispositionTraces
@@ -56,13 +61,13 @@ public class TracePruner {
 
     while (usedTraces.size() < maxSize) {
       if (!_unpickedDispositions.isEmpty()) {
-        usedTraces.add(chooseTraceByDisposition(usedTraces));
+        usedTraces.add(chooseTraceByDisposition());
       } else if (!_unpickedNodes.isEmpty()) {
-        usedTraces.add(chooseTraceByNode(usedTraces));
+        usedTraces.add(chooseTraceByNode());
       } else {
         _traces
             .stream()
-            .filter(trace -> !usedTraces.contains(trace))
+            .filter(trace -> !_pickedTraces.contains(trace))
             .limit(maxSize - usedTraces.size())
             .forEach(usedTraces::add);
         break;
@@ -72,24 +77,24 @@ public class TracePruner {
     return usedTraces;
   }
 
-  private Trace chooseTraceByDisposition(List<Trace> usedTraces) {
+  private Trace chooseTraceByDisposition() {
     Trace t =
         _unpickedDispositions
             .stream()
             .flatMap(disposition -> _dispositionTraces.get(disposition).stream())
-            .filter(trace -> !usedTraces.contains(trace))
+            .filter(trace -> !_pickedTraces.contains(trace))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused disposition"));
     updateUnpickedMaps(t);
     return t;
   }
 
-  private Trace chooseTraceByNode(List<Trace> usedTraces) {
+  private Trace chooseTraceByNode() {
     Trace t =
         _unpickedNodes
             .stream()
             .flatMap(node -> _nodeTraces.get(node).stream())
-            .filter(trace -> !usedTraces.contains(trace))
+            .filter(trace -> !_pickedTraces.contains(trace))
             .findFirst()
             .orElseThrow(() -> new BatfishException("No trace with unused node"));
     updateUnpickedMaps(t);
@@ -97,6 +102,7 @@ public class TracePruner {
   }
 
   private void updateUnpickedMaps(Trace t) {
+    _pickedTraces.add(t);
     _unpickedDispositions.remove(t.getDisposition());
     t.getHops().stream().map(hop -> hop.getNode().getName()).forEach(_unpickedNodes::remove);
   }
