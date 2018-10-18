@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
@@ -100,9 +100,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // mapping: hostname -> set of interfacenames that is not full
   private final Map<String, Set<String>> _interfacesWithMissingDevices;
 
-  // mapping: hostname -> interface -> interface subnet
-  private Map<String, Map<String, Set<InterfaceAddress>>> _interfacesHostSubnetWithMissingDevices;
-
   // mapping: hostname -> vrf name -> interfacename -> ips belonging to a subnet of the interface
   private final Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
 
@@ -131,7 +128,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _snapshotOwnedIps = computeSnapshotOwnedIps(configurations);
     _snapshotOwnedIpBDD = computeSnapshotOwnedIpsBDD();
     _interfacesWithMissingDevices = computeInterfacesWithMissingDevices(configurations);
-    _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIps(configurations, false);
+    _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
@@ -942,10 +939,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   BDD computeVrfOwnedIpBDD(Map<String, Configuration> configurations) {
     Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
-        CommonUtil.computeIpInterfaceOwners(CommonUtil.computeNodeInterfaces(configurations), true);
+        TopologyUtil.computeIpInterfaceOwners(
+            TopologyUtil.computeNodeInterfaces(configurations), true);
     Map<String, Map<String, IpSpace>> vrfOwnedIps =
-        CommonUtil.computeVrfOwnedIpSpaces(
-            CommonUtil.computeIpVrfOwners(ipInterfaceOwners, configurations));
+        TopologyUtil.computeVrfOwnedIpSpaces(
+            TopologyUtil.computeIpVrfOwners(ipInterfaceOwners, configurations));
     return vrfOwnedIps
         .entrySet()
         .stream()
@@ -980,10 +978,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   IpSpace computeSnapshotOwnedIps(Map<String, Configuration> configurations) {
     Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
-        CommonUtil.computeIpInterfaceOwners(CommonUtil.computeNodeInterfaces(configurations), true);
+        TopologyUtil.computeIpInterfaceOwners(
+            TopologyUtil.computeNodeInterfaces(configurations), true);
     Map<String, Map<String, IpSpace>> vrfOwnedIps =
-        CommonUtil.computeVrfOwnedIpSpaces(
-            CommonUtil.computeIpVrfOwners(ipInterfaceOwners, configurations));
+        TopologyUtil.computeVrfOwnedIpSpaces(
+            TopologyUtil.computeIpVrfOwners(ipInterfaceOwners, configurations));
 
     IpSpace vrfOwnedIpSpace =
         AclIpSpace.permitting(

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public final class SelfDescribingObjectTest {
@@ -38,5 +39,12 @@ public final class SelfDescribingObjectTest {
         .addEqualityGroup(group2Elem1)
         .addEqualityGroup(group3Elem1)
         .testEquals();
+  }
+
+  @Test
+  public void testGetTypedValue() {
+    Ip ip = new Ip("1.1.1.1");
+    SelfDescribingObject ipObject = new SelfDescribingObject(Schema.IP, ip);
+    assertThat(ipObject.getTypedValue(), equalTo(ip));
   }
 }

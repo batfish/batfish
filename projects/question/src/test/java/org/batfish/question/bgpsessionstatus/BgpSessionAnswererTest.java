@@ -1,6 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionInfo.getLocallyBrokenStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.getLocallyBrokenStatus;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -9,11 +9,11 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
+import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
 import org.junit.Test;
 
-/** Tests of static methods of {@link BgpSessionInfo} */
-public class BgpSessionInfoTest {
+/** Tests of static methods of {@link BgpSessionAnswerer} */
+public class BgpSessionAnswererTest {
 
   @Test
   public void testLocalIpUnknownStatically() {
@@ -23,16 +23,16 @@ public class BgpSessionInfoTest {
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).build(),
             BgpSessionProperties.SessionType.EBGP_SINGLEHOP),
-        equalTo(SessionStatus.NO_LOCAL_IP));
+        equalTo(ConfiguredSessionStatus.NO_LOCAL_IP));
     assertThat(
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).build(),
             BgpSessionProperties.SessionType.EBGP_MULTIHOP),
-        equalTo(SessionStatus.LOCAL_IP_UNKNOWN_STATICALLY));
+        equalTo(ConfiguredSessionStatus.LOCAL_IP_UNKNOWN_STATICALLY));
     assertThat(
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).build(), BgpSessionProperties.SessionType.IBGP),
-        equalTo(SessionStatus.LOCAL_IP_UNKNOWN_STATICALLY));
+        equalTo(ConfiguredSessionStatus.LOCAL_IP_UNKNOWN_STATICALLY));
   }
 
   @Test
@@ -43,6 +43,6 @@ public class BgpSessionInfoTest {
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).setLocalIp(new Ip("2.2.2.2")).build(),
             SessionType.UNSET),
-        equalTo(SessionStatus.NO_REMOTE_AS));
+        equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
   }
 }

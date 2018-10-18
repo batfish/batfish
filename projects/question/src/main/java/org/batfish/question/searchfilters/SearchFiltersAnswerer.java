@@ -33,7 +33,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -73,15 +72,15 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   private void differentialAnswer(SearchFiltersQuestion question) {
-    _batfish.pushBaseEnvironment();
+    _batfish.pushBaseSnapshot();
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
     Multimap<String, String> baseAcls = getSpecifiedAcls(question);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
-    _batfish.pushDeltaEnvironment();
+    _batfish.pushDeltaSnapshot();
     Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations();
     Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
 
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
 
@@ -345,13 +344,13 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
     if (base) {
-      _batfish.pushBaseEnvironment();
+      _batfish.pushBaseSnapshot();
     } else {
-      _batfish.pushDeltaEnvironment();
+      _batfish.pushDeltaSnapshot();
     }
     Configuration c = _batfish.loadConfigurations().get(hostname);
     Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
-    _batfish.popEnvironment();
+    _batfish.popSnapshot();
     return row;
   }
 
@@ -360,9 +359,5 @@ public final class SearchFiltersAnswerer extends Answerer {
     for (String node : nodes) {
       table.addRow(Row.builder(table.getMetadata().toColumnMap()).put(COL_NODE, node).build());
     }
-  }
-
-  private Set<SubRange> makeSetSubrangeFromInt(int number) {
-    return ImmutableSet.of(new SubRange(number));
   }
 }

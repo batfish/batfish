@@ -1,6 +1,9 @@
 {
   "class": "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
   "differential": true,
+  "actions": "${actions}",
+  "headers": "${headers}",
+  "pathConstraints": "${pathConstraints}",
   "instance": {
     "description": "Detect reduced reachability.",
     "instanceName": "reducedReachability",
@@ -10,6 +13,23 @@
       "reachability",
       "reduced reachability"
     ],
-    "variables": {}
+    "variables": {
+      "actions": {
+        "description": "Only return flows for which the disposition is from this set",
+        "optional": true,
+        "type": "string",
+        "value": "success"
+      },
+      "headers": {
+        "description": "Packet header constraints",
+        "optional": true,
+        "type": "headerConstraint"
+      },
+      "pathConstraints": {
+        "description": "Constraint the path a flow can take (start/end/transit locations)",
+        "optional": true,
+        "type": "pathConstraint"
+      }
+    }
   }
 }

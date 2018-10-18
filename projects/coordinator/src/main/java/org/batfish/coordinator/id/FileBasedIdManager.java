@@ -10,6 +10,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -53,6 +54,13 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
   }
 
   @Override
+  public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
+    Path idFile = getNetworkNodeRolesIdPath(networkId);
+    idFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(idFile, networkNodeRolesId.getId());
+  }
+
+  @Override
   public void assignQuestion(
       String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
     Path idFile = getQuestionIdPath(question, networkId, analysisId);
@@ -73,9 +81,6 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
     Path idFile = getSnapshotIdPath(snapshot, networkId);
     idFile.getParent().toFile().mkdirs();
     CommonUtil.writeFile(idFile, snapshotId.getId());
-    Path nameFile = getSnapshotNamePath(networkId, snapshotId);
-    nameFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(nameFile, snapshot);
   }
 
   @Override
@@ -96,7 +101,6 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    CommonUtil.delete(getSnapshotNamePath(networkId, getSnapshotId(snapshot, networkId)));
     CommonUtil.delete(getSnapshotIdPath(snapshot, networkId));
   }
 
@@ -113,6 +117,11 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
   @Override
   public @Nonnull NetworkId generateNetworkId() {
     return new NetworkId(uuid());
+  }
+
+  @Override
+  public NodeRolesId generateNetworkNodeRolesId() {
+    return new NodeRolesId(uuid());
   }
 
   @Override

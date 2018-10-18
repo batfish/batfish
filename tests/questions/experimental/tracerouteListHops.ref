@@ -1,0 +1,1179 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "The flow",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Flow",
+          "schema" : "Flow"
+        },
+        {
+          "description" : "The traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Traces",
+          "schema" : "Set<Trace>"
+        },
+        {
+          "description" : "The total number traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "TraceCount",
+          "schema" : "Integer"
+        }
+      ],
+      "textDesc" : "Paths for flow ${Flow}"
+    },
+    "rows" : [
+      {
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.0.2.2",
+          "dstPort" : 33434,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "UDP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.0.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Traces" : [
+          {
+            "disposition" : "ACCEPTED",
+            "hops" : [
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "0.0.0.0/0",
+                          "nextHopIp" : "2.128.0.1",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "filter::OUTPUT",
+                      "outputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "2.34.101.3",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "blocktelnet",
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "INSIDE_TO_AS1",
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "1.0.1.2",
+                          "protocol" : "ospf"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "disposition" : "ACCEPTED",
+            "hops" : [
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "0.0.0.0/0",
+                          "nextHopIp" : "2.128.0.1",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "filter::OUTPUT",
+                      "outputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "2.34.101.3",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet3/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "INSIDE_TO_AS1",
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "1.0.1.2",
+                          "protocol" : "ospf"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "disposition" : "ACCEPTED",
+            "hops" : [
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "0.0.0.0/0",
+                          "nextHopIp" : "2.128.0.1",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "filter::OUTPUT",
+                      "outputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "2.34.201.3",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "INSIDE_TO_AS1",
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "1.0.1.2",
+                          "protocol" : "ospf"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "disposition" : "ACCEPTED",
+            "hops" : [
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "0.0.0.0/0",
+                          "nextHopIp" : "2.128.0.1",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "filter::OUTPUT",
+                      "outputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "2.34.201.3",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputFilter" : "blocktelnet",
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet3/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "10.12.11.1",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputFilter" : "INSIDE_TO_AS1",
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "1.0.2.0/24",
+                          "nextHopIp" : "1.0.1.2",
+                          "protocol" : "ospf"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "SENT_OUT",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "SENT_IN",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "RECEIVED"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "TraceCount" : 4
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 1 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]

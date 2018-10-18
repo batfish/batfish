@@ -582,6 +582,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
@@ -5130,6 +5131,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIME_EXCEEDED;
         } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TRACKED() != null) {
@@ -5248,31 +5250,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setAck(true).build())
                 .setUseAck(true)
                 .build());
-      }
-      if (feature.DSCP() != null) {
+      } else if (feature.DSCP() != null) {
         int dscpType = toDscpType(feature.dscp_type());
         dscps.add(dscpType);
-      }
-      if (feature.ECE() != null) {
+      } else if (feature.ECE() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setEce(true).build())
                 .setUseEce(true)
                 .build());
-      }
-      if (feature.ECHO_REPLY() != null) {
+      } else if (feature.ECHO_REPLY() != null) {
         icmpType = IcmpType.ECHO_REPLY;
         icmpCode = 0; /* Forced to 0 by RFC-792. */
-      }
-      if (feature.ECHO() != null) {
+      } else if (feature.ECHO() != null) {
         icmpType = IcmpType.ECHO_REQUEST;
         icmpCode = 0; /* Forced to 0 by RFC-792. */
-      }
-      if (feature.ECN() != null) {
+      } else if (feature.ECN() != null) {
         int ecn = toInteger(feature.ecn);
         ecns.add(ecn);
-      }
-      if (feature.ESTABLISHED() != null) {
+      } else if (feature.ESTABLISHED() != null) {
         // must contain ACK or RST
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -5284,92 +5280,74 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setRst(true).build())
                 .setUseRst(true)
                 .build());
-      }
-      if (feature.FIN() != null) {
+      } else if (feature.FIN() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setFin(true).build())
                 .setUseFin(true)
                 .build());
-      }
-      if (feature.FRAGMENTS() != null) {
+      } else if (feature.FRAGMENTS() != null) {
         todo(ctx);
-      }
-      if (feature.HOST_UNKNOWN() != null) {
+      } else if (feature.HOST_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
-      }
-      if (feature.HOST_UNREACHABLE() != null) {
+      } else if (feature.HOST_UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.HOST_UNREACHABLE;
-      }
-      if (feature.NETWORK_UNKNOWN() != null) {
+      } else if (feature.NETWORK_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
-      }
-      if (feature.NET_UNREACHABLE() != null) {
+      } else if (feature.NET_UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.NETWORK_UNREACHABLE;
-      }
-      if (feature.PARAMETER_PROBLEM() != null) {
+      } else if (feature.PARAMETER_PROBLEM() != null) {
         icmpType = IcmpType.PARAMETER_PROBLEM;
-      }
-      if (feature.PORT_UNREACHABLE() != null) {
+      } else if (feature.PORT_UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.PORT_UNREACHABLE;
-      }
-      if (feature.PSH() != null) {
+      } else if (feature.PSH() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setPsh(true).build())
                 .setUsePsh(true)
                 .build());
-      }
-      if (feature.REDIRECT() != null) {
+      } else if (feature.REDIRECT() != null) {
         icmpType = IcmpType.REDIRECT_MESSAGE;
-      }
-      if (feature.RST() != null) {
+      } else if (feature.RST() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setRst(true).build())
                 .setUseRst(true)
                 .build());
-      }
-      if (feature.SOURCE_QUENCH() != null) {
+      } else if (feature.SOURCE_QUENCH() != null) {
         icmpType = IcmpType.SOURCE_QUENCH;
         icmpCode = 0; /* Forced to 0 by RFC 792. */
-      }
-      if (feature.SYN() != null) {
+      } else if (feature.SYN() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setSyn(true).build())
                 .setUseSyn(true)
                 .build());
-      }
-      if (feature.TIME_EXCEEDED() != null) {
+      } else if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      }
-      if (feature.TTL() != null) {
+      } else if (feature.TTL() != null) {
         todo(ctx);
-      }
-      if (feature.TTL_EXCEEDED() != null) {
+      } else if (feature.TTL_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      }
-      if (feature.TRACEROUTE() != null) {
+      } else if (feature.TRACEROUTE() != null) {
         icmpType = IcmpType.TRACEROUTE;
-      }
-      if (feature.TRACKED() != null) {
+      } else if (feature.TRACKED() != null) {
         states.add(FlowState.ESTABLISHED);
-      }
-      if (feature.UNREACHABLE() != null) {
+      } else if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
-      }
-      if (feature.URG() != null) {
+      } else if (feature.URG() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
                 .setTcpFlags(TcpFlags.builder().setUrg(true).build())
                 .setUseUrg(true)
                 .build());
+      } else {
+        _w.addWarning(ctx, getFullText(feature), _parser, "clause in IPv6 extended access list");
       }
     }
     String name = getFullText(ctx).trim();
@@ -5772,6 +5750,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
+  private static final int TRUST_SECURITY_LEVEL = 100;
+  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
+  private static final int NO_TRUST_SECURITY_LEVEL = 0;
+
   @Override
   public void exitIf_nameif(If_nameifContext ctx) {
     String alias = ctx.name.getText();
@@ -5787,12 +5770,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
       Interface iface = _currentInterfaces.get(0);
       iface.setDeclaredNames(
-          new ImmutableSortedSet.Builder<String>(naturalOrder())
+          ImmutableSortedSet.<String>naturalOrder()
               .addAll(iface.getDeclaredNames())
               .add(alias)
               .build());
       iface.setAlias(alias);
+
+      switch (alias) {
+        case TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+          break;
+        case NO_TRUST_SECURITY_LEVEL_ALIAS:
+          setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+          break;
+        default:
+          // don't set a level
+      }
     }
+  }
+
+  @Override
+  public void exitIf_security_level(If_security_levelContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Security level can only be configured in single-interface context");
+      return;
+    }
+    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
+  }
+
+  private void setIfaceSecurityLevel(Interface iface, int level) {
+    iface.setSecurityLevel(level);
+    String zoneName = CiscoConfiguration.computeSecurityLevelZoneName(level, iface.getName());
+    iface.setSecurityZone(zoneName);
+    _configuration.getSecurityZones().put(zoneName, new SecurityZone(zoneName));
   }
 
   @Override
@@ -10702,10 +10716,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void warnObjectGroupRedefinition(String name) {
     _w.redFlag("Object group defined multiple times: '" + name + "'");
-  }
-
-  private void warnUndefinedObjectGroupReferenced(String name) {
-    _w.redFlag("Referenced object group was not defined: '" + name + "'");
   }
 
   @Nullable

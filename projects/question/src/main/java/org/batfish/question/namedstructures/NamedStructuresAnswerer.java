@@ -7,7 +7,6 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -121,7 +120,7 @@ public class NamedStructuresAnswerer extends Answerer {
         if (namedStructureValues != null) {
 
           if ((namedStructureValues instanceof Map<?, ?>)
-              && !((TreeMap) namedStructureValues).isEmpty()) {
+              && !((Map<?, ?>) namedStructureValues).isEmpty()) {
             for (Map.Entry<?, ?> namedStructureEntry :
                 ((Map<?, ?>) namedStructureValues).entrySet()) {
               Object namedStructutureEntryValue = namedStructureEntry.getValue();

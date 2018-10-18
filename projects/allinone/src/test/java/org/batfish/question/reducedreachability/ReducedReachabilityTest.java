@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import org.batfish.datamodel.matchers.FlowMatchers;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
+import org.batfish.question.specifiers.DispositionSpecifier;
+import org.batfish.question.specifiers.PathConstraintsInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -101,13 +104,13 @@ public class ReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     return batfish;
   }
@@ -116,8 +119,9 @@ public class ReducedReachabilityTest {
   public void testAccepted() throws IOException {
     Question question =
         new ReducedReachabilityQuestion(
-            ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.unconstrained());
+            new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
+            PacketHeaderConstraints.unconstrained(),
+            PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
     Ip dstIp = new Ip("2.2.2.2");
@@ -131,12 +135,12 @@ public class ReducedReachabilityTest {
                             ReducedReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
-                        // at least one trace in base environment is accepted
+                        // at least one trace in snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
-                        // no trace in delta environment is accepted
+                        // no trace in reference snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
@@ -147,8 +151,9 @@ public class ReducedReachabilityTest {
   public void testHeaderSpaceConstraint1() throws IOException {
     Question question =
         new ReducedReachabilityQuestion(
-            ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build());
+            new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
+            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
@@ -163,12 +168,12 @@ public class ReducedReachabilityTest {
                             ReducedReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
-                        // at least one trace in base environment is accepted
+                        // at least one trace in snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
-                        // no trace in delta environment is accepted
+                        // no trace in reference snapshot is accepted
                         hasColumn(
                             ReducedReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
@@ -179,8 +184,9 @@ public class ReducedReachabilityTest {
   public void testHeaderSpaceConstraint2() throws IOException {
     Question question =
         new ReducedReachabilityQuestion(
-            ImmutableSortedSet.of(FlowDisposition.ACCEPTED),
-            PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build());
+            new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
+            PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
+            PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();

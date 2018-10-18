@@ -1398,7 +1398,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
       return IcmpCode.SOURCE_ROUTE_FAILED;
     } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
-      return IcmpCode.TTL_EQ_ZERO_DURING_REASSEMBLY;
+      return IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
       return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {
@@ -1512,10 +1512,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
-  }
-
-  private static long toLong(TerminalNode node) {
-    return toLong(node.getSymbol());
   }
 
   private static long toLong(Token token) {
@@ -1856,7 +1852,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
+        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication());
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }

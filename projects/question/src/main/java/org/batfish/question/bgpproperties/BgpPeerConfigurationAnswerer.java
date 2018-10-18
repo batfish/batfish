@@ -53,9 +53,9 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-        .add(new ColumnMetadata(COL_LOCAL_AS, Schema.INTEGER, "Local AS", false, false))
-        .add(new ColumnMetadata(COL_REMOTE_AS, Schema.SELF_DESCRIBING, "Remote AS", false, false))
+        .add(new ColumnMetadata(COL_LOCAL_AS, Schema.LONG, "Local AS", false, false))
         .add(new ColumnMetadata(COL_LOCAL_IP, Schema.IP, "Local IP", false, false))
+        .add(new ColumnMetadata(COL_REMOTE_AS, Schema.SELF_DESCRIBING, "Remote AS", false, false))
         .add(new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false))
         .add(
             new ColumnMetadata(

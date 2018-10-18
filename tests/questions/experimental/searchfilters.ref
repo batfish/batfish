@@ -4,16 +4,12 @@
   "filters" : ".*",
   "headers" : {
     "dstIps" : "2.2.2.2",
-    "dstPorts" : [
-      "0-0"
-    ],
+    "dstPorts" : "0-21,23-1000",
     "ipProtocols" : [
       "TCP"
     ],
     "srcIps" : "1.1.1.1",
-    "srcPorts" : [
-      "0-0"
-    ]
+    "srcPorts" : "0-0"
   },
   "invertSearch" : false,
   "nodes" : ".*",
@@ -57,12 +53,8 @@
             "tcp"
           ],
           "srcIps" : "1.1.1.1",
-          "srcPorts" : [
-            0
-          ],
-          "dstPorts" : [
-            0
-          ]
+          "srcPorts" : "0",
+          "dstPorts" : "0-1000,!22"
         }
       },
       "invertSearch" : {

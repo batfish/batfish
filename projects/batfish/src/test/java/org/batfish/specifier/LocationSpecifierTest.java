@@ -78,11 +78,10 @@ public class LocationSpecifierTest {
             .setConfigs(_testConfigs)
             .setNodeRoleDimensions(
                 ImmutableSet.of(
-                    new NodeRoleDimension(
-                        _roleDim,
-                        ImmutableSortedSet.of(new NodeRole(roleName, n1.getHostname())),
-                        null,
-                        null)))
+                    NodeRoleDimension.builder()
+                        .setName(_roleDim)
+                        .setRoles(ImmutableSortedSet.of(new NodeRole(roleName, n1.getHostname())))
+                        .build()))
             .build();
   }
 

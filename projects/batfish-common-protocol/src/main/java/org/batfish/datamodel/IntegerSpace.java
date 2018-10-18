@@ -1,16 +1,25 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -27,10 +36,52 @@ public final class IntegerSpace {
   /** A range expressing TCP/UDP ports */
   public static final IntegerSpace PORTS = builder().including(Range.closed(0, 65535)).build();
 
+  private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
+
+  /*
+   * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
+   * and immutable (enforced in constructor)
+   */
   @Nonnull private final RangeSet<Integer> _rangeset;
 
   private IntegerSpace(RangeSet<Integer> rangeset) {
     _rangeset = ImmutableRangeSet.copyOf(rangeset);
+  }
+
+  @JsonCreator
+  @VisibleForTesting
+  @Nonnull
+  static IntegerSpace create(@Nullable String s) {
+    return firstNonNull(IntegerSpace.Builder.create(s), builder()).build();
+  }
+
+  @JsonValue
+  private String value() {
+    return String.join(
+        ",",
+        getRanges()
+            .stream()
+            .map(
+                r ->
+                    String.join(
+                        "-",
+                        ImmutableList.of(
+                            r.lowerEndpoint().toString(), String.valueOf(r.upperEndpoint() - 1))))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  /** This space as a set of included {@link Range}s */
+  public Set<Range<Integer>> getRanges() {
+    return _rangeset.asRanges();
+  }
+
+  /** Return this space as a set of included {@link SubRange}s */
+  public Set<SubRange> getSubRanges() {
+    return _rangeset
+        .asRanges()
+        .stream()
+        .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Check that this space contains a given {@code value}. */
@@ -48,13 +99,34 @@ public final class IntegerSpace {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.integers());
   }
 
-  /** Returns true if this space is a contiguous range */
+  /** Returns true if this space is a contiguous space */
   public boolean isContiguous() {
     return _rangeset.asRanges().size() <= 1;
   }
 
+  /** Return true iff this space is empty (contains no values) */
   public boolean isEmpty() {
     return _rangeset.isEmpty();
+  }
+
+  /** Return true iff this space is a singleton (contains exactly one value) */
+  public boolean isSingleton() {
+    return getRanges().size() == 1 && isSingletonRange(getRanges().iterator().next());
+  }
+
+  private static boolean isSingletonRange(Range<Integer> range) {
+    return range.upperEndpoint() - range.lowerEndpoint() == 1;
+  }
+
+  /**
+   * Return singleton value if this space is a singleton. Otherwise throws {@link
+   * NoSuchElementException}
+   */
+  public int singletonValue() throws NoSuchElementException {
+    if (!isSingleton()) {
+      throw new NoSuchElementException();
+    }
+    return _rangeset.asRanges().iterator().next().lowerEndpoint();
   }
 
   /** Intersect two integer spaces together. */
@@ -93,6 +165,16 @@ public final class IntegerSpace {
     return new IntegerSpace(_rangeset.complement().subRangeSet(_rangeset.span()));
   }
 
+  /** Compute the difference between two integer spaces */
+  public IntegerSpace difference(IntegerSpace other) {
+    return this.intersection(other.not(this));
+  }
+
+  /** Compute the symmetric difference between two integer spaces */
+  public IntegerSpace symmetricDifference(IntegerSpace other) {
+    return this.union(other).difference(intersection(other));
+  }
+
   /** Return a builder initialized with existing integer space */
   public Builder toBuilder() {
     return new Builder(this);
@@ -101,6 +183,25 @@ public final class IntegerSpace {
   /** Create a new integer space from a {@link SubRange} */
   public static IntegerSpace of(SubRange range) {
     return builder().including(range).build();
+  }
+
+  /** Create a new integer space from a {@link SubRange} */
+  public static IntegerSpace unionOf(SubRange... ranges) {
+    Builder b = builder();
+    for (SubRange range : ranges) {
+      b.including(range);
+    }
+    return b.build();
+  }
+
+  /** Create a new integer space from a {@link Range} */
+  public static IntegerSpace of(Range<Integer> range) {
+    return builder().including(range).build();
+  }
+
+  /** Create a new singleton integer space from an integer value */
+  public static IntegerSpace of(int value) {
+    return builder().including(Range.singleton(value)).build();
   }
 
   public static Builder builder() {
@@ -122,6 +223,7 @@ public final class IntegerSpace {
       _including.addAll(space._rangeset.asRanges());
     }
 
+    /** Include a {@link SubRange} */
     public Builder including(SubRange range) {
       if (!range.isEmpty()) {
         _including.add(
@@ -130,7 +232,7 @@ public final class IntegerSpace {
       return this;
     }
 
-    /** Include a range. The {@link Range} must be {@link Range#closed} */
+    /** Include a range. The {@link Range} must be a finite range. */
     public Builder including(Range<Integer> range) {
       checkArgument(
           range.hasLowerBound() && range.hasUpperBound(), "Infinite ranges are not supported");
@@ -140,11 +242,13 @@ public final class IntegerSpace {
       return this;
     }
 
+    /** Include an {@link IntegerSpace} */
     public Builder including(IntegerSpace space) {
       space._rangeset.asRanges().forEach(this::including);
       return this;
     }
 
+    /** Exclude a {@link SubRange} */
     public Builder excluding(SubRange range) {
       if (!range.isEmpty()) {
         _excluding.add(
@@ -153,7 +257,7 @@ public final class IntegerSpace {
       return this;
     }
 
-    /** Exclude a range. The {@link Range} must be {@link Range#closed} */
+    /** Exclude a range. The {@link Range} must be finite range. */
     public Builder excluding(Range<Integer> range) {
       checkArgument(
           range.hasLowerBound() && range.hasUpperBound(), "Infinite ranges are not supported");
@@ -163,15 +267,63 @@ public final class IntegerSpace {
       return this;
     }
 
+    /** Exclude an {@link IntegerSpace} */
     public Builder excluding(IntegerSpace space) {
       space._rangeset.asRanges().forEach(this::excluding);
       return this;
     }
 
+    /**
+     * Returns true if this builder has exclusions only, no positive space.
+     *
+     * <p>Serves as utility function to determine if special handling for such negative-only cases
+     * is required (otherwise empty spaces will be built)
+     */
+    public boolean hasExclusionsOnly() {
+      return _including.isEmpty() && !_excluding.isEmpty();
+    }
+
+    /** Returns a new {@link IntegerSpace} */
     public IntegerSpace build() {
       RangeSet<Integer> rangeSet = TreeRangeSet.create(_including);
       rangeSet.removeAll(_excluding);
       return new IntegerSpace(rangeSet);
+    }
+
+    @JsonCreator
+    @Nullable
+    @VisibleForTesting
+    static Builder create(@Nullable String s) {
+      if (s == null) {
+        return null;
+      }
+      String[] atoms = s.trim().split(",");
+      checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
+      Builder builder = builder();
+      Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
+      return builder;
+    }
+
+    private static Range<Integer> parse(String s) {
+      try {
+        int i = Integer.parseUnsignedInt(s);
+        return (Range.closed(i, i));
+      } catch (NumberFormatException e) {
+        String[] endpoints = s.split("-");
+        checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
+        int low = Integer.parseUnsignedInt(endpoints[0].trim());
+        int high = Integer.parseUnsignedInt(endpoints[1].trim());
+        checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
+        return Range.closed(low, high);
+      }
+    }
+
+    private static void processStringAtom(String s, Builder builder) {
+      if (s.startsWith("!")) {
+        builder.excluding(parse(s.replaceAll("!", "")));
+      } else {
+        builder.including(parse(s));
+      }
     }
   }
 

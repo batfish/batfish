@@ -19,10 +19,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -61,6 +63,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -676,25 +679,26 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeNodeRoles(NodeRolesData nodeRolesData, NetworkId networkId) throws IOException {
+  public void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId)
+      throws IOException {
     FileUtils.write(
-        getNodeRolesPath(networkId).toFile(),
+        getNodeRolesPath(nodeRolesId).toFile(),
         BatfishObjectMapper.writePrettyString(nodeRolesData),
         UTF_8);
   }
 
-  private @Nonnull Path getNodeRolesPath(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+  private @Nonnull Path getNodeRolesPath(NodeRolesId nodeRolesId) {
+    return _d.getNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
   }
 
   @Override
-  public String loadNodeRoles(NetworkId networkId) throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(getNodeRolesPath(networkId).toFile(), UTF_8);
+  public String loadNodeRoles(NodeRolesId nodeRolesId) throws FileNotFoundException, IOException {
+    return FileUtils.readFileToString(getNodeRolesPath(nodeRolesId).toFile(), UTF_8);
   }
 
   @Override
-  public boolean hasNodeRoles(NetworkId networkId) {
-    return Files.exists(getNodeRolesPath(networkId));
+  public boolean hasNodeRoles(NodeRolesId nodeRolesId) {
+    return Files.exists(getNodeRolesPath(nodeRolesId));
   }
 
   @Override
@@ -735,8 +739,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getNetworkObjectsDir(networkId).resolve(encodedKey);
   }
 
   @Override
@@ -763,8 +767,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getSnapshotObjectPath(
       NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
+  }
+
+  private static @Nonnull String toBase64(String key) {
+    return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override
@@ -841,9 +849,6 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return _d.getSnapshotDir(networkId, snapshotId)
         .resolve(BfConsts.RELPATH_OUTPUT)
-        .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
-        .resolve(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
-        .resolve(BfConsts.RELPATH_ENV_DIR)
         .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
   }
 

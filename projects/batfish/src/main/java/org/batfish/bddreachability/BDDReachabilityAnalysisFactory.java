@@ -27,6 +27,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
@@ -1047,8 +1048,8 @@ public final class BDDReachabilityAnalysisFactory {
   private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
       Map<String, Configuration> configs, IpSpaceToBDD ipSpaceToBDD) {
     Map<String, Map<String, IpSpace>> vrfOwnedIpSpaces =
-        CommonUtil.computeVrfOwnedIpSpaces(
-            CommonUtil.computeIpVrfOwners(false, CommonUtil.computeNodeInterfaces(configs)));
+        TopologyUtil.computeVrfOwnedIpSpaces(
+            TopologyUtil.computeIpVrfOwners(false, TopologyUtil.computeNodeInterfaces(configs)));
 
     return CommonUtil.toImmutableMap(
         vrfOwnedIpSpaces,

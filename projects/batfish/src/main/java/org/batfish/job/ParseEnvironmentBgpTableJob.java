@@ -55,9 +55,6 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
     String currentPath = _file.toAbsolutePath().toString();
     ParserRuleContext tree = null;
     _logger.infof("Processing: '%s'\n", currentPath);
-    // String relativePathStr =
-    // _settings.getActiveTestrigSettings().getEnvironmentSettings().getEnvPath()
-    // .relativize(_file).toString();
     BgpTablePlugin plugin = null;
     BgpTableFormat format = BgpTableFormatDetector.identifyBgpTableFormat(_fileText);
     switch (format) {

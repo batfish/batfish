@@ -5,14 +5,12 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
-import org.batfish.coordinator.Main;
+import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRoleDimension.Type;
-import org.batfish.role.NodeRolesData;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,31 +26,23 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void create() throws IOException {
-    String container = "someContainer";
-    Main.getWorkMgr().initNetwork(container, null);
+  public void testProperties() {
+    String snapshot = "snapshot1";
+    String dimension = "someDimension";
+    String role = "someRole";
+    Set<String> nodes = ImmutableSet.of("a", "b");
+    NodeRole nodeRole = new NodeRole(role, "a.*");
+    NodeRoleDimension nodeRoleDimension =
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .build();
+    NodeRoleDimensionBean bean = new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes);
 
-    // create a testrig with a topology file
-    WorkMgrTestUtils.initTestrigWithTopology(container, "testrig", ImmutableSet.of("a", "b"));
-
-    // write node roles data to in the right place
-    NodeRoleDimension dimension1 =
-        new NodeRoleDimension("dimension1", ImmutableSortedSet.of(), null, null);
-    NodeRoleDimension dimension2 =
-        new NodeRoleDimension(
-            "dimension2", ImmutableSortedSet.of(new NodeRole("role2", "a.*")), null, null);
-    Main.getWorkMgr()
-        .writeNodeRoles(
-            new NodeRolesData(null, null, ImmutableSortedSet.of(dimension1, dimension2)),
-            container);
-
-    // we should the expected bean for dimension2
-    assertThat(
-        NodeRoleDimensionBean.create("someContainer", "dimension2"),
-        equalTo(new NodeRoleDimensionBean(dimension2, "testrig", ImmutableSet.of("a", "b"))));
-
-    // we should get null for dimension3 (Which does not exist)
-    assertThat(NodeRoleDimensionBean.create("someContainer", "dimension3"), equalTo(null));
+    assertThat(bean.name, equalTo(dimension));
+    assertThat(bean.roles, equalTo(ImmutableSet.of(new NodeRoleBean(nodeRole, nodes))));
+    assertThat(bean.snapshot, equalTo(snapshot));
+    assertThat(bean.type, equalTo(NodeRoleDimension.Type.CUSTOM));
   }
 
   @Test
@@ -61,6 +51,6 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
     NodeRoleDimension dim = dimBean.toNodeRoleDimension();
 
     // we should get the expected object
-    assertThat(dim, equalTo(new NodeRoleDimension("name", null, Type.CUSTOM, null)));
+    assertThat(dim, equalTo(NodeRoleDimension.builder().setName("name").build()));
   }
 }

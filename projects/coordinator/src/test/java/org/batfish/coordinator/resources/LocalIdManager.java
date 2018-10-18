@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -21,6 +20,7 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
@@ -49,6 +49,7 @@ public class LocalIdManager implements IdManager {
   private final Map<NetworkId, Map<String, AnalysisId>> _analysisIds;
   private final Map<NetworkId, Map<String, IssueSettingsId>> _issueSettingsIds;
   private final Map<String, NetworkId> _networkIds;
+  private final Map<NetworkId, NodeRolesId> _networkNodeRolesIds;
   private final Map<NetworkId, Map<Optional<AnalysisId>, Map<String, QuestionId>>> _questionIds;
   private final Map<NetworkId, Map<String, QuestionSettingsId>> _questionSettingsIds;
   private final Map<NetworkId, Map<String, SnapshotId>> _snapshotIds;
@@ -57,6 +58,7 @@ public class LocalIdManager implements IdManager {
     _analysisIds = new HashMap<>();
     _issueSettingsIds = new HashMap<>();
     _networkIds = new HashMap<>();
+    _networkNodeRolesIds = new HashMap<>();
     _questionIds = new HashMap<>();
     _questionSettingsIds = new HashMap<>();
     _snapshotIds = new HashMap<>();
@@ -84,6 +86,14 @@ public class LocalIdManager implements IdManager {
   @Override
   public void assignNetwork(String network, NetworkId networkId) {
     _networkIds.put(network, networkId);
+  }
+
+  @Override
+  public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
+    if (!_networkIds.values().contains(networkId)) {
+      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
+    }
+    _networkNodeRolesIds.put(networkId, networkNodeRolesId);
   }
 
   @Override
@@ -169,6 +179,11 @@ public class LocalIdManager implements IdManager {
   }
 
   @Override
+  public NodeRolesId generateNetworkNodeRolesId() {
+    return new NodeRolesId(uuid());
+  }
+
+  @Override
   public @Nonnull QuestionId generateQuestionId() {
     return new QuestionId(uuid());
   }
@@ -198,6 +213,7 @@ public class LocalIdManager implements IdManager {
       SnapshotId snapshotId,
       QuestionId questionId,
       QuestionSettingsId questionSettingsId,
+      NodeRolesId networkNodeRolesId,
       SnapshotId referenceSnapshotId,
       AnalysisId analysisId) {
     return new AnswerId(
@@ -207,6 +223,7 @@ public class LocalIdManager implements IdManager {
                     snapshotId,
                     questionId,
                     questionSettingsId,
+                    networkNodeRolesId,
                     ofNullable(referenceSnapshotId),
                     ofNullable(analysisId))
                 .toString()));
@@ -235,6 +252,14 @@ public class LocalIdManager implements IdManager {
   @Override
   public NetworkId getNetworkId(String network) {
     return illegalIfNull(_networkIds.get(network));
+  }
+
+  @Override
+  public NodeRolesId getNetworkNodeRolesId(NetworkId networkId) {
+    if (!_networkIds.values().contains(networkId)) {
+      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
+    }
+    return illegalIfNull(_networkNodeRolesIds.get(networkId));
   }
 
   @Override
@@ -271,18 +296,8 @@ public class LocalIdManager implements IdManager {
   }
 
   @Override
-  public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
-    if (!_networkIds.values().contains(networkId)) {
-      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
-    }
-    return _snapshotIds
-        .computeIfAbsent(networkId, n -> new HashMap<>())
-        .entrySet()
-        .stream()
-        .filter(e -> e.getValue().equals(snapshotId))
-        .map(Entry::getKey)
-        .findFirst()
-        .get();
+  public NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId) {
+    return new NodeRolesId(hash(ImmutableList.of(networkId, snapshotId).toString()));
   }
 
   @Override
@@ -306,6 +321,14 @@ public class LocalIdManager implements IdManager {
   @Override
   public boolean hasNetworkId(String network) {
     return _networkIds.containsKey(network);
+  }
+
+  @Override
+  public boolean hasNetworkNodeRolesId(NetworkId networkId) {
+    if (!_networkIds.values().contains(networkId)) {
+      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
+    }
+    return _networkNodeRolesIds.containsKey(networkId);
   }
 
   @Override

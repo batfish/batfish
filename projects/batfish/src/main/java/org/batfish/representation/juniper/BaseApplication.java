@@ -51,12 +51,9 @@ public final class BaseApplication implements Application, Serializable {
 
   private Term _mainTerm;
 
-  private final String _name;
-
   private final Map<String, Term> _terms;
 
-  public BaseApplication(String name) {
-    _name = name;
+  public BaseApplication() {
     _mainTerm = new Term();
     _terms = new LinkedHashMap<>();
   }
@@ -97,10 +94,6 @@ public final class BaseApplication implements Application, Serializable {
 
   public Term getMainTerm() {
     return _mainTerm;
-  }
-
-  private String getMainTermName() {
-    return "~MAIN_TERM~" + _name;
   }
 
   public Map<String, Term> getTerms() {

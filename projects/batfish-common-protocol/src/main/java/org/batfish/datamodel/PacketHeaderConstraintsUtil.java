@@ -5,9 +5,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -64,6 +67,13 @@ public class PacketHeaderConstraintsUtil {
     return new HeaderSpaceToBDD(new BDDPacket(), namedIpSpaces).toBDD(b.build());
   }
 
+  private static SortedSet<SubRange> extractSubranges(@Nullable IntegerSpace space) {
+    if (space == null || space.isEmpty()) {
+      return ImmutableSortedSet.of();
+    }
+    return ImmutableSortedSet.copyOf(space.getSubRanges());
+  }
+
   /**
    * Convert packet header constraints to a {@link HeaderSpace.Builder}
    *
@@ -74,23 +84,20 @@ public class PacketHeaderConstraintsUtil {
     HeaderSpace.Builder builder =
         HeaderSpace.builder()
             .setIpProtocols(firstNonNull(phc.resolveIpProtocols(), ImmutableSortedSet.of()))
-            .setSrcPorts(firstNonNull(phc.getSrcPorts(), ImmutableSortedSet.of()))
-            .setDstPorts(firstNonNull(phc.resolveDstPorts(), ImmutableSortedSet.of()))
-            .setIcmpCodes(firstNonNull(phc.getIcmpCodes(), ImmutableSortedSet.of()))
-            .setIcmpTypes(firstNonNull(phc.getIcmpTypes(), ImmutableSortedSet.of()))
+            .setSrcPorts(extractSubranges(phc.getSrcPorts()))
+            .setDstPorts(extractSubranges(phc.resolveDstPorts()))
+            .setIcmpCodes(extractSubranges(phc.getIcmpCodes()))
+            .setIcmpTypes(extractSubranges(phc.getIcmpTypes()))
             .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
-            .setFragmentOffsets(firstNonNull(phc.getFragmentOffsets(), ImmutableSortedSet.of()))
-            .setPacketLengths(firstNonNull(phc.getPacketLengths(), ImmutableSortedSet.of()));
+            .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
+            .setPacketLengths(extractSubranges(phc.getPacketLengths()))
+            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));
 
     if (phc.getDscps() != null) {
-      builder.setDscps(
-          ImmutableSortedSet.copyOf(
-              phc.getDscps().stream().flatMapToInt(SubRange::asStream).iterator()));
+      builder.setDscps(phc.getDscps().enumerate());
     }
     if (phc.getEcns() != null) {
-      builder.setEcns(
-          ImmutableSortedSet.copyOf(
-              phc.getEcns().stream().flatMapToInt(SubRange::asStream).iterator()));
+      builder.setEcns(ImmutableSortedSet.copyOf(phc.getEcns().enumerate()));
     }
     return builder;
   }
@@ -114,18 +121,16 @@ public class PacketHeaderConstraintsUtil {
     setEcnValue(phc, builder);
     setFragmentOffsets(phc, builder);
     setFlowStates(phc, builder);
+    setTcpFlags(phc, builder);
     return builder;
   }
 
   @VisibleForTesting
   static void setDscpValue(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    Set<SubRange> dscps = constraints.getDscps();
+    IntegerSpace dscps = constraints.getDscps();
     if (dscps != null) {
-      SubRange dscp = dscps.iterator().next();
-      if (dscps.size() > 1 || !dscp.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot construct flow with multiple DSCP values");
-      }
-      builder.setDscp(dscp.getStart());
+      checkArgument(dscps.isSingleton(), "Cannot construct flow with multiple DSCP values");
+      builder.setDscp(dscps.singletonValue());
     } else {
       builder.setDscp(0);
     }
@@ -133,34 +138,26 @@ public class PacketHeaderConstraintsUtil {
 
   @VisibleForTesting
   static void setIcmpValues(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    Set<SubRange> icmpTypes = constraints.getIcmpTypes();
+    IntegerSpace icmpTypes = constraints.getIcmpTypes();
     if (icmpTypes != null) {
-      SubRange icmpType = icmpTypes.iterator().next();
-      if (icmpTypes.size() > 1 || !icmpType.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot construct flow with multiple ICMP types");
-      }
-      builder.setIcmpType(icmpType.getStart());
+      checkArgument(icmpTypes.isSingleton(), "Cannot construct flow with multiple ICMP types");
+      builder.setIcmpType(icmpTypes.singletonValue());
     }
-    Set<SubRange> icmpCodes = constraints.getIcmpCodes();
+    IntegerSpace icmpCodes = constraints.getIcmpCodes();
     if (icmpCodes != null) {
-      SubRange icmpCode = icmpCodes.iterator().next();
-      if (icmpCodes.size() > 1 || !icmpCode.isSingleValue()) {
-        throw new IllegalArgumentException("Cannot construct flow with multiple ICMP codes");
-      }
-      builder.setIcmpType(icmpCode.getStart());
+      checkArgument(icmpCodes.isSingleton(), "Cannot construct flow with multiple ICMP codes");
+      builder.setIcmpType(icmpCodes.singletonValue());
     }
   }
 
   @VisibleForTesting
   static void setSrcPort(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    Set<SubRange> srcPorts = constraints.getSrcPorts();
+    IntegerSpace srcPorts = constraints.getSrcPorts();
     checkArgument(
-        srcPorts == null || srcPorts.size() == 1,
+        srcPorts == null || srcPorts.isSingleton(),
         "Cannot construct flow with multiple source ports");
     if (srcPorts != null) {
-      SubRange srcPort = srcPorts.iterator().next();
-      checkArgument(srcPort.isSingleValue(), "Cannot construct flow with multiple source ports");
-      builder.setSrcPort(srcPort.getStart());
+      builder.setSrcPort(srcPorts.singletonValue());
     }
   }
 
@@ -178,25 +175,21 @@ public class PacketHeaderConstraintsUtil {
 
   @VisibleForTesting
   static void setDstPort(PacketHeaderConstraints constraints, Builder builder) {
-    Set<SubRange> dstPorts = constraints.resolveDstPorts();
+    IntegerSpace dstPorts = constraints.resolveDstPorts();
     final String errorMessage = "Cannot construct flow with multiple destination ports";
-    checkArgument(dstPorts == null || dstPorts.size() == 1, errorMessage);
+    checkArgument(dstPorts == null || dstPorts.isSingleton(), errorMessage);
     if (dstPorts != null) {
-      SubRange dstPort = dstPorts.iterator().next();
-      checkArgument(dstPort.isSingleValue(), errorMessage);
-      builder.setDstPort(dstPort.getStart());
+      builder.setDstPort(dstPorts.singletonValue());
     }
   }
 
   @VisibleForTesting
   static void setPacketLength(PacketHeaderConstraints constraints, Builder builder) {
-    Set<SubRange> packetLengths = constraints.getPacketLengths();
+    IntegerSpace packetLengths = constraints.getPacketLengths();
     final String errorMessage = "Cannot construct flow with multiple packet lengths";
-    checkArgument(packetLengths == null || packetLengths.size() == 1, errorMessage);
+    checkArgument(packetLengths == null || packetLengths.isSingleton(), errorMessage);
     if (packetLengths != null) {
-      SubRange packetLength = packetLengths.iterator().next();
-      checkArgument(packetLength.isSingleValue(), errorMessage);
-      builder.setPacketLength(packetLength.getStart());
+      builder.setPacketLength(packetLengths.singletonValue());
     } else {
       builder.setPacketLength(DEFAULT_PACKET_LENGTH);
     }
@@ -204,25 +197,21 @@ public class PacketHeaderConstraintsUtil {
 
   @VisibleForTesting
   static void setEcnValue(PacketHeaderConstraints phc, Builder builder) {
-    Set<SubRange> ecns = phc.getEcns();
+    IntegerSpace ecns = phc.getEcns();
     final String errorMessage = "Cannot construct flow with multiple ECN values";
-    checkArgument(ecns == null || ecns.size() == 1, errorMessage);
+    checkArgument(ecns == null || ecns.isSingleton(), errorMessage);
     if (ecns != null) {
-      SubRange ecn = ecns.iterator().next();
-      checkArgument(ecn.isSingleValue(), errorMessage);
-      builder.setEcn(ecn.getStart());
+      builder.setEcn(ecns.singletonValue());
     }
   }
 
   @VisibleForTesting
   static void setFragmentOffsets(PacketHeaderConstraints phc, Builder builder) {
-    Set<SubRange> fragmentOffsets = phc.getFragmentOffsets();
+    IntegerSpace fragmentOffsets = phc.getFragmentOffsets();
     final String errorMessage = "Cannot construct flow with multiple packet lengths";
-    checkArgument(fragmentOffsets == null || fragmentOffsets.size() == 1, errorMessage);
+    checkArgument(fragmentOffsets == null || fragmentOffsets.isSingleton(), errorMessage);
     if (fragmentOffsets != null) {
-      SubRange fragmentOffset = fragmentOffsets.iterator().next();
-      checkArgument(fragmentOffset.isSingleValue(), errorMessage);
-      builder.setFragmentOffset(fragmentOffset.getStart());
+      builder.setFragmentOffset(fragmentOffsets.singletonValue());
     }
   }
 
@@ -234,6 +223,17 @@ public class PacketHeaderConstraintsUtil {
         "Cannot construct flow  with multiple packet lengths");
     if (flowStates != null) {
       builder.setState(flowStates.iterator().next());
+    }
+  }
+
+  @VisibleForTesting
+  static void setTcpFlags(PacketHeaderConstraints phc, Builder builder) {
+    Set<TcpFlagsMatchConditions> tcpFlags = phc.getTcpFlags();
+    checkArgument(
+        tcpFlags == null || tcpFlags.size() == 1,
+        "Cannot construct flow with multiple versions of TCP flags specified");
+    if (tcpFlags != null) {
+      builder.setTcpFlags(tcpFlags.iterator().next().getTcpFlags());
     }
   }
 }
