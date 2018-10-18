@@ -1326,39 +1326,4 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, containsIp(ip1));
     assertThat(result, containsIp(ip2));
   }
-
-  /*
-   * Arp next hop ip (for short, nhip), interface is not full, dst ip is external -> EXITS NETWORK
-   */
-  @Test
-  public void testComputeExitsNetworkPerInterfaceNextHopIp() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    String prefixString = "10.0.0.1/24";
-    Prefix prefix = Prefix.parse(prefixString);
-    Ip ip1 = prefix.getStartIp();
-    Ip ip2 = prefix.getEndIp();
-    StaticRoute route =
-        StaticRoute.builder()
-            .setNextHopIp(new Ip("1.0.0.1"))
-            .setNextHopInterface(i1)
-            .setAdministrativeCost(1)
-            .setNetwork(prefix)
-            .build();
-    _interfacesWithMissingDevices = ImmutableMap.of(c1, ImmutableSet.of(i1));
-    _routesWithExternalNextHopIpArpFalse =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ImmutableSet.of(route))));
-    _arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
-    _snapshotOwnedIps = Prefix.parse("1.0.0.1/24").toIpSpace();
-
-    GenericRib<AbstractRoute> rib = MockRib.builder().setRoutes(ImmutableSet.of(route)).build();
-
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    IpSpace result = forwardingAnalysisImpl.computeExitsNetworkPerInterface(c1, vrf1, i1, rib);
-
-    assertThat(result, containsIp(ip1));
-    assertThat(result, containsIp(ip2));
-  }
 }
