@@ -40,7 +40,6 @@ test tests/basic/multipath-host1.ref get reachability type="multipath", ingressN
 test tests/basic/multipath-host2.ref get reachability type="multipath", ingressNodeRegex="host2", srcIps=["2.128.0.0"], dstIps=["1.0.1.1"], ipProtocols=["UDP"], srcPorts=[0], dstPorts=[0]
 test tests/basic/bgpAsnUse.ref get bgpasnuse minCount=2
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
-test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/outliers3.ref get outliers hypothesis="sameServers"
