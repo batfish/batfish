@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
@@ -178,11 +179,11 @@ class CounterExample {
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<AsSet> asSets = new ArrayList<>();
+          ImmutableList.Builder<AsSet> b = ImmutableList.builder();
           for (int i = 0; i < pathLength; i++) {
-            asSets.add(AsSet.of(-1L));
+            b.add(AsSet.of(-1L));
           }
-          AsPath path = AsPath.createAsPath(asSets);
+          AsPath path = AsPath.createAsPath(b.build());
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
