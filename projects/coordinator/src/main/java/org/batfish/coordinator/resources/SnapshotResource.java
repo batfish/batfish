@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 
 /** Resource for servicing client API calls for a specific snapshot */
@@ -66,7 +66,7 @@ public final class SnapshotResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getSnapshotMetadata() throws IOException {
-    TestrigMetadata metadata = Main.getWorkMgr().getTestrigMetadata(_network, _snapshot);
+    SnapshotMetadata metadata = Main.getWorkMgr().getSnapshotMetadata(_network, _snapshot);
     if (metadata == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

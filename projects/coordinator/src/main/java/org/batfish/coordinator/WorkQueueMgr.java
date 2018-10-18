@@ -653,7 +653,7 @@ public class WorkQueueMgr {
       String network, String snapshot, ProcessingStatus status, String errMessage)
       throws IOException {
     // already resolved
-    TestrigMetadataMgr.updateInitializationStatus(
+    SnapshotMetadataMgr.updateInitializationStatus(
         new NetworkId(network), new SnapshotId(snapshot), status, errMessage);
   }
 
@@ -661,7 +661,7 @@ public class WorkQueueMgr {
   static InitializationMetadata getInitializationMetadata(String network, String snapshot)
       throws IOException {
     // already resolved
-    return TestrigMetadataMgr.getInitializationMetadata(
+    return SnapshotMetadataMgr.getInitializationMetadata(
         new NetworkId(network), new SnapshotId(snapshot));
   }
 }
