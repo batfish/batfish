@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
@@ -36,7 +35,7 @@ public class BgpBestPathRibTest {
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(new Ip("7.7.7.7"))
             .setReceivedFromIp(new Ip("7.7.7.7"))
-            .setAsPath(ImmutableList.of(AsSet.of(1L, 2L)))
+            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
             .build();
     BgpRoute r2 =
         new BgpRoute.Builder()
@@ -47,7 +46,7 @@ public class BgpBestPathRibTest {
             .setReceivedFromIp(new Ip("7.7.7.7"))
             // Higher localpref will kick out r1
             .setLocalPreference(200)
-            .setAsPath(ImmutableList.of(AsSet.of(1L)))
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
             .build();
 
     // Test merging same route twice squashes them
@@ -55,17 +54,13 @@ public class BgpBestPathRibTest {
     _bpRib.mergeRoute(r1);
     assertThat(_bpRib.getRoutes(), hasSize(1));
     assertThat(_bpRib.getBestAsPaths().size(), equalTo(1));
-    assertThat(
-        _bpRib.getBestAsPaths().get(r1.getNetwork()),
-        equalTo(AsPath.of(ImmutableList.of(AsSet.of(1L, 2L)))));
+    assertThat(_bpRib.getBestAsPaths().get(r1.getNetwork()), equalTo(AsPath.of(AsSet.of(1L, 2L))));
 
     // Test better AS path wins
     _bpRib.mergeRoute(r2);
     assertThat(_bpRib.getRoutes(), hasSize(1));
     assertThat(_bpRib.getBestAsPaths().size(), equalTo(1));
-    assertThat(
-        _bpRib.getBestAsPaths().get(r1.getNetwork()),
-        equalTo(AsPath.of(ImmutableList.of(AsSet.of(1L)))));
+    assertThat(_bpRib.getBestAsPaths().get(r1.getNetwork()), equalTo(AsPath.ofSingletonAsSets(1L)));
   }
 
   // TODO: test the rest of the tie breaking more thoroughly

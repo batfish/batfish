@@ -37,7 +37,6 @@ import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -191,15 +190,15 @@ public class IncrementalDataPlanePluginTest {
      * Properties of the routes
      */
     // Should appear only for path-length match
-    List<AsSet> asPath2 = AsPath.ofSingletonAsSets(2L, 4L, 6L).getAsSets();
+    AsPath asPath2 = AsPath.ofSingletonAsSets(2L, 4L, 6L);
     // Should appear only for first-as match and path-length match
-    List<AsSet> asPath3a = AsPath.ofSingletonAsSets(3L, 5L, 6L).getAsSets();
+    AsPath asPath3a = AsPath.ofSingletonAsSets(3L, 5L, 6L);
     // Should never appear
-    List<AsSet> asPath3b = AsPath.ofSingletonAsSets(3L, 4L, 4L, 6L).getAsSets();
+    AsPath asPath3b = AsPath.ofSingletonAsSets(3L, 4L, 4L, 6L);
     // Should always appear
     AsPath bestAsPath = AsPath.ofSingletonAsSets(3L, 4L, 6L);
-    List<AsSet> asPath3c = bestAsPath.getAsSets();
-    List<AsSet> asPath3d = bestAsPath.getAsSets();
+    AsPath asPath3c = bestAsPath;
+    AsPath asPath3d = bestAsPath;
     Ip nextHop2 = new Ip("2.0.0.0");
     Ip nextHop3a = new Ip("3.0.0.1");
     Ip nextHop3b = new Ip("3.0.0.2");
