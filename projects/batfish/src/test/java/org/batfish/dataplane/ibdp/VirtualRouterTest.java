@@ -31,13 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -77,19 +75,15 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link VirtualRouter} */
 public class VirtualRouterTest {
   /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
   private static final Map<String, InterfaceAddress> exampleInterfaceAddresses =
@@ -98,29 +92,6 @@ public class VirtualRouterTest {
           .put("Ethernet2", new InterfaceAddress("10.2.0.0/16"))
           .put("Ethernet3", new InterfaceAddress("10.3.0.0/16"))
           .build();
-
-  private static final String NEIGHBOR_HOST_NAME = "neighbornode";
-  private static final int TEST_ADMIN = 100;
-  private static final Long TEST_AREA = 1L;
-  private static final long TEST_AS1 = 1;
-  private static final long TEST_AS2 = 2;
-  private static final long TEST_AS3 = 3;
-  private static final Ip TEST_DEST_IP = new Ip("2.2.2.2");
-  private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
-  private static final int TEST_METRIC = 30;
-  private static final Ip TEST_SRC_IP = new Ip("1.1.1.1");
-  private static final Prefix TEST_NETWORK = Prefix.parse("4.4.4.4/32");
-  private static final Ip TEST_NEXT_HOP_IP1 = new Ip("1.2.3.4");
-  private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
-  private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
-
-  private BgpActivePeerConfig.Builder _bgpNeighborBuilder;
-  private BgpRoute.Builder _bgpRouteBuilder;
-  private Statement _exitAcceptStatement = Statements.ExitAccept.toStaticStatement();
-  private Statement _exitRejectStatement = Statements.ExitReject.toStaticStatement();
-  private Map<Ip, Set<String>> _ipOwners;
-  private RoutingPolicy.Builder _routingPolicyBuilder;
-  private VirtualRouter _testVirtualRouter;
 
   private static void addInterfaces(
       Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
@@ -139,50 +110,6 @@ public class VirtualRouterTest {
   private static VirtualRouter makeIosVirtualRouter(String hostname) {
     Node n = TestUtils.makeIosRouter(hostname);
     return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
-  }
-
-  /**
-   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
-   * {@link Vrf}
-   *
-   * @param nodeName Node name of the owner {@link Configuration}
-   * @return new instance of {@link VirtualRouter}
-   */
-  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
-    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    Vrf.Builder vb = nf.vrfBuilder().setName(DEFAULT_VRF_NAME);
-    Vrf vrf = vb.setOwner(config).build();
-    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
-    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
-    virtualRouter.initRibs();
-    return virtualRouter;
-  }
-
-  @Before
-  public void setup() {
-    NetworkFactory nf = new NetworkFactory();
-    _testVirtualRouter = createEmptyVirtualRouter(nf, TEST_VIRTUAL_ROUTER_NAME);
-    BgpProcess bgpProcess =
-        nf.bgpProcessBuilder().setVrf(_testVirtualRouter._vrf).setRouterId(TEST_SRC_IP).build();
-    nf.configurationBuilder()
-        .setConfigurationFormat(FORMAT)
-        .setHostname(NEIGHBOR_HOST_NAME)
-        .build();
-    _bgpNeighborBuilder =
-        nf.bgpNeighborBuilder()
-            .setPeerAddress(TEST_DEST_IP)
-            .setLocalIp(TEST_SRC_IP)
-            .setLocalAs(TEST_AS1)
-            .setBgpProcess(bgpProcess);
-    _bgpRouteBuilder =
-        new BgpRoute.Builder()
-            .setNetwork(TEST_NETWORK)
-            .setProtocol(RoutingProtocol.BGP)
-            .setOriginType(OriginType.INCOMPLETE)
-            .setOriginatorIp(TEST_SRC_IP);
-    _ipOwners = ImmutableMap.of(TEST_SRC_IP, ImmutableSet.of(TEST_VIRTUAL_ROUTER_NAME));
-    _routingPolicyBuilder =
-        nf.routingPolicyBuilder().setOwner(_testVirtualRouter.getConfiguration());
   }
 
   /**
