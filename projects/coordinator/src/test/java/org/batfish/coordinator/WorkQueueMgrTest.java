@@ -23,7 +23,7 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
@@ -142,11 +142,11 @@ public class WorkQueueMgrTest {
 
   private void initSnapshotMetadata(String network, String snapshot, ProcessingStatus status)
       throws IOException {
-    WorkMgrTestUtils.initTestrigWithTopology(CONTAINER, snapshot, ImmutableSet.of());
-    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), null);
+    WorkMgrTestUtils.initSnapshotWithTopology(CONTAINER, snapshot, ImmutableSet.of());
+    SnapshotMetadata trMetadata = new SnapshotMetadata(Instant.now(), null);
     InitializationMetadata metadata = trMetadata.getInitializationMetadata();
     metadata.updateStatus(status, null);
-    TestrigMetadataMgr.writeMetadata(trMetadata, network, snapshot);
+    SnapshotMetadataMgr.writeMetadata(trMetadata, network, snapshot);
   }
 
   private void queueWork(String testrig, WorkType wType) throws Exception {
@@ -266,7 +266,7 @@ public class WorkQueueMgrTest {
   public void listIncompleteWork() throws Exception {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     Main.getWorkMgr().initNetwork("other", null);
-    WorkMgrTestUtils.initTestrigWithTopology("other", "testrig", ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology("other", "testrig", ImmutableSet.of());
     initSnapshotMetadata("other", "testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(

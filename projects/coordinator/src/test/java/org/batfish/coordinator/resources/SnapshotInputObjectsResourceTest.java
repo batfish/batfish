@@ -49,7 +49,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     Response response = getTarget(network, snapshot, key).get();
 

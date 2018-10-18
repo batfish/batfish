@@ -17,7 +17,7 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.junit.Before;
 import org.junit.Rule;
@@ -128,7 +128,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getPojoTopologyTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -159,11 +159,11 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(TestrigMetadata.class), notNullValue());
+    assertThat(response.readEntity(SnapshotMetadata.class), notNullValue());
   }
 
   @Test
@@ -190,7 +190,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getTopologyTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

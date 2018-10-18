@@ -52,7 +52,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -663,7 +663,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeSnapshotMetadata(
-      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     FileUtils.writeStringToFile(
         getSnapshotMetadataPath(networkId, snapshotId).toFile(),

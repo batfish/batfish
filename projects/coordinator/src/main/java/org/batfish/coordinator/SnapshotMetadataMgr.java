@@ -11,12 +11,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
 
-public class TestrigMetadataMgr {
+public class SnapshotMetadataMgr {
 
   private static StorageProvider storage() {
     return Main.getWorkMgr().getStorage();
@@ -28,11 +28,11 @@ public class TestrigMetadataMgr {
 
   public static InitializationMetadata getInitializationMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws IOException {
-    TestrigMetadata trMetadata = readMetadata(networkId, snapshotId);
+    SnapshotMetadata trMetadata = readMetadata(networkId, snapshotId);
     return trMetadata.getInitializationMetadata();
   }
 
-  public static Instant getTestrigCreationTimeOrMin(NetworkId networkId, SnapshotId snapshotId) {
+  public static Instant getSnapshotCreationTimeOrMin(NetworkId networkId, SnapshotId snapshotId) {
     try {
       return readMetadata(networkId, snapshotId).getCreationTimestamp();
     } catch (Exception e) {
@@ -45,22 +45,28 @@ public class TestrigMetadataMgr {
     return readMetadata(network, snapshot).getParentSnapshotId();
   }
 
-  public static TestrigMetadata readMetadata(NetworkId networkId, SnapshotId snapshotId)
+  public static SnapshotMetadata readMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(storage().loadSnapshotMetadata(networkId, snapshotId), TestrigMetadata.class);
+        .readValue(storage().loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class);
   }
 
   public static synchronized void updateInitializationStatus(
       NetworkId networkId, SnapshotId snapshotId, ProcessingStatus status, String errMessage)
       throws IOException {
-    TestrigMetadata trMetadata = readMetadata(networkId, snapshotId);
-    InitializationMetadata initializationMetadata = trMetadata.getInitializationMetadata();
-    initializationMetadata.updateStatus(status, errMessage);
-    writeMetadata(trMetadata, networkId, snapshotId);
+    SnapshotMetadata snapshotMetadata = readMetadata(networkId, snapshotId);
+    InitializationMetadata initializationMetadata = snapshotMetadata.getInitializationMetadata();
+    InitializationMetadata newInitializationMetadata =
+        initializationMetadata.updateStatus(status, errMessage);
+    SnapshotMetadata newSnapshotMetadata =
+        new SnapshotMetadata(
+            snapshotMetadata.getCreationTimestamp(),
+            newInitializationMetadata,
+            snapshotMetadata.getParentSnapshotId());
+    writeMetadata(newSnapshotMetadata, networkId, snapshotId);
   }
 
-  public static void writeMetadata(TestrigMetadata metadata, String network, String snapshot)
+  public static void writeMetadata(SnapshotMetadata metadata, String network, String snapshot)
       throws IOException {
     NetworkId networkId = idm().getNetworkId(network);
     SnapshotId snapshotId = idm().getSnapshotId(snapshot, networkId);
@@ -68,7 +74,7 @@ public class TestrigMetadataMgr {
   }
 
   public static synchronized void writeMetadata(
-      TestrigMetadata metadata, NetworkId networkId, SnapshotId snapshotId) throws IOException {
+      SnapshotMetadata metadata, NetworkId networkId, SnapshotId snapshotId) throws IOException {
     storage().storeSnapshotMetadata(metadata, networkId, snapshotId);
   }
 }
