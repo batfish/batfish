@@ -70,6 +70,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
@@ -1361,7 +1362,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Map<String, String> getQuestionTemplates() {
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
     if (_settings.getCoordinatorHost() == null) {
       throw new BatfishException("Cannot get question templates: coordinator host is not set");
     }
@@ -1376,6 +1377,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
     if (response == null) {
