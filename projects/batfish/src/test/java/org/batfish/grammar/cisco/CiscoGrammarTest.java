@@ -221,7 +221,6 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -2309,7 +2308,7 @@ public class CiscoGrammarTest {
             .getAsPath()
             .getAsSets()
             .stream()
-            .flatMap(Collection::stream)
+            .flatMap(asSet -> asSet.getAsSet().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
 
@@ -2323,7 +2322,7 @@ public class CiscoGrammarTest {
             .getAsPath()
             .getAsSets()
             .stream()
-            .flatMap(Collection::stream)
+            .flatMap(asSet -> asSet.getAsSet().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
   }

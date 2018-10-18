@@ -5,12 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -49,12 +48,12 @@ public final class PrependAsPath extends Statement {
   @Override
   public Result execute(Environment environment) {
     List<Long> toPrepend = _expr.evaluate(environment);
-    List<SortedSet<Long>> newAsPaths =
-        toPrepend.stream().map(ImmutableSortedSet::of).collect(ImmutableList.toImmutableList());
+    List<AsSet> newAsPaths =
+        toPrepend.stream().map(AsSet::of).collect(ImmutableList.toImmutableList());
 
     BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
     bgpRouteBuilder.setAsPath(
-        ImmutableList.<SortedSet<Long>>builder()
+        ImmutableList.<AsSet>builder()
             .addAll(newAsPaths)
             .addAll(bgpRouteBuilder.getAsPath())
             .build());
@@ -62,10 +61,7 @@ public final class PrependAsPath extends Statement {
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(
-          ImmutableList.<SortedSet<Long>>builder()
-              .addAll(newAsPaths)
-              .addAll(ir.getAsPath())
-              .build());
+          ImmutableList.<AsSet>builder().addAll(newAsPaths).addAll(ir.getAsPath()).build());
     }
 
     Result result = new Result();

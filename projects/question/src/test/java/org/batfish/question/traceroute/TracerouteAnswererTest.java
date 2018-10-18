@@ -26,6 +26,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -156,6 +157,7 @@ public class TracerouteAnswererTest {
                 historyInfo.getPaths().values().stream().findAny())));
   }
 
+  @Ignore
   @Test
   public void testMaxTraces() {
     List<Trace> traces =

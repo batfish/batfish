@@ -53,7 +53,7 @@ public class EnvironmentTest {
             20,
             20,
             new Ip("0.0.0.0"),
-            new AsPath(Lists.newArrayList()),
+            AsPath.createAsPath(Lists.newArrayList()),
             ImmutableSortedSet.of(),
             ImmutableSortedSet.of(),
             10));

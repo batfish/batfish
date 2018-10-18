@@ -18,7 +18,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    private List<SortedSet<Long>> _asPath;
+    private List<AsSet> _asPath;
 
     private String _attributePolicy;
 
@@ -38,7 +38,7 @@ public final class GeneratedRoute extends AbstractRoute {
           getNetwork(),
           getAdmin(),
           getNextHopIp(),
-          new AsPath(_asPath),
+          AsPath.createAsPath(_asPath),
           _attributePolicy,
           _discard,
           _generationPolicy,
@@ -65,7 +65,7 @@ public final class GeneratedRoute extends AbstractRoute {
           .setNextHopInterface(route.getNextHopInterface());
     }
 
-    public Builder setAsPath(List<SortedSet<Long>> asPath) {
+    public Builder setAsPath(List<AsSet> asPath) {
       _asPath = asPath;
       return this;
     }

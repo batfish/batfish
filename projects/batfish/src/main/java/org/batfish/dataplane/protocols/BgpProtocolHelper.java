@@ -2,12 +2,12 @@ package org.batfish.dataplane.protocols;
 
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -119,7 +119,7 @@ public class BgpProtocolHelper {
            */
           return null;
         }
-        transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRemoteRoute.getClusterList());
+        transformedOutgoingRouteBuilder.addToClusterList(bgpRemoteRoute.getClusterList());
         if (!remoteRouteOriginatedByRemoteNeighbor) {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
@@ -129,9 +129,10 @@ public class BgpProtocolHelper {
                   .getActiveNeighbors()
                   .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
-          transformedOutgoingRouteBuilder.getClusterList().add(newClusterId);
+          transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
         }
         Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
+        @SuppressWarnings("deprecation")
         Set<Long> outgoingClusterList = transformedOutgoingRouteBuilder.getClusterList();
         if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
           /*
@@ -152,9 +153,11 @@ public class BgpProtocolHelper {
       }
     }
     if (sessionProperties.isEbgp()) {
-      SortedSet<Long> newAsPathElement = new TreeSet<>();
-      newAsPathElement.add(fromNeighbor.getLocalAs());
-      transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
+      transformedOutgoingRouteBuilder.setAsPath(
+          ImmutableList.<AsSet>builder()
+              .add(AsSet.of(fromNeighbor.getLocalAs()))
+              .addAll(transformedOutgoingRouteBuilder.getAsPath())
+              .build());
     }
 
     // Outgoing protocol
@@ -219,7 +222,7 @@ public class BgpProtocolHelper {
     BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
     transformedIncomingRouteBuilder.setOriginatorIp(route.getOriginatorIp());
     transformedIncomingRouteBuilder.setReceivedFromIp(route.getReceivedFromIp());
-    transformedIncomingRouteBuilder.getClusterList().addAll(route.getClusterList());
+    transformedIncomingRouteBuilder.addToClusterList(route.getClusterList());
     transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
         route.getReceivedFromRouteReflectorClient());
     transformedIncomingRouteBuilder.setAsPath(route.getAsPath().getAsSets());

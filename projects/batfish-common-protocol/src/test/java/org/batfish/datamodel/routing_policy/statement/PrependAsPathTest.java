@@ -3,12 +3,11 @@ package org.batfish.datamodel.routing_policy.statement;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -28,8 +27,8 @@ public class PrependAsPathTest {
     return Environment.builder(c).setVrf("vrf").setOutputRoute(outputRoute).build();
   }
 
-  private static List<SortedSet<Long>> mkAsPath(Long... explicitAs) {
-    return Arrays.stream(explicitAs).map(ImmutableSortedSet::of).collect(Collectors.toList());
+  private static List<AsSet> mkAsPath(Long... explicitAs) {
+    return Arrays.stream(explicitAs).map(AsSet::of).collect(Collectors.toList());
   }
 
   @Test

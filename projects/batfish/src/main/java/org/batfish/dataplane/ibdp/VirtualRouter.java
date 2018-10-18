@@ -11,6 +11,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,6 +45,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -763,7 +764,7 @@ public class VirtualRouter implements Serializable {
         BgpRoute.Builder builder = new BgpRoute.Builder();
         builder.setAdmin(admin);
         builder.setAsPath(asPath.getAsSets());
-        builder.setClusterList(clusterList);
+        builder.addToClusterList(clusterList);
         builder.setCommunities(communities);
         builder.setLocalPreference(localPreference);
         builder.setMetric(metric);
@@ -811,9 +812,7 @@ public class VirtualRouter implements Serializable {
             transformedOutgoingRoute.getReceivedFromIp());
 
         // Incoming clusterList
-        transformedIncomingRouteBuilder
-            .getClusterList()
-            .addAll(transformedOutgoingRoute.getClusterList());
+        transformedIncomingRouteBuilder.addToClusterList(transformedOutgoingRoute.getClusterList());
 
         // Incoming receivedFromRouteReflectorClient
         transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
@@ -1477,14 +1476,14 @@ public class VirtualRouter implements Serializable {
             boolean routeReceivedFromRouteReflectorClient =
                 bgpRoute.getReceivedFromRouteReflectorClient();
             boolean sendingToRouteReflectorClient = neighbor.getRouteReflectorClient();
-            transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRoute.getClusterList());
+            transformedOutgoingRouteBuilder.addToClusterList(bgpRoute.getClusterList());
             if (!routeReceivedFromRouteReflectorClient && !sendingToRouteReflectorClient) {
               continue;
             }
             if (sendingToRouteReflectorClient) {
               // sender adds its local cluster id to clusterlist of
               // new route
-              transformedOutgoingRouteBuilder.getClusterList().add(neighbor.getClusterId());
+              transformedOutgoingRouteBuilder.addToClusterList(neighbor.getClusterId());
             }
           }
         }
@@ -1499,9 +1498,12 @@ public class VirtualRouter implements Serializable {
           }
         }
         if (ebgpSession) {
-          SortedSet<Long> newAsPathElement = new TreeSet<>();
-          newAsPathElement.add(localAs);
-          transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
+          AsSet asSet = AsSet.of(localAs);
+          transformedOutgoingRouteBuilder.setAsPath(
+              ImmutableList.<AsSet>builder()
+                  .add(asSet)
+                  .addAll(transformedOutgoingRouteBuilder.getAsPath())
+                  .build());
         }
 
         // Outgoing protocol

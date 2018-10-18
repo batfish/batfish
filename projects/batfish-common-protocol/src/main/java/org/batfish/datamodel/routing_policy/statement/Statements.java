@@ -3,9 +3,9 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -83,11 +83,11 @@ public enum Statements {
         case RemovePrivateAs:
           {
             BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-            List<SortedSet<Long>> newAsPath = AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
+            List<AsSet> newAsPath = AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
             bgpRouteBuilder.setAsPath(newAsPath);
             if (environment.getWriteToIntermediateBgpAttributes()) {
               BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
-              List<SortedSet<Long>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
+              List<AsSet> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
               ir.setAsPath(iAsPath);
             }
             break;

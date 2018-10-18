@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
@@ -25,12 +24,14 @@ public class FibImpl implements Fib {
 
   public FibImpl(@Nonnull GenericRib<AbstractRoute> rib) {
     _rib = rib;
-    _nextHopInterfaces = new HashMap<>();
+    ImmutableMap.Builder<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> b =
+        ImmutableMap.builder();
     for (AbstractRoute route : rib.getRoutes()) {
       Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces =
           collectNextHopInterfaces(_rib, route);
-      _nextHopInterfaces.put(route, nextHopInterfaces);
+      b.put(route, nextHopInterfaces);
     }
+    _nextHopInterfaces = b.build();
   }
 
   /**
@@ -74,10 +75,12 @@ public class FibImpl implements Fib {
     if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
       Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
           nextHopInterfaces.computeIfAbsent(Interface.NULL_INTERFACE_NAME, k -> new HashMap<>());
-      Set<AbstractRoute> nextHopInterfaceRoutes =
-          nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
-              Route.UNSET_ROUTE_NEXT_HOP_IP, k -> new TreeSet<>());
-      nextHopInterfaceRoutes.add(route);
+      nextHopInterfaceRoutesByFinalNextHopIp.compute(
+          Route.UNSET_ROUTE_NEXT_HOP_IP,
+          (k, v) ->
+              v == null
+                  ? ImmutableSet.of(route)
+                  : ImmutableSet.<AbstractRoute>builder().addAll(v).add(route).build());
       return;
     }
     if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
@@ -96,10 +99,12 @@ public class FibImpl implements Fib {
       if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
         Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
             nextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new HashMap<>());
-        Set<AbstractRoute> nextHopInterfaceRoutes =
-            nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
-                mostRecentNextHopIp, k -> new TreeSet<>());
-        nextHopInterfaceRoutes.add(route);
+        nextHopInterfaceRoutesByFinalNextHopIp.compute(
+            mostRecentNextHopIp,
+            (k, v) ->
+                v == null
+                    ? ImmutableSet.of(route)
+                    : ImmutableSet.<AbstractRoute>builder().addAll(v).add(route).build());
       } else {
         // TODO: Declare this using some warning mechanism
         // https://github.com/batfish/batfish/issues/1469
