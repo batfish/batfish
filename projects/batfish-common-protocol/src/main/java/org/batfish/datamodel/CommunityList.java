@@ -43,7 +43,6 @@ public class CommunityList extends CommunitySetExpr {
     @Override
     public LoadingCache<Long, Boolean> get() {
       return CacheBuilder.newBuilder()
-          .softValues()
           .build(
               new CacheLoader<Long, Boolean>() {
                 @Override
