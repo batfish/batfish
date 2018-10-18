@@ -607,20 +607,6 @@ class IncrementalBdpEngine {
       compareToPreviousIteration(nodes, dependentRoutesChanged, checkFixedPointCompleted);
     } while (!areQueuesEmpty(nodes) || dependentRoutesChanged.get());
 
-    // After convergence, compute BGP advertisements sent to the outside of the network
-    AtomicInteger computeBgpAdvertisementsToOutsideCompleted =
-        _newBatch.apply("Compute BGP advertisements sent to outside", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.computeBgpAdvertisementsToOutside(dp.getIpOwners());
-              }
-              computeBgpAdvertisementsToOutsideCompleted.incrementAndGet();
-            });
-
     ae.setDependentRoutesIterations(_numIterations);
     return false; // No oscillations
   }

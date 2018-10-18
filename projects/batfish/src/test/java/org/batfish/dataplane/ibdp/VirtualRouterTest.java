@@ -6,11 +6,6 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
-import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
-import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork;
-import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasOriginatorIp;
-import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasSourceIp;
-import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasType;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
@@ -32,7 +27,6 @@ import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,10 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -66,14 +57,12 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
-import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RipRoute;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -89,8 +78,6 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.BgpBestPathRib;
@@ -196,200 +183,6 @@ public class VirtualRouterTest {
     _ipOwners = ImmutableMap.of(TEST_SRC_IP, ImmutableSet.of(TEST_VIRTUAL_ROUTER_NAME));
     _routingPolicyBuilder =
         nf.routingPolicyBuilder().setOwner(_testVirtualRouter.getConfiguration());
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSentToOutsideNoBgp() {
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-
-    // checking that no bgp advertisements are sent if the vrf has no BGP process
-    assertThat(advertisements, empty());
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSentToOutsideIgp() {
-    RoutingPolicy exportPolicy =
-        _routingPolicyBuilder
-            .setStatements(
-                ImmutableList.of(
-                    new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
-                    _exitAcceptStatement))
-            .build();
-    _bgpNeighborBuilder.setExportPolicy(exportPolicy.getName()).setRemoteAs(TEST_AS2).build();
-
-    _testVirtualRouter._mainRib.mergeRoute(
-        new OspfInternalRoute.Builder()
-            .setNetwork(TEST_NETWORK)
-            .setMetric(TEST_METRIC)
-            .setArea(TEST_AREA)
-            .setAdmin(TEST_ADMIN)
-            .setProtocol(RoutingProtocol.OSPF)
-            .build());
-
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-    // checking number of bgp advertisements
-    assertThat(advertisements, hasSize(1));
-
-    BgpAdvertisement bgpAdvertisement = advertisements.iterator().next();
-
-    // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, hasOriginatorIp(TEST_SRC_IP));
-    assertThat(bgpAdvertisement, hasType(BgpAdvertisementType.EBGP_SENT));
-    assertThat(bgpAdvertisement, hasSourceIp(TEST_SRC_IP));
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSTOIbgpAdvertiseExternal() {
-    RoutingPolicy exportPolicy =
-        _routingPolicyBuilder.setStatements(ImmutableList.of(_exitAcceptStatement)).build();
-    _bgpNeighborBuilder
-        .setRemoteAs(TEST_AS1)
-        .setExportPolicy(exportPolicy.getName())
-        .setAdvertiseExternal(true)
-        .build();
-
-    _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder
-            .setNextHopIp(TEST_NEXT_HOP_IP1)
-            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
-            .build());
-
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-    /* checking that the route in EBGP Best Path Rib got advertised */
-    assertThat(advertisements, hasSize(1));
-
-    BgpAdvertisement bgpAdvertisement = advertisements.iterator().next();
-
-    // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, hasOriginatorIp(TEST_SRC_IP));
-    assertThat(bgpAdvertisement, hasType(BgpAdvertisementType.IBGP_SENT));
-    assertThat(bgpAdvertisement, hasSourceIp(TEST_SRC_IP));
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSTOIbgpAdditionalPaths() {
-    RoutingPolicy exportPolicy =
-        _routingPolicyBuilder.setStatements(ImmutableList.of(_exitAcceptStatement)).build();
-
-    _bgpNeighborBuilder
-        .setRemoteAs(TEST_AS1)
-        .setExportPolicy(exportPolicy.getName())
-        .setAdditionalPathsSend(true)
-        .setAdditionalPathsSelectAll(true)
-        .build();
-
-    _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder
-            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
-            .setNextHopIp(TEST_NEXT_HOP_IP1)
-            .build());
-    // adding second similar route in the Multipath rib with a different Next Hop IP
-    _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder
-            .setReceivedFromIp(TEST_NEXT_HOP_IP2)
-            .setNextHopIp(TEST_NEXT_HOP_IP2)
-            .build());
-
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-    // checking that both the routes in BGP Multipath Rib got advertised
-    assertThat(advertisements, hasSize(2));
-
-    // checking that both bgp advertisements have the same network and the supplied next hop IPs
-    Set<Ip> nextHopIps = new HashSet<>();
-    advertisements.forEach(
-        bgpAdvertisement -> {
-          assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-          nextHopIps.add(bgpAdvertisement.getNextHopIp());
-        });
-
-    assertThat(
-        "Next Hop IPs not valid in BGP advertisements",
-        nextHopIps,
-        containsInAnyOrder(TEST_NEXT_HOP_IP1, TEST_NEXT_HOP_IP2));
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSTOEbgpAdvertiseInactive() {
-    RoutingPolicy exportPolicy =
-        _routingPolicyBuilder
-            .setStatements(
-                ImmutableList.of(
-                    new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
-                    _exitAcceptStatement))
-            .build();
-
-    _bgpNeighborBuilder
-        .setRemoteAs(TEST_AS2)
-        .setExportPolicy(exportPolicy.getName())
-        .setAdvertiseInactive(true)
-        .build();
-
-    _testVirtualRouter._bgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder
-            .setNextHopIp(TEST_NEXT_HOP_IP1)
-            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
-            .setAsPath(AsPath.ofSingletonAsSets(TEST_AS3).getAsSets())
-            .build());
-
-    // adding a connected route in main rib
-    _testVirtualRouter._mainRib.mergeRoute(
-        new ConnectedRoute(TEST_NETWORK, Route.UNSET_NEXT_HOP_INTERFACE));
-
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-
-    // checking that the inactive BGP route got advertised along with the active OSPF route
-    assertThat(advertisements, hasSize(2));
-
-    // checking that both bgp advertisements have the same network and correct AS Paths
-    Set<AsPath> asPaths = new HashSet<>();
-    advertisements.forEach(
-        bgpAdvertisement -> {
-          assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
-          asPaths.add(bgpAdvertisement.getAsPath());
-        });
-
-    // next Hop IP for the active OSPF route  will be the neighbor's local IP
-    assertThat(
-        "AS Paths not valid in BGP advertisements",
-        asPaths,
-        equalTo(
-            ImmutableSet.of(
-                AsPath.ofSingletonAsSets(TEST_AS1, TEST_AS3), AsPath.ofSingletonAsSets(TEST_AS1))));
-  }
-
-  @Test
-  public void computeBgpAdvertisementsSTOIbgpNeighborReject() {
-    RoutingPolicy exportPolicy =
-        _routingPolicyBuilder.setStatements(ImmutableList.of(_exitRejectStatement)).build();
-
-    _bgpNeighborBuilder
-        .setRemoteAs(TEST_AS1)
-        .setExportPolicy(exportPolicy.getName())
-        .setAdvertiseExternal(true)
-        .setAdditionalPathsSend(true)
-        .setAdditionalPathsSelectAll(true)
-        .build();
-
-    _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder
-            .setNextHopIp(TEST_NEXT_HOP_IP1)
-            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
-            .build());
-    _testVirtualRouter._bgpMultipathRib.mergeRoute(_bgpRouteBuilder.build());
-
-    Set<BgpAdvertisement> advertisements =
-        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
-    // number of BGP advertisements should be zero given the reject all export policy
-    assertThat(advertisements, empty());
   }
 
   /**
