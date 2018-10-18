@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -26,20 +27,26 @@ public final class TracerouteQuestion extends Question {
   private static final String PROP_IGNORE_ACLS = "ignoreAcls";
   private static final String PROP_SOURCE_LOCATION = "startLocation";
   private static final String PROP_HEADER_CONSTRAINTS = "headers";
+  private static final String PROP_MAX_TRACES = "maxTraces";
+
+  @VisibleForTesting static final int DEFAULT_MAX_TRACES = 32;
 
   private final boolean _ignoreAcls;
   private final @Nullable String _sourceLocationStr;
   private final PacketHeaderConstraints _headerConstraints;
+  private final int _maxTraces;
 
   @JsonCreator
   private static TracerouteQuestion create(
       @JsonProperty(PROP_IGNORE_ACLS) boolean ignoreAcls,
       @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
-      @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints) {
+      @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints,
+      @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces) {
     return new TracerouteQuestion(
         sourceLocationStr,
         firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
-        ignoreAcls);
+        ignoreAcls,
+        firstNonNull(maxTraces, DEFAULT_MAX_TRACES));
   }
 
   /**
@@ -49,18 +56,21 @@ public final class TracerouteQuestion extends Question {
    *     org.batfish.specifier.LocationSpecifier}
    * @param headerConstraints {@link PacketHeaderConstraints} specifying what flow to construct when
    * @param ignoreAcls whether or not to evaluate ACLs on interfaces when performing a traceroute
+   * @param maxTraces the maximum number of traces to include in the answer
    */
   public TracerouteQuestion(
       @Nullable String sourceLocationStr,
       @Nonnull PacketHeaderConstraints headerConstraints,
-      boolean ignoreAcls) {
+      boolean ignoreAcls,
+      int maxTraces) {
     _ignoreAcls = ignoreAcls;
     _sourceLocationStr = sourceLocationStr;
     _headerConstraints = headerConstraints;
+    _maxTraces = maxTraces;
   }
 
   TracerouteQuestion() {
-    this(null, PacketHeaderConstraints.unconstrained(), false);
+    this(null, PacketHeaderConstraints.unconstrained(), false, DEFAULT_MAX_TRACES);
   }
 
   @Override
@@ -77,6 +87,11 @@ public final class TracerouteQuestion extends Question {
   @JsonProperty(PROP_IGNORE_ACLS)
   public boolean getIgnoreAcls() {
     return _ignoreAcls;
+  }
+
+  @JsonProperty(PROP_MAX_TRACES)
+  public int getMaxTraces() {
+    return _maxTraces;
   }
 
   @JsonProperty(PROP_SOURCE_LOCATION)
@@ -96,6 +111,9 @@ public final class TracerouteQuestion extends Question {
       sb.append(String.format("traceroute %s", prettyPrintBase()));
       if (_sourceLocationStr != null) {
         sb.append(String.format(", %s=%s", PROP_SOURCE_LOCATION, _sourceLocationStr));
+      }
+      if (_maxTraces != DEFAULT_MAX_TRACES) {
+        sb.append(String.format(", %s=%s", PROP_MAX_TRACES, _maxTraces));
       }
       return sb.toString();
     } catch (Exception e) {

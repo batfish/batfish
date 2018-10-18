@@ -2,6 +2,7 @@
   "class" : "org.batfish.question.traceroute.TracerouteQuestion",
   "headers" : { },
   "ignoreAcls" : false,
+  "maxTraces" : 0,
   "startLocation" : "location",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -25,6 +26,12 @@
         "optional" : true,
         "type" : "boolean",
         "value" : false
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 0
       },
       "startLocation" : {
         "description" : "Location (node and interface combination) to start tracing from",
