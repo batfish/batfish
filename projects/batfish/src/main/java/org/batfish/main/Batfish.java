@@ -158,7 +158,6 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -1239,11 +1238,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
-  }
-
-  @Override
-  public GrammarSettings getGrammarSettings() {
-    return _settings;
   }
 
   @Override
@@ -3932,10 +3926,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bddSingleReachability(reachabilityParameters);
   }
 
-  public Synthesizer synthesizeDataPlane() {
-    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
-  }
-
   private Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations, DataPlane dataPlane) {
     return synthesizeDataPlane(
@@ -4278,13 +4268,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(
         _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
     return answer;
-  }
-
-  @Override
-  public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
-    _cachedDataPlanes.put(getNetworkSnapshot(), dp);
-    serializeObject(dp, _testrigSettings.getDataPlanePath());
-    serializeObject(ae, _testrigSettings.getDataPlaneAnswerPath());
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
