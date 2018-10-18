@@ -97,7 +97,6 @@ import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -158,7 +157,6 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -1242,11 +1240,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public GrammarSettings getGrammarSettings() {
-    return _settings;
-  }
-
-  @Override
   public FlowHistory getHistory() {
     FlowHistory flowHistory = new FlowHistory();
     if (_settings.getDiffQuestion()) {
@@ -1473,132 +1466,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
-  }
-
-  @Override
-  public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    Set<BgpAdvertisement> globalBgpAdvertisements = getDataPlanePlugin().getAdvertisements();
-    for (Configuration node : configurations.values()) {
-      node.initBgpAdvertisements();
-      for (Vrf vrf : node.getVrfs().values()) {
-        vrf.initBgpAdvertisements();
-      }
-    }
-    for (BgpAdvertisement bgpAdvertisement : globalBgpAdvertisements) {
-      BgpAdvertisementType type = bgpAdvertisement.getType();
-      String srcVrf = bgpAdvertisement.getSrcVrf();
-      String dstVrf = bgpAdvertisement.getDstVrf();
-      switch (type) {
-        case EBGP_ORIGINATED:
-          {
-            String originationNodeName = bgpAdvertisement.getSrcNode();
-            Configuration originationNode = configurations.get(originationNodeName);
-            if (originationNode != null) {
-              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-            } else {
-              throw new BatfishException(
-                  "Originated bgp advertisement refers to missing node: \""
-                      + originationNodeName
-                      + "\"");
-            }
-            break;
-          }
-
-        case IBGP_ORIGINATED:
-          {
-            String originationNodeName = bgpAdvertisement.getSrcNode();
-            Configuration originationNode = configurations.get(originationNodeName);
-            if (originationNode != null) {
-              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-            } else {
-              throw new BatfishException(
-                  "Originated bgp advertisement refers to missing node: \""
-                      + originationNodeName
-                      + "\"");
-            }
-            break;
-          }
-
-        case EBGP_RECEIVED:
-          {
-            String recevingNodeName = bgpAdvertisement.getDstNode();
-            Configuration receivingNode = configurations.get(recevingNodeName);
-            if (receivingNode != null) {
-              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
-
-        case IBGP_RECEIVED:
-          {
-            String recevingNodeName = bgpAdvertisement.getDstNode();
-            Configuration receivingNode = configurations.get(recevingNodeName);
-            if (receivingNode != null) {
-              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
-
-        case EBGP_SENT:
-          {
-            String sendingNodeName = bgpAdvertisement.getSrcNode();
-            Configuration sendingNode = configurations.get(sendingNodeName);
-            if (sendingNode != null) {
-              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
-
-        case IBGP_SENT:
-          {
-            String sendingNodeName = bgpAdvertisement.getSrcNode();
-            Configuration sendingNode = configurations.get(sendingNodeName);
-            if (sendingNode != null) {
-              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
-
-        default:
-          throw new BatfishException("Invalid bgp advertisement type");
-      }
-    }
   }
 
   @Override
@@ -3932,10 +3799,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bddSingleReachability(reachabilityParameters);
   }
 
-  public Synthesizer synthesizeDataPlane() {
-    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
-  }
-
   private Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations, DataPlane dataPlane) {
     return synthesizeDataPlane(
@@ -4278,13 +4141,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(
         _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
     return answer;
-  }
-
-  @Override
-  public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
-    _cachedDataPlanes.put(getNetworkSnapshot(), dp);
-    serializeObject(dp, _testrigSettings.getDataPlanePath());
-    serializeObject(ae, _testrigSettings.getDataPlaneAnswerPath());
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {

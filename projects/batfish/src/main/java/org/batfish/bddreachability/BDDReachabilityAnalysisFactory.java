@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -32,6 +34,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -39,7 +42,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
@@ -467,6 +469,7 @@ public final class BDDReachabilityAnalysisFactory {
     return finalNodes
         .stream()
         .map(_configs::get)
+        .filter(Objects::nonNull) // remove finalNodes that don't exist on this network
         .flatMap(c -> c.getAllInterfaces().values().stream())
         .map(
             iface -> {
@@ -928,25 +931,33 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   @Nonnull
-  private LocationVisitor<StateExpr> getLocationToStateExpr() {
-    return new LocationVisitor<StateExpr>() {
+  /*
+   * Optional.none is used when the location is not in the snapshot. This can happen in differential reachability,
+   * for example.
+   */
+  private LocationVisitor<Optional<StateExpr>> getLocationToStateExpr() {
+    return new LocationVisitor<Optional<StateExpr>>() {
       @Override
-      public StateExpr visitInterfaceLinkLocation(
+      public Optional<StateExpr> visitInterfaceLinkLocation(
           @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
-        return new OriginateInterfaceLink(
-            interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName());
+        return Optional.of(
+            new OriginateInterfaceLink(
+                interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName()));
       }
 
       @Override
-      public StateExpr visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
-        String vrf =
-            _configs
-                .get(interfaceLocation.getNodeName())
-                .getAllInterfaces()
-                .get(interfaceLocation.getInterfaceName())
-                .getVrf()
-                .getName();
-        return new OriginateVrf(interfaceLocation.getNodeName(), vrf);
+      public Optional<StateExpr> visitInterfaceLocation(
+          @Nonnull InterfaceLocation interfaceLocation) {
+        Configuration config = _configs.get(interfaceLocation.getNodeName());
+        if (config == null) {
+          return Optional.empty();
+        }
+        Interface iface = config.getAllInterfaces().get(interfaceLocation.getInterfaceName());
+        if (iface == null) {
+          return Optional.empty();
+        }
+        String vrf = iface.getVrfName();
+        return Optional.of(new OriginateVrf(interfaceLocation.getNodeName(), vrf));
       }
     };
   }
@@ -1009,21 +1020,24 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Map<StateExpr, BDD> rootConstraints(
       IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
-    LocationVisitor<StateExpr> locationToStateExpr = getLocationToStateExpr();
+    LocationVisitor<Optional<StateExpr>> locationToStateExpr = getLocationToStateExpr();
     IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
 
     // convert Locations to StateExprs, and merge srcIp constraints
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
       BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
-      for (Location loc : entry.getLocations()) {
-        StateExpr root = loc.accept(locationToStateExpr);
-        rootConstraints.merge(root, srcIpSpaceBDD, BDD::or);
-      }
+      entry
+          .getLocations()
+          .stream()
+          .map(locationToStateExpr::visit)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(root -> rootConstraints.merge(root, srcIpSpaceBDD, BDD::or));
     }
 
     // add the global initial HeaderSpace and remove unsat entries
-    rootConstraints =
+    Map<StateExpr, BDD> finalRootConstraints =
         rootConstraints
             .entrySet()
             .stream()
@@ -1036,9 +1050,10 @@ public final class BDDReachabilityAnalysisFactory {
 
     // make sure there is at least one possible source
     checkArgument(
-        !rootConstraints.isEmpty(), "No sources are compatible with the headerspace constraint");
+        !finalRootConstraints.isEmpty(),
+        "No sources are compatible with the headerspace constraint");
 
-    return rootConstraints;
+    return finalRootConstraints;
   }
 
   private String ifaceVrf(String node, String iface) {

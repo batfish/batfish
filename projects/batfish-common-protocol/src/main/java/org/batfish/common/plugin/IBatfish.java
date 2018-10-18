@@ -42,7 +42,6 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
@@ -105,8 +104,6 @@ public interface IBatfish extends IPluginConsumer {
 
   String getFlowTag();
 
-  GrammarSettings getGrammarSettings();
-
   FlowHistory getHistory();
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
@@ -138,8 +135,6 @@ public interface IBatfish extends IPluginConsumer {
   Directory getTestrigFileTree();
 
   SnapshotId getTestrigName();
-
-  void initBgpAdvertisements(Map<String, Configuration> configurations);
 
   void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations);
 
@@ -236,8 +231,6 @@ public interface IBatfish extends IPluginConsumer {
   SpecifierContext specifierContext();
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
-
-  void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 
   Set<Flow> bddMultipathConsistency();
 
