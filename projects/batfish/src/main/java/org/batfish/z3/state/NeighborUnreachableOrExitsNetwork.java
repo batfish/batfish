@@ -4,7 +4,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class NodeInterfaceNeighborUnreachable extends StateExpr {
+public class NeighborUnreachableOrExitsNetwork extends StateExpr {
 
   public static class State extends StateExpr.State {
 
@@ -14,30 +14,17 @@ public class NodeInterfaceNeighborUnreachable extends StateExpr {
 
     @Override
     public void accept(StateVisitor visitor) {
-      visitor.visitNodeInterfaceNeighborUnreachable(this);
+      visitor.visitNeighborUnreachableOrExitsNetwork(this);
     }
   }
 
-  private final String _hostname;
+  public static final NeighborUnreachableOrExitsNetwork INSTANCE = new NeighborUnreachableOrExitsNetwork();
 
-  private final String _iface;
-
-  public NodeInterfaceNeighborUnreachable(String hostname, String iface) {
-    _hostname = hostname;
-    _iface = iface;
-  }
+  private NeighborUnreachableOrExitsNetwork() {}
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitNodeInterfaceNeighborUnreachable(this);
-  }
-
-  public String getHostname() {
-    return _hostname;
-  }
-
-  public String getIface() {
-    return _iface;
+    return visitor.visitNeighborUnreachableOrExitsNetwork(this);
   }
 
   @Override
@@ -45,4 +32,3 @@ public class NodeInterfaceNeighborUnreachable extends StateExpr {
     return State.INSTANCE;
   }
 }
-

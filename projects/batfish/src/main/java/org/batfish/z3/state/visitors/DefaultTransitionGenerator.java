@@ -47,6 +47,7 @@ import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
+import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -59,7 +60,7 @@ import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachable;
+import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
@@ -388,7 +389,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNeighborUnreachable(NeighborUnreachable.State state) {
+  public void visitNeighborUnreachableOrExitsNetwork(NeighborUnreachableOrExitsNetwork.State state) {
     _input
         .getNeighborUnreachable()
         .keySet()
@@ -396,7 +397,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
             hostname ->
                 _rules.add(
                     new BasicRuleStatement(
-                        new NodeNeighborUnreachable(hostname), NeighborUnreachable.INSTANCE)));
+                        new NodeNeighborUnreachableOrExitsNetwork(hostname), NeighborUnreachableOrExitsNetwork.INSTANCE)));
   }
 
   // We do not implement the function intentionally.
@@ -410,6 +411,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
   // We do not implement the function intentionally.
   @Override
   public void visitInsufficientInfo(InsufficientInfo.State state) {}
+
+  // We do not implement the function intentionally.
+  @Override public void visitNeighborUnreachable(NeighborUnreachable.State state) {
+  }
 
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
@@ -537,7 +542,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
               }
             });
 
-    // NeighborUnreachable fail OutAcl
+    // NeighborUnreachableOld fail OutAcl
     _input
         .getNeighborUnreachable()
         .forEach(
@@ -598,7 +603,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {
+  public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
+      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {
     _input
         .getNeighborUnreachable()
         .forEach(
@@ -624,14 +630,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                   new BasicRuleStatement(
                                       dstIpConstraint,
                                       preStates.build(),
-                                      new NodeInterfaceNeighborUnreachable(hostname, outIface)));
+                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(hostname, outIface)));
                             })));
   }
-
-  // We do not implement the function intentionally.
-  @Override
-  public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {}
 
   // We do not implement the function intentionally.
   @Override
@@ -645,8 +646,13 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {}
 
+  // We do not implement the function intentionally.
+  @Override public void visitNodeInterfaceNeighborUnreachable(
+      NodeInterfaceNeighborUnreachable.State state) {
+  }
+
   @Override
-  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
+  public void visitNodeNeighborUnreachableOrExitsNetwork(NodeNeighborUnreachableOrExitsNetwork.State state) {
     _input
         .getNeighborUnreachable()
         .forEach(
@@ -657,8 +663,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             (outIface, dstIpConstraint) -> {
                               _rules.add(
                                   new BasicRuleStatement(
-                                      new NodeInterfaceNeighborUnreachable(hostname, outIface),
-                                      new NodeNeighborUnreachable(hostname)));
+                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(hostname, outIface),
+                                      new NodeNeighborUnreachableOrExitsNetwork(hostname)));
                             })));
   }
 

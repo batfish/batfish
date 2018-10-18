@@ -30,7 +30,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
@@ -99,7 +99,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   /*
-   * Test the PreOutVrf -> NodeInterfaceNeighborUnreachable edge for the interface with the
+   * Test the PreOutVrf -> NodeInterfaceNeighborUnreachableOld edge for the interface with the
    * OriginatingFromDevice ACL.
    */
   @Test
@@ -108,7 +108,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
         edges
             .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
             .get(
-                new NodeInterfaceNeighborUnreachable(
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
         factory
@@ -166,7 +166,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   /*
-   * Test the PreOutVrf -> NodeInterfaceNeighborUnreachable edge for the interface with the
+   * Test the PreOutVrf -> NodeInterfaceNeighborUnreachableOld edge for the interface with the
    * MatchSrcInterface ACL.
    */
   @Test
@@ -175,7 +175,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
         edges
             .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
             .get(
-                new NodeInterfaceNeighborUnreachable(
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
         factory

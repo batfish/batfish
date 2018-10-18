@@ -44,7 +44,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -120,12 +120,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
           edges,
           not(hasEntry(equalTo(new NodeDropAclOut(otherNode)), hasKey(DropAclOut.INSTANCE))));
 
-      Set<NodeInterfaceNeighborUnreachable> neighborUnreachables =
+      Set<NodeInterfaceNeighborUnreachableOrExitsNetwork> neighborUnreachables =
           edges
               .keySet()
               .stream()
-              .filter(NodeInterfaceNeighborUnreachable.class::isInstance)
-              .map(NodeInterfaceNeighborUnreachable.class::cast)
+              .filter(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::isInstance)
+              .map(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::cast)
               .collect(Collectors.toSet());
       neighborUnreachables.forEach(nu -> assertThat(nu, hasHostname(node)));
 

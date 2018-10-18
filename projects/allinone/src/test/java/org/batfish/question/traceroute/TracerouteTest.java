@@ -909,7 +909,7 @@ public class TracerouteTest {
    * Case 1: mask <= 29: DELIVERED_TO_SUBNET
    * Case 2: mask > 29: DELIVERED_TO_SUBNET
    *
-   * Constraint to /29 is removed.
+   * Constraint of /29 is removed.
    */
   private TableAnswerElement testHostSubnet(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();

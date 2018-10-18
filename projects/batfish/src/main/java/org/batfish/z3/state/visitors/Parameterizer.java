@@ -27,6 +27,7 @@ import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
+import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -39,7 +40,7 @@ import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachable;
+import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
@@ -149,7 +150,8 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
+  public List<StateParameter> visitNeighborUnreachableOrExitsNetwork(
+      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork) {
     return ImmutableList.of();
   }
 
@@ -165,6 +167,11 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
 
   @Override
   public List<StateParameter> visitInsufficientInfo(InsufficientInfo insufficientInfo) {
+    return ImmutableList.of();
+  }
+
+  @Override public List<StateParameter> visitNeighborUnreachable(
+      NeighborUnreachable neighborUnreachable) {
     return ImmutableList.of();
   }
 
@@ -205,15 +212,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
 
   @Override
   public List<StateParameter> visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork nodeIfaceNeighborUnreachableOrExitsNetwork) {
-    return ImmutableList.of(
-        new StateParameter(nodeIfaceNeighborUnreachableOrExitsNetwork.getHostname(), NODE),
-        new StateParameter(nodeIfaceNeighborUnreachableOrExitsNetwork.getIface(), INTERFACE));
-  }
-
-  @Override
-  public List<StateParameter> visitNodeInterfaceNeighborUnreachable(
-      NodeInterfaceNeighborUnreachable nodeIfaceNeighborUnreachable) {
+      NodeInterfaceNeighborUnreachableOrExitsNetwork nodeIfaceNeighborUnreachable) {
     return ImmutableList.of(
         new StateParameter(nodeIfaceNeighborUnreachable.getHostname(), NODE),
         new StateParameter(nodeIfaceNeighborUnreachable.getIface(), INTERFACE));
@@ -243,10 +242,17 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(nodeIfaceInsufficientInfo.getIface(), INTERFACE));
   }
 
+  @Override public List<StateParameter> visitNodeInterfaceNeighborUnreachable(
+      NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable) {
+    return ImmutableList.of(
+      new StateParameter(nodeInterfaceNeighborUnreachable.getHostname(), NODE),
+      new StateParameter(nodeInterfaceNeighborUnreachable.getIface(), INTERFACE));
+  }
+
   @Override
-  public List<StateParameter> visitNodeNeighborUnreachable(
-      NodeNeighborUnreachable nodeNeighborUnreachable) {
-    return ImmutableList.of(new StateParameter(nodeNeighborUnreachable.getHostname(), NODE));
+  public List<StateParameter> visitNodeNeighborUnreachableOrExitsNetwork(
+      NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork) {
+    return ImmutableList.of(new StateParameter(nodeNeighborUnreachableOrExitsNetwork.getHostname(), NODE));
   }
 
   @Override

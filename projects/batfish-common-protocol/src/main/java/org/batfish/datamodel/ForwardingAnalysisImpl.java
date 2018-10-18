@@ -89,16 +89,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
   // mapping: hostname -> vrf name -> interfacename -> dst ips that end up delivered to subnet
-  private Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
 
   // mapping: hostname -> vrf name -> interfacename -> dst ips that end up exiting the network
-  private Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
 
   // mapping: hostname -> vrf name -> interfacename -> dst ips that end up with insufficient info
-  private Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
   // mapping: hostname -> set of interfacenames that is not full
-  private Map<String, Set<String>> _interfacesWithMissingDevices;
+  private final Map<String, Set<String>> _interfacesWithMissingDevices;
 
   // mapping: hostname -> interface -> interface subnet
   private Map<String, Map<String, Set<InterfaceAddress>>> _interfacesHostSubnetWithMissingDevices;
@@ -165,9 +165,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable,
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableArpDestIp,
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableArpNextHopIp,
+      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp,
       Map<String, Map<String, IpSpace>> nullRoutedIps,
       Map<String, Map<String, IpSpace>> routableIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
@@ -175,7 +175,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse,
       Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue,
-      Map<String, Map<String, IpSpace>> someoneReplies) {
+      Map<String, Map<String, IpSpace>> someoneReplies,
+      Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps,
+      Map<String, Set<String>> interfacesWithMissingDevices,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithExternalNextHopIpArpFalse,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithInternalNextHopIpArpFalse,
+      IpSpace snapshotOwnedIps) {
     _nullRoutedIps = nullRoutedIps;
     _routableIps = routableIps;
     _routesWithNextHop = routesWithNextHop;
@@ -184,19 +189,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpReplies = arpReplies;
     _someoneReplies = someoneReplies;
     _routesWithNextHopIpArpFalse = routesWithNextHopIpArpFalse;
-    _arpFalseNextHopIp = neighborUnreachableArpNextHopIp;
+    _arpFalseNextHopIp = arpFalseNextHopIp;
     _routesWithNextHopIpArpTrue = routesWithNextHopIpArpTrue;
     _arpTrueEdgeNextHopIp = arpTrueEdgeNextHopIp;
     _routesWhereDstIpCanBeArpIp = routesWhereDstIpCanBeArpIp;
-    _arpFalseDestIp = neighborUnreachableArpDestIp;
-    _neighborUnreachableOrExitsNetwork = neighborUnreachable;
+    _arpFalseDestIp = arpFalseDestIp;
+    _neighborUnreachableOrExitsNetwork = neighborUnreachableOrExitsNetwork;
     _routesWithDestIpEdge = routesWithDestIpEdge;
     _arpTrueEdgeDestIp = arpTrueEdgeDestIp;
     _arpTrueEdge = arpTrueEdge;
-    _routesWithExternalNextHopIpArpFalse = null;
-    _routesWithInternalNextHopIpArpFalse = null;
-    _interfaceHostSubnetIps = null;
-    _snapshotOwnedIps = null;
+    _routesWithExternalNextHopIpArpFalse = routesWithExternalNextHopIpArpFalse;
+    _routesWithInternalNextHopIpArpFalse = routesWithInternalNextHopIpArpFalse;
+    _interfaceHostSubnetIps = interfaceHostSubnetIps;
+    _snapshotOwnedIps = snapshotOwnedIps;
+    _interfacesWithMissingDevices = interfacesWithMissingDevices;
     _neighborUnreachable = null;
     _deliveredToSubnet = null;
     _insufficientInfo = null;
@@ -732,7 +738,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      computeRoutesWithNextHopIpArpFalseFilter(Function<Ip, Boolean> nextHopIpFilter) {
+      computeRoutesWithNextHopIpArpFalseFilter(Function<AbstractRoute, Boolean> routeFilter) {
     return toImmutableMap(
         _routesWithNextHopIpArpFalse,
         Entry::getKey /* hostname */,
@@ -748,20 +754,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             routesWithNextHopByOutInterfaceEntry
                                 .getValue()
                                 .stream()
-                                .filter(
-                                    abstractRoute ->
-                                        nextHopIpFilter.apply(abstractRoute.getNextHopIp()))
+                                .filter(route -> routeFilter.apply(route))
                                 .collect(Collectors.toSet()))));
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       computeRoutesWithExternalNextHopIpArpFalse() {
-    return computeRoutesWithNextHopIpArpFalseFilter(ip -> !isIpInSnapshot(ip));
+    return computeRoutesWithNextHopIpArpFalseFilter(route -> !isIpInSnapshot(route.getNextHopIp()));
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       computeRoutesWithInternalNextHopIpArpFalse() {
-    return computeRoutesWithNextHopIpArpFalseFilter(this::isIpInSnapshot);
+    return computeRoutesWithNextHopIpArpFalseFilter(route -> isIpInSnapshot(route.getNextHopIp()));
   }
 
   @VisibleForTesting
@@ -1048,7 +1052,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         });
   }
 
-  private static Map<String, Map<String, Map<String, IpSpace>>> computeInterfaceHostSubnetIps(
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, IpSpace>>> computeInterfaceHostSubnetIps(
       Map<String, Configuration> configs) {
     return toImmutableMap(
         configs,
@@ -1071,11 +1076,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         .map(InterfaceAddress::getPrefix)
                                         .map(
                                             prefix ->
-                                                AclIpSpace.rejecting(
-                                                        prefix.getStartIp().toIpSpace())
-                                                    .thenRejecting(prefix.getStartIp().toIpSpace())
-                                                    .thenPermitting(prefix.toIpSpace())
-                                                    .build())
+                                                prefix.getPrefixLength() >= 31
+                                                    ? prefix.toIpSpace()
+                                                    : AclIpSpace.rejecting(
+                                                            prefix.getStartIp().toIpSpace())
+                                                        .thenRejecting(
+                                                            prefix.getEndIp().toIpSpace())
+                                                        .thenPermitting(prefix.toIpSpace())
+                                                        .build())
                                         .collect(ImmutableList.toImmutableList())),
                                 EmptyIpSpace.INSTANCE))));
   }
@@ -1097,6 +1105,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * Necessary and sufficient: The connected subnet is not full, the dest IP is external,
    * and path is not expected to come back into network (i.e. the ARP IP is also external).
    */
+  @VisibleForTesting
   IpSpace computeExitsNetworkPerInterface(
       String hostname, String vrfName, String interfaceName, GenericRib<AbstractRoute> rib) {
 

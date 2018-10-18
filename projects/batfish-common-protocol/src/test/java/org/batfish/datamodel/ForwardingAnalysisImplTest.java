@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.subsetOf;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.supersetOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,9 +59,9 @@ public class ForwardingAnalysisImplTest {
 
   private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpDestIp;
+  private Map<String, Map<String, Map<String, IpSpace>>> _arpFalseDestIp;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
+  private Map<String, Map<String, Map<String, IpSpace>>> _arpFalseNextHopIp;
 
   private NetworkFactory _nf;
 
@@ -79,6 +81,18 @@ public class ForwardingAnalysisImplTest {
 
   private Map<String, Map<String, IpSpace>> _someoneReplies;
 
+  private Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
+
+  private Map<String, Set<String>> _interfacesWithMissingDevices;
+
+  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      _routesWithExternalNextHopIpArpFalse;
+
+  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      _routesWithInternalNextHopIpArpFalse;
+
+  IpSpace _snapshotOwnedIps;
+
   private Vrf.Builder _vb;
 
   private ForwardingAnalysisImpl initForwardingAnalysisImpl() {
@@ -89,9 +103,7 @@ public class ForwardingAnalysisImplTest {
         _arpTrueEdgeNextHopIp,
         _interfaceOwnedIps,
         _ipsRoutedOutInterfaces,
-        _neighborUnreachable,
-        _neighborUnreachableArpDestIp,
-        _neighborUnreachableArpNextHopIp,
+        _neighborUnreachable, _arpFalseDestIp, _arpFalseNextHopIp,
         _nullRoutedIps,
         _routableIps,
         _routesWhereDstIpCanBeArpIp,
@@ -99,7 +111,12 @@ public class ForwardingAnalysisImplTest {
         _routesWithNextHop,
         _routesWithNextHopIpArpFalse,
         _routesWithNextHopIpArpTrue,
-        _someoneReplies);
+        _someoneReplies, _interfaceHostSubnetIps,
+        _interfacesWithMissingDevices,
+        _routesWithExternalNextHopIpArpFalse,
+        _routesWithInternalNextHopIpArpFalse,
+        _snapshotOwnedIps
+    );
   }
 
   @Before
@@ -537,9 +554,9 @@ public class ForwardingAnalysisImplTest {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
-    _neighborUnreachableArpDestIp =
+    _arpFalseDestIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getStartIp().toIpSpace())));
-    _neighborUnreachableArpNextHopIp =
+    _arpFalseNextHopIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace())));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
@@ -564,7 +581,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableArpDestIp() {
+  public void testComputeArpFalseDestIp() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -603,7 +620,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableArpDestIpNoNeighbors() {
+  public void testComputeArpFalseDestIpNoNeighbors() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -1139,5 +1156,223 @@ public class ForwardingAnalysisImplTest {
     /* IPs not allowed by neighbor should not appear */
     assertThat(
         result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
+  }
+
+  @Test
+  public void testComputeInterfaceHostSubnetIps() {
+    Configuration c1 = _cb.build();
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1);
+    Vrf vrf1 = _vb.setOwner(c1).build();
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .build();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
+        forwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+
+    assertThat(
+        interfaceHostSubnetIps,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(equalTo(vrf1.getName()),
+                hasEntry(equalTo(i1.getName()),
+                    (containsIp(new Ip("1.0.0.2")))))));
+    assertThat(
+        interfaceHostSubnetIps,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(equalTo(vrf1.getName()),
+                hasEntry(equalTo(i1.getName()),
+                    not(containsIp(P1.getStartIp()))))));
+    assertThat(
+        interfaceHostSubnetIps,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(equalTo(vrf1.getName()), hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp()))))));
+  }
+
+  @Test
+  public void testComputeInterfaceHostSubnetIpsWithPrefixLength31() {
+    Configuration c1 = _cb.build();
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1);
+    Vrf vrf1 = _vb.setOwner(c1).build();
+    Prefix prefix = Prefix.parse("1.0.0.1/31");
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
+            .build();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
+        forwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+
+    assertThat(
+        interfaceHostSubnetIps,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()),
+                hasEntry(equalTo(i1.getName()), containsIp(prefix.getStartIp())))));
+    assertThat(
+        interfaceHostSubnetIps,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()),
+                hasEntry(equalTo(i1.getName()), containsIp(prefix.getEndIp())))));
+  }
+
+  @Test
+  public void testComputeDeliveredToSubnetNoArpFalse() {
+    String c1 = "c1";
+    String vrf1 = "vrf1";
+    String i1 = "i1";
+    Ip ip = new Ip("10.0.0.1");
+
+    _arpFalseDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        forwardingAnalysisImpl.computeDeliveredToSubnet();
+
+    assertThat(
+        result,
+        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
+  }
+
+  @Test
+  public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
+    String c1 = "c1";
+    String vrf1 = "vrf1";
+    String i1 = "i1";
+    Ip ip = new Ip("10.0.0.1");
+
+    _arpFalseDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        forwardingAnalysisImpl.computeDeliveredToSubnet();
+
+    assertThat(
+        result,
+        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
+  }
+
+  @Test
+  public void testComputeDeliveredToSubnetEqual() {
+    String c1 = "c1";
+    String vrf1 = "vrf1";
+    String i1 = "i1";
+    Ip ip = new Ip("10.0.0.1");
+
+    _arpFalseDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        forwardingAnalysisImpl.computeDeliveredToSubnet();
+
+    assertThat(
+        result,
+        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
+  }
+  /*
+   * Arp dst ip, interface is not full, dst ip is external -> EXITS NETWORK
+   */
+  @Test
+  public void testComputeExitsNetworkPerInterfaceDstIp() {
+    String c1 = "c1";
+    String vrf1 = "vrf1";
+    String i1 = "i1";
+    String prefixString = "10.0.0.1/24";
+    Prefix prefix = Prefix.parse(prefixString);
+    Ip ip1 = prefix.getStartIp();
+    Ip ip2 = prefix.getEndIp();
+    _interfacesWithMissingDevices = ImmutableMap.of(c1, ImmutableSet.of(i1));
+    _routesWithExternalNextHopIpArpFalse =
+        ImmutableMap.of();
+   _arpFalseDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, prefix.toIpSpace())));
+    _snapshotOwnedIps = Prefix.parse("1.0.0.1/24").toIpSpace();
+
+    GenericRib<AbstractRoute> rib =
+        MockRib.builder()
+            .setRoutes(
+                ImmutableSet.of(
+                    StaticRoute.builder()
+                        .setNextHopInterface(i1)
+                        .setAdministrativeCost(1)
+                        .setNetwork(prefix)
+                        .build()))
+            .build();
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    IpSpace result = forwardingAnalysisImpl.computeExitsNetworkPerInterface(c1, vrf1, i1, rib);
+
+    assertThat(result, containsIp(ip1));
+    assertThat(result, containsIp(ip2));
+  }
+
+  /*
+   * Arp next hop ip (for short, nhip), interface is not full, dst ip is external -> EXITS NETWORK
+   */
+  @Test
+  public void testComputeExitsNetworkPerInterfaceNextHopIp() {
+    String c1 = "c1";
+    String vrf1 = "vrf1";
+    String i1 = "i1";
+    String prefixString = "10.0.0.1/24";
+    Prefix prefix = Prefix.parse(prefixString);
+    Ip ip1 = prefix.getStartIp();
+    Ip ip2 = prefix.getEndIp();
+    _interfacesWithMissingDevices = ImmutableMap.of(c1, ImmutableSet.of(i1));
+    _routesWithExternalNextHopIpArpFalse =
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                vrf1,
+                ImmutableMap.of(
+                    i1,
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNextHopInterface(i1)
+                            .setAdministrativeCost(1)
+                            .setNetwork(prefix)
+                            .build()))));
+    _arpFalseDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, prefix.toIpSpace())));
+    _snapshotOwnedIps = Prefix.parse("1.0.0.1/24").toIpSpace();
+
+    GenericRib<AbstractRoute> rib =
+        MockRib.builder()
+            .setRoutes(
+                ImmutableSet.of(
+                    StaticRoute.builder()
+                        .setNextHopInterface(i1)
+                        .setAdministrativeCost(1)
+                        .setNetwork(prefix)
+                        .build()))
+            .build();
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    IpSpace result = forwardingAnalysisImpl.computeExitsNetworkPerInterface(c1, vrf1, i1, rib);
+
+    assertThat(result, containsIp(ip1));
+    assertThat(result, containsIp(ip2));
   }
 }

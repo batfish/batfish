@@ -26,13 +26,13 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.NeighborUnreachable;
+import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeNeighborUnreachable;
+import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
@@ -165,11 +165,11 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
           if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
-              StateExpr drop = new NodeNeighborUnreachable(finalNode);
+              StateExpr drop = new NodeNeighborUnreachableOrExitsNetwork(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(NeighborUnreachable.INSTANCE);
+            finalActionsBuilder.add(NeighborUnreachableOrExitsNetwork.INSTANCE);
           }
           break;
         default:
