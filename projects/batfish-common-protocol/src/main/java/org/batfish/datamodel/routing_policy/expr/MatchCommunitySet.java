@@ -46,7 +46,6 @@ public class MatchCommunitySet extends BooleanExpr {
   }
 
   @Override
-  @SuppressWarnings("deprecation") // getCommunities
   public Result evaluate(Environment environment) {
     Result result = new Result();
     boolean match = false;

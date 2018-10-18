@@ -749,7 +749,7 @@ public class VirtualRouter implements Serializable {
         BgpRoute.Builder builder = new BgpRoute.Builder();
         builder.setAdmin(admin);
         builder.setAsPath(asPath.getAsSets());
-        builder.addToClusterList(clusterList);
+        builder.getClusterList().addAll(clusterList);
         builder.setCommunities(communities);
         builder.setLocalPreference(localPreference);
         builder.setMetric(metric);
@@ -797,7 +797,9 @@ public class VirtualRouter implements Serializable {
             transformedOutgoingRoute.getReceivedFromIp());
 
         // Incoming clusterList
-        transformedIncomingRouteBuilder.addToClusterList(transformedOutgoingRoute.getClusterList());
+        transformedIncomingRouteBuilder
+            .getClusterList()
+            .addAll(transformedOutgoingRoute.getClusterList());
 
         // Incoming receivedFromRouteReflectorClient
         transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(

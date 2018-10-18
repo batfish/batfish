@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +22,7 @@ public class BgpRoute extends AbstractRoute {
 
     private List<AsSet> _asPath;
 
-    private ImmutableSortedSet.Builder<Long> _clusterList;
+    private SortedSet<Long> _clusterList;
 
     private SortedSet<Long> _communities;
 
@@ -48,7 +47,7 @@ public class BgpRoute extends AbstractRoute {
     public Builder() {
       _asPath = new LinkedList<>();
       _communities = new TreeSet<>();
-      _clusterList = ImmutableSortedSet.naturalOrder();
+      _clusterList = new TreeSet<>();
     }
 
     @Override
@@ -72,7 +71,7 @@ public class BgpRoute extends AbstractRoute {
           _localPreference,
           getMetric(),
           _originatorIp,
-          _clusterList.build(),
+          _clusterList,
           _receivedFromRouteReflectorClient,
           _originType,
           _protocol,
@@ -85,18 +84,8 @@ public class BgpRoute extends AbstractRoute {
       return _asPath;
     }
 
-    @Deprecated
     public SortedSet<Long> getClusterList() {
-      return _clusterList.build();
-    }
-
-    public Builder addToClusterList(Collection<Long> values) {
-      _clusterList.addAll(values);
-      return getThis();
-    }
-
-    public void addToClusterList(long value) {
-      _clusterList.add(value);
+      return _clusterList;
     }
 
     public SortedSet<Long> getCommunities() {
@@ -130,6 +119,11 @@ public class BgpRoute extends AbstractRoute {
 
     public Builder setAsPath(List<AsSet> asPath) {
       _asPath = asPath;
+      return getThis();
+    }
+
+    public Builder setClusterList(SortedSet<Long> clusterList) {
+      _clusterList = clusterList;
       return getThis();
     }
 

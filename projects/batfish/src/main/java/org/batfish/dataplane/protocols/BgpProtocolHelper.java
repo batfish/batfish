@@ -119,7 +119,7 @@ public class BgpProtocolHelper {
            */
           return null;
         }
-        transformedOutgoingRouteBuilder.addToClusterList(bgpRemoteRoute.getClusterList());
+        transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRemoteRoute.getClusterList());
         if (!remoteRouteOriginatedByRemoteNeighbor) {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
@@ -129,7 +129,7 @@ public class BgpProtocolHelper {
                   .getActiveNeighbors()
                   .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
-          transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
+          transformedOutgoingRouteBuilder.getClusterList().add(newClusterId);
         }
         Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
         @SuppressWarnings("deprecation")
@@ -222,7 +222,7 @@ public class BgpProtocolHelper {
     BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
     transformedIncomingRouteBuilder.setOriginatorIp(route.getOriginatorIp());
     transformedIncomingRouteBuilder.setReceivedFromIp(route.getReceivedFromIp());
-    transformedIncomingRouteBuilder.addToClusterList(route.getClusterList());
+    transformedIncomingRouteBuilder.getClusterList().addAll(route.getClusterList());
     transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
         route.getReceivedFromRouteReflectorClient());
     transformedIncomingRouteBuilder.setAsPath(route.getAsPath().getAsSets());

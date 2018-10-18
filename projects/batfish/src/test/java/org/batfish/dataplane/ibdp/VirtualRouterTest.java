@@ -795,7 +795,7 @@ public class VirtualRouterTest {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(new Ip("7.7.7.7"))
         .setReceivedFromIp(new Ip("7.7.7.1"))
-        .addToClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
+        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
         .build();
     BgpRoute oldRoute1 = routeBuilder.build();
     routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
@@ -815,12 +815,12 @@ public class VirtualRouterTest {
     BgpRoute newRoute1 =
         routeBuilder
             .setReceivedFromIp(new Ip("7.7.7.1"))
-            .addToClusterList(ImmutableSortedSet.of(1L))
+            .setClusterList(ImmutableSortedSet.of(1L))
             .build();
     BgpRoute newRoute2 =
         routeBuilder
             .setReceivedFromIp(new Ip("7.7.7.2"))
-            .addToClusterList(ImmutableSortedSet.of(1L))
+            .setClusterList(ImmutableSortedSet.of(1L))
             .build();
     Builder<BgpRoute> builder = new Builder<>(null);
 
@@ -836,7 +836,7 @@ public class VirtualRouterTest {
     // Both new routes
     assertThat(multipathRib.getRoutes(), containsInAnyOrder(newRoute1, newRoute2));
 
-    assertThat(mpDelta, notNullValue());
+    assert mpDelta != null;
     // 2 removals, 2 additions
     assertThat(mpDelta.getActions(), hasSize(4));
   }
@@ -855,7 +855,7 @@ public class VirtualRouterTest {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(new Ip("7.7.7.7"))
         .setReceivedFromIp(new Ip("7.7.7.1"))
-        .addToClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
+        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
         .build();
     BgpRoute oldRoute1 = routeBuilder.build();
 
@@ -902,7 +902,7 @@ public class VirtualRouterTest {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(new Ip("7.7.7.7"))
         .setReceivedFromIp(new Ip("7.7.7.1"))
-        .addToClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
+        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
         .build();
     BgpRoute oldRoute1 = routeBuilder.build();
     routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
@@ -950,7 +950,7 @@ public class VirtualRouterTest {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(new Ip("7.7.7.7"))
         .setReceivedFromIp(new Ip("7.7.7.1"))
-        .addToClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
+        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
         .build();
     BgpRoute oldRoute1 = routeBuilder.build();
     routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
@@ -970,13 +970,13 @@ public class VirtualRouterTest {
         routeBuilder
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setReceivedFromIp(new Ip("7.7.7.1"))
-            .addToClusterList(ImmutableSortedSet.of(1L))
+            .setClusterList(ImmutableSortedSet.of(1L))
             .build();
     BgpRoute newGoodRoute2 =
         routeBuilder
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setReceivedFromIp(new Ip("7.7.7.2"))
-            .addToClusterList(ImmutableSortedSet.of(1L))
+            .setClusterList(ImmutableSortedSet.of(1L))
             .build();
     Builder<BgpRoute> builder = new Builder<>(null);
 
@@ -1015,7 +1015,7 @@ public class VirtualRouterTest {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(new Ip("7.7.7.7"))
         .setReceivedFromIp(new Ip("7.7.7.1"))
-        .addToClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
+        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
         .build();
     BgpRoute oldRoute1 = routeBuilder.build();
     routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
