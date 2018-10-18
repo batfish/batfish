@@ -7,7 +7,7 @@ import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.Network;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -85,7 +85,7 @@ class VirtualEigrpProcess {
         RoutingProtocol.EIGRP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     _externalRib = new EigrpExternalRib();
     _externalStagingRib = new EigrpExternalRib();
-    _interfaces = new LinkedList<>();
+    _interfaces = new ArrayList<>();
     _internalRib = new EigrpInternalRib();
     _internalStagingRib = new EigrpInternalRib();
     _rib = new EigrpRib();

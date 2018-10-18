@@ -12,7 +12,6 @@ import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,7 +73,7 @@ class TracerouteEngineImplContext {
       _aclDefinitions = aclDefinitions;
       _currentNodeName = currentNodeName;
       _flowTraces = flowTraces;
-      _hopsSoFar = new LinkedList<>(hopsSoFar);
+      _hopsSoFar = new ArrayList<>(hopsSoFar);
       _namedIpSpaces = namedIpSpaces;
       _originalFlow = originalFlow;
       _routesForThisNextHopInterface = routesForThisNextHopInterface;

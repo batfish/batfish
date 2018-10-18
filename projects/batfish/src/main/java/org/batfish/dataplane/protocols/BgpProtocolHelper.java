@@ -132,7 +132,6 @@ public class BgpProtocolHelper {
           transformedOutgoingRouteBuilder.getClusterList().add(newClusterId);
         }
         Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
-        @SuppressWarnings("deprecation")
         Set<Long> outgoingClusterList = transformedOutgoingRouteBuilder.getClusterList();
         if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
           /*
