@@ -170,8 +170,8 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
     return ImmutableList.of();
   }
 
-  @Override public List<StateParameter> visitNeighborUnreachable(
-      NeighborUnreachable neighborUnreachable) {
+  @Override
+  public List<StateParameter> visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
     return ImmutableList.of();
   }
 
@@ -242,17 +242,19 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(nodeIfaceInsufficientInfo.getIface(), INTERFACE));
   }
 
-  @Override public List<StateParameter> visitNodeInterfaceNeighborUnreachable(
+  @Override
+  public List<StateParameter> visitNodeInterfaceNeighborUnreachable(
       NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable) {
     return ImmutableList.of(
-      new StateParameter(nodeInterfaceNeighborUnreachable.getHostname(), NODE),
-      new StateParameter(nodeInterfaceNeighborUnreachable.getIface(), INTERFACE));
+        new StateParameter(nodeInterfaceNeighborUnreachable.getHostname(), NODE),
+        new StateParameter(nodeInterfaceNeighborUnreachable.getIface(), INTERFACE));
   }
 
   @Override
   public List<StateParameter> visitNodeNeighborUnreachableOrExitsNetwork(
       NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork) {
-    return ImmutableList.of(new StateParameter(nodeNeighborUnreachableOrExitsNetwork.getHostname(), NODE));
+    return ImmutableList.of(
+        new StateParameter(nodeNeighborUnreachableOrExitsNetwork.getHostname(), NODE));
   }
 
   @Override

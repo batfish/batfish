@@ -45,4 +45,3 @@ public class NodeInterfaceNeighborUnreachable extends StateExpr {
     return State.INSTANCE;
   }
 }
-

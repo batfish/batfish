@@ -14,7 +14,8 @@ public final class NodeInterfaceNeighborUnreachableMatchers {
     return new HasHostname(hostnameMatcher);
   }
 
-  public static Matcher<NodeInterfaceNeighborUnreachableOrExitsNetwork> hasHostname(String hostname) {
+  public static Matcher<NodeInterfaceNeighborUnreachableOrExitsNetwork> hasHostname(
+      String hostname) {
     return new HasHostname(equalTo(hostname));
   }
 }

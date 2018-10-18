@@ -73,10 +73,12 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
         new BasicRuleStatement(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
     rules.add(
         new BasicRuleStatement(
-            ImmutableSet.of(Accept.INSTANCE, NeighborUnreachableOrExitsNetwork.INSTANCE), Query.INSTANCE));
+            ImmutableSet.of(Accept.INSTANCE, NeighborUnreachableOrExitsNetwork.INSTANCE),
+            Query.INSTANCE));
     rules.add(
         new BasicRuleStatement(
-            ImmutableSet.of(Drop.INSTANCE, NeighborUnreachableOrExitsNetwork.INSTANCE), Query.INSTANCE));
+            ImmutableSet.of(Drop.INSTANCE, NeighborUnreachableOrExitsNetwork.INSTANCE),
+            Query.INSTANCE));
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))

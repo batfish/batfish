@@ -389,7 +389,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNeighborUnreachableOrExitsNetwork(NeighborUnreachableOrExitsNetwork.State state) {
+  public void visitNeighborUnreachableOrExitsNetwork(
+      NeighborUnreachableOrExitsNetwork.State state) {
     _input
         .getNeighborUnreachable()
         .keySet()
@@ -397,7 +398,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
             hostname ->
                 _rules.add(
                     new BasicRuleStatement(
-                        new NodeNeighborUnreachableOrExitsNetwork(hostname), NeighborUnreachableOrExitsNetwork.INSTANCE)));
+                        new NodeNeighborUnreachableOrExitsNetwork(hostname),
+                        NeighborUnreachableOrExitsNetwork.INSTANCE)));
   }
 
   // We do not implement the function intentionally.
@@ -413,8 +415,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitInsufficientInfo(InsufficientInfo.State state) {}
 
   // We do not implement the function intentionally.
-  @Override public void visitNeighborUnreachable(NeighborUnreachable.State state) {
-  }
+  @Override
+  public void visitNeighborUnreachable(NeighborUnreachable.State state) {}
 
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
@@ -630,7 +632,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                   new BasicRuleStatement(
                                       dstIpConstraint,
                                       preStates.build(),
-                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(hostname, outIface)));
+                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(
+                                          hostname, outIface)));
                             })));
   }
 
@@ -647,12 +650,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {}
 
   // We do not implement the function intentionally.
-  @Override public void visitNodeInterfaceNeighborUnreachable(
-      NodeInterfaceNeighborUnreachable.State state) {
-  }
+  @Override
+  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {}
 
   @Override
-  public void visitNodeNeighborUnreachableOrExitsNetwork(NodeNeighborUnreachableOrExitsNetwork.State state) {
+  public void visitNodeNeighborUnreachableOrExitsNetwork(
+      NodeNeighborUnreachableOrExitsNetwork.State state) {
     _input
         .getNeighborUnreachable()
         .forEach(
@@ -663,7 +666,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             (outIface, dstIpConstraint) -> {
                               _rules.add(
                                   new BasicRuleStatement(
-                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(hostname, outIface),
+                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(
+                                          hostname, outIface),
                                       new NodeNeighborUnreachableOrExitsNetwork(hostname)));
                             })));
   }

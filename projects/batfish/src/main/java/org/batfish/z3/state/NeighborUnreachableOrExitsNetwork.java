@@ -18,7 +18,8 @@ public class NeighborUnreachableOrExitsNetwork extends StateExpr {
     }
   }
 
-  public static final NeighborUnreachableOrExitsNetwork INSTANCE = new NeighborUnreachableOrExitsNetwork();
+  public static final NeighborUnreachableOrExitsNetwork INSTANCE =
+      new NeighborUnreachableOrExitsNetwork();
 
   private NeighborUnreachableOrExitsNetwork() {}
 

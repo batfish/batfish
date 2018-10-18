@@ -15,7 +15,8 @@ final class NodeInterfaceNeighborUnreachableMatchersImpl {
 
     @Override
     protected String featureValueOf(
-        NodeInterfaceNeighborUnreachableOrExitsNetwork nodeInterfaceNeighborUnreachableOrExitsNetwork) {
+        NodeInterfaceNeighborUnreachableOrExitsNetwork
+            nodeInterfaceNeighborUnreachableOrExitsNetwork) {
       return nodeInterfaceNeighborUnreachableOrExitsNetwork.getHostname();
     }
   }

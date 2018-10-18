@@ -103,7 +103,8 @@ public interface StateVisitor {
 
   void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state);
 
-  void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(NodeInterfaceNeighborUnreachableOrExitsNetwork.State state);
+  void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
+      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state);
 
   void visitNodeNeighborUnreachableOrExitsNetwork(State state);
 
@@ -128,6 +129,4 @@ public interface StateVisitor {
   void visitPreOutEdgePostNat(PreOutEdgePostNat.State state);
 
   void visitQuery(Query.State query);
-
-
 }

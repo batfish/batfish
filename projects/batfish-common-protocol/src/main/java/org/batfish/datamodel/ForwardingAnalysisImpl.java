@@ -1109,12 +1109,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   IpSpace computeExitsNetworkPerInterface(
       String hostname, String vrfName, String interfaceName, GenericRib<AbstractRoute> rib) {
 
-    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
+    if (!_interfacesWithMissingDevices
+        .getOrDefault(hostname, ImmutableSet.of())
+        .contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
     Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
-        _routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
+        _routesWithExternalNextHopIpArpFalse
+            .getOrDefault(hostname, ImmutableMap.of())
+            .getOrDefault(vrfName, ImmutableMap.of())
+            .getOrDefault(interfaceName, ImmutableSet.of());
     IpSpace dstIpsWithExternalNextHopIpArpFalse =
         computeRouteMatchConditions(routesWithExternalNextHopIpArpFalse, rib);
 

@@ -687,12 +687,14 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeNeighborUnreachableOrExitsNetwork(NODE1), NeighborUnreachableOrExitsNetwork.INSTANCE)));
+                new NodeNeighborUnreachableOrExitsNetwork(NODE1),
+                NeighborUnreachableOrExitsNetwork.INSTANCE)));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeNeighborUnreachableOrExitsNetwork(NODE2), NeighborUnreachableOrExitsNetwork.INSTANCE)));
+                new NodeNeighborUnreachableOrExitsNetwork(NODE2),
+                NeighborUnreachableOrExitsNetwork.INSTANCE)));
   }
 
   @Test
@@ -1029,7 +1031,8 @@ public class DefaultTransitionGeneratorTest {
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(NodeInterfaceNeighborUnreachableOrExitsNetwork.State.INSTANCE)));
+                input,
+                ImmutableSet.of(NodeInterfaceNeighborUnreachableOrExitsNetwork.State.INSTANCE)));
 
     assertThat(
         rules,

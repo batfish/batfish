@@ -267,9 +267,13 @@ public final class BDDReachabilityAnalysisTest {
     String link2SrcName = _net._link2Src.getName();
     BDD nodeDropNullRoute = bddTransition(_srcPreOutVrf, new NodeDropNullRoute(_srcName));
     BDD nodeInterfaceNeighborUnreachable1 =
-        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link1SrcName));
+        bddTransition(
+            _srcPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link1SrcName));
     BDD nodeInterfaceNeighborUnreachable2 =
-        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link2SrcName));
+        bddTransition(
+            _srcPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link2SrcName));
     BDD preOutEdge1 = bddTransition(_srcPreOutVrf, _srcPreOutEdge1);
     BDD preOutEdge2 = bddTransition(_srcPreOutVrf, _srcPreOutEdge2);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
@@ -297,17 +301,23 @@ public final class BDDReachabilityAnalysisTest {
      */
     assertThat(
         bddTransition(
-            _dstPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface1Name)),
+            _dstPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface1Name)),
         equalTo(_dstIface1IpBDD));
     assertThat(
         bddTransition(
-            _dstPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface2Name)),
+            _dstPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface2Name)),
         equalTo(_dstIface2IpBDD));
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link1DstName)),
+        bddTransition(
+            _dstPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link1DstName)),
         equalTo(_link1DstIpBDD));
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link2DstName)),
+        bddTransition(
+            _dstPreOutVrf,
+            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link2DstName)),
         equalTo(_link2DstIpBDD));
   }
 

@@ -81,7 +81,8 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNeighborUnreachable(NeighborUnreachable neighborUnreachable);
 
-  R visitNeighborUnreachableOrExitsNetwork(NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork);
+  R visitNeighborUnreachableOrExitsNetwork(
+      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork);
 
   R visitNodeAccept(NodeAccept nodeAccept);
 
@@ -134,5 +135,4 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
 
   R visitQuery(Query query);
-
 }
