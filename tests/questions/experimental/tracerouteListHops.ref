@@ -65,7 +65,7 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
@@ -109,7 +109,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.101.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -151,12 +151,12 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -199,7 +199,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -241,7 +241,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -284,7 +284,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
@@ -343,7 +343,7 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
@@ -387,7 +387,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.101.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -429,12 +429,12 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -476,7 +476,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -518,7 +518,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -561,7 +561,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
@@ -620,7 +620,7 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
@@ -664,7 +664,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.201.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -706,12 +706,12 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -753,7 +753,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -795,7 +795,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -838,7 +838,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
@@ -897,7 +897,7 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
@@ -941,7 +941,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.201.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -983,12 +983,12 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -1031,7 +1031,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -1073,7 +1073,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -1116,7 +1116,7 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
