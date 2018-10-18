@@ -74,7 +74,7 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNeighborUnreachable(NeighborUnreachable neighborUnreachable);
 
-  R visitExitNetwork(ExitsNetwork exitNetwork);
+  R visitExitsNetwork(ExitsNetwork exitsNetwork);
 
   R visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet);
 

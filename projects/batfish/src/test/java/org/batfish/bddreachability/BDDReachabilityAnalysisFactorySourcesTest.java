@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Map;
@@ -115,7 +116,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
-    assertThat(edge, equalTo(null));
+    assertThat(edge, nullValue());
     assertThat(headerSpaceBdd, equalTo(zero));
   }
 
@@ -155,8 +156,12 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
-        factory.getExitsNetworkBDDs().get(CONFIG_NAME).get(VRF_NAME).get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
-    assertThat(edge, equalTo(null));
+        factory
+            .getExitsNetworkBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
+    assertThat(edge, nullValue());
     assertThat(headerSpaceBdd, equalTo(zero));
   }
 
@@ -178,7 +183,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
-    assertThat(edge, equalTo(null));
+    assertThat(edge, nullValue());
     assertThat(headerSpaceBdd, equalTo(zero));
   }
 
@@ -195,7 +200,11 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
-        factory.getDeliveredToSubnetBDDs().get(CONFIG_NAME).get(VRF_NAME).get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
+        factory
+            .getDeliveredToSubnetBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
 
     assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
     assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
@@ -214,9 +223,13 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
             .get(new NodeInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
-        factory.getExitsNetworkBDDs().get(CONFIG_NAME).get(VRF_NAME).get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
+        factory
+            .getExitsNetworkBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
 
-    assertThat(edge, equalTo(null));
+    assertThat(edge, nullValue());
     assertThat(headerSpaceBdd, equalTo(zero));
   }
 

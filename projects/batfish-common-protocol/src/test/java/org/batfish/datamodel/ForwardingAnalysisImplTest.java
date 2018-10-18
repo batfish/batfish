@@ -579,7 +579,7 @@ public class ForwardingAnalysisImplTest {
     _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpNoReplyDestIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseDestIp(ribs);
 
     /* Should contain IP in the route's prefix that sees no reply */
     assertThat(
@@ -618,7 +618,7 @@ public class ForwardingAnalysisImplTest {
     _someoneReplies = ImmutableMap.of();
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpNoReplyDestIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseDestIp(ribs);
 
     /*
      * Since _someoneReplies is empty, all IPs for which longest-prefix-match route has no
@@ -664,7 +664,7 @@ public class ForwardingAnalysisImplTest {
                 v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpNoReplyNextHopIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseNextHopIp(ribs);
 
     /* IPs matching some route on interface with no response should appear */
     assertThat(

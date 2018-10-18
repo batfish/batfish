@@ -222,7 +222,8 @@ class TracerouteEngineImplContext {
 
   private FlowDisposition computeDisposition(
       String hostname, String outgoingInterfaceName, Ip dstIp) {
-    String vrfName = _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
+    String vrfName =
+        _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
     if (_forwardingAnalysis
         .getDeliveredToSubnet()
         .get(hostname)
@@ -245,7 +246,7 @@ class TracerouteEngineImplContext {
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.INSUFFICIENT_INFO;
     } else {
-      return FlowDisposition.INSUFFICIENT_INFO;
+      return FlowDisposition.NEIGHBOR_UNREACHABLE;
     }
   }
 
@@ -394,8 +395,7 @@ class TracerouteEngineImplContext {
                   }
                   if (!denied) {
                     FlowDisposition disposition =
-                        computeDisposition(
-                            currentNodeName, nextHopInterfaceName, dstIp);
+                        computeDisposition(currentNodeName, nextHopInterfaceName, dstIp);
 
                     Edge nextEdge =
                         new Edge(
@@ -700,9 +700,7 @@ class TracerouteEngineImplContext {
         .containsIp(arpIp, c.getIpSpaces())) {
       FlowDisposition disposition =
           computeDisposition(
-              nextHopInterface.getHostname(),
-              nextHopInterface.getInterface(),
-              dstIp);
+              nextHopInterface.getHostname(), nextHopInterface.getInterface(), dstIp);
       FlowTrace trace =
           neighborUnreachableOrExitsNetworkTrace(
               nextHopInterface, transmissionContext, disposition);

@@ -154,7 +154,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitExitNetwork(ExitsNetwork exitNetwork) {
+  public List<StateParameter> visitExitsNetwork(ExitsNetwork exitNetwork) {
     return ImmutableList.of();
   }
 

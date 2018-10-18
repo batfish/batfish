@@ -399,15 +399,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         new NodeNeighborUnreachable(hostname), NeighborUnreachable.INSTANCE)));
   }
 
-  // TODO: complete this function
+  // We do not implement the function intentionally.
   @Override
   public void visitExitsNetwork(ExitsNetwork.State state) {}
 
-  // TODO: complete this function
+  // We do not implement the function intentionally.
   @Override
   public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {}
 
-  // TODO: complete this function
+  // We do not implement the function intentionally.
   @Override
   public void visitInsufficientInfo(InsufficientInfo.State state) {}
 
@@ -628,26 +628,22 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             })));
   }
 
+  // We do not implement the function intentionally.
   @Override
   public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {
-    // TODO: add implementation
-  }
+      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {}
 
+  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
-    // TODO: add implementation
-  }
+  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {}
 
+  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
-    // TODO: add implementation
-  }
+  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {}
 
+  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {
-    // TODO: add implementation
-  }
+  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {}
 
   @Override
   public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {

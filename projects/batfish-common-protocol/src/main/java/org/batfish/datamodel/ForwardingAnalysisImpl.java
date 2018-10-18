@@ -25,37 +25,39 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
-  // mapping: node name -&gt; interface name -&gt; ips that the interface would reply arp request
+  // mapping: node name -> interface name -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
   private final Map<Edge, IpSpace> _arpTrueEdge;
 
-  // mapping: edge -&gt; dst ips for which end up forwarding to this edge and arp for the dst ip itself and get response
+  // mapping: edge -> dst ips for which end up forwarding to this edge and arp for the dst ip itself
+  // and get response
   private final Map<Edge, IpSpace> _arpTrueEdgeDestIp;
 
-  // mapping: edge -&gt; dst ip for which end up forwarding to this edge arp for some other ip and get response
+  // mapping: edge -> dst ip for which end up forwarding to this edge arp for some other ip and get
+  // response
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
 
   private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
 
-  // mapping: node name -&gt; interface name -&gt; dst ips which are routed to the interface
+  // mapping: node name -> interface name -> dst ips which are routed to the interface
   private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; dst ips
+  // mapping: node name -> vrf name -> interface name -> dst ips
   // for which arp dst ip itself but would not be replied
-  private final Map<String, Map<String, Map<String, IpSpace>>> _arpNoReplyDestIp;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalseDestIp;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; dst ips
+  // mapping: node name -> vrf name -> interface name -> dst ips
   // for which arp another ip but would not be replied
-  private final Map<String, Map<String, Map<String, IpSpace>>> _arpNoReplyNextHopIp;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalseNextHopIp;
 
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt; a set of
+  // mapping: node name -> vrf name -> interface name -> a set of
   // routes in which the arp ip is dst ip
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWhereDstIpCanBeArpIp;
@@ -64,17 +66,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>> _routesWithNextHop;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // mapping: node name -> vrf name -> interface name ->
   // a set of routes that with next hop ip but no arp replies
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWithNextHopIpArpFalse;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // mapping: node name -> vrf name -> interface name ->
   // a set of routes that with external next hop ip (i.e., ips not in snapshot) but no arp replies
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWithExternalNextHopIpArpFalse;
 
-  // mapping: node name -&gt; vrf name -&gt; interface name -&gt;
+  // mapping: node name -> vrf name -> interface name ->
   // a set of routes that with external next hop ip (i.e., ips not in snapshot) but no arp replies
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWithInternalNextHopIpArpFalse;
@@ -83,23 +85,28 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _someoneReplies;
 
-  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up with neighbor unreachable
+  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up with neighbor unreachable
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up delivered to subnet
+  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up delivered to subnet
   private Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
 
-  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up exiting the network
+  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up exiting the network
   private Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
 
-  // mapping: hostname -&gt; vrf name -&gt; interfacename -&gt; dst ips that end up with insufficient info
+  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up with insufficient info
   private Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
-  // mapping: hostname -&gt; set of interfacenames that is not full
+  // mapping: hostname -> set of interfacenames that is not full
   private Map<String, Set<String>> _interfacesWithMissingDevices;
 
+  // mapping: hostname -> interface -> interface subnet
+  private Map<String, Map<String, Set<InterfaceAddress>>> _interfacesHostSubnetWithMissingDevices;
+
+  // mapping: hostname -> vrf name -> interfacename -> ips belonging to a subnet of the interface
   private final Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
 
+  // ipSpace of all ips in the snapshot, including all devices ips and ips in interface subnet
   private final IpSpace _snapshotOwnedIps;
 
   // cache some BDDs for convenience
@@ -134,11 +141,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _routesWithNextHopIpArpFalse = computeRoutesWithNextHopIpArpFalse(fibs);
     _routesWithExternalNextHopIpArpFalse = computeRoutesWithExternalNextHopIpArpFalse();
     _routesWithInternalNextHopIpArpFalse = computeRoutesWithInternalNextHopIpArpFalse();
-    _arpNoReplyNextHopIp = computeArpNoReplyNextHopIp(ribs);
+    _arpFalseNextHopIp = computeArpFalseNextHopIp(ribs);
     _routesWithNextHopIpArpTrue = computeRoutesWithNextHopIpArpTrue(fibs, topology);
     _arpTrueEdgeNextHopIp = computeArpTrueEdgeNextHopIp(configurations, ribs);
     _routesWhereDstIpCanBeArpIp = computeRoutesWhereDstIpCanBeArpIp(fibs);
-    _arpNoReplyDestIp = computeArpNoReplyDestIp(ribs);
+    _arpFalseDestIp = computeArpFalseDestIp(ribs);
     _neighborUnreachableOrExitsNetwork = computeNeighborUnreachableOrExitsNetwork();
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(fibs, topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
@@ -177,11 +184,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpReplies = arpReplies;
     _someoneReplies = someoneReplies;
     _routesWithNextHopIpArpFalse = routesWithNextHopIpArpFalse;
-    _arpNoReplyNextHopIp = neighborUnreachableArpNextHopIp;
+    _arpFalseNextHopIp = neighborUnreachableArpNextHopIp;
     _routesWithNextHopIpArpTrue = routesWithNextHopIpArpTrue;
     _arpTrueEdgeNextHopIp = arpTrueEdgeNextHopIp;
     _routesWhereDstIpCanBeArpIp = routesWhereDstIpCanBeArpIp;
-    _arpNoReplyDestIp = neighborUnreachableArpDestIp;
+    _arpFalseDestIp = neighborUnreachableArpDestIp;
     _neighborUnreachableOrExitsNetwork = neighborUnreachable;
     _routesWithDestIpEdge = routesWithDestIpEdge;
     _arpTrueEdgeDestIp = arpTrueEdgeDestIp;
@@ -386,8 +393,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableOrExitsNetwork() {
     Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable =
         new HashMap<>();
-    computeNeighborUnreachableHelper(neighborUnreachable, _arpNoReplyDestIp);
-    computeNeighborUnreachableHelper(neighborUnreachable, _arpNoReplyNextHopIp);
+    computeNeighborUnreachableHelper(neighborUnreachable, _arpFalseDestIp);
+    computeNeighborUnreachableHelper(neighborUnreachable, _arpFalseNextHopIp);
     return neighborUnreachable
         .entrySet()
         .stream()
@@ -419,7 +426,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, IpSpace>>> computeArpNoReplyDestIp(
+  Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseDestIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWhereDstIpCanBeArpIp
         .entrySet()
@@ -474,7 +481,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, IpSpace>>> computeArpNoReplyNextHopIp(
+  Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseNextHopIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithNextHopIpArpFalse
         .entrySet()
@@ -725,73 +732,36 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      computeRoutesWithNextHopIpArpFalseFilter(Function<Ip, Boolean> nextHopIpFilter) {
+    return toImmutableMap(
+        _routesWithNextHopIpArpFalse,
+        Entry::getKey /* hostname */,
+        routesWithNextHopByHostnameEntry ->
+            toImmutableMap(
+                routesWithNextHopByHostnameEntry.getValue(),
+                Entry::getKey /* vrf */,
+                routesWithNextHopByVrfEntry ->
+                    toImmutableMap(
+                        routesWithNextHopByVrfEntry.getValue(),
+                        Entry::getKey /* outInterface */,
+                        routesWithNextHopByOutInterfaceEntry ->
+                            routesWithNextHopByOutInterfaceEntry
+                                .getValue()
+                                .stream()
+                                .filter(
+                                    abstractRoute ->
+                                        nextHopIpFilter.apply(abstractRoute.getNextHopIp()))
+                                .collect(Collectors.toSet()))));
+  }
+
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       computeRoutesWithExternalNextHopIpArpFalse() {
-    return _routesWithNextHopIpArpFalse
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                routesWithNextHopByHostnameEntry ->
-                    routesWithNextHopByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                routesWithNextHopByVrfEntry ->
-                                    routesWithNextHopByVrfEntry
-                                        .getValue()
-                                        .entrySet()
-                                        .stream()
-                                        .collect(
-                                            ImmutableMap.toImmutableMap(
-                                                Entry::getKey /* outInterface */,
-                                                routesWithNextHopByOutInterfaceEntry ->
-                                                    routesWithNextHopByOutInterfaceEntry
-                                                        .getValue()
-                                                        .stream()
-                                                        .filter(
-                                                            abstractRoute ->
-                                                                !isIpInSnapshot(
-                                                                    abstractRoute.getNextHopIp()))
-                                                        .collect(Collectors.toSet())))))));
+    return computeRoutesWithNextHopIpArpFalseFilter(ip -> !isIpInSnapshot(ip));
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       computeRoutesWithInternalNextHopIpArpFalse() {
-    return _routesWithNextHopIpArpFalse
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                routesWithNextHopByHostnameEntry ->
-                    routesWithNextHopByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                routesWithNextHopByVrfEntry ->
-                                    routesWithNextHopByVrfEntry
-                                        .getValue()
-                                        .entrySet()
-                                        .stream()
-                                        .collect(
-                                            ImmutableMap.toImmutableMap(
-                                                Entry::getKey /* outInterface */,
-                                                routesWithNextHopByOutInterfaceEntry ->
-                                                    routesWithNextHopByOutInterfaceEntry
-                                                        .getValue()
-                                                        .stream()
-                                                        .filter(
-                                                            abstractRoute ->
-                                                                isIpInSnapshot(
-                                                                    abstractRoute.getNextHopIp()))
-                                                        .collect(Collectors.toSet())))))));
+    return computeRoutesWithNextHopIpArpFalseFilter(this::isIpInSnapshot);
   }
 
   @VisibleForTesting
@@ -963,7 +933,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   private boolean isIpInSnapshot(Ip ip) {
-    return ip.toIpSpace().accept(_ipSpaceToBDD).and(_snapshotOwnedIpBDD).isZero();
+    return !ip.toIpSpace().accept(_ipSpaceToBDD).and(_snapshotOwnedIpBDD).isZero();
   }
 
   BDD computeVrfOwnedIpBDD(Map<String, Configuration> configurations) {
@@ -1016,20 +986,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 vrfOwnedIps.values().stream().flatMap(entry -> entry.values().stream()))
             .build();
 
-    IpSpace interfaceHostSubnetIpSpace = AclIpSpace.permitting(
-            _interfaceHostSubnetIps
-                .entrySet()
-                .stream()
-                .flatMap(
-                    nodeEntry ->
-                        nodeEntry
-                            .getValue()
-                            .entrySet()
-                            .stream()
-                            .flatMap(
-                                vrfEntry ->
-                                    vrfEntry.getValue().entrySet().stream().map(Entry::getValue))))
-        .build();
+    IpSpace interfaceHostSubnetIpSpace =
+        AclIpSpace.permitting(
+                _interfaceHostSubnetIps
+                    .values()
+                    .stream()
+                    .flatMap(
+                        vrfMap ->
+                            vrfMap
+                                .values()
+                                .stream()
+                                .flatMap(ifaceMap -> ifaceMap.values().stream())))
+            .build();
 
     return AclIpSpace.union(vrfOwnedIpSpace, interfaceHostSubnetIpSpace);
   }
@@ -1103,17 +1071,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         .map(InterfaceAddress::getPrefix)
                                         .map(
                                             prefix ->
-                                            AclIpSpace.rejecting(prefix.getStartIp().toIpSpace())
-                                            .thenRejecting(prefix.getStartIp().toIpSpace())
-                                            .thenPermitting(prefix.toIpSpace()).build()
-                                        )
+                                                AclIpSpace.rejecting(
+                                                        prefix.getStartIp().toIpSpace())
+                                                    .thenRejecting(prefix.getStartIp().toIpSpace())
+                                                    .thenPermitting(prefix.toIpSpace())
+                                                    .build())
                                         .collect(ImmutableList.toImmutableList())),
                                 EmptyIpSpace.INSTANCE))));
   }
 
+  /*
+   * Necessary and sufficient: Arping dst ip and the dst IP is in an interface subnet.
+   */
   @VisibleForTesting
   Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet() {
-    return intersection(_arpNoReplyDestIp, _interfaceHostSubnetIps);
+    return intersection(_arpFalseDestIp, _interfaceHostSubnetIps);
   }
 
   @Override
@@ -1121,124 +1093,118 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _exitsNetwork;
   }
 
-  IpSpace computeExitsNetworkPerInterface(String hostname, String vrfName,
-      String interfaceName,
-      GenericRib<AbstractRoute> rib
-  ) {
+  /*
+   * Necessary and sufficient: The connected subnet is not full, the dest IP is external,
+   * and path is not expected to come back into network (i.e. the ARP IP is also external).
+   */
+  IpSpace computeExitsNetworkPerInterface(
+      String hostname, String vrfName, String interfaceName, GenericRib<AbstractRoute> rib) {
 
     if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
-    // case 1: no nhip, dst ip is external, interface is not full
-    IpSpace ipSpace1 = AclIpSpace.intersection(
-        _arpNoReplyDestIp.get(hostname).get(vrfName).get(interfaceName),
-        _snapshotOwnedIps.complement()
-    );
-
-    // case 2: nhip and dst ip are external, interface is not full
     Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
         _routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
     IpSpace dstIpsWithExternalNextHopIpArpFalse =
         computeRouteMatchConditions(routesWithExternalNextHopIpArpFalse, rib);
-    IpSpace ipSpace2 = AclIpSpace.intersection(
-        dstIpsWithExternalNextHopIpArpFalse,
-        _snapshotOwnedIps.complement()
-    );
 
-    return AclIpSpace.union(ipSpace1, ipSpace2);
+    return AclIpSpace.difference(
+        AclIpSpace.union(
+            _arpFalseDestIp.get(hostname).get(vrfName).get(interfaceName),
+            dstIpsWithExternalNextHopIpArpFalse),
+        _snapshotOwnedIps);
   }
 
-  Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork(Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs
-      ) {
-    Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork = new HashMap<>();
-    configurations
-        .entrySet()
-        .stream()
-        .forEach(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              Map<String, Map<String, IpSpace>> exitsNetworkPerHost =
-                  exitsNetwork.putIfAbsent(hostname, new HashMap<>());
-              nodeEntry
-                  .getValue()
-                  .getAllInterfaces()
-                  .entrySet()
-                  .stream()
-                  .forEach(
-                      ifaceEntry -> {
-                        String ifaceName = ifaceEntry.getKey();
-                        Interface iface = ifaceEntry.getValue();
-                        String vrfName = iface.getVrfName();
-                        Map<String, IpSpace> exitsNetworkPerVrf =
-                            exitsNetworkPerHost.putIfAbsent(vrfName, new HashMap<>());
-                        GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
-                        exitsNetworkPerVrf.putIfAbsent(
-                            ifaceName,
-                            computeExitsNetworkPerInterface(hostname, vrfName, ifaceName, rib));
-                      });
-            });
-    return exitsNetwork;
+  Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork(
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue().getInterfaces(),
+                        Entry::getKey,
+                        ifaceEntry -> {
+                          String hostname = nodeEntry.getKey();
+                          String vrfName = vrfEntry.getKey();
+                          String ifaceName = ifaceEntry.getKey();
+                          GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
+                          return computeExitsNetworkPerInterface(hostname, vrfName, ifaceName, rib);
+                        })));
   }
 
-  IpSpace computeInsufficientInfoPerInterface(String hostname, String vrfName, String interfaceName,
-      GenericRib<AbstractRoute> rib) {
+  /*
+   * Necessary and sufficient: The connected subnet is not full, and next hop ip is internal or
+   * dst ip is internal but not in the interface subnet.
+   */
+  IpSpace computeInsufficientInfoPerInterface(
+      String hostname, String vrfName, String interfaceName, GenericRib<AbstractRoute> rib) {
     // If interface is full (no missing devices), it cannot be insufficient info
     if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
-    // case 1: arp for dst ip, dst ip is internal
-    IpSpace ipSpace1 = AclIpSpace.intersection(_arpNoReplyDestIp.get(hostname).get(vrfName).get(interfaceName),
-    _snapshotOwnedIps);
+    IpSpace ipSpaceElsewhere =
+        AclIpSpace.difference(
+            _snapshotOwnedIps,
+            _interfaceHostSubnetIps.get(hostname).get(vrfName).get(interfaceName));
+
+    // case 1: arp for dst ip, dst ip is internal but not in any subnet of the interface
+    IpSpace ipSpaceInternalDstIp =
+        AclIpSpace.intersection(
+            _arpFalseDestIp.get(hostname).get(vrfName).get(interfaceName), ipSpaceElsewhere);
 
     // case 2: arp for nhip, nhip is external, dst ip is internal
-    IpSpace dstIpsWithExternalNextHopIpArpFalse = computeRouteMatchConditions(_routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
-    rib);
-     IpSpace ipSpace2 = AclIpSpace.intersection(dstIpsWithExternalNextHopIpArpFalse,
-      _snapshotOwnedIps);
+    IpSpace dstIpsWithExternalNextHopIpArpFalse =
+        computeRouteMatchConditions(
+            _routesWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
+            rib);
+    IpSpace ipSpaceInternalDstIpExternalNexthopIp =
+        AclIpSpace.intersection(dstIpsWithExternalNextHopIpArpFalse, _snapshotOwnedIps);
 
     // case 3: arp for nhip, nhip is internal
-    IpSpace ipSpace3 = computeRouteMatchConditions(_routesWithInternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
-    rib);
+    IpSpace ipSpaceInternalNextHopIp =
+        computeRouteMatchConditions(
+            _routesWithInternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName),
+            rib);
 
-    return AclIpSpace.union(ipSpace1, ipSpace2, ipSpace3);
+    return AclIpSpace.union(
+        ipSpaceInternalDstIp, ipSpaceInternalDstIpExternalNexthopIp, ipSpaceInternalNextHopIp);
   }
 
   Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
-    Map<String, Map<String, Map<String, IpSpace>>> insufficientInfo = new HashMap<>();
-    configurations
-        .entrySet()
-        .stream()
-        .forEach(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              Map<String, Map<String, IpSpace>> exitsNetworkPerHost =
-                  insufficientInfo.putIfAbsent(hostname, new HashMap<>());
-              nodeEntry
-                  .getValue()
-                  .getAllInterfaces()
-                  .entrySet()
-                  .stream()
-                  .forEach(
-                      ifaceEntry -> {
-                        String ifaceName = ifaceEntry.getKey();
-                        Interface iface = ifaceEntry.getValue();
-                        String vrfName = iface.getVrfName();
-                        Map<String, IpSpace> exitsNetworkPerVrf =
-                            exitsNetworkPerHost.putIfAbsent(vrfName, new HashMap<>());
-                        GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
-                        exitsNetworkPerVrf.putIfAbsent(
-                            ifaceName,
-                            computeInsufficientInfoPerInterface(hostname, vrfName, ifaceName, rib));
-                      });
-            });
-    return insufficientInfo;
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue().getInterfaces(),
+                        Entry::getKey,
+                        ifaceEntry -> {
+                          String hostname = nodeEntry.getKey();
+                          String vrfName = vrfEntry.getKey();
+                          String ifaceName = ifaceEntry.getKey();
+                          GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrfName);
+                          return computeInsufficientInfoPerInterface(
+                              hostname, vrfName, ifaceName, rib);
+                        })));
   }
 
+  /*
+   * Necessary and sufficient: The connected subnet is full and no arp response.
+   */
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
     return _neighborUnreachableOrExitsNetwork
         .entrySet()
@@ -1278,7 +1244,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   private boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
-    return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_vrfOwnedIpBDD.not()).isZero();
+    // (ips in interface subnet - ips in vrfs) is not empty
+    return !_interfaceHostSubnetIpBDDs
+        .get(hostname)
+        .get(ifaceName)
+        .and(_vrfOwnedIpBDD.not())
+        .isZero();
   }
 
   private Map<String, Set<String>> computeInterfacesWithMissingDevices(

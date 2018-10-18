@@ -178,7 +178,7 @@ public class TracerouteTest {
   }
 
   /*
-   * Build a simple 1-node network with an ACL.
+   * Build a simple 1-node network with an ACL
    */
   private static SortedMap<String, Configuration> aclNetwork() {
     NetworkFactory nf = new NetworkFactory();
@@ -229,7 +229,7 @@ public class TracerouteTest {
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
                 Schema.set(Schema.FLOW_TRACE))));
 
-    // with ignoreAcls we get EXITS_NETWORK
+    // with ignoreAcls we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
     question = new TracerouteQuestion(".*", header, true);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
@@ -239,7 +239,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.EXITS_NETWORK)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
   }
 
@@ -421,12 +421,12 @@ public class TracerouteTest {
    * R1 static route 1.0.0.128/mask -> interface1
    * R2 static route 1.0.0.128/mask -> interface2
    *
-   * traceroute R1 -> 1.0.0.128
+   * traceroute R1 -> 1.0.0.130
    *
    * Case 1: mask < 24 : R1 -> DELIVERED_TO_SUBNET
    * Case 2: mask = 24 : same above,
    * since connected route has higher priority than static route
-   * Case 3: 29 >= mask > 24 : DELIVERED_TO_SUBNET, R1 -> R2 -> delivered
+   * Case 3: mask > 24 : DELIEVERED_TO_SUBNET with trace R1 -> R2
    *
    * Note: in practice, R2 would complain about overlapping interfaces
    */
@@ -494,7 +494,7 @@ public class TracerouteTest {
     TracerouteQuestion question =
         new TracerouteQuestion(
             c1.getHostname(),
-            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.130").build(),
             false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -570,12 +570,11 @@ public class TracerouteTest {
    * R1: 1.0.0.128/24 -> interface2
    * R2: 1.0.0.128/24 -> interface2
    *
-   * Traceroute: R1 -> 1.0.0.128
+   * Traceroute: R1 -> 1.0.0.131
    *
    * Case 1: mask < 24: DELIVERD_TO_SUBNET (to R2)
    * Case 2: mask = 24: DELIVERD_TO_SUBNET (to R1)
-   *    packets take interface1 on R1, but R2 no ARP response
-   * Case 3: 29 >= mask > 24: DELIVERD_TO_SUBNET (to R1)
+   * Case 3: mask > 24: DELIVERD_TO_SUBNET (to R1)
    *
    */
   private TableAnswerElement testDispositionMultiInterfaces(String mask) throws IOException {
@@ -648,7 +647,7 @@ public class TracerouteTest {
     TracerouteQuestion question =
         new TracerouteQuestion(
             c1.getHostname(),
-            PacketHeaderConstraints.builder().setDstIp("1.0.0.128").build(),
+            PacketHeaderConstraints.builder().setDstIp("1.0.0.131").build(),
             false);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -735,9 +734,10 @@ public class TracerouteTest {
    *
    * Case 1: mask < 24: Delivered To Subnet (out of R3)
    *    This is because R3 forwards packets through its static route, and no next hop found
-   * Case 2: mask = 24: LOOP (R1->R2->R3->R1), since packets
-   *   take interface1 on R1, but R2 no ARP response
-   * Case 3: 29 >= mask >= 25: NEIGHBOR_UNREACHABLE
+   * Case 2: mask = 24: LOOP (R1->R2->R3->R2), since packets
+   *   take interface1 on R1, and then R2 followed by R3 before coming back to R2.
+   *   Note that R1 does not reply arp request from R3, but R2 does.
+   * Case 3: mask >= 25: NEIGHBOR_UNREACHABLE
    *    since the connected route is taken, and R1 should deliver the packet to subnet
    */
   private TableAnswerElement testDispositionMultipleRouters(String mask) throws IOException {
@@ -864,7 +864,7 @@ public class TracerouteTest {
     TableAnswerElement answer = testDispositionMultipleRouters("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
-    // check that packet should traverse R1 - R2 - R3 - R1
+    // check that packet should traverse R1 - R2 - R3 - R2
     assertThat(
         answer.getRows().getData(),
         everyItem(
@@ -907,7 +907,9 @@ public class TracerouteTest {
    * Traceroute from R1 to 1.0.0.2
    *
    * Case 1: mask <= 29: DELIVERED_TO_SUBNET
-   * Case 2: mask > 29: EXITS_NETWORK
+   * Case 2: mask > 29: DELIVERED_TO_SUBNET
+   *
+   * Constraint to /29 is removed.
    */
   private TableAnswerElement testHostSubnet(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -968,59 +970,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.EXITS_NETWORK)),
+                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
                 Schema.set(Schema.FLOW_TRACE))));
-  }
-
-  @Test
-  public void testNextHopIpVSDstIp() throws IOException {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = cb.build();
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
-    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
-    Interface i1 =
-        nf.interfaceBuilder()
-            .setOwner(c1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
-            .setProxyArp(true)
-            .build();
-    Interface i2 =
-        nf.interfaceBuilder()
-            .setOwner(c1)
-            .setOwner(c1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress("2.0.0.1/24"))
-            .setProxyArp(true)
-            .build();
-    vrf1.setStaticRoutes(
-        ImmutableSortedSet.of(
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("10.0.0.0/25"))
-                .setNextHopInterface(i1.getName())
-                .setNextHopIp(new Ip("192.168.0.1"))
-                .setAdministrativeCost(1)
-                .build(),
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("192.168.0.1/24"))
-                .setNextHopInterface(i2.getName())
-                .setAdministrativeCost(1)
-                .build()));
-
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane(false);
-
-    TracerouteQuestion question =
-        new TracerouteQuestion(
-            c1.getHostname(),
-            PacketHeaderConstraints.builder().setDstIp("10.0.0.2").build(),
-            false);
-
-    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
-
-    return;
   }
 }

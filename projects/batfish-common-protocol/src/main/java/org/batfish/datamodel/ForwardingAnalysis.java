@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import java.util.Map;
-import java.util.Set;
 
 public interface ForwardingAnalysis {
 
@@ -17,10 +16,10 @@ public interface ForwardingAnalysis {
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
   Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet();
 
-  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichExitsNetwork*/
+  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichExitsNetwork */
   Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork();
 
-  /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichCannotReachNeighbors*/
+  /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichCannotReachNeighbors */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 
   /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichNoSufficientInfoToDetermine */

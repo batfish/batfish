@@ -45,4 +45,3 @@ public class NodeInterfaceInsufficientInfo extends StateExpr {
     return State.INSTANCE;
   }
 }
-

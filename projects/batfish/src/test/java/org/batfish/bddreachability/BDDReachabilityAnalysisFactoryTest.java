@@ -58,7 +58,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private static final BDDPacket PKT = new BDDPacket();
-
   private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final BDD ONE = PKT.getFactory().one();

@@ -4433,29 +4433,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
-                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE))
-            .getIngressLocationReachableBDDs();
-
-    Map<IngressLocation, BDD> deliveredToSubnetBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                finalNodes,
-                ImmutableSet.of(FlowDisposition.DELIVERED_TO_SUBNET))
-            .getIngressLocationReachableBDDs();
-
-    Map<IngressLocation, BDD> exitsNetworkBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                finalNodes,
-                ImmutableSet.of(FlowDisposition.EXITS_NETWORK))
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .getIngressLocationReachableBDDs();
 
     String flowTag = getFlowTag();
@@ -4464,13 +4442,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
                 .stream(),
             computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
-                .stream(),
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, deliveredToSubnetBDDs)
-                .stream(),
-            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, deliveredToSubnetBDDs)
-                .stream(),
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, exitsNetworkBDDs).stream(),
-            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, exitsNetworkBDDs).stream())
+                .stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
