@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RoutingProtocol;
 
 /**
  * Contains information about the {@link Route}s which led to the selection of the outgoing
@@ -16,12 +17,12 @@ import org.batfish.datamodel.Route;
  */
 public final class RouteInfo {
 
-  private static final String PROP_TYPE = "type";
+  private static final String PROP_PROTOCOL = "protocol";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
-  /** Type of the route like BGP, OSPF etc. */
-  private @Nonnull final String _type;
+  /** Protocol of the route like bgp, ospf etc. */
+  private @Nonnull final RoutingProtocol _protocol;
 
   /** Network of this route */
   private @Nonnull final Prefix _network;
@@ -29,26 +30,26 @@ public final class RouteInfo {
   /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
 
-  public RouteInfo(String type, Prefix network, @Nullable Ip nextHopIp) {
-    _type = type;
+  public RouteInfo(RoutingProtocol protocol, Prefix network, @Nullable Ip nextHopIp) {
+    _protocol = protocol;
     _network = network;
     _nextHopIp = nextHopIp;
   }
 
   @JsonCreator
   private static RouteInfo jsonCreator(
-      @JsonProperty(PROP_TYPE) @Nullable String type,
+      @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp) {
-    checkArgument(type != null, "Missing %s", PROP_TYPE);
+    checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
-    return new RouteInfo(type, network, nextHopIp);
+    return new RouteInfo(protocol, network, nextHopIp);
   }
 
-  @JsonProperty(PROP_TYPE)
+  @JsonProperty(PROP_PROTOCOL)
   @Nonnull
-  public String getType() {
-    return _type;
+  public RoutingProtocol getProtocol() {
+    return _protocol;
   }
 
   @JsonProperty(PROP_NETWORK)

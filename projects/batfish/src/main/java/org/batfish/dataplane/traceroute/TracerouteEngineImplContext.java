@@ -496,10 +496,7 @@ public class TracerouteEngineImplContext {
                         .stream()
                         .map(
                             rc ->
-                                new RouteInfo(
-                                    rc.getClass().getSimpleName(),
-                                    rc.getNetwork(),
-                                    rc.getNextHopIp()))
+                                new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
                         .collect(ImmutableList.toImmutableList());
 
                 ImmutableList.Builder<Step<?>> clonedStepsBuilder = ImmutableList.builder();
