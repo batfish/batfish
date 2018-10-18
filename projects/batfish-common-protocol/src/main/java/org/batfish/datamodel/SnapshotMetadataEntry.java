@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.BfConsts.PROP_METADATA;
+import static org.batfish.common.BfConsts.PROP_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,11 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class SnapshotMetadataEntry {
-
-  private static final String PROP_METADATA = "metadata";
-
-  private static final String PROP_NAME = "name";
-
   @JsonCreator
   private static @Nonnull SnapshotMetadataEntry create(
       @JsonProperty(PROP_NAME) @Nullable String name,
