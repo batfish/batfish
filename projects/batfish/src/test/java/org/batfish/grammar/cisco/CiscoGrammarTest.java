@@ -237,8 +237,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -2299,30 +2299,22 @@ public class CiscoGrammarTest {
     assertTrue(r3Prefixes.contains(r1Loopback));
 
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
-    batfish.initBgpAdvertisements(configurations);
-    Configuration r2 = configurations.get("r2");
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
     boolean r2HasPrivate =
-        r2.getReceivedEbgpAdvertisements()
+        r2Routes
             .stream()
-            .filter(a -> a.getNetwork().equals(r1Loopback))
-            .toArray(BgpAdvertisement[]::new)[0]
-            .getAsPath()
-            .getAsSets()
-            .stream()
+            .filter(r -> r.getNetwork().equals(r1Loopback))
+            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(Collection::stream)
             .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
 
     // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
-    Configuration r3 = configurations.get("r3");
     boolean r3HasPrivate =
-        r3.getReceivedEbgpAdvertisements()
+        r3Routes
             .stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
-            .toArray(BgpAdvertisement[]::new)[0]
-            .getAsPath()
-            .getAsSets()
-            .stream()
+            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(Collection::stream)
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
