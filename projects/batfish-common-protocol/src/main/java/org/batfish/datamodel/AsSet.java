@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -67,6 +68,10 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     return Comparators.lexicographical(Ordering.<Long>natural()).compare(_value, o._value);
   }
 
+  public boolean containsAs(Long asn) {
+    return _value.contains(asn);
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (o == this) {
@@ -77,14 +82,24 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     return _value.equals(((AsSet) o)._value);
   }
 
+  @JsonValue
+  public SortedSet<Long> getAsns() {
+    return _value;
+  }
+
   @Override
   public int hashCode() {
     return _value.hashCode();
   }
 
-  @JsonValue
-  public SortedSet<Long> getAsSet() {
-    return _value;
+  public boolean isEmpty() {
+    return _value.isEmpty();
+  }
+
+  /** Returns a new {@link AsSet} that consists of this set with any private ASNs removed. */
+  public AsSet removePrivateAs() {
+    return AsSet.of(
+        _value.stream().filter(asn -> !AsPath.isPrivateAs(asn)).collect(toImmutableList()));
   }
 
   public int size() {

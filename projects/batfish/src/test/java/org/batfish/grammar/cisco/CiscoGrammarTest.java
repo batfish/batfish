@@ -2304,7 +2304,7 @@ public class CiscoGrammarTest {
             .stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
-            .flatMap(asSet -> asSet.getAsSet().stream())
+            .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
 
@@ -2314,7 +2314,7 @@ public class CiscoGrammarTest {
             .stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
-            .flatMap(asSet -> asSet.getAsSet().stream())
+            .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
   }

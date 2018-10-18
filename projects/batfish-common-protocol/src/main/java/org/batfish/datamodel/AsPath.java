@@ -8,16 +8,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
@@ -40,22 +35,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   public static AsPath ofSingletonAsSets(List<Long> asNums) {
-    return createAsPath(asNums.stream().map(AsSet::of).collect(Collectors.toList()));
-  }
-
-  public static List<AsSet> removePrivateAs(List<AsSet> asPath) {
-    return asPath
-        .stream()
-        .map(
-            asSet ->
-                asSet
-                    .getAsSet()
-                    .stream()
-                    .filter(as -> !AsPath.isPrivateAs(as))
-                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
-        .filter(asnList -> !asnList.isEmpty())
-        .map(AsSet::of)
-        .collect(ImmutableList.toImmutableList());
+    return createAsPath(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
   }
 
   private final List<AsSet> _asSets;
@@ -92,16 +72,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   public boolean containsAs(Long as) {
-    return _asSets.stream().anyMatch(a -> a.getAsSet().contains(as));
-  }
-
-  private static List<SortedSet<Long>> copyAsSets(List<SortedSet<Long>> asSets) {
-    List<SortedSet<Long>> newAsSets = new ArrayList<>(asSets.size());
-    for (SortedSet<Long> asSet : asSets) {
-      SortedSet<Long> newAsSet = ImmutableSortedSet.copyOf(asSet);
-      newAsSets.add(newAsSet);
-    }
-    return newAsSets;
+    return _asSets.stream().anyMatch(a -> a.containsAs(as));
   }
 
   @Override
