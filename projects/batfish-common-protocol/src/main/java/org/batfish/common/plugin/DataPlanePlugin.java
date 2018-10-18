@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -80,8 +79,6 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
       boolean differentialContext, Map<String, Configuration> configurations, Topology topology);
 
   protected void dataPlanePluginInitialize() {}
-
-  public abstract Set<BgpAdvertisement> getAdvertisements();
 
   public abstract List<Flow> getHistoryFlows(DataPlane dataPlane);
 

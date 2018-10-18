@@ -22,7 +22,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -227,17 +226,11 @@ public class VirtualRouter implements Serializable {
 
   transient OspfRib _ospfRib;
 
-  /** Set of all received BGP advertisements in {@link BgpAdvertisement} form */
-  private Set<BgpAdvertisement> _receivedBgpAdvertisements;
-
   transient RipInternalRib _ripInternalRib;
 
   transient RipInternalRib _ripInternalStagingRib;
 
   transient RipRib _ripRib;
-
-  /** Set of all sent BGP advertisements in {@link BgpAdvertisement} form */
-  Set<BgpAdvertisement> _sentBgpAdvertisements;
 
   transient StaticRib _staticInterfaceRib;
 
@@ -268,9 +261,6 @@ public class VirtualRouter implements Serializable {
     _name = name;
     _vrf = c.getVrfs().get(name);
     initRibs();
-    // Keep track of sent and received advertisements
-    _receivedBgpAdvertisements = new LinkedHashSet<>();
-    _sentBgpAdvertisements = new LinkedHashSet<>();
     _bgpIncomingRoutes = new TreeMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>>();
     _prefixTracer = new PrefixTracer();
     _virtualEigrpProcesses = ImmutableMap.of();
@@ -1340,12 +1330,12 @@ public class VirtualRouter implements Serializable {
    * @param ipOwners mapping of IPs to their owners (nodes)
    * @return a number of sent out advertisements
    */
-  int computeBgpAdvertisementsToOutside(Map<Ip, Set<String>> ipOwners) {
-    int numAdvertisements = 0;
+  Set<BgpAdvertisement> computeBgpAdvertisementsToOutside(Map<Ip, Set<String>> ipOwners) {
+    ImmutableSet.Builder<BgpAdvertisement> bgpAdvertisementBuilder = ImmutableSet.builder();
 
     // If we have no BGP process, nothing to do
     if (_vrf.getBgpProcess() == null) {
-      return numAdvertisements;
+      return ImmutableSet.of();
     }
 
     /*
@@ -1616,11 +1606,10 @@ public class VirtualRouter implements Serializable {
                 ImmutableSortedSet.copyOf(sentCommunities),
                 ImmutableSortedSet.copyOf(sentClusterList),
                 sentWeight);
-        _sentBgpAdvertisements.add(sentAdvert);
-        numAdvertisements++;
+        bgpAdvertisementBuilder.add(sentAdvert);
       }
     }
-    return numAdvertisements;
+    return bgpAdvertisementBuilder.build();
   }
 
   /**
@@ -1710,13 +1699,6 @@ public class VirtualRouter implements Serializable {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
           if (!remoteRouteAdvert.isWithdrawn()) {
-            markReceivedBgpAdvertisement(
-                ourConfigId,
-                remoteConfigId,
-                ourBgpConfig,
-                remoteBgpConfig,
-                sessionProperties,
-                transformedIncomingRoute);
             _bgpBestPathRib.addBackupRoute(transformedIncomingRoute);
             _prefixTracer.installed(
                 transformedIncomingRoute.getNetwork(),
@@ -2412,10 +2394,6 @@ public class VirtualRouter implements Serializable {
 
       // Call this on the REMOTE VR and REVERSE the edge!
       remoteVirtualRouter.enqueueBgpMessages(edge.reverse(), exportedAdvertisements);
-
-      // Note what we sent
-      markSentBgpAdvertisements(
-          ourConfigId, remoteConfigId, ourConfig, remoteConfig, session, exportedAdvertisements);
     }
   }
 
@@ -2779,81 +2757,6 @@ public class VirtualRouter implements Serializable {
     _bgpIncomingRoutes.get(edgeId).addAll(routes);
   }
 
-  /** Note which advertisement we sent, in full {@link BgpAdvertisement} form. */
-  private void markSentBgpAdvertisements(
-      BgpPeerConfigId localNeighborId,
-      BgpPeerConfigId remoteNeighborId,
-      BgpPeerConfig localNeighbor,
-      BgpPeerConfig remoteNeighbor,
-      BgpSessionProperties sessionProperties,
-      Set<RouteAdvertisement<BgpRoute>> routeAdvertisements) {
-    for (RouteAdvertisement<BgpRoute> routeAdvertisement : routeAdvertisements) {
-      if (!routeAdvertisement.isWithdrawn()) {
-        BgpRoute route = routeAdvertisement.getRoute();
-        _sentBgpAdvertisements.add(
-            BgpAdvertisement.builder()
-                .setType(
-                    sessionProperties.isEbgp()
-                        ? BgpAdvertisementType.EBGP_SENT
-                        : BgpAdvertisementType.IBGP_SENT)
-                .setNetwork(route.getNetwork())
-                .setNextHopIp(route.getNextHopIp())
-                .setSrcNode(getHostname())
-                .setSrcVrf(localNeighborId.getVrfName())
-                .setSrcIp(localNeighbor.getLocalIp())
-                .setDstNode(remoteNeighborId.getHostname())
-                .setDstVrf(remoteNeighborId.getVrfName())
-                .setDstIp(remoteNeighbor.getLocalIp())
-                .setSrcProtocol(
-                    sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP)
-                .setOriginType(route.getOriginType())
-                .setLocalPreference(route.getLocalPreference())
-                .setMed(route.getMetric())
-                .setOriginatorIp(route.getOriginatorIp())
-                .setAsPath(route.getAsPath())
-                .setCommunities(route.getCommunities())
-                .setClusterList(route.getClusterList())
-                .setWeight(-1)
-                .build());
-      }
-    }
-  }
-
-  /** Note which advertisement we received, in full {@link BgpAdvertisement} form. */
-  private void markReceivedBgpAdvertisement(
-      BgpPeerConfigId localNeighborId,
-      BgpPeerConfigId remoteNeighborId,
-      BgpPeerConfig localNeighbor,
-      BgpPeerConfig remoteNeighbor,
-      BgpSessionProperties sessionProperties,
-      BgpRoute route) {
-
-    _receivedBgpAdvertisements.add(
-        BgpAdvertisement.builder()
-            .setType(
-                sessionProperties.isEbgp()
-                    ? BgpAdvertisementType.EBGP_RECEIVED
-                    : BgpAdvertisementType.IBGP_RECEIVED)
-            .setNetwork(route.getNetwork())
-            .setNextHopIp(route.getNextHopIp())
-            .setSrcNode(remoteNeighborId.getHostname())
-            .setSrcVrf(remoteNeighborId.getVrfName())
-            .setSrcIp(remoteNeighbor.getLocalIp())
-            .setDstNode(getHostname())
-            .setDstVrf(localNeighborId.getVrfName())
-            .setDstIp(localNeighbor.getLocalIp())
-            .setSrcProtocol(route.getProtocol())
-            .setOriginType(route.getOriginType())
-            .setLocalPreference(route.getLocalPreference())
-            .setMed(route.getMetric())
-            .setOriginatorIp(route.getOriginatorIp())
-            .setAsPath(route.getAsPath())
-            .setCommunities(route.getCommunities())
-            .setClusterList(route.getClusterList())
-            .setWeight(route.getWeight())
-            .build());
-  }
-
   /** Deal with a newly established BGP session. */
   private void newBgpSessionEstablishedHook(
       @Nonnull BgpEdgeId edge,
@@ -2913,22 +2816,6 @@ public class VirtualRouter implements Serializable {
 
     // Call this on the neighbor's VR, and reverse the egde!
     remoteVr.enqueueBgpMessages(edge.reverse(), exportedNeighborSpecificRoutes);
-
-    // Note which BGP advertisements were sent
-    markSentBgpAdvertisements(
-        localConfigId,
-        remoteConfigId,
-        localConfig,
-        remoteConfig,
-        sessionProperties,
-        exportedRoutes);
-    markSentBgpAdvertisements(
-        localConfigId,
-        remoteConfigId,
-        localConfig,
-        remoteConfig,
-        sessionProperties,
-        exportedNeighborSpecificRoutes);
   }
 
   /**
@@ -3157,14 +3044,6 @@ public class VirtualRouter implements Serializable {
         ourConfig.getExportPolicy());
 
     return transformedOutgoingRoute;
-  }
-
-  Set<BgpAdvertisement> getReceivedBgpAdvertisements() {
-    return _receivedBgpAdvertisements;
-  }
-
-  Set<BgpAdvertisement> getSentBgpAdvertisements() {
-    return _sentBgpAdvertisements;
   }
 
   public BgpMultipathRib getBgpMultipathRib() {

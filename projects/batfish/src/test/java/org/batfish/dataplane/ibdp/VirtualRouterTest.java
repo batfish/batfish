@@ -33,7 +33,6 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -169,7 +168,6 @@ public class VirtualRouterTest {
     config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
     VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
     virtualRouter.initRibs();
-    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
     return virtualRouter;
   }
 
@@ -202,9 +200,11 @@ public class VirtualRouterTest {
 
   @Test
   public void computeBgpAdvertisementsSentToOutsideNoBgp() {
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
 
     // checking that no bgp advertisements are sent if the vrf has no BGP process
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));
+    assertThat(advertisements, empty());
   }
 
   @Test
@@ -227,10 +227,12 @@ public class VirtualRouterTest {
             .setProtocol(RoutingProtocol.OSPF)
             .build());
 
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
     // checking number of bgp advertisements
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
+    assertThat(advertisements, hasSize(1));
 
-    BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
+    BgpAdvertisement bgpAdvertisement = advertisements.iterator().next();
 
     // checking the attributes of the bgp advertisement
     assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
@@ -256,10 +258,12 @@ public class VirtualRouterTest {
             .setReceivedFromIp(TEST_NEXT_HOP_IP1)
             .build());
 
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
     /* checking that the route in EBGP Best Path Rib got advertised */
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
+    assertThat(advertisements, hasSize(1));
 
-    BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
+    BgpAdvertisement bgpAdvertisement = advertisements.iterator().next();
 
     // checking the attributes of the bgp advertisement
     assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
@@ -293,12 +297,14 @@ public class VirtualRouterTest {
             .setNextHopIp(TEST_NEXT_HOP_IP2)
             .build());
 
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
     // checking that both the routes in BGP Multipath Rib got advertised
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(2));
+    assertThat(advertisements, hasSize(2));
 
     // checking that both bgp advertisements have the same network and the supplied next hop IPs
     Set<Ip> nextHopIps = new HashSet<>();
-    _testVirtualRouter._sentBgpAdvertisements.forEach(
+    advertisements.forEach(
         bgpAdvertisement -> {
           assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
           nextHopIps.add(bgpAdvertisement.getNextHopIp());
@@ -337,12 +343,15 @@ public class VirtualRouterTest {
     _testVirtualRouter._mainRib.mergeRoute(
         new ConnectedRoute(TEST_NETWORK, Route.UNSET_NEXT_HOP_INTERFACE));
 
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
+
     // checking that the inactive BGP route got advertised along with the active OSPF route
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(2));
+    assertThat(advertisements, hasSize(2));
 
     // checking that both bgp advertisements have the same network and correct AS Paths
     Set<AsPath> asPaths = new HashSet<>();
-    _testVirtualRouter._sentBgpAdvertisements.forEach(
+    advertisements.forEach(
         bgpAdvertisement -> {
           assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
           asPaths.add(bgpAdvertisement.getAsPath());
@@ -377,8 +386,10 @@ public class VirtualRouterTest {
             .build());
     _testVirtualRouter._bgpMultipathRib.mergeRoute(_bgpRouteBuilder.build());
 
+    Set<BgpAdvertisement> advertisements =
+        _testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners);
     // number of BGP advertisements should be zero given the reject all export policy
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));
+    assertThat(advertisements, empty());
   }
 
   /**

@@ -220,11 +220,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
   }
