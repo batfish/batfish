@@ -147,6 +147,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -3869,10 +3870,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(ImmutableSet.toImmutableSet());
 
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, false);
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    if (_settings.getDebugFlags().contains("traceroute")) {
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
+    } else {
+      getDataPlanePlugin().processFlows(flows, dp, false);
+      return getHistory();
+    }
   }
 
   @Override
