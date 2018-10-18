@@ -9,10 +9,14 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
+import static org.batfish.question.traceroute.TracerouteQuestion.DEFAULT_MAX_TRACES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,6 +24,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -29,12 +34,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.TraceMatchers;
@@ -86,7 +95,10 @@ public class TracerouteTest {
   public void testGetFlows_interfaceSource() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            "node1", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
+            "node1",
+            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            false,
+            DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -117,7 +129,10 @@ public class TracerouteTest {
   public void testGetFlows_interfaceLinkSourceNoSourceIp() {
     TracerouteQuestion question =
         new TracerouteQuestion(
-            "enter(node1)", PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(), false);
+            "enter(node1)",
+            PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            false,
+            DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     thrown.expect(IllegalArgumentException.class);
@@ -130,7 +145,8 @@ public class TracerouteTest {
         new TracerouteQuestion(
             "enter(node1)",
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
-            false);
+            false,
+            DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -165,7 +181,8 @@ public class TracerouteTest {
         new TracerouteQuestion(
             String.format("%s[%s]", NODE1, LOOPBACK),
             PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
-            false);
+            false,
+            DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, _batfish);
     Set<Flow> flows = answerer.getFlows(TAG);
@@ -211,7 +228,7 @@ public class TracerouteTest {
     batfish.computeDataPlane(false);
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
-    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
+    TracerouteQuestion question = new TracerouteQuestion(".*", header, false, DEFAULT_MAX_TRACES);
 
     // without ignoreAcls we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -226,7 +243,7 @@ public class TracerouteTest {
                 Schema.set(Schema.FLOW_TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question = new TracerouteQuestion(".*", header, true);
+    question = new TracerouteQuestion(".*", header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
@@ -248,7 +265,7 @@ public class TracerouteTest {
     batfish.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
 
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
-    TracerouteQuestion question = new TracerouteQuestion(".*", header, false);
+    TracerouteQuestion question = new TracerouteQuestion(".*", header, false, DEFAULT_MAX_TRACES);
 
     // without ignoreAcls we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -263,7 +280,7 @@ public class TracerouteTest {
                 Schema.set(Schema.TRACE))));
 
     // with ignoreAcls we get NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-    question = new TracerouteQuestion(".*", header, true);
+    question = new TracerouteQuestion(".*", header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
@@ -276,5 +293,73 @@ public class TracerouteTest {
                     TraceMatchers.hasDisposition(
                         FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
                 Schema.set(Schema.TRACE))));
+  }
+
+  private Batfish maxTracesBatfish() throws IOException {
+    // create a simple network with two paths for a given destination
+    Prefix dst = Prefix.parse("1.1.1.1/32");
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Interface.Builder ifaceBuilder =
+        nf.interfaceBuilder().setActive(true).setOwner(config).setVrf(vrf);
+    Interface lo0 = ifaceBuilder.setAddress(new InterfaceAddress("5.5.5.5/32")).build();
+    Interface lo1 = ifaceBuilder.setAddress(new InterfaceAddress("6.6.6.6/32")).build();
+    Builder routeBuilder = StaticRoute.builder().setNetwork(dst).setAdministrativeCost(1);
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            routeBuilder.setNextHopInterface(lo0.getName()).build(),
+            routeBuilder.setNextHopInterface(lo1.getName()).build()));
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(config.getHostname(), config), _folder);
+    // use new traceroute engine
+    batfish.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
+    batfish.computeDataPlane(false);
+    return batfish;
+  }
+
+  @Test
+  public void testMaxTraces_default() throws IOException {
+    Batfish batfish = maxTracesBatfish();
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            ".*",
+            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("1.1.1.1").build(),
+            false,
+            DEFAULT_MAX_TRACES);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    assertThat(
+        answer,
+        hasRows(
+            contains(
+                allOf(
+                    hasColumn(TracerouteAnswerer.COL_TRACES, hasSize(2), Schema.set(Schema.TRACE)),
+                    hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)))));
+  }
+
+  @Test
+  public void testMaxTraces_limited() throws IOException {
+    Batfish batfish = maxTracesBatfish();
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            ".*",
+            PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("1.1.1.1").build(),
+            false,
+            1);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    assertThat(
+        answer,
+        hasRows(
+            contains(
+                allOf(
+                    hasColumn(TracerouteAnswerer.COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+                    hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)))));
   }
 }
