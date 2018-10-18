@@ -2,17 +2,21 @@ package org.batfish.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+/** A generic pair of comparable objects */
+@ParametersAreNonnullByDefault
 public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<Pair<T1, T2>> {
 
   private static final long serialVersionUID = 1L;
 
-  protected final T1 _first;
-
-  protected final T2 _second;
+  @Nonnull protected final T1 _first;
+  @Nullable protected final T2 _second;
 
   public Pair(T1 t1, @Nullable T2 t2) {
     _first = t1;
@@ -21,12 +25,9 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
 
   @Override
   public int compareTo(Pair<T1, T2> rhs) {
-    int first = _first.compareTo(rhs._first);
-    if (first == 0) {
-      return _second.compareTo(rhs._second);
-    } else {
-      return first;
-    }
+    return Comparator.nullsFirst(
+            Comparator.comparing(Pair<T1, T2>::getFirst).thenComparing(Pair::getSecond))
+        .compare(this, rhs);
   }
 
   @Override
@@ -41,23 +42,21 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
     return Objects.equals(_first, other._first) && Objects.equals(_second, other._second);
   }
 
+  @Nonnull
   @JsonIgnore
   public final T1 getFirst() {
     return _first;
   }
 
   @JsonIgnore
+  @Nullable
   public final T2 getSecond() {
     return _second;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_first == null) ? 0 : _first.hashCode());
-    result = prime * result + ((_second == null) ? 0 : _second.hashCode());
-    return result;
+    return Objects.hash(_first, _second);
   }
 
   @Override
