@@ -16,6 +16,13 @@
           "isValue" : true,
           "name" : "Traces",
           "schema" : "Set<Trace>"
+        },
+        {
+          "description" : "The total number traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "TraceCount",
+          "schema" : "Integer"
         }
       ],
       "textDesc" : "Paths for flow ${Flow}"
@@ -1142,7 +1149,8 @@
               }
             ]
           }
-        ]
+        ],
+        "TraceCount" : 4
       }
     ],
     "summary" : {
