@@ -52,6 +52,11 @@ public class AsPath implements Serializable, Comparable<AsPath> {
     return of(firstNonNull(value, ImmutableList.of()));
   }
 
+  /** Create and return a new empty {@link AsPath}. */
+  public static AsPath empty() {
+    return AsPath.of(ImmutableList.of());
+  }
+
   /** Create and return a new {@link AsPath} of length 1 using the given {@link AsSet}. */
   public static AsPath of(AsSet asSet) {
     return AsPath.of(ImmutableList.of(asSet));
@@ -66,6 +71,19 @@ public class AsPath implements Serializable, Comparable<AsPath> {
       // This shouldn't happen, but handle anyway.
       return new AsPath(immutableValue);
     }
+  }
+
+  /**
+   * Returns a new {@link AsPath} with all the private ASNs removed. Any {@link AsSet} in that path
+   * that consists only of private ASNs will be dropped from the path entirely.
+   */
+  public AsPath removePrivateAs() {
+    return AsPath.of(
+        _asSets
+            .stream()
+            .map(AsSet::removePrivateAs)
+            .filter(asSet -> !asSet.isEmpty())
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override

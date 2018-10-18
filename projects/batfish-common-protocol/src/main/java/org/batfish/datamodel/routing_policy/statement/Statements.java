@@ -2,10 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -53,14 +50,6 @@ public enum Statements {
       return false;
     }
 
-    private static List<AsSet> removePrivateAs(List<AsSet> asPath) {
-      return asPath
-          .stream()
-          .map(AsSet::removePrivateAs)
-          .filter(asSet -> !asSet.isEmpty())
-          .collect(ImmutableList.toImmutableList());
-    }
-
     @Override
     public Result execute(Environment environment) {
       Result result = new Result();
@@ -91,10 +80,10 @@ public enum Statements {
         case RemovePrivateAs:
           {
             BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-            bgpRouteBuilder.setAsPath(removePrivateAs(bgpRouteBuilder.getAsPath()));
+            bgpRouteBuilder.setAsPath(bgpRouteBuilder.getAsPath().removePrivateAs());
             if (environment.getWriteToIntermediateBgpAttributes()) {
               BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
-              ir.setAsPath(removePrivateAs(ir.getAsPath()));
+              ir.setAsPath(ir.getAsPath().removePrivateAs());
             }
             break;
           }
