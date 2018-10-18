@@ -21,7 +21,7 @@ import org.batfish.datamodel.flow.Trace;
  * Once all dispositions and nodes are covered, pick traces until the maxSize is reached. To ensure
  * determinism, we choose dispositions, nodes, and traces in a consistent order.
  */
-public class TracePruner {
+public final class TracePruner {
   // Invariant: the traces in these maps are in input order
   private final Map<FlowDisposition, List<Trace>> _dispositionTraces;
   private final Map<String, List<Trace>> _nodeTraces;
