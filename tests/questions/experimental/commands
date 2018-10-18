@@ -58,7 +58,7 @@ test -raw tests/questions/experimental/resolveSpecifiers.ref validate-template r
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
 
 # test traceroute
-test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null
+test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, maxTraces=0, headers=null
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
