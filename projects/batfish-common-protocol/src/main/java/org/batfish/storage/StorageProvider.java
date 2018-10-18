@@ -13,7 +13,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -296,7 +296,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   void storeSnapshotMetadata(
-      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
       throws IOException;
 
   /**
