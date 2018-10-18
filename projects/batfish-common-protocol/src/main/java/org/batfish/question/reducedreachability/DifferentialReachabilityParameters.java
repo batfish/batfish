@@ -30,26 +30,55 @@ public class DifferentialReachabilityParameters {
     _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
   }
 
+  /**
+   * @return The set of {@link FlowDisposition dispositions} of interest. Search for differences
+   *     between the sets of {@link org.batfish.datamodel.Flow flows} that have a disposition in
+   *     this set.
+   */
   public Set<FlowDisposition> getFlowDispositions() {
     return _flowDispositions;
   }
 
+  /**
+   * @return The set of router hostnames that may not be transited. Search for differences between
+   *     the the sets of {@link org.batfish.datamodel.Flow flows} with at least one path that does
+   *     not transit any node in this set.
+   */
   public Set<String> getForbiddenTransitNodes() {
     return _forbiddenTransitNodes;
   }
 
+  /**
+   * @return The set of router hostnames that must be transited. Search for differences between the
+   *     the sets of {@link org.batfish.datamodel.Flow flows} with at least one path that transits
+   *     any node in this set.
+   */
   public Set<String> getFinalNodes() {
     return _finalNodes;
   }
 
+  /**
+   * @return The headerspace of interest. Search for differences between sets of {@link
+   *     org.batfish.datamodel.Flow flows} whose headers are contained in this space.
+   */
   public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 
+  /**
+   * @return The source {@link IpSpaceAssignment}. Search for differences between sets of {@link
+   *     org.batfish.datamodel.Flow flows} that start at a location and with an initial source IP
+   *     consistent with an entry in the assignment.
+   */
   public IpSpaceAssignment getIpSpaceAssignment() {
     return _ipSpaceAssignment;
   }
 
+  /**
+   * @return The set of router hostnames where flows stop. Search for differences between the sets
+   *     of {@link org.batfish.datamodel.Flow flows} with at least one path that stops at a router
+   *     in this set.
+   */
   public Set<String> getRequiredTransitNodes() {
     return _requiredTransitNodes;
   }
