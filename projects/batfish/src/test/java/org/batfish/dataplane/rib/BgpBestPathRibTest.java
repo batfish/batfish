@@ -35,7 +35,7 @@ public class BgpBestPathRibTest {
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(new Ip("7.7.7.7"))
             .setReceivedFromIp(new Ip("7.7.7.7"))
-            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
+            .setAsPath(AsPath.of(AsSet.of(1L, 2L)))
             .build();
     BgpRoute r2 =
         new BgpRoute.Builder()

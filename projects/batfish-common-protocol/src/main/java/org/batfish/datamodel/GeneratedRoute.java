@@ -28,7 +28,7 @@ public final class GeneratedRoute extends AbstractRoute {
     private String _nextHopInterface;
 
     public Builder() {
-      _asPath = null;
+      _asPath = AsPath.empty();
     }
 
     @Override
