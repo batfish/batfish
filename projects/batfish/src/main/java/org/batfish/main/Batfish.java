@@ -1151,7 +1151,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
 
-    postProcessConfigurations(configurations.values());
+    identifyDeviceTypes(configurations.values());
     return configurations;
   }
 
@@ -2568,25 +2568,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
   }
 
-  private void postProcessConfigurations(Collection<Configuration> configurations) {
+  private void identifyDeviceTypes(Collection<Configuration> configurations) {
     for (Configuration c : configurations) {
+      if (c.getDeviceType() != null) {
+        continue;
+      }
       // Set device type to host iff the configuration format is HOST
       if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
         c.setDeviceType(DeviceType.HOST);
-      }
-      for (Vrf vrf : c.getVrfs().values()) {
-        // If vrf has BGP, EIGRP, OSPF, or RIP process and device isn't a host, set device type to
-        // router
-        if (c.getDeviceType() == null
-            && (vrf.getBgpProcess() != null
-                || !vrf.getEigrpProcesses().isEmpty()
-                || vrf.getOspfProcess() != null
-                || vrf.getRipProcess() != null)) {
-          c.setDeviceType(DeviceType.ROUTER);
-        }
-      }
-      // If device was not a host or router, call it a switch
-      if (c.getDeviceType() == null) {
+      } else if (c.getVrfs()
+          .values()
+          .stream()
+          .anyMatch(
+              vrf ->
+                  vrf.getBgpProcess() != null
+                      || !vrf.getEigrpProcesses().isEmpty()
+                      || vrf.getOspfProcess() != null
+                      || vrf.getRipProcess() != null)) {
+        // If any vrf on device has BGP, EIGRP, OSPF, or RIP, set device type to router
+        c.setDeviceType(DeviceType.ROUTER);
+      } else {
+        // If device was not a host or router, call it a switch
         c.setDeviceType(DeviceType.SWITCH);
       }
     }
