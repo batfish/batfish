@@ -67,7 +67,8 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -127,12 +128,12 @@ public final class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createTestrigWithMetadata(String container, String testrig) throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(container);
+  private void createSnapshotWithMetadata(String network, String snapshot) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
-    _idManager.assignSnapshot(testrig, networkId, snapshotId);
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), null), networkId, snapshotId);
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+    SnapshotMetadataMgr.writeMetadata(
+        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
   }
 
   @Test
@@ -346,11 +347,11 @@ public final class WorkMgrTest {
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.empty()));
 
     // create testrig1, which should be returned
-    createTestrigWithMetadata("container", "testrig1");
+    createSnapshotWithMetadata("container", "testrig1");
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig1")));
 
     // create a second testrig, which should be returned
-    createTestrigWithMetadata("container", "testrig2");
+    createSnapshotWithMetadata("container", "testrig2");
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig2")));
   }
 
@@ -359,7 +360,7 @@ public final class WorkMgrTest {
     _manager.initNetwork("container", null);
 
     // create a testrig and write a topology object for it
-    createTestrigWithMetadata("container", "testrig1");
+    createSnapshotWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
     CommonUtil.writeFile(
@@ -1171,7 +1172,7 @@ public final class WorkMgrTest {
     String fileName = BfConsts.RELPATH_METADATA_FILE;
 
     _manager.initNetwork(network, null);
-    createTestrigWithMetadata(network, snapshot);
+    createSnapshotWithMetadata(network, snapshot);
     Path object = _manager.getTestrigObject(network, snapshot, fileName);
 
     // Confirm metadata file is found (lives in the output directory)
@@ -1187,7 +1188,7 @@ public final class WorkMgrTest {
     String fileName = "missing.file";
 
     _manager.initNetwork(network, null);
-    createTestrigWithMetadata(network, snapshot);
+    createSnapshotWithMetadata(network, snapshot);
     Path object = _manager.getTestrigObject(network, snapshot, fileName);
 
     // Confirm the bogus file is not found
@@ -2099,5 +2100,27 @@ public final class WorkMgrTest {
 
     // answer should no longer be available since node roles input id changed
     assertThat(answerAfterUpdate.getStatus(), equalTo(AnswerStatus.NOTFOUND));
+  }
+
+  @Test
+  public void testListSnapshotsWithMetadataMissingNetwork() throws IOException {
+    String network = "network1";
+
+    assertThat(Main.getWorkMgr().listSnapshotsWithMetadata(network), nullValue());
+  }
+
+  @Test
+  public void testListSnapshotsWithMetadataSuccess() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
+
+    assertThat(
+        Main.getWorkMgr().listSnapshotsWithMetadata(network),
+        equalTo(
+            ImmutableList.of(
+                new SnapshotMetadataEntry(
+                    snapshot, Main.getWorkMgr().getSnapshotMetadata(network, snapshot)))));
   }
 }

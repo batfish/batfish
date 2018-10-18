@@ -109,9 +109,11 @@ public class BfConsts {
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
   public static final String PROP_MAJOR_ISSUE_CONFIGS = "majorIssueConfigs";
   public static final String PROP_MAX_ROWS = "maxRows";
+  public static final String PROP_METADATA = "metadata";
   public static final String PROP_METRICS = "metrics";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NAME = "name";
   public static final String PROP_NUM_EXCLUDED_ROWS = "numExcludedRows";
   public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";

@@ -54,7 +54,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     Response response = getTarget(network, snapshot, key).delete();
     response = getTarget(network, snapshot, key).delete();
@@ -90,7 +90,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
@@ -111,7 +111,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     Response response = getTarget(network, snapshot, key).get();
 
@@ -144,7 +144,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
@@ -189,7 +189,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
@@ -208,7 +208,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     String oldContent = "baz";
     String newContent = "bath";

@@ -1,11 +1,15 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
+
+import java.io.IOException;
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -28,8 +32,11 @@ public final class SnapshotsResource {
   }
 
   @GET
-  public Response listSnapshots() {
-    List<String> result = Main.getWorkMgr().listSnapshots(_network);
+  public Response listSnapshots(@QueryParam(QP_VERBOSE) boolean verbose) throws IOException {
+    List<?> result =
+        verbose
+            ? Main.getWorkMgr().listSnapshotsWithMetadata(_network)
+            : Main.getWorkMgr().listSnapshots(_network);
     if (result == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

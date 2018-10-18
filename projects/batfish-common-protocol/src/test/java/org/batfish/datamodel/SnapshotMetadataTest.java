@@ -1,8 +1,8 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.TestrigMetadata.PROP_CREATION_TIMESTAMP;
-import static org.batfish.datamodel.TestrigMetadata.PROP_INITIALIZATION_METADATA;
-import static org.batfish.datamodel.TestrigMetadata.PROP_PARENT_SNAPSHOT_ID;
+import static org.batfish.datamodel.SnapshotMetadata.PROP_CREATION_TIMESTAMP;
+import static org.batfish.datamodel.SnapshotMetadata.PROP_INITIALIZATION_METADATA;
+import static org.batfish.datamodel.SnapshotMetadata.PROP_PARENT_SNAPSHOT_ID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -16,11 +16,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class TestrigMetadataTest {
+public final class SnapshotMetadataTest {
   @Test
   public void serialization() {
-    TestrigMetadata metadata =
-        new TestrigMetadata(Instant.ofEpochMilli(758949005001L), new SnapshotId("blah"));
+    SnapshotMetadata metadata =
+        new SnapshotMetadata(Instant.ofEpochMilli(758949005001L), new SnapshotId("blah"));
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(metadata);
     assertThat(jsonNode.get(PROP_CREATION_TIMESTAMP).asText(), equalTo("1994-01-19T03:10:05.001Z"));
     assertThat(jsonNode.get(PROP_PARENT_SNAPSHOT_ID).asText(), equalTo("blah"));
