@@ -109,9 +109,9 @@ public final class PoolMgrServiceTest extends JerseyTest {
     ArrayNode node = response.readEntity(ArrayNode.class);
 
     return BatfishObjectMapper.mapper()
-            .readValue(
-                node.get(1).get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
-                new TypeReference<Map<String, String>>() {});
+        .readValue(
+            node.get(1).get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
+            new TypeReference<Map<String, String>>() {});
   }
 
   private Response getQuestionTemplatesResponse(boolean verbose) {
