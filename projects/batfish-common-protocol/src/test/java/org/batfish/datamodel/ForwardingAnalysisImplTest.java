@@ -25,6 +25,10 @@ import org.junit.Test;
 
 public class ForwardingAnalysisImplTest {
 
+  private static final String CONFIG1 = "config1";
+
+  private static final String VRF1 = "vrf1";
+
   private static final String INTERFACE1 = "interface1";
 
   private static final String INTERFACE2 = "interface2";
@@ -55,7 +59,7 @@ public class ForwardingAnalysisImplTest {
 
   private Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
+  private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
 
   private Map<String, Map<String, Map<String, IpSpace>>> _arpFalseDestIp;
 
@@ -93,6 +97,8 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
+  private GenericRib<AbstractRoute> _rib;
+
   private ForwardingAnalysisImpl initForwardingAnalysisImpl() {
     return new ForwardingAnalysisImpl(
         _arpReplies,
@@ -100,8 +106,7 @@ public class ForwardingAnalysisImplTest {
         _arpTrueEdgeDestIp,
         _arpTrueEdgeNextHopIp,
         _interfaceOwnedIps,
-        _ipsRoutedOutInterfaces,
-        _neighborUnreachable,
+        _ipsRoutedOutInterfaces, _neighborUnreachableOrExitsNetwork,
         _arpFalseDestIp,
         _arpFalseNextHopIp,
         _nullRoutedIps,
@@ -550,7 +555,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachable() {
+  public void testComputeNeighborUnreachableOrExitsNetwork() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -757,9 +762,12 @@ public class ForwardingAnalysisImplTest {
         result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getEndIp())))));
   }
 
-  /** The neighbor unreachable predicate map should not include an entry for null interface. */
+  /**
+   * The neighbor unreachable or exits network predicate map should not include an entry for null
+   * interface.
+   */
   @Test
-  public void testComputeNeighborUnreachble_nullInterface() {
+  public void testComputeNeighborUnreachbleOrExitsNetwork_nullInterface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -799,11 +807,11 @@ public class ForwardingAnalysisImplTest {
     ForwardingAnalysisImpl forwardingAnalysisImpl =
         new ForwardingAnalysisImpl(configs, ribs, fibs, new Topology(ImmutableSortedSet.of()));
 
-    Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable =
+    Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork =
         forwardingAnalysisImpl.getNeighborUnreachableOrExitsNetwork();
 
     assertThat(
-        neighborUnreachable,
+        neighborUnreachableOrExitsNetwork,
         hasEntry(
             equalTo(c.getHostname()),
             hasEntry(equalTo(v.getName()), not(hasKey(Interface.NULL_INTERFACE_NAME)))));
@@ -1270,6 +1278,7 @@ public class ForwardingAnalysisImplTest {
         hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
   }
 
+
   @Test
   public void testComputeDeliveredToSubnetEqual() {
     String c1 = "c1";
@@ -1291,74 +1300,195 @@ public class ForwardingAnalysisImplTest {
         result,
         hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
   }
-  /*
-   * Arp dst ip, interface is not full, dst ip is external -> EXITS NETWORK
-   */
-  @Test
-  public void testComputeExitsNetworkPerInterfaceDstIp() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    String prefixString = "10.0.0.1/24";
-    Prefix prefix = Prefix.parse(prefixString);
-    Ip ip1 = prefix.getStartIp();
-    Ip ip2 = prefix.getEndIp();
-    _interfacesWithMissingDevices = ImmutableMap.of(c1, ImmutableSet.of(i1));
-    _routesWithExternalNextHopIpArpFalse = ImmutableMap.of();
-    _arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, prefix.toIpSpace())));
-    _snapshotOwnedIps = Prefix.parse("1.0.0.1/24").toIpSpace();
 
-    GenericRib<AbstractRoute> rib =
-        MockRib.builder()
-            .setRoutes(
-                ImmutableSet.of(
-                    StaticRoute.builder()
-                        .setNextHopInterface(i1)
-                        .setAdministrativeCost(1)
-                        .setNetwork(prefix)
-                        .build()))
-            .build();
-
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    IpSpace result = forwardingAnalysisImpl.computeExitsNetworkPerInterface(c1, vrf1, i1, rib);
-
-    assertThat(result, containsIp(ip1));
-    assertThat(result, containsIp(ip2));
+  enum NextHopIpStatus {
+    NONE,
+    INTERNAL,
+    EXTERNAL
   }
 
-  /*
-   * Arp next hop ip (for short, nhip), interface is not full, dst ip is external -> EXITS NETWORK
-   */
-  @Test
-  public void testComputeExitsNetworkPerInterfaceNextHopIp() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    String prefixString = "10.0.0.1/24";
-    Prefix prefix = Prefix.parse(prefixString);
-    Ip ip1 = prefix.getStartIp();
-    Ip ip2 = prefix.getEndIp();
+  private void testDispositionComputationTemplate(
+      NextHopIpStatus nextHopIpStatus,
+      boolean isSubnetFull,
+      boolean isDstIpInternal,
+      boolean isDstIpInSubnet,
+      FlowDisposition expectedDisposition) {
+    String nextHopIpString = "1.0.0.1";
+    Prefix dstPrefix = P3;
+    Ip nextHopIp = new Ip(nextHopIpString);
     StaticRoute route =
         StaticRoute.builder()
-            .setNextHopIp(new Ip("1.0.0.1"))
-            .setNextHopInterface(i1)
+            .setNextHopIp(new Ip(nextHopIpString))
+            .setNextHopInterface(INTERFACE1)
             .setAdministrativeCost(1)
-            .setNetwork(prefix)
+            .setNetwork(dstPrefix)
             .build();
-    _interfacesWithMissingDevices = ImmutableMap.of(c1, ImmutableSet.of(i1));
-    _routesWithExternalNextHopIpArpFalse =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ImmutableSet.of(route))));
-    _arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
-    _snapshotOwnedIps = Prefix.parse("1.0.0.1/24").toIpSpace();
 
-    GenericRib<AbstractRoute> rib = MockRib.builder().setRoutes(ImmutableSet.of(route)).build();
+    AclIpSpace.Builder snapshotOwnedIpsBuilder = AclIpSpace.builder();
+
+    if (!isSubnetFull) {
+      _interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of(INTERFACE1));
+    } else {
+      _interfacesWithMissingDevices = ImmutableMap.of();
+    }
+
+    if (nextHopIpStatus == NextHopIpStatus.EXTERNAL) {
+      _routesWithExternalNextHopIpArpFalse =
+          ImmutableMap.of(
+              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(route))));
+      _routesWithInternalNextHopIpArpFalse = ImmutableMap.of();
+      _arpFalseDestIp = ImmutableMap.of();
+    } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
+      _routesWithExternalNextHopIpArpFalse = ImmutableMap.of();
+      _routesWithInternalNextHopIpArpFalse =
+          ImmutableMap.of(
+              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(route))));
+      _arpFalseDestIp = ImmutableMap.of();
+      snapshotOwnedIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
+    } else {
+      _routesWithExternalNextHopIpArpFalse = ImmutableMap.of();
+      _routesWithInternalNextHopIpArpFalse = ImmutableMap.of();
+      _arpFalseDestIp =
+          ImmutableMap.of(
+              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+    }
+
+    if (isDstIpInternal) {
+      snapshotOwnedIpsBuilder.thenPermitting(dstPrefix.toIpSpace());
+    }
+
+    if (isDstIpInSubnet) {
+      _interfaceHostSubnetIps =
+          ImmutableMap.of(
+              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+    } else {
+      _interfaceHostSubnetIps = ImmutableMap.of();
+    }
+
+    _snapshotOwnedIps = snapshotOwnedIpsBuilder.build();
+
+    _neighborUnreachableOrExitsNetwork =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+
+    _rib =
+        MockRib.builder()
+            .setRoutes(ImmutableSet.of(route))
+            .setMatchingIps(ImmutableMap.of(dstPrefix, dstPrefix.toIpSpace()))
+            .build();
 
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    IpSpace result = forwardingAnalysisImpl.computeExitsNetworkPerInterface(c1, vrf1, i1, rib);
+    IpSpace deliveredToSubnetIpSpace =
+        forwardingAnalysisImpl
+            .computeDeliveredToSubnet()
+            .getOrDefault(CONFIG1, ImmutableMap.of())
+            .getOrDefault(VRF1, ImmutableMap.of())
+            .getOrDefault(INTERFACE1, EmptyIpSpace.INSTANCE);
+    IpSpace exitsNetworkIpSpace =
+        forwardingAnalysisImpl.computeExitsNetworkPerInterface(CONFIG1, VRF1, INTERFACE1, _rib);
+    IpSpace insufficientInfoIpSpace =
+        forwardingAnalysisImpl.computeInsufficientInfoPerInterface(CONFIG1, VRF1, INTERFACE1, _rib);
+    IpSpace neighborUnreachableIpSpace =
+        forwardingAnalysisImpl.computeNeighborUnreachable().get(CONFIG1).get(VRF1).get(INTERFACE1);
 
-    assertThat(result, containsIp(ip1));
-    assertThat(result, containsIp(ip2));
+    if (expectedDisposition == FlowDisposition.EXITS_NETWORK) {
+      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getStartIp()));
+      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getEndIp()));
+    } else {
+      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getStartIp())));
+      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getEndIp())));
+    }
+
+    if (expectedDisposition == FlowDisposition.INSUFFICIENT_INFO) {
+      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getStartIp()));
+      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getEndIp()));
+    } else {
+      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getStartIp())));
+      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getEndIp())));
+    }
+
+    if (expectedDisposition == FlowDisposition.DELIVERED_TO_SUBNET) {
+      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getStartIp()));
+      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getEndIp()));
+    } else {
+      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getStartIp())));
+      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getEndIp())));
+    }
+
+    if (expectedDisposition == FlowDisposition.NEIGHBOR_UNREACHABLE) {
+      assertThat(neighborUnreachableIpSpace, (containsIp(dstPrefix.getStartIp())));
+      assertThat(neighborUnreachableIpSpace, (containsIp(dstPrefix.getEndIp())));
+    } else {
+      assertThat(neighborUnreachableIpSpace, not(containsIp(dstPrefix.getStartIp())));
+      assertThat(neighborUnreachableIpSpace, not(containsIp(dstPrefix.getEndIp())));
+    }
+  }
+
+
+  @Test
+  public void testDispositionComputation() {
+    // Arp dst ip, interface is full, dst ip is internal -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.NONE, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // Arp dst ip, interface is full, dst ip is external -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.NONE, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // Arp dst ip, interface is not full, dst ip is subnet -> delivered to subnet
+    testDispositionComputationTemplate(
+        NextHopIpStatus.NONE, false, true, true, FlowDisposition.DELIVERED_TO_SUBNET);
+
+    // Arp dst ip, interface is not full, dst ip is internal -> insufficient info
+    testDispositionComputationTemplate(
+        NextHopIpStatus.NONE, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
+
+    // Arp dst ip, interface is not full, dst ip is external -> exits network
+    testDispositionComputationTemplate(
+        NextHopIpStatus.NONE, false, false, false, FlowDisposition.EXITS_NETWORK);
+
+    // nhip external, interface is full, dst ip is internal -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, true, true, true, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // nhip external, interface is full, dst ip is external -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // nhip external, interface is not full, dst ip is internal -> insufficient info
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, false, true, true, FlowDisposition.INSUFFICIENT_INFO);
+
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
+
+    // nhip external, interface is not full, dst ip is external -> exits network
+    testDispositionComputationTemplate(
+        NextHopIpStatus.EXTERNAL, false, false, false, FlowDisposition.EXITS_NETWORK);
+
+    // nhip internal, interface is full, dst ip is internal -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, true, true, true, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // nhip internal, interface is full, dst ip is external -> neighbor unreachable
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+
+    // nhip internal, interface is not full, dst ip is internal -> insufficient info
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, false, true, true, FlowDisposition.INSUFFICIENT_INFO);
+
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
+
+    // nhip internal, interface is not full, dst ip is external -> insufficient info
+    testDispositionComputationTemplate(
+        NextHopIpStatus.INTERNAL, false, false, false, FlowDisposition.INSUFFICIENT_INFO);
   }
 }
