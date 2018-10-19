@@ -356,7 +356,8 @@ public final class BDDReachabilityAnalysisTest {
             ImmutableSet.of(originateVrf),
             ImmutableMap.of(
                 originateVrf,
-                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))));
+                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))),
+            one);
     assertThat(
         graph.getIngressLocationReachableBDDs(),
         equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));

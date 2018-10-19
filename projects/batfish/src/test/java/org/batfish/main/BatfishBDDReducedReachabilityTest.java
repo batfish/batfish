@@ -9,15 +9,19 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXIT
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
@@ -41,12 +45,17 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
+import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Test of {@link Batfish#bddReducedReachability(Set)}. */
+/** Test of {@link IBatfish#bddReducedReachability} */
 public class BatfishBDDReducedReachabilityTest {
   private static final Ip DST_IP = new Ip("3.3.3.3");
   private static final String NODE1 = "node1";
@@ -63,6 +72,7 @@ public class BatfishBDDReducedReachabilityTest {
   private Configuration.Builder _cb;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _exception = ExpectedException.none();
 
   private org.batfish.datamodel.Interface.Builder _ib;
 
@@ -87,15 +97,53 @@ public class BatfishBDDReducedReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generator.generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseEnvironment();
+    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
-    batfish.pushDeltaEnvironment();
+    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(true);
-    batfish.popEnvironment();
+    batfish.popSnapshot();
 
     return batfish;
+  }
+
+  private static void checkDispositions(
+      Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
+
+    batfish.pushBaseSnapshot();
+    batfish.processFlows(flows, false);
+    List<FlowTrace> traces =
+        batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
+    assertThat(
+        String.format("all traces should have disposition %s in the base environment", disposition),
+        traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+    batfish.popSnapshot();
+
+    batfish.pushDeltaSnapshot();
+    batfish.processFlows(flows, false);
+    traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
+    assertThat(
+        String.format("no traces should have disposition %s in the delta environment", disposition),
+        traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+    batfish.popSnapshot();
+  }
+
+  private static DifferentialReachabilityParameters parameters(
+      Batfish batfish, Set<FlowDisposition> dispositions) {
+    return parameters(batfish, dispositions, TRUE);
+  }
+
+  private static DifferentialReachabilityParameters parameters(
+      Batfish batfish, Set<FlowDisposition> dispositions, AclLineMatchExpr headerSpace) {
+    return new DifferentialReachabilityParameters(
+        dispositions,
+        ImmutableSet.of(),
+        batfish.loadConfigurations().keySet(),
+        headerSpace,
+        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
+            ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+        ImmutableSet.of());
   }
 
   class NeighborUnreachableNetworkGenerator implements NetworkGenerator {
@@ -118,32 +166,27 @@ public class BatfishBDDReducedReachabilityTest {
     }
   }
 
-  private static void checkDispositions(
-      Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
+  @Test
+  public void testHeaderSpace() throws IOException {
+    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
 
-    batfish.pushBaseEnvironment();
-    batfish.processFlows(flows, false);
-    List<FlowTrace> traces =
-        batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
-    assertThat(
-        String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.stream().allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
-
-    batfish.pushDeltaEnvironment();
-    batfish.processFlows(flows, false);
-    traces = batfish.getDataPlanePlugin().getHistoryFlowTraces(batfish.loadDataPlane());
-    assertThat(
-        String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.stream().noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
-    batfish.popEnvironment();
+    _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("No sources are compatible with the headerspace constraint");
+    batfish.bddReducedReachability(
+        parameters(
+            batfish,
+            ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+            matchSrcIp("7.7.7.7")));
   }
 
   @Test
   public void testNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
-    Set<Flow> flows =
-        batfish.bddReducedReachability(ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(
+            parameters(batfish, ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -185,7 +228,11 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testAccepted() throws IOException {
     Batfish batfish = initBatfish(new AcceptedNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(FlowDisposition.ACCEPTED));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(
+            parameters(batfish, ImmutableSet.of(FlowDisposition.ACCEPTED)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -238,7 +285,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedIn() throws IOException {
     Batfish batfish = initBatfish(new DeniedInNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(DENIED_IN));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish, ImmutableSet.of(DENIED_IN)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(3));
     assertThat(
         flows,
@@ -300,7 +350,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedOutNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutNeighborUnreachableNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(DENIED_OUT));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish, ImmutableSet.of(DENIED_OUT)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -366,7 +419,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testDeniedOutForward() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutForwardNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(DENIED_OUT));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish, ImmutableSet.of(DENIED_OUT)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -418,7 +474,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNoRoute() throws IOException {
     Batfish batfish = initBatfish(new NoRouteNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(NO_ROUTE));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish, ImmutableSet.of(NO_ROUTE)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,
@@ -470,7 +529,10 @@ public class BatfishBDDReducedReachabilityTest {
   @Test
   public void testNullRouted() throws IOException {
     Batfish batfish = initBatfish(new NullRoutedNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(NULL_ROUTED));
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(parameters(batfish, ImmutableSet.of(NULL_ROUTED)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
     assertThat(
         flows,

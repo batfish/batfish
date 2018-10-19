@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
@@ -35,7 +36,6 @@ import org.apache.commons.io.FileExistsException;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
@@ -44,7 +44,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -324,6 +324,7 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_DEL_ANALYSIS)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delAnalysis(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -436,6 +437,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_QUESTION)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delQuestion(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -455,7 +457,11 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delQuestion(networkNameParam, questionName);
+      checkArgument(
+          Main.getWorkMgr().delQuestion(networkNameParam, questionName, null),
+          "Could not find ad-hoc question %s under network %s",
+          questionName,
+          networkNameParam);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -506,6 +512,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_SNAPSHOT)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delSnapshot(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -527,7 +534,12 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam);
+      if (!Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam)) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not delete non-existent snapshot:%s in network:%s",
+                snapshotNameParam, networkNameParam));
+      }
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -550,9 +562,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param baseEnv The name of the environment on which the analysis was run
    * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
-   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @param questionName The name of the question
    * @return TODO: document JSON response
@@ -567,11 +577,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
@@ -590,7 +598,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
-      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
       checkStringParam(questionName, "Question name");
 
@@ -649,9 +656,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the analysis resides
    * @param snapshotName The name of the snapshot on which the analysis was run
-   * @param baseEnv The name of the environment on which the analysis was run
    * @param referenceSnapshot The name of the reference snapshot on which the analysis was run
-   * @param deltaEnv The name of the reference environment on which the analysis was run
    * @param analysisName The name of the analysis
    * @return TODO: document JSON response
    */
@@ -665,11 +670,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
@@ -687,7 +690,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
-      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
@@ -718,9 +720,7 @@ public class WorkMgrService {
               .getAnalysisAnswers(
                   networkNameParam,
                   snapshotNameParam,
-                  baseEnv,
                   referenceSnapshotParam,
-                  deltaEnv,
                   analysisName,
                   ImmutableSet.of());
 
@@ -907,9 +907,7 @@ public class WorkMgrService {
               .getAnalysisAnswers(
                   networkNameParam,
                   snapshotNameParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   referenceSnapshotParam,
-                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   analysisName,
                   analysisAnswersOptions.keySet());
 
@@ -939,9 +937,7 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param networkName The name of the network in which the question was asked
    * @param snapshotName The name of the snapshot on which the question was asked
-   * @param baseEnv The name of the environment on which the question was asked
    * @param referenceSnapshot The name of the reference snapshot on which the question was asked
-   * @param deltaEnv The name of the reference environment on which the question was asked
    * @param questionName The name of the question
    * @return TODO: document JSON response
    */
@@ -955,11 +951,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     String networkNameParam = networkName == null ? containerName : networkName;
@@ -976,7 +970,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
       checkStringParam(networkNameParam, "Network name");
       checkStringParam(snapshotNameParam, "Current snapshot name");
-      checkStringParam(baseEnv, "Current environment name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
@@ -1320,6 +1313,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_OBJECT)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @Deprecated
   public Response getObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -1413,6 +1407,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
     try {
       _logger.infof("WMS:getQuestionTemplates %s\n", apiKey);
@@ -1670,12 +1665,21 @@ public class WorkMgrService {
               .listAnalyses(networkNameParam, firstNonNull(analysisType, AnalysisType.USER))) {
 
         JSONObject analysisJson = new JSONObject();
-
-        for (String questionName :
-            Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName)) {
+        SortedSet<String> questions =
+            Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName);
+        checkArgument(
+            questions != null,
+            "Analysis %s under network %s not found",
+            analysisName,
+            networkNameParam);
+        for (String questionName : questions) {
           String questionText =
               Main.getWorkMgr().getQuestion(networkNameParam, questionName, analysisName);
-
+          checkArgument(
+              questionText != null,
+              "Question %s unexpectedly missing from analysis %s",
+              questionName,
+              analysisName);
           analysisJson.put(questionName, new JSONObject(questionText));
         }
 
@@ -1752,51 +1756,6 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:listNetworks exception for apikey:%s, exception:%s", apiKey, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Lists the environments under the specified network, snapshot
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The network in which the snapshot and environments reside
-   * @param snapshotName The name of the snapshot whose environments are to be listed
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray listEnvironments(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String snapshotName) {
-    try {
-      _logger.infof("WMS:listEnvironments %s %s\n", apiKey, networkName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkName);
-
-      SortedSet<String> environmentList =
-          Main.getWorkMgr().listEnvironments(networkName, snapshotName);
-
-      return successResponse(
-          new JSONObject()
-              .put(CoordConsts.SVC_KEY_ENVIRONMENT_LIST, new JSONArray(environmentList)));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:listEnvironments exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:listEnvironments exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1890,10 +1849,15 @@ public class WorkMgrService {
       checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject retObject = new JSONObject();
-
-      for (String questionName : Main.getWorkMgr().listQuestions(networkNameParam, verbose)) {
+      Set<String> questions = Main.getWorkMgr().listQuestions(networkNameParam, verbose);
+      checkArgument(questions != null, "Non-existent network: %s", networkNameParam);
+      for (String questionName : questions) {
         String questionText = Main.getWorkMgr().getQuestion(networkNameParam, questionName, null);
-
+        checkArgument(
+            questionText != null,
+            "Content for ad-hoc question %s under network %s unexpectedly not found",
+            questionName,
+            networkNameParam);
         retObject.put(questionName, new JSONObject(questionText));
       }
 
@@ -1942,6 +1906,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray listSnapshots(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -1951,6 +1916,7 @@ public class WorkMgrService {
     return listSnapshotsHelper(apiKey, clientVersion, networkNameParam);
   }
 
+  @Deprecated
   private JSONArray listSnapshotsHelper(String apiKey, String clientVersion, String networkName) {
     try {
       _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
@@ -1966,10 +1932,12 @@ public class WorkMgrService {
       JSONArray retArray = new JSONArray();
 
       List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
+      checkArgument(snapshotList != null, String.format("Network '%s' not found", networkName));
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
-          TestrigMetadata ssMetadata = Main.getWorkMgr().getTestrigMetadata(networkName, snapshot);
+          SnapshotMetadata ssMetadata =
+              Main.getWorkMgr().getSnapshotMetadata(networkName, snapshot);
 
           String metadataStr = BatfishObjectMapper.writePrettyString(ssMetadata);
           JSONObject jObject =
@@ -2015,6 +1983,7 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray putObject(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -2285,60 +2254,6 @@ public class WorkMgrService {
       _logger.errorf("WMS:test exception: %s", stackTrace);
       // return Response.serverError().build();
       return "got error";
-    }
-  }
-
-  /**
-   * Uploads a new environment under the container, testrig
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param containerName The name of the container under which the testrig resides
-   * @param testrigName The name of the testrig under which to upload the new environment
-   * @param baseEnvName The environment name from which the new environment initially inherits
-   * @param envName The name of the new environment to create
-   * @param fileStream The stream from which the contents of the new environment are read. These
-   *     contents overwrite those inherited from any base environment.
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_UPLOAD_ENV)
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray uploadEnvironment(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
-      @FormDataParam(CoordConsts.SVC_KEY_BASE_ENV_NAME) String baseEnvName,
-      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
-      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
-    try {
-      _logger.infof(
-          "WMS:uploadEnvironment %s %s %s/%s\n", apiKey, containerName, testrigName, envName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
-      checkStringParam(envName, "Environment name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, containerName);
-
-      Main.getWorkMgr()
-          .uploadEnvironment(containerName, testrigName, baseEnvName, envName, fileStream);
-
-      return successResponse(new JSONObject().put("result", "successfully uploaded environment"));
-
-    } catch (BatfishException e) {
-      _logger.errorf("WMS:uploadEnvironment exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:uploadEnvironment exception: %s", stackTrace);
-      return failureResponse(e.getMessage());
     }
   }
 

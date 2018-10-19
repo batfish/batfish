@@ -25,11 +25,15 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pol
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -64,8 +69,10 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -106,6 +113,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -189,6 +197,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     Collections.singleton(new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0))))));
     MATCH_DEFAULT_ROUTE6.setComment("match default route");
   }
+
+  private static final IpAccessListLine ACL_LINE_EXISTING_CONNECTION =
+      new IpAccessListLine(
+          LineAction.PERMIT,
+          new MatchHeaderSpace(
+              HeaderSpace.builder().setStates(ImmutableList.of(FlowState.ESTABLISHED)).build()),
+          "~EXISTING_CONNECTION~");
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -473,6 +488,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Map<String, TrackMethod> _trackingGroups;
 
   private Map<String, NamedCommunitySet> _communitySets;
+
+  // initialized when needed
+  private Multimap<Integer, Interface> _interfacesBySecurityLevel;
 
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
@@ -1536,17 +1554,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // create generation policy for aggregate network
       String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
-      If currentGeneratedRouteConditional = new If();
+      If currentGeneratedRouteConditional =
+          new If(
+              new MatchPrefix6Set(
+                  new DestinationNetwork6(),
+                  new ExplicitPrefix6Set(
+                      new Prefix6Space(
+                          Collections.singleton(new Prefix6Range(prefix6, prefixRange))))),
+              ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
-      currentGeneratedRouteConditional.setGuard(
-          new MatchPrefix6Set(
-              new DestinationNetwork6(),
-              new ExplicitPrefix6Set(
-                  new Prefix6Space(
-                      Collections.singleton(new Prefix6Range(prefix6, prefixRange))))));
-      currentGeneratedRouteConditional
-          .getTrueStatements()
-          .add(Statements.ReturnTrue.toStaticStatement());
       c.getRoutingPolicies().put(generationPolicyName, currentGeneratedRoutePolicy);
       GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
       gr.setGenerationPolicy(generationPolicyName);
@@ -2010,9 +2026,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setBandwidth(iface.getBandwidth());
     }
     if (iface.getDhcpRelayClient()) {
-      newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
+      newIface.setDhcpRelayAddresses(_dhcpRelayServers);
     } else {
-      newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
+      newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
     newIface.setMtu(getInterfaceMtu(iface));
     newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
@@ -3667,7 +3683,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(
             (zoneName, zone) -> {
               // Don't bother if zone is empty
-              if (zone.getInterfaces().isEmpty()) {
+              SortedSet<String> interfaces = zone.getInterfaces();
+              if (interfaces.isEmpty()) {
                 return;
               }
 
@@ -3706,6 +3723,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 zonePair)
                             .ifPresent(zonePolicies::add));
               }
+
+              // Security level policies
+              zonePolicies.addAll(createSecurityLevelAcl(interfaces, zoneName));
 
               IpAccessList.builder()
                   .setName(computeZoneOutgoingAclName(zoneName))
@@ -3761,6 +3781,64 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .build());
   }
 
+  private List<IpAccessListLine> createSecurityLevelAcl(
+      Set<String> zoneInterfaces, String zoneName) {
+    OptionalInt firstSecurityLevel =
+        zoneInterfaces
+            .stream()
+            .map(_interfaces::get)
+            .map(Interface::getSecurityLevel)
+            .filter(Objects::nonNull)
+            .mapToInt(Integer::intValue)
+            .findFirst();
+
+    if (!firstSecurityLevel.isPresent()) {
+      return ImmutableList.of();
+    }
+
+    if (zoneInterfaces.size() != 1) {
+      _w.redFlag(
+          String.format("Security level zones should only have one interface: %s", zoneName));
+      return ImmutableList.of();
+    }
+
+    if (_interfacesBySecurityLevel == null) {
+      _interfacesBySecurityLevel =
+          _interfaces
+              .values()
+              .stream()
+              .filter(iface -> iface.getSecurityLevel() != null)
+              .collect(
+                  Multimaps.toMultimap(
+                      Interface::getSecurityLevel,
+                      Functions.identity(),
+                      MultimapBuilder.hashKeys().arrayListValues()::build));
+    }
+
+    int level = firstSecurityLevel.getAsInt();
+
+    List<IpAccessListLine> lines =
+        _interfacesBySecurityLevel
+            .keySet()
+            .stream()
+            .filter(l -> l > level)
+            .map(
+                l ->
+                    IpAccessListLine.accepting()
+                        .setName("Traffic from security level " + l)
+                        .setMatchCondition(
+                            new MatchSrcInterface(
+                                _interfacesBySecurityLevel
+                                    .get(l)
+                                    .stream()
+                                    .map(Interface::getName)
+                                    .collect(Collectors.toList())))
+                        .build())
+            .collect(Collectors.toList());
+    lines.add(ACL_LINE_EXISTING_CONNECTION);
+    return lines;
+  }
+
   public static String computeZoneOutgoingAclName(@Nonnull String zoneName) {
     return String.format("~ZONE_OUTGOING_ACL~%s~", zoneName);
   }
@@ -3776,6 +3854,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
+  }
+
+  public static String computeSecurityLevelZoneName(
+      int securityLevel, @Nonnull String interfaceName) {
+    return String.format("SECURITY_LEVEL_%s_%s", securityLevel, interfaceName);
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {

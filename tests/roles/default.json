@@ -1,0 +1,25 @@
+{
+    "name": "default",
+    "roles": [
+        {
+            "name": "border",
+            "regex": ".*border.*"
+        },
+        {
+            "name": "core",
+            "regex": ".*core.*"
+        },
+        {
+            "name": "dept",
+            "regex": ".*dept.*"
+        },
+        {
+            "name": "dist",
+            "regex": ".*dist.*"
+        },
+        {
+            "name": "host",
+            "regex": ".*host.*"
+        }
+    ]
+}

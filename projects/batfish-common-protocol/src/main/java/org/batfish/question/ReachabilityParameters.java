@@ -1,12 +1,18 @@
 package org.batfish.question;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -34,7 +40,7 @@ public final class ReachabilityParameters {
 
     private @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier = null;
 
-    private @Nullable HeaderSpace _headerSpace;
+    private @Nullable AclLineMatchExpr _headerSpace;
 
     private int _maxChunkSize;
 
@@ -89,7 +95,7 @@ public final class ReachabilityParameters {
     }
 
     public Builder setHeaderSpace(@Nonnull HeaderSpace headerSpace) {
-      _headerSpace = headerSpace;
+      _headerSpace = new MatchHeaderSpace(headerSpace);
       return this;
     }
 
@@ -127,7 +133,7 @@ public final class ReachabilityParameters {
 
   private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
 
-  private final HeaderSpace _headerSpace;
+  private final AclLineMatchExpr _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -181,7 +187,7 @@ public final class ReachabilityParameters {
     return _forbiddenTransitNodesSpecifier;
   }
 
-  public HeaderSpace getHeaderSpace() {
+  public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
   }
 
@@ -212,5 +218,22 @@ public final class ReachabilityParameters {
 
   public boolean getUseCompression() {
     return _useCompression;
+  }
+
+  /**
+   * Filter a set of dispositions only to the ones reachability questions support.
+   *
+   * @throws IllegalArgumentException if the set of supported dispositions is empty.
+   */
+  @Nonnull
+  public static Set<FlowDisposition> filterDispositions(Set<FlowDisposition> dispositions) {
+    checkArgument(!dispositions.isEmpty(), "Invalid empty set of actions specified");
+    Set<FlowDisposition> result =
+        dispositions
+            .stream()
+            .filter(disposition -> FlowDisposition.LOOP != disposition)
+            .collect(Collectors.toSet());
+    checkArgument(!result.isEmpty(), "Unsupported set of actions specified: %s", dispositions);
+    return result;
   }
 }

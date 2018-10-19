@@ -1,11 +1,10 @@
 package org.batfish.dataplane.rib;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
@@ -79,18 +78,12 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
           break;
 
         case FIRST_AS:
-          SortedSet<Long> lhsFirstAsSet =
-              lhsAsPath.getAsSets().isEmpty()
-                  ? Collections.emptySortedSet()
-                  : lhsAsPath.getAsSets().get(0);
-          SortedSet<Long> rhsFirstAsSet =
-              rhsAsPath.getAsSets().isEmpty()
-                  ? Collections.emptySortedSet()
-                  : rhsAsPath.getAsSets().get(0);
-          SortedSet<Long> bestFirstAsSet =
-              bestAsPath.getAsSets().isEmpty()
-                  ? Collections.emptySortedSet()
-                  : bestAsPath.getAsSets().get(0);
+          AsSet lhsFirstAsSet =
+              lhsAsPath.getAsSets().isEmpty() ? AsSet.empty() : lhsAsPath.getAsSets().get(0);
+          AsSet rhsFirstAsSet =
+              rhsAsPath.getAsSets().isEmpty() ? AsSet.empty() : rhsAsPath.getAsSets().get(0);
+          AsSet bestFirstAsSet =
+              bestAsPath.getAsSets().isEmpty() ? AsSet.empty() : bestAsPath.getAsSets().get(0);
 
           if (bestFirstAsSet.equals(lhsFirstAsSet)) {
             if (!bestFirstAsSet.equals(rhsFirstAsSet)) {

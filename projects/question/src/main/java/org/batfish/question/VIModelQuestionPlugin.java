@@ -25,7 +25,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -40,6 +40,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
@@ -53,6 +54,7 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -217,8 +219,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     public VIModelAnswerElement answer() {
       SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
       Topology topology = _batfish.getEnvironmentTopology();
-      Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configs, true);
-      CommonUtil.initRemoteOspfNeighbors(configs, ipOwners, topology);
+      Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
+      OspfTopologyUtils.initRemoteOspfNeighbors(configs, topology);
       _batfish.initRemoteRipNeighbors(configs, ipOwners, topology);
 
       return new VIModelAnswerElement(
@@ -236,7 +238,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
         Map<String, Configuration> configs, Map<Ip, Set<String>> ipOwners) {
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-          CommonUtil.initBgpTopology(configs, ipOwners, false, false, null, null);
+          BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, null);
       SortedSet<VerboseBgpEdge> bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
       for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
         BgpPeerConfigId bgpPeerConfigId = session.source();

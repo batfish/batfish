@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
@@ -17,6 +18,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -177,13 +179,11 @@ class CounterExample {
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<SortedSet<Long>> asSets = new ArrayList<>();
+          ImmutableList.Builder<AsSet> b = ImmutableList.builder();
           for (int i = 0; i < pathLength; i++) {
-            SortedSet<Long> asSet = new TreeSet<>();
-            asSet.add(-1L);
-            asSets.add(asSet);
+            b.add(AsSet.of(-1L));
           }
-          AsPath path = new AsPath(asSets);
+          AsPath path = AsPath.of(b.build());
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
@@ -434,7 +434,7 @@ class CounterExample {
         SortedSet<Edge> failedLinks = buildFailedLinks(encoder);
         SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(encoder);
         Environment baseEnv =
-            new Environment("BASE", testrigName, failedLinks, null, null, null, null, envRoutes);
+            new Environment(testrigName, failedLinks, null, null, null, null, envRoutes);
         flowHistory.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
       }
     }
@@ -468,11 +468,16 @@ class CounterExample {
         SortedSet<BgpAdvertisement> envRoutesDiff = buildEnvRoutingTable(encoder);
         SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(encoder2);
         Environment baseEnv =
-            new Environment(
-                "BASE", testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
+            new Environment(testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
         Environment failedEnv =
             new Environment(
-                "DELTA", testRigName, failedLinksDiff, null, null, null, null, envRoutesDiff);
+                testRigName + "-with-delta",
+                failedLinksDiff,
+                null,
+                null,
+                null,
+                null,
+                envRoutesDiff);
         flowHistory.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
         flowHistory.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
       }

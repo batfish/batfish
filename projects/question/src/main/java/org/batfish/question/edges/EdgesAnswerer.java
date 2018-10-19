@@ -18,7 +18,7 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -35,6 +35,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
@@ -44,6 +45,7 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -98,11 +100,11 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       EdgeType edgeType) {
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     switch (edgeType) {
       case BGP:
         ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         Network<EigrpInterface, EigrpEdge> eigrpTopology =
@@ -260,8 +262,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       Topology topology) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+    OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
     for (Configuration c : configurations.values()) {
       String hostname = c.getHostname();
       for (Vrf vrf : c.getVrfs().values()) {

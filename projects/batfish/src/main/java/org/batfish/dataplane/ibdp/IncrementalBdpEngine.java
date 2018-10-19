@@ -1,10 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
-import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
-import static org.batfish.common.util.CommonUtil.initBgpTopology;
+import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
+import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedSet;
@@ -606,20 +606,6 @@ class IncrementalBdpEngine {
 
       compareToPreviousIteration(nodes, dependentRoutesChanged, checkFixedPointCompleted);
     } while (!areQueuesEmpty(nodes) || dependentRoutesChanged.get());
-
-    // After convergence, compute BGP advertisements sent to the outside of the network
-    AtomicInteger computeBgpAdvertisementsToOutsideCompleted =
-        _newBatch.apply("Compute BGP advertisements sent to outside", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.computeBgpAdvertisementsToOutside(dp.getIpOwners());
-              }
-              computeBgpAdvertisementsToOutsideCompleted.incrementAndGet();
-            });
 
     ae.setDependentRoutesIterations(_numIterations);
     return false; // No oscillations

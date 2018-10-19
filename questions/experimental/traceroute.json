@@ -3,6 +3,7 @@
   "differential": false,
   "headers": "${headers}",
   "ignoreAcls": "${ignoreAcls}",
+  "maxTraces": "${maxTraces}",
   "startLocation": "${startLocation}",
   "instance": {
     "description": "Trace the path(s) for the specified flow.",
@@ -18,6 +19,11 @@
         "description": "If set to True, ACLs encountered along the path are ignored",
         "optional": true,
         "type": "boolean"
+      },
+      "maxTraces": {
+        "description": "Limit the number of traces returned",
+        "optional": true,
+        "type": "integer"
       },
       "headers": {
         "description": "Packet header constraints",

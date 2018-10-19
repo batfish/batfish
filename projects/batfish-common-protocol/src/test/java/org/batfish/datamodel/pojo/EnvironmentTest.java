@@ -53,13 +53,12 @@ public class EnvironmentTest {
             20,
             20,
             new Ip("0.0.0.0"),
-            new AsPath(Lists.newArrayList()),
+            AsPath.of(Lists.newArrayList()),
             ImmutableSortedSet.of(),
             ImmutableSortedSet.of(),
             10));
     Environment e =
         new Environment(
-            "environment",
             "testrig",
             Sets.newTreeSet(),
             Sets.newTreeSet(),
@@ -67,7 +66,6 @@ public class EnvironmentTest {
             bgpTables,
             routingTables,
             bgpAdvertisements);
-    assertThat(e.getEnvName(), equalTo("environment"));
     assertThat(e.getTestrigName(), equalTo("testrig"));
     assertThat(e.getEdgeBlacklist(), equalTo(Sets.newHashSet()));
     assertThat(e.getInterfaceBlacklist(), equalTo(Sets.newHashSet()));
@@ -81,7 +79,6 @@ public class EnvironmentTest {
   public void testToString() {
     Environment e =
         new Environment(
-            "environment",
             "testrig",
             Sets.newTreeSet(),
             Sets.newTreeSet(),
@@ -92,7 +89,7 @@ public class EnvironmentTest {
     assertThat(
         e.toString(),
         equalTo(
-            "Environment{envName=environment, testrigName=testrig, "
+            "Environment{testrigName=testrig, "
                 + "edgeBlacklist=[], interfaceBlacklist=[], "
                 + "nodeBlacklist=[], bgpTables={}, routingTables={}, "
                 + "externalBgpAnnouncements=[]}"));

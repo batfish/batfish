@@ -283,7 +283,11 @@
             20,
             21,
             22,
-            23
+            23,
+            24,
+            25,
+            26,
+            27
           ]
         }
       },
@@ -293,8 +297,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            30,
-            31
+            34,
+            35
           ]
         }
       },
@@ -304,7 +308,7 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            26
+            30
           ]
         }
       },
@@ -314,7 +318,7 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            28
+            32
           ]
         }
       },
@@ -324,9 +328,9 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            57,
-            58,
-            59
+            61,
+            62,
+            63
           ]
         }
       },
@@ -336,8 +340,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            33,
-            34
+            37,
+            38
           ]
         }
       },
@@ -347,8 +351,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
           "lines" : [
-            36,
-            37
+            40,
+            41
           ]
         }
       },
@@ -368,10 +372,10 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            32,
             33,
             34,
-            35
+            35,
+            36
           ]
         }
       },

@@ -2,7 +2,6 @@ package org.batfish.dataplane.ibdp;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.stream.Stream;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.ITracerouteEngine;
 import org.batfish.common.plugin.Plugin;
@@ -22,6 +20,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.dataplane.TracerouteEngineImpl;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
@@ -78,21 +77,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public Set<BgpAdvertisement> getAdvertisements() {
-    IncrementalDataPlane dp = loadDataPlane();
-    return dp.getNodes()
-        .values()
-        .stream()
-        .flatMap(n -> n.getVirtualRouters().values().stream())
-        .flatMap(
-            virtualRouter ->
-                Stream.concat(
-                    virtualRouter.getSentBgpAdvertisements().stream(),
-                    virtualRouter.getReceivedBgpAdvertisements().stream()))
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @Override
   public ITracerouteEngine getTracerouteEngine() {
     return TracerouteEngineImpl.getInstance();
   }
@@ -132,6 +116,21 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         (IncrementalDataPlane) dataPlane,
         TracerouteEngineImpl.getInstance()
             .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
+  }
+
+  /**
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   *
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param dataPlane {@link DataPlane} for this network snapshot
+   * @param ignoreAcls if true, will ignore ACLs
+   * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
+   */
+  @Override
+  public SortedMap<Flow, List<Trace>> buildFlows(
+      Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
+    return TracerouteEngineImpl.getInstance()
+        .buildFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls);
   }
 
   private IncrementalDataPlane loadDataPlane() {

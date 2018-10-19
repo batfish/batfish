@@ -1,87 +1,111 @@
 package org.batfish.role;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.role.NodeRoleDimension.Type;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Class that captures the node roles */
+@ParametersAreNonnullByDefault
 public class NodeRolesData {
 
+  public static final class Builder {
+    private String _defaultDimension;
+    private SortedSet<NodeRoleDimension> _roleDimensions;
+
+    private Builder() {
+      _roleDimensions = ImmutableSortedSet.of();
+    }
+
+    public @Nonnull NodeRolesData build() {
+      return new NodeRolesData(_defaultDimension, _roleDimensions);
+    }
+
+    public @Nonnull Builder setDefaultDimension(String defaultDimension) {
+      _defaultDimension = defaultDimension;
+      return this;
+    }
+
+    public @Nonnull Builder setRoleDimensions(SortedSet<NodeRoleDimension> roleDimensions) {
+      _roleDimensions = ImmutableSortedSet.copyOf(roleDimensions);
+      return this;
+    }
+  }
+
   private static final String PROP_DEFAULT_DIMENSION = "defaultDimension";
-  private static final String PROP_LAST_MODIFIED_TIME = "lastModifiedTime";
   private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
 
-  @Nullable private String _defaultDimension;
+  private String _defaultDimension;
 
-  @Nullable private Instant _lastModifiedTime;
+  private SortedSet<NodeRoleDimension> _roleDimensions;
 
-  @Nonnull private SortedSet<NodeRoleDimension> _roleDimensions;
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
+
+  private NodeRolesData(
+      @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
+    checkNotNull(roleDimensions);
+    _defaultDimension = defaultDimension;
+    _roleDimensions = roleDimensions;
+  }
 
   @JsonCreator
-  public NodeRolesData(
-      @JsonProperty(PROP_DEFAULT_DIMENSION) String defaultDimension,
-      @JsonProperty(PROP_LAST_MODIFIED_TIME) Instant lastModifiedTime,
-      @JsonProperty(PROP_ROLE_DIMENSIONS) SortedSet<NodeRoleDimension> roleDimensions) {
-    _defaultDimension = defaultDimension;
-    _lastModifiedTime = lastModifiedTime;
-    _roleDimensions = roleDimensions == null ? new TreeSet<>() : roleDimensions;
+  private static @Nonnull NodeRolesData create(
+      @JsonProperty(PROP_DEFAULT_DIMENSION) @Nullable String defaultDimension,
+      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable Set<NodeRoleDimension> roleDimensions) {
+    return new NodeRolesData(
+        defaultDimension,
+        ImmutableSortedSet.copyOf(firstNonNull(roleDimensions, ImmutableSortedSet.of())));
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof NodeRolesData)) {
       return false;
     }
     return Objects.equals(_defaultDimension, ((NodeRolesData) o)._defaultDimension)
-        && Objects.equals(_lastModifiedTime, ((NodeRolesData) o)._lastModifiedTime)
         && Objects.equals(_roleDimensions, ((NodeRolesData) o)._roleDimensions);
   }
 
   @JsonProperty(PROP_DEFAULT_DIMENSION)
-  public String getDefaultDimension() {
+  public @Nullable String getDefaultDimension() {
     return _defaultDimension;
-  }
-
-  @JsonProperty(PROP_LAST_MODIFIED_TIME)
-  public Instant getLastModifiedTime() {
-    return _lastModifiedTime;
-  }
-
-  /** Returns the specified dimension in this NodeRolesData object */
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
-    return _roleDimensions.stream().filter(d -> d.getName().equals(dimension)).findFirst();
   }
 
   /**
    * Get the {@link NodeRoleDimension} object for the specified dimension. If dimension is null,
-   * returns {@link #getNodeRoleDimension(Supplier)}.
+   * returns {@link #getNodeRoleDimension()}.
    *
-   * @param read Supplier of the full role data
    * @param dimension The name of the dimension to fetch
    * @return The {@link NodeRoleDimension} object if one exists or throws {@link
    *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
-  public static Optional<NodeRoleDimension> getNodeRoleDimension(
-      Supplier<NodeRolesData> read, String dimension) throws IOException {
+  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension)
+      throws IOException {
     if (dimension == null) {
-      return getNodeRoleDimension(read);
+      return getNodeRoleDimension();
     }
-    NodeRolesData data = read.get();
-    return data.getNodeRoleDimension(dimension);
+    return _roleDimensions
+        .stream()
+        .filter(d -> d.getName().equalsIgnoreCase(dimension))
+        .findFirst();
   }
 
   /**
@@ -89,87 +113,43 @@ public class NodeRolesData {
    * default dimension if set and exists, the auto-inferred primary dimension if it exists, the
    * dimension that is lexicographically first, and null if no dimensions exist.
    *
-   * @param read Supplier of the full role data
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
   @Nullable
-  private static Optional<NodeRoleDimension> getNodeRoleDimension(Supplier<NodeRolesData> read)
-      throws IOException {
-    NodeRolesData data = read.get();
+  private Optional<NodeRoleDimension> getNodeRoleDimension() throws IOException {
     // check default
-    if (data.getDefaultDimension() != null) {
-      Optional<NodeRoleDimension> opt = data.getNodeRoleDimension(data.getDefaultDimension());
+    if (getDefaultDimension() != null) {
+      Optional<NodeRoleDimension> opt = getNodeRoleDimension(getDefaultDimension());
       if (opt.isPresent()) {
         return opt;
       }
     }
     // check auto primary
     Optional<NodeRoleDimension> optAuto =
-        data.getNodeRoleDimension(NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
+        getNodeRoleDimension(NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
     if (optAuto.isPresent()) {
       return optAuto;
     }
     // check first
-    return data.getNodeRoleDimensions()
-        .stream()
-        .min(Comparator.comparing(NodeRoleDimension::getName));
+    return getNodeRoleDimensions().stream().min(Comparator.comparing(NodeRoleDimension::getName));
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)
-  public SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
+  public @Nonnull SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
     return _roleDimensions;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_defaultDimension, _lastModifiedTime, _roleDimensions);
+    return Objects.hash(_defaultDimension, _roleDimensions);
   }
 
-  /**
-   * Merge the dimensions in current file with new data. If the same dimension is present in both
-   * data sources, the new data wins. If defaultDimension is non-null, it is deemed as the default
-   * dimension. Optionally, delete all dimensions of type AUTO before adding new data.
-   *
-   * @param read Supplier of the old data
-   * @param write Writer of the new data
-   * @param newDimensions The new role data. Null values are treated as if the map were empty.
-   * @param defaultDimension Dimension to deem as default after merger
-   * @param deleteAutoFirst If dimensions of type AUTO should be deleted first
-   */
-  public static synchronized void mergeNodeRoleDimensions(
-      Supplier<NodeRolesData> read,
-      Consumer<NodeRolesData> write,
-      SortedSet<NodeRoleDimension> newDimensions,
-      String defaultDimension,
-      boolean deleteAutoFirst)
-      throws IOException {
-
-    NodeRolesData oldRolesData = read.get();
-
-    final SortedSet<NodeRoleDimension> finalNewDimensions =
-        newDimensions == null ? new TreeSet<>() : newDimensions;
-
-    // add the old role dimensions that are not in common with new dimensions
-    SortedSet<NodeRoleDimension> newRoles =
-        new TreeSet<>(
-            oldRolesData
-                ._roleDimensions
-                .stream()
-                .filter(d -> !finalNewDimensions.contains(d))
-                .collect(Collectors.toSet()));
-
-    // delete the auto dimensions if needed
-    if (deleteAutoFirst) {
-      newRoles.removeIf(d -> d.getType() == Type.AUTO);
-    }
-
-    // add the new dimensions
-    newRoles.addAll(finalNewDimensions);
-
-    write.accept(
-        new NodeRolesData(
-            defaultDimension == null ? oldRolesData.getDefaultDimension() : defaultDimension,
-            new Date().toInstant(),
-            newRoles));
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_DEFAULT_DIMENSION, _defaultDimension)
+        .add(PROP_ROLE_DIMENSIONS, _roleDimensions)
+        .toString();
   }
 }

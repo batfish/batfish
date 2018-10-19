@@ -1,6 +1,10 @@
 package org.batfish.coordinator;
 
+import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
+import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -21,17 +25,21 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -42,6 +50,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -52,11 +62,13 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.coordinator.resources.ForkSnapshotBean;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -66,6 +78,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
@@ -82,7 +95,12 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,7 +108,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkMgr}. */
-public class WorkMgrTest {
+public final class WorkMgrTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -110,28 +128,148 @@ public class WorkMgrTest {
     _storage = _manager.getStorage();
   }
 
-  private void createTestrigWithMetadata(String container, String testrig) throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(container);
+  private void createSnapshotWithMetadata(String network, String snapshot) throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
-    _idManager.assignSnapshot(testrig, networkId, snapshotId);
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), networkId, snapshotId);
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+    SnapshotMetadataMgr.writeMetadata(
+        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
   }
 
   @Test
-  public void initContainerWithContainerName() {
+  public void testAddToSerializedList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(
+        serializedListPath,
+        ImmutableList.of(additionalInterface),
+        new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm the additional and original interfaces show up in the merged list
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface, additionalInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm original interface shows up in the merged list, even if there are no additions
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNullAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    addToSerializedList(serializedListPath, null, new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm original interface shows up in the merged list, even if addition is null
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(baseInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    NodeInterfacePair additionalInterface = new NodeInterfacePair("n2", "iface2");
+
+    addToSerializedList(
+        serializedListPath,
+        ImmutableList.of(additionalInterface),
+        new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm the additional interface shows up in the serialized list, even if the serialized list
+    // didn't exist in the first place
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        containsInAnyOrder(additionalInterface));
+  }
+
+  @Test
+  public void testAddToSerializedListNoListNoAddition() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    serializedList.delete();
+
+    addToSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm no file was created (since there was no list to begin with and nothing was added)
+    MatcherAssert.assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
+  }
+
+  @Test
+  public void initNetworkWithContainerName() {
     String initResult = _manager.initNetwork("container", null);
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
-  public void initContainerWithContainerPrefix() {
+  public void initNetworkWithContainerPrefix() {
     String initResult = _manager.initNetwork(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
-  public void initContainerWithNullInput() {
+  public void initNetworkWithNullInput() {
     String initResult = _manager.initNetwork(null, null);
     assertThat(initResult, startsWith("null_"));
   }
@@ -178,8 +316,7 @@ public class WorkMgrTest {
 
   @Test
   public void listQuestionWithNonExistContainer() {
-    _thrown.expect(IllegalArgumentException.class);
-    _manager.listQuestions("container", false);
+    assertThat(_manager.listQuestions("container", false), nullValue());
   }
 
   @Test
@@ -210,11 +347,11 @@ public class WorkMgrTest {
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.empty()));
 
     // create testrig1, which should be returned
-    createTestrigWithMetadata("container", "testrig1");
+    createSnapshotWithMetadata("container", "testrig1");
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig1")));
 
     // create a second testrig, which should be returned
-    createTestrigWithMetadata("container", "testrig2");
+    createSnapshotWithMetadata("container", "testrig2");
     assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig2")));
   }
 
@@ -223,7 +360,7 @@ public class WorkMgrTest {
     _manager.initNetwork("container", null);
 
     // create a testrig and write a topology object for it
-    createTestrigWithMetadata("container", "testrig1");
+    createSnapshotWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
     CommonUtil.writeFile(
@@ -317,7 +454,7 @@ public class WorkMgrTest {
     assertFalse(_idManager.hasQuestionId("question1", networkId, analysisId));
     assertFalse(_idManager.hasQuestionId("question2", networkId, analysisId));
     assertTrue(_idManager.hasQuestionId("question3", networkId, analysisId));
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Question 'question1' does not exist for analysis 'analysis'"));
     questionsToDelete = ImmutableList.of("question1");
     _manager.configureAnalysis(
@@ -362,6 +499,172 @@ public class WorkMgrTest {
   }
 
   @Test
+  public void testForkSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+  }
+
+  @Test
+  public void testForkSnapshotBlacklists() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
+    List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
+    List<String> nodes = ImmutableList.of("n4", "n5");
+
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes, null));
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    // Confirm the blacklists are correct
+    assertThat(
+        _storage.loadInterfaceBlacklist(networkId, snapshotId),
+        containsInAnyOrder(interfaces.toArray()));
+    assertThat(
+        _storage.loadEdgeBlacklist(networkId, snapshotId), containsInAnyOrder(links.toArray()));
+    assertThat(
+        _storage.loadNodeBlacklist(networkId, snapshotId), containsInAnyOrder(nodes.toArray()));
+  }
+
+  @Test
+  public void testForkSnapshotDuplicateName() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+    uploadTestSnapshot(networkName, snapshotNewName);
+
+    // Fork should fail due to duplicate/conflicting new snapshot name
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotFileUpload() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    String fileName = "file.type";
+    String fileContents = "new";
+
+    _manager.initNetwork(networkName, null);
+    uploadTestSnapshot(networkName, snapshotBaseName);
+
+    // Create zip with a new file to add to the forked snapshot
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContents);
+
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+
+    // Confirm the new file exists in the forked snapshot, with the right contents
+    String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
+    assertThat(readFileContents, equalTo(fileContents));
+  }
+
+  @Test
+  public void testForkSnapshotFileUploadOverwrite() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+    String fileName = "file.type";
+    String fileContents = "contents";
+    String fileContentsNew = "new";
+
+    _manager.initNetwork(networkName, null);
+    // Create base snapshot with a file: fileName, containing: fileContents
+    uploadTestSnapshot(networkName, snapshotBaseName, fileName, fileContents);
+
+    // Create zip with a file to overwrite the original file in the forked snapshot
+    byte[] zipFile = createSnapshotZip(snapshotNewName, fileName, fileContentsNew);
+
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+
+    // Confirm the file was overwritten with the new contents
+    String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
+    assertThat(readFileContents, equalTo(fileContentsNew));
+  }
+
+  private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
+      throws IOException {
+    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    return FileUtils.readFileToByteArray(zipPath.toFile());
+  }
+
+  private String readSnapshotConfig(String network, String snapshot, String fileName)
+      throws IOException {
+    StringWriter writer = new StringWriter();
+    InputStream inputStream =
+        _manager.getSnapshotInputObject(
+            network, snapshot, Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString());
+    assertThat(inputStream, not(nullValue()));
+    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
+    return writer.toString();
+  }
+
+  @Test
+  public void testForkSnapshotMissingBaseSnapshot() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    _manager.initNetwork(networkName, null);
+
+    // Fork should fail because base snapshot does not exist
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+  }
+
+  @Test
+  public void testForkSnapshotMissingNetwork() throws IOException {
+    String networkName = "network";
+    String snapshotBaseName = "snapshotBase";
+    String snapshotNewName = "snapshotNew";
+
+    // Fork should fail because network does not exist
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+  }
+
+  @Test
   public void testGetAnswerAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
@@ -388,17 +691,27 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     AnswerId baseAnswerId2 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -466,17 +779,27 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId1, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     AnswerId baseAnswerId2 =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId2, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -496,31 +819,13 @@ public class WorkMgrTest {
 
     Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of());
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
     Map<String, String> answers2 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of(question1Name));
+            containerName, testrigName, null, analysisName, ImmutableSet.of(question1Name));
     Map<String, String> answers3 =
         _manager.getAnalysisAnswers(
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            analysisName,
-            ImmutableSet.of());
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
 
     assertThat(answers1.keySet(), containsInAnyOrder(question1Name, question2Name));
     assertThat(answers2.keySet(), containsInAnyOrder(question1Name));
@@ -541,14 +846,7 @@ public class WorkMgrTest {
 
     WorkItem analysisWorkItem =
         WorkItemBuilder.getWorkItemRunAnalysis(
-            "useranalysis",
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            false,
-            false);
+            "useranalysis", containerName, testrigName, null, false, false);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 
@@ -586,11 +884,15 @@ public class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     String answerStr = BatfishObjectMapper.writeString(answer);
@@ -647,11 +949,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, analysisId);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -702,11 +1008,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -733,11 +1043,15 @@ public class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -771,7 +1085,13 @@ public class WorkMgrTest {
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
     AnswerMetadata answerMetadata =
@@ -801,14 +1121,7 @@ public class WorkMgrTest {
 
     WorkItem analysisWorkItem =
         WorkItemBuilder.getWorkItemRunAnalysis(
-            "suggestedanalysis",
-            containerName,
-            testrigName,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-            null,
-            null,
-            false,
-            false);
+            "suggestedanalysis", containerName, testrigName, null, false, false);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 
@@ -835,6 +1148,7 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectInput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -842,8 +1156,8 @@ public class WorkMgrTest {
 
     _manager.initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, fileName);
-    // We know the config file will be written under 'testrig/configs/' in the snapshot zip
-    Path object = _manager.getTestrigObject(network, snapshot, "testrig/configs/" + fileName);
+    // We know the config file will be written under 'configs/' in the snapshot zip
+    Path object = _manager.getTestrigObject(network, snapshot, "configs/" + fileName);
 
     // Confirm object is found in the input directory
     assertThat(object, is(not(nullValue())));
@@ -851,13 +1165,14 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectOutput() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String fileName = BfConsts.RELPATH_METADATA_FILE;
 
     _manager.initNetwork(network, null);
-    createTestrigWithMetadata(network, snapshot);
+    createSnapshotWithMetadata(network, snapshot);
     Path object = _manager.getTestrigObject(network, snapshot, fileName);
 
     // Confirm metadata file is found (lives in the output directory)
@@ -866,13 +1181,14 @@ public class WorkMgrTest {
   }
 
   @Test
+  @Deprecated
   public void testGetObjectMissing() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String fileName = "missing.file";
 
     _manager.initNetwork(network, null);
-    createTestrigWithMetadata(network, snapshot);
+    createSnapshotWithMetadata(network, snapshot);
     Path object = _manager.getTestrigObject(network, snapshot, fileName);
 
     // Confirm the bogus file is not found
@@ -1375,11 +1691,15 @@ public class WorkMgrTest {
     String questionContent = BatfishObjectMapper.writeString(testQuestion);
     _storage.storeQuestion(questionContent, networkId, questionId, analysisId);
     _idManager.assignQuestion(question, networkId, questionId, null);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId(question);
-    _idManager.assignQuestionSettingsId(testQuestion.getName(), networkId, questionSettingsId);
     AnswerId answerId =
         _idManager.getBaseAnswerId(
-            networkId, snapshotId, questionId, questionSettingsId, null, null);
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
     _storage.storeAnswer(BatfishObjectMapper.writeString(oldAnswer), answerId);
     _storage.storeAnswerMetadata(oldAnswerMetadata, answerId);
     Map<String, MajorIssueConfig> majorIssueConfigs =
@@ -1521,9 +1841,7 @@ public class WorkMgrTest {
     _manager.initNetwork(network, null);
 
     // should not be able to delete non-existent snapshot
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(containsString(snapshot));
-    _manager.delSnapshot(network, snapshot);
+    assertFalse(_manager.delSnapshot(network, snapshot));
   }
 
   @Test
@@ -1629,25 +1947,17 @@ public class WorkMgrTest {
   }
 
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    uploadTestSnapshot(network, snapshot, "c1");
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)
       throws IOException {
-    Path tmpSnapshotSrcDir = _folder.getRoot().toPath().resolve(snapshot);
-    // intentional duplication of snapshot to provide subdir
-    Path tmpSnapshotConfig =
-        tmpSnapshotSrcDir
-            .resolve(snapshot)
-            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
-            .resolve(fileName);
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
-    tmpSnapshotConfig.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(tmpSnapshotConfig, "content");
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      _manager.uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, _folder);
+  }
+
+  private void uploadTestSnapshot(String network, String snapshot, String fileName, String content)
+      throws IOException {
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, content, _folder);
   }
 
   @Test
@@ -1730,5 +2040,87 @@ public class WorkMgrTest {
 
     assertThat(workDetails.baseTestrig, equalTo(snapshot));
     assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+  }
+
+  @Test
+  public void testGetAnswerNotFoundAfterNodeRolesUpdate() throws IOException {
+    String networkName = "network1";
+    String snapshotName = "snapshot1";
+    Question question = new TestQuestion();
+    String questionContent = BatfishObjectMapper.writeString(question);
+    String questionName = "question2Name";
+    _manager.initNetwork(networkName, null);
+    _manager.uploadQuestion(networkName, questionName, questionContent, false);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    AnswerId baseAnswerId =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
+    Answer answer = new Answer();
+    answer.setStatus(AnswerStatus.SUCCESS);
+    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    AnswerMetadata answerMetadata =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    String answerStr = BatfishObjectMapper.writeString(answer);
+    _storage.storeAnswer(answerStr, baseAnswerId);
+    Answer answerBeforeUpdate =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                Answer.class);
+
+    // answer should be found at first
+    assertThat(answerBeforeUpdate.getStatus(), equalTo(AnswerStatus.SUCCESS));
+
+    boolean updated =
+        _manager.putNetworkNodeRoles(
+            NodeRolesData.builder()
+                .setRoleDimensions(
+                    ImmutableSortedSet.of(NodeRoleDimension.builder().setName("foo").build()))
+                .build(),
+            networkName);
+
+    // updating node roles should succeed
+    assertTrue(updated);
+
+    Answer answerAfterUpdate =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                Answer.class);
+
+    // answer should no longer be available since node roles input id changed
+    assertThat(answerAfterUpdate.getStatus(), equalTo(AnswerStatus.NOTFOUND));
+  }
+
+  @Test
+  public void testListSnapshotsWithMetadataMissingNetwork() throws IOException {
+    String network = "network1";
+
+    assertThat(Main.getWorkMgr().listSnapshotsWithMetadata(network), nullValue());
+  }
+
+  @Test
+  public void testListSnapshotsWithMetadataSuccess() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
+
+    assertThat(
+        Main.getWorkMgr().listSnapshotsWithMetadata(network),
+        equalTo(
+            ImmutableList.of(
+                new SnapshotMetadataEntry(
+                    snapshot, Main.getWorkMgr().getSnapshotMetadata(network, snapshot)))));
   }
 }

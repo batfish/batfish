@@ -98,7 +98,7 @@ public class SpecifiersReachabilityTest {
                 PathConstraintsInput.builder()
                     .setStartLocation(String.format("%s[%s]", NODE1, LOOPBACK))
                     .build())
-            .setActions(ImmutableSortedSet.of(FlowDisposition.NO_ROUTE))
+            .setActions(new DispositionSpecifier(ImmutableSortedSet.of(FlowDisposition.NO_ROUTE)))
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(TableAnswerElement.class));

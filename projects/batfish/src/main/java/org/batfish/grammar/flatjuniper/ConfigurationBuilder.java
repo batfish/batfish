@@ -85,6 +85,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -1398,7 +1399,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
       return IcmpCode.SOURCE_ROUTE_FAILED;
     } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
-      return IcmpCode.TTL_EQ_ZERO_DURING_REASSEMBLY;
+      return IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
       return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {
@@ -1512,10 +1513,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
-  }
-
-  private static long toLong(TerminalNode node) {
-    return toLong(node.getSymbol());
   }
 
   private static long toLong(Token token) {
@@ -1856,7 +1853,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
+        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication());
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }
@@ -5205,22 +5202,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return proposals;
   }
 
-  private SortedSet<Long> toAsSet(As_unitContext ctx) {
+  private AsSet toAsSet(As_unitContext ctx) {
     if (ctx.bgp_asn() != null) {
-      return ImmutableSortedSet.of(toAsNum(ctx.bgp_asn()));
+      return AsSet.of(toAsNum(ctx.bgp_asn()));
     } else {
-      return ctx.as_set()
-          .items
-          .stream()
-          .map(this::toAsNum)
-          .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+      return AsSet.of(
+          ctx.as_set()
+              .items
+              .stream()
+              .map(this::toAsNum)
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     }
   }
 
   private AsPath toAsPath(As_path_exprContext path) {
-    List<SortedSet<Long>> asPath =
+    List<AsSet> asPath =
         path.items.stream().map(this::toAsSet).collect(ImmutableList.toImmutableList());
-    return new AsPath(asPath);
+    return AsPath.of(asPath);
   }
 
   private long toCommunityLong(Ec_literalContext ctx) {

@@ -23,7 +23,7 @@ test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 # Everything below here is to be converted into regular unit tests in some form.
 test tests/basic/filterLineReachability.ref get filterLineReachability
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
-test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*", includeEstablishedCount=true
+test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew nodes="as2.*", remoteNodes="as3.*"
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
@@ -40,7 +40,6 @@ test tests/basic/multipath-host1.ref get reachability type="multipath", ingressN
 test tests/basic/multipath-host2.ref get reachability type="multipath", ingressNodeRegex="host2", srcIps=["2.128.0.0"], dstIps=["1.0.1.1"], ipProtocols=["UDP"], srcPorts=[0], dstPorts=[0]
 test tests/basic/bgpAsnUse.ref get bgpasnuse minCount=2
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
-test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/outliers3.ref get outliers hypothesis="sameServers"
@@ -48,12 +47,6 @@ test tests/basic/outliers-verbose.ref get outliers verbose=True
 
 # takes toooo long. need to constrain to be useful.
 # test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
-
-# init-environment
-test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
-test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
-# failure case with non-existent interface -- but the stack trace returned in the answer is bad mojo the test
-#test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
 
 # disable-as-reuse
 init-snapshot tests/basic/networks/dc-as-reuse basic-dc-as-reuse
@@ -67,8 +60,10 @@ test tests/basic/example-iptables-protection.ref get reachability notIngressNode
 
 # z3 timeout - 1 millisecond
 add-batfish-option z3timeout 1
+add-batfish-option debugflags useNodReachability
 init-snapshot tests/basic/networks/fattree2
 test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
+add-batfish-option debugflags ""
 
 # data-plane related diff tests
 test -compareall tests/basic/init-with-ba.ref init-snapshot networks/example/live-with-bgp-announcements example-with-ba

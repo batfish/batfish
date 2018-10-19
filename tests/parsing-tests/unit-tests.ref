@@ -6749,9 +6749,9 @@
             "            VARIABLE:'blah'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_security_level",
             "          SECURITY_LEVEL:'security-level'  <== mode:DEFAULT_MODE",
-            "          DEC:'0'  <== mode:DEFAULT_MODE",
+            "          level = DEC:'0'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_router_ospf",
@@ -8013,7 +8013,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'123'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'123'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_ipv6_access_list_tail",
             "        ala = (access_list_action",
@@ -8038,7 +8038,7 @@
             "        (extended_access_list_additional_feature",
             "          ND_TYPE:'nd-type'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'133'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'133'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_ipv6_access_list_tail",
             "        ala = (access_list_action",
@@ -13292,6 +13292,46 @@
             "            MICROSOFT_DS:'microsoft-ds'  <== mode:DEFAULT_MODE)",
             "          (port",
             "            DEC:'5432'  <== mode:DEFAULT_MODE))",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_access_list_tail",
+            "        num = DEC:'280'  <== mode:DEFAULT_MODE",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        prot = (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          icmp_message_type = DEC:'5'  <== mode:DEFAULT_MODE",
+            "          icmp_message_code = DEC:'2'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_access_list_tail",
+            "        num = DEC:'290'  <== mode:DEFAULT_MODE",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        prot = (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          TIME_EXCEEDED:'time-exceeded'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_access_list_tail",
+            "        num = DEC:'300'  <== mode:DEFAULT_MODE",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        prot = (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          TTL_EXCEEDED:'ttl-exceeded'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (extended_access_list_stanza",
@@ -13806,6 +13846,15 @@
             "            SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
             "            secs = DEC:'5'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
+            "          (null_bgp_tail",
+            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "            BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "            MED:'med'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
@@ -23052,9 +23101,9 @@
             "            INSIDE:'inside'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_security_level",
             "          SECURITY_LEVEL:'security-level'  <== mode:DEFAULT_MODE",
-            "          DEC:'100'  <== mode:DEFAULT_MODE",
+            "          level = DEC:'100'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_inner",
             "        (if_ip_address",
@@ -24573,7 +24622,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'141'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'141'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_ipv6_access_list_tail",
             "        ala = (access_list_action",
@@ -24585,7 +24634,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'142'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'142'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_ipv6_access_list_tail",
             "        ala = (access_list_action",
@@ -34765,7 +34814,12 @@
             "            HELLO:'hello'  <== mode:DEFAULT_MODE",
             "            COMMA:','  <== mode:DEFAULT_MODE",
             "            VARIABLE:'world'  <== mode:DEFAULT_MODE)",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (t_server_null",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'5'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_tacacs_server",
             "      TACACS_SERVER:'tacacs-server'  <== mode:DEFAULT_MODE",
@@ -37724,7 +37778,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'133'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'133'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'10'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -37738,7 +37792,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'134'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'134'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'20'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -37752,7 +37806,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'135'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'135'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'30'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -37766,7 +37820,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'136'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'136'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'40'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -37780,7 +37834,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'141'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'141'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'50'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -37794,7 +37848,7 @@
             "        dstipr = (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        (extended_access_list_additional_feature",
-            "          icmpv6_message_type = DEC:'142'  <== mode:DEFAULT_MODE)",
+            "          icmp_message_type = DEC:'142'  <== mode:DEFAULT_MODE)",
             "        SEQUENCE:'sequence'  <== mode:DEFAULT_MODE",
             "        num = DEC:'60'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -56318,6 +56372,28 @@
             }
           ]
         },
+        "cadant_acl" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 22,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "123"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 24,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "nd-type"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 24,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "133"
+            }
+          ]
+        },
         "cisco_acl" : {
           "Parse warnings" : [
             {
@@ -56338,13 +56414,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 28,
+              "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 30,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
             }
@@ -56437,6 +56513,82 @@
               "Line" : 276,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
+            }
+          ]
+        },
+        "cisco_ipv6_access_list" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 9,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "router"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 9,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "hoplimit"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 10,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "router"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 11,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "nd"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 12,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "nd"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 13,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "141"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 14,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "142"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 15,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "neighbor"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 20,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "mld-query"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 21,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "mld-report"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 22,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "mld-reduction"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 23,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "mldv2"
             }
           ]
         },
@@ -56537,6 +56689,46 @@
               "Line" : 9,
               "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
               "Text" : "ip route 0.0.0.0/0 1.2.3.4"
+            }
+          ]
+        },
+        "foundry_access_list" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 11,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "133"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 12,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "134"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 13,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "135"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 14,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "136"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 15,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "141"
+            },
+            {
+              "Comment" : "clause in IPv6 extended access list",
+              "Line" : 16,
+              "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
+              "Text" : "142"
             }
           ]
         },
@@ -57384,34 +57576,38 @@
                 20,
                 21,
                 22,
-                23
+                23,
+                24,
+                25,
+                26,
+                27
               ],
               "numReferrers" : 0
             },
             "blah" : {
               "definitionLines" : [
-                30,
-                31
+                34,
+                35
               ],
               "numReferrers" : 0
             },
             "extended" : {
               "definitionLines" : [
-                26
+                30
               ],
               "numReferrers" : 0
             },
             "standard" : {
               "definitionLines" : [
-                28
+                32
               ],
               "numReferrers" : 0
             },
             "test-codes" : {
               "definitionLines" : [
-                57,
-                58,
-                59
+                61,
+                62,
+                63
               ],
               "numReferrers" : 0
             }
@@ -57419,15 +57615,15 @@
           "ipv4 prefix-list" : {
             "allowprefix" : {
               "definitionLines" : [
-                33,
-                34
+                37,
+                38
               ],
               "numReferrers" : 0
             },
             "allowprefix-asa" : {
               "definitionLines" : [
-                36,
-                37
+                40,
+                41
               ],
               "numReferrers" : 0
             }
@@ -57460,10 +57656,10 @@
           "bgp template peer-policy" : {
             "p1" : {
               "definitionLines" : [
-                32,
                 33,
                 34,
-                35
+                35,
+                36
               ],
               "numReferrers" : 0
             }
@@ -57471,25 +57667,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                51
+                52
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                49
+                50
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                53
+                54
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                47
+                48
               ],
               "numReferrers" : 1
             }
@@ -61259,57 +61455,57 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                33
+                34
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             }
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                44
+                45
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                45
+                46
               ]
             },
             "UNSUPP-MAP" : {
               "bgp unsuppress-map" : [
-                37
+                38
               ]
             },
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                30
+                31
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                31
+                32
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                26
+                27
               ]
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                40
+                41
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                36,
-                37
+                37,
+                38
               ]
             },
             "10.20.2.2" : {
@@ -63696,37 +63892,37 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                33
+                34
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                30
+                31
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                31
+                32
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                26
+                27
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                36,
-                37
+                37,
+                38
               ]
             },
             "10.20.2.2" : {

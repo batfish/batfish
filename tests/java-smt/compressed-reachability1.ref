@@ -2,7 +2,7 @@
   {
     "class" : "org.batfish.datamodel.FlowHistory",
     "traces" : {
-      "Flow<ingressNode:as2border1 ingressVrf:default srcIp:0.0.0.0 dstIp:2.34.101.4 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+      "Flow<ingressNode:as2border1 ingressVrf:default srcIp:0.0.0.0 dstIp:2.34.101.4 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:0 icmpCode:0 packetLength:0 state:NEW tag:BASE>" : {
         "environments" : {
           "BASE" : {
             "envName" : "env_default",
@@ -15,8 +15,8 @@
           "dstPort" : 0,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
+          "icmpCode" : 0,
+          "icmpVar" : 0,
           "ingressNode" : "as2border1",
           "ingressVrf" : "default",
           "ipProtocol" : "ICMP",
@@ -117,7 +117,7 @@
           ]
         }
       },
-      "Flow<ingressNode:as2border2 ingressVrf:default srcIp:0.0.0.0 dstIp:2.34.101.4 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+      "Flow<ingressNode:as2border2 ingressVrf:default srcIp:0.0.0.0 dstIp:2.34.101.4 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:0 icmpCode:0 packetLength:0 state:NEW tag:BASE>" : {
         "environments" : {
           "BASE" : {
             "envName" : "env_default",
@@ -130,8 +130,8 @@
           "dstPort" : 0,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
+          "icmpCode" : 0,
+          "icmpVar" : 0,
           "ingressNode" : "as2border2",
           "ingressVrf" : "default",
           "ipProtocol" : "ICMP",
