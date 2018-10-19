@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -49,17 +51,21 @@ import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
+import org.batfish.z3.state.NodeDeliveredToSubnet;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeExitsNetwork;
+import org.batfish.z3.state.NodeInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
@@ -388,35 +394,52 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(_rules::add);
   }
 
-  @Override
-  public void visitNeighborUnreachableOrExitsNetwork(
-      NeighborUnreachableOrExitsNetwork.State state) {
-    _input
-        .getNeighborUnreachable()
+  private void visitDisposition(
+      Map<String, Map<String, Map<String, BooleanExpr>>> dispositionMap,
+      Function<String, StateExpr> nodeDispositionConstructor,
+      StateExpr dispositionNode) {
+    dispositionMap
         .keySet()
         .forEach(
             hostname ->
                 _rules.add(
                     new BasicRuleStatement(
-                        new NodeNeighborUnreachableOrExitsNetwork(hostname),
-                        NeighborUnreachableOrExitsNetwork.INSTANCE)));
+                        nodeDispositionConstructor.apply(hostname), dispositionNode)));
   }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitExitsNetwork(ExitsNetwork.State state) {}
+  public void visitNeighborUnreachableOrExitsNetwork(
+      NeighborUnreachableOrExitsNetwork.State state) {
+    visitDisposition(
+        _input.getNeighborUnreachableOrExitsNetwork(),
+        NodeNeighborUnreachableOrExitsNetwork::new,
+        NeighborUnreachableOrExitsNetwork.INSTANCE);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {}
+  public void visitExitsNetwork(ExitsNetwork.State state) {
+    visitDisposition(_input.getExitsNetwork(), NodeExitsNetwork::new, ExitsNetwork.INSTANCE);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitInsufficientInfo(InsufficientInfo.State state) {}
+  public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {
+    visitDisposition(
+        _input.getDeliveredToSubnet(), NodeDeliveredToSubnet::new, DeliveredToSubnet.INSTANCE);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitNeighborUnreachable(NeighborUnreachable.State state) {}
+  public void visitInsufficientInfo(InsufficientInfo.State state) {
+    visitDisposition(
+        _input.getInsufficientInfo(), NodeInsufficientInfo::new, InsufficientInfo.INSTANCE);
+  }
+
+  @Override
+  public void visitNeighborUnreachable(NeighborUnreachable.State state) {
+    visitDisposition(
+        _input.getNeighborUnreachable(),
+        NodeNeighborUnreachable::new,
+        NeighborUnreachable.INSTANCE);
+  }
 
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
@@ -544,9 +567,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
               }
             });
 
-    // NeighborUnreachableOld fail OutAcl
+    // NeighborUnreachableOrExitsNetwork  fail OutAcl
     _input
-        .getNeighborUnreachable()
+        .getNeighborUnreachableOrExitsNetwork()
         .forEach(
             (hostname, neighborUnreachableByVrf) ->
                 neighborUnreachableByVrf.forEach(
@@ -604,72 +627,120 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                 new NodeDropNullRoute(hostname)))));
   }
 
-  @Override
-  public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {
-    _input
-        .getNeighborUnreachable()
-        .forEach(
-            (hostname, neighborUnreachableByVrf) ->
-                neighborUnreachableByVrf.forEach(
-                    (vrf, neighborUnreachableByOutInterface) ->
-                        neighborUnreachableByOutInterface.forEach(
-                            (outIface, dstIpConstraint) -> {
-                              ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
-                              preStates.add(new PreOutVrf(hostname, vrf));
-
-                              // add outAcl if one exists
-                              String outAcl =
-                                  _input
-                                      .getOutgoingAcls()
-                                      .getOrDefault(hostname, ImmutableMap.of())
-                                      .get(outIface);
-                              if (outAcl != null) {
-                                preStates.add(new AclPermit(hostname, outAcl));
-                              }
-
-                              _rules.add(
-                                  new BasicRuleStatement(
-                                      dstIpConstraint,
-                                      preStates.build(),
-                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(
-                                          hostname, outIface)));
-                            })));
+  private void visitNodeDisposition(
+      Map<String, Map<String, Map<String, BooleanExpr>>> dispositionMap,
+      BiFunction<String, String, StateExpr> nodeInterfaceDispositionConstructor,
+      Function<String, StateExpr> nodeDispositionConstructor) {
+    dispositionMap.forEach(
+        (hostname, dispositionByVrf) ->
+            dispositionByVrf.forEach(
+                (vrf, dispositionByOutInterface) ->
+                    dispositionByOutInterface.forEach(
+                        (outIface, dstIpConstraint) -> {
+                          _rules.add(
+                              new BasicRuleStatement(
+                                  nodeInterfaceDispositionConstructor.apply(hostname, outIface),
+                                  nodeDispositionConstructor.apply(hostname)));
+                        })));
   }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {}
+  public void visitNodeDeliveredToSubnet(NodeDeliveredToSubnet.State state) {
+    visitNodeDisposition(
+        _input.getDeliveredToSubnet(),
+        NodeInterfaceDeliveredToSubnet::new,
+        NodeDeliveredToSubnet::new);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {}
+  public void visitNodeExitsNetwork(NodeExitsNetwork.State state) {
+    visitNodeDisposition(
+        _input.getExitsNetwork(), NodeInterfaceExitsNetwork::new, NodeExitsNetwork::new);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {}
+  public void visitNodeInsufficientInfo(NodeInsufficientInfo.State state) {
+    visitNodeDisposition(
+        _input.getInsufficientInfo(),
+        NodeInterfaceInsufficientInfo::new,
+        NodeInsufficientInfo::new);
+  }
 
-  // We do not implement the function intentionally.
   @Override
-  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {}
+  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
+    visitNodeDisposition(
+        _input.getNeighborUnreachable(),
+        NodeInterfaceNeighborUnreachable::new,
+        NodeNeighborUnreachable::new);
+  }
 
   @Override
   public void visitNodeNeighborUnreachableOrExitsNetwork(
       NodeNeighborUnreachableOrExitsNetwork.State state) {
-    _input
-        .getNeighborUnreachable()
-        .forEach(
-            (hostname, neighborUnreachableByVrf) ->
-                neighborUnreachableByVrf.forEach(
-                    (vrf, neighborUnreachableByOutInterface) ->
-                        neighborUnreachableByOutInterface.forEach(
-                            (outIface, dstIpConstraint) -> {
-                              _rules.add(
-                                  new BasicRuleStatement(
-                                      new NodeInterfaceNeighborUnreachableOrExitsNetwork(
-                                          hostname, outIface),
-                                      new NodeNeighborUnreachableOrExitsNetwork(hostname)));
-                            })));
+    visitNodeDisposition(
+        _input.getNeighborUnreachableOrExitsNetwork(),
+        NodeInterfaceNeighborUnreachableOrExitsNetwork::new,
+        NodeNeighborUnreachableOrExitsNetwork::new);
+  }
+
+  private void visitNodeInterfaceDisposition(
+      Map<String, Map<String, Map<String, BooleanExpr>>> dispositionMap,
+      BiFunction<String, String, StateExpr> nodeInterfaceDispositionConstructor) {
+    dispositionMap.forEach(
+        (hostname, dispositionByVrf) ->
+            dispositionByVrf.forEach(
+                (vrf, dispositionByOutInterface) ->
+                    dispositionByOutInterface.forEach(
+                        (outIface, dstIpConstraint) -> {
+                          ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
+                          preStates.add(new PreOutVrf(hostname, vrf));
+
+                          // add outAcl if one exists
+                          String outAcl =
+                              _input
+                                  .getOutgoingAcls()
+                                  .getOrDefault(hostname, ImmutableMap.of())
+                                  .get(outIface);
+                          if (outAcl != null) {
+                            preStates.add(new AclPermit(hostname, outAcl));
+                          }
+
+                          _rules.add(
+                              new BasicRuleStatement(
+                                  dstIpConstraint,
+                                  preStates.build(),
+                                  nodeInterfaceDispositionConstructor.apply(hostname, outIface)));
+                        })));
+  }
+
+  @Override
+  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
+    visitNodeInterfaceDisposition(
+        _input.getDeliveredToSubnet(), NodeInterfaceDeliveredToSubnet::new);
+  }
+
+  @Override
+  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
+    visitNodeInterfaceDisposition(_input.getExitsNetwork(), NodeInterfaceExitsNetwork::new);
+  }
+
+  @Override
+  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {
+    visitNodeInterfaceDisposition(_input.getInsufficientInfo(), NodeInterfaceInsufficientInfo::new);
+  }
+
+  @Override
+  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {
+    visitNodeInterfaceDisposition(
+        _input.getNeighborUnreachable(), NodeInterfaceNeighborUnreachable::new);
+  }
+
+  @Override
+  public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
+      NodeInterfaceNeighborUnreachableOrExitsNetwork.State state) {
+    visitNodeInterfaceDisposition(
+        _input.getNeighborUnreachableOrExitsNetwork(),
+        NodeInterfaceNeighborUnreachableOrExitsNetwork::new);
   }
 
   @Override

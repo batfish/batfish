@@ -49,7 +49,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _deliveredToSubnet;
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _exitsNetwork;
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _insufficientInfo;
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachableOrExitsNetwork;
 
     private Map<String, List<String>> _nodeInterfaces;
 
@@ -91,7 +95,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
+      _deliveredToSubnet = ImmutableMap.of();
+      _exitsNetwork = ImmutableMap.of();
+      _insufficientInfo = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
+      _neighborUnreachableOrExitsNetwork = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
       _nonTransitNodes = ImmutableSortedSet.of();
@@ -177,9 +185,33 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setDeliveredToSubnet(
+        Map<String, Map<String, Map<String, BooleanExpr>>> deliveredToSubnet) {
+      _deliveredToSubnet = deliveredToSubnet;
+      return this;
+    }
+
+    public Builder setExitsNetwork(
+        Map<String, Map<String, Map<String, BooleanExpr>>> exitsNetwork) {
+      _exitsNetwork = exitsNetwork;
+      return this;
+    }
+
+    public Builder setInsufficientInfo(
+        Map<String, Map<String, Map<String, BooleanExpr>>> insufficientInfo) {
+      _insufficientInfo = insufficientInfo;
+      return this;
+    }
+
     public Builder setNeighborUnreachable(
         Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable) {
       _neighborUnreachable = neighborUnreachable;
+      return this;
+    }
+
+    public Builder setNeighborUnreachableOrExitsNetwork(
+        Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachableOrExitsNetwork) {
+      _neighborUnreachableOrExitsNetwork = neighborUnreachableOrExitsNetwork;
       return this;
     }
 
@@ -290,7 +322,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
+  private final Map<String, Map<String, Map<String, BooleanExpr>>> _deliveredToSubnet;
+  private final Map<String, Map<String, Map<String, BooleanExpr>>> _exitsNetwork;
+  private final Map<String, Map<String, Map<String, BooleanExpr>>> _insufficientInfo;
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+  private final Map<String, Map<String, Map<String, BooleanExpr>>>
+      _neighborUnreachableOrExitsNetwork;
 
   private final Map<String, List<String>> _nodeInterfaces;
 
@@ -332,7 +369,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
+    _deliveredToSubnet = builder._deliveredToSubnet;
+    _exitsNetwork = builder._exitsNetwork;
+    _insufficientInfo = builder._insufficientInfo;
     _neighborUnreachable = builder._neighborUnreachable;
+    _neighborUnreachableOrExitsNetwork = builder._neighborUnreachableOrExitsNetwork;
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
@@ -421,8 +462,28 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getDeliveredToSubnet() {
+    return _deliveredToSubnet;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getExitsNetwork() {
+    return _exitsNetwork;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getInsufficientInfo() {
+    return _insufficientInfo;
+  }
+
+  @Override
   public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
     return _neighborUnreachable;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachableOrExitsNetwork() {
+    return _neighborUnreachableOrExitsNetwork;
   }
 
   @Override

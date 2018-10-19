@@ -10,7 +10,8 @@ final class NodeInterfaceNeighborUnreachableMatchersImpl {
   public static final class HasHostname
       extends FeatureMatcher<NodeInterfaceNeighborUnreachableOrExitsNetwork, String> {
     public HasHostname(Matcher<? super String> subMatcher) {
-      super(subMatcher, "a NodeInterfaceNeighborUnreachableOld with hostname", "hostname");
+      super(
+          subMatcher, "a NodeInterfaceNeighborUnreachableOrExitsNetwork with hostname", "hostname");
     }
 
     @Override

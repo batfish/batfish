@@ -71,10 +71,28 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; IpSpace name -&gt; IpSpace */
   Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 
+  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpConstraintForWhichDelivered */
+  Map<String, Map<String, Map<String, BooleanExpr>>> getDeliveredToSubnet();
+
+  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpConstraintWhichExitsNetwork */
+  Map<String, Map<String, Map<String, BooleanExpr>>> getExitsNetwork();
+
+  /**
+   * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt;
+   * dstIpConstraintForWhichNoSufficientInfo
+   */
+  Map<String, Map<String, Map<String, BooleanExpr>>> getInsufficientInfo();
+
+  /**
+   * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt;
+   * dstIpConstraintForWhichNeighborUnreachable
+   */
+  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
+
   /**
    * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpConstraintForWhichNoArpReplySent
    */
-  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
+  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachableOrExitsNetwork();
 
   /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
   Set<String> getNodesWithSrcInterfaceConstraints();

@@ -668,10 +668,10 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitNeighborUnreachable() {
+  public void testVisitNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1))),
@@ -920,7 +920,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitNodeDropAclOut_nonEdgeInterfaces() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1)))))
             .setOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .build();
@@ -929,7 +929,7 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
 
-    // NeighborUnreachableOld fail OutAcl
+    // NeighborUnreachableOrExitsNetwork fail OutAcl
     assertThat(
         rules,
         contains(
@@ -1014,10 +1014,10 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitNodeInterfaceNeighborUnreachable() {
+  public void testVisitNodeInterfaceNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1065,10 +1065,10 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitNodeNeighborUnreachable() {
+  public void testVisitNodeNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(

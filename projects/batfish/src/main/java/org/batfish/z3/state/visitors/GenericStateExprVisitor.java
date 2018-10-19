@@ -19,17 +19,21 @@ import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
+import org.batfish.z3.state.NodeDeliveredToSubnet;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeExitsNetwork;
+import org.batfish.z3.state.NodeInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
@@ -135,4 +139,12 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
 
   R visitQuery(Query query);
+
+  R visitNodeDeliveredToSubnet(NodeDeliveredToSubnet nodeDeliveredToSubnet);
+
+  R visitNodeExitsNetwork(NodeExitsNetwork nodeExitsNetwork);
+
+  R visitNodeInsufficientInfo(NodeInsufficientInfo nodeInsufficientInfo);
+
+  R visitNodeNeighborUnreachable(NodeNeighborUnreachable nodeNeighborUnreachable);
 }

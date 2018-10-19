@@ -53,7 +53,6 @@ import org.batfish.z3.state.DropNullRoute;
 import org.batfish.z3.state.ExitsNetwork;
 import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
-import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;

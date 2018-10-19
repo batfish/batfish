@@ -716,8 +716,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * routes that use the interface as outgoing interface */
   @VisibleForTesting
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
-      Map<String, Configuration> configurations,
-      Map<String, Map<String, Fib>> fibs) {
+      Map<String, Configuration> configurations, Map<String, Map<String, Fib>> fibs) {
     return toImmutableMap(
         configurations,
         Entry::getKey,
@@ -1277,11 +1276,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
     // (ips in interface subnet - ips in vrfs) is not empty
-    return !_interfaceHostSubnetIpBDDs
-        .get(hostname)
-        .get(ifaceName)
-        .and(_vrfUnOwnedIpBDD)
-        .isZero();
+    return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_vrfUnOwnedIpBDD).isZero();
   }
 
   private Map<String, Set<String>> computeInterfacesWithMissingDevices(

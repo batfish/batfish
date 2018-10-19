@@ -106,7 +106,8 @@ public class ForwardingAnalysisImplTest {
         _arpTrueEdgeDestIp,
         _arpTrueEdgeNextHopIp,
         _interfaceOwnedIps,
-        _ipsRoutedOutInterfaces, _neighborUnreachableOrExitsNetwork,
+        _ipsRoutedOutInterfaces,
+        _neighborUnreachableOrExitsNetwork,
         _arpFalseDestIp,
         _arpFalseNextHopIp,
         _nullRoutedIps,
@@ -939,8 +940,12 @@ public class ForwardingAnalysisImplTest {
                     .setRoutesByNextHopInterface(ImmutableMap.of(i1, ImmutableSet.of(r1)))
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+
+    Configuration config = _cb.setHostname(c1).build();
+    _vb.setName(v1).setOwner(config).build();
+    _ib.setName(i1).setOwner(config).build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, _cb.build()), fibs);
+        forwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, config), fibs);
 
     assertThat(
         result,
@@ -1278,7 +1283,6 @@ public class ForwardingAnalysisImplTest {
         hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
   }
 
-
   @Test
   public void testComputeDeliveredToSubnetEqual() {
     String c1 = "c1";
@@ -1423,7 +1427,6 @@ public class ForwardingAnalysisImplTest {
       assertThat(neighborUnreachableIpSpace, not(containsIp(dstPrefix.getEndIp())));
     }
   }
-
 
   @Test
   public void testDispositionComputation() {
