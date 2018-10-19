@@ -15,8 +15,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
@@ -163,8 +166,10 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
-    assertThat(edge, nullValue());
-    assertThat(headerSpaceBdd, equalTo(zero));
+    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
+    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(originatingFromDeviceBdd)));
   }
 
   /*
@@ -256,9 +261,10 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
-
-    assertThat(edge, nullValue());
-    assertThat(headerSpaceBdd, equalTo(zero));
+    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
+    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(matchSrcInterfaceBdd)));
   }
 
   /*

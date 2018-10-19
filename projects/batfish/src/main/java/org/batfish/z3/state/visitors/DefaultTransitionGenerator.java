@@ -51,21 +51,17 @@ import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDeliveredToSubnet;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeExitsNetwork;
-import org.batfish.z3.state.NodeInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
@@ -416,29 +412,24 @@ public class DefaultTransitionGenerator implements StateVisitor {
         NeighborUnreachableOrExitsNetwork.INSTANCE);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitExitsNetwork(ExitsNetwork.State state) {
-    visitDisposition(_input.getExitsNetwork(), NodeExitsNetwork::new, ExitsNetwork.INSTANCE);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {
-    visitDisposition(
-        _input.getDeliveredToSubnet(), NodeDeliveredToSubnet::new, DeliveredToSubnet.INSTANCE);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitInsufficientInfo(InsufficientInfo.State state) {
-    visitDisposition(
-        _input.getInsufficientInfo(), NodeInsufficientInfo::new, InsufficientInfo.INSTANCE);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitNeighborUnreachable(NeighborUnreachable.State state) {
-    visitDisposition(
-        _input.getNeighborUnreachable(),
-        NodeNeighborUnreachable::new,
-        NeighborUnreachable.INSTANCE);
   }
 
   @Override
@@ -645,36 +636,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNodeDeliveredToSubnet(NodeDeliveredToSubnet.State state) {
-    visitNodeDisposition(
-        _input.getDeliveredToSubnet(),
-        NodeInterfaceDeliveredToSubnet::new,
-        NodeDeliveredToSubnet::new);
-  }
-
-  @Override
-  public void visitNodeExitsNetwork(NodeExitsNetwork.State state) {
-    visitNodeDisposition(
-        _input.getExitsNetwork(), NodeInterfaceExitsNetwork::new, NodeExitsNetwork::new);
-  }
-
-  @Override
-  public void visitNodeInsufficientInfo(NodeInsufficientInfo.State state) {
-    visitNodeDisposition(
-        _input.getInsufficientInfo(),
-        NodeInterfaceInsufficientInfo::new,
-        NodeInsufficientInfo::new);
-  }
-
-  @Override
-  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
-    visitNodeDisposition(
-        _input.getNeighborUnreachable(),
-        NodeInterfaceNeighborUnreachable::new,
-        NodeNeighborUnreachable::new);
-  }
-
-  @Override
   public void visitNodeNeighborUnreachableOrExitsNetwork(
       NodeNeighborUnreachableOrExitsNetwork.State state) {
     visitNodeDisposition(
@@ -713,26 +674,24 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         })));
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
-    visitNodeInterfaceDisposition(
-        _input.getDeliveredToSubnet(), NodeInterfaceDeliveredToSubnet::new);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
-    visitNodeInterfaceDisposition(_input.getExitsNetwork(), NodeInterfaceExitsNetwork::new);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {
-    visitNodeInterfaceDisposition(_input.getInsufficientInfo(), NodeInterfaceInsufficientInfo::new);
   }
 
+  // We do not implement this function intentionally
   @Override
   public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {
-    visitNodeInterfaceDisposition(
-        _input.getNeighborUnreachable(), NodeInterfaceNeighborUnreachable::new);
   }
 
   @Override
