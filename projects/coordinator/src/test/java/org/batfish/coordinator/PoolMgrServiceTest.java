@@ -38,8 +38,6 @@ public final class PoolMgrServiceTest extends JerseyTest {
   @Rule public TemporaryFolder _networksFolder = new TemporaryFolder();
   @Rule public TemporaryFolder _questionsTemplatesFolder = new TemporaryFolder();
 
-  private PoolMgrService _service;
-
   @Before
   public void setup() {
     BatfishLogger logger = new BatfishLogger("debug", false);
@@ -52,8 +50,6 @@ public final class PoolMgrServiceTest extends JerseyTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-
-    _service = new PoolMgrService();
   }
 
   @Override
