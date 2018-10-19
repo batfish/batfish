@@ -1084,7 +1084,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newRoute.setDiscard(true);
     newRoute.setGenerationPolicy(policyName);
     if (route.getAsPath() != null) {
-      newRoute.setAsPath(route.getAsPath().getAsSets());
+      newRoute.setAsPath(route.getAsPath());
     }
     _c.getRoutingPolicies().put(policyName, routingPolicy);
     _c.getRouteFilterLists().put(rflName, rfList);

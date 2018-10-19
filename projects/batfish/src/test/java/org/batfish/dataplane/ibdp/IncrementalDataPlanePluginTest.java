@@ -190,15 +190,15 @@ public class IncrementalDataPlanePluginTest {
      * Properties of the routes
      */
     // Should appear only for path-length match
-    List<SortedSet<Long>> asPath2 = AsPath.ofSingletonAsSets(2L, 4L, 6L).getAsSets();
+    AsPath asPath2 = AsPath.ofSingletonAsSets(2L, 4L, 6L);
     // Should appear only for first-as match and path-length match
-    List<SortedSet<Long>> asPath3a = AsPath.ofSingletonAsSets(3L, 5L, 6L).getAsSets();
+    AsPath asPath3a = AsPath.ofSingletonAsSets(3L, 5L, 6L);
     // Should never appear
-    List<SortedSet<Long>> asPath3b = AsPath.ofSingletonAsSets(3L, 4L, 4L, 6L).getAsSets();
+    AsPath asPath3b = AsPath.ofSingletonAsSets(3L, 4L, 4L, 6L);
     // Should always appear
     AsPath bestAsPath = AsPath.ofSingletonAsSets(3L, 4L, 6L);
-    List<SortedSet<Long>> asPath3c = bestAsPath.getAsSets();
-    List<SortedSet<Long>> asPath3d = bestAsPath.getAsSets();
+    AsPath asPath3c = bestAsPath;
+    AsPath asPath3d = bestAsPath;
     Ip nextHop2 = new Ip("2.0.0.0");
     Ip nextHop3a = new Ip("3.0.0.1");
     Ip nextHop3b = new Ip("3.0.0.2");

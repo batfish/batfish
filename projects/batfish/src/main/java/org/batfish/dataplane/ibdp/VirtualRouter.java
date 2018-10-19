@@ -748,7 +748,7 @@ public class VirtualRouter implements Serializable {
         int weight = advert.getWeight();
         BgpRoute.Builder builder = new BgpRoute.Builder();
         builder.setAdmin(admin);
-        builder.setAsPath(asPath.getAsSets());
+        builder.setAsPath(asPath);
         builder.setClusterList(clusterList);
         builder.setCommunities(communities);
         builder.setLocalPreference(localPreference);
@@ -773,7 +773,7 @@ public class VirtualRouter implements Serializable {
         } else {
           localPreference = advert.getLocalPreference();
         }
-        outgoingRouteBuilder.setAsPath(advert.getAsPath().getAsSets());
+        outgoingRouteBuilder.setAsPath(advert.getAsPath());
         outgoingRouteBuilder.setCommunities(ImmutableSortedSet.copyOf(advert.getCommunities()));
         outgoingRouteBuilder.setLocalPreference(localPreference);
         outgoingRouteBuilder.setMetric(advert.getMed());
@@ -806,7 +806,7 @@ public class VirtualRouter implements Serializable {
             transformedOutgoingRoute.getReceivedFromRouteReflectorClient());
 
         // Incoming asPath
-        transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath().getAsSets());
+        transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
 
         // Incoming communities
         transformedIncomingRouteBuilder

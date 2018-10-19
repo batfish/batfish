@@ -1,21 +1,23 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import org.batfish.common.util.CommonUtil;
+import java.util.concurrent.ExecutionException;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.commons.lang3.StringUtils;
 
+@ParametersAreNonnullByDefault
 public class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
@@ -33,109 +35,87 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   public static AsPath ofSingletonAsSets(List<Long> asNums) {
-    return new AsPath(asNums.stream().map(ImmutableSortedSet::of).collect(Collectors.toList()));
+    return of(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
   }
 
-  public static List<SortedSet<Long>> removePrivateAs(List<SortedSet<Long>> asPath) {
-    return asPath
-        .stream()
-        .map(
-            asSet ->
-                asSet
-                    .stream()
-                    .filter(as -> !AsPath.isPrivateAs(as))
-                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
-        .filter(asSet -> !asSet.isEmpty())
-        .collect(ImmutableList.toImmutableList());
-  }
+  private final List<AsSet> _asSets;
 
-  private final List<SortedSet<Long>> _asSets;
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  //   (24 bytes seems smallest possible entry (list(set(long)), would be 1.5 MiB total).
+  private static final Cache<List<AsSet>, AsPath> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build();
+
+  private AsPath(ImmutableList<AsSet> asSets) {
+    _asSets = asSets;
+  }
 
   @JsonCreator
-  public AsPath(List<SortedSet<Long>> asSets) {
-    _asSets = copyAsSets(asSets);
+  private static AsPath jsonCreator(@Nullable ImmutableList<AsSet> value) {
+    return of(firstNonNull(value, ImmutableList.of()));
+  }
+
+  /** Create and return a new empty {@link AsPath}. */
+  public static AsPath empty() {
+    return AsPath.of(ImmutableList.of());
+  }
+
+  /** Create and return a new {@link AsPath} of length 1 using the given {@link AsSet}. */
+  public static AsPath of(AsSet asSet) {
+    return AsPath.of(ImmutableList.of(asSet));
+  }
+
+  /** Create and return a new {@link AsPath} of the given {@link AsSet AsSets}. */
+  public static AsPath of(List<AsSet> asSets) {
+    ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
+    try {
+      return CACHE.get(immutableValue, () -> new AsPath(immutableValue));
+    } catch (ExecutionException e) {
+      // This shouldn't happen, but handle anyway.
+      return new AsPath(immutableValue);
+    }
+  }
+
+  /**
+   * Returns a new {@link AsPath} with all the private ASNs removed. Any {@link AsSet} in that path
+   * that consists only of private ASNs will be dropped from the path entirely.
+   */
+  public AsPath removePrivateAs() {
+    return AsPath.of(
+        _asSets
+            .stream()
+            .map(AsSet::removePrivateAs)
+            .filter(asSet -> !asSet.isEmpty())
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
-  public int compareTo(@Nonnull AsPath rhs) {
-    Iterator<SortedSet<Long>> l = _asSets.iterator();
-    Iterator<SortedSet<Long>> r = rhs._asSets.iterator();
-    while (l.hasNext()) {
-      if (!r.hasNext()) {
-        return 1;
-      }
-      SortedSet<Long> lVal = l.next();
-      SortedSet<Long> rVal = r.next();
-      int ret = CommonUtil.compareCollection(lVal, rVal);
-      if (ret != 0) {
-        return ret;
-      }
-    }
-    if (r.hasNext()) {
-      return -1;
-    }
-    return 0;
+  public int compareTo(AsPath rhs) {
+    return Comparators.lexicographical(Ordering.<AsSet>natural()).compare(_asSets, rhs._asSets);
   }
 
-  public boolean containsAs(long as) {
-    return _asSets.stream().anyMatch(a -> a.contains(as));
-  }
-
-  private List<SortedSet<Long>> copyAsSets(List<SortedSet<Long>> asSets) {
-    List<SortedSet<Long>> newAsSets = new ArrayList<>(asSets.size());
-    for (SortedSet<Long> asSet : asSets) {
-      SortedSet<Long> newAsSet = ImmutableSortedSet.copyOf(asSet);
-      newAsSets.add(newAsSet);
-    }
-    return newAsSets;
+  public boolean containsAs(Long as) {
+    return _asSets.stream().anyMatch(a -> a.containsAs(as));
   }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof AsPath)) {
       return false;
     }
     AsPath other = (AsPath) obj;
-    if (_asSets == null) {
-      if (other._asSets != null) {
-        return false;
-      }
-    } else if (!_asSets.equals(other._asSets)) {
-      return false;
-    }
-    return true;
+    return _asSets.equals(other._asSets);
   }
 
   public String getAsPathString() {
-    StringBuilder sb = new StringBuilder();
-    for (Set<Long> asSet : _asSets) {
-      if (asSet.size() == 1) {
-        long elem = asSet.iterator().next();
-        sb.append(elem);
-      } else {
-        sb.append("{");
-        Iterator<Long> i = asSet.iterator();
-        sb.append(i.next());
-        while (i.hasNext()) {
-          sb.append(",");
-          sb.append(i.next());
-        }
-        sb.append("}");
-      }
-      sb.append(" ");
-    }
-    return sb.toString().trim();
+    return StringUtils.join(_asSets, " ");
   }
 
   @JsonValue
-  public List<SortedSet<Long>> getAsSets() {
-    return copyAsSets(_asSets);
+  public List<AsSet> getAsSets() {
+    return _asSets;
   }
 
   @Override

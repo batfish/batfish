@@ -2,12 +2,13 @@ package org.batfish.dataplane.protocols;
 
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -146,15 +147,18 @@ public class BgpProtocolHelper {
     // Outgoing communities
     if (remoteRouteIsBgp) {
       BgpRoute bgpRemoteRoute = (BgpRoute) route;
-      transformedOutgoingRouteBuilder.setAsPath(bgpRemoteRoute.getAsPath().getAsSets());
+      transformedOutgoingRouteBuilder.setAsPath(bgpRemoteRoute.getAsPath());
       if (fromNeighbor.getSendCommunity()) {
         transformedOutgoingRouteBuilder.getCommunities().addAll(bgpRemoteRoute.getCommunities());
       }
     }
     if (sessionProperties.isEbgp()) {
-      SortedSet<Long> newAsPathElement = new TreeSet<>();
-      newAsPathElement.add(fromNeighbor.getLocalAs());
-      transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
+      transformedOutgoingRouteBuilder.setAsPath(
+          AsPath.of(
+              ImmutableList.<AsSet>builder()
+                  .add(AsSet.of(fromNeighbor.getLocalAs()))
+                  .addAll(transformedOutgoingRouteBuilder.getAsPath().getAsSets())
+                  .build()));
     }
 
     // Outgoing protocol
@@ -222,7 +226,7 @@ public class BgpProtocolHelper {
     transformedIncomingRouteBuilder.getClusterList().addAll(route.getClusterList());
     transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
         route.getReceivedFromRouteReflectorClient());
-    transformedIncomingRouteBuilder.setAsPath(route.getAsPath().getAsSets());
+    transformedIncomingRouteBuilder.setAsPath(route.getAsPath());
     transformedIncomingRouteBuilder.getCommunities().addAll(route.getCommunities());
     transformedIncomingRouteBuilder.setProtocol(targetProtocol);
     transformedIncomingRouteBuilder.setNetwork(route.getNetwork());
@@ -246,7 +250,7 @@ public class BgpProtocolHelper {
   public static BgpRoute convertGeneratedRouteToBgp(GeneratedRoute generatedRoute, Ip routerId) {
     BgpRoute.Builder b = new BgpRoute.Builder();
     b.setAdmin(generatedRoute.getAdministrativeCost());
-    b.setAsPath(generatedRoute.getAsPath().getAsSets());
+    b.setAsPath(generatedRoute.getAsPath());
     b.setMetric(generatedRoute.getMetric());
     b.setSrcProtocol(RoutingProtocol.AGGREGATE);
     b.setProtocol(RoutingProtocol.AGGREGATE);

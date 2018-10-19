@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
@@ -17,6 +18,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -177,13 +179,11 @@ class CounterExample {
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<SortedSet<Long>> asSets = new ArrayList<>();
+          ImmutableList.Builder<AsSet> b = ImmutableList.builder();
           for (int i = 0; i < pathLength; i++) {
-            SortedSet<Long> asSet = new TreeSet<>();
-            asSet.add(-1L);
-            asSets.add(asSet);
+            b.add(AsSet.of(-1L));
           }
-          AsPath path = new AsPath(asSets);
+          AsPath path = AsPath.of(b.build());
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
