@@ -2255,7 +2255,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
           DhcpRelayServerGroup asg = ri.getDhcpRelayServerGroups().get(asgName);
           if (asg != null) {
             for (org.batfish.datamodel.Interface iface : interfaces) {
-              iface.getDhcpRelayAddresses().addAll(asg.getServers());
+              iface.setDhcpRelayAddresses(
+                  ImmutableList.<Ip>builder()
+                      .addAll(iface.getDhcpRelayAddresses())
+                      .addAll(asg.getServers())
+                      .build());
             }
           }
         }
