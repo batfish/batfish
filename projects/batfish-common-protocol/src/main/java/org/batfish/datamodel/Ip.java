@@ -3,17 +3,10 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.BitSet;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public class Ip implements Comparable<Ip>, Serializable {
-
-  private static Map<Ip, BitSet> _addressBitsCache = new ConcurrentHashMap<>();
 
   public static final Ip AUTO = new Ip(-1L);
 
@@ -28,8 +21,6 @@ public class Ip implements Comparable<Ip>, Serializable {
   public static final Ip FIRST_MULTICAST_IP = new Ip("224.0.0.0");
 
   public static final Ip MAX = new Ip(0xFFFFFFFFL);
-
-  private static final int NUM_BYTES = 4;
 
   private static final long serialVersionUID = 1L;
 
@@ -129,27 +120,6 @@ public class Ip implements Comparable<Ip>, Serializable {
     }
     Ip rhs = (Ip) o;
     return _ip == rhs._ip;
-  }
-
-  /** @deprecated In favor of much simpler {@link #getBitAtPosition(Ip, int)} */
-  @Deprecated
-  public BitSet getAddressBits() {
-    BitSet bits = _addressBitsCache.get(this);
-    if (bits == null) {
-      int addressAsInt = (int) (_ip);
-      ByteBuffer b = ByteBuffer.allocate(NUM_BYTES);
-      b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a
-      // byte
-      // buffer is always BIG_ENDIAN.
-      b.putInt(addressAsInt);
-      BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
-      bits = new BitSet(Prefix.MAX_PREFIX_LENGTH);
-      for (int i = Prefix.MAX_PREFIX_LENGTH - 1, j = 0; i >= 0; i--, j++) {
-        bits.set(j, bitsWithHighestMostSignificant.get(i));
-      }
-      _addressBitsCache.put(this, bits);
-    }
-    return bits;
   }
 
   public Ip getClassMask() {
