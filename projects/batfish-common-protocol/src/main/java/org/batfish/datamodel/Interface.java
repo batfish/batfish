@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -716,11 +715,11 @@ public final class Interface extends ComparableStructure<String> {
     super(name);
     _active = true;
     _autoState = true;
-    _allowedVlans = new ArrayList<>();
+    _allowedVlans = ImmutableList.of();
     _allAddresses = ImmutableSortedSet.of();
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
-    _dhcpRelayAddresses = new ArrayList<>();
+    _dhcpRelayAddresses = ImmutableList.of();
     _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
@@ -734,7 +733,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
-    _allowedVlans.addAll(ranges);
+    _allowedVlans = ImmutableList.<SubRange>builder().addAll(_allowedVlans).addAll(ranges).build();
   }
 
   @Override
@@ -1277,7 +1276,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
   public void setDhcpRelayAddresses(List<Ip> dhcpRelayAddresses) {
-    _dhcpRelayAddresses = dhcpRelayAddresses;
+    _dhcpRelayAddresses = ImmutableList.copyOf(dhcpRelayAddresses);
   }
 
   @JsonProperty(PROP_EIGRP)
