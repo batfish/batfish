@@ -1310,6 +1310,7 @@ public class ForwardingAnalysisImplTest {
     INTERNAL,
     EXTERNAL
   }
+<<<<<<< HEAD
 
   private void testDispositionComputationTemplate(
       NextHopIpStatus nextHopIpStatus,
@@ -1494,4 +1495,6 @@ public class ForwardingAnalysisImplTest {
     testDispositionComputationTemplate(
         NextHopIpStatus.INTERNAL, false, false, false, FlowDisposition.INSUFFICIENT_INFO);
   }
+=======
+>>>>>>> 0ab3c4c5f0c1f59e8d7f91e4fbd6ff9cef11576e
 }
