@@ -340,7 +340,7 @@ public final class BDDReachabilityAnalysisFactory {
                 case LOOP:
                   throw new BatfishException("FlowDisposition LOOP is unsupported");
                 case NEIGHBOR_UNREACHABLE:
-                  return new Edge(NeighborUnreachableOrExitsNetwork.INSTANCE, Query.INSTANCE, _one);
+                  return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE, _one);
                 case DELIVERED_TO_SUBNET:
                   return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE, _one);
                 case EXITS_NETWORK:

@@ -940,7 +940,7 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHop(fibs);
+        forwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, _cb.build()), fibs);
 
     assertThat(
         result,

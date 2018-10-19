@@ -134,7 +134,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
-    _routesWithNextHop = computeRoutesWithNextHop(fibs);
+    _routesWithNextHop = computeRoutesWithNextHop(configurations, fibs);
     _ipsRoutedOutInterfaces = computeIpsRoutedOutInterfaces(ribs);
     _arpReplies = computeArpReplies(configurations, ribs);
     _someoneReplies = computeSomeoneReplies(topology);
@@ -716,25 +716,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * routes that use the interface as outgoing interface */
   @VisibleForTesting
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
+      Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs) {
-    return fibs.entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                fibsByHostnameEntry -> {
-                  return fibsByHostnameEntry
-                      .getValue()
-                      .entrySet()
-                      .stream()
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Entry::getKey /* vrf */,
-                              fibsByVrfEntry -> {
-                                Fib fib = fibsByVrfEntry.getValue();
-                                return fib.getRoutesByNextHopInterface();
-                              }));
-                }));
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        nodeEntry.getValue().getAllInterfaces(),
+                        Entry::getKey,
+                        ifaceEntry ->
+                            fibs.get(nodeEntry.getKey())
+                                .get(vrfEntry.getKey())
+                                .getRoutesByNextHopInterface()
+                                .getOrDefault(ifaceEntry.getKey(), ImmutableSet.of()))));
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>

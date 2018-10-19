@@ -32,6 +32,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -226,28 +227,35 @@ class TracerouteEngineImplContext {
         _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
     if (_forwardingAnalysis
         .getDeliveredToSubnet()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
+        .getOrDefault(hostname, ImmutableMap.of())
+        .getOrDefault(vrfName, ImmutableMap.of())
+        .getOrDefault(outgoingInterfaceName, EmptyIpSpace.INSTANCE)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.DELIVERED_TO_SUBNET;
     } else if (_forwardingAnalysis
         .getExitsNetwork()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
+        .getOrDefault(hostname, ImmutableMap.of())
+        .getOrDefault(vrfName, ImmutableMap.of())
+        .getOrDefault(outgoingInterfaceName, EmptyIpSpace.INSTANCE)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.EXITS_NETWORK;
     } else if (_forwardingAnalysis
         .getInsufficientInfo()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
+        .getOrDefault(hostname, ImmutableMap.of())
+        .getOrDefault(vrfName, ImmutableMap.of())
+        .getOrDefault(outgoingInterfaceName, EmptyIpSpace.INSTANCE)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.INSUFFICIENT_INFO;
-    } else {
+    } else if (_forwardingAnalysis
+        .getNeighborUnreachable()
+        .getOrDefault(hostname, ImmutableMap.of())
+        .getOrDefault(vrfName, ImmutableMap.of())
+        .getOrDefault(outgoingInterfaceName, EmptyIpSpace.INSTANCE)
+        .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.NEIGHBOR_UNREACHABLE;
     }
+    // It would be a bug if dst ip not in any sets above
+    throw new BatfishException("Cannot find correct flow disposition");
   }
 
   private void collectFlowTraces(
