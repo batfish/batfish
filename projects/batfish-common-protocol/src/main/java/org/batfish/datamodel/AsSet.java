@@ -21,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 /** An immutable class representing a set of AS numbers. */
 @ParametersAreNonnullByDefault
 public class AsSet implements Serializable, Comparable<AsSet> {
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
   private static final Cache<ImmutableSortedSet<Long>, AsSet> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build();
 
@@ -53,7 +56,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     try {
       return CACHE.get(immutableValues, () -> new AsSet(immutableValues));
     } catch (ExecutionException e) {
-      // This really shouldn't happen, but work anyway.
+      // This shouldn't happen, but handle anyway.
       return new AsSet(immutableValues);
     }
   }

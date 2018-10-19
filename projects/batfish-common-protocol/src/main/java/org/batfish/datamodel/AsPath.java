@@ -40,7 +40,10 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   private final List<AsSet> _asSets;
 
-  private static final Cache<List<AsSet>, AsPath> VALUES_CACHE =
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  //   (24 bytes seems smallest possible entry (list(set(long)), would be 1.5 MiB total).
+  private static final Cache<List<AsSet>, AsPath> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build();
 
   private AsPath(ImmutableList<AsSet> asSets) {
@@ -66,7 +69,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   public static AsPath of(List<AsSet> asSets) {
     ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
     try {
-      return VALUES_CACHE.get(immutableValue, () -> new AsPath(immutableValue));
+      return CACHE.get(immutableValue, () -> new AsPath(immutableValue));
     } catch (ExecutionException e) {
       // This shouldn't happen, but handle anyway.
       return new AsPath(immutableValue);
