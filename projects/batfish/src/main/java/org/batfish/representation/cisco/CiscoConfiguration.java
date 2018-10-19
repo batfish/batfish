@@ -1554,17 +1554,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // create generation policy for aggregate network
       String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
-      If currentGeneratedRouteConditional = new If();
+      If currentGeneratedRouteConditional =
+          new If(
+              new MatchPrefix6Set(
+                  new DestinationNetwork6(),
+                  new ExplicitPrefix6Set(
+                      new Prefix6Space(
+                          Collections.singleton(new Prefix6Range(prefix6, prefixRange))))),
+              ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
-      currentGeneratedRouteConditional.setGuard(
-          new MatchPrefix6Set(
-              new DestinationNetwork6(),
-              new ExplicitPrefix6Set(
-                  new Prefix6Space(
-                      Collections.singleton(new Prefix6Range(prefix6, prefixRange))))));
-      currentGeneratedRouteConditional
-          .getTrueStatements()
-          .add(Statements.ReturnTrue.toStaticStatement());
       c.getRoutingPolicies().put(generationPolicyName, currentGeneratedRoutePolicy);
       GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
       gr.setGenerationPolicy(generationPolicyName);
@@ -2028,9 +2026,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setBandwidth(iface.getBandwidth());
     }
     if (iface.getDhcpRelayClient()) {
-      newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
+      newIface.setDhcpRelayAddresses(_dhcpRelayServers);
     } else {
-      newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
+      newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
     newIface.setMtu(getInterfaceMtu(iface));
     newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
