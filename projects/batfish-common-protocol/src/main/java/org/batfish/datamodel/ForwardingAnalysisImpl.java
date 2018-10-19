@@ -154,14 +154,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(fibs, topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
     _arpTrueEdge = computeArpTrueEdge();
-    _deliveredToSubnet = computeDeliveredToSubnet();
-    _exitsNetwork = computeExitsNetwork(configurations, ribs);
-    _insufficientInfo = computeInsufficientInfo(configurations, ribs);
-    _neighborUnreachable = computeNeighborUnreachable();
     _dstIpsWithExternalNextHopIpArpFalse =
         computeDstIpsWithExternalNextHopIpArpFalse(configurations, ribs);
     _dstIpsWithInternalNextHopIpArpFalse =
         computeDstIpsWithInternalNextHopIpArpFalse(configurations, ribs);
+    _deliveredToSubnet = computeDeliveredToSubnet();
+    _exitsNetwork = computeExitsNetwork(configurations, ribs);
+    _insufficientInfo = computeInsufficientInfo(configurations, ribs);
+    _neighborUnreachable = computeNeighborUnreachable();
   }
 
   /* The constructor should only be used for tests */
@@ -1317,7 +1317,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 Entry::getKey,
                 vrfEntry ->
                     toImmutableMap(
-                        nodeEntry.getValue().getAllInterfaces(),
+                        vrfEntry.getValue().getInterfaces(),
                         Entry::getKey,
                         ifaceEntry -> {
                           Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
@@ -1344,7 +1344,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 Entry::getKey,
                 vrfEntry ->
                     toImmutableMap(
-                        nodeEntry.getValue().getAllInterfaces(),
+                        vrfEntry.getValue().getInterfaces(),
                         Entry::getKey,
                         ifaceEntry -> {
                           Set<AbstractRoute> routesWithInternalNextHopIpArpFalse =

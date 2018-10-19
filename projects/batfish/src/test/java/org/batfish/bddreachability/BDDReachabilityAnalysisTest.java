@@ -41,6 +41,10 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
@@ -294,31 +298,106 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutVrf_NodeInterfaceNeighborUnreachable() {
+  public void testBDDTransitions_PreOutVrf_NodeInterfaceDisposition() {
     /*
      * These predicates include the IP address of the interface, which is technically wrong.
      * It doesn't matter because those addresses can't get to PreOutVrf from PostInVrf.
      */
+
+    // delievered to subnet
     assertThat(
-        bddTransition(
-            _dstPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface1Name)),
+        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface1Name)),
         equalTo(_dstIface1IpBDD));
     assertThat(
-        bddTransition(
-            _dstPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _dstIface2Name)),
+        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface2Name)),
         equalTo(_dstIface2IpBDD));
     assertThat(
-        bddTransition(
-            _dstPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link1DstName)),
+        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _link1DstName)),
         equalTo(_link1DstIpBDD));
     assertThat(
-        bddTransition(
-            _dstPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_dstName, _link2DstName)),
+        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _link2DstName)),
         equalTo(_link2DstIpBDD));
+
+    // exits network
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceExitsNetwork(_dstName, _dstIface1Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceExitsNetwork(_dstName, _dstIface2Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceExitsNetwork(_dstName, _link1DstName)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceExitsNetwork(_dstName, _link2DstName)),
+        nullValue());
+
+    // neighbor unreachable
+    assertThat(
+        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
+        equalTo(_dstIface1IpBDD));
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceNeighborUnreachable(_dstName, _dstIface2Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceNeighborUnreachable(_dstName, _link1DstName)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceNeighborUnreachable(_dstName, _link2DstName)),
+        nullValue());
+
+    // insufficient info
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceInsufficientInfo(_dstName, _dstIface1Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceInsufficientInfo(_dstName, _dstIface2Name)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceInsufficientInfo(_dstName, _link1DstName)),
+        nullValue());
+    assertThat(
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceInsufficientInfo(_dstName, _link2DstName)),
+        nullValue());
   }
 
   @Test

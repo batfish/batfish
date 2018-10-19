@@ -1,8 +1,12 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
@@ -69,7 +73,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
           DENIED_OUT,
           NO_ROUTE,
           NULL_ROUTED,
-          NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
+          DELIVERED_TO_SUBNET,
+          EXITS_NETWORK,
+          NEIGHBOR_UNREACHABLE,
+          INSUFFICIENT_INFO);
 
   private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
     SpecifierContext ctxt = batfish.specifierContext();

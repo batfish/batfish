@@ -178,6 +178,7 @@ public final class BDDReachabilityAnalysisFactory {
     _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
 
     _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
+    checkConsistency();
   }
 
   private static Map<String, Map<String, BDD>> computeAclBDDs(
@@ -284,6 +285,45 @@ public final class BDDReachabilityAnalysisFactory {
                         vrfEntry.getValue(),
                         Entry::getKey,
                         ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
+  }
+
+  private void checkConsistency() {
+    _configs
+        .entrySet()
+        .stream()
+        .forEach(
+            nodeEntry ->
+              nodeEntry
+                  .getValue()
+                  .getVrfs()
+                  .entrySet()
+                  .stream()
+                  .forEach(
+                      vrfEntry ->
+                          vrfEntry.getValue().getInterfaces()
+                      .entrySet()
+                      .stream()
+                      .forEach(
+                          ifaceEntry -> {
+                            BDD deliveredToSubnet = _deliveredToSubnetBDDs.get(nodeEntry.getKey())
+                                .get(vrfEntry.getKey()).get(ifaceEntry.getKey());
+                            BDD exitsNetwork = _exitsNetworkBDDs.get(nodeEntry.getKey())
+                                .get(vrfEntry.getKey()).get(ifaceEntry.getKey());
+                            BDD neighborUnreachable = _neighborUnreachableBDDs.get(nodeEntry.getKey())
+                                .get(vrfEntry.getKey()).get(ifaceEntry.getKey());
+                            BDD insufficientInfo = _insufficientInfoBDDs.get(nodeEntry.getKey())
+                                .get(vrfEntry.getKey()).get(ifaceEntry.getKey());
+
+                            assert deliveredToSubnet.and(exitsNetwork).isZero();
+                            assert deliveredToSubnet.and(neighborUnreachable).isZero();
+                            assert deliveredToSubnet.and(insufficientInfo).isZero();
+                            assert exitsNetwork.and(neighborUnreachable).isZero();
+                            assert exitsNetwork.and(insufficientInfo).isZero();
+                            assert neighborUnreachable.and(insufficientInfo).isZero();
+                                  }
+                      )
+                  )
+        );
   }
 
   private Map<String, Map<String, Map<String, BDD>>> computeNeighborUnreachableBDDs(
