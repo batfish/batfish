@@ -119,7 +119,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
-  Map<String, String> getQuestionTemplates();
+  Map<String, String> getQuestionTemplates(boolean verbose);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
