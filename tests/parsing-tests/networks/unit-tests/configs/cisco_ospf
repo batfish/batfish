@@ -59,6 +59,7 @@ router ospf 1
   log-adjacency-changes detail
   log-adj-changes
   maximum-paths 32
+  priority 10
   redistribute direct route-map DIRECT_OSPF
   redistribute eigrp 5 metric 6 route-map eigrp-ospf-route-map
   redistribute ospf 2 match internal

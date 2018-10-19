@@ -323,6 +323,8 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
+
+
 ro_redistribute_bgp
 :
    REDISTRIBUTE BGP bgp_asn
@@ -675,6 +677,7 @@ s_router_ospf
       | ro_router_id
       | ro_summary_address
       | ro_vrf
+      | roi_priority
    )*
 ;
 
