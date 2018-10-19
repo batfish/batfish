@@ -106,6 +106,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // ipSpace of all ips in the snapshot, including all devices ips and ips in interface subnet
   private final IpSpace _snapshotOwnedIps;
 
+  private final Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithExternalNextHopIpArpFalse;
+
+  private final Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithInternalNextHopIpArpFalse;
+
   // cache some BDDs for convenience
   private IpSpaceToBDD _ipSpaceToBDD;
 
@@ -154,6 +158,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _exitsNetwork = computeExitsNetwork(configurations, ribs);
     _insufficientInfo = computeInsufficientInfo(configurations, ribs);
     _neighborUnreachable = computeNeighborUnreachable();
+    _dstIpsWithExternalNextHopIpArpFalse =
+        computeDstIpsWithExternalNextHopIpArpFalse(configurations, ribs);
+    _dstIpsWithInternalNextHopIpArpFalse =
+        computeDstIpsWithInternalNextHopIpArpFalse(configurations, ribs);
   }
 
   /* The constructor should only be used for tests */
@@ -180,6 +188,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithExternalNextHopIpArpFalse,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithInternalNextHopIpArpFalse,
+      Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithExternalNextHopIpArpFalse,
+      Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithInternalNextHopIpArpFalse,
       IpSpace snapshotOwnedIps) {
     _nullRoutedIps = nullRoutedIps;
     _routableIps = routableIps;
@@ -207,6 +217,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _deliveredToSubnet = null;
     _insufficientInfo = null;
     _exitsNetwork = null;
+    _dstIpsWithInternalNextHopIpArpFalse = dstIpsWithInternalNextHopIpArpFalse;
+    _dstIpsWithExternalNextHopIpArpFalse = dstIpsWithExternalNextHopIpArpFalse;
   }
 
   /**
@@ -1120,13 +1132,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       return EmptyIpSpace.INSTANCE;
     }
 
-    Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
-        _routesWithExternalNextHopIpArpFalse
-            .getOrDefault(hostname, ImmutableMap.of())
-            .getOrDefault(vrfName, ImmutableMap.of())
-            .getOrDefault(interfaceName, ImmutableSet.of());
-    IpSpace dstIpsWithExternalNextHopIpArpFalse =
-        computeRouteMatchConditions(routesWithExternalNextHopIpArpFalse, rib);
+    IpSpace dstIpsWithExternalNextHopIpArpFalsePerInterface =
+        _dstIpsWithExternalNextHopIpArpFalse
+            .get(hostname)
+            .get(vrfName)
+            .get(interfaceName);
 
     IpSpace externalIps = _snapshotOwnedIps.complement();
 
@@ -1139,7 +1149,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 .getOrDefault(hostname, ImmutableMap.of())
                 .getOrDefault(vrfName, ImmutableMap.of())
                 .getOrDefault(interfaceName, EmptyIpSpace.INSTANCE),
-            dstIpsWithExternalNextHopIpArpFalse),
+            dstIpsWithExternalNextHopIpArpFalsePerInterface),
         externalIps);
   }
 
@@ -1175,9 +1185,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   IpSpace computeInsufficientInfoPerInterface(
       String hostname, String vrfName, String interfaceName, GenericRib<AbstractRoute> rib) {
     // If interface is full (no missing devices), it cannot be insufficient info
-    if (!_interfacesWithMissingDevices
-        .getOrDefault(hostname, ImmutableSet.of())
-        .contains(interfaceName)) {
+    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
@@ -1199,24 +1207,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             ipSpaceElsewhere);
 
     // case 2: arp for nhip, nhip is external, dst ip is internal
-    IpSpace dstIpsWithExternalNextHopIpArpFalse =
-        computeRouteMatchConditions(
-            _routesWithExternalNextHopIpArpFalse
-                .getOrDefault(hostname, ImmutableMap.of())
-                .getOrDefault(vrfName, ImmutableMap.of())
-                .getOrDefault(interfaceName, ImmutableSet.of()),
-            rib);
+    IpSpace dstIpsWithExternalNextHopIpArpFalsePerInterafce =
+        _dstIpsWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
+
     IpSpace ipSpaceInternalDstIpExternalNexthopIp =
-        AclIpSpace.intersection(dstIpsWithExternalNextHopIpArpFalse, _snapshotOwnedIps);
+        AclIpSpace.intersection(dstIpsWithExternalNextHopIpArpFalsePerInterafce, _snapshotOwnedIps);
 
     // case 3: arp for nhip, nhip is internal
     IpSpace ipSpaceInternalNextHopIp =
-        computeRouteMatchConditions(
-            _routesWithInternalNextHopIpArpFalse
-                .getOrDefault(hostname, ImmutableMap.of())
-                .getOrDefault(vrfName, ImmutableMap.of())
-                .getOrDefault(interfaceName, ImmutableSet.of()),
-            rib);
+        _dstIpsWithInternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
 
     return AclIpSpace.union(
         ipSpaceInternalDstIp, ipSpaceInternalDstIpExternalNexthopIp, ipSpaceInternalNextHopIp);
@@ -1274,6 +1273,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _neighborUnreachable;
   }
 
+  // If one subnet of an interface has missing devices, then packets going out of the interface
+  // may potentially be sent to the subnet and be forwarded further. Therefore, instead of consider
+  // whether each subnet has missing devices, we just need to consider if one of the subnets has
+  // missing devices.
   private boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
     // (ips in interface subnet - ips in vrfs) is not empty
     return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_vrfUnOwnedIpBDD).isZero();
@@ -1281,28 +1284,78 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private Map<String, Set<String>> computeInterfacesWithMissingDevices(
       Map<String, Configuration> configurations) {
-    return configurations
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* node name */,
-                nodeEntry ->
-                    nodeEntry
-                        .getValue()
-                        .getAllInterfaces()
-                        .entrySet()
-                        .stream()
-                        .filter(
-                            ifaceEntry ->
-                                hasMissingDevicesOnInterface(
-                                    nodeEntry.getKey(), ifaceEntry.getKey()))
-                        .map(Entry::getKey)
-                        .collect(Collectors.toSet())));
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            nodeEntry
+                .getValue()
+                .getAllInterfaces()
+                .entrySet()
+                .stream()
+                .filter(
+                    ifaceEntry ->
+                        hasMissingDevicesOnInterface(nodeEntry.getKey(), ifaceEntry.getKey()))
+                .map(Entry::getKey)
+                .collect(Collectors.toSet()));
   }
 
   @Override
   public Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
     return _insufficientInfo;
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> computeDstIpsWithExternalNextHopIpArpFalse(
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        nodeEntry.getValue().getAllInterfaces(),
+                        Entry::getKey,
+                        ifaceEntry -> {
+                          Set<AbstractRoute> routesWithExternalNextHopIpArpFalse =
+                              _routesWithExternalNextHopIpArpFalse
+                                  .get(nodeEntry.getKey())
+                                  .get(vrfEntry.getKey())
+                                  .getOrDefault(ifaceEntry.getKey(), ImmutableSet.of());
+                          GenericRib<AbstractRoute> rib =
+                              ribs.get(nodeEntry.getKey()).get(vrfEntry.getKey());
+                          return computeRouteMatchConditions(
+                              routesWithExternalNextHopIpArpFalse, rib);
+                        })));
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> computeDstIpsWithInternalNextHopIpArpFalse(
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        nodeEntry.getValue().getAllInterfaces(),
+                        Entry::getKey,
+                        ifaceEntry -> {
+                          Set<AbstractRoute> routesWithInternalNextHopIpArpFalse =
+                              _routesWithInternalNextHopIpArpFalse
+                                  .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
+                                  .getOrDefault(vrfEntry.getKey(), ImmutableMap.of())
+                                  .getOrDefault(ifaceEntry.getKey(), ImmutableSet.of());
+                          GenericRib<AbstractRoute> rib =
+                              ribs.get(nodeEntry.getKey()).get(vrfEntry.getKey());
+                          return computeRouteMatchConditions(
+                              routesWithInternalNextHopIpArpFalse, rib);
+                        })));
   }
 }

@@ -414,23 +414,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   // We do not implement this function intentionally
   @Override
-  public void visitExitsNetwork(ExitsNetwork.State state) {
-  }
+  public void visitExitsNetwork(ExitsNetwork.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {
-  }
+  public void visitDeliveredToSubnet(DeliveredToSubnet.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitInsufficientInfo(InsufficientInfo.State state) {
-  }
+  public void visitInsufficientInfo(InsufficientInfo.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitNeighborUnreachable(NeighborUnreachable.State state) {
-  }
+  public void visitNeighborUnreachable(NeighborUnreachable.State state) {}
 
   @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
@@ -676,23 +672,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   // We do not implement this function intentionally
   @Override
-  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {
-  }
+  public void visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {
-  }
+  public void visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {
-  }
+  public void visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo.State state) {}
 
   // We do not implement this function intentionally
   @Override
-  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {
-  }
+  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {}
 
   @Override
   public void visitNodeInterfaceNeighborUnreachableOrExitsNetwork(

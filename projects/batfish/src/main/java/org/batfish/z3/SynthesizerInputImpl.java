@@ -217,10 +217,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _deliveredToSubnet;
-  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _exitsNetwork;
-  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _insufficientInfo;
-  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
   private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>>
       _neighborUnreachableOrExitsNetwork;
 
@@ -290,11 +286,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _dataPlane = forwardingAnalysis != null;
     if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
-      _deliveredToSubnet = computeDeliveredToSubnet(forwardingAnalysis.getDeliveredToSubnet());
-      _exitsNetwork = computeExitsNetwork(forwardingAnalysis.getExitsNetwork());
-      _insufficientInfo = computeInsufficientInfo(forwardingAnalysis.getInsufficientInfo());
-      _neighborUnreachable =
-          computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
       _neighborUnreachableOrExitsNetwork =
           computeNeighborUnreachableOrExitsNetwork(
               forwardingAnalysis.getNeighborUnreachableOrExitsNetwork());
@@ -308,10 +299,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _sourceNats = computeSourceNats();
     } else {
       _arpTrueEdge = null;
-      _deliveredToSubnet = null;
-      _exitsNetwork = null;
-      _insufficientInfo = null;
-      _neighborUnreachable = null;
       _neighborUnreachableOrExitsNetwork = null;
       _nullRoutedIps = null;
       _routableIps = null;
@@ -956,26 +943,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
     return _namedIpSpaces;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getDeliveredToSubnet() {
-    return _deliveredToSubnet;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getExitsNetwork() {
-    return _exitsNetwork;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getInsufficientInfo() {
-    return _insufficientInfo;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
-    return _neighborUnreachable;
   }
 
   @Override
