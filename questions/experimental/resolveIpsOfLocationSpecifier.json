@@ -1,0 +1,19 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "locationSpecifierInput": "${locations}",
+  "queryType": "ip_space_of_location",
+  "instance": {
+    "description": "Show IPs that are auto-assigned to locations",
+    "instanceName": "resolveIpsOfLocationSpecifier",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "locations": {
+        "description": "Input to the LocationSpecifier",
+        "optional": true,
+        "type": "string"
+      }
+    }
+  }
+}

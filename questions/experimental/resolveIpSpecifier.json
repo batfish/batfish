@@ -1,0 +1,20 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "ipSpaceSpecifierInput": "${ips}",
+  "queryType": "ip_space",
+  "instance": {
+    "description": "Show the resolved values for IP specifier",
+    "instanceName": "resolveIpSpecifier",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "ips": {
+        "description": "Input to the IpSpaceSpecifier",
+        "optional": true,
+        "value": "0.0.0.0/0",
+        "type": "string"
+      }
+    }
+  }
+}
