@@ -44,7 +44,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -1906,6 +1906,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray listSnapshots(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -1915,6 +1916,7 @@ public class WorkMgrService {
     return listSnapshotsHelper(apiKey, clientVersion, networkNameParam);
   }
 
+  @Deprecated
   private JSONArray listSnapshotsHelper(String apiKey, String clientVersion, String networkName) {
     try {
       _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
@@ -1934,7 +1936,8 @@ public class WorkMgrService {
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
-          TestrigMetadata ssMetadata = Main.getWorkMgr().getTestrigMetadata(networkName, snapshot);
+          SnapshotMetadata ssMetadata =
+              Main.getWorkMgr().getSnapshotMetadata(networkName, snapshot);
 
           String metadataStr = BatfishObjectMapper.writePrettyString(ssMetadata);
           JSONObject jObject =

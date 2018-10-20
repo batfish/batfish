@@ -70,6 +70,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
@@ -147,6 +148,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -1354,7 +1356,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Map<String, String> getQuestionTemplates() {
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
     if (_settings.getCoordinatorHost() == null) {
       throw new BatfishException("Cannot get question templates: coordinator host is not set");
     }
@@ -1369,6 +1371,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
     if (response == null) {
@@ -3869,10 +3872,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(ImmutableSet.toImmutableSet());
 
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, false);
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    if (_settings.getDebugFlags().contains("traceroute")) {
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
+    } else {
+      getDataPlanePlugin().processFlows(flows, dp, false);
+      return getHistory();
+    }
   }
 
   @Override

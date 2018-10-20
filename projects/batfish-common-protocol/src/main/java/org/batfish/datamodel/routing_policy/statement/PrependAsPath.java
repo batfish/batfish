@@ -5,12 +5,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -49,23 +50,24 @@ public final class PrependAsPath extends Statement {
   @Override
   public Result execute(Environment environment) {
     List<Long> toPrepend = _expr.evaluate(environment);
-    List<SortedSet<Long>> newAsPaths =
-        toPrepend.stream().map(ImmutableSortedSet::of).collect(ImmutableList.toImmutableList());
+    List<AsSet> newAsPaths = toPrepend.stream().map(AsSet::of).collect(Collectors.toList());
 
     BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
     bgpRouteBuilder.setAsPath(
-        ImmutableList.<SortedSet<Long>>builder()
-            .addAll(newAsPaths)
-            .addAll(bgpRouteBuilder.getAsPath())
-            .build());
+        AsPath.of(
+            ImmutableList.<AsSet>builder()
+                .addAll(newAsPaths)
+                .addAll(bgpRouteBuilder.getAsPath().getAsSets())
+                .build()));
 
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(
-          ImmutableList.<SortedSet<Long>>builder()
-              .addAll(newAsPaths)
-              .addAll(ir.getAsPath())
-              .build());
+          AsPath.of(
+              ImmutableList.<AsSet>builder()
+                  .addAll(newAsPaths)
+                  .addAll(ir.getAsPath().getAsSets())
+                  .build()));
     }
 
     Result result = new Result();

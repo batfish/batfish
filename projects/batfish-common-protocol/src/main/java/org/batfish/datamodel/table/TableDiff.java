@@ -161,6 +161,7 @@ public final class TableDiff {
 
     TableMetadata inputMetadata = baseTable.getMetadata();
     TableAnswerElement diffTable = new TableAnswerElement(diffMetadata(inputMetadata));
+    Map<String, ColumnMetadata> diffColumnMap = diffTable.getMetadata().toColumnMap();
 
     List<String> keyColumns =
         inputMetadata
@@ -189,7 +190,7 @@ public final class TableDiff {
       List<Row> deltaRows = deltaMap.get(baseKey);
       if (deltaRows == null) { // no matching keys in delta table
         if (includeOneTableKeys) {
-          RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
+          RowBuilder diffRowBuilder = Row.builder(diffColumnMap).putAll(baseRow, keyColumns);
           diffRowValues(diffRowBuilder, baseRow, null, inputMetadata);
           diffTable.addRow(diffRowBuilder.build());
         }
@@ -197,7 +198,7 @@ public final class TableDiff {
         for (Row deltaRow : deltaRows) {
           // insert delta rows that are unequal
           if (!baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns))) {
-            RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
+            RowBuilder diffRowBuilder = Row.builder(diffColumnMap).putAll(baseRow, keyColumns);
             diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
             diffTable.addRow(diffRowBuilder.build());
           }
@@ -213,7 +214,7 @@ public final class TableDiff {
         if (baseKeys.contains(deltaKey)) {
           continue;
         }
-        RowBuilder diffRowBuilder = Row.builder().putAll(deltaRow, keyColumns);
+        RowBuilder diffRowBuilder = Row.builder(diffColumnMap).putAll(deltaRow, keyColumns);
         diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
         diffTable.addRow(diffRowBuilder.build());
       }

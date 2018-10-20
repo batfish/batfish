@@ -168,7 +168,8 @@ public final class TracerouteAnswerer extends Answerer {
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
-  private static TableMetadata metadata() {
+  /** Create metadata for the new traceroute v2 answer */
+  public static TableMetadata metadata() {
     List<ColumnMetadata> columnMetadata;
     columnMetadata =
         ImmutableList.of(

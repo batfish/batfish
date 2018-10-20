@@ -88,7 +88,8 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -1231,7 +1232,7 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.getNetworkId(container);
     Function<String, Instant> toTestrigTimestamp =
         t ->
-            TestrigMetadataMgr.getTestrigCreationTimeOrMin(
+            SnapshotMetadataMgr.getSnapshotCreationTimeOrMin(
                 networkId, _idManager.getSnapshotId(t, networkId));
     return listSnapshots(container)
         .stream()
@@ -1310,6 +1311,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getStatusJson();
   }
 
+  @Deprecated
   public String getTestrigInfo(String containerName, String testrigName) {
     Path testrigDir = getdirSnapshot(containerName, testrigName);
     Path submittedTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
@@ -1456,8 +1458,8 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Now that the directory exists, we must also create the metadata.
     try {
-      TestrigMetadataMgr.writeMetadata(
-          new TestrigMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
+      SnapshotMetadataMgr.writeMetadata(
+          new SnapshotMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
       BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
       try {
@@ -1868,13 +1870,32 @@ public class WorkMgr extends AbstractCoordinator {
                   SnapshotId snapshotId1 = _idManager.getSnapshotId(t1, networkId);
                   SnapshotId snapshotId2 = _idManager.getSnapshotId(t2, networkId);
                   String key1 =
-                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(networkId, snapshotId1) + t1;
+                      SnapshotMetadataMgr.getSnapshotCreationTimeOrMin(networkId, snapshotId1) + t1;
                   String key2 =
-                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(networkId, snapshotId2) + t2;
+                      SnapshotMetadataMgr.getSnapshotCreationTimeOrMin(networkId, snapshotId2) + t2;
                   return key2.compareTo(key1);
                 })
             .collect(Collectors.toList());
     return testrigs;
+  }
+
+  /**
+   * Returns list of snapshots for given network along with their metadata, or {@code null} if
+   * network does not exist.
+   *
+   * @throws IOException if there is an error reading metadata for any snapshot
+   */
+  public @Nullable List<SnapshotMetadataEntry> listSnapshotsWithMetadata(@Nonnull String network)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    ImmutableList.Builder<SnapshotMetadataEntry> snapshotMetadataList = ImmutableList.builder();
+    for (String snapshot : listSnapshots(network)) {
+      snapshotMetadataList.add(
+          new SnapshotMetadataEntry(snapshot, getSnapshotMetadata(network, snapshot)));
+    }
+    return snapshotMetadataList.build();
   }
 
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
@@ -1915,7 +1936,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (TestrigMetadataMgr.getInitializationMetadata(
+      if (SnapshotMetadataMgr.getInitializationMetadata(
               networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
           == null) {
         throw new BatfishException(
@@ -1923,7 +1944,7 @@ public class WorkMgr extends AbstractCoordinator {
                 "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
       }
       if (workDetails.isDifferential
-          && TestrigMetadataMgr.getInitializationMetadata(
+          && SnapshotMetadataMgr.getInitializationMetadata(
                   networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
               == null) {
         throw new BatfishException(
@@ -2360,7 +2381,7 @@ public class WorkMgr extends AbstractCoordinator {
    * Fetch testrig metadata for network and snapshot. Returns {@code null} if network or snapshot
    * does not exist.
    */
-  public @Nullable TestrigMetadata getTestrigMetadata(String network, String snapshot)
+  public @Nullable SnapshotMetadata getSnapshotMetadata(String network, String snapshot)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2370,7 +2391,7 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    return TestrigMetadataMgr.readMetadata(networkId, snapshotId);
+    return SnapshotMetadataMgr.readMetadata(networkId, snapshotId);
   }
 
   /**

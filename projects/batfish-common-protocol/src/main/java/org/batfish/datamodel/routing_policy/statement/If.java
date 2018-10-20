@@ -39,7 +39,7 @@ public class If extends Statement {
   }
 
   public If(BooleanExpr guard, List<Statement> trueStatements) {
-    this(null, guard, trueStatements, new ArrayList<>());
+    this(null, guard, trueStatements, ImmutableList.of());
   }
 
   public If(BooleanExpr guard, List<Statement> trueStatements, List<Statement> falseStatements) {

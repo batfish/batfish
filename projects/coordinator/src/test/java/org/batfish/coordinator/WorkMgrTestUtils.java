@@ -14,7 +14,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.identifiers.NetworkId;
@@ -42,7 +42,7 @@ public final class WorkMgrTestUtils {
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
   }
 
-  public static void initTestrigWithTopology(String network, String snapshot, Set<String> nodes)
+  public static void initSnapshotWithTopology(String network, String snapshot, Set<String> nodes)
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
     NetworkId networkId = idManager.getNetworkId(network);
@@ -51,8 +51,8 @@ public final class WorkMgrTestUtils {
             ? idManager.getSnapshotId(snapshot, networkId)
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), null), networkId, snapshotId);
+    SnapshotMetadataMgr.writeMetadata(
+        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
     pojoTopology.setNodes(nodes.stream().map(Node::new).collect(Collectors.toSet()));
     Main.getWorkMgr().getStorage().storePojoTopology(pojoTopology, networkId, snapshotId);

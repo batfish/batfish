@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -21,7 +18,7 @@ public class BgpRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
-    private List<SortedSet<Long>> _asPath;
+    private AsPath _asPath;
 
     private SortedSet<Long> _clusterList;
 
@@ -46,7 +43,7 @@ public class BgpRoute extends AbstractRoute {
     private int _weight;
 
     public Builder() {
-      _asPath = new ArrayList<>();
+      _asPath = AsPath.empty();
       _communities = new TreeSet<>();
       _clusterList = new TreeSet<>();
     }
@@ -66,7 +63,7 @@ public class BgpRoute extends AbstractRoute {
           getNetwork(),
           getNextHopIp(),
           getAdmin(),
-          new AsPath(_asPath),
+          _asPath,
           _communities,
           _discard,
           _localPreference,
@@ -81,7 +78,7 @@ public class BgpRoute extends AbstractRoute {
           _weight);
     }
 
-    public List<SortedSet<Long>> getAsPath() {
+    public AsPath getAsPath() {
       return _asPath;
     }
 
@@ -118,7 +115,7 @@ public class BgpRoute extends AbstractRoute {
       return _weight;
     }
 
-    public Builder setAsPath(List<SortedSet<Long>> asPath) {
+    public Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
       return getThis();
     }
@@ -272,9 +269,9 @@ public class BgpRoute extends AbstractRoute {
     _admin = admin;
     _asPath = asPath;
     _clusterList =
-        clusterList == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(clusterList);
+        clusterList == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(clusterList);
     _communities =
-        communities == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(communities);
+        communities == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(communities);
     _discard = discard;
     _localPreference = localPreference;
     _med = med;
