@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
+
 import com.google.common.base.Throwables;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -8,6 +10,7 @@ import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -38,11 +41,11 @@ public class PoolMgrService {
   @GET
   @Path(CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getQuestionTemplates() {
+  public JSONArray getQuestionTemplates(@QueryParam(QP_VERBOSE) boolean verbose) {
     try {
       _logger.info("PMS:getQuestionTemplates");
 
-      Map<String, String> questionTemplates = Main.getQuestionTemplates();
+      Map<String, String> questionTemplates = Main.getQuestionTemplates(verbose);
 
       if (questionTemplates == null) {
         return new JSONArray(

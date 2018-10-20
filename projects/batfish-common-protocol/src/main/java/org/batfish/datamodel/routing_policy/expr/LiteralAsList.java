@@ -26,7 +26,7 @@ public final class LiteralAsList extends AsPathListExpr {
   }
 
   public LiteralAsList(List<AsExpr> list) {
-    _list = list;
+    _list = ImmutableList.copyOf(list);
   }
 
   @Override

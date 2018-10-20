@@ -67,7 +67,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     Set<String> nodes = ImmutableSet.of();
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, nodes);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, nodes);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
     WorkMgrTestUtils.setSnapshotNodeRoles(nodeRolesData, network, snapshot);
     Response response = getNodeRolesTarget(network, snapshot, true).get();
@@ -103,7 +103,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     Set<String> nodes = ImmutableSet.of();
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, nodes);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, nodes);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
     Response response = getNodeRolesTarget(network, snapshot, false).get();
 

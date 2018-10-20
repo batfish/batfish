@@ -7,18 +7,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    private List<SortedSet<Long>> _asPath;
+    @Nullable private AsPath _asPath;
 
     private String _attributePolicy;
 
@@ -29,7 +28,7 @@ public final class GeneratedRoute extends AbstractRoute {
     private String _nextHopInterface;
 
     public Builder() {
-      _asPath = new ArrayList<>();
+      _asPath = AsPath.empty();
     }
 
     @Override
@@ -38,7 +37,7 @@ public final class GeneratedRoute extends AbstractRoute {
           getNetwork(),
           getAdmin(),
           getNextHopIp(),
-          new AsPath(_asPath),
+          _asPath,
           _attributePolicy,
           _discard,
           _generationPolicy,
@@ -58,14 +57,14 @@ public final class GeneratedRoute extends AbstractRoute {
           .setMetric(firstNonNull(route.getMetric(), 0L))
           .setAdmin(route.getAdministrativeCost())
           // GeneratedRoute properties
-          .setAsPath(route.getAsPath().getAsSets())
+          .setAsPath(route.getAsPath())
           .setAttributePolicy(route.getAttributePolicy())
           .setDiscard(route.getDiscard())
           .setGenerationPolicy(route.getGenerationPolicy())
           .setNextHopInterface(route.getNextHopInterface());
     }
 
-    public Builder setAsPath(List<SortedSet<Long>> asPath) {
+    public Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
       return this;
     }

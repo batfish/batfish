@@ -21,9 +21,8 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.queues.WorkQueue.Type;
-import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.junit.Before;
@@ -33,9 +32,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkQueueMgr}. */
-public class WorkQueueMgrTest {
+public final class WorkQueueMgrTest {
 
-  private static final String CONTAINER = "container";
+  private static final String NETWORK = "container";
 
   private static final String SNAPSHOT = "snapshot";
 
@@ -132,26 +131,24 @@ public class WorkQueueMgrTest {
     Main.setLogger(new BatfishLogger("debug", false));
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
     WorkMgrTestUtils.initWorkManager(_folder);
-    Main.getWorkMgr().initNetwork(CONTAINER, null);
-    _networkId = Main.getWorkMgr().getIdManager().getNetworkId(CONTAINER);
+    Main.getWorkMgr().initNetwork(NETWORK, null);
+    _networkId = Main.getWorkMgr().getIdManager().getNetworkId(NETWORK);
   }
 
   private void initSnapshotMetadata(String snapshot, ProcessingStatus status) throws IOException {
-    initSnapshotMetadata(CONTAINER, snapshot, status);
+    initSnapshotMetadata(NETWORK, snapshot, status);
   }
 
   private void initSnapshotMetadata(String network, String snapshot, ProcessingStatus status)
       throws IOException {
-    WorkMgrTestUtils.initTestrigWithTopology(CONTAINER, snapshot, ImmutableSet.of());
-    TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), null);
-    InitializationMetadata metadata = trMetadata.getInitializationMetadata();
-    metadata.updateStatus(status, null);
-    TestrigMetadataMgr.writeMetadata(trMetadata, network, snapshot);
+    WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
+    SnapshotMetadataMgr.writeMetadata(
+        new SnapshotMetadata(Instant.now(), null).updateStatus(status, null), network, snapshot);
   }
 
   private void queueWork(String testrig, WorkType wType) throws Exception {
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(CONTAINER, testrig), new WorkDetails(testrig, wType));
+        resolvedQueuedWork(new WorkItem(NETWORK, testrig), new WorkDetails(testrig, wType));
     _workQueueMgr.queueUnassignedWork(work);
   }
 
@@ -159,7 +156,7 @@ public class WorkQueueMgrTest {
       throws Exception {
     QueuedWork work =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, snapshot),
+            new WorkItem(NETWORK, snapshot),
             new WorkDetails(snapshot, referenceSnapshot, true, wType));
     _workQueueMgr.queueUnassignedWork(work);
   }
@@ -167,7 +164,7 @@ public class WorkQueueMgrTest {
   private void workIsRejected(ProcessingStatus trStatus, WorkType wType) throws Exception {
     initSnapshotMetadata(SNAPSHOT, trStatus);
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(CONTAINER, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
+        resolvedQueuedWork(new WorkItem(NETWORK, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
     doAction(new Action(ActionType.QUEUE, work));
@@ -180,7 +177,7 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata(REFERENCE_SNAPSHOT, deltaTrStatus);
     QueuedWork work =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, SNAPSHOT),
+            new WorkItem(NETWORK, SNAPSHOT),
             new WorkDetails(SNAPSHOT, REFERENCE_SNAPSHOT, true, wType));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
@@ -192,7 +189,7 @@ public class WorkQueueMgrTest {
       throws Exception {
     initSnapshotMetadata(SNAPSHOT, trStatus);
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(CONTAINER, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
+        resolvedQueuedWork(new WorkItem(NETWORK, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
@@ -209,7 +206,7 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata(REFERENCE_SNAPSHOT, deltaTrStatus);
     QueuedWork work =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, SNAPSHOT),
+            new WorkItem(NETWORK, SNAPSHOT),
             new WorkDetails(SNAPSHOT, REFERENCE_SNAPSHOT, true, wType));
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
@@ -219,19 +216,19 @@ public class WorkQueueMgrTest {
   @Test
   public void getMatchingWorkAbsent() throws Exception {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    WorkItem wItem = new WorkItem(CONTAINER, "testrig");
+    WorkItem wItem = new WorkItem(NETWORK, "testrig");
     wItem.addRequestParam("key", "value");
     // get matching work should be null on an empty queue
     QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
     assertThat(matchingWork, equalTo(null));
 
     // build two work items that do not match
-    WorkItem wItem1 = new WorkItem(CONTAINER, "testrig");
+    WorkItem wItem1 = new WorkItem(NETWORK, "testrig");
     wItem1.addRequestParam("key1", "value1");
     QueuedWork work1 = resolvedQueuedWork(wItem1, new WorkDetails("testrig", WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
@@ -244,17 +241,17 @@ public class WorkQueueMgrTest {
   @Test
   public void getMatchingWorkPresent() throws Exception {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    WorkItem wItem1 = new WorkItem(CONTAINER, "testrig");
+    WorkItem wItem1 = new WorkItem(NETWORK, "testrig");
     wItem1.addRequestParam("key1", "value1");
     QueuedWork work1 = resolvedQueuedWork(wItem1, new WorkDetails("testrig", WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
     // build a work item that should match wItem1
-    WorkItem wItem3 = WorkMgr.resolveIds(new WorkItem(CONTAINER, "testrig"));
+    WorkItem wItem3 = WorkMgr.resolveIds(new WorkItem(NETWORK, "testrig"));
     wItem3.addRequestParam("key1", "value1");
 
     QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem3, QueueType.INCOMPLETE);
@@ -266,11 +263,11 @@ public class WorkQueueMgrTest {
   public void listIncompleteWork() throws Exception {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     Main.getWorkMgr().initNetwork("other", null);
-    WorkMgrTestUtils.initTestrigWithTopology("other", "testrig", ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology("other", "testrig", ImmutableSet.of());
     initSnapshotMetadata("other", "testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
             new WorkItem("other", "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
@@ -287,10 +284,10 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
@@ -306,10 +303,10 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("testrig2", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig2"), new WorkDetails("testrig2", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig2"), new WorkDetails("testrig2", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
@@ -984,11 +981,11 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("other", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "other"), new WorkDetails("other", WorkType.PARSING));
+            new WorkItem(NETWORK, "other"), new WorkDetails("other", WorkType.PARSING));
     _workQueueMgr.queueUnassignedWork(work1);
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "other"), new WorkDetails("other", WorkType.DATAPLANING));
+            new WorkItem(NETWORK, "other"), new WorkDetails("other", WorkType.DATAPLANING));
     _workQueueMgr.queueUnassignedWork(work2);
 
     QueuedWork aWork1 =
@@ -1011,12 +1008,12 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
     _workQueueMgr.queueUnassignedWork(work1);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(NETWORK, "testrig"),
             new WorkDetails("testrig", WorkType.PARSING_DEPENDENT_ANSWERING));
     _workQueueMgr.queueUnassignedWork(work2);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(2L));
@@ -1027,7 +1024,7 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
   }
@@ -1042,10 +1039,10 @@ public class WorkQueueMgrTest {
 
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
     workToCheck = _workQueueMgr.getWorkForChecking();
@@ -1085,7 +1082,7 @@ public class WorkQueueMgrTest {
     initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
 
     _thrown.expect(BatfishException.class);
@@ -1100,14 +1097,14 @@ public class WorkQueueMgrTest {
 
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(NETWORK, "testrig"),
             new WorkDetails("testrig", WorkType.PARSING_DEPENDENT_ANSWERING));
     QueuedWork work3 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(NETWORK, "testrig"),
             new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
 
     doAction(new Action(ActionType.QUEUE, work1));
@@ -1139,14 +1136,14 @@ public class WorkQueueMgrTest {
 
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(NETWORK, "testrig"),
             new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
     QueuedWork work3 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(NETWORK, "testrig"),
             new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
 
     doAction(new Action(ActionType.QUEUE, work1));
@@ -1178,7 +1175,7 @@ public class WorkQueueMgrTest {
 
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(CONTAINER, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
 
     doAction(new Action(ActionType.QUEUE, work1));
     _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedByUser, "Fake"));
