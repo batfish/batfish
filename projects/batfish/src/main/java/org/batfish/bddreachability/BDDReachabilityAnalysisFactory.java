@@ -29,6 +29,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -163,7 +164,8 @@ public final class BDDReachabilityAnalysisFactory {
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
-    _dstIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp());
+    _dstIpSpaceToBDD =
+        new MemoizedIpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp(), ImmutableMap.of());
 
     _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
     _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
@@ -973,7 +975,8 @@ public final class BDDReachabilityAnalysisFactory {
   private Map<StateExpr, BDD> rootConstraints(
       IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
     LocationVisitor<Optional<StateExpr>> locationToStateExpr = getLocationToStateExpr();
-    IpSpaceToBDD srcIpSpaceToBDD = new IpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp());
+    IpSpaceToBDD srcIpSpaceToBDD =
+        new MemoizedIpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp(), ImmutableMap.of());
 
     // convert Locations to StateExprs, and merge srcIp constraints
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();
