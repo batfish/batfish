@@ -342,26 +342,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
-    return computeDisposition(neighborUnreachable);
-  }
-
-  private Map<String, Map<String, Map<String, BooleanExpr>>> computeInsufficientInfo(
-      Map<String, Map<String, Map<String, IpSpace>>> insufficientInfo) {
-    return computeDisposition(insufficientInfo);
-  }
-
-  private Map<String, Map<String, Map<String, BooleanExpr>>> computeExitsNetwork(
-      Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork) {
-    return computeDisposition(exitsNetwork);
-  }
-
-  private Map<String, Map<String, Map<String, BooleanExpr>>> computeDeliveredToSubnet(
-      Map<String, Map<String, Map<String, IpSpace>>> deliveredToSubnet) {
-    return computeDisposition(deliveredToSubnet);
-  }
-
   private Map<String, Map<String, Map<String, BooleanExpr>>>
       computeNeighborUnreachableOrExitsNetwork(
           Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork) {
