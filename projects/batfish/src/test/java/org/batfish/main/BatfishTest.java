@@ -166,7 +166,8 @@ public class BatfishTest {
 
     assertThat(
         batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
-        containsInAnyOrder(new Edge("c1", "i1", "c2", "i2"), new Edge("c2", "i2", "c1", "i1")));
+        containsInAnyOrder(
+            Edge.fromStrings("c1", "i1", "c2", "i2"), Edge.fromStrings("c2", "i2", "c1", "i1")));
   }
 
   @Test
@@ -181,7 +182,8 @@ public class BatfishTest {
 
     assertThat(
         batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
-        containsInAnyOrder(new Edge("c1", "i1", "c2", "i2"), new Edge("c2", "i2", "c1", "i1")));
+        containsInAnyOrder(
+            Edge.fromStrings("c1", "i1", "c2", "i2"), Edge.fromStrings("c2", "i2", "c1", "i1")));
   }
 
   @Test
@@ -238,7 +240,7 @@ public class BatfishTest {
     configs.put(
         "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
     SortedSet<Edge> edges =
-        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+        new TreeSet<>(Collections.singletonList(Edge.fromStrings("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     // test that checkTopology does not throw
@@ -251,7 +253,7 @@ public class BatfishTest {
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
     SortedSet<Edge> edges =
-        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+        new TreeSet<>(Collections.singletonList(Edge.fromStrings("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     _thrown.expect(BatfishException.class);
@@ -267,7 +269,7 @@ public class BatfishTest {
     configs.put(
         "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
     SortedSet<Edge> edges =
-        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
+        new TreeSet<>(Collections.singletonList(Edge.fromStrings("h1", "eth1", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     _thrown.expect(BatfishException.class);

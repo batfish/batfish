@@ -306,7 +306,7 @@ public class ForwardingAnalysisImplTest {
   public void testComputeArpTrueEdge() {
     IpSpace nextHopIpSpace = new MockIpSpace(1);
     IpSpace dstIpSpace = new MockIpSpace(2);
-    Edge e1 = new Edge("c1", "i1", "c2", "i2");
+    Edge e1 = Edge.fromStrings("c1", "i1", "c2", "i2");
     _arpTrueEdgeDestIp = ImmutableMap.of(e1, dstIpSpace);
     _arpTrueEdgeNextHopIp = ImmutableMap.of(e1, nextHopIpSpace);
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
@@ -348,7 +348,7 @@ public class ForwardingAnalysisImplTest {
                                 .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
-    Edge edge = new Edge(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
+    Edge edge = Edge.fromStrings(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
     _routesWithDestIpEdge =
         ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())));
     _arpReplies =
@@ -388,7 +388,7 @@ public class ForwardingAnalysisImplTest {
             .setVrf(vrf2)
             .setAddress(new InterfaceAddress(i2Ip, P1.getPrefixLength()))
             .build();
-    Edge edge = new Edge(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
+    Edge edge = Edge.fromStrings(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
     Map<String, Configuration> configurations =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
@@ -877,7 +877,7 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute r1 = new ConnectedRoute(P1, i1);
     _routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
-    Edge e1 = new Edge(c1, i1, c2, i2);
+    Edge e1 = Edge.fromStrings(c1, i1, c2, i2);
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     Map<String, Map<String, Fib>> fibs =
@@ -1075,7 +1075,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     String c2 = "c2";
     String i2 = "i2";
-    Edge e1 = new Edge(c1, i1, c2, i2);
+    Edge e1 = Edge.fromStrings(c1, i1, c2, i2);
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     String v1 = "v1";
@@ -1126,7 +1126,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     String c2 = "c2";
     String i2 = "i2";
-    Edge e1 = new Edge(c1, i1, c2, i2);
+    Edge e1 = Edge.fromStrings(c1, i1, c2, i2);
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P1.toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();

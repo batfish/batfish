@@ -521,7 +521,7 @@ public final class WorkMgrTest {
     String snapshotNewName = "snapshotNew";
 
     List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
-    List<Edge> links = ImmutableList.of(new Edge("n2", "iface2", "n3", "iface3"));
+    List<Edge> links = ImmutableList.of(Edge.fromStrings("n2", "iface2", "n3", "iface3"));
     List<String> nodes = ImmutableList.of("n4", "n5");
 
     _manager.initNetwork(networkName, null);

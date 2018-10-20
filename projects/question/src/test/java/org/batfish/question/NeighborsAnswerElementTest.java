@@ -19,8 +19,8 @@ public class NeighborsAnswerElementTest {
   public void testPrettyPrint() {
     NeighborsAnswerElement neighborsAnswerElement = new NeighborsAnswerElement();
 
-    Edge testEdge1 = new Edge("node11", "interface11", "node12", "interface12");
-    Edge testEdge2 = new Edge("node21", "interface21", "node22", "interface22");
+    Edge testEdge1 = Edge.fromStrings("node11", "interface11", "node12", "interface12");
+    Edge testEdge2 = Edge.fromStrings("node21", "interface21", "node22", "interface22");
 
     RoleEdge testRoleEdge1 = new RoleEdge("role11", "role12");
 

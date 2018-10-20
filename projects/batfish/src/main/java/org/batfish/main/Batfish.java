@@ -1434,9 +1434,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (consumedEdges.contains(edge)) {
         continue;
       }
-      Edge reverseEdge = new Edge(edge.getInterface2(), edge.getInterface1());
       consumedEdges.add(edge);
-      consumedEdges.add(reverseEdge);
+      consumedEdges.add(edge.reverse());
     }
     return consumedEdges;
   }

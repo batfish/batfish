@@ -168,14 +168,14 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE2)))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -843,10 +843,10 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE2)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -1219,8 +1219,8 @@ public class DefaultTransitionGeneratorTest {
                     NODE1, ImmutableSet.of(VRF1, VRF2), NODE2, ImmutableSet.of(VRF1, VRF2)))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1326,10 +1326,10 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE3),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE1, INTERFACE3, NODE2, INTERFACE3),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -1427,8 +1427,8 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1474,8 +1474,8 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(VRF1, ImmutableSet.of(INTERFACE1))))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1523,24 +1523,24 @@ public class DefaultTransitionGeneratorTest {
                     NODE2, ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3)))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE3),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE3),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE3),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE3),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE3),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE3)))
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE3),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE1, INTERFACE2, NODE2, INTERFACE3),
+                    Edge.fromStrings(NODE1, INTERFACE3, NODE2, INTERFACE1),
+                    Edge.fromStrings(NODE1, INTERFACE3, NODE2, INTERFACE2),
+                    Edge.fromStrings(NODE1, INTERFACE3, NODE2, INTERFACE3),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE1, NODE1, INTERFACE3),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE2, NODE1, INTERFACE3),
+                    Edge.fromStrings(NODE2, INTERFACE3, NODE1, INTERFACE1),
+                    Edge.fromStrings(NODE2, INTERFACE3, NODE1, INTERFACE2),
+                    Edge.fromStrings(NODE2, INTERFACE3, NODE1, INTERFACE3)))
             .setNodeInterfaces(
                 ImmutableMap.of(
                     NODE1, ImmutableList.of(INTERFACE1, INTERFACE2, INTERFACE3),
@@ -1881,7 +1881,8 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setEnabledEdges(
+                ImmutableSet.of(Edge.fromStrings(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setSourceNats(
                 ImmutableMap.of(
