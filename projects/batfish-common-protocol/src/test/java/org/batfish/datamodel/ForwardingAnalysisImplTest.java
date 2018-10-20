@@ -948,8 +948,8 @@ public class ForwardingAnalysisImplTest {
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
 
     Configuration config = _cb.setHostname(c1).build();
-    _vb.setName(v1).setOwner(config).build();
-    _ib.setName(i1).setOwner(config).build();
+    Vrf vrf = _vb.setName(v1).setOwner(config).build();
+    _ib.setName(i1).setVrf(vrf).setOwner(config).build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
         forwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, config), fibs);
 

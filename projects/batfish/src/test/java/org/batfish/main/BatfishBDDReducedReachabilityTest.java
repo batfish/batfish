@@ -6,7 +6,6 @@ import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -175,17 +174,15 @@ public class BatfishBDDReducedReachabilityTest {
     _exception.expectMessage("No sources are compatible with the headerspace constraint");
     batfish.bddReducedReachability(
         parameters(
-            batfish,
-            ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
-            matchSrcIp("7.7.7.7")));
+            batfish, ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE), matchSrcIp("7.7.7.7")));
   }
 
   @Test
-  public void testNeighborUnreachable() throws IOException {
+  public void testExitsNetwork() throws IOException {
     Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
-            parameters(batfish, ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)));
+            parameters(batfish, ImmutableSet.of(FlowDisposition.EXITS_NETWORK)));
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
     Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(2));
@@ -198,30 +195,38 @@ public class BatfishBDDReducedReachabilityTest {
     checkDispositions(batfish, flows, EXITS_NETWORK);
   }
 
-  // TODO
-  /*
   @Test
   public void testDeliveredToSubnet() throws IOException {
-    Batfish batfish = initBatfish(new ExitNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(DELIVERED_TO_SUBNET));
+    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(
+            parameters(batfish, ImmutableSet.of(FlowDisposition.DELIVERED_TO_SUBNET)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(0));
   }
 
-  // TODO
   @Test
-  public void testExitsNetwork() throws IOException {
-    Batfish batfish = initBatfish(new ExitNetworkGenerator());
-    Set<Flow> flows = batfish.bddReducedReachability(ImmutableSet.of(EXITS_NETWORK));
-    assertThat(flows, hasSize(2));
-    assertThat(
-        flows,
-        containsInAnyOrder(
-            ImmutableList.of(
-                allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_IP)),
-                allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
-    checkDispositions(batfish, flows, EXITS_NETWORK);
+  public void testNeighborUnreachable() throws IOException {
+    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(
+            parameters(batfish, ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(flows, hasSize(0));
   }
-  */
+
+  @Test
+  public void testInsufficientInfo() throws IOException {
+    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddReducedReachability(
+            parameters(batfish, ImmutableSet.of(FlowDisposition.INSUFFICIENT_INFO)));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(flows, hasSize(0));
+  }
 
   class AcceptedNetworkGenerator implements NetworkGenerator {
     @Override

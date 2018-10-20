@@ -45,7 +45,6 @@ import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -271,13 +270,9 @@ public final class BDDReachabilityAnalysisTest {
     String link2SrcName = _net._link2Src.getName();
     BDD nodeDropNullRoute = bddTransition(_srcPreOutVrf, new NodeDropNullRoute(_srcName));
     BDD nodeInterfaceNeighborUnreachable1 =
-        bddTransition(
-            _srcPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link1SrcName));
+        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachable(_srcName, link1SrcName));
     BDD nodeInterfaceNeighborUnreachable2 =
-        bddTransition(
-            _srcPreOutVrf,
-            new NodeInterfaceNeighborUnreachableOrExitsNetwork(_srcName, link2SrcName));
+        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachable(_srcName, link2SrcName));
     BDD preOutEdge1 = bddTransition(_srcPreOutVrf, _srcPreOutEdge1);
     BDD preOutEdge2 = bddTransition(_srcPreOutVrf, _srcPreOutEdge2);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
@@ -346,32 +341,19 @@ public final class BDDReachabilityAnalysisTest {
 
     // neighbor unreachable
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
+        bddTransition(
+            _dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
         equalTo(_dstIface1IpBDD));
     assertThat(
-        _graph
-            .getEdges()
-            .get(_dstPreOutVrf)
-            .get(new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
-        nullValue());
+        bddTransition(
+            _dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface2Name)),
+        equalTo(_dstIface2IpBDD));
     assertThat(
-        _graph
-            .getEdges()
-            .get(_dstPreOutVrf)
-            .get(new NodeInterfaceNeighborUnreachable(_dstName, _dstIface2Name)),
-        nullValue());
+        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _link1DstName)),
+        equalTo(_link1DstIpBDD));
     assertThat(
-        _graph
-            .getEdges()
-            .get(_dstPreOutVrf)
-            .get(new NodeInterfaceNeighborUnreachable(_dstName, _link1DstName)),
-        nullValue());
-    assertThat(
-        _graph
-            .getEdges()
-            .get(_dstPreOutVrf)
-            .get(new NodeInterfaceNeighborUnreachable(_dstName, _link2DstName)),
-        nullValue());
+        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _link2DstName)),
+        equalTo(_link2DstIpBDD));
 
     // insufficient info
     assertThat(

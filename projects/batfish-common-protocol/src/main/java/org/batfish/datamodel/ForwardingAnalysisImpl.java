@@ -738,7 +738,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 Entry::getKey,
                 vrfEntry ->
                     toImmutableMap(
-                        nodeEntry.getValue().getAllInterfaces(),
+                        vrfEntry.getValue().getInterfaces(),
                         Entry::getKey,
                         ifaceEntry ->
                             fibs.get(nodeEntry.getKey())
@@ -1133,10 +1133,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     }
 
     IpSpace dstIpsWithExternalNextHopIpArpFalsePerInterface =
-        _dstIpsWithExternalNextHopIpArpFalse
-            .get(hostname)
-            .get(vrfName)
-            .get(interfaceName);
+        _dstIpsWithExternalNextHopIpArpFalse.get(hostname).get(vrfName).get(interfaceName);
 
     IpSpace externalIps = _snapshotOwnedIps.complement();
 
