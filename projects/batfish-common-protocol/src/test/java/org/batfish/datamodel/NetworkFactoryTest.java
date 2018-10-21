@@ -102,10 +102,10 @@ public class NetworkFactoryTest {
     Interface iface =
         nf.interfaceBuilder().setOwner(c).setActive(false).setVrf(vrf).setOspfArea(oa2).build();
 
-    assertThat(oa1.getName(), not(equalTo(oa2.getName())));
+    assertThat(oa1.getAreaNumber(), not(equalTo(oa2.getAreaNumber())));
     assertThat(oa1, not(sameInstance(oa2)));
-    assertThat(ospfProcess.getAreas().get(oa2.getName()), sameInstance(oa2));
+    assertThat(ospfProcess.getAreas().get(oa2.getAreaNumber()), sameInstance(oa2));
     assertThat(oa2, OspfAreaMatchers.hasInterfaces(hasItem(iface.getName())));
-    assertThat(iface.getOspfAreaName(), equalTo(oa2.getName()));
+    assertThat(iface.getOspfAreaName(), equalTo(oa2.getAreaNumber()));
   }
 }
