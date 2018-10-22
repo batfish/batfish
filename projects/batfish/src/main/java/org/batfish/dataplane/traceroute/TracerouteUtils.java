@@ -1,7 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.flow.StepAction.BLOCKED;
+import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
@@ -121,7 +121,7 @@ final class TracerouteUtils {
         if (filterResult.getAction() == LineAction.DENY) {
           return enterSrcIfaceStepBuilder
               .setDetail(enterSrcStepDetailBuilder.build())
-              .setAction(BLOCKED)
+              .setAction(DENIED)
               .build();
         }
       }

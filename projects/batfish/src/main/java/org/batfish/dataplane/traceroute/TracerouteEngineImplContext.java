@@ -270,7 +270,7 @@ public class TracerouteEngineImplContext {
                                 transmissionContext._originalFlow,
                                 transmissionContext._transformedFlow))
                         .build())
-                .setAction(StepAction.BLOCKED)
+                .setAction(StepAction.DENIED)
                 .build());
         Hop deniedOutHop = new Hop(new Node(currentNodeName), stepBuilder.build());
         transmissionContext._hopsSoFar.add(deniedOutHop);
@@ -398,7 +398,7 @@ public class TracerouteEngineImplContext {
               _dataPlane);
       if (enterIfaceStep != null) {
         steps.add(enterIfaceStep);
-        if (enterIfaceStep.getAction() == StepAction.BLOCKED) {
+        if (enterIfaceStep.getAction() == StepAction.DENIED) {
           Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
           transmissionContext._hopsSoFar.add(deniedHop);
           Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
@@ -618,7 +618,7 @@ public class TracerouteEngineImplContext {
     Trace trace;
     if (denied) {
       // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.BLOCKED);
+      exitOutIfaceBuilder.setAction(StepAction.DENIED);
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(deniedOutHop);
