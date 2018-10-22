@@ -1686,7 +1686,7 @@
         "Lines" : {
           "filename" : "configs/cisco_vrrp",
           "lines" : [
-            14
+            16
           ]
         }
       },
@@ -1698,7 +1698,7 @@
         "Lines" : {
           "filename" : "configs/cisco_vrrp",
           "lines" : [
-            24
+            26
           ]
         }
       },
@@ -1710,7 +1710,7 @@
         "Lines" : {
           "filename" : "configs/cisco_vrrp",
           "lines" : [
-            26
+            28
           ]
         }
       },
