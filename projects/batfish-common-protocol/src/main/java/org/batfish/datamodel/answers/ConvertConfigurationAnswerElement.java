@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
@@ -30,6 +32,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
   private static final String PROP_ERRORS = "errors";
   private static final String PROP_FAILED = "failed";
+  private static final String PROP_FILEMAP = "filemap";
   private static final String PROP_REFERENCED_STRUCTURES = "referencedStructures";
   private static final String PROP_UNDEFINED_REFERENCES = "undefinedReferences";
   private static final String PROP_VERSION = "version";
@@ -50,6 +53,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private Set<String> _failed;
 
+  @Nonnull private Multimap<String, String> _fileMap;
+
   // filename -> structType -> structName -> usage -> lines
   @Nonnull
   private SortedMap<
@@ -61,7 +66,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
-    this(null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null);
   }
 
   @JsonCreator
@@ -76,6 +81,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
               referencedstructures,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
       @JsonProperty(PROP_FAILED) SortedSet<String> failed,
+      @JsonProperty(PROP_FILEMAP) Multimap<String, String> fileMap,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
           SortedMap<
                   String,
@@ -86,6 +92,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
     _failed = firstNonNull(failed, new TreeSet<>());
+    _fileMap = firstNonNull(fileMap, TreeMultimap.create());
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
     _version = firstNonNull(version, Version.getVersion());
@@ -110,6 +117,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull
   public Set<String> getFailed() {
     return _failed;
+  }
+
+  @JsonProperty(PROP_FILEMAP)
+  @Nonnull
+  public Multimap<String, String> getFileMap() {
+    return _fileMap;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)
