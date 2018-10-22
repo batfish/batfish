@@ -1,0 +1,25 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "filterSpecifierInput": "${filters}",
+  "nodeSpecifierInput": "${nodes}",
+  "queryType": "filter",
+  "instance": {
+    "description": "Show the resolved values for filter specifier",
+    "instanceName": "resolveFilterSpecifier",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "filters": {
+        "description": "Input to the FilterSpecifier",
+        "optional": true,
+        "type": "string"
+      },
+      "nodes": {
+        "description": "Input to the NodeSpecifier",
+        "optional": true,
+        "type": "string"
+      }
+    }
+  }
+}

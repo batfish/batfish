@@ -1,0 +1,27 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "IP_SPACE",
+  "differential" : false,
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Show the resolved values for IP specifier",
+    "instanceName" : "qname",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "ips" : {
+        "description" : "Input to the IpSpaceSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "1.1.1.1/24"
+      }
+    }
+  },
+  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "ipSpaceSpecifierInput" : "1.1.1.1/24",
+  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory"
+}
