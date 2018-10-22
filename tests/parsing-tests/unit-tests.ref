@@ -25584,7 +25584,12 @@
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        VACANT_MESSAGE:'vacant-message'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
-            "          NEWLINE:'\\n'  <== mode:M_VacantMessageText))))",
+            "          NEWLINE:'\\n'  <== mode:M_VacantMessageText))",
+            "      (l_null",
+            "        SPEED:'speed'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          DEC:'38400'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_line",
             "      LINE:'line'  <== mode:DEFAULT_MODE",
@@ -29866,6 +29871,14 @@
             "      (ro_distribute_list",
             "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
             "        name = (variable_distribute_list",
+            "          VARIABLE:'aclin'  <== mode:DEFAULT_MODE)",
+            "        IN:'in'  <== mode:DEFAULT_MODE",
+            "        iname = (interface_name",
+            "          VARIABLE:'ethernet0/0'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
+            "        name = (variable_distribute_list",
             "          VARIABLE:'aclout'  <== mode:DEFAULT_MODE)",
             "        OUT:'out'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -29938,6 +29951,10 @@
             "      (ro_maximum_paths",
             "        MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "        DEC:'32'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (roi_priority",
+            "        PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (ro_redistribute_connected",
             "        REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
@@ -56626,19 +56643,61 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 60,
+              "Line" : 48,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list aclin in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 49,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list aclin in ethernet0/0"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 50,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list aclout out"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 51,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list prefix plin in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 52,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list prefix plout out"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 53,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list route-map rmin in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 54,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list route-map rmout out"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 61,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 75,
+              "Line" : 77,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 76,
+              "Line" : 78,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
             }
@@ -58742,7 +58801,7 @@
                 14,
                 15
               ],
-              "numReferrers" : 2
+              "numReferrers" : 3
             },
             "Loopback0" : {
               "definitionLines" : [
@@ -62033,24 +62092,24 @@
             "40" : {
               "line access-class list" : [
                 6,
-                25
+                26
               ]
             },
             "99" : {
               "line access-class list" : [
-                55
+                56
               ]
             },
             "vty-acl" : {
               "line access-class list" : [
-                21
+                22
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                60
+                61
               ]
             }
           }
@@ -62152,6 +62211,9 @@
               "interface" : [
                 7,
                 12
+              ],
+              "router ospf distribute-list in" : [
+                49
               ]
             },
             "Loopback0" : {
@@ -62163,12 +62225,12 @@
           "ipv4 prefix-list" : {
             "INFILTER" : {
               "ospf area filter-list" : [
-                75
+                77
               ]
             },
             "OUTFILTER" : {
               "ospf area filter-list" : [
-                76
+                78
               ]
             },
             "filterName" : {
@@ -62179,46 +62241,47 @@
             },
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                50
+                51
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                51
+                52
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                48
+                48,
+                49
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                49
+                50
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                61
+                63
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                62
+                64
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                52
+                53
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                53
+                54
               ]
             }
           }
@@ -64152,24 +64215,24 @@
             "40" : {
               "line access-class list" : [
                 6,
-                25
+                26
               ]
             },
             "99" : {
               "line access-class list" : [
-                55
+                56
               ]
             },
             "vty-acl" : {
               "line access-class list" : [
-                21
+                22
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                60
+                61
               ]
             }
           }
@@ -64236,46 +64299,47 @@
           "ipv4 prefix-list" : {
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                50
+                51
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                51
+                52
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                48
+                48,
+                49
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                49
+                50
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                61
+                63
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                62
+                64
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                52
+                53
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                53
+                54
               ]
             }
           }

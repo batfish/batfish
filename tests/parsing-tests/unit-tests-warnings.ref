@@ -324,21 +324,70 @@
       },
       {
         "Filename" : "cisco_ospf",
-        "Line" : 60,
+        "Line" : 48,
+        "Text" : "distribute-list aclin in",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 49,
+        "Text" : "distribute-list aclin in ethernet0/0",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 50,
+        "Text" : "distribute-list aclout out",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 51,
+        "Text" : "distribute-list prefix plin in",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 52,
+        "Text" : "distribute-list prefix plout out",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 53,
+        "Text" : "distribute-list route-map rmin in",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 54,
+        "Text" : "distribute-list route-map rmout out",
+        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ospf",
+        "Line" : 61,
         "Text" : "maximum-paths 32",
         "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_ospf",
-        "Line" : 75,
+        "Line" : 77,
         "Text" : "area 0 filter-list prefix INFILTER in",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_ospf",
-        "Line" : 76,
+        "Line" : 78,
         "Text" : "area 0 filter-list prefix OUTFILTER out",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -513,10 +562,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 67 results",
+      "notes" : "Found 74 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 67
+      "numResults" : 74
     }
   }
 ]

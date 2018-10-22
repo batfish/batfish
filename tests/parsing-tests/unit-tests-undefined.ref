@@ -936,7 +936,7 @@
           "filename" : "configs/cisco_line",
           "lines" : [
             6,
-            25
+            26
           ]
         }
       },
@@ -948,7 +948,7 @@
         "Lines" : {
           "filename" : "configs/cisco_line",
           "lines" : [
-            55
+            56
           ]
         }
       },
@@ -960,7 +960,7 @@
         "Lines" : {
           "filename" : "configs/cisco_line",
           "lines" : [
-            21
+            22
           ]
         }
       },
@@ -972,7 +972,7 @@
         "Lines" : {
           "filename" : "configs/cisco_line",
           "lines" : [
-            60
+            61
           ]
         }
       },
@@ -1080,7 +1080,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            50
+            51
           ]
         }
       },
@@ -1092,7 +1092,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            51
+            52
           ]
         }
       },
@@ -1104,7 +1104,8 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            48
+            48,
+            49
           ]
         }
       },
@@ -1116,7 +1117,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            49
+            50
           ]
         }
       },
@@ -1128,7 +1129,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            61
+            63
           ]
         }
       },
@@ -1140,7 +1141,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            62
+            64
           ]
         }
       },
@@ -1152,7 +1153,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            52
+            53
           ]
         }
       },
@@ -1164,7 +1165,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            53
+            54
           ]
         }
       },
