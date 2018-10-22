@@ -14,9 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.topology.TopologyUtil;
@@ -55,7 +53,7 @@ public class ForwardingAnalysisImplTest {
 
   private Interface.Builder _ib;
 
-  private Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
+  private Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps = ImmutableMap.of();
 
   private Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
@@ -83,7 +81,8 @@ public class ForwardingAnalysisImplTest {
 
   private Map<String, Map<String, IpSpace>> _someoneReplies;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
+  private Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps =
+      ImmutableMap.of();
 
   private Map<String, Set<String>> _interfacesWithMissingDevices;
 
@@ -97,11 +96,11 @@ public class ForwardingAnalysisImplTest {
 
   private Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithInternalNextHopIpArpFalse;
 
-  IpSpace _snapshotOwnedIps;
-
   private Vrf.Builder _vb;
 
   private GenericRib<AbstractRoute> _rib;
+
+  private IpSpace _internalIps = EmptyIpSpace.INSTANCE;
 
   private ForwardingAnalysisImpl initForwardingAnalysisImpl() {
     return new ForwardingAnalysisImpl(
@@ -128,7 +127,7 @@ public class ForwardingAnalysisImplTest {
         _routesWithInternalNextHopIpArpFalse,
         _dstIpsWithExternalNextHopIpArpFalse,
         _dstIpsWithInternalNextHopIpArpFalse,
-        _snapshotOwnedIps);
+        _internalIps);
   }
 
   @Before
@@ -691,6 +690,11 @@ public class ForwardingAnalysisImplTest {
             c1,
             ImmutableSortedMap.of(
                 v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
+    /*
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
+        */
+
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
         forwardingAnalysisImpl.computeArpFalseNextHopIp(ribs);
@@ -926,7 +930,7 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, Set<AbstractRoute>> result =
-        forwardingAnalysisImpl.computeRoutesWithDestIpEdge(fibs, topology);
+        forwardingAnalysisImpl.computeRoutesWithDestIpEdge(topology);
 
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
@@ -1014,9 +1018,8 @@ public class ForwardingAnalysisImplTest {
             .setAdministrativeCost(1)
             .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
-    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
-        Maps.immutableEntry(
-            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
+    Set<AbstractRoute> candidateRoutes =
+        ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
     _someoneReplies =
         ImmutableMap.of(hostname, ImmutableMap.of(outInterface, P2.getStartIp().toIpSpace()));
     Fib fib =
@@ -1042,7 +1045,7 @@ public class ForwardingAnalysisImplTest {
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Set<AbstractRoute> result =
         forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface(
-            fib, hostname, routesWithNextHopByOutInterfaceEntry);
+            fib, hostname, outInterface, candidateRoutes);
 
     /*
      * Should only contain nextHopIpRoute1 since it is the only route with a next-hop-ip for which
@@ -1068,9 +1071,8 @@ public class ForwardingAnalysisImplTest {
             .setAdministrativeCost(1)
             .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
-    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
-        Maps.immutableEntry(
-            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
+    Set<AbstractRoute> candidateRoutes =
+        ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
     _someoneReplies = ImmutableMap.of();
     Fib fib =
         MockFib.builder()
@@ -1095,7 +1097,7 @@ public class ForwardingAnalysisImplTest {
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Set<AbstractRoute> result =
         forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface(
-            fib, hostname, routesWithNextHopByOutInterfaceEntry);
+            fib, hostname, outInterface, candidateRoutes);
 
     /*
      * Should contain both nextHopIpRoute1 and nextHopIpRoute2, since:
@@ -1187,9 +1189,8 @@ public class ForwardingAnalysisImplTest {
             .setVrf(vrf1)
             .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
             .build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        forwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+        ForwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
 
     assertThat(
         interfaceHostSubnetIps,
@@ -1225,9 +1226,8 @@ public class ForwardingAnalysisImplTest {
             .setVrf(vrf1)
             .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        forwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+        ForwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
 
     assertThat(
         interfaceHostSubnetIps,
@@ -1339,7 +1339,7 @@ public class ForwardingAnalysisImplTest {
             .setMatchingIps(ImmutableMap.of(dstPrefix, dstPrefix.toIpSpace()))
             .build();
 
-    AclIpSpace.Builder snapshotOwnedIpsBuilder = AclIpSpace.builder();
+    AclIpSpace.Builder internalIpsBuilder = AclIpSpace.builder();
 
     if (!isSubnetFull) {
       _interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of(INTERFACE1));
@@ -1373,7 +1373,7 @@ public class ForwardingAnalysisImplTest {
       _arpFalseDestIp =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      snapshotOwnedIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
+      internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
       _dstIpsWithInternalNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
@@ -1399,8 +1399,10 @@ public class ForwardingAnalysisImplTest {
     }
 
     if (isDstIpInternal) {
-      snapshotOwnedIpsBuilder.thenPermitting(dstPrefix.toIpSpace());
+      internalIpsBuilder.thenPermitting(dstPrefix.toIpSpace());
     }
+
+    _internalIps = internalIpsBuilder.build();
 
     if (isDstIpInSubnet) {
       _interfaceHostSubnetIps =
@@ -1411,8 +1413,6 @@ public class ForwardingAnalysisImplTest {
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
     }
-
-    _snapshotOwnedIps = snapshotOwnedIpsBuilder.build();
 
     _neighborUnreachableOrExitsNetwork =
         ImmutableMap.of(
@@ -1426,9 +1426,9 @@ public class ForwardingAnalysisImplTest {
             .getOrDefault(VRF1, ImmutableMap.of())
             .getOrDefault(INTERFACE1, EmptyIpSpace.INSTANCE);
     IpSpace exitsNetworkIpSpace =
-        forwardingAnalysisImpl.computeExitsNetworkPerInterface(CONFIG1, VRF1, INTERFACE1, _rib);
+        forwardingAnalysisImpl.computeExitsNetworkPerInterface(CONFIG1, VRF1, INTERFACE1);
     IpSpace insufficientInfoIpSpace =
-        forwardingAnalysisImpl.computeInsufficientInfoPerInterface(CONFIG1, VRF1, INTERFACE1, _rib);
+        forwardingAnalysisImpl.computeInsufficientInfoPerInterface(CONFIG1, VRF1, INTERFACE1);
     IpSpace neighborUnreachableIpSpace =
         forwardingAnalysisImpl.computeNeighborUnreachable().get(CONFIG1).get(VRF1).get(INTERFACE1);
 
