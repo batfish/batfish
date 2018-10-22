@@ -2,8 +2,8 @@ package org.batfish.question.referencedstructures;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -36,7 +36,7 @@ public class ReferencedStructuresAnswerer extends Answerer {
   public TableAnswerElement answer() {
     ReferencedStructuresQuestion question = (ReferencedStructuresQuestion) _question;
     Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-    SetMultimap<String, String> hostnameFilenameMap =
+    Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =
         hostnameFilenameMap

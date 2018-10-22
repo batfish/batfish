@@ -5,8 +5,8 @@ import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -49,7 +49,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
       Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-      SetMultimap<String, String> hostnameFilenameMap =
+      Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
           hostnameFilenameMap

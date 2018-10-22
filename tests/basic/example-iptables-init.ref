@@ -3,11 +3,36 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
+        "internet-host" : [
+          "hosts/internet-host.json"
+        ],
+        "iptables/z1-firewall.v4" : [
+          "iptables/z1-firewall.v4"
+        ],
+        "iptables/z2-firewall.v4" : [
+          "iptables/z2-firewall.v4"
+        ],
+        "iptables/z2-host2.v4" : [
+          "iptables/z2-host2.v4"
+        ],
+        "r1" : [
+          "configs/r1.cfg"
+        ],
         "r2" : [
           "configs/r2.cfg"
         ],
         "r3" : [
           "configs/r3.cfg"
+        ],
+        "z1-firewall" : [
+          "configs/z1-firewall.cfg",
+          "hosts/z1-firewall.json"
+        ],
+        "z1-host1" : [
+          "hosts/z1-host1.json"
+        ],
+        "z1-host2" : [
+          "hosts/z1-host2.json"
         ],
         "z2-firewall" : [
           "configs/z2-firewall.cfg",
@@ -18,31 +43,6 @@
         ],
         "z2-host2" : [
           "hosts/z2-host2.json"
-        ],
-        "z1-host1" : [
-          "hosts/z1-host1.json"
-        ],
-        "iptables/z1-firewall.v4" : [
-          "iptables/z1-firewall.v4"
-        ],
-        "z1-host2" : [
-          "hosts/z1-host2.json"
-        ],
-        "internet-host" : [
-          "hosts/internet-host.json"
-        ],
-        "iptables/z2-firewall.v4" : [
-          "iptables/z2-firewall.v4"
-        ],
-        "iptables/z2-host2.v4" : [
-          "iptables/z2-host2.v4"
-        ],
-        "z1-firewall" : [
-          "hosts/z1-firewall.json",
-          "configs/z1-firewall.cfg"
-        ],
-        "r1" : [
-          "configs/r1.cfg"
         ]
       },
       "parseStatus" : {

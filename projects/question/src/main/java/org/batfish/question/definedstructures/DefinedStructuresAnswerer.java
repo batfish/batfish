@@ -3,8 +3,8 @@ package org.batfish.question.definedstructures;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.SetMultimap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +45,7 @@ public class DefinedStructuresAnswerer extends Answerer {
   private Multiset<Row> rawAnswer(DefinedStructuresQuestion question) {
     Multiset<Row> structures = HashMultiset.create();
     Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-    SetMultimap<String, String> hostnameFilenameMap =
+    Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =
         hostnameFilenameMap
