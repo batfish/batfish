@@ -1467,6 +1467,11 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testDispositionComputation() {
+    /*
+     * Avoid the case where arp dst ip, interface is full, and dst ip is in subnet (would be accepted).
+     * Avoid cases where dst ip is internal but not in subet.
+     */
+
     // Arp dst ip, interface is full, dst ip is internal -> neighbor unreachable
     testDispositionComputationTemplate(
         NextHopIpStatus.NONE, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);

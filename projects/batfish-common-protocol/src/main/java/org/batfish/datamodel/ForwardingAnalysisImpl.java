@@ -938,21 +938,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         ipSpaces1,
         Entry::getKey, /* hostname */
         nodeEntry -> {
-          Map<String, Map<String, IpSpace>> nodeIpSpace2 =
-              ipSpaces2.getOrDefault(nodeEntry.getKey(), ImmutableMap.of());
+          Map<String, Map<String, IpSpace>> nodeIpSpace2 = ipSpaces2.get(nodeEntry.getKey());
           return toImmutableMap(
               nodeEntry.getValue(),
               Entry::getKey, /* vrf */
               vrfEntry -> {
-                Map<String, IpSpace> vrfIpSpaces2 =
-                    nodeIpSpace2.getOrDefault(vrfEntry.getKey(), ImmutableMap.of());
+                Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
                 return toImmutableMap(
                     vrfEntry.getValue(),
                     Entry::getKey, /* interface */
                     ifaceEntry ->
-                        op.apply(
-                            ifaceEntry.getValue(),
-                            vrfIpSpaces2.getOrDefault(ifaceEntry.getKey(), EmptyIpSpace.INSTANCE)));
+                        op.apply(ifaceEntry.getValue(), vrfIpSpaces2.get(ifaceEntry.getKey())));
               });
         });
   }
@@ -1140,8 +1136,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         vrfEntry.getValue(),
                         Entry::getKey,
                         ifaceEntry ->
+                            // We just need to consider if there is a subnet with missing devices,
+                            // since if so a packet could be further forwarded.
                             _interfacesWithMissingDevices
-                                    .getOrDefault(nodeEntry.getKey(), ImmutableSet.of())
+                                    .get(nodeEntry.getKey())
                                     .contains(ifaceEntry.getKey())
                                 ? EmptyIpSpace.INSTANCE
                                 : ifaceEntry.getValue())));
@@ -1207,7 +1205,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               _routesWithExternalNextHopIpArpFalse
                                   .get(nodeEntry.getKey())
                                   .get(vrfEntry.getKey())
-                                  .getOrDefault(ifaceEntry.getKey(), ImmutableSet.of());
+                                  .get(ifaceEntry.getKey());
                           GenericRib<AbstractRoute> rib =
                               ribs.get(nodeEntry.getKey()).get(vrfEntry.getKey());
                           return computeRouteMatchConditions(
