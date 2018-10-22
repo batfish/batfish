@@ -9,6 +9,7 @@ import static org.batfish.question.specifiers.SpecifiersAnswerer.COL_NODE;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveFilter;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveInterface;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveIpSpace;
+import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveIpSpaceOfLocation;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveLocation;
 import static org.batfish.question.specifiers.SpecifiersAnswerer.resolveNode;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -132,11 +133,50 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveIpSpaceTestDefault() {
+  public void resolveIpSpaceTest() {
+    String prefix = "3.3.3.3/24";
+
+    SpecifiersQuestion questionWithIp = new SpecifiersQuestion(QueryType.LOCATION);
+    questionWithIp.setIpSpaceSpecifierInput(prefix);
+
+    // both interfacelocations should be mapped to 3.3.3.3/24
+    assertThat(
+        resolveIpSpace(questionWithIp, _context).getRows().getData(),
+        equalTo(
+            ImmutableMultiset.of(
+                Row.of(
+                    COL_IP_SPACE,
+                    IpWildcardSetIpSpace.builder()
+                        .including(new IpWildcard(prefix))
+                        .build()
+                        .toString()))));
+  }
+
+  @Test
+  public void resolveIpSpaceOfLocationTest() {
+    SpecifiersQuestion questionWithLocation =
+        new SpecifiersQuestion(QueryType.IP_SPACE_OF_LOCATION);
+    questionWithLocation.setLocationSpecifierInput(_c1.getHostname());
+
+    // only c1:iface1 should be present
+    assertThat(
+        resolveIpSpaceOfLocation(questionWithLocation, _context).getRows().getData(),
+        equalTo(
+            ImmutableMultiset.of(
+                Row.of(
+                    COL_LOCATIONS,
+                    ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
+                        .toString(),
+                    COL_IP_SPACE,
+                    _iface1.getAddress().getIp().toIpSpace().toString()))));
+  }
+
+  @Test
+  public void resolveIpSpaceOfLocationTestDefault() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
 
     assertThat(
-        resolveIpSpace(question, _context).getRows().getData(),
+        resolveIpSpaceOfLocation(question, _context).getRows().getData(),
         equalTo(
             ImmutableMultiset.of(
                 Row.of(
@@ -151,49 +191,6 @@ public class SpecifiersAnswererTest {
                         .toString(),
                     COL_IP_SPACE,
                     _iface2.getAddress().getIp().toIpSpace().toString()))));
-  }
-
-  @Test
-  public void resolveIpSpaceTestIpSpace() {
-    String prefix = "3.3.3.3/24";
-
-    SpecifiersQuestion questionWithIp = new SpecifiersQuestion(QueryType.LOCATION);
-    questionWithIp.setIpSpaceSpecifierInput(prefix);
-
-    // both interfacelocations should be mapped to 3.3.3.3/24
-    assertThat(
-        resolveIpSpace(questionWithIp, _context).getRows().getData(),
-        equalTo(
-            ImmutableMultiset.of(
-                Row.of(
-                    COL_LOCATIONS,
-                    ImmutableSet.of(
-                            new InterfaceLocation(_c1.getHostname(), _iface1.getName()).toString(),
-                            new InterfaceLocation(_c2.getHostname(), _iface2.getName()).toString())
-                        .toString(),
-                    COL_IP_SPACE,
-                    IpWildcardSetIpSpace.builder()
-                        .including(new IpWildcard(prefix))
-                        .build()
-                        .toString()))));
-  }
-
-  @Test
-  public void resolveIpSpaceTestLocation() {
-    SpecifiersQuestion questionWithLocation = new SpecifiersQuestion(QueryType.LOCATION);
-    questionWithLocation.setLocationSpecifierInput(_c1.getHostname());
-
-    // only c1:iface1 should be present
-    assertThat(
-        resolveIpSpace(questionWithLocation, _context).getRows().getData(),
-        equalTo(
-            ImmutableMultiset.of(
-                Row.of(
-                    COL_LOCATIONS,
-                    ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
-                        .toString(),
-                    COL_IP_SPACE,
-                    _iface1.getAddress().getIp().toIpSpace().toString()))));
   }
 
   @Test
