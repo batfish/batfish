@@ -100,8 +100,6 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  private GenericRib<AbstractRoute> _rib;
-
   private IpSpace _internalIps = EmptyIpSpace.INSTANCE;
 
   private ForwardingAnalysisImpl initForwardingAnalysisImpl() {
@@ -918,18 +916,6 @@ public class ForwardingAnalysisImplTest {
     Edge e1 = new Edge(c1, i1, c2, i2);
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    Map<String, Map<String, Fib>> fibs =
-        ImmutableMap.of(
-            c1,
-            ImmutableMap.of(
-                v1,
-                MockFib.builder()
-                    .setNextHopInterfaces(
-                        ImmutableMap.of(
-                            r1,
-                            ImmutableMap.of(
-                                i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(r1)))))
-                    .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, Set<AbstractRoute>> result =
         forwardingAnalysisImpl.computeRoutesWithDestIpEdge(topology);
@@ -1334,11 +1320,6 @@ public class ForwardingAnalysisImplTest {
             .setNextHopInterface(INTERFACE1)
             .setAdministrativeCost(1)
             .setNetwork(dstPrefix)
-            .build();
-    _rib =
-        MockRib.builder()
-            .setRoutes(ImmutableSet.of(route))
-            .setMatchingIps(ImmutableMap.of(dstPrefix, dstPrefix.toIpSpace()))
             .build();
 
     AclIpSpace.Builder internalIpsBuilder = AclIpSpace.builder();
