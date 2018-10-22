@@ -30,11 +30,11 @@
         "as2core2" : [
           "configs/as2core2.cfg"
         ],
-        "as1border1" : [
-          "configs/as1border1.cfg"
-        ],
         "as3border1" : [
           "configs/as3border1.cfg"
+        ],
+        "as1border1" : [
+          "configs/as1border1.cfg"
         ],
         "as2border1" : [
           "configs/as2border1.cfg"

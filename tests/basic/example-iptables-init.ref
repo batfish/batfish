@@ -16,11 +16,11 @@
         "z2-host1" : [
           "hosts/z2-host1.json"
         ],
-        "z1-host1" : [
-          "hosts/z1-host1.json"
-        ],
         "z2-host2" : [
           "hosts/z2-host2.json"
+        ],
+        "z1-host1" : [
+          "hosts/z1-host1.json"
         ],
         "iptables/z1-firewall.v4" : [
           "iptables/z1-firewall.v4"

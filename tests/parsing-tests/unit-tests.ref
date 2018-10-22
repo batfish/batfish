@@ -3,17 +3,17 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "cisco_vrrp" : [
-          "configs/cisco_vrrp"
-        ],
         "arista_queue_monitor" : [
           "configs/arista_queue_monitor"
         ],
-        "ios_xr_class_map" : [
-          "configs/ios_xr_class_map"
+        "cisco_vrrp" : [
+          "configs/cisco_vrrp"
         ],
         "cisco_line" : [
           "configs/cisco_line"
+        ],
+        "ios_xr_class_map" : [
+          "configs/ios_xr_class_map"
         ],
         "no_aaa_group_server" : [
           "configs/no_aaa_group_server"
@@ -78,11 +78,11 @@
         "mac_access_list" : [
           "configs/mac_access_list"
         ],
-        "ip_prefix_list_single_line" : [
-          "configs/ip_prefix_list_single_line"
-        ],
         "ios_xr_multipart" : [
           "configs/ios_xr_multipart"
+        ],
+        "ip_prefix_list_single_line" : [
+          "configs/ip_prefix_list_single_line"
         ],
         "aruba_time_range" : [
           "configs/aruba_time_range"
@@ -108,11 +108,11 @@
         "juniper_security" : [
           "configs/juniper_security"
         ],
-        "neighbor_mix" : [
-          "configs/neighbor_mix"
-        ],
         "rp" : [
           "configs/ios_xr_route_policy"
+        ],
+        "neighbor_mix" : [
+          "configs/neighbor_mix"
         ],
         "cisco_tacacs" : [
           "configs/cisco_tacacs"
@@ -193,11 +193,11 @@
           "hosts/host2.json",
           "configs/host2"
         ],
-        "aaa_group_server_source_interface" : [
-          "configs/aaa_group_server_source_interface"
-        ],
         "cadant_acl" : [
           "configs/cadant_acl"
+        ],
+        "aaa_group_server_source_interface" : [
+          "configs/aaa_group_server_source_interface"
         ],
         "cisco_dot11" : [
           "configs/cisco_dot11"
@@ -271,11 +271,11 @@
         "cisco_ipv6_access_list" : [
           "configs/cisco_ipv6_access_list"
         ],
-        "nxos_bgp" : [
-          "configs/nxos_bgp"
-        ],
         "cisco_dot1x" : [
           "configs/cisco_dot1x"
+        ],
+        "nxos_bgp" : [
+          "configs/nxos_bgp"
         ],
         "test" : [
           "configs/ip_default_route_classless"
@@ -313,11 +313,11 @@
         "tcpflags" : [
           "configs/tcpflags"
         ],
-        "asa_ssh" : [
-          "configs/asa_ssh"
-        ],
         "cisco-zone" : [
           "configs/cisco_zone"
+        ],
+        "asa_ssh" : [
+          "configs/asa_ssh"
         ],
         "ios_template" : [
           "configs/ios_template"
@@ -343,14 +343,14 @@
         "juniper_bgp_authentication" : [
           "configs/juniper_bgp_authentication"
         ],
+        "ios_xr_logging" : [
+          "configs/ios_xr_logging"
+        ],
         "juniper_relay" : [
           "configs/juniper_relay"
         ],
         "neighbor_nxos" : [
           "configs/neighbor_nxos"
-        ],
-        "ios_xr_logging" : [
-          "configs/ios_xr_logging"
         ],
         "ios_xr_bgp" : [
           "configs/ios_xr_bgp"
@@ -373,11 +373,11 @@
         "no_ip_name_server" : [
           "configs/cisco_noipns"
         ],
-        "cadant_qos" : [
-          "configs/cadant_qos"
-        ],
         "interface_sdr" : [
           "configs/interface_sdr"
+        ],
+        "cadant_qos" : [
+          "configs/cadant_qos"
         ],
         "juniper_isis" : [
           "configs/juniper_isis"
@@ -388,11 +388,11 @@
         "mos_misc" : [
           "configs/mos_misc"
         ],
-        "cadant_route_map" : [
-          "configs/cadant_route_map"
-        ],
         "juniper_ospf_stub_areas" : [
           "configs/juniper_ospf_stub_areas"
+        ],
+        "cadant_route_map" : [
+          "configs/cadant_route_map"
         ],
         "nxos_route_map_continue" : [
           "configs/nxos_route_map_continue"
@@ -409,11 +409,11 @@
         "ios_xr_isis" : [
           "configs/ios_xr_isis"
         ],
-        "cisco_enable" : [
-          "configs/cisco_enable"
-        ],
         "cadant_cable" : [
           "configs/cadant_cable"
+        ],
+        "cisco_enable" : [
+          "configs/cisco_enable"
         ],
         "cisco_system" : [
           "configs/cisco_system"
@@ -439,20 +439,20 @@
         "aruba_net" : [
           "configs/aruba_net"
         ],
-        "arista_ospf" : [
-          "configs/arista_ospf"
-        ],
         "cisco_privilege" : [
           "configs/cisco_privilege"
+        ],
+        "arista_ospf" : [
+          "configs/arista_ospf"
         ],
         "nxos_misc" : [
           "configs/nxos_misc"
         ],
-        "aruba_vlan" : [
-          "configs/aruba_vlan"
-        ],
         "ios_xr_ssh" : [
           "configs/ios_xr_ssh"
+        ],
+        "aruba_vlan" : [
+          "configs/aruba_vlan"
         ],
         "juniper_bgp" : [
           "configs/juniper_bgp"
@@ -502,11 +502,11 @@
         "pim_snooping" : [
           "configs/pim_snooping"
         ],
-        "cisco_ip" : [
-          "configs/cisco_ip"
-        ],
         "preset" : [
           "configs/ios_xr_prefix_set"
+        ],
+        "cisco_ip" : [
+          "configs/cisco_ip"
         ],
         "cisco_dynamic_access_policy_record" : [
           "configs/cisco_dynamic_access_policy_record"
@@ -577,11 +577,11 @@
         "cisco_additional_paths" : [
           "configs/cisco_additional_paths"
         ],
-        "juniper_route_filter" : [
-          "configs/juniper_route_filter"
-        ],
         "statistics" : [
           "configs/statistics"
+        ],
+        "juniper_route_filter" : [
+          "configs/juniper_route_filter"
         ],
         "network6" : [
           "configs/network6"
@@ -619,11 +619,11 @@
         "cisco_ipsla" : [
           "configs/cisco_ipsla"
         ],
-        "pim" : [
-          "configs/pim"
-        ],
         "cadant_misc" : [
           "configs/cadant_misc"
+        ],
+        "pim" : [
+          "configs/pim"
         ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
@@ -703,20 +703,20 @@
         "cisco_multicast" : [
           "configs/cisco_multicast"
         ],
-        "foundry_interface" : [
-          "configs/foundry_interface"
-        ],
         "nexus_bgp" : [
           "configs/nexus_bgp"
-        ],
-        "cisco_vpn" : [
-          "configs/cisco_vpn"
         ],
         "nxos_interface" : [
           "configs/nxos_interface"
         ],
+        "foundry_interface" : [
+          "configs/foundry_interface"
+        ],
         "foundry_vlan_group" : [
           "configs/foundry_vlan_group"
+        ],
+        "cisco_vpn" : [
+          "configs/cisco_vpn"
         ],
         "cadant_interface" : [
           "configs/cadant_interface"
