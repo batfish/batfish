@@ -45,10 +45,10 @@ public class Edge implements Serializable, Comparable<Edge> {
       @Nullable @JsonProperty(PROP_INT1) String int1,
       @Nullable @JsonProperty(PROP_NODE2) String node2,
       @Nullable @JsonProperty(PROP_INT2) String int2) {
-    checkArgument(!Strings.isNullOrEmpty(node1), "Cannot create Edge with null node");
-    checkArgument(!Strings.isNullOrEmpty(int1), "Cannot create Edge with null interface");
-    checkArgument(!Strings.isNullOrEmpty(node2), "Cannot create Edge with null node");
-    checkArgument(!Strings.isNullOrEmpty(int2), "Cannot create Edge with null interface");
+    checkArgument(!Strings.isNullOrEmpty(node1), "Missing %s", PROP_NODE1);
+    checkArgument(!Strings.isNullOrEmpty(int1), "Missing %s", PROP_INT1);
+    checkArgument(!Strings.isNullOrEmpty(node2), "Missing %s", PROP_NODE2);
+    checkArgument(!Strings.isNullOrEmpty(int2), "Missing %s", PROP_INT2);
     return new Edge(new NodeInterfacePair(node1, int1), new NodeInterfacePair(node2, int2));
   }
 
@@ -60,7 +60,7 @@ public class Edge implements Serializable, Comparable<Edge> {
   }
 
   /** Create an edge from names of nodes and interfaces */
-  public static Edge fromStrings(
+  public static Edge of(
       String tailNode, String tailInterface, String headNode, String headInterface) {
     return create(tailNode, tailInterface, headNode, headInterface);
   }

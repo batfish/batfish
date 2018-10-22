@@ -45,68 +45,46 @@ public class InferRolesMixedCaseTest {
   private static final Topology EXAMPLE_TOPOLOGY =
       new Topology(
           ImmutableSortedSet.of(
-              Edge.fromStrings(
-                  "as1BORDER1", "GigabitEthernet0/0", "as1core1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as1BORDER1", "GigabitEthernet1/0", "as2border1", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as1bORder2", "GigabitEthernet0/0", "as3border2", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as1bORder2", "GigabitEthernet1/0", "as1core1", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as1core1", "GigabitEthernet0/0", "as1bORder2", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as1core1", "GigabitEthernet1/0", "as1BORDER1", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as2border1", "GigabitEthernet0/0", "as1BORDER1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2border1", "GigabitEthernet1/0", "as2core1", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as2border1", "GigabitEthernet2/0", "as2core2", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2border2", "GigabitEthernet0/0", "as3border1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2border2", "GigabitEthernet1/0", "as2core2", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as2border2", "GigabitEthernet2/0", "as2core1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2core1", "GigabitEthernet0/0", "as2border1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2core1", "GigabitEthernet1/0", "as2border2", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2core1", "GigabitEthernet2/0", "as2dist1", "GigabitEthernet0/0"),
-              Edge.fromStrings("as2core1", "GigabitEthernet3/0", "as2dist2", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2core2", "GigabitEthernet0/0", "as2border2", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as2core2", "GigabitEthernet1/0", "as2border1", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2core2", "GigabitEthernet2/0", "as2dist2", "GigabitEthernet0/0"),
-              Edge.fromStrings("as2core2", "GigabitEthernet3/0", "as2dist1", "GigabitEthernet1/0"),
-              Edge.fromStrings("as2DEPT1", "GigabitEthernet0/0", "as2dist1", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2DEPT1", "GigabitEthernet1/0", "as2dist2", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2DEPT1", "GigabitEthernet2/0", "host1", "eth0"),
-              Edge.fromStrings("as2DEPT1", "GigabitEthernet3/0", "host2", "eth0"),
-              Edge.fromStrings("as2dist1", "GigabitEthernet0/0", "as2core1", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2dist1", "GigabitEthernet1/0", "as2core2", "GigabitEthernet3/0"),
-              Edge.fromStrings("as2dist1", "GigabitEthernet2/0", "as2DEPT1", "GigabitEthernet0/0"),
-              Edge.fromStrings("as2dist2", "GigabitEthernet0/0", "as2core2", "GigabitEthernet2/0"),
-              Edge.fromStrings("as2dist2", "GigabitEthernet1/0", "as2core1", "GigabitEthernet3/0"),
-              Edge.fromStrings("as2dist2", "GigabitEthernet2/0", "as2DEPT1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as3border1", "GigabitEthernet0/0", "as3core1", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as3border1", "GigabitEthernet1/0", "as2border2", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as3border2", "GigabitEthernet0/0", "as1bORder2", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as3border2", "GigabitEthernet1/0", "as3core1", "GigabitEthernet0/0"),
-              Edge.fromStrings(
-                  "as3core1", "GigabitEthernet0/0", "as3border2", "GigabitEthernet1/0"),
-              Edge.fromStrings(
-                  "as3core1", "GigabitEthernet1/0", "as3border1", "GigabitEthernet0/0"),
-              Edge.fromStrings("as3core1", "GigabitEthernet2/0", "as3core1", "GigabitEthernet3/0"),
-              Edge.fromStrings("as3core1", "GigabitEthernet3/0", "as3core1", "GigabitEthernet2/0"),
-              Edge.fromStrings("host1", "eth0", "as2DEPT1", "GigabitEthernet2/0"),
-              Edge.fromStrings("host2", "eth0", "as2DEPT1", "GigabitEthernet3/0")));
+              Edge.of("as1BORDER1", "GigabitEthernet0/0", "as1core1", "GigabitEthernet1/0"),
+              Edge.of("as1BORDER1", "GigabitEthernet1/0", "as2border1", "GigabitEthernet0/0"),
+              Edge.of("as1bORder2", "GigabitEthernet0/0", "as3border2", "GigabitEthernet0/0"),
+              Edge.of("as1bORder2", "GigabitEthernet1/0", "as1core1", "GigabitEthernet0/0"),
+              Edge.of("as1core1", "GigabitEthernet0/0", "as1bORder2", "GigabitEthernet1/0"),
+              Edge.of("as1core1", "GigabitEthernet1/0", "as1BORDER1", "GigabitEthernet0/0"),
+              Edge.of("as2border1", "GigabitEthernet0/0", "as1BORDER1", "GigabitEthernet1/0"),
+              Edge.of("as2border1", "GigabitEthernet1/0", "as2core1", "GigabitEthernet0/0"),
+              Edge.of("as2border1", "GigabitEthernet2/0", "as2core2", "GigabitEthernet1/0"),
+              Edge.of("as2border2", "GigabitEthernet0/0", "as3border1", "GigabitEthernet1/0"),
+              Edge.of("as2border2", "GigabitEthernet1/0", "as2core2", "GigabitEthernet0/0"),
+              Edge.of("as2border2", "GigabitEthernet2/0", "as2core1", "GigabitEthernet1/0"),
+              Edge.of("as2core1", "GigabitEthernet0/0", "as2border1", "GigabitEthernet1/0"),
+              Edge.of("as2core1", "GigabitEthernet1/0", "as2border2", "GigabitEthernet2/0"),
+              Edge.of("as2core1", "GigabitEthernet2/0", "as2dist1", "GigabitEthernet0/0"),
+              Edge.of("as2core1", "GigabitEthernet3/0", "as2dist2", "GigabitEthernet1/0"),
+              Edge.of("as2core2", "GigabitEthernet0/0", "as2border2", "GigabitEthernet1/0"),
+              Edge.of("as2core2", "GigabitEthernet1/0", "as2border1", "GigabitEthernet2/0"),
+              Edge.of("as2core2", "GigabitEthernet2/0", "as2dist2", "GigabitEthernet0/0"),
+              Edge.of("as2core2", "GigabitEthernet3/0", "as2dist1", "GigabitEthernet1/0"),
+              Edge.of("as2DEPT1", "GigabitEthernet0/0", "as2dist1", "GigabitEthernet2/0"),
+              Edge.of("as2DEPT1", "GigabitEthernet1/0", "as2dist2", "GigabitEthernet2/0"),
+              Edge.of("as2DEPT1", "GigabitEthernet2/0", "host1", "eth0"),
+              Edge.of("as2DEPT1", "GigabitEthernet3/0", "host2", "eth0"),
+              Edge.of("as2dist1", "GigabitEthernet0/0", "as2core1", "GigabitEthernet2/0"),
+              Edge.of("as2dist1", "GigabitEthernet1/0", "as2core2", "GigabitEthernet3/0"),
+              Edge.of("as2dist1", "GigabitEthernet2/0", "as2DEPT1", "GigabitEthernet0/0"),
+              Edge.of("as2dist2", "GigabitEthernet0/0", "as2core2", "GigabitEthernet2/0"),
+              Edge.of("as2dist2", "GigabitEthernet1/0", "as2core1", "GigabitEthernet3/0"),
+              Edge.of("as2dist2", "GigabitEthernet2/0", "as2DEPT1", "GigabitEthernet1/0"),
+              Edge.of("as3border1", "GigabitEthernet0/0", "as3core1", "GigabitEthernet1/0"),
+              Edge.of("as3border1", "GigabitEthernet1/0", "as2border2", "GigabitEthernet0/0"),
+              Edge.of("as3border2", "GigabitEthernet0/0", "as1bORder2", "GigabitEthernet0/0"),
+              Edge.of("as3border2", "GigabitEthernet1/0", "as3core1", "GigabitEthernet0/0"),
+              Edge.of("as3core1", "GigabitEthernet0/0", "as3border2", "GigabitEthernet1/0"),
+              Edge.of("as3core1", "GigabitEthernet1/0", "as3border1", "GigabitEthernet0/0"),
+              Edge.of("as3core1", "GigabitEthernet2/0", "as3core1", "GigabitEthernet3/0"),
+              Edge.of("as3core1", "GigabitEthernet3/0", "as3core1", "GigabitEthernet2/0"),
+              Edge.of("host1", "eth0", "as2DEPT1", "GigabitEthernet2/0"),
+              Edge.of("host2", "eth0", "as2DEPT1", "GigabitEthernet3/0")));
 
   private static Set<String> filterSet(Set<String> nodes, Predicate<String> filter) {
     return nodes.stream().filter(filter).collect(ImmutableSet.toImmutableSet());

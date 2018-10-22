@@ -124,8 +124,7 @@ public class EdgesAnswererTest {
     _includeRemoteNodes = ImmutableSortedSet.of("host1", "host2");
 
     // Sending an  edge from host1 to host2 in layer 3
-    _topology =
-        new Topology(ImmutableSortedSet.of(Edge.fromStrings("host1", "int1", "host2", "int2")));
+    _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
   }
 
   @Test
@@ -371,7 +370,7 @@ public class EdgesAnswererTest {
   @Test
   public void testGetLayer3Edges() {
     Topology layer3Topology =
-        new Topology(ImmutableSortedSet.of(Edge.fromStrings("host1", "int1", "host2", "int2")));
+        new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
 
     Multiset<Row> rows =
         getLayer3Edges(_configurations, _includeNodes, _includeRemoteNodes, layer3Topology);
@@ -511,7 +510,7 @@ public class EdgesAnswererTest {
   public void testLayer3ToRow() {
     Map<String, Configuration> configurationMap =
         ImmutableSortedMap.of("host1", _host1, "host2", _host2);
-    Row row = layer3EdgeToRow(configurationMap, Edge.fromStrings("host1", "int1", "host2", "int2"));
+    Row row = layer3EdgeToRow(configurationMap, Edge.of("host1", "int1", "host2", "int2"));
     assertThat(
         row,
         allOf(

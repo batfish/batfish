@@ -18,7 +18,7 @@ public class EdgeTest {
 
   @Test
   public void testFactory() {
-    assertThat(Edge.fromStrings("tail", "tailInt", "head", "headInt"), equalTo(EDGE));
+    assertThat(Edge.of("tail", "tailInt", "head", "headInt"), equalTo(EDGE));
   }
 
   @Test

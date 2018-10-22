@@ -275,11 +275,9 @@ public class SynthesizerInputImplTest {
     BooleanExpr m2 =
         ipSpace2.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
     Edge edge1 =
-        Edge.fromStrings(
-            srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
+        Edge.of(srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
     Edge edge2 =
-        Edge.fromStrings(
-            srcNode.getHostname(), srcInterface.getName(), nextHop2, nextHopInterface2);
+        Edge.of(srcNode.getHostname(), srcInterface.getName(), nextHop2, nextHopInterface2);
 
     SynthesizerInput inputWithoutDataPlane =
         _inputBuilder.setConfigurations(ImmutableMap.of(srcNode.getHostname(), srcNode)).build();
