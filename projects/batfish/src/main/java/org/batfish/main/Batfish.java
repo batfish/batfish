@@ -2065,13 +2065,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileText = configFile.getValue();
       String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
 
-      // we stop classic link processing here because it interferes with VPC
-      // processing
-      if (file.toString().contains("classic-link")) {
-        _logger.errorf("%s has classic link configuration\n", file);
-        continue;
-      }
-
       JSONObject jsonObj = null;
       try {
         jsonObj = new JSONObject(fileText);
