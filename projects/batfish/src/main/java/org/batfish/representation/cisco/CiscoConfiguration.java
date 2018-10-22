@@ -3278,6 +3278,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
         CiscoStructureUsage.TRACK_INTERFACE);
