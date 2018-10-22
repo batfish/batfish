@@ -18,6 +18,7 @@ import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -975,18 +976,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         .getAllAddresses()
                                         .stream()
                                         .map(InterfaceAddress::getPrefix)
-                                        .map(
-                                            prefix ->
-                                                prefix.getPrefixLength() >= 31
-                                                    ? prefix.toIpSpace()
-                                                    : AclIpSpace.rejecting(
-                                                            prefix.getStartIp().toIpSpace())
-                                                        .thenRejecting(
-                                                            prefix.getEndIp().toIpSpace())
-                                                        .thenPermitting(prefix.toIpSpace())
-                                                        .build())
+                                        .map(ForwardingAnalysisImpl::hostSubnetIpSpace)
                                         .collect(ImmutableList.toImmutableList())),
                                 EmptyIpSpace.INSTANCE))));
+  }
+
+  @Nonnull
+  static IpSpace hostSubnetIpSpace(Prefix prefix) {
+    return prefix.getPrefixLength() >= 31
+        ? prefix.toIpSpace()
+        : AclIpSpace.rejecting(prefix.getStartIp().toIpSpace())
+            .thenRejecting(prefix.getEndIp().toIpSpace())
+            .thenPermitting(prefix.toIpSpace())
+            .build();
   }
 
   private IpSpace computeInternalIps() {
@@ -1154,13 +1156,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // may potentially be sent to the subnet and be forwarded further. Therefore, instead of consider
   // whether each subnet has missing devices, we just need to consider if one of the subnets has
   // missing devices.
-  private boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
-    // (ips in interface subnet - ips in vrfs) is not empty
-    try {
-      return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_unownedIpsBDD).isZero();
-    } catch (NullPointerException e) {
-      return false;
-    }
+  @VisibleForTesting
+  boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
+    // ips in interface subnet has at least one unowned IP
+    return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_unownedIpsBDD).isZero();
   }
 
   private Map<String, Set<String>> computeInterfacesWithMissingDevices(

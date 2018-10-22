@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceHostSubnetIps;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.hostSubnetIpSpace;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -1190,7 +1192,7 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
             .build();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        ForwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+        computeInterfaceHostSubnetIps(configs);
 
     assertThat(
         interfaceHostSubnetIps,
@@ -1227,7 +1229,7 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        ForwardingAnalysisImpl.computeInterfaceHostSubnetIps(configs);
+        computeInterfaceHostSubnetIps(configs);
 
     assertThat(
         interfaceHostSubnetIps,
@@ -1535,5 +1537,78 @@ public class ForwardingAnalysisImplTest {
     // nhip internal, interface is not full, dst ip is external -> insufficient info
     testDispositionComputationTemplate(
         NextHopIpStatus.INTERNAL, false, false, false, FlowDisposition.INSUFFICIENT_INFO);
+  }
+
+  @Test
+  public void testHasMissingDevicesOnInterface_full30() {
+    Prefix subnet = Prefix.parse("1.0.0.0/30");
+    Ip ip1 = new Ip("1.0.0.1");
+    Ip ip2 = new Ip("1.0.0.2");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(
+            CONFIG1,
+            ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+  }
+
+  @Test
+  public void testHasMissingDevicesOnInterface_full31() {
+    Prefix subnet = Prefix.parse("1.0.0.0/31");
+    Ip ip1 = new Ip("1.0.0.0");
+    Ip ip2 = new Ip("1.0.0.1");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(
+            CONFIG1,
+            ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+  }
+
+  @Test
+  public void testHasMissingDevicesOnInterface_full32() {
+    Prefix subnet = Prefix.parse("1.0.0.0/32");
+    Ip ip1 = new Ip("1.0.0.0");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+  }
+
+  @Test
+  public void testHasMissingDevicesOnInterface_notFull30() {
+    Prefix subnet = Prefix.parse("1.0.0.0/30");
+    Ip ip1 = new Ip("1.0.0.1");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat(
+        "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+  }
+
+  @Test
+  public void testHasMissingDevicesOnInterface_notFull31() {
+    Prefix subnet = Prefix.parse("1.0.0.0/31");
+    Ip ip1 = new Ip("1.0.0.0");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat(
+        "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 }
