@@ -3263,7 +3263,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return overlayConfigurations;
   }
 
-  private Answer serializeIndependentConfigs(Path vendorConfigPath) {
+  Answer serializeIndependentConfigs(Path vendorConfigPath) {
     Answer answer = new Answer();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());

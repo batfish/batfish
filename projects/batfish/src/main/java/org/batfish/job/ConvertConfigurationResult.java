@@ -65,7 +65,7 @@ public class ConvertConfigurationResult
           throw new BatfishException("Duplicate hostname: " + hostname);
         } else {
           configurations.put(hostname, config);
-          answerElement.getFileMap().put(config.getHostname(), hostname);
+          answerElement.getFileMap().put(hostname, _name);
           if (_warningsByHost.containsKey(hostname) && !_warningsByHost.get(hostname).isEmpty()) {
             answerElement.getWarnings().put(hostname, _warningsByHost.get(hostname));
           }

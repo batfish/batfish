@@ -36,6 +36,8 @@ import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
+import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -532,5 +534,23 @@ public class BatfishTest {
 
     // should get null answerer if no creator available
     assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
+  }
+
+  @Test
+  public void testSerializedObjectMapAWS() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setAwsText(
+                    "org/batfish/representation/aws/test/",
+                    ImmutableList.of("NetworkAcls.json", "Subnets.json", "Vpcs.json"))
+                .build(),
+            _folder);
+    TestrigSettings snapshotSettings = batfish.getTestrigSettings();
+    Settings settings = batfish.getSettings();
+
+    batfish.serializeVendorConfigs(
+        snapshotSettings.getInputPath(), snapshotSettings.getSerializeVendorPath());
+    batfish.serializeIndependentConfigs(snapshotSettings.getSerializeVendorPath());
   }
 }
