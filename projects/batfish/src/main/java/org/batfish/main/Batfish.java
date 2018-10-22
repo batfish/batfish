@@ -71,7 +71,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -1451,19 +1450,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getInputPath();
-    Directory dir = new Directory(trPath);
-    return dir;
-  }
-
-  @Override
   public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
-  }
-
-  public TestrigSettings getTestrigSettings() {
-    return _testrigSettings;
   }
 
   @Override
