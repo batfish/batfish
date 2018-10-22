@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -21,7 +22,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  private SortedMap<String, String> _fileMap;
+  private HashMultimap<String, String> _fileMap;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -32,7 +33,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   private SortedMap<String, Warnings> _warnings;
 
   public ParseVendorConfigurationAnswerElement() {
-    _fileMap = new TreeMap<>();
+    _fileMap = HashMultimap.create();
     _parseStatus = new TreeMap<>();
     _parseTrees = new TreeMap<>();
     _warnings = new TreeMap<>();
@@ -52,7 +53,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   @JsonProperty(PROP_FILE_MAP)
-  public SortedMap<String, String> getFileMap() {
+  public HashMultimap<String, String> getFileMap() {
     return _fileMap;
   }
 
@@ -115,7 +116,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   @JsonProperty(PROP_FILE_MAP)
-  public void setFileMap(SortedMap<String, String> fileMap) {
+  public void setFileMap(HashMultimap<String, String> fileMap) {
     _fileMap = fileMap;
   }
 

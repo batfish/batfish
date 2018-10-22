@@ -6,6 +6,7 @@ import static org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructur
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -111,7 +112,10 @@ public class UnusedStructuresAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("h", "f", "h2", "f2"));
+      HashMultimap<String, String> map = HashMultimap.create();
+      map.put("h", "f");
+      map.put("h2", "f2");
+      pvcae.setFileMap(map);
       return pvcae;
     }
 

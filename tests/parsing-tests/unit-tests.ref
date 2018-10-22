@@ -3,262 +3,775 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "aaa_accounting" : "configs/aaa_accounting",
-        "aaa_authentication_login_default_tacacs_local" : "configs/aaa_authentication_login_default_tacacs_local",
-        "aaa_group_server_source_interface" : "configs/aaa_group_server_source_interface",
-        "access_list" : "configs/access_list",
-        "address_family" : "configs/address_family",
-        "aggaddress" : "configs/ios_bgp_aggregate_address",
-        "arista-event-handler" : "configs/arista-event-handler",
-        "arista_acl" : "configs/arista_acl",
-        "arista_bgp" : "configs/arista_bgp",
-        "arista_dhcp_relay" : "configs/arista_dhcp_relay",
-        "arista_interface" : "configs/arista_interface",
-        "arista_ip_route" : "configs/arista_ip_route",
-        "arista_logging" : "configs/arista-logging",
-        "arista_misc" : "configs/arista_misc",
-        "arista_ospf" : "configs/arista_ospf",
-        "arista_queue_monitor" : "configs/arista_queue_monitor",
-        "arista_username" : "configs/arista_username",
-        "arista_vrf" : "configs/arista_vrf",
-        "aruba_aaa" : "configs/aruba_aaa",
-        "aruba_acl" : "configs/aruba_acl",
-        "aruba_airgroup" : "configs/aruba_airgroup",
-        "aruba_crypto" : "configs/aruba_crypto",
-        "aruba_dhcp" : "configs/aruba_dhcp",
-        "aruba_interface" : "configs/aruba_interface",
-        "aruba_logging" : "configs/aruba_logging",
-        "aruba_misc" : "configs/aruba_misc",
-        "aruba_net" : "configs/aruba_net",
-        "aruba_snmp" : "configs/aruba_snmp",
-        "aruba_time_range" : "configs/aruba_time_range",
-        "aruba_user_role" : "configs/aruba_user_role",
-        "aruba_vlan" : "configs/aruba_vlan",
-        "aruba_voice" : "configs/aruba_voice",
-        "aruba_vpn" : "configs/aruba_vpn",
-        "as_path_prepend" : "configs/as_path_prepend",
-        "asa_acl" : "configs/asa_acl",
-        "asa_banner" : "configs/asa_banner",
-        "asa_ospf" : "configs/asa_ospf",
-        "asa_ssh" : "configs/asa_ssh",
-        "banner" : "configs/banner",
-        "banner_dos" : "configs/banner_dos",
-        "bgp-allow" : "configs/juniper_bgp_allow",
-        "bgp-enforce-first-as" : "configs/juniper_bgp_enforce_fist_as",
-        "bgp_address_family" : "configs/bgp_address_family",
-        "bgp_default_originate_policy" : "configs/bgp_default_originate_policy",
-        "bgp_foundry" : "configs/bgp_foundry",
-        "bgp_nsr" : "configs/bgp_nsr",
-        "bgp_route_policy" : "configs/bgp_route_policy",
-        "cadant_acl" : "configs/cadant_acl",
-        "cadant_banner" : "configs/cadant_banner",
-        "cadant_bgp" : "configs/cadant_bgp",
-        "cadant_cable" : "configs/cadant_cable",
-        "cadant_interface" : "configs/cadant_interface",
-        "cadant_ip_route" : "configs/cadant_ip_route",
-        "cadant_isis" : "configs/cadant_isis",
-        "cadant_line" : "configs/cadant_line",
-        "cadant_logging" : "configs/cadant_logging",
-        "cadant_misc" : "configs/cadant_misc",
-        "cadant_prefix_list" : "configs/cadant_prefix_list",
-        "cadant_qos" : "configs/cadant_qos",
-        "cadant_rip" : "configs/cadant_rip",
-        "cadant_route_map" : "configs/cadant_route_map",
-        "cadant_snmp" : "configs/cadant_snmp",
-        "cisco-zone" : "configs/cisco_zone",
-        "cisco_aaa" : "configs/cisco_aaa",
-        "cisco_acl" : "configs/cisco_acl",
-        "cisco_additional_paths" : "configs/cisco_additional_paths",
-        "cisco_authentication" : "configs/cisco_authentication",
-        "cisco_bgp" : "configs/cisco_bgp",
-        "cisco_bgp_confederation" : "configs/cisco_bgp_confederation",
-        "cisco_cable" : "configs/cisco_cable",
-        "cisco_callhome" : "configs/cisco_callhome",
-        "cisco_control_plane" : "configs/cisco_control_plane",
-        "cisco_controller" : "configs/cisco_controller",
-        "cisco_crypto" : "configs/cisco_crypto",
-        "cisco_dhcp" : "configs/cisco_dhcp",
-        "cisco_domain" : "configs/cisco_domain",
-        "cisco_dot11" : "configs/cisco_dot11",
-        "cisco_dot1x" : "configs/cisco_dot1x",
-        "cisco_dspfarm" : "configs/cisco_dscpfarm",
-        "cisco_dynamic_access_policy_record" : "configs/cisco_dynamic_access_policy_record",
-        "cisco_eigrp" : "configs/cisco_eigrp",
-        "cisco_enable" : "configs/cisco_enable",
-        "cisco_flow" : "configs/cisco_flow",
-        "cisco_hardware" : "configs/cisco_hardware",
-        "cisco_hsrp" : "configs/cisco_hsrp",
-        "cisco_interface" : "configs/cisco_interface",
-        "cisco_ip" : "configs/cisco_ip",
-        "cisco_ip_nat" : "configs/cisco_ip_nat",
-        "cisco_ip_route" : "configs/cisco_ip_route",
-        "cisco_ipsla" : "configs/cisco_ipsla",
-        "cisco_ipv6" : "configs/cisco_ipv6",
-        "cisco_ipv6_access_list" : "configs/cisco_ipv6_access_list",
-        "cisco_isis" : "configs/cisco_isis",
-        "cisco_l2tp" : "configs/cisco_l2tp",
-        "cisco_line" : "configs/cisco_line",
-        "cisco_logging" : "configs/cisco_logging",
-        "cisco_mac_acl" : "configs/cisco_mac_acl",
-        "cisco_misc" : "configs/cisco_misc",
-        "cisco_monitor" : "configs/cisco_monitor",
-        "cisco_mpls" : "configs/cisco_mpls",
-        "cisco_multicast" : "configs/cisco_multicast",
-        "cisco_ntp" : "configs/cisco_ntp",
-        "cisco_nxos" : "configs/cisco_nxos",
-        "cisco_nxos_bgp" : "configs/cisco_nxos_bgp",
-        "cisco_ospf" : "configs/cisco_ospf",
-        "cisco_pim" : "configs/cisco_pim",
-        "cisco_platform" : "configs/cisco_platform",
-        "cisco_privilege" : "configs/cisco_privilege",
-        "cisco_qos" : "configs/cisco_qos",
-        "cisco_queue_monitor" : "configs/cisco_queue_monitor",
-        "cisco_redundancy" : "configs/cisco_redundancy",
-        "cisco_rip" : "configs/cisco_rip",
-        "cisco_role" : "configs/cisco_role",
-        "cisco_route_map" : "configs/cisco_route_map",
-        "cisco_sccp" : "configs/cisco_sccp",
-        "cisco_snmp" : "configs/cisco_snmp",
-        "cisco_spanning_tree" : "configs/cisco_spanning_tree",
-        "cisco_ssh" : "configs/cisco_ssh",
-        "cisco_stcapp" : "configs/cisco_stcapp",
-        "cisco_style_acl1" : "configs/cisco_style_acl1",
-        "cisco_style_acl2" : "configs/cisco_style_acl2",
-        "cisco_system" : "configs/cisco_system",
-        "cisco_tacacs" : "configs/cisco_tacacs",
-        "cisco_track" : "configs/cisco_track",
-        "cisco_username" : "configs/cisco_username",
-        "cisco_username_without_password" : "configs/cisco_username_without_password",
-        "cisco_vdc" : "configs/cisco_vdc",
-        "cisco_vlan" : "configs/cisco_vlan",
-        "cisco_voice" : "configs/cisco_voice",
-        "cisco_vpdn" : "configs/cisco_vpdn",
-        "cisco_vpn" : "configs/cisco_vpn",
-        "cisco_vrf" : "configs/cisco_vrf",
-        "cisco_vrrp" : "configs/cisco_vrrp",
-        "cisco_webvpn" : "configs/cisco_webvpn",
-        "cisco_wsma" : "configs/cisco_wsma",
-        "colon_in_vrf" : "configs/colon_in_vrf",
-        "commset" : "configs/ios_xr_community_set",
-        "community-name-numbers" : "configs/community_name_numbers",
-        "community-name-numbers_dos" : "configs/community_name_numbers_dos",
-        "community_list_named" : "configs/community_list_named",
-        "community_set" : "configs/community_set",
-        "foundry_access_list" : "configs/foundry_access_list",
-        "foundry_bgp" : "configs/foundry_bgp",
-        "foundry_interface" : "configs/foundry_interface",
-        "foundry_misc" : "configs/foundry_misc",
-        "foundry_vlan_group" : "configs/foundry_vlan_group",
-        "host1" : "hosts/host1.json",
-        "host2" : "configs/host2",
-        "if_tag_is" : "configs/if_tag_is",
-        "interface_exit" : "configs/interface_exit",
-        "interface_name" : "configs/interface_name",
-        "interface_sdr" : "configs/interface_sdr",
-        "ios_bfd" : "configs/ios_bfd",
-        "ios_bgp" : "configs/ios_bgp",
-        "ios_interface" : "configs/ios_interface",
-        "ios_standby" : "configs/ios_standby",
-        "ios_template" : "configs/ios_template",
-        "ios_xr_acl" : "configs/ios_xr_acl",
-        "ios_xr_bgp" : "configs/ios_xr_bgp",
-        "ios_xr_bgp_neighbor_group" : "configs/ios_xr_bgp_neighbor_group",
-        "ios_xr_class_map" : "configs/ios_xr_class_map",
-        "ios_xr_isis" : "configs/ios_xr_isis",
-        "ios_xr_logging" : "configs/ios_xr_logging",
-        "ios_xr_misc" : "configs/ios_xr_misc",
-        "ios_xr_multipart" : "configs/ios_xr_multipart",
-        "ios_xr_ntp" : "configs/ios_xr_ntp",
-        "ios_xr_ospf" : "configs/ios_xr_ospf",
-        "ios_xr_router_static" : "configs/ios_xr_router_static",
-        "ios_xr_ssh" : "configs/ios_xr_ssh",
-        "ios_xr_taskgroup" : "configs/ios_xr_taskgroup",
-        "iosxrmulticast" : "configs/ios_xr_multicast",
-        "ip_prefix_list_single_line" : "configs/ip_prefix_list_single_line",
-        "iptables/host1.iptables" : "iptables/host1.iptables",
-        "iptables/host2.iptables" : "iptables/host2.iptables",
-        "isr_crypto_gdoi" : "configs/isr_crypto",
-        "isr_voip" : "configs/isr_voip",
-        "juniper-ospf" : "configs/juniper_ospf",
-        "juniper-tcpflags" : "configs/juniper-tcpflags",
-        "juniper_application" : "configs/juniper_application",
-        "juniper_apply_macro" : "configs/juniper_apply_macro",
-        "juniper_bgp" : "configs/juniper_bgp",
-        "juniper_bgp_authentication" : "configs/juniper_bgp_authentication",
-        "juniper_bgp_remove_private_as" : "configs/juniper_bgp_remove_private_as",
-        "juniper_extended_community" : "configs/juniper_extended_community",
-        "juniper_firewall" : "configs/juniper_firewall",
-        "juniper_forwarding_options" : "configs/juniper_forwarding_options",
-        "juniper_interfaces" : "configs/juniper_interfaces",
-        "juniper_isis" : "configs/juniper_isis",
-        "juniper_l2_learning" : "configs/juniper_l2_learning",
-        "juniper_misc" : "configs/juniper_misc",
-        "juniper_ntp" : "configs/juniper_ntp",
-        "juniper_ospf_stub_areas" : "configs/juniper_ospf_stub_areas",
-        "juniper_passwords" : "configs/juniper_passwords",
-        "juniper_policy_statement" : "configs/juniper_policy_statement",
-        "juniper_relay" : "configs/juniper_relay",
-        "juniper_route_filter" : "configs/juniper_route_filter",
-        "juniper_routing_options" : "configs/juniper_routing_options",
-        "juniper_security" : "configs/juniper_security",
-        "juniper_snmp" : "configs/juniper_snmp",
-        "juniper_syslog" : "configs/juniper_syslog",
-        "juniper_system" : "configs/juniper_system",
-        "juniper_tacplus" : "configs/juniper_tacplus",
-        "l2vpn" : "configs/ios_xr_l2vpn",
-        "local_v6_addr" : "configs/local_v6_addr",
-        "mac_access_list" : "configs/mac_access_list",
-        "mcastrouting" : "configs/ios_xr_multicast_routing",
-        "mos_interface" : "configs/mos_interface",
-        "mos_misc" : "configs/mos_misc",
-        "msdp_originator_id" : "configs/msdp_originator_id",
-        "named_and_numbered_lists" : "configs/named_and_numbered_lists",
-        "neighbor-name-numbers" : "configs/neighbor_name_numbers",
-        "neighbor_mix" : "configs/neighbor_mix",
-        "neighbor_nxos" : "configs/neighbor_nxos",
-        "network6" : "configs/network6",
-        "nexus" : "configs/nexus",
-        "nexus_bgp" : "configs/nexus_bgp",
-        "nexus_ntp" : "configs/nexus_ntp",
-        "nexus_ssh" : "configs/nexus_ssh",
-        "no_aaa_group_server" : "configs/no_aaa_group_server",
-        "no_ip_name_server" : "configs/cisco_noipns",
-        "no_mask_reply" : "configs/cisco_nomaskreply",
-        "no_snmp_server" : "configs/cisco_nosnmp",
-        "non_nexus_neighbor_af" : "configs/non_nexus_neighbor_af",
-        "nxos_acl" : "configs/nxos_acl",
-        "nxos_bgp" : "configs/nxos_bgp",
-        "nxos_interface" : "configs/nxos_interface",
-        "nxos_misc" : "configs/nxos_misc",
-        "nxos_ospf" : "configs/nxos_ospf",
-        "nxos_route_map_continue" : "configs/nxos_route_map_continue",
-        "nxos_system" : "configs/nxos_system",
-        "openflow" : "configs/openflow",
-        "peer_template" : "configs/peer_template",
-        "pim" : "configs/pim",
-        "pim_snooping" : "configs/pim_snooping",
-        "prefix_list_ipv4" : "configs/prefix_list_ipv4",
-        "preset" : "configs/ios_xr_prefix_set",
-        "route_maps_in_two_address_families" : "configs/route_maps_in_two_address_families",
-        "route_policy_as_path_set" : "configs/route_policy_as_path",
-        "route_policy_igp_cost" : "configs/route_policy_igp_cost",
-        "route_policy_metric_type" : "configs/route_policy_metric_type",
-        "route_policy_param" : "configs/route_policy_param",
-        "router_msdp" : "configs/router_msdp",
-        "rp" : "configs/ios_xr_route_policy",
-        "set_inline_community" : "configs/set_inline_community",
-        "statistics" : "configs/statistics",
-        "switchport_range" : "configs/switchport_range",
-        "syslog_source_interface" : "configs/syslog_source_interface",
-        "taskgroup" : "configs/taskgroup",
-        "tcpflags" : "configs/tcpflags",
-        "test" : "configs/ip_default_route_classless",
-        "underscore_variable" : "configs/underscore_variable",
-        "variables" : "configs/variables",
-        "variables_dos" : "configs/variables_dos",
-        "vlan_access_map4" : "configs/vlan_access_map2",
-        "vrf_context" : "configs/vrf_context",
-        "vxlan" : "configs/vxlan"
+        "cisco_vrrp" : [
+          "configs/cisco_vrrp"
+        ],
+        "arista_queue_monitor" : [
+          "configs/arista_queue_monitor"
+        ],
+        "ios_xr_class_map" : [
+          "configs/ios_xr_class_map"
+        ],
+        "cisco_line" : [
+          "configs/cisco_line"
+        ],
+        "no_aaa_group_server" : [
+          "configs/no_aaa_group_server"
+        ],
+        "cisco_dhcp" : [
+          "configs/cisco_dhcp"
+        ],
+        "ios_xr_misc" : [
+          "configs/ios_xr_misc"
+        ],
+        "bgp_default_originate_policy" : [
+          "configs/bgp_default_originate_policy"
+        ],
+        "cisco_username_without_password" : [
+          "configs/cisco_username_without_password"
+        ],
+        "as_path_prepend" : [
+          "configs/as_path_prepend"
+        ],
+        "cisco_stcapp" : [
+          "configs/cisco_stcapp"
+        ],
+        "juniper_firewall" : [
+          "configs/juniper_firewall"
+        ],
+        "cisco_ipv6" : [
+          "configs/cisco_ipv6"
+        ],
+        "juniper_l2_learning" : [
+          "configs/juniper_l2_learning"
+        ],
+        "juniper_misc" : [
+          "configs/juniper_misc"
+        ],
+        "arista_username" : [
+          "configs/arista_username"
+        ],
+        "arista_acl" : [
+          "configs/arista_acl"
+        ],
+        "asa_ospf" : [
+          "configs/asa_ospf"
+        ],
+        "ios_xr_ospf" : [
+          "configs/ios_xr_ospf"
+        ],
+        "arista-event-handler" : [
+          "configs/arista-event-handler"
+        ],
+        "aruba_user_role" : [
+          "configs/aruba_user_role"
+        ],
+        "router_msdp" : [
+          "configs/router_msdp"
+        ],
+        "cisco_isis" : [
+          "configs/cisco_isis"
+        ],
+        "cadant_bgp" : [
+          "configs/cadant_bgp"
+        ],
+        "mac_access_list" : [
+          "configs/mac_access_list"
+        ],
+        "ip_prefix_list_single_line" : [
+          "configs/ip_prefix_list_single_line"
+        ],
+        "ios_xr_multipart" : [
+          "configs/ios_xr_multipart"
+        ],
+        "aruba_time_range" : [
+          "configs/aruba_time_range"
+        ],
+        "arista_ip_route" : [
+          "configs/arista_ip_route"
+        ],
+        "ios_interface" : [
+          "configs/ios_interface"
+        ],
+        "cisco_domain" : [
+          "configs/cisco_domain"
+        ],
+        "juniper_forwarding_options" : [
+          "configs/juniper_forwarding_options"
+        ],
+        "isr_voip" : [
+          "configs/isr_voip"
+        ],
+        "cisco_pim" : [
+          "configs/cisco_pim"
+        ],
+        "juniper_security" : [
+          "configs/juniper_security"
+        ],
+        "neighbor_mix" : [
+          "configs/neighbor_mix"
+        ],
+        "rp" : [
+          "configs/ios_xr_route_policy"
+        ],
+        "cisco_tacacs" : [
+          "configs/cisco_tacacs"
+        ],
+        "cisco_mac_acl" : [
+          "configs/cisco_mac_acl"
+        ],
+        "aruba_dhcp" : [
+          "configs/aruba_dhcp"
+        ],
+        "bgp-enforce-first-as" : [
+          "configs/juniper_bgp_enforce_fist_as"
+        ],
+        "juniper_policy_statement" : [
+          "configs/juniper_policy_statement"
+        ],
+        "asa_acl" : [
+          "configs/asa_acl"
+        ],
+        "variables_dos" : [
+          "configs/variables_dos"
+        ],
+        "mos_interface" : [
+          "configs/mos_interface"
+        ],
+        "no_mask_reply" : [
+          "configs/cisco_nomaskreply"
+        ],
+        "cisco_style_acl1" : [
+          "configs/cisco_style_acl1"
+        ],
+        "cisco_ntp" : [
+          "configs/cisco_ntp"
+        ],
+        "address_family" : [
+          "configs/address_family"
+        ],
+        "cisco_nxos_bgp" : [
+          "configs/cisco_nxos_bgp"
+        ],
+        "cisco_style_acl2" : [
+          "configs/cisco_style_acl2"
+        ],
+        "cisco_vdc" : [
+          "configs/cisco_vdc"
+        ],
+        "juniper-tcpflags" : [
+          "configs/juniper-tcpflags"
+        ],
+        "switchport_range" : [
+          "configs/switchport_range"
+        ],
+        "mcastrouting" : [
+          "configs/ios_xr_multicast_routing"
+        ],
+        "arista_bgp" : [
+          "configs/arista_bgp"
+        ],
+        "juniper_snmp" : [
+          "configs/juniper_snmp"
+        ],
+        "variables" : [
+          "configs/variables"
+        ],
+        "host1" : [
+          "hosts/host1.json"
+        ],
+        "syslog_source_interface" : [
+          "configs/syslog_source_interface"
+        ],
+        "iptables/host1.iptables" : [
+          "iptables/host1.iptables"
+        ],
+        "route_maps_in_two_address_families" : [
+          "configs/route_maps_in_two_address_families"
+        ],
+        "host2" : [
+          "hosts/host2.json",
+          "configs/host2"
+        ],
+        "aaa_group_server_source_interface" : [
+          "configs/aaa_group_server_source_interface"
+        ],
+        "cadant_acl" : [
+          "configs/cadant_acl"
+        ],
+        "cisco_dot11" : [
+          "configs/cisco_dot11"
+        ],
+        "cisco_track" : [
+          "configs/cisco_track"
+        ],
+        "cisco_mpls" : [
+          "configs/cisco_mpls"
+        ],
+        "interface_exit" : [
+          "configs/interface_exit"
+        ],
+        "aruba_vpn" : [
+          "configs/aruba_vpn"
+        ],
+        "juniper_extended_community" : [
+          "configs/juniper_extended_community"
+        ],
+        "ios_xr_router_static" : [
+          "configs/ios_xr_router_static"
+        ],
+        "nexus_ntp" : [
+          "configs/nexus_ntp"
+        ],
+        "cisco_role" : [
+          "configs/cisco_role"
+        ],
+        "juniper_passwords" : [
+          "configs/juniper_passwords"
+        ],
+        "cisco_bgp_confederation" : [
+          "configs/cisco_bgp_confederation"
+        ],
+        "cadant_logging" : [
+          "configs/cadant_logging"
+        ],
+        "cisco_monitor" : [
+          "configs/cisco_monitor"
+        ],
+        "cisco_cable" : [
+          "configs/cisco_cable"
+        ],
+        "aruba_logging" : [
+          "configs/aruba_logging"
+        ],
+        "cisco_aaa" : [
+          "configs/cisco_aaa"
+        ],
+        "cadant_line" : [
+          "configs/cadant_line"
+        ],
+        "bgp_route_policy" : [
+          "configs/bgp_route_policy"
+        ],
+        "cisco_queue_monitor" : [
+          "configs/cisco_queue_monitor"
+        ],
+        "route_policy_igp_cost" : [
+          "configs/route_policy_igp_cost"
+        ],
+        "cisco_hardware" : [
+          "configs/cisco_hardware"
+        ],
+        "foundry_bgp" : [
+          "configs/foundry_bgp"
+        ],
+        "nexus_ssh" : [
+          "configs/nexus_ssh"
+        ],
+        "cisco_ipv6_access_list" : [
+          "configs/cisco_ipv6_access_list"
+        ],
+        "nxos_bgp" : [
+          "configs/nxos_bgp"
+        ],
+        "cisco_dot1x" : [
+          "configs/cisco_dot1x"
+        ],
+        "test" : [
+          "configs/ip_default_route_classless"
+        ],
+        "aaa_accounting" : [
+          "configs/aaa_accounting"
+        ],
+        "ios_xr_acl" : [
+          "configs/ios_xr_acl"
+        ],
+        "cadant_ip_route" : [
+          "configs/cadant_ip_route"
+        ],
+        "community-name-numbers" : [
+          "configs/community_name_numbers"
+        ],
+        "juniper_syslog" : [
+          "configs/juniper_syslog"
+        ],
+        "cisco_interface" : [
+          "configs/cisco_interface"
+        ],
+        "cisco_ssh" : [
+          "configs/cisco_ssh"
+        ],
+        "cisco_l2tp" : [
+          "configs/cisco_l2tp"
+        ],
+        "bgp_foundry" : [
+          "configs/bgp_foundry"
+        ],
+        "cisco_qos" : [
+          "configs/cisco_qos"
+        ],
+        "tcpflags" : [
+          "configs/tcpflags"
+        ],
+        "asa_ssh" : [
+          "configs/asa_ssh"
+        ],
+        "cisco-zone" : [
+          "configs/cisco_zone"
+        ],
+        "ios_template" : [
+          "configs/ios_template"
+        ],
+        "bgp_address_family" : [
+          "configs/bgp_address_family"
+        ],
+        "juniper_ntp" : [
+          "configs/juniper_ntp"
+        ],
+        "arista_logging" : [
+          "configs/arista-logging"
+        ],
+        "cadant_prefix_list" : [
+          "configs/cadant_prefix_list"
+        ],
+        "arista_misc" : [
+          "configs/arista_misc"
+        ],
+        "named_and_numbered_lists" : [
+          "configs/named_and_numbered_lists"
+        ],
+        "juniper_bgp_authentication" : [
+          "configs/juniper_bgp_authentication"
+        ],
+        "juniper_relay" : [
+          "configs/juniper_relay"
+        ],
+        "neighbor_nxos" : [
+          "configs/neighbor_nxos"
+        ],
+        "ios_xr_logging" : [
+          "configs/ios_xr_logging"
+        ],
+        "ios_xr_bgp" : [
+          "configs/ios_xr_bgp"
+        ],
+        "cisco_eigrp" : [
+          "configs/cisco_eigrp"
+        ],
+        "access_list" : [
+          "configs/access_list"
+        ],
+        "prefix_list_ipv4" : [
+          "configs/prefix_list_ipv4"
+        ],
+        "colon_in_vrf" : [
+          "configs/colon_in_vrf"
+        ],
+        "isr_crypto_gdoi" : [
+          "configs/isr_crypto"
+        ],
+        "no_ip_name_server" : [
+          "configs/cisco_noipns"
+        ],
+        "cadant_qos" : [
+          "configs/cadant_qos"
+        ],
+        "interface_sdr" : [
+          "configs/interface_sdr"
+        ],
+        "juniper_isis" : [
+          "configs/juniper_isis"
+        ],
+        "cadant_banner" : [
+          "configs/cadant_banner"
+        ],
+        "mos_misc" : [
+          "configs/mos_misc"
+        ],
+        "cadant_route_map" : [
+          "configs/cadant_route_map"
+        ],
+        "juniper_ospf_stub_areas" : [
+          "configs/juniper_ospf_stub_areas"
+        ],
+        "nxos_route_map_continue" : [
+          "configs/nxos_route_map_continue"
+        ],
+        "aruba_snmp" : [
+          "configs/aruba_snmp"
+        ],
+        "set_inline_community" : [
+          "configs/set_inline_community"
+        ],
+        "aruba_airgroup" : [
+          "configs/aruba_airgroup"
+        ],
+        "ios_xr_isis" : [
+          "configs/ios_xr_isis"
+        ],
+        "cisco_enable" : [
+          "configs/cisco_enable"
+        ],
+        "cadant_cable" : [
+          "configs/cadant_cable"
+        ],
+        "cisco_system" : [
+          "configs/cisco_system"
+        ],
+        "cisco_ip_route" : [
+          "configs/cisco_ip_route"
+        ],
+        "bgp-allow" : [
+          "configs/juniper_bgp_allow"
+        ],
+        "vxlan" : [
+          "configs/vxlan"
+        ],
+        "juniper_routing_options" : [
+          "configs/juniper_routing_options"
+        ],
+        "taskgroup" : [
+          "configs/taskgroup"
+        ],
+        "route_policy_as_path_set" : [
+          "configs/route_policy_as_path"
+        ],
+        "aruba_net" : [
+          "configs/aruba_net"
+        ],
+        "arista_ospf" : [
+          "configs/arista_ospf"
+        ],
+        "cisco_privilege" : [
+          "configs/cisco_privilege"
+        ],
+        "nxos_misc" : [
+          "configs/nxos_misc"
+        ],
+        "aruba_vlan" : [
+          "configs/aruba_vlan"
+        ],
+        "ios_xr_ssh" : [
+          "configs/ios_xr_ssh"
+        ],
+        "juniper_bgp" : [
+          "configs/juniper_bgp"
+        ],
+        "juniper_apply_macro" : [
+          "configs/juniper_apply_macro"
+        ],
+        "banner_dos" : [
+          "configs/banner_dos"
+        ],
+        "vrf_context" : [
+          "configs/vrf_context"
+        ],
+        "cisco_acl" : [
+          "configs/cisco_acl"
+        ],
+        "cisco_nxos" : [
+          "configs/cisco_nxos"
+        ],
+        "cisco_controller" : [
+          "configs/cisco_controller"
+        ],
+        "aruba_interface" : [
+          "configs/aruba_interface"
+        ],
+        "ios_bfd" : [
+          "configs/ios_bfd"
+        ],
+        "nxos_ospf" : [
+          "configs/nxos_ospf"
+        ],
+        "peer_template" : [
+          "configs/peer_template"
+        ],
+        "cisco_platform" : [
+          "configs/cisco_platform"
+        ],
+        "aruba_misc" : [
+          "configs/aruba_misc"
+        ],
+        "ios_xr_bgp_neighbor_group" : [
+          "configs/ios_xr_bgp_neighbor_group"
+        ],
+        "cisco_snmp" : [
+          "configs/cisco_snmp"
+        ],
+        "pim_snooping" : [
+          "configs/pim_snooping"
+        ],
+        "cisco_ip" : [
+          "configs/cisco_ip"
+        ],
+        "preset" : [
+          "configs/ios_xr_prefix_set"
+        ],
+        "cisco_dynamic_access_policy_record" : [
+          "configs/cisco_dynamic_access_policy_record"
+        ],
+        "cisco_logging" : [
+          "configs/cisco_logging"
+        ],
+        "route_policy_metric_type" : [
+          "configs/route_policy_metric_type"
+        ],
+        "underscore_variable" : [
+          "configs/underscore_variable"
+        ],
+        "juniper_application" : [
+          "configs/juniper_application"
+        ],
+        "cisco_dspfarm" : [
+          "configs/cisco_dscpfarm"
+        ],
+        "aggaddress" : [
+          "configs/ios_bgp_aggregate_address"
+        ],
+        "nxos_acl" : [
+          "configs/nxos_acl"
+        ],
+        "route_policy_param" : [
+          "configs/route_policy_param"
+        ],
+        "cisco_voice" : [
+          "configs/cisco_voice"
+        ],
+        "cadant_isis" : [
+          "configs/cadant_isis"
+        ],
+        "cisco_vlan" : [
+          "configs/cisco_vlan"
+        ],
+        "cisco_route_map" : [
+          "configs/cisco_route_map"
+        ],
+        "foundry_misc" : [
+          "configs/foundry_misc"
+        ],
+        "commset" : [
+          "configs/ios_xr_community_set"
+        ],
+        "cisco_hsrp" : [
+          "configs/cisco_hsrp"
+        ],
+        "nxos_system" : [
+          "configs/nxos_system"
+        ],
+        "cisco_wsma" : [
+          "configs/cisco_wsma"
+        ],
+        "aruba_voice" : [
+          "configs/aruba_voice"
+        ],
+        "cisco_authentication" : [
+          "configs/cisco_authentication"
+        ],
+        "cisco_username" : [
+          "configs/cisco_username"
+        ],
+        "cisco_callhome" : [
+          "configs/cisco_callhome"
+        ],
+        "cisco_additional_paths" : [
+          "configs/cisco_additional_paths"
+        ],
+        "juniper_route_filter" : [
+          "configs/juniper_route_filter"
+        ],
+        "statistics" : [
+          "configs/statistics"
+        ],
+        "network6" : [
+          "configs/network6"
+        ],
+        "iosxrmulticast" : [
+          "configs/ios_xr_multicast"
+        ],
+        "cisco_ip_nat" : [
+          "configs/cisco_ip_nat"
+        ],
+        "community_list_named" : [
+          "configs/community_list_named"
+        ],
+        "no_snmp_server" : [
+          "configs/cisco_nosnmp"
+        ],
+        "neighbor-name-numbers" : [
+          "configs/neighbor_name_numbers"
+        ],
+        "openflow" : [
+          "configs/openflow"
+        ],
+        "ios_xr_ntp" : [
+          "configs/ios_xr_ntp"
+        ],
+        "aruba_aaa" : [
+          "configs/aruba_aaa"
+        ],
+        "cisco_vrf" : [
+          "configs/cisco_vrf"
+        ],
+        "juniper-ospf" : [
+          "configs/juniper_ospf"
+        ],
+        "cisco_ipsla" : [
+          "configs/cisco_ipsla"
+        ],
+        "pim" : [
+          "configs/pim"
+        ],
+        "cadant_misc" : [
+          "configs/cadant_misc"
+        ],
+        "foundry_access_list" : [
+          "configs/foundry_access_list"
+        ],
+        "community_set" : [
+          "configs/community_set"
+        ],
+        "juniper_system" : [
+          "configs/juniper_system"
+        ],
+        "juniper_interfaces" : [
+          "configs/juniper_interfaces"
+        ],
+        "cisco_rip" : [
+          "configs/cisco_rip"
+        ],
+        "non_nexus_neighbor_af" : [
+          "configs/non_nexus_neighbor_af"
+        ],
+        "ios_standby" : [
+          "configs/ios_standby"
+        ],
+        "arista_interface" : [
+          "configs/arista_interface"
+        ],
+        "cisco_crypto" : [
+          "configs/cisco_crypto"
+        ],
+        "arista_vrf" : [
+          "configs/arista_vrf"
+        ],
+        "msdp_originator_id" : [
+          "configs/msdp_originator_id"
+        ],
+        "ios_bgp" : [
+          "configs/ios_bgp"
+        ],
+        "cisco_sccp" : [
+          "configs/cisco_sccp"
+        ],
+        "nexus" : [
+          "configs/nexus"
+        ],
+        "community-name-numbers_dos" : [
+          "configs/community_name_numbers_dos"
+        ],
+        "cisco_redundancy" : [
+          "configs/cisco_redundancy"
+        ],
+        "aruba_acl" : [
+          "configs/aruba_acl"
+        ],
+        "aruba_crypto" : [
+          "configs/aruba_crypto"
+        ],
+        "arista_dhcp_relay" : [
+          "configs/arista_dhcp_relay"
+        ],
+        "interface_name" : [
+          "configs/interface_name"
+        ],
+        "cisco_flow" : [
+          "configs/cisco_flow"
+        ],
+        "ios_xr_taskgroup" : [
+          "configs/ios_xr_taskgroup"
+        ],
+        "cisco_vpdn" : [
+          "configs/cisco_vpdn"
+        ],
+        "iptables/host2.iptables" : [
+          "iptables/host2.iptables"
+        ],
+        "local_v6_addr" : [
+          "configs/local_v6_addr"
+        ],
+        "cisco_multicast" : [
+          "configs/cisco_multicast"
+        ],
+        "foundry_interface" : [
+          "configs/foundry_interface"
+        ],
+        "nexus_bgp" : [
+          "configs/nexus_bgp"
+        ],
+        "cisco_vpn" : [
+          "configs/cisco_vpn"
+        ],
+        "nxos_interface" : [
+          "configs/nxos_interface"
+        ],
+        "foundry_vlan_group" : [
+          "configs/foundry_vlan_group"
+        ],
+        "cadant_interface" : [
+          "configs/cadant_interface"
+        ],
+        "juniper_bgp_remove_private_as" : [
+          "configs/juniper_bgp_remove_private_as"
+        ],
+        "aaa_authentication_login_default_tacacs_local" : [
+          "configs/aaa_authentication_login_default_tacacs_local"
+        ],
+        "cisco_ospf" : [
+          "configs/cisco_ospf"
+        ],
+        "cisco_control_plane" : [
+          "configs/cisco_control_plane"
+        ],
+        "if_tag_is" : [
+          "configs/if_tag_is"
+        ],
+        "l2vpn" : [
+          "configs/ios_xr_l2vpn"
+        ],
+        "bgp_nsr" : [
+          "configs/bgp_nsr"
+        ],
+        "asa_banner" : [
+          "configs/asa_banner"
+        ],
+        "cisco_spanning_tree" : [
+          "configs/cisco_spanning_tree"
+        ],
+        "banner" : [
+          "configs/banner"
+        ],
+        "cadant_rip" : [
+          "configs/cadant_rip"
+        ],
+        "cisco_bgp" : [
+          "configs/cisco_bgp"
+        ],
+        "cisco_misc" : [
+          "configs/cisco_misc"
+        ],
+        "cisco_webvpn" : [
+          "configs/cisco_webvpn"
+        ],
+        "vlan_access_map4" : [
+          "configs/vlan_access_map2"
+        ],
+        "juniper_tacplus" : [
+          "configs/juniper_tacplus"
+        ],
+        "cadant_snmp" : [
+          "configs/cadant_snmp"
+        ]
       },
       "parseStatus" : {
         "configs/aaa_accounting" : "PASSED",
