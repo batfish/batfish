@@ -667,7 +667,10 @@ public class TracerouteEngineImplContext {
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.INSUFFICIENT_INFO;
     } else {
-      return FlowDisposition.NEIGHBOR_UNREACHABLE;
+      throw new BatfishException(
+          String.format(
+              "No disposition at hostname=%s outgoingInterface=%s for destIp=%s",
+              hostname, outgoingInterfaceName, dstIp));
     }
   }
 }

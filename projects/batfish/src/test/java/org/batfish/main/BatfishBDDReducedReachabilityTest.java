@@ -146,7 +146,7 @@ public class BatfishBDDReducedReachabilityTest {
         ImmutableSet.of());
   }
 
-  class NeighborUnreachableNetworkGenerator implements NetworkGenerator {
+  class ExitsNetworkNetworkGenerator implements NetworkGenerator {
     @Override
     public SortedMap<String, Configuration> generateConfigs(boolean delta) {
       Configuration node1 = _cb.setHostname(NODE1).build();
@@ -168,7 +168,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testHeaderSpace() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
 
     _exception.expect(IllegalArgumentException.class);
     _exception.expectMessage("No sources are compatible with the headerspace constraint");
@@ -179,7 +179,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testExitsNetwork() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
             parameters(batfish, ImmutableSet.of(FlowDisposition.EXITS_NETWORK)));
@@ -197,7 +197,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testDeliveredToSubnet() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
             parameters(batfish, ImmutableSet.of(FlowDisposition.DELIVERED_TO_SUBNET)));
@@ -208,7 +208,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testNeighborUnreachable() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
             parameters(batfish, ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE)));
@@ -219,7 +219,7 @@ public class BatfishBDDReducedReachabilityTest {
 
   @Test
   public void testInsufficientInfo() throws IOException {
-    Batfish batfish = initBatfish(new NeighborUnreachableNetworkGenerator());
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
             parameters(batfish, ImmutableSet.of(FlowDisposition.INSUFFICIENT_INFO)));

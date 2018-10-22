@@ -717,37 +717,47 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut_PerDisposition(
-      Map<String, Map<String, Map<String, BDD>>> dispositionMap) {
-    return dispositionMap
+  private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut() {
+    return _configs
         .entrySet()
         .stream()
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();
+              Map<String, BDD> aclDenyBDDs = _aclDenyBDDs.get(node);
               return nodeEntry
                   .getValue()
+                  .getVrfs()
                   .entrySet()
                   .stream()
                   .flatMap(
                       vrfEntry -> {
                         String vrf = vrfEntry.getKey();
+                        Map<String, BDD> deliveredToSubnetBDDs =
+                            _deliveredToSubnetBDDs.get(node).get(vrf);
+                        Map<String, BDD> exitsNetworkBDDs = _exitsNetworkBDDs.get(node).get(vrf);
+                        Map<String, BDD> neighborUnreachableBDDs =
+                            _neighborUnreachableBDDs.get(node).get(vrf);
+                        Map<String, BDD> insufficientInfoBDDs =
+                            _insufficientInfoBDDs.get(node).get(vrf);
                         return vrfEntry
                             .getValue()
-                            .entrySet()
+                            .getInterfaces()
+                            .values()
                             .stream()
                             .flatMap(
-                                ifaceEntry -> {
-                                  String iface = ifaceEntry.getKey();
-                                  BDD ipSpaceBDD = ifaceEntry.getValue();
-                                  String outAcl =
-                                      _configs
-                                          .get(node)
-                                          .getAllInterfaces()
-                                          .get(iface)
-                                          .getOutgoingFilterName();
+                                iface -> {
+                                  String name = iface.getName();
+                                  BDD ipSpaceBDD =
+                                      Stream.of(
+                                              deliveredToSubnetBDDs.get(name),
+                                              exitsNetworkBDDs.get(name),
+                                              neighborUnreachableBDDs.get(name),
+                                              insufficientInfoBDDs.get(name))
+                                          .reduce(_zero, BDD::or);
+                                  String outAcl = iface.getOutgoingFilterName();
                                   BDD outAclDenyBDD =
-                                      outAcl == null ? _zero : _aclDenyBDDs.get(node).get(outAcl);
+                                      outAcl == null ? _zero : aclDenyBDDs.get(outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclDenyBDD);
 
                                   return edgeBdd.isZero()
@@ -761,14 +771,6 @@ public final class BDDReachabilityAnalysisFactory {
                                 });
                       });
             });
-  }
-
-  private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut() {
-    return Streams.concat(
-        generateRules_PreOutVrf_NodeDropAclOut_PerDisposition(_deliveredToSubnetBDDs),
-        generateRules_PreOutVrf_NodeDropAclOut_PerDisposition(_exitsNetworkBDDs),
-        generateRules_PreOutVrf_NodeDropAclOut_PerDisposition(_neighborUnreachableBDDs),
-        generateRules_PreOutVrf_NodeDropAclOut_PerDisposition(_insufficientInfoBDDs));
   }
 
   private Stream<Edge> generateRules_PreOutVrf_NodeDropNullRoute() {

@@ -1005,6 +1005,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /*
    * Necessary and sufficient: Arping dst ip and the dst IP is in an interface subnet.
+   * TODO and dst is not owned
    */
   @VisibleForTesting
   Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet() {
@@ -1124,6 +1125,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /*
    * Necessary and sufficient: The connected subnet is full and no arp response.
+   * TODO (connected subnet is full or dest IP is owned) and no ARP response
    */
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
     return toImmutableMap(
