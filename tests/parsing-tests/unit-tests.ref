@@ -36631,6 +36631,15 @@
             "        (if_vrrp",
             "          VRRP:'vrrp'  <== mode:DEFAULT_MODE",
             "          groupnum = DEC:'123'  <== mode:DEFAULT_MODE",
+            "          (ifvrrp_description",
+            "            (description_line",
+            "              DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "              text = RAW_TEXT:' 123desc'  <== mode:M_Description",
+            "              NEWLINE:'\\n'  <== mode:M_Description))))",
+            "      (if_inner",
+            "        (if_vrrp",
+            "          VRRP:'vrrp'  <== mode:DEFAULT_MODE",
+            "          groupnum = DEC:'123'  <== mode:DEFAULT_MODE",
             "          (ifvrrp_ip",
             "            IP:'ip'  <== mode:DEFAULT_MODE",
             "            ip = IP_ADDRESS:'1.0.0.1'  <== mode:DEFAULT_MODE",
@@ -36642,6 +36651,14 @@
             "          (ifvrrp_ipv6",
             "            IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "            ip = IPV6_ADDRESS:'::1'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (if_inner",
+            "        (if_vrrpno",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          VRRP:'vrrp'  <== mode:DEFAULT_MODE",
+            "          groupnum = DEC:'123'  <== mode:DEFAULT_MODE",
+            "          (ifvrrpno_preempt",
+            "            PREEMPT:'preempt'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (if_inner",
             "        (if_vrrp",
@@ -59064,7 +59081,9 @@
                 8,
                 9,
                 10,
-                11
+                11,
+                12,
+                13
               ],
               "numReferrers" : 1
             }
@@ -62504,17 +62523,17 @@
             },
             "GigabitEthernet0/0/0/19" : {
               "router vrrp interface" : [
-                14
+                16
               ]
             },
             "ManagementEthernet0/RSP0/CPU0/0" : {
               "router vrrp interface" : [
-                24
+                26
               ]
             },
             "ManagementEthernet0/RSP1/CPU0/0" : {
               "router vrrp interface" : [
-                26
+                28
               ]
             }
           }
@@ -64537,17 +64556,17 @@
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
               "router vrrp interface" : [
-                14
+                16
               ]
             },
             "ManagementEthernet0/RSP0/CPU0/0" : {
               "router vrrp interface" : [
-                24
+                26
               ]
             },
             "ManagementEthernet0/RSP1/CPU0/0" : {
               "router vrrp interface" : [
-                26
+                28
               ]
             }
           }
