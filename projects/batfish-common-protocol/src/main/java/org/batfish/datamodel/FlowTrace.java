@@ -89,7 +89,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       return null;
     }
     FlowTraceHop lastHop = getLastHop();
-    return lastHop == null ? null : lastHop.getEdge().getInterface2();
+    return lastHop == null ? null : lastHop.getEdge().getHead();
   }
 
   @JsonProperty(PROP_NOTES)
