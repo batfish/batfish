@@ -2,7 +2,7 @@ package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.BLOCKED;
-import static org.batfish.datamodel.flow.StepAction.SENT_IN;
+import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
 import java.util.NavigableMap;
@@ -130,7 +130,7 @@ final class TracerouteUtils {
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
-        .setAction(SENT_IN)
+        .setAction(RECEIVED)
         .build();
   }
 }

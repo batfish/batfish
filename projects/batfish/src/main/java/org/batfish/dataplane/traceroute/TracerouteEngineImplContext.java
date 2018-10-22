@@ -212,7 +212,7 @@ public class TracerouteEngineImplContext {
                             transmissionContext._originalFlow,
                             transmissionContext._transformedFlow))
                     .build())
-            .setAction(StepAction.SENT_OUT)
+            .setAction(StepAction.TRANSMITTED)
             .build());
     Hop hop = new Hop(new Node(currentNodeName), stepBuilder.build());
     transmissionContext._hopsSoFar.add(hop);
@@ -424,7 +424,7 @@ public class TracerouteEngineImplContext {
         .contains(vrfName)) {
       InboundStep inboundStep =
           InboundStep.builder()
-              .setAction(StepAction.RECEIVED)
+              .setAction(StepAction.ACCEPTED)
               .setDetail(new InboundStepDetail())
               .build();
       steps.add(inboundStep);
