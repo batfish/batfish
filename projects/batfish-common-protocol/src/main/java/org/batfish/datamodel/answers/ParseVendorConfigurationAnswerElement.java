@@ -12,7 +12,6 @@ import org.batfish.common.Warnings;
 public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_FILE_MAP = "fileMap";
@@ -21,6 +20,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
+  /* Map of hostname to source filename (e.g. "configs/foo.cfg") */
   private SortedMap<String, String> _fileMap;
 
   private SortedMap<String, ParseStatus> _parseStatus;
@@ -29,6 +29,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private String _version;
 
+  /* Map of hostname to warnings */
   private SortedMap<String, Warnings> _warnings;
 
   public ParseVendorConfigurationAnswerElement() {
@@ -40,10 +41,11 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   public void addRedFlagWarning(String name, Warning warning) {
-    if (!_warnings.containsKey(name)) {
-      _warnings.put(name, new Warnings());
-    }
-    _warnings.get(name).getRedFlagWarnings().add(warning);
+    _warnings.computeIfAbsent(name, n -> new Warnings()).getRedFlagWarnings().add(warning);
+  }
+
+  public void addUnimplementedWarning(String name, Warning warning) {
+    _warnings.computeIfAbsent(name, n -> new Warnings()).getUnimplementedWarnings().add(warning);
   }
 
   @Override

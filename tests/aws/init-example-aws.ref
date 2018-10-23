@@ -7,7 +7,29 @@
     "parseStatus" : {
       "configs/lhr-border-02.cfg" : "PASSED"
     },
-    "version" : "0.36.0"
+    "version" : "0.36.0",
+    "warnings" : {
+      "aws_configs" : {
+        "Unimplemented features" : [
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'Hosts' in AWS file aws_configs/us-west-2/Hosts.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'MovingAddressStatuses' in AWS file aws_configs/us-west-2/MovingAddressStatuses.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'PrefixLists' in AWS file aws_configs/us-west-2/PrefixLists.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'VpcEndpoints' in AWS file aws_configs/us-west-2/VpcEndpoints.json"
+          }
+        ]
+      }
+    }
   },
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
