@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
@@ -12,9 +13,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -44,6 +48,8 @@ import org.junit.rules.TemporaryFolder;
 public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private static final BDDPacket PKT = new BDDPacket();
   private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp());
+  private static final ImmutableSet<FlowDisposition> DISPOSITIONS =
+      ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK, INSUFFICIENT_INFO, NEIGHBOR_UNREACHABLE);
 
   public @Rule TemporaryFolder temp = new TemporaryFolder();
 
@@ -119,6 +125,33 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _loc = IngressLocation.vrf(NODE1, Configuration.DEFAULT_VRF_NAME);
   }
 
+  private void checkDispositionsDisjoint() {
+    Map<FlowDisposition, BDD> dispositionBDDs =
+        toImmutableMap(
+            DISPOSITIONS,
+            Function.identity(),
+            disposition -> {
+              try {
+                return initAnalysis(disposition).getIngressLocationReachableBDDs().get(_loc);
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
+    dispositionBDDs.forEach(
+        (disposition1, bdd1) ->
+            dispositionBDDs.forEach(
+                (disposition2, bdd2) -> {
+                  if (disposition1 == disposition2) {
+                    return;
+                  }
+                  assertThat(
+                      String.format(
+                          "dispositions %s and %s should not intersect",
+                          disposition1, disposition2),
+                      bdd1.and(bdd2).isZero());
+                }));
+  }
+
   private void setup_dstInSubnet_dstOwned() {
     Configuration node1 = _cb.setHostname(NODE1).build();
     Vrf vrf = _vb.setOwner(node1).setName(Configuration.DEFAULT_VRF_NAME).build();
@@ -139,11 +172,30 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
   @Test
   public void dstInSubnet_dstOwned() throws IOException {
-    // TODO this should be NEIGHBOR_UNREACHABLE
     setup_dstInSubnet_dstOwned();
-    BDDReachabilityAnalysis analysis = initAnalysis(DELIVERED_TO_SUBNET);
+    checkDispositionsDisjoint();
+    BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    assertThat(reach, hasEntry(_loc, dstIpToBDD(NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp())));
+    BDD neighborUnreachableIps =
+        Stream.of(
+                NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp(),
+                /*
+                 * Note: sometimes the network and broadcast IPs are EXITS_NETWORK, sometimes
+                 * NEIGHBOR_UNREACHABLE. We don't really care what disposition these have, and at
+                 * some point we will disallow using them as dst IPs in reachability or traceroute.
+                 */
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(PKT.getFactory().zero(), BDD::or);
+    List<Ip> ips =
+        DST_TO_BDD
+            .getBDDInteger()
+            .getValuesSatisfying(reach.get(_loc), 100)
+            .stream()
+            .map(Ip::new)
+            .collect(Collectors.toList());
+    assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
   }
 
   private void setup_dstInSubnet_dstUnowned() {
@@ -157,6 +209,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   @Test
   public void dstInSubnet_dstUnowned() throws IOException {
     setup_dstInSubnet_dstUnowned();
+    checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(DELIVERED_TO_SUBNET);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
     assertThat(reach, hasEntry(_loc, dstIpToBDD(NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp())));
@@ -190,6 +243,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   @Test
   public void noNHIp_subnetFull_internalDstIp() throws IOException {
     setup_noNHIp_subnetFull_internalDstIp();
+    checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
     assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
@@ -213,6 +267,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   @Test
   public void noNHIp_subnetFull_externalDstIp() throws IOException {
     setup_noNHIp_subnetFull_externalDstIp();
+    checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
     assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
@@ -269,6 +324,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   @Test
   public void noNHIp_subnetNotFull_externalDstIp() throws IOException {
     setup_noNHIp_subnetNotFull_externalDstIp();
+    checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
     BDD exitsNetworkIps =

@@ -113,6 +113,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, BDD>> _interfaceHostSubnetIpBDDs;
 
+  // ips belonging to any interface in the network
+  private final IpSpace _ownedIps;
+
   // ips belonging to any subnet in the network
   private final IpSpace _internalIps;
 
@@ -137,6 +140,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _ipSpaceToBDD = initIpSpaceToBDD();
     _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
+    _ownedIps = computeOwnedIps();
     _unownedIpsBDD = computeUnownedIpsBDD();
     _internalIps = computeInternalIps();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
@@ -231,6 +235,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _externalIps = _internalIps.complement();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
+    _ownedIps = computeOwnedIps();
     _unownedIpsBDD = computeUnownedIpsBDD();
   }
 
@@ -1004,12 +1009,23 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   /*
-   * Necessary and sufficient: Arping dst ip and the dst IP is in an interface subnet.
-   * TODO and dst is not owned
+   * Necessary and sufficient: Arping dst ip and the dst IP is not owned but is in an interface
+   * subnet.
    */
   @VisibleForTesting
   Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet() {
-    return intersection(_arpFalseDestIp, _interfaceHostSubnetIps);
+    return toImmutableMap(
+        intersection(_arpFalseDestIp, _interfaceHostSubnetIps),
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey,
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue(),
+                        Entry::getKey,
+                        ifaceEntry -> AclIpSpace.difference(ifaceEntry.getValue(), _ownedIps))));
   }
 
   @Override
@@ -1124,11 +1140,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   /*
-   * Necessary and sufficient: The connected subnet is full and no arp response.
-   * TODO (connected subnet is full or dest IP is owned) and no ARP response
+   * Necessary and sufficient: No ARP response, and either:
+   * 1. the interface is full, or
+   * 2. we ARPed for a dest IP which is owned in the snapshot.
+   *
+   * An interface is full if all subnets connected to it are full.
    */
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
     return toImmutableMap(
+        /* The old NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition is all dst IPs for which ARP
+         * fails.
+         */
         _neighborUnreachableOrExitsNetwork,
         Entry::getKey,
         nodeEntry ->
@@ -1139,14 +1161,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                     toImmutableMap(
                         vrfEntry.getValue(),
                         Entry::getKey,
-                        ifaceEntry ->
-                            // We just need to consider if there is a subnet with missing devices,
-                            // since if so a packet could be further forwarded.
-                            _interfacesWithMissingDevices
-                                    .get(nodeEntry.getKey())
-                                    .contains(ifaceEntry.getKey())
-                                ? EmptyIpSpace.INSTANCE
-                                : ifaceEntry.getValue())));
+                        ifaceEntry -> {
+                          String node = nodeEntry.getKey();
+                          String vrf = vrfEntry.getKey();
+                          String iface = ifaceEntry.getKey();
+
+                          IpSpace arpFalse = ifaceEntry.getValue();
+
+                          IpSpace arpFalseUnownedDstIp =
+                              AclIpSpace.intersection(
+                                  _arpFalseDestIp.get(node).get(vrf).get(iface), _ownedIps);
+
+                          return _interfacesWithMissingDevices.get(node).contains(iface)
+                              ? arpFalseUnownedDstIp
+                              : arpFalse;
+                        })));
   }
 
   @Override
@@ -1241,14 +1270,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         })));
   }
 
+  private IpSpace computeOwnedIps() {
+    return IpWildcardSetIpSpace.builder()
+        .including(
+            _interfaceOwnedIps
+                .values()
+                .stream()
+                .flatMap(ifaceMap -> ifaceMap.values().stream())
+                .flatMap(Collection::stream)
+                .map(IpWildcard::new)
+                .collect(Collectors.toList()))
+        .build();
+  }
+
   private BDD computeUnownedIpsBDD() {
-    return _interfaceOwnedIps
-        .values()
-        .stream()
-        .flatMap(ifaceMap -> ifaceMap.values().stream())
-        .flatMap(Collection::stream)
-        .map(_ipSpaceToBDD::toBDD)
-        .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or)
-        .not();
+    return _ipSpaceToBDD.visit(_ownedIps).not();
   }
 }
