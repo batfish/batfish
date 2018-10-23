@@ -71,7 +71,6 @@ public class TracerouteEngineImplContext {
     private final List<Hop> _hopsSoFar;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
     private final Flow _originalFlow;
-    private final List<RouteInfo> _routesForThisNextHopInterface;
     private final Flow _transformedFlow;
 
     private TransmissionContext(
@@ -81,7 +80,6 @@ public class TracerouteEngineImplContext {
         List<Hop> hopsSoFar,
         NavigableMap<String, IpSpace> namedIpSpaces,
         Flow originalFlow,
-        List<RouteInfo> routesForThisNextHopInterface,
         Flow transformedFlow) {
       _aclDefinitions = aclDefinitions;
       _currentNode = currentNode;
@@ -89,7 +87,6 @@ public class TracerouteEngineImplContext {
       _hopsSoFar = new ArrayList<>(hopsSoFar);
       _namedIpSpaces = namedIpSpaces;
       _originalFlow = originalFlow;
-      _routesForThisNextHopInterface = routesForThisNextHopInterface;
       _transformedFlow = transformedFlow;
     }
 
@@ -102,7 +99,6 @@ public class TracerouteEngineImplContext {
               _hopsSoFar,
               _namedIpSpaces,
               _originalFlow,
-              _routesForThisNextHopInterface,
               _transformedFlow);
       transmissionContext._filterOutNotes = _filterOutNotes;
       return transmissionContext;
@@ -343,7 +339,6 @@ public class TracerouteEngineImplContext {
                         hops,
                         Maps.newTreeMap(),
                         flow,
-                        new ArrayList<>(),
                         flow);
                 processHop(
                     ingressNodeName, ingressInterfaceName, transmissionContext, flow, visitedHops);
@@ -356,7 +351,6 @@ public class TracerouteEngineImplContext {
                         hops,
                         Maps.newTreeMap(),
                         flow,
-                        new ArrayList<>(),
                         flow);
                 processHop(ingressNodeName, null, transmissionContext, flow, visitedHops);
               }
@@ -491,13 +485,13 @@ public class TracerouteEngineImplContext {
                     Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
                         ? null
                         : resolvedNextHopIp;
-                List<RouteInfo> routesForThisNextHopInterface =
+                Set<RouteInfo> routesForThisNextHopInterface =
                     routeCandidates
                         .stream()
                         .map(
                             rc ->
                                 new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
-                        .collect(ImmutableList.toImmutableList());
+                        .collect(ImmutableSet.toImmutableSet());
 
                 ImmutableList.Builder<Step<?>> clonedStepsBuilder = ImmutableList.builder();
                 clonedStepsBuilder.addAll(steps);
@@ -556,7 +550,6 @@ public class TracerouteEngineImplContext {
                         transmissionContext._hopsSoFar,
                         namedIpSpaces,
                         currentFlow,
-                        routesForThisNextHopInterface,
                         newTransformedFlow);
                 if (edges == null || edges.isEmpty()) {
                   updateDeniedOrUnreachableTrace(
