@@ -841,7 +841,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return CommonUtil.synthesizeTopology(configurations);
   }
 
-  private Map<String, Configuration> convertConfigurations(
+  Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");

@@ -5,11 +5,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
@@ -18,7 +15,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,14 +31,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.config.Settings;
-import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -51,7 +44,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -540,50 +532,5 @@ public class BatfishTest {
 
     // should get null answerer if no creator available
     assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
-  }
-
-  @Test
-  public void testSerializedObjectMapAWS() throws IOException {
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setAwsText(
-                    "org/batfish/representation/aws/test/",
-                    ImmutableList.of("NetworkAcls.json", "Subnets.json", "Vpcs.json"))
-                .build(),
-            _folder);
-    TestrigSettings snapshotSettings = batfish.getTestrigSettings();
-    // Settings settings = batfish.getSettings();
-
-    batfish.serializeVendorConfigs(
-        snapshotSettings.getInputPath(), snapshotSettings.getSerializeVendorPath());
-    Answer answer = batfish.serializeIndependentConfigs(snapshotSettings.getSerializeVendorPath());
-    List<AnswerElement> elements = answer.getAnswerElements();
-    assertThat(elements, iterableWithSize(1));
-    assertThat(elements.get(0), instanceOf(ConvertConfigurationAnswerElement.class));
-    Multimap<String, String> map =
-        ((ConvertConfigurationAnswerElement) answer.getAnswerElements().get(0)).getFileMap();
-
-    assertThat(
-        map.asMap(),
-        hasEntry(
-            equalTo("subnet-073b8061"), containsInAnyOrder(BfConsts.RELPATH_AWS_CONFIGS_FILE)));
-    assertThat(
-        map.asMap(),
-        hasEntry(
-            equalTo("subnet-1f315846"), containsInAnyOrder(BfConsts.RELPATH_AWS_CONFIGS_FILE)));
-    assertThat(
-        map.asMap(),
-        hasEntry(
-            equalTo("subnet-b26c24fa"), containsInAnyOrder(BfConsts.RELPATH_AWS_CONFIGS_FILE)));
-    assertThat(
-        map.asMap(),
-        hasEntry(equalTo("vpc-6f6f8316"), containsInAnyOrder(BfConsts.RELPATH_AWS_CONFIGS_FILE)));
-    assertThat(
-        map.asMap(),
-        hasEntry(equalTo("vpc-b390fad5"), containsInAnyOrder(BfConsts.RELPATH_AWS_CONFIGS_FILE)));
-
-    // assertThat(map.asMap(), hasEntry(equalTo(BfConsts.RELPATH_AWS_CONFIGS_FILE),
-    // containsInAnyOrder("NetworkAcls.json", "Subnets.json", "Vpcs.json")));
   }
 }
