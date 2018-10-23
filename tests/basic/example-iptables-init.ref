@@ -226,6 +226,18 @@
         "hosts/z2-host1.json" : { },
         "hosts/z2-host2.json" : { }
       },
+      "fileMap" : {
+        "internet-host" : "internet-host",
+        "r1" : "r1",
+        "r2" : "r2",
+        "r3" : "r3",
+        "z1-firewall" : "z1-firewall",
+        "z1-host1" : "z1-host1",
+        "z1-host2" : "z1-host2",
+        "z2-firewall" : "z2-firewall",
+        "z2-host1" : "z2-host1",
+        "z2-host2" : "z2-host2"
+      },
       "referencedStructures" : {
         "configs/r1.cfg" : {
           "interface" : {

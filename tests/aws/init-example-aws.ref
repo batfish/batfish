@@ -308,6 +308,29 @@
         }
       }
     },
+    "fileMap" : {
+      "es-domain" : "aws_configs",
+      "igw-068fee63" : "aws_configs",
+      "igw-9b93ddfc" : "aws_configs",
+      "igw-fac5839d" : "aws_configs",
+      "lhr-border-02" : "lhr-border-02",
+      "subnet-073b8061" : "aws_configs",
+      "subnet-1641fa70" : "aws_configs",
+      "subnet-1f315846" : "aws_configs",
+      "subnet-30398256" : "aws_configs",
+      "subnet-62f14104" : "aws_configs",
+      "subnet-7044ff16" : "aws_configs",
+      "subnet-8d0cbdeb" : "aws_configs",
+      "subnet-9c8adceb" : "aws_configs",
+      "subnet-d9cafabc" : "aws_configs",
+      "subnet-f73a8191" : "aws_configs",
+      "test-rds" : "aws_configs",
+      "vgw-81fd279f" : "aws_configs",
+      "vpc-815775e7" : "aws_configs",
+      "vpc-925131f4" : "aws_configs",
+      "vpc-b390fad5" : "aws_configs",
+      "vpc-f8fad69d" : "aws_configs"
+    },
     "referencedStructures" : {
       "configs/lhr-border-02.cfg" : {
         "bgp peer-group" : {

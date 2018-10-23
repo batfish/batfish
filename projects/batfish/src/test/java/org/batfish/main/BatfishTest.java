@@ -578,6 +578,8 @@ public class BatfishTest {
     configs.put(
         "aws",
         new AwsConfiguration() {
+          private static final long serialVersionUID = 1L;
+
           @Override
           public Map<String, Configuration> toConfigurations(
               Settings settings, Map<String, Warnings> warningsByHost) {
