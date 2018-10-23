@@ -505,7 +505,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setForwardingAnalysis(
                 MockForwardingAnalysis.builder()
-                    .setNeighborUnreachable(
+                    .setNeighborUnreachableOrExitsNetwork(
                         ImmutableMap.of(
                             node.getHostname(),
                             ImmutableMap.of(

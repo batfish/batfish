@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,6 +28,9 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.NodeAccept;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
@@ -113,6 +117,28 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
+    assertThat(edge, nullValue());
+    assertThat(headerSpaceBdd, equalTo(zero));
+  }
+
+  /*
+   * Test the PreOutVrf -> DeliveredToSubnet edge for the interface with the
+   * OriginatingFromDevice ACL.
+   */
+  @Test
+  public void preOutVrf_NodeInterfaceDeliveredToSubnet_OriginatingFromDevice() {
+    Edge edge =
+        edges
+            .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
+            .get(
+                new NodeInterfaceDeliveredToSubnet(
+                    CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
+    BDD headerSpaceBdd =
+        factory
+            .getDeliveredToSubnetBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
     assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
     assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
     assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
@@ -120,20 +146,66 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   /*
-   * Test the PreOutVrf -> NodeInterfaceNeighborUnreachable edge for the interface with the
-   * MatchSrcInterface ACL.
+   * Test the PreOutVrf -> ExitsNetwork edge for the interface with the
+   * OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutVrf_NodeInterfaceNeighborUnreachable_MatchSrcInterface() {
+  public void preOutVrf_NodeInterfaceExitsNetwork_OriginatingFromDevice() {
     Edge edge =
         edges
             .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
             .get(
-                new NodeInterfaceNeighborUnreachable(
+                new NodeInterfaceExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
+    BDD headerSpaceBdd =
+        factory
+            .getExitsNetworkBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
+    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
+    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(originatingFromDeviceBdd)));
+  }
+
+  /*
+   * Test the PreOutVrf -> DeliveredToSubnet edge for the interface with the
+   * MatchSrcInterface ACL.
+   */
+  @Test
+  public void preOutVrf_NodeInterfaceDeliveredToSubnet_MatchSrcInterface() {
+    Edge edge =
+        edges
+            .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
+            .get(
+                new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
     BDD headerSpaceBdd =
         factory
-            .getNeighborUnreachableBDDs()
+            .getDeliveredToSubnetBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
+
+    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
+    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(matchSrcInterfaceBdd)));
+  }
+
+  /*
+   * Test the PreOutVrf -> ExitsNetwork edge for the interface with the
+   * MatchSrcInterface ACL.
+   */
+  @Test
+  public void preOutVrf_NodeInterfaceExitsNetwork_MatchSrcInterface() {
+    Edge edge =
+        edges
+            .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
+            .get(new NodeInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
+    BDD headerSpaceBdd =
+        factory
+            .getExitsNetworkBDDs()
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
@@ -141,6 +213,28 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
     assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(headerSpaceBdd));
     assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(matchSrcInterfaceBdd)));
+  }
+
+  /*
+   * Test the PreOutVrf -> Insufficient edge for the interface with the
+   * MatchSrcInterface ACL.
+   */
+  @Test
+  public void preOutVrf_NodeInterfaceInsufficientInfo_MatchSrcInterface() {
+    Edge edge =
+        edges
+            .get(new PreOutVrf(CONFIG_NAME, VRF_NAME))
+            .get(
+                new NodeInterfaceInsufficientInfo(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
+    BDD headerSpaceBdd =
+        factory
+            .getInsufficientInfoBDDs()
+            .get(CONFIG_NAME)
+            .get(VRF_NAME)
+            .get(MATCH_SRC_INTERFACE_ACL_IFACE_NAME);
+
+    assertThat(edge, nullValue());
+    assertThat(headerSpaceBdd, equalTo(zero));
   }
 
   /*

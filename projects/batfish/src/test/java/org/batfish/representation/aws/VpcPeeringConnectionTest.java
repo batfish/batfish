@@ -18,7 +18,7 @@ public class VpcPeeringConnectionTest {
 
     JSONObject jObj = new JSONObject(text);
     Region region = new Region("r1");
-    region.addConfigElement(jObj, null);
+    region.addConfigElement(jObj, null, null);
 
     /*
      * We should have an entry for the vpc peering connection with status code "active", but not
