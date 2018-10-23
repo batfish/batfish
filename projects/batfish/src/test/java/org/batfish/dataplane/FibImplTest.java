@@ -60,7 +60,11 @@ public class FibImplTest {
   @Test
   public void testNextHopInterfaceTakesPrecedence() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
-    // Both next hop IP and interface, interface should take precedence
+    /*
+     * Both next hop IP and interface on the static route. Interface should take precedence
+     * EXTERNAL_IP should be ignored (i.e., not resolved recursively) -- there will not be a route
+     * for it.
+     */
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -86,7 +90,10 @@ public class FibImplTest {
   @Test
   public void testNextHopIpIsResolved() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
-    // only next hop ip
+    /*
+     * Only next hop ip on the static route.
+     * Next hop IP should be resolved, and match the connected route on FastEthernet0/0
+     */
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
