@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +50,11 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
       Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-      SortedMap<String, String> hostnameFilenameMap =
+      Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
           hostnameFilenameMap
-              .entrySet()
+              .entries()
               .stream()
               .filter(e -> includeNodes.contains(e.getKey()))
               .map(Entry::getValue)

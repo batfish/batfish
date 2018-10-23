@@ -35,6 +35,7 @@ public final class SpecifiersQuestion extends Question {
     FILTER,
     INTERFACE,
     IP_SPACE,
+    IP_SPACE_OF_LOCATION,
     LOCATION,
     NODE
   }

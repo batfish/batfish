@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
@@ -183,7 +182,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Map<String, String> getQuestionTemplates() {
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
     throw new UnsupportedOperationException();
   }
 
@@ -200,11 +199,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public String getTaskId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Directory getTestrigFileTree() {
     throw new UnsupportedOperationException();
   }
 

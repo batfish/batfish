@@ -1,0 +1,34 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "FILTER",
+  "differential" : false,
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filterSpecifierInput" : "input",
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Show the resolved values for filter specifier",
+    "instanceName" : "qname",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "filters" : {
+        "description" : "Input to the FilterSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "input"
+      },
+      "nodes" : {
+        "description" : "Input to the NodeSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "input"
+      }
+    }
+  },
+  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
+  "nodeSpecifierInput" : "input"
+}

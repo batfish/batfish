@@ -1276,12 +1276,26 @@ if_vrrp
    VRRP groupnum = DEC
    (
       ifvrrp_authentication
+      | ifvrrp_description
       | ifvrrp_ip
       | ifvrrp_ip_secondary
       | ifvrrp_ipv6
       | ifvrrp_preempt
       | ifvrrp_priority
    )
+;
+
+if_vrrpno
+:
+   NO VRRP groupnum = DEC
+   (
+      ifvrrpno_preempt
+   )
+;
+
+ifvrrpno_preempt
+:
+   PREEMPT NEWLINE
 ;
 
 if_zone_member
@@ -1433,6 +1447,11 @@ ifvrrp_authentication
    AUTHENTICATION TEXT text = variable_permissive NEWLINE
 ;
 
+ifvrrp_description
+:
+   description_line
+;
+
 ifvrrp_ip
 :
    IP ip = IP_ADDRESS NEWLINE
@@ -1565,6 +1584,7 @@ if_inner
    | if_vrf
    | if_vrf_member
    | if_vrrp
+   | if_vrrpno
    | if_zone_member
    | if_security_level
    // do not rearrange items below

@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
-import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
@@ -119,7 +118,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
-  Map<String, String> getQuestionTemplates();
+  Map<String, String> getQuestionTemplates(boolean verbose);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
@@ -131,8 +130,6 @@ public interface IBatfish extends IPluginConsumer {
   ImmutableConfiguration getSettingsConfiguration();
 
   String getTaskId();
-
-  Directory getTestrigFileTree();
 
   SnapshotId getTestrigName();
 

@@ -1,0 +1,19 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "nodeSpecifierInput": "${nodes}",
+  "queryType": "node",
+  "instance": {
+    "description": "Show the resolved values for node specifier",
+    "instanceName": "resolveNodeSpecifier",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "nodes": {
+        "description": "Input to the NodeSpecifier",
+        "optional": true,
+        "type": "string"
+      }
+    }
+  }
+}

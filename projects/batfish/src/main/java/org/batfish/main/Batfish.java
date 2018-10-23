@@ -70,7 +70,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Directory;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -1355,7 +1355,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Map<String, String> getQuestionTemplates() {
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
     if (_settings.getCoordinatorHost() == null) {
       throw new BatfishException("Cannot get question templates: coordinator host is not set");
     }
@@ -1370,6 +1370,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
     if (response == null) {
@@ -1432,9 +1433,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (consumedEdges.contains(edge)) {
         continue;
       }
-      Edge reverseEdge = new Edge(edge.getInterface2(), edge.getInterface1());
       consumedEdges.add(edge);
-      consumedEdges.add(reverseEdge);
+      consumedEdges.add(edge.reverse());
     }
     return consumedEdges;
   }
@@ -1449,19 +1449,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getInputPath();
-    Directory dir = new Directory(trPath);
-    return dir;
-  }
-
-  @Override
   public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
-  }
-
-  public TestrigSettings getTestrigSettings() {
-    return _testrigSettings;
   }
 
   @Override
@@ -2075,13 +2064,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path file = configFile.getKey();
       String fileText = configFile.getValue();
       String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
-
-      // we stop classic link processing here because it interferes with VPC
-      // processing
-      if (file.toString().contains("classic-link")) {
-        _logger.errorf("%s has classic link configuration\n", file);
-        continue;
-      }
 
       JSONObject jsonObj = null;
       try {
