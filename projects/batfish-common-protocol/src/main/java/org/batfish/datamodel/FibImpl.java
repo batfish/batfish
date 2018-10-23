@@ -82,11 +82,15 @@ public class FibImpl implements Fib {
 
     String nextHopInterface = route.getNextHopInterface();
     if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
+      Ip finalNextHopIp =
+          route.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+              ? mostRecentNextHopIp
+              : route.getNextHopIp();
       Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
           nextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new HashMap<>());
       Set<AbstractRoute> nextHopInterfaceRoutes =
           nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
-              mostRecentNextHopIp, k -> new TreeSet<>());
+              finalNextHopIp, k -> new TreeSet<>());
       nextHopInterfaceRoutes.add(route);
     } else {
       Ip nextHopIp = route.getNextHopIp();
