@@ -551,7 +551,7 @@ public class BatfishTest {
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     SortedMap<String, GenericConfigObject> configs = new TreeMap<>();
 
-    // Pseudo Cisco config
+    // Create minimal Cisco config
     VendorConfiguration config = new CiscoConfiguration();
     config.setHostname("hostname");
     config.setVendor(ConfigurationFormat.CISCO_IOS);
