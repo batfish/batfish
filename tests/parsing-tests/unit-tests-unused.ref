@@ -613,6 +613,16 @@
         }
       },
       {
+        "Structure_Type" : "bgp peer-group",
+        "Structure_Name" : "8075-CORE",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_ios_neighbor",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
         "Structure_Type" : "nat pool",
         "Structure_Name" : "abc",
         "Source_Lines" : {
@@ -2158,16 +2168,6 @@
           "lines" : [
             4,
             5
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp peer-group",
-        "Structure_Name" : "8075-CORE",
-        "Source_Lines" : {
-          "filename" : "configs/neighbor_name_numbers",
-          "lines" : [
-            6
           ]
         }
       },
