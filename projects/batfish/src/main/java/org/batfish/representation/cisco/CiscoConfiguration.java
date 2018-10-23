@@ -1876,10 +1876,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   .setRemoteAs(lpg.getRemoteAs());
         } else if (lpg instanceof DynamicIpBgpPeerGroup) {
           DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
+          // Sort the remove AS numbers for consistent refs.
+          SortedSet<Long> asns =
+              ImmutableSortedSet.<Long>naturalOrder()
+                  .add(dpg.getRemoteAs())
+                  .addAll(firstNonNull(dpg.getAlternateAs(), ImmutableList.of()))
+                  .build();
           newNeighborBuilder =
               BgpPassivePeerConfig.builder()
                   .setPeerPrefix(dpg.getPrefix())
-                  .setRemoteAs(ImmutableList.of(lpg.getRemoteAs()));
+                  .setRemoteAs(ImmutableList.copyOf(asns));
         } else if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
           // TODO: implement ipv6 bgp neighbors
           continue;

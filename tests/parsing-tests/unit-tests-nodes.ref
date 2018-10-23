@@ -7546,6 +7546,121 @@
           }
         }
       },
+      "cisco_ios_neighbor" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ios_neighbor",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ios_neighbor",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "dynamicNeighbors" : {
+                "10.10.20.0/24" : {
+                  "class" : "org.batfish.datamodel.BgpPassivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : true,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : true,
+                  "clusterId" : 3475939343,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~",
+                  "group" : "LEAF",
+                  "localAs" : 12076,
+                  "localIp" : "AUTO/NONE(-1l)",
+                  "peerPrefix" : "10.10.20.0/24",
+                  "remoteAs" : [
+                    65001,
+                    65002,
+                    65003,
+                    65004,
+                    65005
+                  ],
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "routerId" : "207.46.160.15",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
       "cisco_ip" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_ip",
@@ -17850,66 +17965,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
-          }
-        }
-      },
-      "neighbor-name-numbers" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "neighbor-name-numbers",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "ROUTER",
-        "routingPolicies" : {
-          "~BGP_COMMON_EXPORT_POLICY:default~" : {
-            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "neighbor-name-numbers",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "multipathEbgp" : false,
-              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
-              "multipathIbgp" : false,
-              "routerId" : "207.46.160.15",
-              "tieBreaker" : "ARRIVAL_ORDER"
-            }
           }
         }
       },

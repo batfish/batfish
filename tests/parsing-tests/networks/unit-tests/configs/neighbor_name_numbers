@@ -1,8 +1,0 @@
-!
-hostname neighbor-name-numbers
-!
-router bgp 12076
- bgp router-id 207.46.160.15
- neighbor 8075-CORE peer-group
-!
-end
