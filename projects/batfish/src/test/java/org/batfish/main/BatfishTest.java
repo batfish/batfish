@@ -3,8 +3,10 @@ package org.batfish.main;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
@@ -31,19 +33,24 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -53,6 +60,8 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
+import org.batfish.representation.aws.AwsConfiguration;
+import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -532,5 +541,60 @@ public class BatfishTest {
 
     // should get null answerer if no creator available
     assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
+  }
+
+  @Test
+  public void testConvertConfigurations() {
+    BatfishLogger logger = new BatfishLogger("fatal", false);
+    Settings settings = new Settings();
+    settings.setLogger(logger);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    SortedMap<String, GenericConfigObject> configs = new TreeMap<>();
+
+    // Pseudo Cisco config
+    VendorConfiguration config = new CiscoConfiguration();
+    config.setHostname("hostname");
+    config.setVendor(ConfigurationFormat.CISCO_IOS);
+    config.setFilename("filename.cfg");
+
+    configs.put("test", config);
+    Batfish.convertConfigurations(configs, ccae, logger, settings);
+
+    // Confirm config makes it into the fileMap, mapping hostname to vendor config name
+    SortedMap<String, String> fileMap = ccae.getFileMap();
+    assertThat(fileMap, aMapWithSize(1));
+    assertThat(fileMap, hasEntry("hostname", "test"));
+  }
+
+  @Test
+  public void testConvertConfigurationsAws() {
+    BatfishLogger logger = new BatfishLogger("fatal", false);
+    Settings settings = new Settings();
+    settings.setLogger(logger);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    SortedMap<String, GenericConfigObject> configs = new TreeMap<>();
+
+    // Pseudo AWS config with two sub-configs
+    configs.put(
+        "aws",
+        new AwsConfiguration() {
+          @Override
+          public Map<String, Configuration> toConfigurations(
+              Settings settings, Map<String, Warnings> warningsByHost) {
+            SortedMap<String, Configuration> configs = new TreeMap<>();
+            configs.put("config1", new Configuration("config1", ConfigurationFormat.AWS));
+            configs.put("config2", new Configuration("config2", ConfigurationFormat.AWS));
+            return configs;
+          }
+        });
+
+    Batfish.convertConfigurations(configs, ccae, logger, settings);
+
+    // Confirm both sub-configs make it into the fileMap
+    // Mapping both hostnames to the same vendor config name
+    SortedMap<String, String> fileMap = ccae.getFileMap();
+    assertThat(fileMap, aMapWithSize(2));
+    assertThat(fileMap, hasEntry("config1", "aws"));
+    assertThat(fileMap, hasEntry("config2", "aws"));
   }
 }

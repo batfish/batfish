@@ -841,27 +841,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return CommonUtil.synthesizeTopology(configurations);
   }
 
-  Map<String, Configuration> convertConfigurations(
+  static Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
-      ConvertConfigurationAnswerElement answerElement) {
-    _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
-    _logger.resetTimer();
+      ConvertConfigurationAnswerElement answerElement,
+      BatfishLogger logger,
+      Settings settings) {
+    logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
+    logger.resetTimer();
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
       GenericConfigObject vc = config.getValue();
-      ConvertConfigurationJob job = new ConvertConfigurationJob(_settings, vc, config.getKey());
+      ConvertConfigurationJob job = new ConvertConfigurationJob(settings, vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
-        _settings,
-        _logger,
+        settings,
+        logger,
         jobs,
         configurations,
         answerElement,
-        _settings.getHaltOnConvertError(),
+        settings.getHaltOnConvertError(),
         "Convert configurations to vendor-independent format");
-    _logger.printElapsedTime();
+    logger.printElapsedTime();
     return configurations;
   }
 
@@ -1148,7 +1150,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, GenericConfigObject> vendorConfigurations =
         deserializeVendorConfigurations(serializedVendorConfigPath);
     Map<String, Configuration> configurations =
-        convertConfigurations(vendorConfigurations, answerElement);
+        convertConfigurations(vendorConfigurations, answerElement, _logger, _settings);
 
     identifyDeviceTypes(configurations.values());
     return configurations;
@@ -3245,7 +3247,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return overlayConfigurations;
   }
 
-  Answer serializeIndependentConfigs(Path vendorConfigPath) {
+  private Answer serializeIndependentConfigs(Path vendorConfigPath) {
     Answer answer = new Answer();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
