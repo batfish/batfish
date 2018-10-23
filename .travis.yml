@@ -3,7 +3,7 @@ sudo: true
 dist: xenial
 
 jdk:
-  - oraclejdk8
+  - openjdk8 
 
 env:
   - BF_BUILDER="mvn"

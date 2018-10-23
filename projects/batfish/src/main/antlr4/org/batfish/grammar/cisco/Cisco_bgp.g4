@@ -107,15 +107,10 @@ additional_paths_rb_stanza
 :
    BGP ADDITIONAL_PATHS
    (
-      SELECT ALL
-      |
-      (
-         SEND RECEIVE?
-      )
-      |
-      (
-         RECEIVE SEND?
-      )
+      INSTALL
+      | SELECT ALL
+      | SEND RECEIVE?
+      | RECEIVE SEND?
    ) NEWLINE
 ;
 

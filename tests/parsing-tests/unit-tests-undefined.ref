@@ -405,8 +405,8 @@
         "Lines" : {
           "filename" : "configs/cisco_additional_paths",
           "lines" : [
-            7,
-            8
+            8,
+            9
           ]
         }
       },
