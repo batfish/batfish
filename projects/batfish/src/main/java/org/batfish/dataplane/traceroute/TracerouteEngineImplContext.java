@@ -666,6 +666,13 @@ public class TracerouteEngineImplContext {
         .get(outgoingInterfaceName)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.INSUFFICIENT_INFO;
+    } else if (_forwardingAnalysis
+        .getNeighborUnreachable()
+        .get(hostname)
+        .get(vrfName)
+        .get(outgoingInterfaceName)
+        .containsIp(dstIp, ImmutableMap.of())) {
+      return FlowDisposition.NEIGHBOR_UNREACHABLE;
     } else {
       throw new BatfishException(
           String.format(
