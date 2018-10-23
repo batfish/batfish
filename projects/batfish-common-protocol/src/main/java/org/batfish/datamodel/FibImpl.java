@@ -68,7 +68,6 @@ public class FibImpl implements Fib {
       // https://github.com/batfish/batfish/issues/1469
       return;
     }
-    Ip nextHopIp = route.getNextHopIp();
 
     /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
     if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
@@ -80,26 +79,28 @@ public class FibImpl implements Fib {
       nextHopInterfaceRoutes.add(route);
       return;
     }
-    if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-      Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = rib.longestPrefixMatch(nextHopIp);
-      for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {
-        collectNextHopInterfaces(
-            rib,
-            nextHopLongestPrefixMatchRoute,
-            nextHopIp,
-            nextHopInterfaces,
-            newSeenNetworks,
-            depth + 1);
-      }
+
+    String nextHopInterface = route.getNextHopInterface();
+    if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
+      Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
+          nextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new HashMap<>());
+      Set<AbstractRoute> nextHopInterfaceRoutes =
+          nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
+              mostRecentNextHopIp, k -> new TreeSet<>());
+      nextHopInterfaceRoutes.add(route);
     } else {
-      String nextHopInterface = route.getNextHopInterface();
-      if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
-        Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
-            nextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new HashMap<>());
-        Set<AbstractRoute> nextHopInterfaceRoutes =
-            nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
-                mostRecentNextHopIp, k -> new TreeSet<>());
-        nextHopInterfaceRoutes.add(route);
+      Ip nextHopIp = route.getNextHopIp();
+      if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+        Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = rib.longestPrefixMatch(nextHopIp);
+        for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {
+          collectNextHopInterfaces(
+              rib,
+              nextHopLongestPrefixMatchRoute,
+              nextHopIp,
+              nextHopInterfaces,
+              newSeenNetworks,
+              depth + 1);
+        }
       } else {
         // TODO: Declare this using some warning mechanism
         // https://github.com/batfish/batfish/issues/1469
