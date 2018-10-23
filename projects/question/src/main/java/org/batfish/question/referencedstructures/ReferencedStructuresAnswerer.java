@@ -2,12 +2,12 @@ package org.batfish.question.referencedstructures;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
@@ -36,11 +36,11 @@ public class ReferencedStructuresAnswerer extends Answerer {
   public TableAnswerElement answer() {
     ReferencedStructuresQuestion question = (ReferencedStructuresQuestion) _question;
     Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-    SortedMap<String, String> hostnameFilenameMap =
+    Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =
         hostnameFilenameMap
-            .entrySet()
+            .entries()
             .stream()
             .filter(e -> includeNodes.contains(e.getKey()))
             .map(Entry::getValue)

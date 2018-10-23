@@ -71,7 +71,6 @@ public class TracerouteEngineImplContext {
     private final List<Hop> _hopsSoFar;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
     private final Flow _originalFlow;
-    private final List<RouteInfo> _routesForThisNextHopInterface;
     private final Flow _transformedFlow;
 
     private TransmissionContext(
@@ -81,7 +80,6 @@ public class TracerouteEngineImplContext {
         List<Hop> hopsSoFar,
         NavigableMap<String, IpSpace> namedIpSpaces,
         Flow originalFlow,
-        List<RouteInfo> routesForThisNextHopInterface,
         Flow transformedFlow) {
       _aclDefinitions = aclDefinitions;
       _currentNode = currentNode;
@@ -89,7 +87,6 @@ public class TracerouteEngineImplContext {
       _hopsSoFar = new ArrayList<>(hopsSoFar);
       _namedIpSpaces = namedIpSpaces;
       _originalFlow = originalFlow;
-      _routesForThisNextHopInterface = routesForThisNextHopInterface;
       _transformedFlow = transformedFlow;
     }
 
@@ -102,7 +99,6 @@ public class TracerouteEngineImplContext {
               _hopsSoFar,
               _namedIpSpaces,
               _originalFlow,
-              _routesForThisNextHopInterface,
               _transformedFlow);
       transmissionContext._filterOutNotes = _filterOutNotes;
       return transmissionContext;
@@ -212,7 +208,7 @@ public class TracerouteEngineImplContext {
                             transmissionContext._originalFlow,
                             transmissionContext._transformedFlow))
                     .build())
-            .setAction(StepAction.SENT_OUT)
+            .setAction(StepAction.TRANSMITTED)
             .build());
     Hop hop = new Hop(new Node(currentNodeName), stepBuilder.build());
     transmissionContext._hopsSoFar.add(hop);
@@ -270,7 +266,7 @@ public class TracerouteEngineImplContext {
                                 transmissionContext._originalFlow,
                                 transmissionContext._transformedFlow))
                         .build())
-                .setAction(StepAction.BLOCKED)
+                .setAction(StepAction.DENIED)
                 .build());
         Hop deniedOutHop = new Hop(new Node(currentNodeName), stepBuilder.build());
         transmissionContext._hopsSoFar.add(deniedOutHop);
@@ -343,7 +339,6 @@ public class TracerouteEngineImplContext {
                         hops,
                         Maps.newTreeMap(),
                         flow,
-                        new ArrayList<>(),
                         flow);
                 processHop(
                     ingressNodeName, ingressInterfaceName, transmissionContext, flow, visitedHops);
@@ -356,7 +351,6 @@ public class TracerouteEngineImplContext {
                         hops,
                         Maps.newTreeMap(),
                         flow,
-                        new ArrayList<>(),
                         flow);
                 processHop(ingressNodeName, null, transmissionContext, flow, visitedHops);
               }
@@ -398,7 +392,7 @@ public class TracerouteEngineImplContext {
               _dataPlane);
       if (enterIfaceStep != null) {
         steps.add(enterIfaceStep);
-        if (enterIfaceStep.getAction() == StepAction.BLOCKED) {
+        if (enterIfaceStep.getAction() == StepAction.DENIED) {
           Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
           transmissionContext._hopsSoFar.add(deniedHop);
           Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
@@ -424,7 +418,7 @@ public class TracerouteEngineImplContext {
         .contains(vrfName)) {
       InboundStep inboundStep =
           InboundStep.builder()
-              .setAction(StepAction.RECEIVED)
+              .setAction(StepAction.ACCEPTED)
               .setDetail(new InboundStepDetail())
               .build();
       steps.add(inboundStep);
@@ -491,13 +485,13 @@ public class TracerouteEngineImplContext {
                     Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
                         ? null
                         : resolvedNextHopIp;
-                List<RouteInfo> routesForThisNextHopInterface =
+                Set<RouteInfo> routesForThisNextHopInterface =
                     routeCandidates
                         .stream()
                         .map(
                             rc ->
                                 new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
-                        .collect(ImmutableList.toImmutableList());
+                        .collect(ImmutableSet.toImmutableSet());
 
                 ImmutableList.Builder<Step<?>> clonedStepsBuilder = ImmutableList.builder();
                 clonedStepsBuilder.addAll(steps);
@@ -556,7 +550,6 @@ public class TracerouteEngineImplContext {
                         transmissionContext._hopsSoFar,
                         namedIpSpaces,
                         currentFlow,
-                        routesForThisNextHopInterface,
                         newTransformedFlow);
                 if (edges == null || edges.isEmpty()) {
                   updateDeniedOrUnreachableTrace(
@@ -618,7 +611,7 @@ public class TracerouteEngineImplContext {
     Trace trace;
     if (denied) {
       // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.BLOCKED);
+      exitOutIfaceBuilder.setAction(StepAction.DENIED);
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(deniedOutHop);

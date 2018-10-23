@@ -7,8 +7,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.collect.ImmutableList;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -35,16 +35,16 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
-    @Nonnull private List<RouteInfo> _routes;
+    @Nonnull private Set<RouteInfo> _routes;
 
     @JsonCreator
-    private RoutingStepDetail(@JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes) {
-      _routes = firstNonNull(routes, ImmutableList.of());
+    private RoutingStepDetail(@JsonProperty(PROP_ROUTES) @Nullable Set<RouteInfo> routes) {
+      _routes = firstNonNull(routes, ImmutableSet.of());
     }
 
     @JsonProperty(PROP_ROUTES)
     @Nonnull
-    public List<RouteInfo> getRoutes() {
+    public Set<RouteInfo> getRoutes() {
       return _routes;
     }
 
@@ -54,13 +54,13 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
-      private @Nullable List<RouteInfo> _routes;
+      private @Nullable Set<RouteInfo> _routes;
 
       public RoutingStepDetail build() {
         return new RoutingStepDetail(_routes);
       }
 
-      public Builder setRoutes(List<RouteInfo> routes) {
+      public Builder setRoutes(Set<RouteInfo> routes) {
         _routes = routes;
         return this;
       }
