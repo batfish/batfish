@@ -49,7 +49,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-    private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachableOrExitsNetwork;
 
     private Map<String, List<String>> _nodeInterfaces;
 
@@ -91,7 +91,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
-      _neighborUnreachable = ImmutableMap.of();
+      _neighborUnreachableOrExitsNetwork = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
       _nonTransitNodes = ImmutableSortedSet.of();
@@ -177,9 +177,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setNeighborUnreachable(
-        Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable) {
-      _neighborUnreachable = neighborUnreachable;
+    public Builder setNeighborUnreachableOrExitsNetwork(
+        Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachableOrExitsNetwork) {
+      _neighborUnreachableOrExitsNetwork = neighborUnreachableOrExitsNetwork;
       return this;
     }
 
@@ -290,7 +290,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-  private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+  private final Map<String, Map<String, Map<String, BooleanExpr>>>
+      _neighborUnreachableOrExitsNetwork;
 
   private final Map<String, List<String>> _nodeInterfaces;
 
@@ -332,7 +333,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
-    _neighborUnreachable = builder._neighborUnreachable;
+    _neighborUnreachableOrExitsNetwork = builder._neighborUnreachableOrExitsNetwork;
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
@@ -421,8 +422,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
-    return _neighborUnreachable;
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachableOrExitsNetwork() {
+    return _neighborUnreachableOrExitsNetwork;
   }
 
   @Override

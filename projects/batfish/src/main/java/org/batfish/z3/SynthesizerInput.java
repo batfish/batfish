@@ -74,7 +74,7 @@ public interface SynthesizerInput {
   /**
    * Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpConstraintForWhichNoArpReplySent
    */
-  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
+  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachableOrExitsNetwork();
 
   /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
   Set<String> getNodesWithSrcInterfaceConstraints();
