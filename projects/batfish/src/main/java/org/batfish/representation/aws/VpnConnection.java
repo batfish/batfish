@@ -10,7 +10,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -137,15 +136,13 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final String _vpnGatewayId;
 
-  public VpnConnection(JSONObject jObj, BatfishLogger logger) throws JSONException {
+  public VpnConnection(JSONObject jObj) throws JSONException {
     _vgwTelemetrys = new LinkedList<>();
     _routes = new LinkedList<>();
     _ipsecTunnels = new LinkedList<>();
     _vpnConnectionId = jObj.getString(JSON_KEY_VPN_CONNECTION_ID);
     _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
     _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
-
-    logger.debugf("parsing vpnconnection id: %s\n", _vpnConnectionId);
 
     String cgwConfiguration = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION);
     Document document;

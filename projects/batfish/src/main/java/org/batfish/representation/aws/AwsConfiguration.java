@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -12,6 +11,7 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -35,14 +35,15 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
   }
 
-  public void addConfigElement(String region, JSONObject jsonObj, BatfishLogger logger)
+  public void addConfigElement(
+      String region,
+      JSONObject jsonObj,
+      String sourceFileName,
+      ParseVendorConfigurationAnswerElement pvcae)
       throws JSONException {
-
-    if (!_regions.containsKey(region)) {
-      _regions.put(region, new Region(region));
-    }
-
-    _regions.get(region).addConfigElement(jsonObj, logger);
+    _regions
+        .computeIfAbsent(region, r -> new Region(region))
+        .addConfigElement(jsonObj, sourceFileName, pvcae);
   }
 
   public Map<String, Configuration> getConfigurationNodes() {
