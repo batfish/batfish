@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
@@ -26,6 +28,10 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class Region implements Serializable {
+
+  private interface ThrowingConsumer<T, E extends Exception> {
+    void accept(T t) throws E;
+  }
 
   private static final long serialVersionUID = 1L;
 
@@ -72,7 +78,9 @@ public class Region implements Serializable {
     _name = name;
   }
 
-  public void addConfigElement(JSONObject jsonObj, BatfishLogger logger) throws JSONException {
+  public void addConfigElement(
+      JSONObject jsonObj, String sourceFileName, ParseVendorConfigurationAnswerElement pvcae)
+      throws JSONException {
 
     Iterator<?> keys = jsonObj.keys();
 
@@ -83,106 +91,134 @@ public class Region implements Serializable {
         continue;
       }
 
-      JSONArray jsonArray = jsonObj.getJSONArray(key);
+      // All objects nested under the current key will be subjected to this function, which will
+      // integrate them appropriately into this Region. Returns null on unrecognized keys.
+      ThrowingConsumer<JSONObject, JSONException> integratorFunction = getChildConsumer(key);
 
-      for (int index = 0; index < jsonArray.length(); index++) {
-        JSONObject childObject = jsonArray.getJSONObject(index);
-        addConfigElement(key, childObject, logger);
+      if (integratorFunction == null) {
+        // Add warning for unrecognized key in AWS file
+        pvcae.addUnimplementedWarning(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(
+                String.format("Unrecognized element '%s' in AWS file %s", key, sourceFileName),
+                "AWS"));
+      } else {
+        JSONArray jsonArray = jsonObj.getJSONArray(key);
+        for (int index = 0; index < jsonArray.length(); index++) {
+          integratorFunction.accept(jsonArray.getJSONObject(index));
+        }
       }
     }
   }
 
-  private void addConfigElement(String elementType, JSONObject jsonObject, BatfishLogger logger)
-      throws JSONException {
+  // Given some top-level key from an AWS file, returns a function that will convert children to the
+  // appropriate type and add them to the appropriate Map (e.g. _addresses, _instances).
+  private ThrowingConsumer<JSONObject, JSONException> getChildConsumer(String elementType) {
     switch (elementType) {
       case AwsVpcEntity.JSON_KEY_ADDRESSES:
-        Address address = new Address(jsonObject);
-        _addresses.put(address.getId(), address);
-        break;
+        return jsonObject -> {
+          Address address = new Address(jsonObject);
+          _addresses.put(address.getId(), address);
+        };
       case AwsVpcEntity.JSON_KEY_INSTANCES:
-        Instance instance = new Instance(jsonObject);
-        if (instance.getStatus() == Status.RUNNING) {
-          _instances.put(instance.getId(), instance);
-        }
-        break;
+        return jsonObject -> {
+          Instance instance = new Instance(jsonObject);
+          if (instance.getStatus() == Status.RUNNING) {
+            _instances.put(instance.getId(), instance);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
-        CustomerGateway cGateway = new CustomerGateway(jsonObject);
-        _customerGateways.put(cGateway.getId(), cGateway);
-        break;
+        return jsonObject -> {
+          CustomerGateway cGateway = new CustomerGateway(jsonObject);
+          _customerGateways.put(cGateway.getId(), cGateway);
+        };
       case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
-        RdsInstance rdsInstance = new RdsInstance(jsonObject);
-        if (rdsInstance.getDbInstanceStatus() == RdsInstance.Status.AVAILABLE) {
-          _rdsInstances.put(rdsInstance.getId(), rdsInstance);
-        }
-        break;
+        return jsonObject -> {
+          RdsInstance rdsInstance = new RdsInstance(jsonObject);
+          if (rdsInstance.getDbInstanceStatus() == RdsInstance.Status.AVAILABLE) {
+            _rdsInstances.put(rdsInstance.getId(), rdsInstance);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST:
-        ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject);
-        // we cannot represent an elasticsearch domain without vpc and subnets as a node
-        if (elasticsearchDomain.getAvailable() && elasticsearchDomain.getVpcId() != null) {
-          _elasticsearchDomains.put(elasticsearchDomain.getId(), elasticsearchDomain);
-        }
-        break;
+        return jsonObject -> {
+          ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject);
+          // we cannot represent an elasticsearch domain without vpc and subnets as a node
+          if (elasticsearchDomain.getAvailable() && elasticsearchDomain.getVpcId() != null) {
+            _elasticsearchDomains.put(elasticsearchDomain.getId(), elasticsearchDomain);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
-        InternetGateway iGateway = new InternetGateway(jsonObject);
-        _internetGateways.put(iGateway.getId(), iGateway);
-        break;
+        return jsonObject -> {
+          InternetGateway iGateway = new InternetGateway(jsonObject);
+          _internetGateways.put(iGateway.getId(), iGateway);
+        };
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
-        NatGateway natGateway = new NatGateway(jsonObject);
-        _natGateways.put(natGateway.getId(), natGateway);
-        break;
+        return jsonObject -> {
+          NatGateway natGateway = new NatGateway(jsonObject);
+          _natGateways.put(natGateway.getId(), natGateway);
+        };
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
-        NetworkAcl networkAcl = new NetworkAcl(jsonObject);
-        _networkAcls.put(networkAcl.getId(), networkAcl);
-        break;
+        return jsonObject -> {
+          NetworkAcl networkAcl = new NetworkAcl(jsonObject);
+          _networkAcls.put(networkAcl.getId(), networkAcl);
+        };
       case AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES:
-        NetworkInterface networkInterface = new NetworkInterface(jsonObject);
-        _networkInterfaces.put(networkInterface.getId(), networkInterface);
-        break;
+        return jsonObject -> {
+          NetworkInterface networkInterface = new NetworkInterface(jsonObject);
+          _networkInterfaces.put(networkInterface.getId(), networkInterface);
+        };
       case AwsVpcEntity.JSON_KEY_RESERVATIONS:
-        // instances are embedded inside reservations
-        JSONArray jsonArray = jsonObject.getJSONArray(AwsVpcEntity.JSON_KEY_INSTANCES);
-        for (int index = 0; index < jsonArray.length(); index++) {
-          JSONObject childObject = jsonArray.getJSONObject(index);
-          addConfigElement(AwsVpcEntity.JSON_KEY_INSTANCES, childObject, logger);
-        }
-        break;
+        return jsonObject -> {
+          // instances are embedded inside reservations
+          JSONArray jsonArray = jsonObject.getJSONArray(AwsVpcEntity.JSON_KEY_INSTANCES);
+          for (int index = 0; index < jsonArray.length(); index++) {
+            JSONObject childObject = jsonArray.getJSONObject(index);
+            getChildConsumer(AwsVpcEntity.JSON_KEY_INSTANCES).accept(childObject);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_ROUTE_TABLES:
-        RouteTable routeTable = new RouteTable(jsonObject);
-        _routeTables.put(routeTable.getId(), routeTable);
-        break;
+        return jsonObject -> {
+          RouteTable routeTable = new RouteTable(jsonObject);
+          _routeTables.put(routeTable.getId(), routeTable);
+        };
       case AwsVpcEntity.JSON_KEY_SECURITY_GROUPS:
-        SecurityGroup sGroup = new SecurityGroup(jsonObject);
-        _securityGroups.put(sGroup.getId(), sGroup);
-        break;
+        return jsonObject -> {
+          SecurityGroup sGroup = new SecurityGroup(jsonObject);
+          _securityGroups.put(sGroup.getId(), sGroup);
+        };
       case AwsVpcEntity.JSON_KEY_SUBNETS:
-        Subnet subnet = new Subnet(jsonObject);
-        _subnets.put(subnet.getId(), subnet);
-        break;
+        return jsonObject -> {
+          Subnet subnet = new Subnet(jsonObject);
+          _subnets.put(subnet.getId(), subnet);
+        };
       case AwsVpcEntity.JSON_KEY_VPCS:
-        Vpc vpc = new Vpc(jsonObject);
-        _vpcs.put(vpc.getId(), vpc);
-        break;
+        return jsonObject -> {
+          Vpc vpc = new Vpc(jsonObject);
+          _vpcs.put(vpc.getId(), vpc);
+        };
       case AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS:
-        String code =
-            jsonObject
-                .getJSONObject(AwsVpcEntity.JSON_KEY_STATUS)
-                .getString(AwsVpcEntity.JSON_KEY_CODE);
-        if (!code.equals(AwsVpcEntity.STATUS_DELETED)) {
-          VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject);
-          _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
-        }
-        break;
+        return jsonObject -> {
+          String code =
+              jsonObject
+                  .getJSONObject(AwsVpcEntity.JSON_KEY_STATUS)
+                  .getString(AwsVpcEntity.JSON_KEY_CODE);
+          if (!code.equals(AwsVpcEntity.STATUS_DELETED)) {
+            VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject);
+            _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
-        VpnConnection vpnConnection = new VpnConnection(jsonObject, logger);
-        _vpnConnections.put(vpnConnection.getId(), vpnConnection);
-        break;
+        return jsonObject -> {
+          VpnConnection vpnConnection = new VpnConnection(jsonObject);
+          _vpnConnections.put(vpnConnection.getId(), vpnConnection);
+        };
       case AwsVpcEntity.JSON_KEY_VPN_GATEWAYS:
-        VpnGateway vpnGateway = new VpnGateway(jsonObject);
-        _vpnGateways.put(vpnGateway.getId(), vpnGateway);
-        break;
+        return jsonObject -> {
+          VpnGateway vpnGateway = new VpnGateway(jsonObject);
+          _vpnGateways.put(vpnGateway.getId(), vpnGateway);
+        };
       default:
-        // do nothing here
-        logger.debugf("skipping top-level element: %s\n", elementType);
+        return null;
     }
   }
 
