@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +41,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // response
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
 
+  // mapping: node -> interface -> set of Ips owned by the interface
   private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
+
+  // mapping: node -> interface -> BDD representation of Ips owned by the interface
+  private final Map<String, Map<String, BDD>> _interfaceOwnedIpsBDDs;
 
   // mapping: node name -> interface name -> dst ips which are routed to the interface
   private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
@@ -100,7 +105,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
   // mapping: hostname -> set of interfacenames that is not full
-  private final Map<String, Set<String>> _interfacesWithMissingDevices;
+  private final Map<String, Set<String>> _interfacesWithMissingEdges;
 
   // mapping: hostname -> vrf name -> interfacename -> ips belonging to a subnet of the interface
   private final Map<String, Map<String, Map<String, IpSpace>>> _interfaceHostSubnetIps;
@@ -137,12 +142,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _ipSpaceToBDD = initIpSpaceToBDD();
     _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
+    _interfaceOwnedIpsBDDs = computeInterfaceOwnedIpsBDDs();
     _unownedIpsBDD = computeUnownedIpsBDD();
     _internalIps = computeInternalIps();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
     _externalIps = _internalIps.complement();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
-    _interfacesWithMissingDevices = computeInterfacesWithMissingDevices(configurations);
+    _interfacesWithMissingEdges = computeInterfacesWithMissingEdges(configurations, topology);
     _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(configurations, fibs);
@@ -171,6 +177,22 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _neighborUnreachable = computeNeighborUnreachable();
   }
 
+  private Map<String, Map<String, BDD>> computeInterfaceOwnedIpsBDDs() {
+    return toImmutableMap(
+        _interfaceOwnedIps,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey,
+                ifaceEntry ->
+                    ifaceEntry
+                        .getValue()
+                        .stream()
+                        .map(_ipSpaceToBDD::toBDD)
+                        .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or)));
+  }
+
   /* The constructor should only be used for tests */
   @VisibleForTesting
   ForwardingAnalysisImpl(
@@ -192,7 +214,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue,
       Map<String, Map<String, IpSpace>> someoneReplies,
       Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps,
-      Map<String, Set<String>> interfacesWithMissingDevices,
+      Map<String, Set<String>> interfacesWithMissingEdges,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithExternalNextHopIpArpFalse,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithInternalNextHopIpArpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithExternalNextHopIpArpFalse,
@@ -218,7 +240,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _routesWithExternalNextHopIpArpFalse = routesWithExternalNextHopIpArpFalse;
     _routesWithInternalNextHopIpArpFalse = routesWithInternalNextHopIpArpFalse;
     _interfaceHostSubnetIps = interfaceHostSubnetIps;
-    _interfacesWithMissingDevices = interfacesWithMissingDevices;
+    _interfacesWithMissingEdges = interfacesWithMissingEdges;
     _neighborUnreachable = null;
     _deliveredToSubnet = null;
     _insufficientInfo = null;
@@ -229,6 +251,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _ipSpaceToBDD = initIpSpaceToBDD();
     _internalIps = internalIps;
     _externalIps = _internalIps.complement();
+    _interfaceOwnedIpsBDDs = computeInterfaceOwnedIpsBDDs();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
     _unownedIpsBDD = computeUnownedIpsBDD();
@@ -1025,7 +1048,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   IpSpace computeExitsNetworkPerInterface(String hostname, String vrfName, String interfaceName) {
 
     // the connected subnet is full
-    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
+    if (!_interfacesWithMissingEdges.get(hostname).contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
@@ -1074,7 +1097,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   IpSpace computeInsufficientInfoPerInterface(
       String hostname, String vrfName, String interfaceName) {
     // If interface is full (no missing devices), it cannot be insufficient info
-    if (!_interfacesWithMissingDevices.get(hostname).contains(interfaceName)) {
+    if (!_interfacesWithMissingEdges.get(hostname).contains(interfaceName)) {
       return EmptyIpSpace.INSTANCE;
     }
 
@@ -1142,7 +1165,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         ifaceEntry ->
                             // We just need to consider if there is a subnet with missing devices,
                             // since if so a packet could be further forwarded.
-                            _interfacesWithMissingDevices
+                            _interfacesWithMissingEdges
                                     .get(nodeEntry.getKey())
                                     .contains(ifaceEntry.getKey())
                                 ? EmptyIpSpace.INSTANCE
@@ -1154,18 +1177,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _neighborUnreachable;
   }
 
-  // If one subnet of an interface has missing devices, then packets going out of the interface
-  // may potentially be sent to the subnet and be forwarded further. Therefore, instead of consider
-  // whether each subnet has missing devices, we just need to consider if one of the subnets has
-  // missing devices.
-  @VisibleForTesting
-  boolean hasMissingDevicesOnInterface(String hostname, String ifaceName) {
-    // ips in interface subnet has at least one unowned IP
-    return !_interfaceHostSubnetIpBDDs.get(hostname).get(ifaceName).and(_unownedIpsBDD).isZero();
-  }
-
-  private Map<String, Set<String>> computeInterfacesWithMissingDevices(
-      Map<String, Configuration> configurations) {
+  private Map<String, Set<String>> computeInterfacesWithMissingEdges(
+      Map<String, Configuration> configurations, Topology topology) {
+    Map<NodeInterfacePair, SortedSet<Edge>> interfaceEdges = topology.getInterfaceEdges();
     return toImmutableMap(
         configurations,
         Entry::getKey,
@@ -1176,10 +1190,30 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 .entrySet()
                 .stream()
                 .filter(
-                    ifaceEntry ->
-                        hasMissingDevicesOnInterface(nodeEntry.getKey(), ifaceEntry.getKey()))
+                    ifaceEntry -> {
+                      String node = nodeEntry.getKey();
+                      String iface = ifaceEntry.getKey();
+                      return hasMissingEdgesOnInterface(
+                          node, iface, interfaceEdges.get(new NodeInterfacePair(node, iface)));
+                    })
                 .map(Entry::getKey)
                 .collect(Collectors.toSet()));
+  }
+
+  @VisibleForTesting
+  boolean hasMissingEdgesOnInterface(String node, String iface, Set<Edge> topologyEdges) {
+    // precondition: all edges have head = (node,iface)
+    BDD subnetBDD = _interfaceHostSubnetIpBDDs.get(node).get(iface);
+
+    BDD selfOwnedIps = _interfaceOwnedIpsBDDs.get(node).get(iface);
+
+    BDD neighborOwnedIps =
+        topologyEdges
+            .stream()
+            .map(edge -> _interfaceOwnedIpsBDDs.get(edge.getNode2()).get(edge.getInt2()))
+            .reduce(_ipSpaceToBDD.getBDDInteger().getFactory().zero(), BDD::or);
+
+    return !subnetBDD.and(selfOwnedIps.not()).and(neighborOwnedIps.not()).isZero();
   }
 
   @Override

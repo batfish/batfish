@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.topology.TopologyUtil;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1521,7 +1522,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testHasMissingDevicesOnInterface_full30() {
+  public void testHasMissingEdgesOnInterface_full30() {
     Prefix subnet = Prefix.parse("1.0.0.0/30");
     Ip ip1 = new Ip("1.0.0.1");
     Ip ip2 = new Ip("1.0.0.2");
@@ -1533,11 +1534,19 @@ public class ForwardingAnalysisImplTest {
             CONFIG1,
             ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertThat(
+        "INTERFACE1 should be full",
+        !fa.hasMissingEdgesOnInterface(
+            CONFIG1,
+            INTERFACE1,
+            ImmutableSet.of(
+                new Edge(
+                    new NodeInterfacePair(CONFIG1, INTERFACE1),
+                    new NodeInterfacePair(CONFIG1, INTERFACE2)))));
   }
 
   @Test
-  public void testHasMissingDevicesOnInterface_full31() {
+  public void testHasMissingEdgesOnInterface_full31() {
     Prefix subnet = Prefix.parse("1.0.0.0/31");
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("1.0.0.1");
@@ -1549,11 +1558,38 @@ public class ForwardingAnalysisImplTest {
             CONFIG1,
             ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertThat(
+        "INTERFACE1 should be full",
+        !fa.hasMissingEdgesOnInterface(
+            CONFIG1,
+            INTERFACE1,
+            ImmutableSet.of(
+                new Edge(
+                    new NodeInterfacePair(CONFIG1, INTERFACE1),
+                    new NodeInterfacePair(CONFIG1, INTERFACE2)))));
   }
 
   @Test
-  public void testHasMissingDevicesOnInterface_full32() {
+  public void testHasMissingEdgesOnInterface_missingEdge() {
+    // All the subnet IPs are owned, but we're missing an edge
+    Prefix subnet = Prefix.parse("1.0.0.0/31");
+    Ip ip1 = new Ip("1.0.0.0");
+    Ip ip2 = new Ip("1.0.0.1");
+    _interfaceHostSubnetIps =
+        ImmutableMap.of(
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+    _interfaceOwnedIps =
+        ImmutableMap.of(
+            CONFIG1,
+            ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
+    ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
+    assertThat(
+        "INTERFACE1 should not be full",
+        fa.hasMissingEdgesOnInterface(CONFIG1, INTERFACE1, ImmutableSet.of()));
+  }
+
+  @Test
+  public void testHasMissingEdgesOnInterface_full32() {
     Prefix subnet = Prefix.parse("1.0.0.0/32");
     Ip ip1 = new Ip("1.0.0.0");
     _interfaceHostSubnetIps =
@@ -1562,11 +1598,13 @@ public class ForwardingAnalysisImplTest {
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertThat(
+        "INTERFACE1 should be full",
+        !fa.hasMissingEdgesOnInterface(CONFIG1, INTERFACE1, ImmutableSet.of()));
   }
 
   @Test
-  public void testHasMissingDevicesOnInterface_notFull30() {
+  public void testHasMissingEdgesOnInterface_notFull30() {
     Prefix subnet = Prefix.parse("1.0.0.0/30");
     Ip ip1 = new Ip("1.0.0.1");
     _interfaceHostSubnetIps =
@@ -1576,11 +1614,12 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
     assertThat(
-        "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+        "INTERFACE1 should not be full",
+        fa.hasMissingEdgesOnInterface(CONFIG1, INTERFACE1, ImmutableSet.of()));
   }
 
   @Test
-  public void testHasMissingDevicesOnInterface_notFull31() {
+  public void testHasMissingEdgesOnInterface_notFull31() {
     Prefix subnet = Prefix.parse("1.0.0.0/31");
     Ip ip1 = new Ip("1.0.0.0");
     _interfaceHostSubnetIps =
@@ -1590,6 +1629,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
     assertThat(
-        "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+        "INTERFACE1 should not be full",
+        fa.hasMissingEdgesOnInterface(CONFIG1, INTERFACE1, ImmutableSet.of()));
   }
 }
