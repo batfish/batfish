@@ -558,7 +558,7 @@ public class BatfishTest {
     config.setFilename("filename.cfg");
 
     configs.put("test", config);
-    Batfish.convertConfigurations(configs, ccae, logger, settings);
+    Batfish.convertConfigurations(configs, ccae, settings);
 
     // Confirm config makes it into the fileMap, mapping hostname to vendor config name
     SortedMap<String, String> fileMap = ccae.getFileMap();
@@ -590,7 +590,7 @@ public class BatfishTest {
           }
         });
 
-    Batfish.convertConfigurations(configs, ccae, logger, settings);
+    Batfish.convertConfigurations(configs, ccae, settings);
 
     // Confirm both sub-configs make it into the fileMap
     // Mapping both hostnames to the same vendor config name

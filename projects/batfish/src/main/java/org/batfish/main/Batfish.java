@@ -841,11 +841,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return CommonUtil.synthesizeTopology(configurations);
   }
 
+  @VisibleForTesting
   static Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
       ConvertConfigurationAnswerElement answerElement,
-      BatfishLogger logger,
       Settings settings) {
+    BatfishLogger logger = settings.getLogger();
     logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
     logger.resetTimer();
     Map<String, Configuration> configurations = new TreeMap<>();
@@ -1150,7 +1151,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, GenericConfigObject> vendorConfigurations =
         deserializeVendorConfigurations(serializedVendorConfigPath);
     Map<String, Configuration> configurations =
-        convertConfigurations(vendorConfigurations, answerElement, _logger, _settings);
+        convertConfigurations(vendorConfigurations, answerElement, _settings);
 
     identifyDeviceTypes(configurations.values());
     return configurations;
