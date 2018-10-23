@@ -485,13 +485,14 @@ public class TracerouteEngineImplContext {
                     Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
                         ? null
                         : resolvedNextHopIp;
-                Set<RouteInfo> routesForThisNextHopInterface =
+                List<RouteInfo> routesForThisNextHopInterface =
                     routeCandidates
                         .stream()
                         .map(
                             rc ->
                                 new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
-                        .collect(ImmutableSet.toImmutableSet());
+                        .distinct()
+                        .collect(ImmutableList.toImmutableList());
 
                 ImmutableList.Builder<Step<?>> clonedStepsBuilder = ImmutableList.builder();
                 clonedStepsBuilder.addAll(steps);
