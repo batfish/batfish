@@ -2,9 +2,8 @@ package org.batfish.main;
 
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,10 +28,8 @@ public class AwsParseWarningsTest {
     Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning(
-                    String.format("AWS file %s is not valid JSON", _path.toString()), "AWS"))));
+        containsInAnyOrder(
+            new Warning(String.format("AWS file %s is not valid JSON", _path.toString()), "AWS")));
   }
 
   @Test
@@ -40,11 +37,9 @@ public class AwsParseWarningsTest {
     Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{ \"invalidKey\": [] }"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getUnimplementedWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning(
-                    String.format(
-                        "Unrecognized element 'invalidKey' in AWS file %s", _path.toString()),
-                    "AWS"))));
+        containsInAnyOrder(
+            new Warning(
+                String.format("Unrecognized element 'invalidKey' in AWS file %s", _path.toString()),
+                "AWS")));
   }
 }
