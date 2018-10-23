@@ -53,6 +53,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private Set<String> _failed;
 
+  /** Map VI model configuration to vendor model configuration */
   @Nonnull private Multimap<String, String> _fileMap;
 
   // filename -> structType -> structName -> usage -> lines
