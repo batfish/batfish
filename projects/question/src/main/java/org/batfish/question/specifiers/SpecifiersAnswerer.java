@@ -1,7 +1,5 @@
 package org.batfish.question.specifiers;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -52,6 +50,8 @@ public final class SpecifiersAnswerer extends Answerer {
         return resolveInterface(question, context);
       case IP_SPACE:
         return resolveIpSpace(question, context);
+      case IP_SPACE_OF_LOCATION:
+        return resolveIpSpaceOfLocation(question, context);
       case LOCATION:
         return resolveLocation(question, context);
       case NODE:
@@ -119,10 +119,25 @@ public final class SpecifiersAnswerer extends Answerer {
 
   @VisibleForTesting
   static TableAnswerElement resolveIpSpace(SpecifiersQuestion question, SpecifierContext context) {
+    List<ColumnMetadata> columns =
+        ImmutableList.of(new ColumnMetadata(COL_IP_SPACE, Schema.STRING, "IP space", false, false));
+    TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
+    Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
-    checkArgument(
-        question.getLocationSpecifierInput() == null || question.getIpSpaceSpecifierInput() == null,
-        "Input for both locations and ips should not be provided");
+    // this will yield all default locations for the factory
+    Set<Location> locations = question.getLocationSpecifier().resolve(context);
+    IpSpaceAssignment ipSpaceAssignment =
+        question.getIpSpaceSpecifier().resolve(locations, context);
+
+    for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
+      table.addRow(Row.of(columnMap, COL_IP_SPACE, Objects.toString(entry.getIpSpace())));
+    }
+    return table;
+  }
+
+  @VisibleForTesting
+  static TableAnswerElement resolveIpSpaceOfLocation(
+      SpecifiersQuestion question, SpecifierContext context) {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(

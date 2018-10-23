@@ -7845,6 +7845,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       usage = in ? OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN : OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
     }
     _configuration.referenceStructure(type, name, usage, line);
+
+    if (ctx.iname != null) {
+      String canonicalIfaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(INTERFACE, canonicalIfaceName, usage, line);
+    }
+
+    todo(ctx);
   }
 
   @Override

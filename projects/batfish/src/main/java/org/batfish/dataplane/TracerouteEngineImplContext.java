@@ -641,7 +641,7 @@ class TracerouteEngineImplContext {
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
                 Edge edge =
-                    new Edge(
+                    Edge.of(
                         TRACEROUTE_INGRESS_NODE_NAME,
                         TRACEROUTE_INGRESS_NODE_INTERFACE_NAME,
                         ingressNodeName,

@@ -1,43 +1,41 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.batfish.common.BatfishException;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/**
+ * Network Factory -- helpful in creating test networks, as it allows child builders to
+ * automatically generate names/ID for objects they create.
+ */
 public class NetworkFactory {
 
+  /** Base class for all network factory builders */
   public abstract static class NetworkFactoryBuilder<T> {
 
-    private final NetworkFactory _networkFactory;
+    @Nullable private final NetworkFactory _networkFactory;
 
     private final Class<T> _outputClass;
 
-    protected NetworkFactoryBuilder(NetworkFactory networkFactory, Class<T> outputClass) {
+    protected NetworkFactoryBuilder(@Nullable NetworkFactory networkFactory, Class<T> outputClass) {
       _networkFactory = networkFactory;
       _outputClass = outputClass;
     }
 
     public abstract T build();
 
-    private void checkNetworkFactory(String toGenerate) {
-      if (_networkFactory == null) {
-        throw new BatfishException(
-            String.format(
-                "Cannot generate %s for %s not created via %s",
-                toGenerate, getClass().getCanonicalName(), NetworkFactory.class.getSimpleName()));
-      }
-    }
-
     protected long generateLong() {
-      checkNetworkFactory("long");
+      checkState(_networkFactory != null, "Cannot generate a long value without a network factory");
       return _networkFactory.generateLong(_outputClass);
     }
 
     protected String generateName() {
-      checkNetworkFactory("name");
+      checkState(_networkFactory != null, "Cannot generate a name without a network factory");
       return _networkFactory.generateName(_outputClass);
     }
   }

@@ -57,8 +57,8 @@ public final class Topology implements Serializable {
     return getInterfaceEdges()
         .getOrDefault(iface, ImmutableSortedSet.of())
         .stream()
-        .filter(e -> e.getFirst().equals(iface))
-        .map(Edge::getSecond)
+        .filter(e -> e.getTail().equals(iface))
+        .map(Edge::getHead)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -94,8 +94,8 @@ public final class Topology implements Serializable {
     for (Edge edge : _edges) {
       String node1 = edge.getNode1();
       String node2 = edge.getNode2();
-      NodeInterfacePair iface1 = edge.getInterface1();
-      NodeInterfacePair iface2 = edge.getInterface2();
+      NodeInterfacePair iface1 = edge.getTail();
+      NodeInterfacePair iface2 = edge.getHead();
 
       _nodeEdges.computeIfAbsent(node1, k -> new TreeSet<>()).add(edge);
       _nodeEdges.computeIfAbsent(node2, k -> new TreeSet<>()).add(edge);

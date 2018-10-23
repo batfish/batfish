@@ -1,0 +1,27 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "LOCATION",
+  "differential" : false,
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Show the resolved values for location specifier",
+    "instanceName" : "qname",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "locations" : {
+        "description" : "Input to the LocationSpecifier",
+        "optional" : true,
+        "type" : "string",
+        "value" : "input"
+      }
+    }
+  },
+  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "locationSpecifierInput" : "input",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory"
+}

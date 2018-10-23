@@ -71,7 +71,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -1434,9 +1433,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (consumedEdges.contains(edge)) {
         continue;
       }
-      Edge reverseEdge = new Edge(edge.getInterface2(), edge.getInterface1());
       consumedEdges.add(edge);
-      consumedEdges.add(reverseEdge);
+      consumedEdges.add(edge.reverse());
     }
     return consumedEdges;
   }
@@ -1451,19 +1449,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getInputPath();
-    Directory dir = new Directory(trPath);
-    return dir;
-  }
-
-  @Override
   public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
-  }
-
-  public TestrigSettings getTestrigSettings() {
-    return _testrigSettings;
   }
 
   @Override
@@ -2077,13 +2064,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path file = configFile.getKey();
       String fileText = configFile.getValue();
       String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
-
-      // we stop classic link processing here because it interferes with VPC
-      // processing
-      if (file.toString().contains("classic-link")) {
-        _logger.errorf("%s has classic link configuration\n", file);
-        continue;
-      }
 
       JSONObject jsonObj = null;
       try {

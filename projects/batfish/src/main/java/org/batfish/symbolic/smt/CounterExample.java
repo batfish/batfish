@@ -121,7 +121,7 @@ class CounterExample {
     String int1 = graphEdge.getStart() == null ? "none" : graphEdge.getStart().getName();
     String node2 = graphEdge.getPeer();
     String int2 = graphEdge.getEnd() == null ? "none" : graphEdge.getEnd().getName();
-    return new Edge(node1, int1, node2, int2);
+    return Edge.of(node1, int1, node2, int2);
   }
 
   SortedSet<Edge> buildFailedLinks(Encoder encoder) {
@@ -232,7 +232,7 @@ class CounterExample {
     String int1 = graphEdge.getStart().getName();
     String node2 = graphEdge.getPeer() == null ? "(none)" : graphEdge.getPeer();
     String int2 = graphEdge.getEnd() == null ? "null_interface" : graphEdge.getEnd().getName();
-    Edge edge = new Edge(node1, int1, node2, int2);
+    Edge edge = Edge.of(node1, int1, node2, int2);
     SortedSet<String> routes = new TreeSet<>();
     routes.add(route);
     return new FlowTraceHop(edge, routes, null, null, null);
