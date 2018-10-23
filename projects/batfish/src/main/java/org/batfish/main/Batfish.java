@@ -2058,25 +2058,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return parse(parser);
   }
 
-  private AwsConfiguration parseAwsConfigurations(Map<Path, String> configurationData) {
+  @VisibleForTesting
+  public static AwsConfiguration parseAwsConfigurations(
+      Map<Path, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
     AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
-      Path file = configFile.getKey();
+      Path path = configFile.getKey();
+      int pathLength = configFile.getKey().getNameCount();
       String fileText = configFile.getValue();
-      String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
+      String regionName = path.getName(pathLength - 2).toString(); // parent dir name
+      String fileName = path.subpath(pathLength - 3, pathLength).toString();
 
       JSONObject jsonObj = null;
       try {
         jsonObj = new JSONObject(fileText);
       } catch (JSONException e) {
-        _logger.errorf("%s does not have valid json\n", file);
+        pvcae.addRedFlagWarning(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(String.format("AWS file %s is not valid JSON", fileName), "AWS"));
       }
 
       if (jsonObj != null) {
         try {
-          config.addConfigElement(regionName, jsonObj, _logger);
+          config.addConfigElement(regionName, jsonObj, fileName, pvcae);
         } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + file, e);
+          throw new BatfishException("Problems parsing JSON in " + fileName, e);
         }
       }
     }
@@ -3092,15 +3098,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
-    Answer answer = new Answer();
+  private void serializeAwsConfigs(
+      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
     AwsConfiguration config;
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
       assert parseAwsConfigsSpan != null; // avoid unused warning
-      config = parseAwsConfigurations(configurationData);
+      config = parseAwsConfigurations(configurationData, pvcae);
     }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
@@ -3111,7 +3117,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
-    return answer;
   }
 
   private Answer serializeEnvironmentBgpTables(Path inputPath, Path outputPath) {
@@ -3399,12 +3404,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // look for AWS VPC configs
     Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
-      answer.append(serializeAwsConfigs(testRigPath, outputPath));
+      serializeAwsConfigs(testRigPath, outputPath, answerElement);
       configsFound = true;
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found in testrig path " + testRigPath);
+      throw new BatfishException("No valid configurations found in snapshot path " + testRigPath);
     }
 
     // serialize warnings

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -67,7 +68,7 @@ public class FileParseStatusAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("h", "f"));
+      pvcae.setFileMap(ImmutableMultimap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));
       return pvcae;
     }

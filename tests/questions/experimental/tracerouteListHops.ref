@@ -159,11 +159,6 @@
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -433,11 +428,6 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "routes" : [
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "protocol" : "ibgp"
-                        },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
@@ -714,11 +704,6 @@
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "protocol" : "ibgp"
                         }
                       ]
                     }
@@ -987,11 +972,6 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "routes" : [
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "protocol" : "ibgp"
-                        },
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
