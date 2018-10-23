@@ -13639,6 +13639,12 @@
             "        (additional_paths_rb_stanza",
             "          BGP:'bgp'  <== mode:DEFAULT_MODE",
             "          ADDITIONAL_PATHS:'additional-paths'  <== mode:DEFAULT_MODE",
+            "          INSTALL:'install'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
+            "        (additional_paths_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          ADDITIONAL_PATHS:'additional-paths'  <== mode:DEFAULT_MODE",
             "          SELECT:'select'  <== mode:DEFAULT_MODE",
             "          ALL:'all'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -61506,8 +61512,8 @@
           "undeclared bgp peer" : {
             "1.2.3.4" : {
               "bgp neighbor without remote-as" : [
-                7,
-                8
+                8,
+                9
               ]
             }
           }
@@ -63957,8 +63963,8 @@
           "undeclared bgp peer" : {
             "1.2.3.4" : {
               "bgp neighbor without remote-as" : [
-                7,
-                8
+                8,
+                9
               ]
             }
           }
