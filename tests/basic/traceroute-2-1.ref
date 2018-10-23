@@ -61,7 +61,7 @@
                 "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
                 "filterOut" : "{filter::OUTPUT}{default}",
                 "routes" : [
-                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
+                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:null"
                 ]
               },
               {
@@ -126,7 +126,7 @@
                 "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
                 "filterOut" : "{filter::OUTPUT}{default}",
                 "routes" : [
-                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
+                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:null"
                 ]
               },
               {
@@ -190,7 +190,7 @@
                 "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
                 "filterOut" : "{filter::OUTPUT}{default}",
                 "routes" : [
-                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
+                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:null"
                 ]
               },
               {
@@ -254,7 +254,7 @@
                 "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
                 "filterOut" : "{filter::OUTPUT}{default}",
                 "routes" : [
-                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
+                  "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:null"
                 ]
               },
               {
