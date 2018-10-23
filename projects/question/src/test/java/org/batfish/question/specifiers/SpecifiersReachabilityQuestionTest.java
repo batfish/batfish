@@ -1,6 +1,8 @@
 package org.batfish.question.specifiers;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,7 +37,9 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testQuestionDefaults() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    assertThat(question.getActions().getDispositions(), equalTo(ImmutableSortedSet.of(ACCEPTED)));
+    assertThat(
+        question.getActions().getDispositions(),
+        equalTo(ImmutableSortedSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK)));
     assertThat(
         question.getReachabilityParameters().getDestinationIpSpaceSpecifier(),
         equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));

@@ -3908,7 +3908,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
-                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                ImmutableSet.of(
+                    FlowDisposition.NEIGHBOR_UNREACHABLE,
+                    FlowDisposition.DELIVERED_TO_SUBNET,
+                    FlowDisposition.EXITS_NETWORK,
+                    FlowDisposition.INSUFFICIENT_INFO))
             .getIngressLocationReachableBDDs();
 
     String flowTag = getFlowTag();

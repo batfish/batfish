@@ -279,7 +279,7 @@ public class TracerouteEngineImplContext {
     Configuration c = _configurations.get(transmissionContext._currentNode.getName());
     // halt processing and add neighbor-unreachable trace if no one would respond
     if (_forwardingAnalysis
-        .getNeighborUnreachable()
+        .getNeighborUnreachableOrExitsNetwork()
         .get(transmissionContext._currentNode.getName())
         .get(c.getAllInterfaces().get(nextHopInterfaceName).getVrfName())
         .get(nextHopInterfaceName)
@@ -301,10 +301,12 @@ public class TracerouteEngineImplContext {
       Hop neighborUnreachableOrExitsNetwork =
           new Hop(new Node(currentNodeName), stepBuilder.build());
       transmissionContext._hopsSoFar.add(neighborUnreachableOrExitsNetwork);
-      Trace trace =
-          new Trace(
-              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
-              transmissionContext._hopsSoFar);
+      FlowDisposition disposition =
+          computeDisposition(
+              currentNodeName,
+              nextHopInterfaceName,
+              transmissionContext._transformedFlow.getDstIp());
+      Trace trace = new Trace(disposition, transmissionContext._hopsSoFar);
       transmissionContext._flowTraces.add(trace);
       return false;
     }
@@ -623,11 +625,53 @@ public class TracerouteEngineImplContext {
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop neighborUnreachableHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(neighborUnreachableHop);
-      trace =
-          new Trace(
-              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
-              transmissionContext._hopsSoFar);
+      FlowDisposition disposition =
+          computeDisposition(
+              currentNodeName,
+              outInterface.getName(),
+              transmissionContext._transformedFlow.getDstIp());
+      trace = new Trace(disposition, transmissionContext._hopsSoFar);
     }
     transmissionContext._flowTraces.add(trace);
+  }
+
+  private FlowDisposition computeDisposition(
+      String hostname, String outgoingInterfaceName, Ip dstIp) {
+    String vrfName =
+        _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
+    if (_forwardingAnalysis
+        .getDeliveredToSubnet()
+        .get(hostname)
+        .get(vrfName)
+        .get(outgoingInterfaceName)
+        .containsIp(dstIp, ImmutableMap.of())) {
+      return FlowDisposition.DELIVERED_TO_SUBNET;
+    } else if (_forwardingAnalysis
+        .getExitsNetwork()
+        .get(hostname)
+        .get(vrfName)
+        .get(outgoingInterfaceName)
+        .containsIp(dstIp, ImmutableMap.of())) {
+      return FlowDisposition.EXITS_NETWORK;
+    } else if (_forwardingAnalysis
+        .getInsufficientInfo()
+        .get(hostname)
+        .get(vrfName)
+        .get(outgoingInterfaceName)
+        .containsIp(dstIp, ImmutableMap.of())) {
+      return FlowDisposition.INSUFFICIENT_INFO;
+    } else if (_forwardingAnalysis
+        .getNeighborUnreachable()
+        .get(hostname)
+        .get(vrfName)
+        .get(outgoingInterfaceName)
+        .containsIp(dstIp, ImmutableMap.of())) {
+      return FlowDisposition.NEIGHBOR_UNREACHABLE;
+    } else {
+      throw new BatfishException(
+          String.format(
+              "No disposition at hostname=%s outgoingInterface=%s for destIp=%s",
+              hostname, outgoingInterfaceName, dstIp));
+    }
   }
 }

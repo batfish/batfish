@@ -113,7 +113,7 @@ public class FibImpl implements Fib {
     }
   }
 
-  /** Mapping: route -&gt; nextHopInterface -&gt; nextHopIp -&gt; interfaceRoutes */
+  /** Mapping: route -&gt; nextHopInterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
   @Override
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfaces() {
