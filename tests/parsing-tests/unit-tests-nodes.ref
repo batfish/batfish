@@ -1770,12 +1770,12 @@
             "ospfProcess" : {
               "areas" : {
                 "0" : {
-                  "name" : 0,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "blah"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -9699,9 +9699,9 @@
             "ospfProcess" : {
               "areas" : {
                 "0" : {
-                  "name" : 0,
                   "injectDefaultRoute" : true,
                   "metricOfDefaultRoute" : 0,
+                  "name" : 0,
                   "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
@@ -9712,9 +9712,9 @@
                   "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                 },
                 "16909056" : {
-                  "name" : 16909056,
                   "injectDefaultRoute" : true,
                   "metricOfDefaultRoute" : 0,
+                  "name" : 16909056,
                   "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
@@ -12247,13 +12247,13 @@
             "ospfProcess" : {
               "areas" : {
                 "0" : {
-                  "name" : 0,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet0",
                     "Ethernet1"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 0,
                   "stubType" : "NONE"
                 }
               },
@@ -13951,9 +13951,9 @@
             "ospfProcess" : {
               "areas" : {
                 "0" : {
-                  "name" : 0,
                   "injectDefaultRoute" : true,
                   "metricOfDefaultRoute" : 0,
+                  "name" : 0,
                   "stubType" : "NONE",
                   "summaries" : {
                     "10.0.0.0/15" : {
@@ -14435,9 +14435,9 @@
             "ospfProcess" : {
               "areas" : {
                 "66051" : {
-                  "name" : 66051,
                   "injectDefaultRoute" : false,
                   "metricOfDefaultRoute" : 0,
+                  "name" : 66051,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
                     "suppressType3" : true
@@ -16346,18 +16346,18 @@
             "ospfProcess" : {
               "areas" : {
                 "7" : {
-                  "name" : 7,
                   "injectDefaultRoute" : true,
                   "metricOfDefaultRoute" : 10,
+                  "name" : 7,
                   "stub" : {
                     "suppressType3" : false
                   },
                   "stubType" : "STUB"
                 },
                 "46" : {
-                  "name" : 46,
                   "injectDefaultRoute" : false,
                   "metricOfDefaultRoute" : 0,
+                  "name" : 46,
                   "stub" : {
                     "suppressType3" : true
                   },
