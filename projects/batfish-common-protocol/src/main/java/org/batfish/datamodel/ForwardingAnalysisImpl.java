@@ -45,7 +45,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // mapping: node name -> interface name -> dst ips which are routed to the interface
   private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
-  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
 
   // mapping: node name -> vrf name -> interface name -> dst ips
   // for which arp dst ip itself but would not be replied
@@ -161,7 +161,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpTrueEdgeNextHopIp = computeArpTrueEdgeNextHopIp(configurations, ribs);
     _routesWhereDstIpCanBeArpIp = computeRoutesWhereDstIpCanBeArpIp(fibs);
     _arpFalseDestIp = computeArpFalseDestIp(ribs);
-    _neighborUnreachableOrExitsNetwork = computeNeighborUnreachableOrExitsNetwork();
+    _arpFalse = computeArpFalse();
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
     _arpTrueEdge = computeArpTrueEdge();
@@ -184,7 +184,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp,
       Map<String, Map<String, IpSpace>> nullRoutedIps,
@@ -215,7 +215,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _arpTrueEdgeNextHopIp = arpTrueEdgeNextHopIp;
     _routesWhereDstIpCanBeArpIp = routesWhereDstIpCanBeArpIp;
     _arpFalseDestIp = arpFalseDestIp;
-    _neighborUnreachableOrExitsNetwork = neighborUnreachableOrExitsNetwork;
+    _arpFalse = arpFalse;
     _routesWithDestIpEdge = routesWithDestIpEdge;
     _arpTrueEdgeDestIp = arpTrueEdgeDestIp;
     _arpTrueEdge = arpTrueEdge;
@@ -423,7 +423,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableOrExitsNetwork() {
+  Map<String, Map<String, Map<String, IpSpace>>> computeArpFalse() {
     return union(_arpFalseDestIp, _arpFalseNextHopIp);
   }
 
@@ -887,7 +887,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @Override
   public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork() {
-    return _neighborUnreachableOrExitsNetwork;
+    /* The old NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition is all dst IPs for which ARP
+     * fails.
+     */
+    return _arpFalse;
   }
 
   @Override
@@ -1148,10 +1151,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    */
   Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
     return toImmutableMap(
-        /* The old NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition is all dst IPs for which ARP
-         * fails.
-         */
-        _neighborUnreachableOrExitsNetwork,
+        _arpFalse,
         Entry::getKey,
         nodeEntry ->
             toImmutableMap(
