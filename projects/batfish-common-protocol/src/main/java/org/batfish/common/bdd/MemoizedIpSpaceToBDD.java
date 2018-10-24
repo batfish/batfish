@@ -1,19 +1,16 @@
 package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.IpSpace;
 
-/**
- * An {@link IpSpaceToBDD} that memoizes its {@link IpSpaceToBDD#visit} method using an {@link
- * IdentityHashMap}.
- */
+/** An {@link IpSpaceToBDD} that memoizes its {@link IpSpaceToBDD#visit} method. */
 public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
-  private final Map<IpSpace, BDD> _cache = new IdentityHashMap<>();
+  private final Map<IpSpace, BDD> _cache = new HashMap<>();
 
   public MemoizedIpSpaceToBDD(
       BDDFactory factory, BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
