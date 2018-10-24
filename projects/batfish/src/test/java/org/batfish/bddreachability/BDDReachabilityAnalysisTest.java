@@ -294,24 +294,31 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PreOutVrf_NodeInterfaceDisposition() {
-    /*
-     * These predicates include the IP address of the interface, which is technically wrong.
-     * It doesn't matter because those addresses can't get to PreOutVrf from PostInVrf.
-     */
-
     // delievered to subnet
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface1Name)),
-        equalTo(_dstIface1IpBDD));
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface1Name)),
+        nullValue());
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface2Name)),
-        equalTo(_dstIface2IpBDD));
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface2Name)),
+        nullValue());
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _link1DstName)),
-        equalTo(_link1DstIpBDD));
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceDeliveredToSubnet(_dstName, _link1DstName)),
+        nullValue());
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceDeliveredToSubnet(_dstName, _link2DstName)),
-        equalTo(_link2DstIpBDD));
+        _graph
+            .getEdges()
+            .get(_dstPreOutVrf)
+            .get(new NodeInterfaceDeliveredToSubnet(_dstName, _link2DstName)),
+        nullValue());
 
     // exits network
     assertThat(
