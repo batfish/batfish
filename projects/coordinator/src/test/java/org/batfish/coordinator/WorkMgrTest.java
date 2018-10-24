@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
+import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
@@ -254,6 +256,91 @@ public final class WorkMgrTest {
 
     // Confirm no file was created (since there was no list to begin with and nothing was added)
     MatcherAssert.assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
+  }
+
+  @Test
+  public void testRemoveFromSerializedList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface1 = new NodeInterfacePair("n1", "iface1");
+    NodeInterfacePair baseInterface2 = new NodeInterfacePair("n2", "iface2");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface1);
+    interfaces.add(baseInterface2);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    removeFromSerializedList(
+        serializedListPath,
+        ImmutableList.of(baseInterface1),
+        new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm only one interface shows up
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        contains(baseInterface2));
+  }
+
+  @Test
+  public void testRemoveFromSerializedListNoSubtraction() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface1 = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface1);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    removeFromSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm nothing changes with no subtraction
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        contains(baseInterface1));
+  }
+
+  @Test
+  public void testRemoveFromSerializedListBadSubtraction() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface1 = new NodeInterfacePair("n1", "iface1");
+    NodeInterfacePair baseInterface2 = new NodeInterfacePair("n2", "iface2");
+    NodeInterfacePair subtraction1 = new NodeInterfacePair("n2", "iface2");
+    NodeInterfacePair subtraction2 = new NodeInterfacePair("n3", "iface3");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface1);
+    interfaces.add(baseInterface2);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Existing blacklist does not contain element(s) specified for removal: '%s'",
+            ImmutableList.of(subtraction2)));
+    removeFromSerializedList(
+        serializedListPath,
+        ImmutableList.of(subtraction1, subtraction2),
+        new TypeReference<List<NodeInterfacePair>>() {});
   }
 
   @Test
@@ -508,7 +595,8 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -518,7 +606,8 @@ public final class WorkMgrTest {
   public void testForkSnapshotBlacklists() throws IOException {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
-    String snapshotNewName = "snapshotNew";
+    String snapshotNewName1 = "snapshotNew1";
+    String snapshotNewName2 = "snapshotNew2";
 
     List<NodeInterfacePair> interfaces = ImmutableList.of(new NodeInterfacePair("n1", "iface1"));
     List<Edge> links = ImmutableList.of(Edge.of("n2", "iface2", "n3", "iface3"));
@@ -528,20 +617,35 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotBaseName);
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, interfaces, links, nodes, null));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName1, interfaces, links, nodes, null, null, null, null));
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotNewName, networkId);
+    SnapshotId snapshotId1 = _idManager.getSnapshotId(snapshotNewName1, networkId);
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName1)));
     // Confirm the blacklists are correct
     assertThat(
-        _storage.loadInterfaceBlacklist(networkId, snapshotId),
+        _storage.loadInterfaceBlacklist(networkId, snapshotId1),
         containsInAnyOrder(interfaces.toArray()));
     assertThat(
-        _storage.loadEdgeBlacklist(networkId, snapshotId), containsInAnyOrder(links.toArray()));
+        _storage.loadEdgeBlacklist(networkId, snapshotId1), containsInAnyOrder(links.toArray()));
     assertThat(
-        _storage.loadNodeBlacklist(networkId, snapshotId), containsInAnyOrder(nodes.toArray()));
+        _storage.loadNodeBlacklist(networkId, snapshotId1), containsInAnyOrder(nodes.toArray()));
+
+    // Remove blacklisted items from a fork of the first fork
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(
+            snapshotNewName1, snapshotNewName2, null, null, null, interfaces, links, nodes, null));
+    SnapshotId snapshotId2 = _idManager.getSnapshotId(snapshotNewName2, networkId);
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName2)));
+    // Confirm the blacklists are empty
+    assertThat(_storage.loadInterfaceBlacklist(networkId, snapshotId2), iterableWithSize(0));
+    assertThat(_storage.loadEdgeBlacklist(networkId, snapshotId2), iterableWithSize(0));
+    assertThat(_storage.loadNodeBlacklist(networkId, snapshotId2), iterableWithSize(0));
   }
 
   @Test
@@ -559,7 +663,8 @@ public final class WorkMgrTest {
     _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
   @Test
@@ -578,7 +683,8 @@ public final class WorkMgrTest {
 
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -606,7 +712,8 @@ public final class WorkMgrTest {
 
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, zipFile));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
@@ -647,7 +754,8 @@ public final class WorkMgrTest {
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
   @Test
@@ -661,7 +769,8 @@ public final class WorkMgrTest {
     _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
     _manager.forkSnapshot(
         networkName,
-        new ForkSnapshotBean(snapshotBaseName, snapshotNewName, null, null, null, null));
+        new ForkSnapshotBean(
+            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
   @Test

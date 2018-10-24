@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1623,6 +1624,20 @@ public class WorkMgr extends AbstractCoordinator {
         forkSnapshotBean.deactivateNodes,
         new TypeReference<List<String>>() {});
 
+    // Remove user-specified items from blacklists
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreInterfaces,
+        new TypeReference<List<NodeInterfacePair>>() {});
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreLinks,
+        new TypeReference<List<Edge>>() {});
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreNodes,
+        new TypeReference<List<String>>() {});
+
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
         networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
@@ -1644,6 +1659,39 @@ public class WorkMgr extends AbstractCoordinator {
       baseList.addAll(addition);
     } else {
       baseList = ImmutableList.copyOf(addition);
+    }
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+  }
+
+  // Visible for testing
+  /**
+   * Helper method to remove the specified collection from the serialized list at the specified
+   * path.
+   */
+  static <T> void removeFromSerializedList(
+      Path serializedObjectPath, @Nullable Collection<T> subtraction, TypeReference<List<T>> type)
+      throws IOException {
+    if (subtraction == null || subtraction.isEmpty()) {
+      return;
+    }
+
+    List<T> baseList;
+    if (serializedObjectPath.toFile().exists()) {
+      baseList =
+          BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(serializedObjectPath), type);
+    } else {
+      baseList = ImmutableList.of();
+    }
+
+    if (!baseList.containsAll(subtraction)) {
+      ArrayList<T> missing = new ArrayList<>(subtraction);
+      missing.removeAll(baseList);
+      throw new IllegalArgumentException(
+          String.format(
+              "Existing blacklist does not contain element(s) specified for removal: '%s'",
+              missing));
+    } else {
+      baseList.removeAll(subtraction);
     }
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }

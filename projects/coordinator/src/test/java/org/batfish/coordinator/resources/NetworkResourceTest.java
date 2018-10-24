@@ -68,6 +68,9 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableList.of(),
             ImmutableList.of(),
             ImmutableList.of("node1"),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
             null);
 
     Response response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
@@ -103,10 +106,21 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableList.of(),
             ImmutableList.of(),
             ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
             null);
     ForkSnapshotBean forkSnapshotBeanNoBaseName =
         new ForkSnapshotBean(
-            null, snapshotName, ImmutableList.of(), ImmutableList.of(), ImmutableList.of(), null);
+            null,
+            snapshotName,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            null);
 
     Response response =
         getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
