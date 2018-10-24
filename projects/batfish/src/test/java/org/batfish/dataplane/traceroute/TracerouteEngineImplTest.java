@@ -260,7 +260,6 @@ public class TracerouteEngineImplTest {
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     // make batfish call the new traceroute engine
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
 
     b.computeDataPlane(false);
     Flow flow =
@@ -310,7 +309,6 @@ public class TracerouteEngineImplTest {
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
 
     // make batfish call the new traceroute engine
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
     b.computeDataPlane(false);
     Flow flow =
         Flow.builder()
@@ -347,7 +345,6 @@ public class TracerouteEngineImplTest {
             .build();
 
     Batfish b = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
     b.computeDataPlane(false);
 
     Flow.Builder fb =

@@ -229,6 +229,7 @@ public class TracerouteTest {
   public void testIgnoreAcls() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
@@ -317,6 +318,7 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
 
     TracerouteQuestion question =
@@ -404,6 +406,7 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
 
     TracerouteQuestion question =
@@ -508,6 +511,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
 
     TracerouteQuestion question =
@@ -672,6 +676,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
 
     TracerouteQuestion question =
@@ -866,6 +871,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane(false);
 
     TracerouteQuestion question =
@@ -980,8 +986,6 @@ public class TracerouteTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(config.getHostname(), config), _folder);
-    // use new traceroute engine
-    batfish.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
     batfish.computeDataPlane(false);
     return batfish;
   }
