@@ -272,7 +272,13 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH));
+    if (!Files.exists(path)) {
+      // (deprecated)
+      path =
+          _d.getSnapshotDir(network, snapshot)
+              .resolve(Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology"));
+    }
     if (!Files.exists(path)) {
       return null;
     }
