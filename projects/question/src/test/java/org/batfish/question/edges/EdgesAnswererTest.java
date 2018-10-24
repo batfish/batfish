@@ -205,10 +205,10 @@ public class EdgesAnswererTest {
     OspfProcess ospf2 = new OspfProcess();
 
     NetworkFactory nf = new NetworkFactory();
-    OspfArea one = OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).build();
-    OspfArea two = OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).build();
-    one.getInterfaces().add("int1");
-    two.getInterfaces().add("int2");
+    OspfArea one =
+        OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
+    OspfArea two =
+        OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).addInterface("int2").build();
     ospf1.getAreas().put(1L, one);
     ospf2.getAreas().put(1L, two);
 

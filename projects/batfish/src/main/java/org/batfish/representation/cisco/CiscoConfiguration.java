@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -2322,7 +2323,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newProcess.setProcessId(proc.getName());
 
     // establish areas and associated interfaces
-    Map<Long, OspfArea> areas = newProcess.getAreas();
+    Map<Long, OspfArea.Builder> areas = new HashMap<>();
     Map<Long, ImmutableSortedSet.Builder<String>> areaInterfacesBuilders = new HashMap<>();
     // Sort networks with longer prefixes first, then lower start IPs and areas.
     SortedSet<OspfNetwork> networks =
@@ -2351,12 +2352,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (maskedInterfaceAddress.equals(networkAddress)) {
           // we have a longest prefix match
           long areaNum = network.getArea();
-          OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
+          areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
           ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
               areaInterfacesBuilders.computeIfAbsent(
                   areaNum, n -> ImmutableSortedSet.naturalOrder());
           newAreaInterfacesBuilder.add(ifaceName);
-          iface.setOspfArea(newArea);
           iface.setOspfEnabled(true);
           boolean passive =
               proc.getPassiveInterfaceList().contains(iface.getName())
@@ -2368,7 +2368,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       areaInterfacesBuilders.forEach(
           (areaNum, interfacesBuilder) ->
-              areas.get(areaNum).setInterfaces(interfacesBuilder.build()));
+              areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
     }
     proc.getNssas()
         .forEach(
@@ -2377,7 +2377,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 return;
               }
               areas.get(areaId).setStubType(StubType.NSSA);
-              areas.get(areaId).setNssa(toNssaSettings(nssaSettings));
+              areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
             });
 
     proc.getStubs()
@@ -2387,19 +2387,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 return;
               }
               areas.get(areaId).setStubType(StubType.STUB);
-              areas.get(areaId).setStub(toStubSettings(stubSettings));
+              areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
             });
 
     // create summarization filters for inter-area routes
     for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
       long areaLong = e1.getKey();
       Map<Prefix, OspfAreaSummary> summaries = e1.getValue();
-      OspfArea area = areas.get(areaLong);
+      OspfArea.Builder area = areas.get(areaLong);
       String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaLong + "~";
       RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
       c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
       if (area == null) {
-        area = new OspfArea(areaLong);
+        area = OspfArea.builder().setNumber(areaLong);
         areas.put(areaLong, area);
       }
       area.setSummaryFilter(summaryFilterName);
@@ -2417,13 +2417,28 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 new IpWildcard(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
-      area.setSummaries(ImmutableSortedMap.copyOf(summaries));
+      area.addSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
               LineAction.PERMIT,
               new IpWildcard(Prefix.ZERO),
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
+    newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+    // set pointers from interfaces to their parent areas
+    newProcess
+        .getAreas()
+        .values()
+        .forEach(
+            area ->
+                area.getInterfaces()
+                    .forEach(
+                        ifaceName ->
+                            c.getVrfs()
+                                .get(vrfName)
+                                .getInterfaces()
+                                .get(ifaceName)
+                                .setOspfArea(area)));
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
