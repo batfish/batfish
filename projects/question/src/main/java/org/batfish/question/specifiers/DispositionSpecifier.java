@@ -9,7 +9,6 @@ import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 
@@ -44,7 +43,6 @@ public final class DispositionSpecifier {
           .add(LOOP)
           .add(NEIGHBOR_UNREACHABLE)
           .add(INSUFFICIENT_INFO)
-          .add(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
           .add(NO_ROUTE)
           .add(NULL_ROUTED)
           .build();

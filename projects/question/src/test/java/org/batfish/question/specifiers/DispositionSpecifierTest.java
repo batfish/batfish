@@ -80,7 +80,10 @@ public class DispositionSpecifierTest {
   public void testAllDispositionsCovered() {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
-        equalTo(ImmutableSet.copyOf(FlowDisposition.values())));
+        equalTo(
+            Sets.difference(
+                ImmutableSet.copyOf(FlowDisposition.values()),
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))));
   }
 
   @Test
