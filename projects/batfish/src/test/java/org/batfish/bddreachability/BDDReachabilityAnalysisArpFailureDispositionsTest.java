@@ -13,12 +13,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -188,13 +186,6 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
             .map(this::dstIpToBDD)
             .reduce(PKT.getFactory().zero(), BDD::or);
-    List<Ip> ips =
-        DST_TO_BDD
-            .getBDDInteger()
-            .getValuesSatisfying(reach.get(_loc), 100)
-            .stream()
-            .map(Ip::new)
-            .collect(Collectors.toList());
     assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
   }
 
