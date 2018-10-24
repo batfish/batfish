@@ -3,29 +3,37 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/** Represents a group of interfaces in {@link ReferenceBook} */
+@ParametersAreNonnullByDefault
 public class InterfaceGroup implements Comparable<InterfaceGroup> {
 
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private SortedSet<NodeInterfacePair> _interfaces;
-  @Nonnull private String _name;
+  @Nonnull private final SortedSet<NodeInterfacePair> _interfaces;
+  @Nonnull private final String _name;
 
-  public InterfaceGroup(
-      @Nullable @JsonProperty(PROP_INTERFACES) SortedSet<NodeInterfacePair> interfaces,
-      @Nullable @JsonProperty(PROP_NAME) String name) {
+  @JsonCreator
+  private static InterfaceGroup jsonCreator(
+      @JsonProperty(PROP_INTERFACES) SortedSet<NodeInterfacePair> interfaces,
+      @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Interface group name cannot not be null");
+    return new InterfaceGroup(firstNonNull(interfaces, ImmutableSortedSet.of()), name);
+  }
+
+  public InterfaceGroup(SortedSet<NodeInterfacePair> interfaces, String name) {
     ReferenceLibrary.checkValidName(name, "interface group");
 
     _name = name;
-    _interfaces = firstNonNull(interfaces, new TreeSet<>());
+    _interfaces = ImmutableSortedSet.copyOf(interfaces);
   }
 
   @Override

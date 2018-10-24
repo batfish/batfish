@@ -27,7 +27,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     private List<ServiceObjectGroup> _serviceObjectGroups;
     private List<ServiceObject> _serviceObjects;
 
-    public Builder(String name) {
+    private Builder(String name) {
       _name = name;
     }
 
