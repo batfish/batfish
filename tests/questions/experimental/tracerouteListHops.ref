@@ -65,6 +65,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -338,6 +345,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -610,6 +624,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -881,6 +902,13 @@
                   "name" : "host1"
                 },
                 "steps" : [
+                  {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
                   {
                     "type" : "Routing",
                     "action" : "FORWARDED",

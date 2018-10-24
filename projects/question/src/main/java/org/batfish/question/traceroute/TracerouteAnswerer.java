@@ -102,17 +102,16 @@ public final class TracerouteAnswerer extends Answerer {
     Set<Flow> flows = getFlows(tag);
     Multiset<Row> rows;
     TableAnswerElement table;
-    if (_batfish.getSettingsConfiguration().getList("debugflags").contains("traceroute")) {
-      SortedMap<Flow, List<Trace>> flowTraces =
-          _batfish.buildFlows(flows, question.getIgnoreAcls());
-      rows = flowTracesToRows(flowTraces, question.getMaxTraces());
-      table = new TableAnswerElement(metadata());
-
-    } else {
+    if (_batfish.debugFlagEnabled("oldtraceroute")) {
       _batfish.processFlows(flows, question.getIgnoreAcls());
       FlowHistory flowHistory = _batfish.getHistory();
       rows = flowHistoryToRows(flowHistory, false);
       table = new TableAnswerElement(createMetadata(false));
+    } else {
+      SortedMap<Flow, List<Trace>> flowTraces =
+          _batfish.buildFlows(flows, question.getIgnoreAcls());
+      rows = flowTracesToRows(flowTraces, question.getMaxTraces());
+      table = new TableAnswerElement(metadata());
     }
     table.postProcessAnswer(_question, rows);
     return table;

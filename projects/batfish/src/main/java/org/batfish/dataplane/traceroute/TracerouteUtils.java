@@ -9,7 +9,6 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.ForwardingAnalysis;
