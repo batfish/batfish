@@ -3857,11 +3857,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(ImmutableSet.toImmutableSet());
 
     DataPlane dp = loadDataPlane();
-    if (_settings.getDebugFlags().contains("traceroute")) {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
-    } else {
+    if (_settings.debugFlagEnabled("oldtraceroute")) {
       getDataPlanePlugin().processFlows(flows, dp, false);
       return getHistory();
+    } else {
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
     }
   }
 

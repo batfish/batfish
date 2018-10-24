@@ -31,6 +31,7 @@ test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfacesSpecifier="Loopback.*", status=".*passive"
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters headers={"dstIps": "1.1.1.1"}, nodes="host.*", filters="filter.*"
+add-batfish-option debugflags oldtraceroute
 test tests/basic/oldtraceroute-1-2.ref get oldtraceroute ingressNode="as1core1", dst="host1"
 test tests/basic/oldtraceroute-1-2-ignoreAcls.ref get oldtraceroute ingressNode="as1core1", dst="host1", ignoreAcls=true
 test tests/basic/oldtraceroute-2-1.ref get oldtraceroute ingressNode="host2", dst="1.0.1.1"
