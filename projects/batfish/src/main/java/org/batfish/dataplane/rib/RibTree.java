@@ -102,8 +102,8 @@ class RibTree<R extends AbstractRoute> implements Serializable {
     return _root.clearRoutes(prefix);
   }
 
-  public Map<Prefix, IpWildcardSetIpSpace> getMatchingIps() {
-    ImmutableMap.Builder<Prefix, IpWildcardSetIpSpace> builder = ImmutableMap.builder();
+  public Map<Prefix, IpSpace> getMatchingIps() {
+    ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
     _root.addMatchingIps(builder);
     return builder.build();
   }
