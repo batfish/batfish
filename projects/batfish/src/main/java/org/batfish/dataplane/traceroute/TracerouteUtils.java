@@ -6,6 +6,7 @@ import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -86,18 +87,17 @@ final class TracerouteUtils {
    *     node
    * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
    *     Hop})
-   * @param dataPlane Computed {@link DataPlane} for the node
    * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
+  @Nonnull
   static EnterInputIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       String inputIfaceName,
       boolean ignoreAcls,
       Flow currentFlow,
       Map<String, IpAccessList> aclDefinitions,
-      NavigableMap<String, IpSpace> namedIpSpaces,
-      DataPlane dataPlane) {
+      NavigableMap<String, IpSpace> namedIpSpaces) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
