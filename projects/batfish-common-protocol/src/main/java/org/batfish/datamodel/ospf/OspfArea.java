@@ -93,7 +93,7 @@ public class OspfArea implements Serializable {
       return this;
     }
 
-    /** Set this are no be not a stub area of any type, and remove any stub settings */
+    /** Remove any stub settings, make this area not a Stub of any type */
     public Builder setNonStub() {
       _stubType = StubType.NONE;
       _nssa = null;
@@ -102,8 +102,7 @@ public class OspfArea implements Serializable {
     }
 
     /**
-     * Set this are no be not a not-so-stubby area with given settings, erase any other stub
-     * settings
+     * Set this area to be a not-so-stubby area with given settings, erase any other stub settings
      */
     public Builder setNssa(@Nonnull NssaSettings nssa) {
       _stubType = StubType.NSSA;
@@ -112,7 +111,7 @@ public class OspfArea implements Serializable {
       return this;
     }
 
-    /** Set NSSA settings only */
+    /** Set the not-so-stubby settings only */
     public Builder setNssaSettings(@Nonnull NssaSettings nssa) {
       _nssa = nssa;
       return this;
