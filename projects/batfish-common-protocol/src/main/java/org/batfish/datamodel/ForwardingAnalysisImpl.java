@@ -1142,7 +1142,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   /*
    * Necessary and sufficient: No ARP response, and either:
    * 1. the interface is full, or
-   * 2. we ARPed for a dest IP which is owned in the snapshot.
+   * 2. we ARPed for a dest IP that is in a conncected subnet and is owned in the snapshot.
    *
    * An interface is full if all subnets connected to it are full.
    */
@@ -1168,12 +1168,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
                           IpSpace arpFalse = ifaceEntry.getValue();
 
-                          IpSpace arpFalseUnownedDstIp =
+                          IpSpace arpFalseDstIpOwnedAndInSubnet =
                               AclIpSpace.intersection(
-                                  _arpFalseDestIp.get(node).get(vrf).get(iface), _ownedIps);
+                                  _arpFalseDestIp.get(node).get(vrf).get(iface),
+                                  _interfaceHostSubnetIps.get(node).get(vrf).get(iface),
+                                  _ownedIps);
 
                           return _interfacesWithMissingDevices.get(node).contains(iface)
-                              ? arpFalseUnownedDstIp
+                              ? arpFalseDstIpOwnedAndInSubnet
                               : arpFalse;
                         })));
   }
