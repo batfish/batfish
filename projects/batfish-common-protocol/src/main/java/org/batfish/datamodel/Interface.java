@@ -118,8 +118,8 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
-        _ospfArea.getInterfaces().add(name);
-        iface.setOspfAreaName(_ospfArea.getName());
+        _ospfArea.addInterface(name);
+        iface.setOspfAreaName(_ospfArea.getAreaNumber());
       }
       iface.setOspfCost(_ospfCost);
       iface.setOspfEnabled(_ospfEnabled);
@@ -1002,7 +1002,7 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("The OSPF area to which this interface belongs.")
   public Long getOspfAreaName() {
     if (_ospfArea != null) {
-      return _ospfArea.getName();
+      return _ospfArea.getAreaNumber();
     } else {
       return _ospfAreaName;
     }

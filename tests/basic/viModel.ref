@@ -8339,13 +8339,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -9585,13 +9585,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -9981,7 +9981,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -9989,6 +9988,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -11248,7 +11248,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
@@ -11256,6 +11255,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -12458,7 +12458,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
@@ -12466,6 +12465,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -13066,7 +13066,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -13076,6 +13075,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -13623,7 +13623,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -13633,6 +13632,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -15337,7 +15337,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -15345,6 +15344,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -16094,7 +16094,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -16102,6 +16101,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -17220,13 +17220,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -18297,13 +18297,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -18893,7 +18893,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -18901,6 +18900,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
