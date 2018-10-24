@@ -59,19 +59,16 @@ public class ReferenceFilterGroupFilterSpecifierTest {
                 _filter3));
 
     ReferenceBook book =
-        new ReferenceBook(
-            null,
-            ImmutableList.of(
-                new FilterGroup(
-                    ImmutableList.of(
-                        new FiltersSpecifier(_filter1.getName()),
-                        new FiltersSpecifier(
-                            "outputfilteron:" + _interfaceName)), // should match _filter3
-                    _filterGroupName)),
-            _refBookName,
-            null,
-            null,
-            null);
+        ReferenceBook.builder(_refBookName)
+            .setFilterGroups(
+                ImmutableList.of(
+                    new FilterGroup(
+                        ImmutableList.of(
+                            new FiltersSpecifier(_filter1.getName()),
+                            new FiltersSpecifier(
+                                "outputfilteron:" + _interfaceName)), // should match _filter3
+                        _filterGroupName)))
+            .build();
 
     _ctxt =
         MockSpecifierContext.builder()
