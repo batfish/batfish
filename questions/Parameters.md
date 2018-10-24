@@ -10,6 +10,7 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `integer`)
 [comment]: # (* `interfacePropertySpec`)
 -->
+* [`dispositionSpec`](#disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
 
@@ -52,6 +53,28 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `string`)
 [comment]: # (* `subrange`)
 -->
+
+## Disposition specifier
+
+A specification of flow dispositions, used to identify desired flow actions. Used in questions like `reachability`.
+Disposition specifier takes as input a string of comma-separated disposition values, which are interpreted using logical OR.
+
+There are two meta flow dispositions: `Success` and `Failure` used to indicate that a flow has been successfully delivered, 
+or alternatively, has been dropped somewhere in the network. 
+
+The following fine-grained disposition values are also supported:
+* Success dispositions:
+    * `Accepted` - a flow has been accepted by a device in the snapshot
+    * `Delivered_to_subnet` - a flow has been delivered to the host subnet
+    * `Exits_network` - a flow has been succesfully forwared to a device currently outside of the snapshot
+* Failure dispositions:
+    * `Denied_in` - a flow was denied by an input ACL on an interface
+    * `Denied_out` - a flow was denied by an output ACL on an interface
+    * `No_route` - a flow was dropped, no suitable route exists on device 
+    * `Null_routed` - a flow was dropped, since it matched a `null` route 
+    * `Neighbor_unreachable` - could not reach the next hop (e.g., an ARP failure)
+    * `Loop` - the flow encountered a forwarding loop
+    * `Insufficient_info` - Batfish does not have enough configuration info to make a determination with certainty (e.g., some device configs are missing)
 
 ## Filter Specifier
 
@@ -135,13 +158,13 @@ There are two types of `Location`:
 
 Some examples:
 
-* `as1border1[Ethernet0/0]` -- specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
+* `as1border1[Ethernet0/0]` - specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
 
-* `as1border1` -- specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
+* `as1border1` - specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
 
-* `[Ethernet0/0]` -- specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
+* `[Ethernet0/0]` - specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
 
-* `enter([Ethernet0/0])` -- specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
+* `enter([Ethernet0/0])` - specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
 
 #### Location Specifier Grammar
 
