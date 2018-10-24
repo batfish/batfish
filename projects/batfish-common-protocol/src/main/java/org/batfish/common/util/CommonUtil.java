@@ -877,8 +877,8 @@ public class CommonUtil {
 
       for (Interface iface1 : bucketEntry.getValue()) {
         for (Interface iface2 : candidateInterfaces) {
-          // no self-edges
-          if (iface1 == iface2) {
+          // No device self-adjacencies
+          if (iface1.getOwner() == iface2.getOwner()) {
             continue;
           }
           // don't connect interfaces that have any IP address in common

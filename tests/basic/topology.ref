@@ -27,12 +27,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-as3core1-GigabitEthernet3/0",
-      "name" : "GigabitEthernet3/0",
-      "nodeId" : "node-as3core1",
-      "type" : "PHYSICAL"
-    },
-    {
       "id" : "interface-node-as3border2-GigabitEthernet0/0",
       "name" : "GigabitEthernet0/0",
       "nodeId" : "node-as3border2",
@@ -72,12 +66,6 @@
       "id" : "interface-node-as2dept1-GigabitEthernet1/0",
       "name" : "GigabitEthernet1/0",
       "nodeId" : "node-as2dept1",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-as3core1-GigabitEthernet2/0",
-      "name" : "GigabitEthernet2/0",
-      "nodeId" : "node-as3core1",
       "type" : "PHYSICAL"
     },
     {
@@ -287,12 +275,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-as3core1-GigabitEthernet3/0",
-      "id" : "link-interface-node-as3core1-GigabitEthernet2/0-interface-node-as3core1-GigabitEthernet3/0",
-      "srcId" : "interface-node-as3core1-GigabitEthernet2/0",
-      "type" : "PHYSICAL"
-    },
-    {
       "dstId" : "interface-node-as2dept1-GigabitEthernet3/0",
       "id" : "link-interface-node-host2-eth0-interface-node-as2dept1-GigabitEthernet3/0",
       "srcId" : "interface-node-host2-eth0",
@@ -428,12 +410,6 @@
       "dstId" : "interface-node-as2border1-GigabitEthernet0/0",
       "id" : "link-interface-node-as2border1-GigabitEthernet1/0-interface-node-as2border1-GigabitEthernet0/0",
       "srcId" : "interface-node-as2border1-GigabitEthernet1/0",
-      "type" : "PHYSICAL"
-    },
-    {
-      "dstId" : "interface-node-as3core1-GigabitEthernet2/0",
-      "id" : "link-interface-node-as3core1-GigabitEthernet3/0-interface-node-as3core1-GigabitEthernet2/0",
-      "srcId" : "interface-node-as3core1-GigabitEthernet3/0",
       "type" : "PHYSICAL"
     },
     {

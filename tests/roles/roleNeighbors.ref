@@ -48,10 +48,6 @@
       },
       {
         "role1" : "core",
-        "role2" : "core"
-      },
-      {
-        "role1" : "core",
         "role2" : "dist"
       },
       {
