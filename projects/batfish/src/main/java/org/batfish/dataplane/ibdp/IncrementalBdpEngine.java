@@ -81,7 +81,6 @@ class IncrementalBdpEngine {
     Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         computeIpVrfOwners(true, computeNodeInterfaces(configurations));
-    dpBuilder.setIpOwners(ipOwners);
     dpBuilder.setIpVrfOwners(ipVrfOwners);
 
     // Generate our nodes, keyed by name, sorted for determinism
@@ -118,14 +117,14 @@ class IncrementalBdpEngine {
         computeNonMonotonicPortionOfDataPlane(
             nodes,
             topology,
-            dp,
             externalAdverts,
             answerElement,
             true,
             bgpTopology,
             eigrpTopology,
             isisTopology,
-            networkConfigurations);
+            networkConfigurations,
+            ipOwners);
     if (isOscillating) {
       // If we are oscillating here, network has no stable solution.
       throw new BdpOscillationException("Network has no stable solution");
@@ -152,14 +151,14 @@ class IncrementalBdpEngine {
       computeNonMonotonicPortionOfDataPlane(
           nodes,
           topology,
-          dp,
           externalAdverts,
           answerElement,
           false,
           bgpTopology,
           eigrpTopology,
           isisTopology,
-          networkConfigurations);
+          networkConfigurations,
+          ipOwners);
     }
     // Generate the answers from the computation, compute final FIBs
     computeFibs(nodes);
@@ -491,24 +490,24 @@ class IncrementalBdpEngine {
    *
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
    * @param topology The topology representing Layer 3 adjacencies between interface of the nodes
-   * @param dp The output data plane
    * @param externalAdverts the set of external BGP advertisements
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
    * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param ipOwners The ip owner mapping
    * @return true iff the computation is oscillating
    */
   private boolean computeNonMonotonicPortionOfDataPlane(
       SortedMap<String, Node> nodes,
       Topology topology,
-      IncrementalDataPlane dp,
       Set<BgpAdvertisement> externalAdverts,
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology,
-      NetworkConfigurations networkConfigurations) {
+      NetworkConfigurations networkConfigurations,
+      Map<Ip, Set<String>> ipOwners) {
 
     /*
      * Initialize all routers and their message queues (can be done as parallel as possible)
@@ -537,7 +536,7 @@ class IncrementalBdpEngine {
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
                   vr.initBaseBgpRibs(
-                      externalAdverts, dp.getIpOwners(), nodes, bgpTopology, networkConfigurations);
+                      externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 }
                 queueInitial.incrementAndGet();
