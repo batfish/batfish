@@ -117,8 +117,10 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(CONFIG_NAME)
             .get(VRF_NAME)
             .get(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME);
-    assertThat(edge, nullValue());
-    assertThat(headerSpaceBdd, equalTo(zero));
+    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
+    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(originatingFromDeviceBdd)));
   }
 
   /*

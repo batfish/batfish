@@ -571,7 +571,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace())));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeNeighborUnreachableOrExitsNetwork();
+        forwardingAnalysisImpl.computeArpFalse();
 
     /* Should contain both IPs. */
     assertThat(
