@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Collection;
@@ -1190,7 +1191,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       String node = nodeEntry.getKey();
                       String iface = ifaceEntry.getKey();
                       return hasMissingEdgesOnInterface(
-                          node, iface, interfaceEdges.get(new NodeInterfacePair(node, iface)));
+                          node,
+                          iface,
+                          interfaceEdges.getOrDefault(
+                              new NodeInterfacePair(node, iface), ImmutableSortedSet.of()));
                     })
                 .map(Entry::getKey)
                 .collect(Collectors.toSet()));
