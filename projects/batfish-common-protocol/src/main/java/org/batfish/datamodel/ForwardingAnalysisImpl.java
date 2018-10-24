@@ -126,8 +126,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final BDD _internalIpsBDD;
 
-  private final BDD _unownedIpsBDD;
-
   private static IpSpaceToBDD initIpSpaceToBDD() {
     BDDPacket bddPacket = new BDDPacket();
     return new IpSpaceToBDD(bddPacket.getFactory(), bddPacket.getDstIp());
@@ -143,7 +141,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
     _interfaceOwnedIpsBDDs = computeInterfaceOwnedIpsBDDs();
-    _unownedIpsBDD = computeUnownedIpsBDD();
     _internalIps = computeInternalIps();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
     _externalIps = _internalIps.complement();
@@ -254,7 +251,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _interfaceOwnedIpsBDDs = computeInterfaceOwnedIpsBDDs();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
     _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
-    _unownedIpsBDD = computeUnownedIpsBDD();
   }
 
   /**
