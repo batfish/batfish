@@ -55,6 +55,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -444,7 +445,7 @@ public class TracerouteTest {
    * Case 1: mask < 24 : R1 -> DELIVERED_TO_SUBNET
    * Case 2: mask = 24 : same above,
    * since connected route has higher priority than static route
-   * Case 3: mask > 24 : DELIEVERED_TO_SUBNET with trace R1 -> R2
+   * Case 3: mask > 24 : DELIVERED_TO_SUBNET with trace R1 -> R2
    *
    * Note: in practice, R2 would complain about overlapping interfaces
    */
@@ -521,6 +522,7 @@ public class TracerouteTest {
     return answer;
   }
 
+  @Ignore("https://github.com/batfish/batfish/issues/2528")
   @Test
   public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("22");
@@ -685,6 +687,7 @@ public class TracerouteTest {
     return answer;
   }
 
+  @Ignore("https://github.com/batfish/batfish/issues/2528")
   @Test
   public void testDispositionMultiInterfaces1() throws IOException {
     TableAnswerElement answer = testDispositionMultiInterfaces("22");
@@ -878,6 +881,7 @@ public class TracerouteTest {
     return answer;
   }
 
+  @Ignore("https://github.com/batfish/batfish/issues/2528")
   @Test
   public void testDispositionMultipleRouters1() throws IOException {
     TableAnswerElement answer = testDispositionMultipleRouters("22");
