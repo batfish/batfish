@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
@@ -26,14 +27,14 @@ public class OspfArea implements Serializable {
   public static class Builder extends NetworkFactoryBuilder<OspfArea> {
 
     private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
-    @Nonnull private final ImmutableSortedSet.Builder<String> _interfaces;
+    @Nonnull private ImmutableSortedSet.Builder<String> _interfaces;
     @Nullable private NssaSettings _nssa;
     @Nullable private Long _number;
     private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
     @Nullable private OspfProcess _ospfProcess;
     @Nullable private StubSettings _stub;
     @Nonnull private StubType _stubType;
-    @Nonnull private final ImmutableSortedMap.Builder<Prefix, OspfAreaSummary> _summaries;
+    @Nonnull private ImmutableSortedMap.Builder<Prefix, OspfAreaSummary> _summaries;
     @Nullable private String _summaryFilter;
 
     Builder(NetworkFactory networkFactory) {
@@ -85,6 +86,13 @@ public class OspfArea implements Serializable {
 
     public Builder addSummaries(@Nonnull Map<Prefix, OspfAreaSummary> summaries) {
       _summaries.putAll(summaries);
+      return this;
+    }
+
+    /** Replace all interfaces in the area */
+    public Builder setInterfaces(@Nonnull Collection<String> interfaces) {
+      _interfaces = new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+      _interfaces.addAll(interfaces);
       return this;
     }
 
@@ -144,6 +152,13 @@ public class OspfArea implements Serializable {
 
     public Builder setStubType(@Nonnull StubType stubType) {
       _stubType = stubType;
+      return this;
+    }
+
+    /** Replace the area summaries */
+    public Builder setSummaries(@Nonnull Map<Prefix, OspfAreaSummary> summaries) {
+      _summaries = new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+      _summaries.putAll(summaries);
       return this;
     }
 
