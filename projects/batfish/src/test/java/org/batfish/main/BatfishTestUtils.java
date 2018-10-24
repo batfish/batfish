@@ -208,8 +208,7 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
     if (layer1TopologyText != null) {
       writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH, layer1TopologyText),
-          testrigPath);
+          ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
     }
     if (legacyTopologyText != null) {
       writeTemporaryTestrigFiles(
