@@ -49,8 +49,7 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(container, null);
 
     // add book1
-    ReferenceBookBean book =
-        new ReferenceBookBean(new ReferenceBook(null, null, "book1", null, null, null));
+    ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder("book1").build());
     Response response =
         getReferenceLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
 

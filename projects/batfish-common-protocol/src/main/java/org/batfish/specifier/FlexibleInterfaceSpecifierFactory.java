@@ -14,6 +14,8 @@ import org.batfish.datamodel.questions.InterfacesSpecifier;
  * <ul>
  *   <li>null: returns ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL)
  *   <li>connectedTo(ip, prefix, or wildcard): returns {@link InterfaceWithConnectedIpsSpecifier}
+ *   <li>{@code ref.interfaceGroup(foo, bar)}, which returns {@link
+ *       ReferenceInterfaceGroupInterfaceSpecifier};
  *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
  *   <li>all other inputs go directly to {@link ShorthandInterfaceSpecifier}
@@ -25,6 +27,9 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
 
   private static final Pattern CONNECTED_TO_PATTERN =
       Pattern.compile("connectedTo\\((.*)\\)", Pattern.CASE_INSENSITIVE);
+
+  private static final Pattern REF_PATTERN =
+      Pattern.compile("ref\\.interfacegroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
 
   private static final Pattern VRF_PATTERN =
       Pattern.compile("vrf\\((.*)\\)", Pattern.CASE_INSENSITIVE);
@@ -50,6 +55,18 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
     if (matcher.find()) {
       String ipWildcard = matcher.group(1).trim();
       return new InterfaceWithConnectedIpsSpecifier.Factory().buildInterfaceSpecifier(ipWildcard);
+    }
+
+    // interface group subnet pattern
+    matcher = REF_PATTERN.matcher(str);
+    if (matcher.find()) {
+      String refInput = matcher.group(1).trim();
+      String[] words = refInput.split(",");
+      checkArgument(
+          words.length == 2,
+          "ref.interfaceGroup() needs interface group and reference book names separated by ','");
+
+      return new ReferenceInterfaceGroupInterfaceSpecifier(words[0], words[1]);
     }
 
     // VRF pattern

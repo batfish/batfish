@@ -43,6 +43,13 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   }
 
   @Test
+  public void testReferenceInterfaceGroup() {
+    assertThat(
+        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("ref.interfaceGroup(a, b)"),
+        equalTo(new ReferenceInterfaceGroupInterfaceSpecifier("a", "b")));
+  }
+
+  @Test
   public void testShorthand() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("name:.*"),
