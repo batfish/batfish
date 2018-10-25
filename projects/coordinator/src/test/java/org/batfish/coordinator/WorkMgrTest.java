@@ -332,6 +332,7 @@ public final class WorkMgrTest {
     interfaces.add(baseInterface2);
     writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
 
+    // Removing non-existent element should throw
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(
         String.format(
