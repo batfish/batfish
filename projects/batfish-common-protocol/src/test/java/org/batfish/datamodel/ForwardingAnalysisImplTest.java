@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceHostSubnetIps;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.hostSubnetIpSpace;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
@@ -389,7 +390,7 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, IpSpace> result =
-        forwardingAnalysisImpl.computeArpTrueEdgeDestIp(configurations, ribs);
+        forwardingAnalysisImpl.computeArpTrueEdgeDestIp(configurations, computeMatchingIps(ribs));
 
     /* Respond to request for IP on i2. */
     assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
@@ -444,7 +445,8 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, IpSpace> result =
-        forwardingAnalysisImpl.computeArpTrueEdgeNextHopIp(configurations, ribs);
+        forwardingAnalysisImpl.computeArpTrueEdgeNextHopIp(
+            configurations, computeMatchingIps(ribs));
 
     /*
      * Respond for any destination IP in network not matching more specific route not going out i1.
@@ -548,7 +550,7 @@ public class ForwardingAnalysisImplTest {
                     ImmutableSet.of(nullRoute))));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
-        forwardingAnalysisImpl.computeIpsRoutedOutInterfaces(ribs);
+        forwardingAnalysisImpl.computeIpsRoutedOutInterfaces(computeMatchingIps(ribs));
 
     /* Should contain IPs matching the route */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), containsIp(P1.getStartIp()))));
@@ -607,7 +609,7 @@ public class ForwardingAnalysisImplTest {
     _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpFalseDestIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseDestIp(computeMatchingIps(ribs));
 
     /* Should contain IP in the route's prefix that sees no reply */
     assertThat(
@@ -646,7 +648,7 @@ public class ForwardingAnalysisImplTest {
     _someoneReplies = ImmutableMap.of();
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpFalseDestIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseDestIp(computeMatchingIps(ribs));
 
     /*
      * Since _someoneReplies is empty, all IPs for which longest-prefix-match route has no
@@ -697,7 +699,7 @@ public class ForwardingAnalysisImplTest {
 
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        forwardingAnalysisImpl.computeArpFalseNextHopIp(ribs);
+        forwardingAnalysisImpl.computeArpFalseNextHopIp(computeMatchingIps(ribs));
 
     /* IPs matching some route on interface with no response should appear */
     assertThat(
@@ -759,9 +761,8 @@ public class ForwardingAnalysisImplTest {
                                 ImmutableMap.of(
                                     Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(otherRoute)))))
                     .build()));
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
-        forwardingAnalysisImpl.computeNullRoutedIps(ribs, fibs);
+        ForwardingAnalysisImpl.computeNullRoutedIps(computeMatchingIps(ribs), fibs);
 
     /* IPs for the null route should appear */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getStartIp()))));
@@ -835,8 +836,7 @@ public class ForwardingAnalysisImplTest {
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1, ImmutableSortedMap.of(v1, MockRib.builder().setRoutableIps(IPSPACE1).build()));
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    Map<String, Map<String, IpSpace>> result = forwardingAnalysisImpl.computeRoutableIps(ribs);
+    Map<String, Map<String, IpSpace>> result = ForwardingAnalysisImpl.computeRoutableIps(ribs);
 
     assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, IPSPACE1))));
   }
@@ -847,11 +847,10 @@ public class ForwardingAnalysisImplTest {
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
     MockRib rib =
         MockRib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
 
     /* Resulting IP space should permit matching IPs */
     assertThat(
-        forwardingAnalysisImpl.computeRouteMatchConditions(routes, rib),
+        ForwardingAnalysisImpl.computeRouteMatchConditions(routes, rib.getMatchingIps()),
         isAclIpSpaceThat(
             hasLines(
                 containsInAnyOrder(
@@ -937,13 +936,12 @@ public class ForwardingAnalysisImplTest {
                 MockFib.builder()
                     .setRoutesByNextHopInterface(ImmutableMap.of(i1, ImmutableSet.of(r1)))
                     .build()));
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
 
     Configuration config = _cb.setHostname(c1).build();
     Vrf vrf = _vb.setName(v1).setOwner(config).build();
     _ib.setName(i1).setVrf(vrf).setOwner(config).build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, config), fibs);
+        ForwardingAnalysisImpl.computeRoutesWithNextHop(ImmutableMap.of(c1, config), fibs);
 
     assertThat(
         result,
