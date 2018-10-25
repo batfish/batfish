@@ -6,7 +6,7 @@ The topology of the network is show below: ![Campus topology](example-network.pn
 
 The example contains three different subnetworks corresponding to the campus (AS2) and a simplified view of two upstream providers (AS1 and AS3) and the connectivity between them.
 
-There are three snapshots for this network which can be used to exercise and understand various analysis capabilities in Batfish.
+There are several snapshots for this network which can be used to exercise and understand various analysis capabilities in Batfish.
 
 1. `live`: The snapshot of the device configurations currently deployed in this network.
 
