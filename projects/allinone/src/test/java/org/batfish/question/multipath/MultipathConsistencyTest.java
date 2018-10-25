@@ -26,6 +26,8 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.matchers.TraceMatchers;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -53,7 +55,8 @@ public class MultipathConsistencyTest {
   }
 
   @Test
-  public void testMultipath() {
+  public void testMultipath_oldtraceroute() {
+    _batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
@@ -86,5 +89,43 @@ public class MultipathConsistencyTest {
                     hasDisposition(FlowDisposition.DENIED_IN),
                     hasDisposition(FlowDisposition.ACCEPTED))),
             Schema.set(Schema.FLOW_TRACE)));
+  }
+
+  @Test
+  public void testMultipath() {
+    _batfish.getSettings().setDebugFlags(ImmutableList.of());
+    MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
+    MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+
+    assertThat(ae.getRows(), hasSize(1));
+
+    Row row = ae.getRows().getData().iterator().next();
+    assertThat(
+        row,
+        hasColumn(
+            COL_FLOW,
+            allOf(
+                ImmutableList.of(
+                    hasDstIp(new Ip("2.1.0.0")),
+                    hasDstPort(1234),
+                    hasIcmpCode(0),
+                    hasIcmpType(0),
+                    hasIngressNode("~Configuration_0~"),
+                    hasIngressVrf("default"),
+                    hasIpProtocol(IpProtocol.HOPOPT),
+                    hasSrcIp(oneOf(new Ip("2.0.0.0"), new Ip("1.0.0.0"))),
+                    hasTag("BASE"))),
+            Schema.FLOW));
+
+    assertThat(
+        row,
+        hasColumn(
+            COL_TRACES,
+            containsInAnyOrder(
+                ImmutableList.of(
+                    TraceMatchers.hasDisposition(FlowDisposition.DENIED_IN),
+                    TraceMatchers.hasDisposition(FlowDisposition.ACCEPTED))),
+            Schema.set(Schema.TRACE)));
   }
 }

@@ -8,7 +8,9 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.createMetadata;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
@@ -16,9 +18,11 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.question.traceroute.TracerouteAnswerer;
 
 public class MultipathConsistencyAnswerer extends Answerer {
   public MultipathConsistencyAnswerer(Question question, IBatfish batfish) {
@@ -28,12 +32,20 @@ public class MultipathConsistencyAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     Set<Flow> flows = _batfish.bddMultipathConsistency();
-    _batfish.processFlows(flows, false);
-    FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory);
-    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
-    table.postProcessAnswer(_question, rows);
-    return table;
+    if (_batfish.debugFlagEnabled("oldtraceroute")) {
+      _batfish.processFlows(flows, false);
+      FlowHistory flowHistory = _batfish.getHistory();
+      Multiset<Row> rows = flowHistoryToRows(flowHistory);
+      TableAnswerElement table = new TableAnswerElement(createMetadata(false));
+      table.postProcessAnswer(_question, rows);
+      return table;
+    } else {
+      SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata());
+      TracerouteAnswerer.flowTracesToRows(flowTraces, Integer.MAX_VALUE)
+          .forEach(tableAnswer::addRow);
+      return tableAnswer;
+    }
   }
 
   /**
