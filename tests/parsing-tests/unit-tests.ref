@@ -117,6 +117,9 @@
         "asa_ssh" : [
           "configs/asa_ssh"
         ],
+        "aws_configs" : [
+          "input/aws_configs/NatGateways.json"
+        ],
         "banner" : [
           "configs/banner"
         ],

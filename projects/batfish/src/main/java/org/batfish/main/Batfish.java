@@ -2068,6 +2068,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileText = configFile.getValue();
       String regionName = path.getName(pathLength - 2).toString(); // parent dir name
       String fileName = path.subpath(pathLength - 3, pathLength).toString();
+      pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
       JSONObject jsonObj = null;
       try {
