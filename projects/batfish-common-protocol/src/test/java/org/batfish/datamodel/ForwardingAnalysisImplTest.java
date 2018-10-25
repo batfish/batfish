@@ -761,7 +761,6 @@ public class ForwardingAnalysisImplTest {
                                 ImmutableMap.of(
                                     Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(otherRoute)))))
                     .build()));
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
         ForwardingAnalysisImpl.computeNullRoutedIps(computeMatchingIps(ribs), fibs);
 
@@ -848,7 +847,6 @@ public class ForwardingAnalysisImplTest {
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
     MockRib rib =
         MockRib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
 
     /* Resulting IP space should permit matching IPs */
     assertThat(
