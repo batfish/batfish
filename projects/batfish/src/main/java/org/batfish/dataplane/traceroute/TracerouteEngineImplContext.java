@@ -462,6 +462,8 @@ public class TracerouteEngineImplContext {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
+      Hop loopHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
+      transmissionContext._hopsSoFar.add(loopHop);
       Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
       transmissionContext._flowTraces.add(trace);
       return;
@@ -482,7 +484,6 @@ public class TracerouteEngineImplContext {
                 .setDetail(new InboundStepDetail())
                 .build();
         steps.add(inboundStep);
-
         Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(acceptedHop);
         Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
