@@ -19,7 +19,12 @@ public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
 
   @Override
   public BDD visit(IpSpace ipSpace) {
-    return _cache.computeIfAbsent(ipSpace, super::visit);
+    BDD bdd = _cache.get(ipSpace);
+    if (bdd == null) {
+      bdd = super.visit(ipSpace);
+      _cache.put(ipSpace, bdd);
+    }
+    return bdd;
   }
 
   @VisibleForTesting
