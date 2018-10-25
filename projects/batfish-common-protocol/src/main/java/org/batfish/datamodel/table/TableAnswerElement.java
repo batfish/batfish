@@ -1,5 +1,7 @@
 package org.batfish.datamodel.table;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,6 +49,11 @@ public final class TableAnswerElement extends AnswerElement {
    * @param row The row to add
    */
   public @Nonnull TableAnswerElement addRow(Row row) {
+    checkArgument(
+        row.getColumnNames().equals(_tableMetadata.toColumnMap().keySet()),
+        "Row columns %s do not match metadata columns metadata %s",
+        row.getColumnNames(),
+        _tableMetadata.toColumnMap().keySet());
     _rows.add(row);
     _rowsList.add(row);
     return this;
@@ -58,6 +65,11 @@ public final class TableAnswerElement extends AnswerElement {
    * @param row The row to add
    */
   public @Nonnull TableAnswerElement addExcludedRow(Row row, String exclusionName) {
+    checkArgument(
+        row.getColumnNames().equals(_tableMetadata.toColumnMap().keySet()),
+        "Row columns %s do not match metadata columns metadata %s",
+        row.getColumnNames(),
+        row);
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
