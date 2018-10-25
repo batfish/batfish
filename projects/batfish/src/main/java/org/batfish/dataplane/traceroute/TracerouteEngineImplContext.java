@@ -48,6 +48,8 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
+import org.batfish.datamodel.flow.OriginateStep;
+import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -390,18 +392,25 @@ public class TracerouteEngineImplContext {
               _ignoreAcls,
               currentFlow,
               aclDefinitions,
-              namedIpSpaces,
-              _dataPlane);
-      if (enterIfaceStep != null) {
-        steps.add(enterIfaceStep);
-        if (enterIfaceStep.getAction() == StepAction.DENIED) {
-          Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
-          transmissionContext._hopsSoFar.add(deniedHop);
-          Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
-          transmissionContext._flowTraces.add(trace);
-          return;
-        }
+              namedIpSpaces);
+      steps.add(enterIfaceStep);
+      if (enterIfaceStep.getAction() == StepAction.DENIED) {
+        Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
+        transmissionContext._hopsSoFar.add(deniedHop);
+        Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
+        transmissionContext._flowTraces.add(trace);
+        return;
       }
+    } else if (currentFlow.getIngressVrf() != null) {
+      // if inputIfaceName is not set for this hop, this is the originating step
+      steps.add(
+          OriginateStep.builder()
+              .setDetail(
+                  OriginateStepDetail.builder()
+                      .setOriginatingVrf(currentFlow.getIngressVrf())
+                      .build())
+              .setAction(StepAction.ORIGINATED)
+              .build());
     }
 
     // Figure out where the trace came from..
