@@ -1,6 +1,7 @@
 package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -146,6 +147,15 @@ public class RowTest {
       // we should be able to put null
       Row row = builder.put("col", null).build();
       assertThat(row.get("col", Schema.INTEGER), Matchers.is(nullValue()));
+    }
+
+    @Test
+    public void fillInEmptyColumnsOnBuild() {
+      Row row =
+          Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")))
+              .build();
+      assertThat(row.getColumnNames(), contains("col"));
+      assertThat(row.hasNonNull("col"), equalTo(false));
     }
   }
 
