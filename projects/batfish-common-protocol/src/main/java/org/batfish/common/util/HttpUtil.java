@@ -6,7 +6,7 @@ import javax.ws.rs.BadRequestException;
 public final class HttpUtil {
 
   /**
-   * If {@code precondition} is {code false}, throw {@link BadRequestException} with message
+   * If {@code precondition} is {@code false}, throw {@link BadRequestException} with message
    * constructed from {@code format} string and {@code args}.
    */
   public static void checkClientArgument(
