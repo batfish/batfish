@@ -25,7 +25,7 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
 # validate multipathConsistency
-test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"

@@ -45,6 +45,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -229,7 +230,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
-  Set<Flow> bddMultipathConsistency();
+  Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters);
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
