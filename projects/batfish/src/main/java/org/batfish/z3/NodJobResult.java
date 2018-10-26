@@ -1,6 +1,5 @@
 package org.batfish.z3;
 
-import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
@@ -12,11 +11,6 @@ public class NodJobResult extends BatfishJobResult<Set<Flow>, NodAnswerElement> 
 
   /** Elapsed time in milliseconds */
   private Set<Flow> _flows;
-
-  public NodJobResult(long startTime, BatfishLoggerHistory history) {
-    super(System.currentTimeMillis() - startTime, history);
-    _flows = Collections.emptySet();
-  }
 
   public NodJobResult(long startTime, BatfishLoggerHistory history, Set<Flow> flows) {
     super(System.currentTimeMillis() - startTime, history);
