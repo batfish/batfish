@@ -184,6 +184,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -3867,20 +3868,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency() {
+  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     BDDPacket pkt = new BDDPacket();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt);
-    IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
-    Set<String> finalNodes = loadConfigurations().keySet();
+    IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
+    Set<String> finalNodes = parameters.getFinalNodes();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
-    Set<String> forbiddenTransitNodes = ImmutableSet.of();
-    Set<String> requiredTransitNodes = ImmutableSet.of();
+    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Map<IngressLocation, BDD> acceptedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(

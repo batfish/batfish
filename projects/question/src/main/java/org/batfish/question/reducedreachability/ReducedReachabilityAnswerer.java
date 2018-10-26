@@ -2,13 +2,13 @@ package org.batfish.question.reducedreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -30,16 +30,11 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.NoNodesNodeSpecifier;
-import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
@@ -70,7 +65,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
         new FlexibleInferFromLocationIpSpaceSpecifierFactory();
     SpecifierContext ctxt = _batfish.specifierContext();
 
-    PathConstraints pathConstraints = resolvePathConstraints(question.getPathConstraints());
+    PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
     Set<String> requiredTransitNodes = pathConstraints.getTransitLocations().resolve(ctxt);
     Set<Location> startLocations = pathConstraints.getStartLocation().resolve(ctxt);
@@ -125,30 +120,6 @@ public class ReducedReachabilityAnswerer extends Answerer {
     TableAnswerElement table = new TableAnswerElement(createMetadata());
     table.postProcessAnswer(_question, rows);
     return table;
-  }
-
-  private PathConstraints resolvePathConstraints(PathConstraintsInput pathConstraints) {
-    FlexibleNodeSpecifierFactory nodeSpecifierFactory = new FlexibleNodeSpecifierFactory();
-    /* FlexibleNodeSpecifierFactory defaults to all nodes. We want a different default for transit
-     * nodes.
-     */
-    NodeSpecifier forbiddenTransitNodes =
-        Optional.ofNullable(pathConstraints.getForbiddenLocations())
-            .map(nodeSpecifierFactory::buildNodeSpecifier)
-            .orElse(NoNodesNodeSpecifier.INSTANCE);
-    NodeSpecifier requiredTransitNodes =
-        Optional.ofNullable(pathConstraints.getForbiddenLocations())
-            .map(nodeSpecifierFactory::buildNodeSpecifier)
-            .orElse(NoNodesNodeSpecifier.INSTANCE);
-    nodeSpecifierFactory.buildNodeSpecifier(pathConstraints.getTransitLocations());
-    return PathConstraints.builder()
-        .withStartLocation(
-            new FlexibleLocationSpecifierFactory()
-                .buildLocationSpecifier(pathConstraints.getStartLocation()))
-        .withEndLocation(nodeSpecifierFactory.buildNodeSpecifier(pathConstraints.getEndLocation()))
-        .avoid(forbiddenTransitNodes)
-        .through(requiredTransitNodes)
-        .build();
   }
 
   private static TableMetadata createMetadata() {
