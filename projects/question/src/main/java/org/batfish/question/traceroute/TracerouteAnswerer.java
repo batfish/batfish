@@ -193,9 +193,21 @@ public final class TracerouteAnswerer extends Answerer {
                   false,
                   true),
               new ColumnMetadata(
+                  TableDiff.baseColumnName(COL_TRACE_COUNT),
+                  Schema.INTEGER,
+                  "The total number traces in the BASE snapshot",
+                  false,
+                  true),
+              new ColumnMetadata(
                   TableDiff.deltaColumnName(COL_TRACES),
                   Schema.set(Schema.TRACE),
                   "The traces in the DELTA snapshot",
+                  false,
+                  true),
+              new ColumnMetadata(
+                  TableDiff.deltaColumnName(COL_TRACE_COUNT),
+                  Schema.INTEGER,
+                  "The total number traces in the DELTA snapshot",
                   false,
                   true));
     } else {
@@ -297,8 +309,12 @@ public final class TracerouteAnswerer extends Answerer {
               flow,
               TableDiff.baseColumnName(COL_TRACES),
               baseFlowTraces.get(flow),
+              TableDiff.baseColumnName(COL_TRACE_COUNT),
+              baseFlowTraces.get(flow).size(),
               TableDiff.deltaColumnName(COL_TRACES),
-              deltaFlowTraces.get(flow)));
+              deltaFlowTraces.get(flow),
+              TableDiff.deltaColumnName(COL_TRACE_COUNT),
+              deltaFlowTraces.get(flow).size()));
     }
     return rows;
   }
