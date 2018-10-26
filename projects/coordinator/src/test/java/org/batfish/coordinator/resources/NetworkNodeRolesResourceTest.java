@@ -4,6 +4,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.resources.NetworkNodeRolesResource.noDuplicateDimensions;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -194,6 +195,17 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON));
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testPutNodeRolesNull() throws IOException {
+    String network = "someContainer";
+    Main.getWorkMgr().initNetwork(network, null);
+    Response response =
+        getNodeRolesTarget(network).put(Entity.entity("", MediaType.APPLICATION_JSON));
+
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(response.readEntity(String.class), containsString("may not be null"));
   }
 
   @Test

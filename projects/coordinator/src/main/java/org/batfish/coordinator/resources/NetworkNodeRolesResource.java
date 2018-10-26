@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -99,7 +100,7 @@ public final class NetworkNodeRolesResource {
 
   @Consumes(MediaType.APPLICATION_JSON)
   @PUT
-  public Response putNodeRoles(NodeRolesDataBean nodeRolesDataBean) throws IOException {
+  public Response putNodeRoles(@NotNull NodeRolesDataBean nodeRolesDataBean) throws IOException {
     checkArgument(
         noDuplicateDimensions(nodeRolesDataBean),
         "Supplied node roles contains duplicate dimensions");
