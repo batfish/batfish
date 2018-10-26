@@ -239,6 +239,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 
+  Set<Flow> bddLoopDetection();
+
   Set<Flow> bddMultipathConsistency();
 
   @Nullable

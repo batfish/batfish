@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.z3.IngressLocation;
@@ -87,10 +88,15 @@ public class BDDReachabilityAnalysis {
 
   private Map<StateExpr, BDD> computeReverseReachableStates() {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
-    Set<StateExpr> dirty = new HashSet<>();
-
     reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
-    dirty.add(Query.INSTANCE);
+
+    backwardFixpoint(reverseReachableStates);
+
+    return ImmutableMap.copyOf(reverseReachableStates);
+  }
+
+  private void backwardFixpoint(Map<StateExpr, BDD> reverseReachableStates) {
+    Set<StateExpr> dirty = reverseReachableStates.keySet();
 
     while (!dirty.isEmpty()) {
       Set<StateExpr> newDirty = new HashSet<>();
@@ -123,42 +129,53 @@ public class BDDReachabilityAnalysis {
 
       dirty = newDirty;
     }
-
-    return ImmutableMap.copyOf(reverseReachableStates);
   }
 
-  public void detectLoops() {
+  private Map<StateExpr, BDD> reachableInNRounds(int numRounds) {
     BDD one = _bddPacket.getFactory().one();
-    BDD zero = _bddPacket.getFactory().zero();
+
+    // All ingress locations are reachable in 0 rounds.
     Map<StateExpr, BDD> reachableInNRounds =
         toImmutableMap(_ingressLocationStates, Function.identity(), k -> one);
 
-    long numEdges = true ? 2000 : _edges.values().stream().mapToLong(m -> m.values().size()).sum();
-    long time = System.currentTimeMillis();
-    for (int round = 0; !reachableInNRounds.isEmpty() && round < numEdges; round++) {
+    for (int round = 0; !reachableInNRounds.isEmpty() && round < numRounds; round++) {
       reachableInNRounds = propagate(reachableInNRounds);
     }
-    time = System.currentTimeMillis() - time;
+    return reachableInNRounds;
+  }
 
-    if (!reachableInNRounds.isEmpty()) {
-      /*
-       * Loop! At least one of the entries in reachableInNRounds is part of a loop. The others are
-       * offshoots of a loop. We want to distinguish between them. One way is to do DFS from each
-       * to try to find itself. Another is to
-       */
-      long confirmTime = System.currentTimeMillis();
-      Map<StateExpr, BDD> confirmedLoops =
-          reachableInNRounds
-              .entrySet()
-              .stream()
-              // .filter(entry -> confirmLoop(entry.getKey(), entry.getValue(), numEdges))
-              .filter(entry -> confirmLoopFW(entry.getKey(), entry.getValue()))
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-      confirmTime = System.currentTimeMillis() - confirmTime;
-      return;
-    } else {
-      return;
-    }
+  /*
+   * Detect infinite routing loops in the network.
+   */
+  public Map<IngressLocation, BDD> detectLoops() {
+    /*
+     * Run enough rounds to exceed the max TTL (255). It takes at 5 iterations to go between hops.
+     * Since we don't model TTL, all packets on loops will loop forever. But most paths will stop
+     * long before numRounds. What's left will be a few candidate location/headerspace pairs that
+     * may be on loops. In practice this is most likely way more iterations than necessary.
+     */
+    int numRounds = 256 * 5;
+    Map<StateExpr, BDD> reachableInNRounds = reachableInNRounds(numRounds);
+
+    /*
+     * Identify which of the candidates are actually on loops
+     */
+    Map<StateExpr, BDD> loopBDDs =
+        reachableInNRounds
+            .entrySet()
+            .stream()
+            .filter(entry -> confirmLoop(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+    /*
+     * Run backward to find the ingress locations/headerspaces that lead to loops.
+     */
+    backwardFixpoint(loopBDDs);
+
+    /*
+     * Extract the ingress location BDDs.
+     */
+    return getIngressLocationBDDs(loopBDDs);
   }
 
   public Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
@@ -179,41 +196,16 @@ public class BDDReachabilityAnalysis {
     return newReachableInNRounds;
   }
 
-  private boolean confirmLoop(StateExpr stateExpr, BDD bdd, long rounds) {
-    Map<StateExpr, BDD> bdds = propagate(ImmutableMap.of(stateExpr, bdd));
-
-    BDD zero = _bddPacket.getFactory().zero();
-    for (int i = 0; i < rounds; i++) {
-      if (bdds.isEmpty()) {
-        return false;
-      }
-      bdds = propagate(bdds);
-      BDD bdd1 = bdds.getOrDefault(stateExpr, zero);
-      if (!bdd1.and(bdd).isZero()) {
-        // non-empty intersection, so there's a loop.
-        // if bdd1 is contained in bdd, then it's an infinite loop
-        // if it's a partial intersection, it could be a non-infinite loop (though we don't
-        // currently support the transformations necessary to make those).
-        return true;
-      }
-    }
-
-    return false;
-    // throw new BatfishException("Shouldn't happen!");
-  }
-
   /**
    * Run Floyd-Warshall from one step past the initial state. Each round, check if the initial state
    * has been reached yet.
    */
-  private boolean confirmLoopFW(StateExpr stateExpr, BDD bdd) {
+  private boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
     Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
     Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
 
-    int rounds = 0;
     BDD zero = _bddPacket.getFactory().zero();
     while (!dirty.isEmpty()) {
-      rounds += 1;
       Set<StateExpr> newDirty = new HashSet<>();
 
       dirty.forEach(
@@ -257,8 +249,13 @@ public class BDDReachabilityAnalysis {
   }
 
   public Map<IngressLocation, BDD> getIngressLocationReachableBDDs() {
-    BDD zero = _bddPacket.getFactory().zero();
     Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates();
+    return getIngressLocationBDDs(reverseReachableStates);
+  }
+
+  private Map<IngressLocation, BDD> getIngressLocationBDDs(
+      Map<StateExpr, BDD> reverseReachableStates) {
+    BDD zero = _bddPacket.getFactory().zero();
     return _ingressLocationStates
         .stream()
         .collect(
