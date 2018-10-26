@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -289,32 +290,6 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testRemoveFromSerializedListNoSubtraction() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
-    Path serializedListPath = serializedList.toPath();
-
-    NodeInterfacePair baseInterface1 = new NodeInterfacePair("n1", "iface1");
-
-    // Write base serialized list
-    List<NodeInterfacePair> interfaces = new ArrayList<>();
-    interfaces.add(baseInterface1);
-    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
-
-    removeFromSerializedList(
-        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
-
-    // Confirm nothing changes with no subtraction
-    MatcherAssert.assertThat(
-        BatfishObjectMapper.mapper()
-            .readValue(
-                CommonUtil.readFile(serializedListPath),
-                new TypeReference<List<NodeInterfacePair>>() {}),
-        contains(baseInterface1));
-  }
-
-  @Test
   public void testRemoveFromSerializedListBadSubtraction() throws IOException {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
@@ -342,6 +317,101 @@ public final class WorkMgrTest {
         serializedListPath,
         ImmutableList.of(subtraction1, subtraction2),
         new TypeReference<List<NodeInterfacePair>>() {});
+  }
+
+  @Test
+  public void testRemoveFromSerializedListBadSubtractionMissingBaseList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    Files.delete(serializedListPath);
+
+    NodeInterfacePair subtraction = new NodeInterfacePair("n2", "iface2");
+
+    // Removing non-existent element should throw
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Cannot remove element(s) from non-existent blacklist.");
+    removeFromSerializedList(
+        serializedListPath,
+        ImmutableList.of(subtraction),
+        new TypeReference<List<NodeInterfacePair>>() {});
+  }
+
+  @Test
+  public void testRemoveFromSerializedListEmptyBaseList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    // Write empty base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    removeFromSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm no issue if base list didn't exist
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        iterableWithSize(0));
+  }
+
+  @Test
+  public void testRemoveFromSerializedListMissingBaseList() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+    Files.delete(serializedListPath);
+
+    // Remove nothing from a non-existent list
+    removeFromSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm no issue if base list didn't exist
+    assertThat(serializedList, not(anExistingFile()));
+  }
+
+  @Test
+  public void testRemoveFromSerializedListNoSubtraction() throws IOException {
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    File serializedList = tmp.newFile();
+    Path serializedListPath = serializedList.toPath();
+
+    NodeInterfacePair baseInterface1 = new NodeInterfacePair("n1", "iface1");
+
+    // Write base serialized list
+    List<NodeInterfacePair> interfaces = new ArrayList<>();
+    interfaces.add(baseInterface1);
+    writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
+
+    removeFromSerializedList(
+        serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm nothing changes with no subtraction
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        contains(baseInterface1));
+
+    removeFromSerializedList(
+        serializedListPath, null, new TypeReference<List<NodeInterfacePair>>() {});
+
+    // Confirm nothing changes with null subtraction
+    MatcherAssert.assertThat(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(serializedListPath),
+                new TypeReference<List<NodeInterfacePair>>() {}),
+        contains(baseInterface1));
   }
 
   @Test
@@ -587,7 +657,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshot() throws IOException {
+  public void testForkSnapshot() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -604,7 +674,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotBlacklists() throws IOException {
+  public void testForkSnapshotBlacklists() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName1 = "snapshotNew1";
@@ -650,7 +720,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotDuplicateName() throws IOException {
+  public void testForkSnapshotDuplicateName() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -669,7 +739,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotFileUpload() throws IOException {
+  public void testForkSnapshotFileUpload() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -696,7 +766,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotFileUploadOverwrite() throws IOException {
+  public void testForkSnapshotFileUploadOverwrite() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -742,7 +812,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotMissingBaseSnapshot() throws IOException {
+  public void testForkSnapshotMissingBaseSnapshot() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -760,7 +830,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotMissingNetwork() throws IOException {
+  public void testForkSnapshotMissingNetwork() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";

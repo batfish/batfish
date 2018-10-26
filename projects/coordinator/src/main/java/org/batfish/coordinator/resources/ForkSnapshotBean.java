@@ -19,56 +19,54 @@ public class ForkSnapshotBean {
 
   /** Name of the snapshot to copy */
   @JsonProperty(PROP_SNAPSHOT_BASE)
-  public String baseSnapshot;
+  public final String baseSnapshot;
 
   /** Name of the snapshot to create */
   @JsonProperty(PROP_SNAPSHOT_NEW)
-  public String newSnapshot;
+  public final String newSnapshot;
 
   /** List of interfaces to deactivate */
   @JsonProperty(PROP_DEACTIVATE_INTERFACES)
-  public List<NodeInterfacePair> deactivateInterfaces;
+  public final List<NodeInterfacePair> deactivateInterfaces;
 
   /** List of links to deactivate */
   @JsonProperty(PROP_DEACTIVATE_LINKS)
-  public List<Edge> deactivateLinks;
+  public final List<Edge> deactivateLinks;
 
   /** List of names of nodes to deactivate */
   @JsonProperty(PROP_DEACTIVATE_NODES)
-  public List<String> deactivateNodes;
+  public final List<String> deactivateNodes;
 
   /** List of interfaces to restore (undo deactivation) */
   @JsonProperty(PROP_RESTORE_INTERFACES)
-  public List<NodeInterfacePair> restoreInterfaces;
+  public final List<NodeInterfacePair> restoreInterfaces;
 
   /** List of links to restore (undo deactivation) */
   @JsonProperty(PROP_RESTORE_LINKS)
-  public List<Edge> restoreLinks;
+  public final List<Edge> restoreLinks;
 
   /** List of names of nodes to restore (undo deactivation) */
   @JsonProperty(PROP_RESTORE_NODES)
-  public List<String> restoreNodes;
+  public final List<String> restoreNodes;
 
   /**
    * Zip file, containing files to write to new snapshot input dir (same format as initial
    * snapshot-upload-zips)
    */
   @JsonProperty(PROP_ZIP_FILE)
-  public byte[] zipFile;
+  public final byte[] zipFile;
 
   @JsonCreator
-  private ForkSnapshotBean() {}
-
   public ForkSnapshotBean(
-      String baseSnapshotName,
-      String newSnapshotName,
-      List<NodeInterfacePair> deactivateInterfacesList,
-      List<Edge> deactivateLinksList,
-      List<String> deactivateNodesList,
-      List<NodeInterfacePair> restoreInterfacesList,
-      List<Edge> restoreLinksList,
-      List<String> restoreNodesList,
-      byte[] file) {
+      @JsonProperty(PROP_SNAPSHOT_BASE) String baseSnapshotName,
+      @JsonProperty(PROP_SNAPSHOT_NEW) String newSnapshotName,
+      @JsonProperty(PROP_DEACTIVATE_INTERFACES) List<NodeInterfacePair> deactivateInterfacesList,
+      @JsonProperty(PROP_DEACTIVATE_LINKS) List<Edge> deactivateLinksList,
+      @JsonProperty(PROP_DEACTIVATE_NODES) List<String> deactivateNodesList,
+      @JsonProperty(PROP_RESTORE_INTERFACES) List<NodeInterfacePair> restoreInterfacesList,
+      @JsonProperty(PROP_RESTORE_LINKS) List<Edge> restoreLinksList,
+      @JsonProperty(PROP_RESTORE_NODES) List<String> restoreNodesList,
+      @JsonProperty(PROP_ZIP_FILE) byte[] file) {
     baseSnapshot = baseSnapshotName;
     newSnapshot = newSnapshotName;
     deactivateInterfaces = deactivateInterfacesList;

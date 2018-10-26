@@ -34,7 +34,6 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1541,9 +1540,13 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param networkName Name of the network containing the original snapshot
    * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
+   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot
+   *     or if item to restore had not been deactivated.
+   * @throws IOException If the base network or snapshot are missing or if there is an error reading
+   *     or writing snapshot files.
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
-      throws IOException {
+      throws IllegalArgumentException, IOException {
     Path networkDir = getdirNetwork(networkName);
     NetworkId networkId = _idManager.getNetworkId(networkName);
 
@@ -1643,8 +1646,8 @@ public class WorkMgr extends AbstractCoordinator {
         networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
   }
 
-  // Visible for testing
-  /** Helper method to add the specified collection to the serialized list at the specified path. */
+  @VisibleForTesting
+  /* Helper method to add the specified collection to the serialized list at the specified path. */
   static <T> void addToSerializedList(
       Path serializedObjectPath, @Nullable Collection<T> addition, TypeReference<List<T>> type)
       throws IOException {
@@ -1663,8 +1666,8 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 
-  // Visible for testing
-  /**
+  @VisibleForTesting
+  /*
    * Helper method to remove the specified collection from the serialized list at the specified
    * path.
    */
@@ -1680,19 +1683,20 @@ public class WorkMgr extends AbstractCoordinator {
       baseList =
           BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(serializedObjectPath), type);
     } else {
-      baseList = ImmutableList.of();
+      throw new IllegalArgumentException("Cannot remove element(s) from non-existent blacklist.");
     }
 
-    if (!baseList.containsAll(subtraction)) {
-      ArrayList<T> missing = new ArrayList<>(subtraction);
-      missing.removeAll(baseList);
-      throw new IllegalArgumentException(
-          String.format(
-              "Existing blacklist does not contain element(s) specified for removal: '%s'",
-              missing));
-    } else {
-      baseList.removeAll(subtraction);
-    }
+    List<T> missing =
+        subtraction
+            .stream()
+            .filter(s -> !baseList.contains(s))
+            .collect(ImmutableList.toImmutableList());
+    checkArgument(
+        missing.isEmpty(),
+        "Existing blacklist does not contain element(s) specified for removal: '%s'",
+        missing);
+
+    baseList.removeAll(subtraction);
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 

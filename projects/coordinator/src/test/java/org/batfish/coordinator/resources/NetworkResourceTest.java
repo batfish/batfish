@@ -8,7 +8,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -56,7 +55,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testForkSnapshot() throws IOException {
+  public void testForkSnapshot() throws Exception {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
@@ -93,34 +92,16 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testForkSnapshotBadRequest() throws IOException {
+  public void testForkSnapshotBadRequest() throws Exception {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
     Main.getWorkMgr().initNetwork(networkName, null);
 
     ForkSnapshotBean forkSnapshotBeanNoName =
-        new ForkSnapshotBean(
-            baseSnapshotName,
-            null,
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            null);
+        new ForkSnapshotBean(baseSnapshotName, null, null, null, null, null, null, null, null);
     ForkSnapshotBean forkSnapshotBeanNoBaseName =
-        new ForkSnapshotBean(
-            null,
-            snapshotName,
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            null);
+        new ForkSnapshotBean(null, snapshotName, null, null, null, null, null, null, null);
 
     Response response =
         getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
