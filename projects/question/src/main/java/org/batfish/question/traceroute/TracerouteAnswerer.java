@@ -111,7 +111,7 @@ public final class TracerouteAnswerer extends Answerer {
       SortedMap<Flow, List<Trace>> flowTraces =
           _batfish.buildFlows(flows, question.getIgnoreAcls());
       rows = flowTracesToRows(flowTraces, question.getMaxTraces());
-      table = new TableAnswerElement(metadata());
+      table = new TableAnswerElement(metadata(false));
     }
     table.postProcessAnswer(_question, rows);
     return table;
@@ -119,22 +119,34 @@ public final class TracerouteAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
+    boolean ignoreAcls = ((TracerouteQuestion) _question).getIgnoreAcls();
     Set<Flow> flows = getFlows(_batfish.getDifferentialFlowTag());
-
-    _batfish.pushBaseSnapshot();
-    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    _batfish.popSnapshot();
-
-    _batfish.pushDeltaSnapshot();
-    _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
-    _batfish.popSnapshot();
-
-    TableAnswerElement table;
     Multiset<Row> rows;
-    FlowHistory flowHistory = _batfish.getHistory();
-    rows = flowHistoryToRows(flowHistory, true);
-    table = new TableAnswerElement(createMetadata(true));
+    TableAnswerElement table;
+    if (_batfish.debugFlagEnabled("oldtraceroute")) {
+      _batfish.pushBaseSnapshot();
+      _batfish.processFlows(flows, ignoreAcls);
+      _batfish.popSnapshot();
 
+      _batfish.pushDeltaSnapshot();
+      _batfish.processFlows(flows, ignoreAcls);
+      _batfish.popSnapshot();
+
+      FlowHistory flowHistory = _batfish.getHistory();
+      rows = flowHistoryToRows(flowHistory, true);
+      table = new TableAnswerElement(createMetadata(true));
+    } else {
+      _batfish.pushBaseSnapshot();
+      Map<Flow, List<Trace>> baseFlowTraces = _batfish.buildFlows(flows, ignoreAcls);
+      _batfish.popSnapshot();
+
+      _batfish.pushDeltaSnapshot();
+      Map<Flow, List<Trace>> deltaFlowTraces = _batfish.buildFlows(flows, ignoreAcls);
+      _batfish.popSnapshot();
+
+      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces);
+      table = new TableAnswerElement(metadata(true));
+    }
     table.postProcessAnswer(_question, rows);
     return table;
   }
@@ -168,20 +180,37 @@ public final class TracerouteAnswerer extends Answerer {
   }
 
   /** Create metadata for the new traceroute v2 answer */
-  public static TableMetadata metadata() {
+  public static TableMetadata metadata(boolean differential) {
     List<ColumnMetadata> columnMetadata;
-    columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-            new ColumnMetadata(
-                COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true),
-            new ColumnMetadata(
-                COL_TRACE_COUNT,
-                Schema.INTEGER,
-                "The total number traces for this flow",
-                false,
-                true));
-
+    if (differential) {
+      columnMetadata =
+          ImmutableList.of(
+              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+              new ColumnMetadata(
+                  TableDiff.baseColumnName(COL_TRACES),
+                  Schema.set(Schema.TRACE),
+                  "The traces in the BASE snapshot",
+                  false,
+                  true),
+              new ColumnMetadata(
+                  TableDiff.deltaColumnName(COL_TRACES),
+                  Schema.set(Schema.TRACE),
+                  "The traces in the DELTA snapshot",
+                  false,
+                  true));
+    } else {
+      columnMetadata =
+          ImmutableList.of(
+              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
+              new ColumnMetadata(
+                  COL_TRACES, Schema.set(Schema.TRACE), "The traces for this flow", false, true),
+              new ColumnMetadata(
+                  COL_TRACE_COUNT,
+                  Schema.INTEGER,
+                  "The total number traces for this flow",
+                  false,
+                  true));
+    }
     return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
   }
 
@@ -250,6 +279,26 @@ public final class TracerouteAnswerer extends Answerer {
               prunedTraces,
               COL_TRACE_COUNT,
               traces.size()));
+    }
+    return rows;
+  }
+
+  @VisibleForTesting
+  static Multiset<Row> diffFlowTracesToRows(
+      Map<Flow, List<Trace>> baseFlowTraces, Map<Flow, List<Trace>> deltaFlowTraces) {
+    Multiset<Row> rows = LinkedHashMultiset.create();
+    checkArgument(
+        baseFlowTraces.keySet().equals(deltaFlowTraces.keySet()),
+        "Base and delta flow traces should have same flows");
+    for (Flow flow : baseFlowTraces.keySet()) {
+      rows.add(
+          Row.of(
+              COL_FLOW,
+              flow,
+              TableDiff.baseColumnName(COL_TRACES),
+              baseFlowTraces.get(flow),
+              TableDiff.deltaColumnName(COL_TRACES),
+              deltaFlowTraces.get(flow)));
     }
     return rows;
   }

@@ -41,7 +41,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
       return table;
     } else {
       SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
-      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata());
+      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
       TracerouteAnswerer.flowTracesToRows(flowTraces, Integer.MAX_VALUE)
           .forEach(tableAnswer::addRow);
       return tableAnswer;
