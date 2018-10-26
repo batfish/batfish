@@ -1,0 +1,15 @@
+{
+  "class" : "org.batfish.question.loop.DetectLoopsQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Detect forwarding loops.",
+    "instanceName" : "qname",
+    "longDescription" : "Finds forwarding loops",
+    "tags" : [
+      "dataPlane",
+      "loop",
+      "reachability"
+    ]
+  }
+}

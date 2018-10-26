@@ -1,5 +1,5 @@
 {
-  "class": "org.batfish.question.loop.DetectLoops",
+  "class": "org.batfish.question.loop.DetectLoopsQuestion",
   "differential": false,
   "instance": {
     "description": "Detect forwarding loops.",
