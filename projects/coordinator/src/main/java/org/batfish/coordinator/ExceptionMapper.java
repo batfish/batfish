@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
+public final class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
   @Override
   public Response toResponse(Exception exception) {
     if (exception instanceof WebApplicationException) {

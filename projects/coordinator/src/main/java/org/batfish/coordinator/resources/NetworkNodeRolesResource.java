@@ -1,6 +1,6 @@
 package org.batfish.coordinator.resources;
 
-import static org.batfish.common.util.CommonUtil.checkClientArgument;
+import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
