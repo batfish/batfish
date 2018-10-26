@@ -52,7 +52,6 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 
 public class Main {
 
@@ -216,8 +215,7 @@ public class Main {
         new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
             .register(MultiPartFeature.class)
-            .register(CrossDomainFilter.class)
-            .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+            .register(CrossDomainFilter.class);
     HttpServer server;
     if (_settings.getSslPoolDisable()) {
       URI poolMgrUri =
@@ -270,8 +268,7 @@ public class Main {
     ResourceConfig rcWork =
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
-            .register(CrossDomainFilter.class)
-            .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+            .register(CrossDomainFilter.class);
     if (_settings.getTracingEnable()) {
       _logger.infof("Registering feature %s", ServerTracingDynamicFeature.class.getSimpleName());
       rcWork.register(ServerTracingDynamicFeature.class);
@@ -280,6 +277,7 @@ public class Main {
       _logger.infof("Registering feature %s", feature.getSimpleName());
       rcWork.register(feature);
     }
+
     HttpServer server;
     if (_settings.getSslWorkDisable()) {
       URI workMgrUri =
