@@ -1,8 +1,12 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -57,16 +61,42 @@ public class ForkSnapshotBean {
   public final byte[] zipFile;
 
   @JsonCreator
+  private static ForkSnapshotBean create(
+      @Nullable @JsonProperty(PROP_SNAPSHOT_BASE) String baseSnapshotName,
+      @Nullable @JsonProperty(PROP_SNAPSHOT_NEW) String newSnapshotName,
+      @Nullable @JsonProperty(PROP_DEACTIVATE_INTERFACES)
+          List<NodeInterfacePair> deactivateInterfacesList,
+      @Nullable @JsonProperty(PROP_DEACTIVATE_LINKS) List<Edge> deactivateLinksList,
+      @Nullable @JsonProperty(PROP_DEACTIVATE_NODES) List<String> deactivateNodesList,
+      @Nullable @JsonProperty(PROP_RESTORE_INTERFACES)
+          List<NodeInterfacePair> restoreInterfacesList,
+      @Nullable @JsonProperty(PROP_RESTORE_LINKS) List<Edge> restoreLinksList,
+      @Nullable @JsonProperty(PROP_RESTORE_NODES) List<String> restoreNodesList,
+      @Nullable @JsonProperty(PROP_ZIP_FILE) byte[] file) {
+    checkArgument(baseSnapshotName != null, "Base snapshot name cannot be null");
+    checkArgument(newSnapshotName != null, "New snapshot name cannot be null");
+    return new ForkSnapshotBean(
+        baseSnapshotName,
+        newSnapshotName,
+        deactivateInterfacesList,
+        deactivateLinksList,
+        deactivateNodesList,
+        restoreInterfacesList,
+        restoreLinksList,
+        restoreNodesList,
+        file);
+  }
+
   public ForkSnapshotBean(
-      @JsonProperty(PROP_SNAPSHOT_BASE) String baseSnapshotName,
-      @JsonProperty(PROP_SNAPSHOT_NEW) String newSnapshotName,
-      @JsonProperty(PROP_DEACTIVATE_INTERFACES) List<NodeInterfacePair> deactivateInterfacesList,
-      @JsonProperty(PROP_DEACTIVATE_LINKS) List<Edge> deactivateLinksList,
-      @JsonProperty(PROP_DEACTIVATE_NODES) List<String> deactivateNodesList,
-      @JsonProperty(PROP_RESTORE_INTERFACES) List<NodeInterfacePair> restoreInterfacesList,
-      @JsonProperty(PROP_RESTORE_LINKS) List<Edge> restoreLinksList,
-      @JsonProperty(PROP_RESTORE_NODES) List<String> restoreNodesList,
-      @JsonProperty(PROP_ZIP_FILE) byte[] file) {
+      @Nonnull String baseSnapshotName,
+      @Nonnull String newSnapshotName,
+      @Nullable List<NodeInterfacePair> deactivateInterfacesList,
+      @Nullable List<Edge> deactivateLinksList,
+      @Nullable List<String> deactivateNodesList,
+      @Nullable List<NodeInterfacePair> restoreInterfacesList,
+      @Nullable List<Edge> restoreLinksList,
+      @Nullable List<String> restoreNodesList,
+      @Nullable byte[] file) {
     baseSnapshot = baseSnapshotName;
     newSnapshot = newSnapshotName;
     deactivateInterfaces = deactivateInterfacesList;

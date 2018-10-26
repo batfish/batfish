@@ -99,9 +99,9 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(networkName, null);
 
     ForkSnapshotBean forkSnapshotBeanNoName =
-        new ForkSnapshotBean(baseSnapshotName, null, null, null, null, null, null, null, null);
+        new ForkSnapshotBean(baseSnapshotName, "", null, null, null, null, null, null, null);
     ForkSnapshotBean forkSnapshotBeanNoBaseName =
-        new ForkSnapshotBean(null, snapshotName, null, null, null, null, null, null, null);
+        new ForkSnapshotBean("", snapshotName, null, null, null, null, null, null, null);
 
     Response response =
         getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
