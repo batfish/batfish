@@ -24,12 +24,9 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
         String stackTrace = Throwables.getStackTraceAsString(exception);
         return Response.fromResponse(r).entity(stackTrace).build();
       }
-    } else if (exception instanceof IllegalArgumentException) {
-      return Response.status(Status.BAD_REQUEST.getStatusCode())
-          .entity(Throwables.getStackTraceAsString(exception))
-          .build();
     }
 
+    // INTERNAL SERVER ERROR with stack trace for all other exceptions
     String stackTrace = Throwables.getStackTraceAsString(exception);
     return Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(stackTrace).build();
   }

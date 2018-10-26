@@ -70,6 +70,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.io.FileUtils;
@@ -961,6 +962,19 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException(
           "Failed to write input stream to output file: '" + outputFile + "'", e);
+    }
+  }
+
+  public static void checkClientArgument(boolean precondition) {
+    if (!precondition) {
+      throw new BadRequestException();
+    }
+  }
+
+  public static void checkClientArgument(
+      boolean precondition, @Nonnull String format, @Nonnull Object... args) {
+    if (!precondition) {
+      throw new BadRequestException(String.format(format, args));
     }
   }
 }

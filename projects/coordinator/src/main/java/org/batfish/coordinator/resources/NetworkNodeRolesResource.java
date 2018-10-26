@@ -1,6 +1,6 @@
 package org.batfish.coordinator.resources;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CommonUtil.checkClientArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -54,13 +54,13 @@ public final class NetworkNodeRolesResource {
 
   @POST
   public Response addNodeRoleDimension(NodeRoleDimensionBean dimBean) throws IOException {
-    checkArgument(dimBean.name != null, "Node role dimension must have a name");
+    checkClientArgument(dimBean.name != null, "Node role dimension must have a name");
     NodeRolesData nodeRolesData = Main.getWorkMgr().getNetworkNodeRoles(_network);
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
     Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(dimBean.name);
-    checkArgument(!dimension.isPresent(), "Duplicate dimension specified: %s", dimBean.name);
+    checkClientArgument(!dimension.isPresent(), "Duplicate dimension specified: %s", dimBean.name);
     if (!Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder()
@@ -100,7 +100,8 @@ public final class NetworkNodeRolesResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @PUT
   public Response putNodeRoles(NodeRolesDataBean nodeRolesDataBean) throws IOException {
-    checkArgument(
+    checkClientArgument(nodeRolesDataBean != null, "Node roles must not be null");
+    checkClientArgument(
         noDuplicateDimensions(nodeRolesDataBean),
         "Supplied node roles contains duplicate dimensions");
     if (!Main.getWorkMgr().putNetworkNodeRoles(nodeRolesDataBean.toNodeRolesData(), _network)) {

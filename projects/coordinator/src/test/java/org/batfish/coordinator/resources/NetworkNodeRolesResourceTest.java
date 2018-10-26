@@ -205,7 +205,6 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         getNodeRolesTarget(network).put(Entity.entity("", MediaType.APPLICATION_JSON));
 
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(response.readEntity(String.class), containsString("may not be null"));
   }
 
   @Test
