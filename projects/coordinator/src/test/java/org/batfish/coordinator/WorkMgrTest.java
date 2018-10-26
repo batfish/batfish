@@ -67,6 +67,7 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
@@ -92,9 +93,11 @@ import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
@@ -1894,6 +1897,98 @@ public final class WorkMgrTest {
 
     // should contain initialized network
     assertThat(_manager.getNetworkNames(), contains(network));
+  }
+
+  @Test
+  public void testGetNetworkNodeRolesEmptyNoSnapshots() throws IOException {
+    String network = "network1";
+    _manager.initNetwork(network, null);
+
+    // should return empty node roles
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(NodeRolesData.builder().build()));
+  }
+
+  @Test
+  public void testGetNetworkNodeRolesEmptyNoGoodSnapshots() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String node = "node1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    NodeRolesData snapshotInferredNodeRoles =
+        NodeRolesData.builder()
+            .setRoleDimensions(
+                ImmutableSortedSet.of(
+                    NodeRoleDimension.builder()
+                        .setName("dim1")
+                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
+                        .build()))
+            .build();
+    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
+    SnapshotMetadataMgr.updateInitializationStatus(
+        networkId, snapshotId, ProcessingStatus.PARSING_FAIL, null);
+
+    // should return empty node roles since snapshot parsing failed
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(NodeRolesData.builder().build()));
+  }
+
+  @Test
+  public void testGetNetworkNodeRolesEmptyGoodSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String node = "node1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    NodeRolesData snapshotInferredNodeRoles =
+        NodeRolesData.builder()
+            .setRoleDimensions(
+                ImmutableSortedSet.of(
+                    NodeRoleDimension.builder()
+                        .setName("dim1")
+                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
+                        .build()))
+            .build();
+    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
+    SnapshotMetadataMgr.updateInitializationStatus(
+        networkId, snapshotId, ProcessingStatus.PARSED, null);
+
+    // inferred roles for first snapshot should have been set network-wide
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(snapshotInferredNodeRoles));
+  }
+
+  @Test
+  public void testGetNetworkNodeRolesUnchangedOnceSet() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String node = "node1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    NodeRolesData manualRoles = NodeRolesData.builder().build();
+    _manager.putNetworkNodeRoles(manualRoles, network);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    NodeRolesData snapshotInferredNodeRoles =
+        NodeRolesData.builder()
+            .setRoleDimensions(
+                ImmutableSortedSet.of(
+                    NodeRoleDimension.builder()
+                        .setName("dim1")
+                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
+                        .build()))
+            .build();
+    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
+    SnapshotMetadataMgr.updateInitializationStatus(
+        networkId, snapshotId, ProcessingStatus.PARSED, null);
+
+    // network node roles should not have changed since they had already been set
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(manualRoles));
   }
 
   @Test
