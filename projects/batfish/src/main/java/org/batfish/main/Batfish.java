@@ -3788,18 +3788,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bddSingleReachability(reachabilityParameters);
   }
 
-  private Synthesizer synthesizeDataPlane(
-      Map<String, Configuration> configurations, DataPlane dataPlane) {
-    return synthesizeDataPlane(
-        configurations,
-        dataPlane,
-        TRUE,
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        IpSpaceAssignment.empty(),
-        false);
-  }
-
   public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
     ResolvedReachabilityParameters params;
     try {
