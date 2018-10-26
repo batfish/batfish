@@ -1900,7 +1900,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesEmptyNoSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesNoSnapshots() throws IOException {
     String network = "network1";
     _manager.initNetwork(network, null);
 
@@ -1909,7 +1909,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesEmptyNoGoodSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesNoGoodSnapshots() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     String node = "node1";
@@ -1936,7 +1936,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesEmptyGoodSnapshot() throws IOException {
+  public void testGetNetworkNodeRolesGoodSnapshot() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     String node = "node1";
