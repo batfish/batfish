@@ -571,7 +571,7 @@ public class Graph {
    * with the same AS number.
    */
   private void initIbgpNeighbors() {
-    Map<String, Ip> ips = new HashMap<>();
+    Map<String, List<Ip>> ips = new HashMap<>();
 
     Table2<String, String, BgpActivePeerConfig> neighbors = new Table2<>();
 
@@ -583,7 +583,14 @@ public class Graph {
       if (p != null) {
         for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
           if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
-            ips.put(router, n.getLocalIp());
+            if (ips.get(router)==null){
+              List<Ip> ipset = new ArrayList<Ip>();
+              ipset.add(n.getLocalIp());
+              ips.put(router, ipset);
+            }
+            else{
+              ips.get(router).add(n.getLocalIp());
+            }
           }
         }
       }
@@ -598,11 +605,13 @@ public class Graph {
           Prefix pfx = entry2.getKey();
           BgpActivePeerConfig n = entry2.getValue();
           if (n.getLocalAs().equals(n.getRemoteAs())) {
-            for (Entry<String, Ip> ipEntry : ips.entrySet()) {
+            for (Entry<String, List<Ip>> ipEntry : ips.entrySet()) {
               String r = ipEntry.getKey();
-              Ip ip = ipEntry.getValue();
-              if (!router.equals(r) && pfx.containsIp(ip)) {
-                neighbors.put(router, r, n);
+              List<Ip> ip = ipEntry.getValue();
+              for (Ip test_Ip: ip){
+                if (!router.equals(r) && pfx.containsIp(test_Ip)){
+                  neighbors.put(router, r, n);
+                }
               }
             }
           }
