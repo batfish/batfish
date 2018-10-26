@@ -1,0 +1,15 @@
+{
+  "class": "org.batfish.question.loop.DetectLoops",
+  "differential": false,
+  "instance": {
+    "description": "Detect forwarding loops.",
+    "instanceName": "detectLoops",
+    "longDescription": "Finds forwarding loops",
+    "tags": [
+      "dataPlane",
+      "reachability",
+      "loop"
+    ],
+    "variables": {}
+  }
+}

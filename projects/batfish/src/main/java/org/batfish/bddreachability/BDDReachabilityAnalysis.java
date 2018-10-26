@@ -96,7 +96,7 @@ public class BDDReachabilityAnalysis {
   }
 
   private void backwardFixpoint(Map<StateExpr, BDD> reverseReachableStates) {
-    Set<StateExpr> dirty = reverseReachableStates.keySet();
+    Set<StateExpr> dirty = ImmutableSet.copyOf(reverseReachableStates.keySet());
 
     while (!dirty.isEmpty()) {
       Set<StateExpr> newDirty = new HashSet<>();

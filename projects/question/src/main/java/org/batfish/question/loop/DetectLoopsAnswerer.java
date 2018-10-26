@@ -8,7 +8,9 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.createMetadata;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
@@ -16,11 +18,14 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.question.traceroute.TracerouteAnswerer;
 
-public class DetectLoopsAnswerer extends Answerer {
+/** {@link Answerer} for {@link DetectLoopsQuestion}. */
+public final class DetectLoopsAnswerer extends Answerer {
   public DetectLoopsAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -28,19 +33,27 @@ public class DetectLoopsAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     Set<Flow> flows = _batfish.bddLoopDetection();
-    _batfish.processFlows(flows, false);
-    FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory);
-    TableAnswerElement table = new TableAnswerElement(createMetadata(false));
-    table.postProcessAnswer(_question, rows);
-    return table;
+    if (_batfish.debugFlagEnabled("oldtraceroute")) {
+      _batfish.processFlows(flows, false);
+      FlowHistory flowHistory = _batfish.getHistory();
+      Multiset<Row> rows = flowHistoryToRows(flowHistory);
+      TableAnswerElement table = new TableAnswerElement(createMetadata(false));
+      table.postProcessAnswer(_question, rows);
+      return table;
+    } else {
+      SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
+      TracerouteAnswerer.flowTracesToRows(flowTraces, Integer.MAX_VALUE)
+          .forEach(tableAnswer::addRow);
+      return tableAnswer;
+    }
   }
 
   /**
    * Converts {@code FlowHistoryInfo} into {@link Row}. Expects that the history object contains
    * traces for only one environment
    */
-  static Row flowHistoryToRow(FlowHistoryInfo historyInfo) {
+  private static Row flowHistoryToRow(FlowHistoryInfo historyInfo) {
     // there should be only environment in this object
     checkArgument(
         historyInfo.getPaths().size() == 1,
@@ -53,7 +66,7 @@ public class DetectLoopsAnswerer extends Answerer {
   }
 
   /** Converts a flowHistory object into a set of Rows. */
-  public static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
+  private static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
       rows.add(flowHistoryToRow(historyInfo));

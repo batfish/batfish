@@ -3875,6 +3875,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     .map(
                         fb -> {
                           IngressLocation loc = entry.getKey();
+                          fb.setTag(flowTag);
                           fb.setIngressNode(loc.getNode());
                           switch (loc.getType()) {
                             case INTERFACE_LINK:
