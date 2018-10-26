@@ -64,12 +64,12 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
         new ForkSnapshotBean(
             baseSnapshotName,
             snapshotName,
-            ImmutableList.of(),
-            ImmutableList.of(),
+            null,
+            null,
             ImmutableList.of("node1"),
-            ImmutableList.of(),
-            ImmutableList.of(),
-            ImmutableList.of(),
+            null,
+            null,
+            null,
             null);
 
     Response response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
