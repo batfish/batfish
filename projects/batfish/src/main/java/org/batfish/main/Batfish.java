@@ -119,7 +119,6 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -3886,7 +3885,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
@@ -3896,7 +3895,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
@@ -3906,7 +3905,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
