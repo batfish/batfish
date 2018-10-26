@@ -3,6 +3,7 @@ package org.batfish.symbolic;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
@@ -571,44 +573,7 @@ public class Graph {
    * with the same AS number.
    */
   private void initIbgpNeighbors() {
-    Map<String, Ip> ips = new HashMap<>();
-
-    Table2<String, String, BgpActivePeerConfig> neighbors = new Table2<>();
-
-    // Match iBGP sessions with pairs of routers and BgpPeerConfig
-    for (Entry<String, Configuration> entry : _configurations.entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      BgpProcess p = conf.getDefaultVrf().getBgpProcess();
-      if (p != null) {
-        for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
-          if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
-            ips.put(router, n.getLocalIp());
-          }
-        }
-      }
-    }
-
-    for (Entry<String, Configuration> entry : _configurations.entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      BgpProcess p = conf.getDefaultVrf().getBgpProcess();
-      if (p != null) {
-        for (Entry<Prefix, BgpActivePeerConfig> entry2 : p.getActiveNeighbors().entrySet()) {
-          Prefix pfx = entry2.getKey();
-          BgpActivePeerConfig n = entry2.getValue();
-          if (n.getLocalAs().equals(n.getRemoteAs())) {
-            for (Entry<String, Ip> ipEntry : ips.entrySet()) {
-              String r = ipEntry.getKey();
-              Ip ip = ipEntry.getValue();
-              if (!router.equals(r) && pfx.containsIp(ip)) {
-                neighbors.put(router, r, n);
-              }
-            }
-          }
-        }
-      }
-    }
+    Table2<String, String, BgpActivePeerConfig> neighbors = generateIbgpNeighbors(_configurations);
 
     // Add abstract graph edges for iBGP sessions
     Table2<String, String, GraphEdge> reverse = new Table2<>();
@@ -668,6 +633,76 @@ public class Graph {
               });
           _routeReflectorClients.put(r1, clients);
         });
+  }
+
+  /** Compute a map of iBGP neighbors given the configurations */
+  @VisibleForTesting
+  @Nonnull
+  static Table2<String, String, BgpActivePeerConfig> generateIbgpNeighbors(
+      Map<String, Configuration> configurations) {
+    // Map of hostname to a set of local IPs of *all* iBGP neighbors
+    Map<String, Set<Ip>> ips = new HashMap<>();
+
+    // Match iBGP sessions with pairs of routers and BgpPeerConfig
+    for (Entry<String, Configuration> entry : configurations.entrySet()) {
+      String hostname = entry.getKey();
+      Configuration conf = entry.getValue();
+      BgpProcess p = conf.getDefaultVrf().getBgpProcess();
+      if (p == null) {
+        // No bgp process, nothing to do
+        continue;
+      }
+      for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
+        if (n.getLocalAs() == null || n.getRemoteAs() == null) {
+          // Invalid config
+          continue;
+        }
+        if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
+          ips.computeIfAbsent(hostname, key -> new HashSet<>()).add(n.getLocalIp());
+        }
+      }
+    }
+
+    // Init the resulting map
+    Table2<String, String, BgpActivePeerConfig> neighbors = new Table2<>();
+
+    // Loop over all iBGP configs and match up
+    for (Entry<String, Configuration> entry : configurations.entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      BgpProcess p = conf.getDefaultVrf().getBgpProcess();
+      if (p == null) {
+        // No bgp process, nothing to do
+        continue;
+      }
+
+      for (Entry<Prefix, BgpActivePeerConfig> entry2 : p.getActiveNeighbors().entrySet()) {
+        Prefix remotePrefix = entry2.getKey();
+        BgpActivePeerConfig n = entry2.getValue();
+        if (n.getLocalAs() == null || n.getRemoteAs() == null) {
+          // Invalid config
+          continue;
+        }
+        if (!n.getLocalAs().equals(n.getRemoteAs())) {
+          // Not iBGP
+          continue;
+        }
+
+        // Loop over all local IPs computed earlier to find session matches
+        for (Entry<String, Set<Ip>> ipEntry : ips.entrySet()) {
+          String r = ipEntry.getKey();
+          Set<Ip> ip = ipEntry.getValue();
+          for (Ip localIp : ip) {
+            // Check that it's not a self-edge and local IP matches remote prefix
+            if (!router.equals(r) && remotePrefix.containsIp(localIp)) {
+              // We have a neighbor match
+              neighbors.put(router, r, n);
+            }
+          }
+        }
+      }
+    }
+    return neighbors;
   }
 
   public BgpSendType peerType(GraphEdge ge) {
