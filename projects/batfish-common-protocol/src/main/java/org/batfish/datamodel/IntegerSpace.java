@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -47,39 +49,10 @@ public final class IntegerSpace {
   }
 
   @JsonCreator
-  @Nullable
   @VisibleForTesting
+  @Nonnull
   static IntegerSpace create(@Nullable String s) {
-    if (s == null) {
-      return null;
-    }
-    String[] atoms = s.trim().split(",");
-    checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
-    Builder builder = builder();
-    Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
-    return builder.build();
-  }
-
-  private static Range<Integer> parse(String s) {
-    try {
-      int i = Integer.parseUnsignedInt(s);
-      return (Range.closed(i, i));
-    } catch (NumberFormatException e) {
-      String[] endpoints = s.split("-");
-      checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
-      int low = Integer.parseUnsignedInt(endpoints[0].trim());
-      int high = Integer.parseUnsignedInt(endpoints[1].trim());
-      checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
-      return Range.closed(low, high);
-    }
-  }
-
-  private static void processStringAtom(String s, Builder builder) {
-    if (s.startsWith("!")) {
-      builder.excluding(parse(s.replaceAll("!", "")));
-    } else {
-      builder.including(parse(s));
-    }
+    return firstNonNull(IntegerSpace.Builder.create(s), builder()).build();
   }
 
   @JsonValue
@@ -100,6 +73,15 @@ public final class IntegerSpace {
   /** This space as a set of included {@link Range}s */
   public Set<Range<Integer>> getRanges() {
     return _rangeset.asRanges();
+  }
+
+  /** Return this space as a set of included {@link SubRange}s */
+  public Set<SubRange> getSubRanges() {
+    return _rangeset
+        .asRanges()
+        .stream()
+        .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Check that this space contains a given {@code value}. */
@@ -203,6 +185,25 @@ public final class IntegerSpace {
     return builder().including(range).build();
   }
 
+  /** Create a new integer space from a {@link SubRange} */
+  public static IntegerSpace unionOf(SubRange... ranges) {
+    Builder b = builder();
+    for (SubRange range : ranges) {
+      b.including(range);
+    }
+    return b.build();
+  }
+
+  /** Create a new integer space from a {@link Range} */
+  public static IntegerSpace of(Range<Integer> range) {
+    return builder().including(range).build();
+  }
+
+  /** Create a new singleton integer space from an integer value */
+  public static IntegerSpace of(int value) {
+    return builder().including(Range.singleton(value)).build();
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -272,11 +273,57 @@ public final class IntegerSpace {
       return this;
     }
 
+    /**
+     * Returns true if this builder has exclusions only, no positive space.
+     *
+     * <p>Serves as utility function to determine if special handling for such negative-only cases
+     * is required (otherwise empty spaces will be built)
+     */
+    public boolean hasExclusionsOnly() {
+      return _including.isEmpty() && !_excluding.isEmpty();
+    }
+
     /** Returns a new {@link IntegerSpace} */
     public IntegerSpace build() {
       RangeSet<Integer> rangeSet = TreeRangeSet.create(_including);
       rangeSet.removeAll(_excluding);
       return new IntegerSpace(rangeSet);
+    }
+
+    @JsonCreator
+    @Nullable
+    @VisibleForTesting
+    static Builder create(@Nullable String s) {
+      if (s == null) {
+        return null;
+      }
+      String[] atoms = s.trim().split(",");
+      checkArgument(atoms.length != 0, ERROR_MESSAGE_TEMPLATE, s);
+      Builder builder = builder();
+      Arrays.stream(atoms).forEach(atom -> processStringAtom(atom.trim(), builder));
+      return builder;
+    }
+
+    private static Range<Integer> parse(String s) {
+      try {
+        int i = Integer.parseUnsignedInt(s);
+        return (Range.closed(i, i));
+      } catch (NumberFormatException e) {
+        String[] endpoints = s.split("-");
+        checkArgument((endpoints.length == 2), ERROR_MESSAGE_TEMPLATE, s);
+        int low = Integer.parseUnsignedInt(endpoints[0].trim());
+        int high = Integer.parseUnsignedInt(endpoints[1].trim());
+        checkArgument(low <= high, ERROR_MESSAGE_TEMPLATE, s);
+        return Range.closed(low, high);
+      }
+    }
+
+    private static void processStringAtom(String s, Builder builder) {
+      if (s.startsWith("!")) {
+        builder.excluding(parse(s.replaceAll("!", "")));
+      } else {
+        builder.including(parse(s));
+      }
     }
   }
 

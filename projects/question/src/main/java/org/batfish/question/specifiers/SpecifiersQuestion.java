@@ -3,6 +3,7 @@ package org.batfish.question.specifiers;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,10 +11,10 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
 import org.batfish.specifier.FlexibleFilterSpecifierFactory;
+import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
 import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -34,6 +35,7 @@ public final class SpecifiersQuestion extends Question {
     FILTER,
     INTERFACE,
     IP_SPACE,
+    IP_SPACE_OF_LOCATION,
     LOCATION,
     NODE
   }
@@ -54,9 +56,7 @@ public final class SpecifiersQuestion extends Question {
 
   private String _filterSpecifierFactory = FlexibleFilterSpecifierFactory.NAME;
   private String _interfaceSpecifierFactory = FlexibleInterfaceSpecifierFactory.NAME;
-  private String _ipSpaceSpecifierFactory =
-      InferFromLocationIpSpaceSpecifierFactory
-          .NAME; // reasonable default (perhaps we need a unique entry factory)?
+  private String _ipSpaceSpecifierFactory = FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
   private String _locationSpecifierFactory = FlexibleLocationSpecifierFactory.NAME;
   private String _nodeSpecifierFactory = FlexibleNodeSpecifierFactory.NAME;
 
@@ -73,30 +73,35 @@ public final class SpecifiersQuestion extends Question {
     _queryType = queryType;
   }
 
+  @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
     checkNotNull(_filterSpecifierFactory, PROP_FILTER_SPECIFIER_FACTORY + " is null");
     return FilterSpecifierFactory.load(_filterSpecifierFactory)
         .buildFilterSpecifier(_filterSpecifierInput);
   }
 
+  @JsonIgnore
   public InterfaceSpecifier getInterfaceSpecifier() {
     checkNotNull(_interfaceSpecifierFactory, PROP_INTERFACE_SPECIFIER_FACTORY + " is null");
     return InterfaceSpecifierFactory.load(_interfaceSpecifierFactory)
         .buildInterfaceSpecifier(_interfaceSpecifierInput);
   }
 
+  @JsonIgnore
   public IpSpaceSpecifier getIpSpaceSpecifier() {
     checkNotNull(_ipSpaceSpecifierFactory, PROP_IP_SPACE_SPECIFIER_FACTORY + " is null");
     return IpSpaceSpecifierFactory.load(_ipSpaceSpecifierFactory)
         .buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
   }
 
+  @JsonIgnore
   public LocationSpecifier getLocationSpecifier() {
     checkNotNull(_locationSpecifierFactory, PROP_LOCATION_SPECIFIER_FACTORY + " is null");
     return LocationSpecifierFactory.load(_locationSpecifierFactory)
         .buildLocationSpecifier(_locationSpecifierInput);
   }
 
+  @JsonIgnore
   public NodeSpecifier getNodeSpecifier() {
     checkNotNull(_nodeSpecifierFactory, PROP_NODE_SPECIFIER_FACTORY + " is null");
     return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);

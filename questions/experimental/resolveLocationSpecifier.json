@@ -1,0 +1,19 @@
+{
+  "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+  "locationSpecifierInput": "${locations}",
+  "queryType": "location",
+  "instance": {
+    "description": "Show the resolved values for location specifier",
+    "instanceName": "resolveLocationSpecifier",
+    "tags": [
+      "specifiers"
+    ],
+    "variables": {
+      "locations": {
+        "description": "Input to the LocationSpecifier",
+        "optional": true,
+        "type": "string"
+      }
+    }
+  }
+}

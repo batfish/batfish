@@ -19,10 +19,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -50,7 +52,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -270,7 +272,13 @@ public final class FileBasedStorage implements StorageProvider {
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH));
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH));
+    if (!Files.exists(path)) {
+      // (deprecated)
+      path =
+          _d.getSnapshotDir(network, snapshot)
+              .resolve(Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology"));
+    }
     if (!Files.exists(path)) {
       return null;
     }
@@ -661,7 +669,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeSnapshotMetadata(
-      TestrigMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     FileUtils.writeStringToFile(
         getSnapshotMetadataPath(networkId, snapshotId).toFile(),
@@ -737,8 +745,8 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getNetworkObjectsDir(networkId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getNetworkObjectsDir(networkId).resolve(encodedKey);
   }
 
   @Override
@@ -765,8 +773,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getSnapshotObjectPath(
       NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
-    Path relativePath = objectKeyToRelativePath(key);
-    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(relativePath);
+    String encodedKey = toBase64(key);
+    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
+  }
+
+  private static @Nonnull String toBase64(String key) {
+    return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override

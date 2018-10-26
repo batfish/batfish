@@ -174,7 +174,11 @@ ro_distribute_list
   (
     IN
     | OUT
-  ) NEWLINE
+  )
+  (
+    iname = interface_name
+  )?
+  NEWLINE
 ;
 
 ro_max_metric
@@ -318,6 +322,8 @@ ro_passive_interface
 :
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
+
+
 
 ro_redistribute_bgp
 :
@@ -671,6 +677,7 @@ s_router_ospf
       | ro_router_id
       | ro_summary_address
       | ro_vrf
+      | roi_priority
    )*
 ;
 
@@ -682,4 +689,3 @@ s_router_ospfv3
       | rov3_common
    )*
 ;
-

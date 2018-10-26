@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
@@ -29,7 +28,8 @@ public final class PsThenAsPathPrepend extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings w) {
-    List<AsExpr> asList = _asPath.stream().map(ExplicitAs::new).collect(Collectors.toList());
+    List<AsExpr> asList =
+        _asPath.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
     statements.add(new PrependAsPath(new LiteralAsList(asList)));
   }
 }

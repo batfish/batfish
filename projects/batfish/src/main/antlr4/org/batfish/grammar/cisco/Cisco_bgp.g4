@@ -107,15 +107,10 @@ additional_paths_rb_stanza
 :
    BGP ADDITIONAL_PATHS
    (
-      SELECT ALL
-      |
-      (
-         SEND RECEIVE?
-      )
-      |
-      (
-         RECEIVE SEND?
-      )
+      INSTALL
+      | SELECT ALL
+      | SEND RECEIVE?
+      | RECEIVE SEND?
    ) NEWLINE
 ;
 
@@ -727,7 +722,7 @@ prefix_list_bgp_tail
 
 remote_as_bgp_tail
 :
-   REMOTE_AS bgp_asn NEWLINE
+   REMOTE_AS remote = bgp_asn (ALTERNATE_AS alt_ases += bgp_asn+)? NEWLINE
 ;
 
 remove_private_as_bgp_tail

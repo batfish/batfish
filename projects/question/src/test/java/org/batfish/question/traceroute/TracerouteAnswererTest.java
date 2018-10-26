@@ -1,8 +1,18 @@
 package org.batfish.question.traceroute;
 
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
+import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACE_COUNT;
+import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
+import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
@@ -11,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -19,6 +30,8 @@ import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -125,6 +138,78 @@ public class TracerouteAnswererTest {
                 flowHistoryInfo.getPaths().get(Flow.BASE_FLOW_TAG),
                 TableDiff.deltaColumnName(COL_TRACES),
                 flowHistoryInfo.getPaths().get(Flow.DELTA_FLOW_TAG))));
+  }
+
+  @Test
+  public void testDiffFlowTracesToRows() {
+    Flow flow =
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+
+    Map<Flow, List<Trace>> baseFlowTraces =
+        ImmutableMap.of(
+            flow, ImmutableList.of(new Trace(FlowDisposition.DENIED_OUT, ImmutableList.of())));
+    Map<Flow, List<Trace>> deltaFlowTraces =
+        ImmutableMap.of(
+            flow, ImmutableList.of(new Trace(FlowDisposition.DENIED_IN, ImmutableList.of())));
+
+    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces);
+    assertThat(
+        rows.iterator().next(),
+        allOf(
+            hasColumn(
+                COL_FLOW,
+                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                Schema.FLOW),
+            hasColumn(
+                "Base_Traces",
+                containsInAnyOrder(
+                    ImmutableList.of(TraceMatchers.hasDisposition(FlowDisposition.DENIED_OUT))),
+                Schema.set(Schema.TRACE)),
+            hasColumn("Base_TraceCount", equalTo(1), Schema.INTEGER),
+            hasColumn(
+                "Delta_Traces",
+                containsInAnyOrder(
+                    ImmutableList.of(TraceMatchers.hasDisposition(FlowDisposition.DENIED_IN))),
+                Schema.set(Schema.TRACE)),
+            hasColumn("Delta_TraceCount", equalTo(1), Schema.INTEGER)));
+  }
+
+  @Test
+  public void testMetadata() {
+    List<ColumnMetadata> columnMetadata = metadata(false).getColumnMetadata();
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(COL_FLOW, COL_TRACES, COL_TRACE_COUNT));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(Schema.FLOW, Schema.set(Schema.TRACE), Schema.INTEGER));
+
+    List<ColumnMetadata> diffColumnMetadata = metadata(true).getColumnMetadata();
+    assertThat(
+        diffColumnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(COL_FLOW, "Base_Traces", "Base_TraceCount", "Delta_Traces", "Delta_TraceCount"));
+
+    assertThat(
+        diffColumnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            Schema.FLOW,
+            Schema.set(Schema.TRACE),
+            Schema.INTEGER,
+            Schema.set(Schema.TRACE),
+            Schema.INTEGER));
   }
 
   @Test

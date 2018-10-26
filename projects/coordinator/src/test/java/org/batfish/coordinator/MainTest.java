@@ -163,7 +163,7 @@ public class MainTest {
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
     Main.getSettings()
-        .setQuestionTemplatedDirs(ImmutableList.of(_folder.getRoot().toPath(), Paths.get("")));
+        .setQuestionTemplateDirs(ImmutableList.of(_folder.getRoot().toPath(), Paths.get("")));
 
     Map<String, String> questionTemplates = getQuestionTemplates();
 

@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
@@ -17,6 +18,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -119,7 +121,7 @@ class CounterExample {
     String int1 = graphEdge.getStart() == null ? "none" : graphEdge.getStart().getName();
     String node2 = graphEdge.getPeer();
     String int2 = graphEdge.getEnd() == null ? "none" : graphEdge.getEnd().getName();
-    return new Edge(node1, int1, node2, int2);
+    return Edge.of(node1, int1, node2, int2);
   }
 
   SortedSet<Edge> buildFailedLinks(Encoder encoder) {
@@ -177,13 +179,11 @@ class CounterExample {
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<SortedSet<Long>> asSets = new ArrayList<>();
+          ImmutableList.Builder<AsSet> b = ImmutableList.builder();
           for (int i = 0; i < pathLength; i++) {
-            SortedSet<Long> asSet = new TreeSet<>();
-            asSet.add(-1L);
-            asSets.add(asSet);
+            b.add(AsSet.of(-1L));
           }
-          AsPath path = new AsPath(asSets);
+          AsPath path = AsPath.of(b.build());
 
           // Recover communities
           SortedSet<Long> communities = new TreeSet<>();
@@ -232,7 +232,7 @@ class CounterExample {
     String int1 = graphEdge.getStart().getName();
     String node2 = graphEdge.getPeer() == null ? "(none)" : graphEdge.getPeer();
     String int2 = graphEdge.getEnd() == null ? "null_interface" : graphEdge.getEnd().getName();
-    Edge edge = new Edge(node1, int1, node2, int2);
+    Edge edge = Edge.of(node1, int1, node2, int2);
     SortedSet<String> routes = new TreeSet<>();
     routes.add(route);
     return new FlowTraceHop(edge, routes, null, null, null);

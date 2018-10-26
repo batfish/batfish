@@ -26,6 +26,7 @@ public class ReferenceBookTest {
 
     assertThat(book.getAddressGroups(), hasSize(2));
     assertThat(book.getFilterGroups(), hasSize(2));
+    assertThat(book.getInterfaceGroups(), hasSize(2));
     assertThat(book.getServiceEndpoints(), hasSize(2));
     assertThat(book.getServiceObjects(), hasSize(2));
     assertThat(book.getServiceObjectGroups(), hasSize(2));

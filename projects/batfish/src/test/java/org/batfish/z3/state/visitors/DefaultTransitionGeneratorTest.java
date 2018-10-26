@@ -50,7 +50,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.NeighborUnreachable;
+import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -58,8 +58,8 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
+import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
@@ -168,14 +168,14 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -668,10 +668,10 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitNeighborUnreachable() {
+  public void testVisitNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1))),
@@ -681,18 +681,20 @@ public class DefaultTransitionGeneratorTest {
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(NeighborUnreachable.State.INSTANCE)));
+                input, ImmutableSet.of(NeighborUnreachableOrExitsNetwork.State.INSTANCE)));
 
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeNeighborUnreachable(NODE1), NeighborUnreachable.INSTANCE)));
+                new NodeNeighborUnreachableOrExitsNetwork(NODE1),
+                NeighborUnreachableOrExitsNetwork.INSTANCE)));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeNeighborUnreachable(NODE2), NeighborUnreachable.INSTANCE)));
+                new NodeNeighborUnreachableOrExitsNetwork(NODE2),
+                NeighborUnreachableOrExitsNetwork.INSTANCE)));
   }
 
   @Test
@@ -843,10 +845,10 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -918,7 +920,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitNodeDropAclOut_nonEdgeInterfaces() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1)))))
             .setOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .build();
@@ -927,7 +929,7 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
 
-    // NeighborUnreachable fail OutAcl
+    // NeighborUnreachableOrExitsNetwork fail OutAcl
     assertThat(
         rules,
         contains(
@@ -1012,10 +1014,10 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitNodeInterfaceNeighborUnreachable() {
+  public void testVisitNodeInterfaceNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1029,7 +1031,8 @@ public class DefaultTransitionGeneratorTest {
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(NodeInterfaceNeighborUnreachable.State.INSTANCE)));
+                input,
+                ImmutableSet.of(NodeInterfaceNeighborUnreachableOrExitsNetwork.State.INSTANCE)));
 
     assertThat(
         rules,
@@ -1037,35 +1040,35 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 b(1),
                 new PreOutVrf(NODE1, VRF1),
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE1))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(2),
                 new PreOutVrf(NODE1, VRF1),
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE2))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(3),
                 new PreOutVrf(NODE1, VRF2),
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE3))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(4),
                 new PreOutVrf(NODE2, VRF1),
-                new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE2, INTERFACE1))));
   }
 
   @Test
-  public void testVisitNodeNeighborUnreachable() {
+  public void testVisitNodeNeighborUnreachableOrExitsNetwork() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setNeighborUnreachable(
+            .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(
@@ -1079,32 +1082,32 @@ public class DefaultTransitionGeneratorTest {
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(NodeNeighborUnreachable.State.INSTANCE)));
+                input, ImmutableSet.of(NodeNeighborUnreachableOrExitsNetwork.State.INSTANCE)));
 
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE1),
-                new NodeNeighborUnreachable(NODE1))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE1),
+                new NodeNeighborUnreachableOrExitsNetwork(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE2),
-                new NodeNeighborUnreachable(NODE1))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE2),
+                new NodeNeighborUnreachableOrExitsNetwork(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE3),
-                new NodeNeighborUnreachable(NODE1))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE1, INTERFACE3),
+                new NodeNeighborUnreachableOrExitsNetwork(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1),
-                new NodeNeighborUnreachable(NODE2))));
+                new NodeInterfaceNeighborUnreachableOrExitsNetwork(NODE2, INTERFACE1),
+                new NodeNeighborUnreachableOrExitsNetwork(NODE2))));
   }
 
   @Test
@@ -1219,8 +1222,8 @@ public class DefaultTransitionGeneratorTest {
                     NODE1, ImmutableSet.of(VRF1, VRF2), NODE2, ImmutableSet.of(VRF1, VRF2)))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1326,10 +1329,10 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE3),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE3),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -1427,8 +1430,8 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1474,8 +1477,8 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(VRF1, ImmutableSet.of(INTERFACE1))))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
             .setOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
@@ -1523,24 +1526,24 @@ public class DefaultTransitionGeneratorTest {
                     NODE2, ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3)))
             .setEnabledEdges(
                 ImmutableSet.of(
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE3),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE2, NODE2, INTERFACE3),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE1),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE2),
-                    new Edge(NODE1, INTERFACE3, NODE2, INTERFACE3),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE3),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE2, NODE1, INTERFACE3),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE1),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE2),
-                    new Edge(NODE2, INTERFACE3, NODE1, INTERFACE3)))
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE3),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE3),
+                    Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE1),
+                    Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE2),
+                    Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE3),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE3),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE3),
+                    Edge.of(NODE2, INTERFACE3, NODE1, INTERFACE1),
+                    Edge.of(NODE2, INTERFACE3, NODE1, INTERFACE2),
+                    Edge.of(NODE2, INTERFACE3, NODE1, INTERFACE3)))
             .setNodeInterfaces(
                 ImmutableMap.of(
                     NODE1, ImmutableList.of(INTERFACE1, INTERFACE2, INTERFACE3),
@@ -1881,7 +1884,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setSourceNats(
                 ImmutableMap.of(

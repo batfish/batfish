@@ -31,6 +31,7 @@ test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfacesSpecifier="Loopback.*", status=".*passive"
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters headers={"dstIps": "1.1.1.1"}, nodes="host.*", filters="filter.*"
+add-batfish-option debugflags oldtraceroute
 test tests/basic/oldtraceroute-1-2.ref get oldtraceroute ingressNode="as1core1", dst="host1"
 test tests/basic/oldtraceroute-1-2-ignoreAcls.ref get oldtraceroute ingressNode="as1core1", dst="host1", ignoreAcls=true
 test tests/basic/oldtraceroute-2-1.ref get oldtraceroute ingressNode="host2", dst="1.0.1.1"
@@ -40,7 +41,6 @@ test tests/basic/multipath-host1.ref get reachability type="multipath", ingressN
 test tests/basic/multipath-host2.ref get reachability type="multipath", ingressNodeRegex="host2", srcIps=["2.128.0.0"], dstIps=["1.0.1.1"], ipProtocols=["UDP"], srcPorts=[0], dstPorts=[0]
 test tests/basic/bgpAsnUse.ref get bgpasnuse minCount=2
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
-test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/outliers3.ref get outliers hypothesis="sameServers"

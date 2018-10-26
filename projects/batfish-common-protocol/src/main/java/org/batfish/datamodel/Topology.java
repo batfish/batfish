@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -13,19 +15,25 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/**
+ * Represents a set of {@link Edge Edges} and provides methods to prune the edges with edge, node,
+ * and interface blacklists.
+ */
 public final class Topology implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static Topology jacksonCreateTopology(SortedSet<Edge> edges) {
-    return new Topology(edges);
+    return new Topology(firstNonNull(edges, ImmutableSortedSet.of()));
   }
 
   private final SortedSet<Edge> _edges;
 
+  // Mapping of interface -> set of all edges whose source or dest is that interface
   private final Map<NodeInterfacePair, SortedSet<Edge>> _interfaceEdges;
 
+  // Mapping of node -> set of all edges whose source or dest is on that node
   private final Map<String, SortedSet<Edge>> _nodeEdges;
 
   public Topology(SortedSet<Edge> edges) {
@@ -49,8 +57,8 @@ public final class Topology implements Serializable {
     return getInterfaceEdges()
         .getOrDefault(iface, ImmutableSortedSet.of())
         .stream()
-        .filter(e -> e.getFirst().equals(iface))
-        .map(Edge::getSecond)
+        .filter(e -> e.getTail().equals(iface))
+        .map(Edge::getHead)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -65,17 +73,16 @@ public final class Topology implements Serializable {
       Set<String> blacklistNodes,
       Set<NodeInterfacePair> blacklistInterfaces) {
     if (blacklistEdges != null) {
-      SortedSet<Edge> edges = getEdges();
-      edges.removeAll(blacklistEdges);
+      _edges.removeAll(blacklistEdges);
     }
     if (blacklistNodes != null) {
       for (String blacklistNode : blacklistNodes) {
-        removeNode(blacklistNode);
+        _edges.removeAll(_nodeEdges.getOrDefault(blacklistNode, ImmutableSortedSet.of()));
       }
     }
     if (blacklistInterfaces != null) {
       for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-        removeInterface(blacklistInterface);
+        _edges.removeAll(_interfaceEdges.getOrDefault(blacklistInterface, ImmutableSortedSet.of()));
       }
     }
     rebuildFromEdges();
@@ -84,37 +91,16 @@ public final class Topology implements Serializable {
   private void rebuildFromEdges() {
     _nodeEdges.clear();
     _interfaceEdges.clear();
-    for (Edge edge : getEdges()) {
+    for (Edge edge : _edges) {
       String node1 = edge.getNode1();
       String node2 = edge.getNode2();
-      NodeInterfacePair int1 = edge.getInterface1();
-      NodeInterfacePair int2 = edge.getInterface2();
+      NodeInterfacePair iface1 = edge.getTail();
+      NodeInterfacePair iface2 = edge.getHead();
 
-      SortedSet<Edge> node1Edges = _nodeEdges.computeIfAbsent(node1, k -> new TreeSet<>());
-      node1Edges.add(edge);
-
-      SortedSet<Edge> node2Edges = _nodeEdges.computeIfAbsent(node2, k -> new TreeSet<>());
-      node2Edges.add(edge);
-
-      SortedSet<Edge> interface1Edges = _interfaceEdges.computeIfAbsent(int1, k -> new TreeSet<>());
-      interface1Edges.add(edge);
-
-      SortedSet<Edge> interface2Edges = _interfaceEdges.computeIfAbsent(int2, k -> new TreeSet<>());
-      interface2Edges.add(edge);
-    }
-  }
-
-  private void removeInterface(NodeInterfacePair iface) {
-    SortedSet<Edge> interfaceEdges = _interfaceEdges.get(iface);
-    if (interfaceEdges != null) {
-      _edges.removeAll(interfaceEdges);
-    }
-  }
-
-  private void removeNode(String hostname) {
-    SortedSet<Edge> nodeEdges = _nodeEdges.get(hostname);
-    if (nodeEdges != null) {
-      _edges.removeAll(nodeEdges);
+      _nodeEdges.computeIfAbsent(node1, k -> new TreeSet<>()).add(edge);
+      _nodeEdges.computeIfAbsent(node2, k -> new TreeSet<>()).add(edge);
+      _interfaceEdges.computeIfAbsent(iface1, k -> new TreeSet<>()).add(edge);
+      _interfaceEdges.computeIfAbsent(iface2, k -> new TreeSet<>()).add(edge);
     }
   }
 

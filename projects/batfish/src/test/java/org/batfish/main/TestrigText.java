@@ -129,9 +129,7 @@ public class TestrigText {
     public @Nonnull Builder setLayer1TopologyText(@Nonnull String testrigResourcePrefix) {
       _layer1TopologyText =
           readTestrigResources(
-                  testrigResourcePrefix,
-                  null,
-                  ImmutableList.of(BfConsts.RELPATH_TESTRIG_L1_TOPOLOGY_PATH))
+                  testrigResourcePrefix, null, ImmutableList.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH))
               .values()
               .iterator()
               .next();

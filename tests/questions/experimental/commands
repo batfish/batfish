@@ -25,7 +25,7 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
 # validate multipathConsistency
-test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
@@ -51,14 +51,29 @@ test -raw tests/questions/experimental/reachability.ref validate-template reacha
 # validate reducedReachability
 test -raw tests/questions/experimental/reducedReachability.ref validate-template reducedReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
-# validate searchfilters
-test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts=[0], dstPorts=[0]}, nodes=".*", startLocation="somenode", explain=false
+# validate resolveFilterSpecifier
+test -raw tests/questions/experimental/resolveFilterSpecifier.ref validate-template resolveFilterSpecifier filters="input", nodes="input"
 
-# validate specifiers
-test -raw tests/questions/experimental/specifiers.ref validate-template specifiers queryType="filter", filterSpecifierFactory="FlexibleFilterSpecifierFactory", filterSpecifierInput="filterSpecifierInput", interfaceSpecifierFactory="FlexibleInterfaceSpecifierFactory", interfaceSpecifierInput="filterSpecifierInput", ipSpaceSpecifierFactory="InferFromLocationIpSpaceSpecifierFactory", ipSpaceSpecifierInput="ipSpaceSpecifierInput", locationSpecifierFactory="FlexibleLocationSpecifierFactory", locationSpecifierInput="locationSpecifierInput", nodeSpecifierFactory="FlexibleNodeSpecifierFactory", nodeSpecifierInput="nodeSpecifierInput"
+# validate resolveInterfaceSpecifier
+test -raw tests/questions/experimental/resolveInterfaceSpecifier.ref validate-template resolveInterfaceSpecifier interfaces="input", nodes="input"
+
+# validate resolveIpSpecifier
+test -raw tests/questions/experimental/resolveIpSpecifier.ref validate-template resolveIpSpecifier ips="1.1.1.1/24"
+
+# validate resolveIpsOfLocationSpecifier
+test -raw tests/questions/experimental/resolveIpsOfLocationSpecifier.ref validate-template resolveIpsOfLocationSpecifier locations="input"
+
+# validate resolveLocationSpecifier
+test -raw tests/questions/experimental/resolveLocationSpecifier.ref validate-template resolveLocationSpecifier locations="input"
+
+# validate resolveNodeSpecifier
+test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-template resolveNodeSpecifier nodes="input"
+
+# validate searchfilters
+test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols=["tcp"], srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
 
 # test traceroute
-test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, headers=null
+test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreAcls=false, maxTraces=0, headers=null
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel

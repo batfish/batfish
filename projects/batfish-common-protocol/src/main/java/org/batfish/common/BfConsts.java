@@ -58,6 +58,7 @@ public class BfConsts {
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+  public static final String ARG_SNAPSHOT_NAME = "snapshotname";
   public static final String ARG_SSL_DISABLE = "ssldisable";
   public static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
   public static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
@@ -108,9 +109,11 @@ public class BfConsts {
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
   public static final String PROP_MAJOR_ISSUE_CONFIGS = "majorIssueConfigs";
   public static final String PROP_MAX_ROWS = "maxRows";
+  public static final String PROP_METADATA = "metadata";
   public static final String PROP_METRICS = "metrics";
   public static final String PROP_MIN_ELEMENTS = "minElements";
   public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_NAME = "name";
   public static final String PROP_NUM_EXCLUDED_ROWS = "numExcludedRows";
   public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";
@@ -156,6 +159,7 @@ public class BfConsts {
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
+  public static final String RELPATH_L1_TOPOLOGY_PATH = "layer1_topology.json";
   public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
@@ -173,7 +177,6 @@ public class BfConsts {
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_TESTRIG_L1_TOPOLOGY_PATH = "testrig_layer1_topology";
   public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";

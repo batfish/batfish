@@ -7,13 +7,17 @@ import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.Debug;
+import org.batfish.z3.state.DeliveredToSubnet;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.DropAcl;
 import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.ExitsNetwork;
+import org.batfish.z3.state.InsufficientInfo;
 import org.batfish.z3.state.NeighborUnreachable;
+import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -21,8 +25,12 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
+import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
@@ -65,7 +73,16 @@ public interface GenericStateExprVisitor<R> {
 
   R visitDropNullRoute(DropNullRoute dropNullRoute);
 
+  R visitExitsNetwork(ExitsNetwork exitsNetwork);
+
+  R visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet);
+
+  R visitInsufficientInfo(InsufficientInfo insufficientInfo);
+
   R visitNeighborUnreachable(NeighborUnreachable neighborUnreachable);
+
+  R visitNeighborUnreachableOrExitsNetwork(
+      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork);
 
   R visitNodeAccept(NodeAccept nodeAccept);
 
@@ -81,9 +98,21 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute);
 
-  R visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable nodeNeighborUnreachable);
+  R visitNodeInterfaceDeliveredToSubnet(
+      NodeInterfaceDeliveredToSubnet nodeInterfaceDeliveredToSubnet);
 
-  R visitNodeNeighborUnreachable(NodeNeighborUnreachable nodeNeighborUnreachable);
+  R visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork nodeInterfaceExitsNetwork);
+
+  R visitNodeInterfaceInsufficientInfo(NodeInterfaceInsufficientInfo nodeInterfaceInsufficientInfo);
+
+  R visitNodeInterfaceNeighborUnreachable(
+      NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable);
+
+  R visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
+      NodeInterfaceNeighborUnreachableOrExitsNetwork nodeNeighborUnreachable);
+
+  R visitNodeNeighborUnreachableOrExitsNetwork(
+      NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork);
 
   R visitNumberedQuery(NumberedQuery numberedQuery);
 

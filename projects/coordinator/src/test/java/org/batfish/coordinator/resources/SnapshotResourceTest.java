@@ -2,6 +2,7 @@ package org.batfish.coordinator.resources;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -16,14 +17,14 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
+public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -68,6 +69,42 @@ public class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
+  public void testDeleteSnapshotMissingNetwork() {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Response response = getTarget(network, snapshot).delete();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testDeleteSnapshotMissingSnapshot() {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    Response response = getTarget(network, snapshot).delete();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testDeleteSnapshotSuccess() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, _folder);
+    Response response = getTarget(network, snapshot).delete();
+
+    // should succeed first time
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+
+    response = getTarget(network, snapshot).delete();
+
+    // should fail second time
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
   public void testGetPojoTopologyMissingNetwork() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
@@ -91,7 +128,7 @@ public class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getPojoTopologyTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -122,11 +159,11 @@ public class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(TestrigMetadata.class), notNullValue());
+    assertThat(response.readEntity(SnapshotMetadata.class), notNullValue());
   }
 
   @Test
@@ -153,7 +190,7 @@ public class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initTestrigWithTopology(network, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     Response response = getTopologyTarget(network, snapshot).get();
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

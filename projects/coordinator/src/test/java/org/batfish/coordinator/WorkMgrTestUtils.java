@@ -14,7 +14,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.identifiers.NetworkId;
@@ -42,7 +42,7 @@ public final class WorkMgrTestUtils {
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
   }
 
-  public static void initTestrigWithTopology(String network, String snapshot, Set<String> nodes)
+  public static void initSnapshotWithTopology(String network, String snapshot, Set<String> nodes)
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
     NetworkId networkId = idManager.getNetworkId(network);
@@ -51,8 +51,8 @@ public final class WorkMgrTestUtils {
             ? idManager.getSnapshotId(snapshot, networkId)
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), null), networkId, snapshotId);
+    SnapshotMetadataMgr.writeMetadata(
+        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
     pojoTopology.setNodes(nodes.stream().map(Node::new).collect(Collectors.toSet()));
     Main.getWorkMgr().getStorage().storePojoTopology(pojoTopology, networkId, snapshotId);
@@ -91,6 +91,15 @@ public final class WorkMgrTestUtils {
   public static void uploadTestSnapshot(
       String network, String snapshot, String fileName, String content, TemporaryFolder folder)
       throws IOException {
+    Path tmpSnapshotZip = createSnapshotZip(snapshot, fileName, content, folder);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream, false);
+    }
+  }
+
+  /** Creates a snapshot zip with the specified config and returns the path to that zip */
+  public static Path createSnapshotZip(
+      String snapshot, String fileName, String content, TemporaryFolder folder) {
     Path tmpSnapshotSrcDir = folder.getRoot().toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
     Path tmpSnapshotConfig =
@@ -102,8 +111,6 @@ public final class WorkMgrTestUtils {
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, content);
     ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream, false);
-    }
+    return tmpSnapshotZip;
   }
 }

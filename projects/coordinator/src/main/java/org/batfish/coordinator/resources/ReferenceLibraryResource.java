@@ -18,7 +18,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 
 /**
  * The {@link ReferenceLibraryResource} is a resource for servicing client API calls for the address
- * library. It is a subresource of {@link ContainerResource}.
+ * library. It is a subresource of {@link NetworkResource}.
  */
 @Produces(MediaType.APPLICATION_JSON)
 public class ReferenceLibraryResource {

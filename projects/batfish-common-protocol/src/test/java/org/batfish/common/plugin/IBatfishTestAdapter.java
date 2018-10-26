@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
@@ -43,11 +42,11 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -147,11 +146,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public GrammarSettings getGrammarSettings() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public FlowHistory getHistory() {
     throw new UnsupportedOperationException();
   }
@@ -189,7 +183,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Map<String, String> getQuestionTemplates() {
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
     throw new UnsupportedOperationException();
   }
 
@@ -210,17 +204,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Directory getTestrigFileTree() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SnapshotId getTestrigName() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void initBgpAdvertisements(Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
   }
 
@@ -439,17 +423,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Set<Flow> bddLoopDetection() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency() {
+  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     throw new UnsupportedOperationException();
   }
 

@@ -45,14 +45,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
 
-  private static final String ARG_GENERATE_STUBS = "gs";
-
-  private static final String ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
-
-  private static final String ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "gsidregex";
-
-  private static final String ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
-
   private static final String ARG_HELP = "help";
 
   private static final String ARG_HISTOGRAM = "histogram";
@@ -113,11 +105,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
-  private static final String ARGNAME_AS = "as";
-
   private static final String ARGNAME_HOSTNAME = "hostname";
-
-  private static final String ARGNAME_JAVA_REGEX = "java-regex";
 
   private static final String ARGNAME_LOG_LEVEL = "level-name";
 
@@ -129,9 +117,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARGNAME_PORT = "port";
 
-  private static final String ARGNAME_ROLE = "role";
-
   private static final String ARGNAME_STRINGS = "string..";
+
+  private static final String DEPRECATED_ARG_DESC =
+      "(ignored, provided for backwards compatibility)";
 
   private static final String EXECUTABLE_NAME = "batfish";
 
@@ -140,12 +129,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String DIFFERENTIAL_QUESTION = "diffquestion";
 
   public static final String TASK_ID = "taskid";
-
-  private static final String DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
-  private static final String DEPRECATED_ARG_ENVIRONMENT_NAME = "env";
-  private static final String DEPRECATED_ARG_OUTPUT_ENV = "outputenv";
-  private static final String DEPRECATED_ARG_DESC =
-      "(ignored, provided for backwards compatibility)";
 
   private TestrigSettings _activeTestrigSettings;
 
@@ -301,22 +284,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return Paths.get(_config.getString(ARG_FLATTEN_DESTINATION));
   }
 
-  public boolean getGenerateStubs() {
-    return _config.getBoolean(ARG_GENERATE_STUBS);
-  }
-
-  public String getGenerateStubsInputRole() {
-    return _config.getString(ARG_GENERATE_STUBS_INPUT_ROLE);
-  }
-
-  public String getGenerateStubsInterfaceDescriptionRegex() {
-    return _config.getString(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-  }
-
-  public int getGenerateStubsRemoteAs() {
-    return _config.getInt(ARG_GENERATE_STUBS_REMOTE_AS);
-  }
-
   public boolean getHaltOnConvertError() {
     return _config.getBoolean(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
   }
@@ -465,6 +432,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(ARG_DISABLE_Z3_SIMPLIFICATION);
   }
 
+  public String getSnapshotName() {
+    return _config.getString(BfConsts.ARG_SNAPSHOT_NAME);
+  }
+
   public boolean getSslDisable() {
     return _config.getBoolean(BfConsts.ARG_SSL_DISABLE);
   }
@@ -598,10 +569,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
     setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
-    setDefaultProperty(ARG_GENERATE_STUBS, false);
-    setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
-    setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
-    setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
     setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
@@ -633,6 +600,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
+    setDefaultProperty(BfConsts.ARG_SNAPSHOT_NAME, null);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
@@ -702,7 +670,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_CHECK_BGP_REACHABILITY,
         "whether to check BGP session reachability during data plane computation");
 
-    addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
+    addOption(BfConsts.ARG_CONTAINER, "ID of network", ARGNAME_NAME);
 
     addOption(
         ARG_COORDINATOR_HOST,
@@ -753,21 +721,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
-
-    addBooleanOption(ARG_GENERATE_STUBS, "generate stubs");
-
-    addOption(
-        ARG_GENERATE_STUBS_INPUT_ROLE, "input role for which to generate stubs", ARGNAME_ROLE);
-
-    addOption(
-        ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX,
-        "java regex to extract hostname of generated stub from description of adjacent interface",
-        ARGNAME_JAVA_REGEX);
-
-    addOption(
-        ARG_GENERATE_STUBS_REMOTE_AS,
-        "autonomous system number of stubs to be generated",
-        ARGNAME_AS);
 
     addBooleanOption(
         BfConsts.ARG_HALT_ON_CONVERT_ERROR,
@@ -857,6 +810,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
+    addOption(BfConsts.ARG_SNAPSHOT_NAME, "name of snapshot", ARGNAME_NAME);
+
     addBooleanOption(
         BfConsts.ARG_SSL_DISABLE, "whether to disable SSL during communication with coordinator");
 
@@ -876,7 +831,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(BfConsts.ARG_TASK_PLUGIN, "fully-qualified name of task plugin class", ARGNAME_NAME);
 
-    addOption(BfConsts.ARG_TESTRIG, "name of testrig", ARGNAME_NAME);
+    addOption(BfConsts.ARG_TESTRIG, "ID of snapshot", ARGNAME_NAME);
 
     addBooleanOption(ARG_THROW_ON_LEXER_ERROR, "throw exception immediately on lexer error");
 
@@ -922,9 +877,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "dataplane engine name");
 
     // deprecated and ignored
-    addOption(DEPRECATED_ARG_DELTA_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
-    addOption(DEPRECATED_ARG_ENVIRONMENT_NAME, DEPRECATED_ARG_DESC, "name");
-    addOption(DEPRECATED_ARG_OUTPUT_ENV, DEPRECATED_ARG_DESC, "name");
+    for (String deprecatedStringArg :
+        new String[] {"deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv"}) {
+      addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
+    }
+    for (String deprecatedBooleanArg : new String[] {"gs"}) {
+      addBooleanOption(deprecatedBooleanArg, DEPRECATED_ARG_DESC);
+    }
   }
 
   public void parseCommandLine(String[] args) {
@@ -971,10 +930,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
     getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
-    getBooleanOptionValue(ARG_GENERATE_STUBS);
-    getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
-    getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-    getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);
@@ -1007,6 +962,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+    getStringOptionValue(BfConsts.ARG_SNAPSHOT_NAME);
     getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
     getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
@@ -1182,5 +1138,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public void setQuestionName(QuestionId questionName) {
     _config.setProperty(
         BfConsts.ARG_QUESTION_NAME, questionName != null ? questionName.getId() : null);
+  }
+
+  public void setSnapshotName(String snapshotName) {
+    _config.setProperty(BfConsts.ARG_SNAPSHOT_NAME, snapshotName);
   }
 }

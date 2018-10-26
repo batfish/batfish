@@ -399,7 +399,7 @@ public class Graph {
               }
               // Only look at the first pair
               if (!router.equals(e.getNode2())) {
-                Interface i2 = ifaceMap.get(e.getInterface2());
+                Interface i2 = ifaceMap.get(e.getHead());
                 String neighbor = e.getNode2();
                 GraphEdge ge1 = new GraphEdge(i1, i2, router, neighbor, false, false);
                 GraphEdge ge2 = new GraphEdge(i2, i1, neighbor, router, false, false);

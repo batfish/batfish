@@ -1,10 +1,8 @@
 package org.batfish.dataplane.rib;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -254,11 +252,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
 
   @Override
   public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree
-        .getMatchingIps()
-        .entrySet()
-        .stream()
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> (IpSpace) e.getValue()));
+    return _tree.getMatchingIps();
   }
 
   @Override

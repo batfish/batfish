@@ -684,6 +684,11 @@ ALTERNATE_ADDRESS
    'alternate-address'
 ;
 
+ALTERNATE_AS
+:
+   'alternate-as'
+;
+
 ALWAYS
 :
    'always'

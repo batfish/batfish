@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
@@ -43,7 +44,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -323,6 +324,7 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_DEL_ANALYSIS)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delAnalysis(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -435,6 +437,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_QUESTION)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delQuestion(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -454,7 +457,11 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delQuestion(networkNameParam, questionName);
+      checkArgument(
+          Main.getWorkMgr().delQuestion(networkNameParam, questionName, null),
+          "Could not find ad-hoc question %s under network %s",
+          questionName,
+          networkNameParam);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -505,6 +512,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_SNAPSHOT)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray delSnapshot(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -526,7 +534,12 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkNameParam);
 
-      Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam);
+      if (!Main.getWorkMgr().delSnapshot(networkNameParam, snapshotNameParam)) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not delete non-existent snapshot:%s in network:%s",
+                snapshotNameParam, networkNameParam));
+      }
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -1394,6 +1407,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
     try {
       _logger.infof("WMS:getQuestionTemplates %s\n", apiKey);
@@ -1651,12 +1665,21 @@ public class WorkMgrService {
               .listAnalyses(networkNameParam, firstNonNull(analysisType, AnalysisType.USER))) {
 
         JSONObject analysisJson = new JSONObject();
-
-        for (String questionName :
-            Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName)) {
+        SortedSet<String> questions =
+            Main.getWorkMgr().listAnalysisQuestions(networkNameParam, analysisName);
+        checkArgument(
+            questions != null,
+            "Analysis %s under network %s not found",
+            analysisName,
+            networkNameParam);
+        for (String questionName : questions) {
           String questionText =
               Main.getWorkMgr().getQuestion(networkNameParam, questionName, analysisName);
-
+          checkArgument(
+              questionText != null,
+              "Question %s unexpectedly missing from analysis %s",
+              questionName,
+              analysisName);
           analysisJson.put(questionName, new JSONObject(questionText));
         }
 
@@ -1826,10 +1849,15 @@ public class WorkMgrService {
       checkNetworkAccessibility(apiKey, networkNameParam);
 
       JSONObject retObject = new JSONObject();
-
-      for (String questionName : Main.getWorkMgr().listQuestions(networkNameParam, verbose)) {
+      Set<String> questions = Main.getWorkMgr().listQuestions(networkNameParam, verbose);
+      checkArgument(questions != null, "Non-existent network: %s", networkNameParam);
+      for (String questionName : questions) {
         String questionText = Main.getWorkMgr().getQuestion(networkNameParam, questionName, null);
-
+        checkArgument(
+            questionText != null,
+            "Content for ad-hoc question %s under network %s unexpectedly not found",
+            questionName,
+            networkNameParam);
         retObject.put(questionName, new JSONObject(questionText));
       }
 
@@ -1878,6 +1906,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray listSnapshots(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -1887,6 +1916,7 @@ public class WorkMgrService {
     return listSnapshotsHelper(apiKey, clientVersion, networkNameParam);
   }
 
+  @Deprecated
   private JSONArray listSnapshotsHelper(String apiKey, String clientVersion, String networkName) {
     try {
       _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
@@ -1902,10 +1932,12 @@ public class WorkMgrService {
       JSONArray retArray = new JSONArray();
 
       List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
+      checkArgument(snapshotList != null, String.format("Network '%s' not found", networkName));
       for (String snapshot : snapshotList) {
         try {
           String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
-          TestrigMetadata ssMetadata = Main.getWorkMgr().getTestrigMetadata(networkName, snapshot);
+          SnapshotMetadata ssMetadata =
+              Main.getWorkMgr().getSnapshotMetadata(networkName, snapshot);
 
           String metadataStr = BatfishObjectMapper.writePrettyString(ssMetadata);
           JSONObject jObject =

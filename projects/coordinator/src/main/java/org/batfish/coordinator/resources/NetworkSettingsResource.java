@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * The {@link NetworkSettingsResource} is a resource for servicing client API calls for
- * network-level settings. It is a subresource of {@link ContainerResource}.
+ * network-level settings. It is a subresource of {@link NetworkResource}.
  */
 @Produces(MediaType.APPLICATION_JSON)
 public class NetworkSettingsResource {

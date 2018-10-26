@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
-import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
@@ -42,11 +41,11 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
 import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
@@ -105,8 +104,6 @@ public interface IBatfish extends IPluginConsumer {
 
   String getFlowTag();
 
-  GrammarSettings getGrammarSettings();
-
   FlowHistory getHistory();
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
@@ -122,7 +119,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
-  Map<String, String> getQuestionTemplates();
+  Map<String, String> getQuestionTemplates(boolean verbose);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
@@ -135,11 +132,7 @@ public interface IBatfish extends IPluginConsumer {
 
   String getTaskId();
 
-  Directory getTestrigFileTree();
-
   SnapshotId getTestrigName();
-
-  void initBgpAdvertisements(Map<String, Configuration> configurations);
 
   void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations);
 
@@ -237,11 +230,9 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
-  void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
   Set<Flow> bddLoopDetection();
 
-  Set<Flow> bddMultipathConsistency();
+  Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters);
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);

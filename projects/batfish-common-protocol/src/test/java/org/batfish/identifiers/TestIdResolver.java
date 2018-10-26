@@ -57,11 +57,6 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public String getSnapshotName(NetworkId networkId, SnapshotId snapshotId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public NodeRolesId getSnapshotNodeRolesId(NetworkId networkId, SnapshotId snapshotId) {
     throw new UnsupportedOperationException();
   }

@@ -90,6 +90,8 @@ junit_tests(
         "@jaxrs_api//:compile",
         "@jersey_client//:compile",
         "@jersey_media_jackson//:compile",
+        "@jersey_media_jettison//:compile",
+        "@jersey_media_multipart//:compile",
         "@jersey_server//:compile",
         "@jersey_test_framework//:compile",
         "@jettison//:compile",

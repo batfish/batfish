@@ -737,31 +737,56 @@ public final class JuniperConfiguration extends VendorConfiguration {
               }
             });
     // areas
-    Map<Long, org.batfish.datamodel.ospf.OspfArea> newAreas = newProc.getAreas();
-    newAreas.putAll(
+    Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> newAreaBuilders =
         CommonUtil.toImmutableMap(
-            routingInstance.getOspfAreas(), Entry::getKey, e -> toOspfArea(e.getValue())));
+            routingInstance.getOspfAreas(), Entry::getKey, e -> toOspfAreaBuilder(e.getValue()));
     // place interfaces into areas
     for (Entry<String, Interface> e : routingInstance.getInterfaces().entrySet()) {
       String name = e.getKey();
       Interface iface = e.getValue();
-      placeInterfaceIntoArea(newAreas, name, iface, vrfName);
+      placeInterfaceIntoArea(newAreaBuilders, name, iface, vrfName);
     }
+
+    // Build areas
+    newProc.setAreas(
+        newAreaBuilders
+            .entrySet()
+            .stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
+
+    // set pointers from interfaces to their parent areas
+    newProc
+        .getAreas()
+        .values()
+        .forEach(
+            area ->
+                area.getInterfaces()
+                    .forEach(
+                        ifaceName ->
+                            _c.getVrfs()
+                                .get(vrfName)
+                                .getInterfaces()
+                                .get(ifaceName)
+                                .setOspfArea(area)));
+
     newProc.setRouterId(getOspfRouterId(routingInstance));
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
 
-  private org.batfish.datamodel.ospf.OspfArea toOspfArea(OspfArea area) {
-    org.batfish.datamodel.ospf.OspfArea newArea =
-        new org.batfish.datamodel.ospf.OspfArea(area.getName());
-    newArea.setNssa(toNssaSettings(area.getNssaSettings()));
-    newArea.setStub(toStubSettings(area.getStubSettings()));
-    newArea.setStubType(area.getStubType());
-    newArea.setSummaries(area.getSummaries());
-    newArea.setInjectDefaultRoute(area.getInjectDefaultRoute());
-    newArea.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
-    return newArea;
+  private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(OspfArea area) {
+    org.batfish.datamodel.ospf.OspfArea.Builder newAreaBuilder =
+        org.batfish.datamodel.ospf.OspfArea.builder();
+    newAreaBuilder.setNumber(area.getName());
+    newAreaBuilder.setNssaSettings(toNssaSettings(area.getNssaSettings()));
+    newAreaBuilder.setStubSettings(toStubSettings(area.getStubSettings()));
+    newAreaBuilder.setStubType(area.getStubType());
+    newAreaBuilder.addSummaries(area.getSummaries());
+    newAreaBuilder.setInjectDefaultRoute(area.getInjectDefaultRoute());
+    newAreaBuilder.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
+    return newAreaBuilder;
   }
 
   private org.batfish.datamodel.ospf.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
@@ -977,12 +1002,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void placeInterfaceIntoArea(
-      Map<Long, org.batfish.datamodel.ospf.OspfArea> newAreas,
-      String name,
+      Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> newAreas,
+      String interfaceName,
       Interface iface,
       String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
-    org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(name);
+    org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(interfaceName);
     Ip ospfArea = iface.getOspfArea();
     if (ospfArea == null) {
       return;
@@ -991,13 +1016,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _w.redFlag(
           String.format(
               "Cannot assign interface %s to area %s because it has no IP address.",
-              name, ospfArea));
+              interfaceName, ospfArea));
       return;
     }
     long ospfAreaLong = ospfArea.asLong();
-    org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
-    newArea.getInterfaces().add(name);
-    newIface.setOspfArea(newArea);
+    org.batfish.datamodel.ospf.OspfArea.Builder newArea = newAreas.get(ospfAreaLong);
+    newArea.addInterface(interfaceName);
     newIface.setOspfEnabled(true);
     newIface.setOspfPassive(iface.getOspfPassive());
     Integer ospfCost = iface.getOspfCost();
@@ -1084,7 +1108,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newRoute.setDiscard(true);
     newRoute.setGenerationPolicy(policyName);
     if (route.getAsPath() != null) {
-      newRoute.setAsPath(route.getAsPath().getAsSets());
+      newRoute.setAsPath(route.getAsPath());
     }
     _c.getRoutingPolicies().put(policyName, routingPolicy);
     _c.getRouteFilterLists().put(rflName, rfList);
@@ -2255,7 +2279,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
           DhcpRelayServerGroup asg = ri.getDhcpRelayServerGroups().get(asgName);
           if (asg != null) {
             for (org.batfish.datamodel.Interface iface : interfaces) {
-              iface.getDhcpRelayAddresses().addAll(asg.getServers());
+              iface.setDhcpRelayAddresses(
+                  ImmutableList.<Ip>builder()
+                      .addAll(iface.getDhcpRelayAddresses())
+                      .addAll(asg.getServers())
+                      .build());
             }
           }
         }

@@ -479,8 +479,8 @@ public class Settings extends BaseSettings {
     _containersLocation = dir;
   }
 
-  public void setQuestionTemplatedDirs(List<Path> questionTemplatedDirs) {
-    _questionTemplateDirs = questionTemplatedDirs;
+  public void setQuestionTemplateDirs(List<Path> questionTemplateDirs) {
+    _questionTemplateDirs = questionTemplateDirs;
   }
 
   public void setSslPoolDisable(boolean sslPoolDisable) {

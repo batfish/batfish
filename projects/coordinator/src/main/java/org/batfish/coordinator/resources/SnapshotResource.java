@@ -9,6 +9,7 @@ import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
 
 import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -16,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
-import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 
 /** Resource for servicing client API calls for a specific snapshot */
@@ -35,7 +36,7 @@ public final class SnapshotResource {
   @Path(RSC_POJO_TOPOLOGY)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
-  public Response get() throws IOException {
+  public Response getPojoTopology() throws IOException {
     org.batfish.datamodel.pojo.Topology topology =
         Main.getWorkMgr().getPojoTopology(_network, _snapshot);
     if (topology == null) {
@@ -54,10 +55,18 @@ public final class SnapshotResource {
     return new SnapshotInputObjectsResource(_network, _snapshot);
   }
 
+  @DELETE
+  public Response deleteSnapshot() {
+    if (!Main.getWorkMgr().delSnapshot(_network, _snapshot)) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok().build();
+  }
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getSnapshotMetadata() throws IOException {
-    TestrigMetadata metadata = Main.getWorkMgr().getTestrigMetadata(_network, _snapshot);
+    SnapshotMetadata metadata = Main.getWorkMgr().getSnapshotMetadata(_network, _snapshot);
     if (metadata == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

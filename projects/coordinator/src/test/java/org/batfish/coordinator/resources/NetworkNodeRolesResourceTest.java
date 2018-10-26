@@ -197,6 +197,16 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
+  public void testPutNodeRolesNull() throws IOException {
+    String network = "someContainer";
+    Main.getWorkMgr().initNetwork(network, null);
+    Response response =
+        getNodeRolesTarget(network).put(Entity.entity("", MediaType.APPLICATION_JSON));
+
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+  }
+
+  @Test
   public void testPutNodeRolesSuccess() throws IOException {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);

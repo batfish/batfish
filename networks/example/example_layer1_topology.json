@@ -1,0 +1,404 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "as1border1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as1core1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as1border1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as1border2",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as3border2",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as1border2",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as1core1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as1core1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as1border2",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as1core1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as1border1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as1border1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as3border1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet3/0"
+      },
+      "node2": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2border1",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet3/0"
+      },
+      "node2": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "host1",
+        "interfaceName": "eth0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet3/0"
+      },
+      "node2": {
+        "hostname": "host2",
+        "interfaceName": "eth0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet3/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist1",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as2core2",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2core1",
+        "interfaceName": "GigabitEthernet3/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as2dist2",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3border1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3border1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as2border2",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3border2",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as1border2",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3border2",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet0/0"
+      },
+      "node2": {
+        "hostname": "as3border2",
+        "interfaceName": "GigabitEthernet1/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet1/0"
+      },
+      "node2": {
+        "hostname": "as3border1",
+        "interfaceName": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet2/0"
+      },
+      "node2": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet3/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet3/0"
+      },
+      "node2": {
+        "hostname": "as3core1",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "host1",
+        "interfaceName": "eth0"
+      },
+      "node2": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet2/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "host2",
+        "interfaceName": "eth0"
+      },
+      "node2": {
+        "hostname": "as2dept1",
+        "interfaceName": "GigabitEthernet3/0"
+      }
+    }
+  ]
+}

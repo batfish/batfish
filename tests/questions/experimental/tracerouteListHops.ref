@@ -16,6 +16,13 @@
           "isValue" : true,
           "name" : "Traces",
           "schema" : "Set<Trace>"
+        },
+        {
+          "description" : "The total number traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "TraceCount",
+          "schema" : "Integer"
         }
       ],
       "textDesc" : "Paths for flow ${Flow}"
@@ -58,6 +65,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -65,14 +79,14 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
@@ -91,7 +105,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
@@ -109,14 +123,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.101.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dept1",
@@ -134,7 +148,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2dist1",
@@ -151,19 +165,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dist1",
@@ -181,7 +190,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "blocktelnet",
                       "inputInterface" : {
@@ -199,14 +208,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2core1",
@@ -224,7 +233,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2border1",
@@ -241,14 +250,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
@@ -267,7 +276,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1border1",
@@ -284,14 +293,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as1border1",
@@ -309,7 +318,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -317,6 +326,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "ACCEPTED"
                   }
                 ]
               }
@@ -332,6 +345,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -339,14 +359,14 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
@@ -365,7 +385,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
@@ -383,14 +403,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.101.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dept1",
@@ -408,7 +428,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2dist1",
@@ -425,19 +445,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dist1",
@@ -455,7 +470,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2core2",
@@ -472,14 +487,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2core2",
@@ -497,7 +512,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2border1",
@@ -514,14 +529,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
@@ -540,7 +555,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1border1",
@@ -557,14 +572,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as1border1",
@@ -582,7 +597,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -590,6 +605,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "ACCEPTED"
                   }
                 ]
               }
@@ -605,6 +624,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -612,14 +638,14 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
@@ -638,7 +664,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
@@ -656,14 +682,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.201.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dept1",
@@ -681,7 +707,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2dist2",
@@ -698,19 +724,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dist2",
@@ -728,7 +749,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2core2",
@@ -745,14 +766,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2core2",
@@ -770,7 +791,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2border1",
@@ -787,14 +808,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
@@ -813,7 +834,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1border1",
@@ -830,14 +851,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as1border1",
@@ -855,7 +876,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -863,6 +884,10 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "ACCEPTED"
                   }
                 ]
               }
@@ -878,6 +903,13 @@
                 },
                 "steps" : [
                   {
+                    "type" : "Originate",
+                    "action" : "ORIGINATED",
+                    "detail" : {
+                      "originatingVrf" : "default"
+                    }
+                  },
+                  {
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
@@ -885,14 +917,14 @@
                         {
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.0.1",
-                          "type" : "StaticRoute"
+                          "protocol" : "static"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
@@ -911,7 +943,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
@@ -929,14 +961,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "2.34.201.3",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dept1",
@@ -954,7 +986,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2dist2",
@@ -971,19 +1003,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
-                        },
-                        {
-                          "network" : "1.0.2.0/24",
-                          "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2dist2",
@@ -1001,7 +1028,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputFilter" : "blocktelnet",
                       "inputInterface" : {
@@ -1019,14 +1046,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "ibgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as2core1",
@@ -1044,7 +1071,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as2border1",
@@ -1061,14 +1088,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "10.12.11.1",
-                          "type" : "BgpRoute"
+                          "protocol" : "bgp"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
@@ -1087,7 +1114,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "SENT_IN",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1border1",
@@ -1104,14 +1131,14 @@
                         {
                           "network" : "1.0.2.0/24",
                           "nextHopIp" : "1.0.1.2",
-                          "type" : "OspfIntraAreaRoute"
+                          "protocol" : "ospf"
                         }
                       ]
                     }
                   },
                   {
                     "type" : "ExitOutputInterface",
-                    "action" : "SENT_OUT",
+                    "action" : "TRANSMITTED",
                     "detail" : {
                       "outputInterface" : {
                         "hostname" : "as1border1",
@@ -1129,7 +1156,7 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "TERMINATED",
+                    "action" : "RECEIVED",
                     "detail" : {
                       "inputInterface" : {
                         "hostname" : "as1core1",
@@ -1137,12 +1164,17 @@
                       },
                       "inputVrf" : "default"
                     }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "ACCEPTED"
                   }
                 ]
               }
             ]
           }
-        ]
+        ],
+        "TraceCount" : 4
       }
     ],
     "summary" : {
