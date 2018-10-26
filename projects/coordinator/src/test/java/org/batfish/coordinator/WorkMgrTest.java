@@ -102,7 +102,6 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -160,7 +159,7 @@ public final class WorkMgrTest {
         new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm the additional and original interfaces show up in the merged list
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -186,7 +185,7 @@ public final class WorkMgrTest {
         serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm original interface shows up in the merged list, even if there are no additions
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -211,7 +210,7 @@ public final class WorkMgrTest {
     addToSerializedList(serializedListPath, null, new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm original interface shows up in the merged list, even if addition is null
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -236,7 +235,7 @@ public final class WorkMgrTest {
 
     // Confirm the additional interface shows up in the serialized list, even if the serialized list
     // didn't exist in the first place
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -256,7 +255,7 @@ public final class WorkMgrTest {
         serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm no file was created (since there was no list to begin with and nothing was added)
-    MatcherAssert.assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
+    assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
   }
 
   @Test
@@ -281,7 +280,7 @@ public final class WorkMgrTest {
         new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm only one interface shows up
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -353,7 +352,7 @@ public final class WorkMgrTest {
         serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm no issue if base list didn't exist
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -395,7 +394,7 @@ public final class WorkMgrTest {
         serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm nothing changes with no subtraction
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
@@ -406,7 +405,7 @@ public final class WorkMgrTest {
         serializedListPath, null, new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm nothing changes with null subtraction
-    MatcherAssert.assertThat(
+    assertThat(
         BatfishObjectMapper.mapper()
             .readValue(
                 CommonUtil.readFile(serializedListPath),
