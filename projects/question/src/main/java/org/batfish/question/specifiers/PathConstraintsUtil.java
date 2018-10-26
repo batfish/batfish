@@ -11,6 +11,15 @@ import org.batfish.specifier.NodeSpecifier;
 public final class PathConstraintsUtil {
   private PathConstraintsUtil() {}
 
+  /**
+   * Converts {@link PathConstraintsInput} to {@link PathConstraints} using {@link
+   * FlexibleNodeSpecifierFactory} for {@link PathConstraintsInput#getTransitLocations()} {@link
+   * PathConstraintsInput#getForbiddenLocations()}, and {@link
+   * PathConstraintsInput#getEndLocation()}. If {@link PathConstraintsInput#getTransitLocations()}
+   * {@link PathConstraintsInput#getForbiddenLocations()} are not specified, default to {@link
+   * NoNodesNodeSpecifier} instead of {@link FlexibleNodeSpecifierFactory the factory's} usual
+   * default {@link org.batfish.specifier.AllNodesNodeSpecifier}.
+   */
   public static PathConstraints createPathConstraints(PathConstraintsInput input) {
     FlexibleNodeSpecifierFactory nodeSpecifierFactory = new FlexibleNodeSpecifierFactory();
     /* FlexibleNodeSpecifierFactory defaults to all nodes. We want a different default for transit
@@ -21,10 +30,9 @@ public final class PathConstraintsUtil {
             .map(nodeSpecifierFactory::buildNodeSpecifier)
             .orElse(NoNodesNodeSpecifier.INSTANCE);
     NodeSpecifier requiredTransitNodes =
-        Optional.ofNullable(input.getForbiddenLocations())
+        Optional.ofNullable(input.getTransitLocations())
             .map(nodeSpecifierFactory::buildNodeSpecifier)
             .orElse(NoNodesNodeSpecifier.INSTANCE);
-    nodeSpecifierFactory.buildNodeSpecifier(input.getTransitLocations());
     return PathConstraints.builder()
         .withStartLocation(
             new FlexibleLocationSpecifierFactory().buildLocationSpecifier(input.getStartLocation()))
