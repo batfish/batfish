@@ -88,6 +88,7 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
@@ -2395,13 +2396,21 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Reads the {@link NodeRolesData} object for the provided network. If none exists, initializes a
-   * new object.
+   * Reads the {@link NodeRolesData} object for the provided network. If none previously set for
+   * this network, first initialize node roles to the inferred roles of the earliest completed
+   * snapshot if one exists, and return them. If no suitable snapshot exists, return empty node
+   * roles. Returns {@code null} if network does not exist.
    *
    * @throws IOException If there is an error
    */
-  public NodeRolesData getNetworkNodeRoles(String network) throws IOException {
+  public @Nullable NodeRolesData getNetworkNodeRoles(@Nonnull String network) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
+      initializeNetworkNodeRolesFromEarliestSnapshot(network);
+    }
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
       return NodeRolesData.builder().build();
     }
@@ -2414,14 +2423,46 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private void initializeNetworkNodeRolesFromEarliestSnapshot(@Nonnull String network)
+      throws IOException {
+    Optional<String> snapshot =
+        listSnapshotsWithMetadata(network)
+            .stream()
+            .filter(WorkMgr::isParsed)
+            .sorted(Comparator.comparing(e -> e.getMetadata().getCreationTimestamp()))
+            .map(SnapshotMetadataEntry::getName)
+            .findFirst();
+    if (snapshot.isPresent()) {
+      putNetworkNodeRoles(getSnapshotNodeRoles(network, snapshot.get()), network);
+    }
+  }
+
+  private static boolean isParsed(@Nonnull SnapshotMetadataEntry snapshotMetadataEntry) {
+    ProcessingStatus processingStatus =
+        snapshotMetadataEntry.getMetadata().getInitializationMetadata().getProcessingStatus();
+    switch (processingStatus) {
+      case DATAPLANED:
+      case DATAPLANING:
+      case DATAPLANING_FAIL:
+      case PARSED:
+        return true;
+
+      case PARSING:
+      case PARSING_FAIL:
+      case UNINITIALIZED:
+      default:
+        return false;
+    }
+  }
+
   /**
    * Returns the {@link NodeRolesData} object containing only inferred roles for the provided
    * network and snapshot, or {@code null} if either the network or snapshot does not exist.
    *
    * @throws IOException If there is an error
    */
-  public @Nullable NodeRolesData getSnapshotNodeRoles(String network, String snapshot)
-      throws IOException {
+  public @Nullable NodeRolesData getSnapshotNodeRoles(
+      @Nonnull String network, @Nonnull String snapshot) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
     }
