@@ -1,6 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
@@ -323,6 +324,12 @@ public class TracerouteEngineImplContext {
         .get(c.getAllInterfaces().get(nextHopInterfaceName).getVrfName())
         .get(nextHopInterfaceName)
         .containsIp(arpIp, c.getIpSpaces())) {
+      FlowDisposition disposition =
+          computeDisposition(
+              currentNodeName,
+              nextHopInterfaceName,
+              transmissionContext._transformedFlow.getDstIp());
+
       stepBuilder.add(
           ExitOutputIfaceStep.builder()
               .setDetail(
@@ -335,18 +342,15 @@ public class TracerouteEngineImplContext {
                               transmissionContext._originalFlow,
                               transmissionContext._transformedFlow))
                       .build())
-              .setAction(StepAction.DROPPED)
+              .setAction(getFinalActionForDisposition(disposition))
               .build());
-      Hop neighborUnreachableOrExitsNetwork =
-          new Hop(new Node(currentNodeName), stepBuilder.build());
-      transmissionContext._hopsSoFar.add(neighborUnreachableOrExitsNetwork);
-      FlowDisposition disposition =
-          computeDisposition(
-              currentNodeName,
-              nextHopInterfaceName,
-              transmissionContext._transformedFlow.getDstIp());
+
+      Hop terminalHop = new Hop(new Node(currentNodeName), stepBuilder.build());
+
+      transmissionContext._hopsSoFar.add(terminalHop);
       Trace trace = new Trace(disposition, transmissionContext._hopsSoFar);
       transmissionContext._flowTraces.add(trace);
+
       return false;
     }
     return true;
@@ -499,7 +503,7 @@ public class TracerouteEngineImplContext {
         RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
         routingStepBuilder
             .setDetail(RoutingStepDetail.builder().build())
-            .setAction(StepAction.DROPPED);
+            .setAction(StepAction.NO_ROUTE);
         steps.add(routingStepBuilder.build());
         Hop noRouteHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(noRouteHop);
@@ -577,7 +581,7 @@ public class TracerouteEngineImplContext {
                                         new NodeInterfacePair(
                                             currentNodeName, Interface.NULL_INTERFACE_NAME))
                                     .build())
-                            .setAction(StepAction.DROPPED)
+                            .setAction(StepAction.NULL_ROUTED)
                             .build());
                     Hop nullRoutedHop =
                         new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
@@ -684,16 +688,19 @@ public class TracerouteEngineImplContext {
       transmissionContext._hopsSoFar.add(deniedOutHop);
       trace = new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
     } else {
-      // add a neighbor unreachable step and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.DROPPED);
-      List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
-      Hop neighborUnreachableHop = new Hop(new Node(currentNodeName), currentSteps);
-      transmissionContext._hopsSoFar.add(neighborUnreachableHop);
       FlowDisposition disposition =
           computeDisposition(
               currentNodeName,
               outInterface.getName(),
               transmissionContext._transformedFlow.getDstIp());
+
+      // create appropriate step
+      exitOutIfaceBuilder.setAction(getFinalActionForDisposition(disposition));
+      List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
+
+      Hop terminalHop = new Hop(new Node(currentNodeName), currentSteps);
+
+      transmissionContext._hopsSoFar.add(terminalHop);
       trace = new Trace(disposition, transmissionContext._hopsSoFar);
     }
     transmissionContext._flowTraces.add(trace);
