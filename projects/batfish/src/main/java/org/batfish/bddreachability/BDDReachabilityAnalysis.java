@@ -197,8 +197,8 @@ public class BDDReachabilityAnalysis {
   }
 
   /**
-   * Run Floyd-Warshall from one step past the initial state. Each round, check if the initial state
-   * has been reached yet.
+   * Analyze reachability from one step past the initial state. Each round, check if the initial
+   * state has been reached yet.
    */
   private boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
     Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
@@ -219,7 +219,7 @@ public class BDDReachabilityAnalysis {
             BDD preStateBDD = reachable.get(preState);
             preStateOutEdges.forEach(
                 (postState, edge) -> {
-                  BDD result = edge.traverseBackward(preStateBDD);
+                  BDD result = edge.traverseForward(preStateBDD);
                   if (result.isZero()) {
                     return;
                   }
