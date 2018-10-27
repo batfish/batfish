@@ -139,8 +139,12 @@ final class TracerouteUtils {
         .build();
   }
 
+  /**
+   * Gets the final actions for dispositions returned by {@link
+   * TracerouteEngineImplContext#computeDisposition(String, String, Ip)}
+   */
   static StepAction getFinalActionForDisposition(FlowDisposition disposition) {
-    StepAction finalAction = INSUFFICIENT_INFO;
+    StepAction finalAction;
     switch (disposition) {
       case DELIVERED_TO_SUBNET:
         finalAction = DELIVERED_TO_SUBNET;
@@ -148,12 +152,12 @@ final class TracerouteUtils {
       case EXITS_NETWORK:
         finalAction = EXITS_NETWORK;
         break;
-      case INSUFFICIENT_INFO:
-        finalAction = INSUFFICIENT_INFO;
-        break;
       case NEIGHBOR_UNREACHABLE:
         finalAction = NEIGHBOR_UNREACHABLE;
         break;
+      case INSUFFICIENT_INFO:
+      default:
+        finalAction = INSUFFICIENT_INFO;
     }
     return finalAction;
   }
