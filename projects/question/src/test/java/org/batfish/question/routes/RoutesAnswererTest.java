@@ -318,6 +318,28 @@ public class RoutesAnswererTest {
   }
 
   @Test
+  public void testBgpRoutesHaveTagColumn() {
+    Ip ip = new Ip("1.1.1.1");
+    List<Row> rows =
+        getRowsForBgpRoutes(
+            "node",
+            "vrf",
+            null,
+            Pattern.compile(".*"),
+            ImmutableSet.of(
+                new Builder()
+                    .setNetwork(new Prefix(ip, MAX_PREFIX_LENGTH))
+                    .setOriginType(OriginType.IGP)
+                    .setOriginatorIp(ip)
+                    .setReceivedFromIp(ip)
+                    .setCommunities(ImmutableSortedSet.of(65537L))
+                    .setProtocol(RoutingProtocol.BGP)
+                    .build()));
+
+    assertThat(rows.get(0).get(COL_TAG, Schema.STRING), nullValue());
+  }
+
+  @Test
   public void testComputeNextHopNode() {
     assertThat(computeNextHopNode(null, ImmutableMap.of()), nullValue());
     assertThat(computeNextHopNode(new Ip("1.1.1.1"), null), nullValue());
