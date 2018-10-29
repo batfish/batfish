@@ -1,4 +1,4 @@
-package org.batfish.question.reducedreachability;
+package org.batfish.question.differentialreachability;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
