@@ -706,6 +706,18 @@ public class TracerouteEngineImplContext {
     transmissionContext._flowTraces.add(trace);
   }
 
+  /**
+   * Returns dispositions for the special case when a {@link Flow} either exits the network, gets
+   * delivered to subnet, gets terminated due to an unreachable neighbor or when information is not
+   * sufficient to compute disposition
+   *
+   * @param hostname Hostname of the current {@link Hop}
+   * @param outgoingInterfaceName output interface for the current {@link Hop}
+   * @param dstIp Destination IP for the {@link Flow}
+   * @return one of {@link FlowDisposition#DELIVERED_TO_SUBNET}, {@link
+   *     FlowDisposition#EXITS_NETWORK}, {@link FlowDisposition#INSUFFICIENT_INFO} or {@link
+   *     FlowDisposition#NEIGHBOR_UNREACHABLE}
+   */
   private FlowDisposition computeDisposition(
       String hostname, String outgoingInterfaceName, Ip dstIp) {
     String vrfName =
