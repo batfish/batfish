@@ -14399,14 +14399,24 @@
             "          (redistribute_ospf_bgp_tail",
             "            REDISTRIBUTE:'redistribute'",
             "            OSPF:'ospf'",
-            "            procnum = DEC:'2'",
+            "            procname = (variable",
+            "              VARIABLE:'abc')",
             "            NEWLINE:'\\n')))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_ospf_bgp_tail",
             "            REDISTRIBUTE:'redistribute'",
             "            OSPF:'ospf'",
-            "            procnum = DEC:'2'",
+            "            procname = (variable",
+            "              DEC:'2')",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
+            "          (redistribute_ospf_bgp_tail",
+            "            REDISTRIBUTE:'redistribute'",
+            "            OSPF:'ospf'",
+            "            procname = (variable",
+            "              DEC:'2')",
             "            VRF:'vrf'",
             "            vrf = (variable",
             "              VARIABLE:'vrf1')",
@@ -14489,7 +14499,8 @@
             "            (redistribute_ospfv3_bgp_tail",
             "              REDISTRIBUTE:'redistribute'",
             "              OSPFV3:'ospfv3'",
-            "              procnum = DEC:'1'",
+            "              procname = (variable",
+            "                DEC:'1')",
             "              ROUTE_MAP:'route-map'",
             "              map = (variable",
             "                VARIABLE:'ospfv3_map'  <== mode:M_RouteMap)",
@@ -30253,6 +30264,40 @@
             "          PASSIVE_INTERFACE:'passive-interface'",
             "          NEWLINE:'\\n'  <== mode:M_Interface))))",
             "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'4.4.4.0'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_ospf_area",
+            "          IP:'ip'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            VARIABLE:'abcdefg')",
+            "          AREA:'area'",
+            "          area = DEC:'0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_ospf_passive_interface",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          OSPF:'ospf'",
+            "          PASSIVE_INTERFACE:'passive-interface'",
+            "          NEWLINE:'\\n'  <== mode:M_Interface))))",
+            "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
             "      OSPF:'ospf'",
@@ -30678,7 +30723,8 @@
             "    (s_router_ospfv3",
             "      ROUTER:'router'",
             "      OSPFV3:'ospfv3'",
-            "      procnum = DEC:'1'",
+            "      procname = (variable",
+            "        DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (rov3_address_family",
             "        ADDRESS_FAMILY:'address-family'",
@@ -30882,7 +30928,8 @@
             "      IPV6:'ipv6'",
             "      ROUTER:'router'",
             "      OSPF:'ospf'",
-            "      procnum = DEC:'1'",
+            "      procname = (variable",
+            "        DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (ro6_router_id",
             "        ROUTER_ID:'router-id'",
@@ -41078,7 +41125,8 @@
             "    (s_router_ospfv3",
             "      ROUTER:'router'",
             "      OSPFV3:'ospfv3'",
-            "      procnum = DEC:'1'",
+            "      procname = (variable",
+            "        DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (rov3_common",
             "        (rov3_null",
@@ -57010,11 +57058,17 @@
               "Comment" : "This feature is not currently supported",
               "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf 2"
+              "Text" : "redistribute ospf abc"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 30,
+              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "redistribute ospf 2"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 31,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
             }
@@ -57190,91 +57244,91 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 23,
+              "Line" : 28,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 24,
+              "Line" : 29,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 34,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 30,
+              "Line" : 35,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 31,
+              "Line" : 36,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 48,
+              "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 49,
+              "Line" : 54,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in ethernet0/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 50,
+              "Line" : 55,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 56,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 52,
+              "Line" : 57,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 58,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 59,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
+              "Line" : 66,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 77,
+              "Line" : 82,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 78,
+              "Line" : 83,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
             }
@@ -58292,10 +58346,10 @@
           "bgp template peer-policy" : {
             "p1" : {
               "definitionLines" : [
-                33,
                 34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             }
@@ -58303,25 +58357,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                52
+                53
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                50
+                51
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                54
+                55
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                48
+                49
               ],
               "numReferrers" : 1
             }
@@ -59395,6 +59449,15 @@
                 15
               ],
               "numReferrers" : 3
+            },
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                17,
+                18,
+                19,
+                20
+              ],
+              "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
@@ -62099,39 +62162,39 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                35
+                36
               ]
             }
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                45
+                46
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                46
+                47
               ]
             },
             "UNSUPP-MAP" : {
               "bgp unsuppress-map" : [
-                38
+                39
               ]
             },
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                31
+                32
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                32
+                33
               ]
             },
             "bloop" : {
@@ -62141,15 +62204,15 @@
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                41
+                42
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                37,
-                38
+                38,
+                39
               ]
             },
             "10.20.2.2" : {
@@ -62807,7 +62870,12 @@
                 12
               ],
               "router ospf distribute-list in" : [
-                49
+                54
+              ]
+            },
+            "Ethernet1/0" : {
+              "interface" : [
+                17
               ]
             },
             "Loopback0" : {
@@ -62819,63 +62887,63 @@
           "ipv4 prefix-list" : {
             "INFILTER" : {
               "ospf area filter-list" : [
-                77
+                82
               ]
             },
             "OUTFILTER" : {
               "ospf area filter-list" : [
-                78
+                83
               ]
             },
             "filterName" : {
               "ospf area filter-list" : [
-                23,
-                24
+                28,
+                29
               ]
             },
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                51
+                56
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                52
+                57
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                48,
-                49
+                53,
+                54
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                50
+                55
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                63
+                68
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                64
+                69
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                53
+                58
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                54
+                59
               ]
             }
           }
@@ -64549,24 +64617,24 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                34
+                35
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                35
+                36
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                31
+                32
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                32
+                33
               ]
             },
             "bloop" : {
@@ -64578,8 +64646,8 @@
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                37,
-                38
+                38,
+                39
               ]
             },
             "10.20.2.2" : {
@@ -64893,47 +64961,47 @@
           "ipv4 prefix-list" : {
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                51
+                56
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                52
+                57
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                48,
-                49
+                53,
+                54
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                50
+                55
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                63
+                68
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                64
+                69
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                53
+                58
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                54
+                59
               ]
             }
           }

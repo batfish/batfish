@@ -9505,6 +9505,37 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "Ethernet1/0" : {
+            "name" : "Ethernet1/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "4.4.4.0/24"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet1/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfArea" : 0,
+            "ospfCost" : 4000,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "4.4.4.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "Loopback0" : {
             "name" : "Loopback0",
             "accessVlan" : 0,
@@ -9694,15 +9725,23 @@
             "name" : "default",
             "interfaces" : [
               "Ethernet0/0",
+              "Ethernet1/0",
               "Loopback0"
             ],
             "ospfProcess" : {
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
+                  "interfaces" : [
+                    "Ethernet1/0"
+                  ],
                   "metricOfDefaultRoute" : 0,
                   "name" : 0,
-                  "stubType" : "NONE",
+                  "nssa" : {
+                    "defaultOriginateType" : "INTER_AREA",
+                    "suppressType3" : true
+                  },
+                  "stubType" : "NSSA",
                   "summaries" : {
                     "1.2.3.0/24" : {
                       "advertise" : true,
