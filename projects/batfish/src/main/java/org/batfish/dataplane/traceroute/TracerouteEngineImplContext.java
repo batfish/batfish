@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -211,7 +210,6 @@ public class TracerouteEngineImplContext {
 
   private void processCurrentNextHopInterfaceEdges(
       String currentNodeName,
-      Set<Hop> visitedHops,
       @Nullable String srcInterface,
       Ip dstIp,
       String nextHopInterfaceName,
@@ -266,7 +264,6 @@ public class TracerouteEngineImplContext {
             edge.getInt2(),
             transmissionContext,
             transmissionContext._transformedFlow,
-            visitedHops,
             breadcrumbs);
       }
     }
@@ -373,7 +370,6 @@ public class TracerouteEngineImplContext {
                   flowTraces.computeIfAbsent(flow, k -> new ArrayList<>());
               validateInputs(_configurations, flow);
               String ingressNodeName = flow.getIngressNode();
-              Set<Hop> visitedHops = Collections.emptySet();
               List<Hop> hops = new ArrayList<>();
               Stack<Breadcrumb> breadcrumbs = new Stack<>();
               String ingressInterfaceName = flow.getIngressInterface();
@@ -388,12 +384,7 @@ public class TracerouteEngineImplContext {
                         flow,
                         flow);
                 processHop(
-                    ingressNodeName,
-                    ingressInterfaceName,
-                    transmissionContext,
-                    flow,
-                    visitedHops,
-                    breadcrumbs);
+                    ingressNodeName, ingressInterfaceName, transmissionContext, flow, breadcrumbs);
               } else {
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
@@ -404,8 +395,7 @@ public class TracerouteEngineImplContext {
                         Maps.newTreeMap(),
                         flow,
                         flow);
-                processHop(
-                    ingressNodeName, null, transmissionContext, flow, visitedHops, breadcrumbs);
+                processHop(ingressNodeName, null, transmissionContext, flow, breadcrumbs);
               }
             });
     return new TreeMap<>(flowTraces);
@@ -416,7 +406,6 @@ public class TracerouteEngineImplContext {
       @Nullable String inputIfaceName,
       TransmissionContext oldTransmissionContext,
       Flow currentFlow,
-      Set<Hop> visitedHops,
       Stack<Breadcrumb> breadcrumbs) {
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
@@ -638,7 +627,6 @@ public class TracerouteEngineImplContext {
                   } else {
                     processCurrentNextHopInterfaceEdges(
                         currentNodeName,
-                        visitedHops,
                         inputIfaceName,
                         dstIp,
                         nextHopInterfaceName,
