@@ -260,7 +260,7 @@ if_ip_nbar
 
 if_ip_ospf_area
 :
-   IP OSPF procnum = DEC AREA area = DEC NEWLINE
+   IP OSPF procname = variable AREA area = DEC NEWLINE
 ;
 
 if_ip_ospf_cost
@@ -334,7 +334,7 @@ if_ip_router_isis
 
 if_ip_router_ospf_area
 :
-   IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
+   IP ROUTER OSPF procname = variable AREA area = IP_ADDRESS NEWLINE
 ;
 
 if_ip_rtp

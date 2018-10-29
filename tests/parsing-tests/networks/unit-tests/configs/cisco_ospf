@@ -14,6 +14,11 @@ interface ethernet0/0
  ip ospf 1 area 0
  no ip ospf passive-interface
 !
+interface ethernet1/0
+ ip address 4.4.4.0 255.255.255.0
+ ip ospf abcdefg area 0
+ no ip ospf passive-interface
+!
 router ospf abcdefg
 !
 router ospf 1
