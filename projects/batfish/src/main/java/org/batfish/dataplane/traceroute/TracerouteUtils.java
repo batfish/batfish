@@ -1,7 +1,11 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.flow.StepAction.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.flow.StepAction.EXITS_NETWORK;
+import static org.batfish.datamodel.flow.StepAction.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
@@ -11,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -22,6 +27,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.StepAction;
 
 @ParametersAreNonnullByDefault
 final class TracerouteUtils {
@@ -131,5 +137,28 @@ final class TracerouteUtils {
         .setDetail(enterSrcStepDetailBuilder.build())
         .setAction(RECEIVED)
         .build();
+  }
+
+  /**
+   * Gets the final actions for dispositions returned by {@link
+   * TracerouteEngineImplContext#computeDisposition(String, String, Ip)}
+   */
+  static StepAction getFinalActionForDisposition(FlowDisposition disposition) {
+    StepAction finalAction;
+    switch (disposition) {
+      case DELIVERED_TO_SUBNET:
+        finalAction = DELIVERED_TO_SUBNET;
+        break;
+      case EXITS_NETWORK:
+        finalAction = EXITS_NETWORK;
+        break;
+      case NEIGHBOR_UNREACHABLE:
+        finalAction = NEIGHBOR_UNREACHABLE;
+        break;
+      case INSUFFICIENT_INFO:
+      default:
+        finalAction = INSUFFICIENT_INFO;
+    }
+    return finalAction;
   }
 }
