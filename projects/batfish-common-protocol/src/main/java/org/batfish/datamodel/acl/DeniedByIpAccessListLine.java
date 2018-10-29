@@ -1,6 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,29 +20,17 @@ public final class DeniedByIpAccessListLine implements TerminalTraceEvent {
 
   private static final long serialVersionUID = 1L;
 
-  private static String computeDescription(
-      int index,
-      @Nonnull String lineDescription,
-      @Nonnull String name,
-      @Nullable String sourceName,
-      @Nullable String sourceType) {
-    if (sourceName != null) {
-      return String.format(
-          "Flow denied by '%s' named '%s', index %d: %s",
-          sourceType, sourceName, index, lineDescription);
-    }
-    return String.format(
-        "Flow denied by ACL named '%s', index %d: %s", name, index, lineDescription);
-  }
-
   @JsonCreator
   private static DeniedByIpAccessListLine create(
-      @JsonProperty(PROP_DESCRIPTION) String description,
-      @JsonProperty(PROP_INDEX) int index,
-      @JsonProperty(PROP_LINE_DESCRIPTION) @Nonnull String lineDescription,
-      @JsonProperty(PROP_NAME) @Nonnull String name) {
-    return new DeniedByIpAccessListLine(
-        requireNonNull(description), index, requireNonNull(lineDescription), requireNonNull(name));
+      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
+      @Nullable @JsonProperty(PROP_INDEX) Integer index,
+      @Nullable @JsonProperty(PROP_LINE_DESCRIPTION) String lineDescription,
+      @Nullable @JsonProperty(PROP_NAME) String name) {
+    checkArgument(description != null, "Missing %s", PROP_DESCRIPTION);
+    checkArgument(index != null, "Missing %s", PROP_INDEX);
+    checkArgument(lineDescription != null, "Missing %s", PROP_LINE_DESCRIPTION);
+    checkArgument(name != null, "Missing %s", PROP_NAME);
+    return new DeniedByIpAccessListLine(description, index, lineDescription, name);
   }
 
   private final String _description;
@@ -54,19 +42,6 @@ public final class DeniedByIpAccessListLine implements TerminalTraceEvent {
   private final String _name;
 
   public DeniedByIpAccessListLine(
-      int index,
-      @Nonnull String lineDescription,
-      @Nonnull String name,
-      @Nullable String sourceName,
-      @Nullable String sourceType) {
-    this(
-        computeDescription(index, lineDescription, name, sourceName, sourceType),
-        index,
-        lineDescription,
-        name);
-  }
-
-  private DeniedByIpAccessListLine(
       @Nonnull String description,
       int index,
       @Nonnull String lineDescription,

@@ -106,22 +106,20 @@ public final class AclTracer extends Evaluator {
   public void recordAction(
       @Nonnull IpAccessList ipAccessList, int index, @Nonnull IpAccessListLine line) {
     String lineDescription = firstNonNull(line.getName(), line.toString());
+    String type = firstNonNull(ipAccessList.getSourceType(), "filter");
+    String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
+    String actionStr = line.getAction() == LineAction.PERMIT ? "permitted" : "denied";
+    String description =
+        String.format(
+            "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
     if (line.getAction() == LineAction.PERMIT) {
       _currentTreeNode.setEvent(
           new PermittedByIpAccessListLine(
-              index,
-              lineDescription,
-              ipAccessList.getName(),
-              ipAccessList.getSourceName(),
-              ipAccessList.getSourceType()));
+              description, index, lineDescription, ipAccessList.getName()));
     } else {
       _currentTreeNode.setEvent(
           new DeniedByIpAccessListLine(
-              index,
-              lineDescription,
-              ipAccessList.getName(),
-              ipAccessList.getSourceName(),
-              ipAccessList.getSourceType()));
+              description, index, lineDescription, ipAccessList.getName()));
     }
   }
 
