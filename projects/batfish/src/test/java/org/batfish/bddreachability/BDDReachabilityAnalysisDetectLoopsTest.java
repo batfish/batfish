@@ -102,7 +102,4 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
             .bddReachabilityAnalysis(srcIpSpaceAssignment);
     analysis.detectLoops();
   }
-
-  @Test
-  public void testDetectLoopsWithNat() {}
 }

@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link Batfish#bddLoopDetection()}. */
 public class BatfishBDDDetectLoopsTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
 
