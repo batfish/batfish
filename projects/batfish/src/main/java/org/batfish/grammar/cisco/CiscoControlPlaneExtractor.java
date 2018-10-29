@@ -7628,9 +7628,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.MATCH() != null) {
         todo(ctx);
       }
-      if (ctx.procnum != null) {
-        int procNum = toInteger(ctx.procnum);
-        r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      if (ctx.procname != null) {
+        r.getSpecialAttributes()
+            .put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, ctx.procname.getText());
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");

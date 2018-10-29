@@ -26,6 +26,7 @@ router bgp 1
  bgp bestpath med always
  redistribute connected route-map bloop
  redistribute eigrp 1
+ redistribute ospf abc
  redistribute ospf 2
  redistribute ospf 2 vrf vrf1
  redistribute static metric 4294967295 route-map abcdefg
