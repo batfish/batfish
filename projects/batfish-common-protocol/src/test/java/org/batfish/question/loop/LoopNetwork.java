@@ -17,7 +17,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
-public class TestLoopNetwork {
+public class LoopNetwork {
   /*
    * Create a network with a forwarding loop. Optionally include an ACL that denies the traffic that
    * loops.

@@ -23,7 +23,7 @@ public class DetectLoopsTest {
   Batfish _batfish;
 
   private void initNetwork(boolean includeLoop) throws IOException {
-    SortedMap<String, Configuration> configs = TestLoopNetwork.testLoopNetwork(includeLoop);
+    SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(includeLoop);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     _batfish.computeDataPlane(false);
   }
