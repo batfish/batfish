@@ -56,6 +56,7 @@ import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
+import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -149,7 +150,6 @@ public class TracerouteEngineImplContext {
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
   private final boolean _ignoreAcls;
-  private final Stack<Breadcrumb> _breadcrumbs;
 
   public TracerouteEngineImplContext(
       DataPlane dataPlane,
@@ -162,7 +162,6 @@ public class TracerouteEngineImplContext {
     _fibs = fibs;
     _ignoreAcls = ignoreAcls;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
-    _breadcrumbs = new Stack<>();
   }
 
   /**
@@ -219,7 +218,8 @@ public class TracerouteEngineImplContext {
       @Nullable Ip finalNextHopIp,
       SortedSet<Edge> edges,
       TransmissionContext transmissionContext,
-      ImmutableList.Builder<Step<?>> stepBuilder) {
+      ImmutableList.Builder<Step<?>> stepBuilder,
+      Stack<Breadcrumb> breadcrumbs) {
     if (!processFlowTransmission(
         currentNodeName,
         srcInterface,
@@ -266,7 +266,8 @@ public class TracerouteEngineImplContext {
             edge.getInt2(),
             transmissionContext,
             transmissionContext._transformedFlow,
-            visitedHops);
+            visitedHops,
+            breadcrumbs);
       }
     }
   }
@@ -374,6 +375,7 @@ public class TracerouteEngineImplContext {
               String ingressNodeName = flow.getIngressNode();
               Set<Hop> visitedHops = Collections.emptySet();
               List<Hop> hops = new ArrayList<>();
+              Stack<Breadcrumb> breadcrumbs = new Stack<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
                 TransmissionContext transmissionContext =
@@ -386,7 +388,12 @@ public class TracerouteEngineImplContext {
                         flow,
                         flow);
                 processHop(
-                    ingressNodeName, ingressInterfaceName, transmissionContext, flow, visitedHops);
+                    ingressNodeName,
+                    ingressInterfaceName,
+                    transmissionContext,
+                    flow,
+                    visitedHops,
+                    breadcrumbs);
               } else {
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
@@ -397,7 +404,8 @@ public class TracerouteEngineImplContext {
                         Maps.newTreeMap(),
                         flow,
                         flow);
-                processHop(ingressNodeName, null, transmissionContext, flow, visitedHops);
+                processHop(
+                    ingressNodeName, null, transmissionContext, flow, visitedHops, breadcrumbs);
               }
             });
     return new TreeMap<>(flowTraces);
@@ -408,7 +416,8 @@ public class TracerouteEngineImplContext {
       @Nullable String inputIfaceName,
       TransmissionContext oldTransmissionContext,
       Flow currentFlow,
-      Set<Hop> visitedHops) {
+      Set<Hop> visitedHops,
+      Stack<Breadcrumb> breadcrumbs) {
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
     if (currentConfiguration == null) {
@@ -465,7 +474,7 @@ public class TracerouteEngineImplContext {
 
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
-    if (_breadcrumbs.contains(breadcrumb)) {
+    if (breadcrumbs.contains(breadcrumb)) {
       Hop loopHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
       transmissionContext._hopsSoFar.add(loopHop);
       Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
@@ -473,7 +482,7 @@ public class TracerouteEngineImplContext {
       return;
     }
 
-    _breadcrumbs.push(breadcrumb);
+    breadcrumbs.push(breadcrumb);
     // use try/finally to make sure we pop off the breadcrumb
     try {
       // Accept if the flow is destined for this vrf on this host.
@@ -500,7 +509,7 @@ public class TracerouteEngineImplContext {
       Set<String> nextHopInterfaces = currentFib.getNextHopInterfaces(dstIp);
       if (nextHopInterfaces.isEmpty()) {
         // add a step for  NO_ROUTE from source to output interface
-        RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
+        Builder routingStepBuilder = RoutingStep.builder();
         routingStepBuilder
             .setDetail(RoutingStepDetail.builder().build())
             .setAction(StepAction.NO_ROUTE);
@@ -636,12 +645,13 @@ public class TracerouteEngineImplContext {
                         finalNextHopIp,
                         edges,
                         clonedTransmissionContext,
-                        clonedStepsBuilder);
+                        clonedStepsBuilder,
+                        breadcrumbs);
                   }
                 });
       }
     } finally {
-      _breadcrumbs.pop();
+      breadcrumbs.pop();
     }
   }
 
