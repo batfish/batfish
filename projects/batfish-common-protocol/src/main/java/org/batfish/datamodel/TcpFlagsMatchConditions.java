@@ -94,6 +94,13 @@ public final class TcpFlagsMatchConditions
   /** Shorthand for match conditions for a ACK (acknowledgement) packet */
   public static final TcpFlagsMatchConditions ACK_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setAck(true).build()).setUseAck(true).build();
+  /** Shorthand for match conditions for a SYN-ACK packet */
+  public static final TcpFlagsMatchConditions SYN_ACK_TCP_FLAG =
+      builder()
+          .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
+          .setUseAck(true)
+          .setUseSyn(true)
+          .build();
 
   private static final Comparator<TcpFlagsMatchConditions> COMPARATOR =
       Comparator.comparing(TcpFlagsMatchConditions::getTcpFlags)

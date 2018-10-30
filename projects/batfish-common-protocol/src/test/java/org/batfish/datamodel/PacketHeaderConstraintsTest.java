@@ -21,7 +21,9 @@ import static org.hamcrest.Matchers.nullValue;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.Collections;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
@@ -389,6 +391,7 @@ public class PacketHeaderConstraintsTest {
   @Test
   public void testIpProtocolExpansion() {
     assertThat(expandProtocols(null), nullValue());
+    assertThat(expandProtocols(""), nullValue());
     assertThat(expandProtocols("TCP"), contains(IpProtocol.TCP));
     assertThat(expandProtocols(" TCP , UDP"), containsInAnyOrder(IpProtocol.TCP, IpProtocol.UDP));
     assertThat(expandProtocols("6,17"), containsInAnyOrder(IpProtocol.TCP, IpProtocol.UDP));
@@ -432,5 +435,24 @@ public class PacketHeaderConstraintsTest {
     // test (de)serialization
     PacketHeaderConstraints phcDup = BatfishObjectMapper.clone(phc, PacketHeaderConstraints.class);
     assertThat(phc, equalTo(phcDup));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            PacketHeaderConstraints.unconstrained(), PacketHeaderConstraints.builder().build())
+        .addEqualityGroup(PacketHeaderConstraints.builder().setDstIp("1.1.1.1"))
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder().setSrcIp("2.2.2.2").setDstIp("1.1.1.1").build())
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder()
+                .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG))
+                .build())
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder()
+                .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.SYN_ACK_TCP_FLAG))
+                .build())
+        .testEquals();
   }
 }
