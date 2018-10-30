@@ -1,5 +1,5 @@
 {
-  "class" : "org.batfish.question.reducedreachability.ReducedReachabilityQuestion",
+  "class" : "org.batfish.question.differentialreachability.DifferentialReachabilityQuestion",
   "headers" : {
     "dstIps" : "ddd",
     "srcIps" : "sss"
@@ -13,13 +13,13 @@
   "differential" : true,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Detect reduced reachability.",
+    "description" : "Detect differential reachability.",
     "instanceName" : "qname",
     "longDescription" : "Finds flows that are accepted in one snapshot but dropped in another",
     "tags" : [
       "dataPlane",
-      "reachability",
-      "reduced reachability"
+      "differential",
+      "reachability"
     ],
     "variables" : {
       "actions" : {

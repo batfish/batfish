@@ -132,10 +132,10 @@ junit_tests(
 )
 
 junit_tests(
-    name = "ReducedReachabilityTest",
+    name = "DifferentialReachabilityTest",
     size = "small",
     srcs = [
-        "src/test/java/org/batfish/question/reducedreachability/ReducedReachabilityTest.java",
+        "src/test/java/org/batfish/question/differentialreachability/DifferentialReachabilityTest.java",
     ],
     deps = [
         "//projects/batfish",
