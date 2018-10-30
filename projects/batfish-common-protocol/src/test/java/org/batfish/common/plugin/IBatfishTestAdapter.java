@@ -423,6 +423,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Set<Flow> bddLoopDetection() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     throw new UnsupportedOperationException();
   }

@@ -230,6 +230,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
+  Set<Flow> bddLoopDetection();
+
   Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters);
 
   @Nullable
