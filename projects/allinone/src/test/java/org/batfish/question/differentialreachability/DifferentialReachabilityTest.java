@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link DifferentialReachabilityQuestion}. */
-public class ReducedReachabilityTest {
+public class DifferentialReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -56,7 +56,7 @@ public class ReducedReachabilityTest {
 
   private org.batfish.datamodel.Vrf.Builder _vb;
 
-  public ReducedReachabilityTest() {}
+  public DifferentialReachabilityTest() {}
 
   @Before
   public void setup() {
