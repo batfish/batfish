@@ -60,7 +60,7 @@ public final class ColumnFilter {
   }
 
   public boolean matches(@Nonnull Row row) {
-    return row.get(_column).toString().contains(_filterText);
+    return row.get(_column).toString().toLowerCase().contains(_filterText.toLowerCase());
   }
 
   @Override
