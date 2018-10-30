@@ -1,5 +1,5 @@
 {
-  "class": "org.batfish.question.reducedreachability.DifferentialReachabilityQuestion",
+  "class": "org.batfish.question.differentialreachability.DifferentialReachabilityQuestion",
   "differential": true,
   "actions": "${actions}",
   "headers": "${headers}",

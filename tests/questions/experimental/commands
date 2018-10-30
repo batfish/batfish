@@ -48,7 +48,7 @@ test -raw tests/questions/experimental/prefixTracer.ref validate-template prefix
 # validate reachability
 test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
-# validate reducedReachability
+# validate differentialReachability
 test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
 
 # validate resolveFilterSpecifier
