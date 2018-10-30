@@ -62,6 +62,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -3852,6 +3853,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
     }
+  }
+
+  @Override
+  public Set<Flow> bddLoopDetection() {
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    BDDReachabilityAnalysis analysis =
+        bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
+            getAllSourcesInferFromLocationIpSpaceAssignment());
+    Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
+
+    String flowTag = getFlowTag();
+    return loopBDDs
+        .entrySet()
+        .stream()
+        .map(
+            entry ->
+                pkt.getFlow(entry.getValue())
+                    .map(
+                        fb -> {
+                          IngressLocation loc = entry.getKey();
+                          fb.setTag(flowTag);
+                          fb.setIngressNode(loc.getNode());
+                          switch (loc.getType()) {
+                            case INTERFACE_LINK:
+                              fb.setIngressInterface(loc.getInterface());
+                              break;
+                            case VRF:
+                              fb.setIngressVrf(loc.getVrf());
+                              break;
+                            default:
+                              throw new BatfishException("Unknown Location Type: " + loc.getType());
+                          }
+                          return fb.build();
+                        }))
+        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
