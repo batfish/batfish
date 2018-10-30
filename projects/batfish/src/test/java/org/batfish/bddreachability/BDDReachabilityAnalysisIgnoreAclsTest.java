@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FlowDisposition;
@@ -40,7 +39,6 @@ import org.junit.rules.TemporaryFolder;
 
 public class BDDReachabilityAnalysisIgnoreAclsTest {
   private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp());
   private static final String NODE1 = "node1";
   private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
   private static final InterfaceAddress NODE2_ADDR = new InterfaceAddress("1.2.3.2/24");
@@ -111,14 +109,13 @@ public class BDDReachabilityAnalysisIgnoreAclsTest {
                 ImmutableList.of(
                     IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(DENIED_IN_SRC_IP))))
             .build();
-    Interface iface2 =
-        nf.interfaceBuilder()
-            .setOwner(c2)
-            .setVrf(vrf2)
-            .setActive(true)
-            .setAddress(NODE2_ADDR)
-            .setIncomingFilter(incomingFilter)
-            .build();
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setVrf(vrf2)
+        .setActive(true)
+        .setAddress(NODE2_ADDR)
+        .setIncomingFilter(incomingFilter)
+        .build();
 
     IFACE1_LOCATION = new InterfaceLocation(c1.getHostname(), iface1.getName());
 
