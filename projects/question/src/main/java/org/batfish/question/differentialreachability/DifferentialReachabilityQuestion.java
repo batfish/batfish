@@ -1,4 +1,4 @@
-package org.batfish.question.reducedreachability;
+package org.batfish.question.differentialreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.specifiers.DispositionSpecifier.SUCCESS_SPECIFIER;
@@ -13,7 +13,7 @@ import org.batfish.question.specifiers.DispositionSpecifier;
 import org.batfish.question.specifiers.PathConstraintsInput;
 
 /** A zero-input question to check for reduced reachability between base and delta snapshots. */
-public final class ReducedReachabilityQuestion extends Question {
+public final class DifferentialReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADERS = "headers";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
@@ -23,7 +23,7 @@ public final class ReducedReachabilityQuestion extends Question {
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
 
   @JsonCreator
-  public ReducedReachabilityQuestion(
+  public DifferentialReachabilityQuestion(
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
@@ -33,7 +33,7 @@ public final class ReducedReachabilityQuestion extends Question {
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
-  public ReducedReachabilityQuestion() {
+  public DifferentialReachabilityQuestion() {
     this(null, null, null);
   }
 
