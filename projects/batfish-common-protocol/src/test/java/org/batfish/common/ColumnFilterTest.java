@@ -1,6 +1,9 @@
 package org.batfish.common;
 
+import static org.junit.Assert.assertTrue;
+
 import com.google.common.testing.EqualsTester;
+import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
 public final class ColumnFilterTest {
@@ -17,5 +20,14 @@ public final class ColumnFilterTest {
         .addEqualityGroup(group2Elem1)
         .addEqualityGroup(group3Elem1)
         .testEquals();
+  }
+
+  @Test
+  public void testMatches() {
+    String columnName = "column";
+    String filterText = "bLah";
+    ColumnFilter filter = new ColumnFilter(columnName, filterText);
+    Row row = Row.builder().put(columnName, "BlaHah").build();
+    assertTrue(filter.matches(row));
   }
 }
