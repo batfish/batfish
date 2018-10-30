@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -129,7 +130,7 @@ public class PacketHeaderConstraints {
   @Nullable
   @VisibleForTesting
   static Set<IpProtocol> expandProtocols(@Nullable String ipProtocols) {
-    if (ipProtocols == null) {
+    if (Strings.isNullOrEmpty(ipProtocols)) {
       return null;
     }
     String[] atoms = ipProtocols.trim().split(",");
