@@ -2,10 +2,15 @@ package org.batfish.dataplane.traceroute;
 
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -44,6 +49,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.dataplane.TracerouteEngineImpl;
@@ -470,5 +476,17 @@ public class TracerouteEngineImplTest {
         TracerouteEngineImpl.getInstance()
             .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), true);
     assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(LOOP)));
+  }
+
+  @Test
+  public void testGetFinalActionForDisposition() {
+    assertThat(
+        getFinalActionForDisposition(DELIVERED_TO_SUBNET), equalTo(StepAction.DELIVERED_TO_SUBNET));
+    assertThat(getFinalActionForDisposition(EXITS_NETWORK), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(
+        getFinalActionForDisposition(INSUFFICIENT_INFO), equalTo(StepAction.INSUFFICIENT_INFO));
+    assertThat(
+        getFinalActionForDisposition(NEIGHBOR_UNREACHABLE),
+        equalTo(StepAction.NEIGHBOR_UNREACHABLE));
   }
 }
