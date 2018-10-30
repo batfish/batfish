@@ -8,7 +8,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,7 +99,7 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
       @Nullable @JsonProperty(PROP_FLOW_STATES) Set<FlowState> flowStates,
       @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace.Builder fragmentOffsets,
-      @Nullable @JsonProperty(PROP_IP_PROTOCOLS) Set<IpProtocol> ipProtocols,
+      @Nullable @JsonProperty(PROP_IP_PROTOCOLS) String ipProtocols,
       @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
       @Nullable @JsonProperty(PROP_DST_IPS) String dstIps,
       @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace.Builder icmpCodes,
@@ -113,7 +115,7 @@ public class PacketHeaderConstraints {
         processBuilder(packetLengths, VALID_PACKET_LENGTH),
         flowStates,
         processBuilder(fragmentOffsets, VALID_FRAGMENT_OFFSET),
-        ipProtocols,
+        expandProtocols(ipProtocols),
         srcIps,
         dstIps,
         processBuilder(icmpCodes, VALID_ICMP_CODE_TYPE),
@@ -122,6 +124,31 @@ public class PacketHeaderConstraints {
         processBuilder(dstPorts, IntegerSpace.PORTS),
         applications,
         tcpFlags);
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static Set<IpProtocol> expandProtocols(@Nullable String ipProtocols) {
+    if (ipProtocols == null) {
+      return null;
+    }
+    String[] atoms = ipProtocols.trim().split(",");
+    ImmutableSet.Builder<IpProtocol> including = ImmutableSet.builder();
+    ImmutableSet.Builder<IpProtocol> excluding = ImmutableSet.builder();
+    for (String atom : atoms) {
+      String trimmed = atom.trim();
+      if (trimmed.startsWith("!")) {
+        excluding.add(IpProtocol.fromString(trimmed.replaceFirst("!", "")));
+      } else {
+        including.add(IpProtocol.fromString(trimmed));
+      }
+    }
+
+    if (including.build().isEmpty()) {
+      including.addAll(Arrays.asList(IpProtocol.values()));
+    }
+
+    return ImmutableSet.copyOf(Sets.difference(including.build(), excluding.build()));
   }
 
   private PacketHeaderConstraints(
@@ -205,9 +232,19 @@ public class PacketHeaderConstraints {
   }
 
   @Nullable
-  @JsonProperty(PROP_IP_PROTOCOLS)
   public Set<IpProtocol> getIpProtocols() {
     return _ipProtocols;
+  }
+
+  @JsonProperty(PROP_IP_PROTOCOLS)
+  @Nullable
+  private String getIpProtocolsString() {
+    if (_ipProtocols == null) {
+      return null;
+    }
+    return String.join(
+        ",",
+        _ipProtocols.stream().map(IpProtocol::toString).collect(ImmutableSet.toImmutableSet()));
   }
 
   @Nullable
@@ -514,6 +551,50 @@ public class PacketHeaderConstraints {
         .reduce(IntegerSpace::union)
         .orElse(IntegerSpace.EMPTY)
         .intersection(ports);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PacketHeaderConstraints)) {
+      return false;
+    }
+    PacketHeaderConstraints that = (PacketHeaderConstraints) o;
+    return Objects.equals(_dscps, that._dscps)
+        && Objects.equals(_ecns, that._ecns)
+        && Objects.equals(_packetLengths, that._packetLengths)
+        && Objects.equals(_flowStates, that._flowStates)
+        && Objects.equals(_fragmentOffsets, that._fragmentOffsets)
+        && Objects.equals(_ipProtocols, that._ipProtocols)
+        && Objects.equals(_srcIp, that._srcIp)
+        && Objects.equals(_dstIp, that._dstIp)
+        && Objects.equals(_icmpCode, that._icmpCode)
+        && Objects.equals(_icmpType, that._icmpType)
+        && Objects.equals(_srcPorts, that._srcPorts)
+        && Objects.equals(_dstPorts, that._dstPorts)
+        && Objects.equals(_applications, that._applications)
+        && Objects.equals(_tcpFlags, that._tcpFlags);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _dscps,
+        _ecns,
+        _packetLengths,
+        _flowStates,
+        _fragmentOffsets,
+        _ipProtocols,
+        _srcIp,
+        _dstIp,
+        _icmpCode,
+        _icmpType,
+        _srcPorts,
+        _dstPorts,
+        _applications,
+        _tcpFlags);
   }
 
   public static Builder builder() {
