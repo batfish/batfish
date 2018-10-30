@@ -635,7 +635,12 @@ public class Graph {
         });
   }
 
-  /** Compute a map of iBGP neighbors given the configurations */
+  /**
+   * Compute a map of iBGP neighbors given the configurations. Return a {@link Table2} containing
+   * directional edges, representing iBGP sessions that are <i>likely</i> to come up.
+   *
+   * <p>Table mapping: source hostname -&gt; target hostname -&gt; source's BGP config
+   */
   @VisibleForTesting
   @Nonnull
   static Table2<String, String, BgpActivePeerConfig> generateIbgpNeighbors(
@@ -668,35 +673,35 @@ public class Graph {
 
     // Loop over all iBGP configs and match up
     for (Entry<String, Configuration> entry : configurations.entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      BgpProcess p = conf.getDefaultVrf().getBgpProcess();
-      if (p == null) {
+      String localHostname = entry.getKey();
+      BgpProcess proc = entry.getValue().getDefaultVrf().getBgpProcess();
+      if (proc == null) {
         // No bgp process, nothing to do
         continue;
       }
 
-      for (Entry<Prefix, BgpActivePeerConfig> entry2 : p.getActiveNeighbors().entrySet()) {
+      for (Entry<Prefix, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
         Prefix remotePrefix = entry2.getKey();
-        BgpActivePeerConfig n = entry2.getValue();
-        if (n.getLocalAs() == null || n.getRemoteAs() == null) {
+        BgpActivePeerConfig localBgpConfig = entry2.getValue();
+        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAs() == null) {
           // Invalid config
           continue;
         }
-        if (!n.getLocalAs().equals(n.getRemoteAs())) {
+        if (!localBgpConfig.getLocalAs().equals(localBgpConfig.getRemoteAs())) {
           // Not iBGP
           continue;
         }
 
         // Loop over all local IPs computed earlier to find session matches
         for (Entry<String, Set<Ip>> ipEntry : ips.entrySet()) {
-          String r = ipEntry.getKey();
-          Set<Ip> ip = ipEntry.getValue();
-          for (Ip localIp : ip) {
-            // Check that it's not a self-edge and local IP matches remote prefix
-            if (!router.equals(r) && remotePrefix.containsIp(localIp)) {
+          String candidateHostname = ipEntry.getKey();
+          Set<Ip> candidateIps = ipEntry.getValue();
+          for (Ip candidateLocalIp : candidateIps) {
+            // Check that it's not a self-edge and candidate's IP matches remote prefix
+            if (!localHostname.equals(candidateHostname)
+                && remotePrefix.containsIp(candidateLocalIp)) {
               // We have a neighbor match
-              neighbors.put(router, r, n);
+              neighbors.put(localHostname, candidateHostname, localBgpConfig);
             }
           }
         }
