@@ -25,7 +25,7 @@ public class BDDIpSpaceSpecializerTest {
   public void init() {
     _factory = BDDUtils.bddFactory(32);
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
-    _toBdd = new IpSpaceToBDD(_factory, ipAddrBdd);
+    _toBdd = new IpSpaceToBDD(ipAddrBdd);
   }
 
   private BDDIpSpaceSpecializer specializer(IpSpace specializeIpSpace) {

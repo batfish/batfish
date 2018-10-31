@@ -180,8 +180,7 @@ public final class BDDReachabilityAnalysisFactory {
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
-    _dstIpSpaceToBDD =
-        new MemoizedIpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getDstIp(), ImmutableMap.of());
+    _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), ImmutableMap.of());
 
     _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
     _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
@@ -1077,7 +1076,7 @@ public final class BDDReachabilityAnalysisFactory {
       IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
     LocationVisitor<Optional<StateExpr>> locationToStateExpr = getLocationToStateExpr();
     IpSpaceToBDD srcIpSpaceToBDD =
-        new MemoizedIpSpaceToBDD(_bddPacket.getFactory(), _bddPacket.getSrcIp(), ImmutableMap.of());
+        new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
 
     // convert Locations to StateExprs, and merge srcIp constraints
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();

@@ -14,7 +14,7 @@ public final class IpSpaceRepresentative {
   public IpSpaceRepresentative() {
     BDDPacket bddPacket = new BDDPacket();
     BDDInteger ipAddrBdd = bddPacket.getDstIp();
-    _ipSpaceToBDD = new IpSpaceToBDD(bddPacket.getFactory(), ipAddrBdd);
+    _ipSpaceToBDD = new IpSpaceToBDD(ipAddrBdd);
   }
 
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */

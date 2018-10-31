@@ -128,7 +128,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private static IpSpaceToBDD initIpSpaceToBDD() {
     BDDPacket bddPacket = new BDDPacket();
-    return new IpSpaceToBDD(bddPacket.getFactory(), bddPacket.getDstIp());
+    return new IpSpaceToBDD(bddPacket.getDstIp());
   }
 
   public ForwardingAnalysisImpl(
