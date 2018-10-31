@@ -635,7 +635,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private int _nativeVlan;
 
-  private transient Long _ospfAreaName;
+  @Nullable private Long _ospfAreaName;
 
   private Integer _ospfCost;
 
@@ -993,7 +993,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public OspfArea getOspfArea() {
-    if (_vrf.getOspfProcess() == null) {
+    if (_ospfAreaName == null || _vrf.getOspfProcess() == null) {
       return null;
     }
     return _vrf.getOspfProcess().getAreas().get(_ospfAreaName);
@@ -1330,7 +1330,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setOspfArea(OspfArea ospfArea) {
+  public void setOspfArea(@Nullable OspfArea ospfArea) {
     if (ospfArea == null) {
       _ospfAreaName = null;
     } else {
