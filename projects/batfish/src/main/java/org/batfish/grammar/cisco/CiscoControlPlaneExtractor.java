@@ -5639,15 +5639,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_ospf_passive_interface(If_ip_ospf_passive_interfaceContext ctx) {
-    boolean active = ctx.NO() != null;
-    if (active) {
-      for (Interface iface : _currentInterfaces) {
-        iface.setOspfActive(true);
-      }
-    } else {
-      for (Interface iface : _currentInterfaces) {
-        iface.setOspfPassive(true);
-      }
+    boolean passive = ctx.NO() == null;
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfPassive(passive);
     }
   }
 
@@ -7900,12 +7894,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
     boolean passive = ctx.NO() == null;
-    String iname = ctx.i.getText();
+    String iname = toInterfaceName(ctx.i);
     OspfProcess proc = _currentOspfProcess;
     if (passive) {
-      proc.getPassiveInterfaceList().add(iname);
+      proc.getPassiveInterfaces().add(iname);
     } else {
-      proc.getActiveInterfaceList().add(iname);
+      proc.getPassiveInterfaces().remove(iname);
     }
   }
 
@@ -8099,7 +8093,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoi_passive(Roi_passiveContext ctx) {
     if (ctx.ENABLE() != null) {
-      _currentOspfProcess.getPassiveInterfaceList().add(_currentOspfInterface);
+      _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
     }
   }
 

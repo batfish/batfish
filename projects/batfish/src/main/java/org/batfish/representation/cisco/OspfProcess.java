@@ -55,8 +55,6 @@ public class OspfProcess implements Serializable {
 
   private Set<String> _interfaceBlacklist;
 
-  private Set<String> _interfaceWhitelist;
-
   private Long _maxMetricExternalLsa;
 
   private boolean _maxMetricIncludeStub;
@@ -149,7 +147,6 @@ public class OspfProcess implements Serializable {
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
     _nssas = new HashMap<>();
     _interfaceBlacklist = new HashSet<>();
-    _interfaceWhitelist = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
@@ -179,10 +176,6 @@ public class OspfProcess implements Serializable {
         }
       }
     }
-  }
-
-  public Set<String> getActiveInterfaceList() {
-    return _interfaceWhitelist;
   }
 
   public long getDefaultInformationMetric() {
@@ -245,7 +238,7 @@ public class OspfProcess implements Serializable {
     return _passiveInterfaceDefault;
   }
 
-  public Set<String> getPassiveInterfaceList() {
+  public Set<String> getPassiveInterfaces() {
     return _interfaceBlacklist;
   }
 
