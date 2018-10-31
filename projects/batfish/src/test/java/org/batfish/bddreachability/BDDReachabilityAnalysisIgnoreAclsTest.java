@@ -1,0 +1,192 @@
+package org.batfish.bddreachability;
+
+import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.not;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import java.io.IOException;
+import java.util.Map;
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.z3.IngressLocation;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+public class BDDReachabilityAnalysisIgnoreAclsTest {
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final String NODE1 = "node1";
+  private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
+  private static final InterfaceAddress NODE2_ADDR = new InterfaceAddress("1.2.3.2/24");
+  private static final String NODE2 = "node2";
+  private static final Ip DENIED_IN_SRC_IP = new Ip("1.1.1.1");
+  private static final Ip DENIED_OUT_SRC_IP = new Ip("1.1.1.2");
+  private static final IngressLocation INGRESS_LOCATION =
+      IngressLocation.vrf(NODE1, Configuration.DEFAULT_VRF_NAME);
+  private static final Ip NAT_MATCH_IP = new Ip("2.2.2.2");
+  private static final Ip NAT_POOL_IP = new Ip("2.2.2.3");
+  private static final BDD ZERO = PKT.getFactory().zero();
+
+  public static @ClassRule TemporaryFolder temp = new TemporaryFolder();
+
+  private static Batfish batfish;
+  private static InterfaceLocation IFACE1_LOCATION;
+
+  @BeforeClass
+  public static void setup() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname(NODE1)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
+    IpAccessList natAcl =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting(AclLineMatchExprs.matchSrc(NAT_MATCH_IP))))
+            .build();
+    IpAccessList outgoingFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(DENIED_OUT_SRC_IP))))
+            .build();
+    Interface iface1 =
+        nf.interfaceBuilder()
+            .setOwner(c1)
+            .setVrf(vrf1)
+            .setActive(true)
+            .setAddress(NODE1_ADDR)
+            .setSourceNats(
+                ImmutableList.of(
+                    SourceNat.builder()
+                        .setAcl(natAcl)
+                        .setPoolIpFirst(NAT_POOL_IP)
+                        .setPoolIpLast(NAT_POOL_IP)
+                        .build()))
+            .setOutgoingFilter(outgoingFilter)
+            .build();
+
+    Configuration c2 =
+        nf.configurationBuilder()
+            .setHostname(NODE2)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).setName(Configuration.DEFAULT_VRF_NAME).build();
+    IpAccessList incomingFilter =
+        nf.aclBuilder()
+            .setOwner(c2)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(DENIED_IN_SRC_IP))))
+            .build();
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setVrf(vrf2)
+        .setActive(true)
+        .setAddress(NODE2_ADDR)
+        .setIncomingFilter(incomingFilter)
+        .build();
+
+    IFACE1_LOCATION = new InterfaceLocation(c1.getHostname(), iface1.getName());
+
+    batfish =
+        BatfishTestUtils.getBatfish(
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
+    batfish.computeDataPlane(false);
+  }
+
+  BDDReachabilityAnalysis initAnalysis(
+      IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreAcls) {
+    return initAnalysis(initialSrcIp, UniverseIpSpace.INSTANCE, disposition, ignoreAcls);
+  }
+
+  BDDReachabilityAnalysis initAnalysis(
+      IpSpace initialSrcIp, IpSpace finalSrcIp, FlowDisposition disposition, boolean ignoreAcls) {
+    Map<String, Configuration> configs = batfish.loadConfigurations();
+    return new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreAcls)
+        .bddReachabilityAnalysis(
+            IpSpaceAssignment.builder().assign(IFACE1_LOCATION, initialSrcIp).build(),
+            AclLineMatchExprs.matchDst(NODE2_ADDR.getIp().toIpSpace()),
+            finalSrcIp,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            configs.keySet(),
+            ImmutableSet.of(disposition));
+  }
+
+  @Test
+  public void ignoreInAcl() {
+    Map<IngressLocation, BDD> reachableBDDs =
+        initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, true)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(ZERO))));
+  }
+
+  @Test
+  public void dontIgnoreInAcl() {
+    Map<IngressLocation, BDD> reachableBDDs =
+        initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, false)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+  }
+
+  @Test
+  public void ignoreOutAcl() {
+    Map<IngressLocation, BDD> reachableBDDs =
+        initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, true)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(ZERO))));
+  }
+
+  @Test
+  public void dontIgnoreOutAcl() {
+    Map<IngressLocation, BDD> reachableBDDs =
+        initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, false)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+  }
+
+  @Test
+  public void neverIgnoreSourceNatAcls() {
+    Map<IngressLocation, BDD> reachableBDDs =
+        initAnalysis(NAT_MATCH_IP.toIpSpace(), NAT_POOL_IP.toIpSpace(), ACCEPTED, true)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(ZERO))));
+
+    reachableBDDs =
+        initAnalysis(NAT_MATCH_IP.toIpSpace(), NAT_MATCH_IP.toIpSpace(), ACCEPTED, true)
+            .getIngressLocationReachableBDDs();
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+  }
+}
