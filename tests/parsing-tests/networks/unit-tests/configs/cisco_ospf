@@ -14,6 +14,11 @@ interface ethernet0/0
  ip ospf 1 area 0
  no ip ospf passive-interface
 !
+interface ethernet1/0
+ ip address 4.4.4.0 255.255.255.0
+ ip ospf abcdefg area 0
+ no ip ospf passive-interface
+!
 router ospf abcdefg
 !
 router ospf 1
@@ -46,6 +51,7 @@ router ospf 1
   discard-route internal
   distance 110
   distribute-list aclin in
+  distribute-list aclin in ethernet0/0
   distribute-list aclout out
   distribute-list prefix plin in
   distribute-list prefix plout out
@@ -58,6 +64,7 @@ router ospf 1
   log-adjacency-changes detail
   log-adj-changes
   maximum-paths 32
+  priority 10
   redistribute direct route-map DIRECT_OSPF
   redistribute eigrp 5 metric 6 route-map eigrp-ospf-route-map
   redistribute ospf 2 match internal

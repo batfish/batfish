@@ -21,7 +21,11 @@ public class DispositionSpecifierTest {
   public void testCreationDefault() {
     assertThat(
         DispositionSpecifier.create(null).getDispositions(),
-        equalTo(ImmutableSet.of(FlowDisposition.ACCEPTED)));
+        equalTo(
+            ImmutableSet.of(
+                FlowDisposition.ACCEPTED,
+                FlowDisposition.DELIVERED_TO_SUBNET,
+                FlowDisposition.EXITS_NETWORK)));
   }
 
   @Test
@@ -49,7 +53,11 @@ public class DispositionSpecifierTest {
   public void testSuccess() {
     assertThat(
         DispositionSpecifier.create("success").getDispositions(),
-        equalTo(ImmutableSet.of(FlowDisposition.ACCEPTED)));
+        equalTo(
+            ImmutableSet.of(
+                FlowDisposition.ACCEPTED,
+                FlowDisposition.DELIVERED_TO_SUBNET,
+                FlowDisposition.EXITS_NETWORK)));
   }
 
   @Test
@@ -72,7 +80,10 @@ public class DispositionSpecifierTest {
   public void testAllDispositionsCovered() {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
-        equalTo(ImmutableSet.copyOf(FlowDisposition.values())));
+        equalTo(
+            Sets.difference(
+                ImmutableSet.copyOf(FlowDisposition.values()),
+                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))));
   }
 
   @Test

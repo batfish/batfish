@@ -138,6 +138,7 @@ junit_tests(
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
+        "@jaxrs_api//:compile",
         "@opentracing_api//:compile",
         "@opentracing_mock//:compile",
         "@opentracing_util//:compile",

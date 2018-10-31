@@ -1996,7 +1996,6 @@
             "ospfProcess" : {
               "areas" : {
                 "0" : {
-                  "name" : 0,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "Ethernet1/0",
@@ -2004,6 +2003,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 0,
                   "stubType" : "NONE"
                 }
               },

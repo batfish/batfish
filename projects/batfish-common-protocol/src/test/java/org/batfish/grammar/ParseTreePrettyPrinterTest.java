@@ -53,21 +53,12 @@ public class ParseTreePrettyPrinterTest {
         ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
 
     /* Confirm printed parse tree includes line numbers when that option is set */
+    assertThat(ptSentencesLineNums.getSentences().get(3), containsString("SIMPLE:'simple' line:1"));
+    assertThat(ptSentencesLineNums.getSentences().get(9), containsString("BLOCK:'block' line:2"));
+    assertThat(ptSentencesLineNums.getSentences().get(12), containsString("INNER:'inner' line:3"));
     assertThat(
-        ptSentencesLineNums.getSentences().get(3),
-        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:1"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(9),
-        containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:2"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(12),
-        containsString("INNER:'inner'  <== mode:DEFAULT_MODE line:3"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(14),
-        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:3)"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(16),
-        containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:5)"));
+        ptSentencesLineNums.getSentences().get(14), containsString("SIMPLE:'simple' line:3)"));
+    assertThat(ptSentencesLineNums.getSentences().get(16), containsString("EOF:<EOF> line:5)"));
   }
 
   @Test
@@ -92,20 +83,11 @@ public class ParseTreePrettyPrinterTest {
         ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
 
     /* Confirm printed parse tree includes original line numbers */
+    assertThat(ptSentencesLineNums.getSentences().get(3), containsString("SIMPLE:'simple' line:5"));
+    assertThat(ptSentencesLineNums.getSentences().get(9), containsString("BLOCK:'block' line:6"));
+    assertThat(ptSentencesLineNums.getSentences().get(12), containsString("INNER:'inner' line:7"));
     assertThat(
-        ptSentencesLineNums.getSentences().get(3),
-        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:5"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(9),
-        containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:6"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(12),
-        containsString("INNER:'inner'  <== mode:DEFAULT_MODE line:7"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(14),
-        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:8)"));
-    assertThat(
-        ptSentencesLineNums.getSentences().get(16),
-        containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:9)"));
+        ptSentencesLineNums.getSentences().get(14), containsString("SIMPLE:'simple' line:8)"));
+    assertThat(ptSentencesLineNums.getSentences().get(16), containsString("EOF:<EOF> line:9)"));
   }
 }

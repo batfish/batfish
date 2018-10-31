@@ -427,18 +427,6 @@
         "node2interface" : "GigabitEthernet0/0"
       },
       {
-        "node1" : "as3core1",
-        "node1interface" : "GigabitEthernet2/0",
-        "node2" : "as3core1",
-        "node2interface" : "GigabitEthernet3/0"
-      },
-      {
-        "node1" : "as3core1",
-        "node1interface" : "GigabitEthernet3/0",
-        "node2" : "as3core1",
-        "node2interface" : "GigabitEthernet2/0"
-      },
-      {
         "node1" : "host1",
         "node1interface" : "eth0",
         "node2" : "as2dept1",

@@ -131,7 +131,7 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Map<String, Map<String, BooleanExpr>>> featureValueOf(
         SynthesizerInput actual) {
-      return actual.getNeighborUnreachable();
+      return actual.getNeighborUnreachableOrExitsNetwork();
     }
   }
 

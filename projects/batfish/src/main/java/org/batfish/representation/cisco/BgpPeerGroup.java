@@ -1,6 +1,10 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 
 public abstract class BgpPeerGroup implements Serializable {
@@ -18,6 +22,8 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _advertiseInactive;
 
   protected Boolean _allowAsIn;
+
+  private Set<Long> _alternateAs;
 
   protected Ip _clusterId;
 
@@ -101,6 +107,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public Boolean getAllowAsIn() {
     return _allowAsIn;
+  }
+
+  public Set<Long> getAlternateAs() {
+    return _alternateAs;
   }
 
   public Ip getClusterId() {
@@ -267,6 +277,9 @@ public abstract class BgpPeerGroup implements Serializable {
     if (_allowAsIn == null) {
       _allowAsIn = pg.getAllowAsIn();
     }
+    if (_alternateAs == null) {
+      _alternateAs = pg.getAlternateAs();
+    }
     if (_clusterId == null) {
       _clusterId = pg.getClusterId();
     }
@@ -380,6 +393,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setAllowAsIn(boolean allowAsIn) {
     _allowAsIn = allowAsIn;
+  }
+
+  public void setAlternateAs(@Nonnull Collection<Long> alternateAs) {
+    _alternateAs = ImmutableSet.copyOf(alternateAs);
   }
 
   public void setClusterId(Ip ip) {

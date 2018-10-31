@@ -1,9 +1,12 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
@@ -44,7 +47,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -69,7 +72,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
           DENIED_OUT,
           NO_ROUTE,
           NULL_ROUTED,
-          NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK);
+          DELIVERED_TO_SUBNET,
+          EXITS_NETWORK,
+          NEIGHBOR_UNREACHABLE,
+          INSUFFICIENT_INFO);
 
   private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
     SpecifierContext ctxt = batfish.specifierContext();
@@ -120,12 +126,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
           edges,
           not(hasEntry(equalTo(new NodeDropAclOut(otherNode)), hasKey(DropAclOut.INSTANCE))));
 
-      Set<NodeInterfaceNeighborUnreachable> neighborUnreachables =
+      Set<NodeInterfaceNeighborUnreachableOrExitsNetwork> neighborUnreachables =
           edges
               .keySet()
               .stream()
-              .filter(NodeInterfaceNeighborUnreachable.class::isInstance)
-              .map(NodeInterfaceNeighborUnreachable.class::cast)
+              .filter(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::isInstance)
+              .map(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::cast)
               .collect(Collectors.toSet());
       neighborUnreachables.forEach(nu -> assertThat(nu, hasHostname(node)));
 

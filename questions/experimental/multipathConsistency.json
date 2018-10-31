@@ -1,6 +1,8 @@
 {
   "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
   "differential": false,
+  "headers": "${headers}",
+  "pathConstraints": "${pathConstraints}",
   "instance": {
     "description": "Validate multipath consistency.",
     "instanceName": "multipathConsistency",
@@ -10,6 +12,17 @@
       "reachability",
       "multipath consistency"
     ],
-    "variables": {}
+    "variables": {
+      "headers": {
+        "description": "Packet header constraints",
+        "optional": true,
+        "type": "headerConstraint"
+      },
+      "pathConstraints": {
+        "description": "Constraint the path a flow can take (start/end/transit locations)",
+        "optional": true,
+        "type": "pathConstraint"
+      }
+    }
   }
 }

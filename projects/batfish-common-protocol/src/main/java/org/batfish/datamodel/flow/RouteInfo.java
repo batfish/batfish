@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -44,6 +45,24 @@ public final class RouteInfo {
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
     return new RouteInfo(protocol, network, nextHopIp);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof RouteInfo)) {
+      return false;
+    }
+    RouteInfo other = (RouteInfo) o;
+    return Objects.equals(_protocol, other._protocol)
+        && Objects.equals(_network, other._network)
+        && Objects.equals(_nextHopIp, other._nextHopIp);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_protocol, _network, _nextHopIp);
   }
 
   @JsonProperty(PROP_PROTOCOL)

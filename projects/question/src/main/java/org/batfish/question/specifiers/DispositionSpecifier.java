@@ -2,10 +2,13 @@ package org.batfish.question.specifiers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 
@@ -38,14 +41,15 @@ public final class DispositionSpecifier {
           .add(DENIED_IN)
           .add(DENIED_OUT)
           .add(LOOP)
-          .add(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
+          .add(NEIGHBOR_UNREACHABLE)
+          .add(INSUFFICIENT_INFO)
           .add(NO_ROUTE)
           .add(NULL_ROUTED)
           .build();
 
   private static final Map<String, Set<FlowDisposition>> _expansions =
       ImmutableMap.<String, Set<FlowDisposition>>builder()
-          .put(SUCCESS, ImmutableSet.of(ACCEPTED))
+          .put(SUCCESS, ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK))
           .put(FAILURE, FAILURE_DISPOSITIONS)
           .build();
   private static final Map<String, Set<FlowDisposition>> _map = getMap();

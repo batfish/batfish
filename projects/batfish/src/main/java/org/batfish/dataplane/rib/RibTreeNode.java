@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
@@ -395,7 +396,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return delta;
   }
 
-  public void addMatchingIps(ImmutableMap.Builder<Prefix, IpWildcardSetIpSpace> builder) {
+  public void addMatchingIps(ImmutableMap.Builder<Prefix, IpSpace> builder) {
     if (_left != null) {
       _left.addMatchingIps(builder);
     }

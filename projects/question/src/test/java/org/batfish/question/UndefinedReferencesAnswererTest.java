@@ -10,6 +10,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
@@ -118,7 +119,7 @@ public class UndefinedReferencesAnswererTest {
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setFileMap(ImmutableSortedMap.of("h", "f", "h2", "f2"));
+      pvcae.setFileMap(ImmutableMultimap.of("h", "f", "h2", "f2"));
       return pvcae;
     }
 

@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
-  "actions" : "ACCEPTED",
+  "actions" : "ACCEPTED,DELIVERED_TO_SUBNET,EXITS_NETWORK",
   "headers" : {
     "dstIps" : "ddd",
     "srcIps" : "sss"
@@ -24,7 +24,7 @@
       "actions" : {
         "description" : "Only return flows for which the disposition is from this set",
         "optional" : true,
-        "type" : "string",
+        "type" : "dispositionSpec",
         "value" : "success"
       },
       "headers" : {

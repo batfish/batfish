@@ -10,6 +10,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.FilterGroup;
+import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ServiceEndpoint;
 import org.batfish.referencelibrary.ServiceObject;
@@ -52,7 +53,7 @@ public class ReferenceBookBeanTest {
 
   @Test
   public void constructorEmptyBook() {
-    ReferenceBook book1 = new ReferenceBook(null, null, "book1", null, null, null);
+    ReferenceBook book1 = ReferenceBook.builder("book1").build();
 
     beanBookMatch(new ReferenceBookBean(book1), book1);
   }
@@ -60,13 +61,17 @@ public class ReferenceBookBeanTest {
   @Test
   public void constructorNonEmptyBook() {
     ReferenceBook book2 =
-        new ReferenceBook(
-            ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
-            ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")),
-            "book2",
-            ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),
-            ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())),
-            ImmutableList.of(new ServiceObject(IpProtocol.TCP, "so1", new SubRange(2, 3))));
+        ReferenceBook.builder("book2")
+            .setAddressGroups(ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")))
+            .setFilterGroups(ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")))
+            .setInterfaceGroups(
+                ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "ig1")))
+            .setServiceEndpoints(ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")))
+            .setServiceObjectGroups(
+                ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())))
+            .setServiceObjects(
+                ImmutableList.of(new ServiceObject(IpProtocol.TCP, "so1", new SubRange(2, 3))))
+            .build();
 
     beanBookMatch(new ReferenceBookBean(book2), book2);
   }
@@ -75,13 +80,18 @@ public class ReferenceBookBeanTest {
   public void toAddressBook() {
     ReferenceBookBean bean =
         new ReferenceBookBean(
-            new ReferenceBook(
-                ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")),
-                ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")),
-                "book2",
-                ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")),
-                ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())),
-                ImmutableList.of(new ServiceObject(IpProtocol.TCP, "so1", new SubRange(2, 3)))));
+            ReferenceBook.builder("book2")
+                .setAddressGroups(
+                    ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")))
+                .setFilterGroups(ImmutableList.of(new FilterGroup(ImmutableList.of(), "fg1")))
+                .setInterfaceGroups(
+                    ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "ig1")))
+                .setServiceEndpoints(ImmutableList.of(new ServiceEndpoint("ag1", "se1", "so1")))
+                .setServiceObjectGroups(
+                    ImmutableList.of(new ServiceObjectGroup("sog1", ImmutableSortedSet.of())))
+                .setServiceObjects(
+                    ImmutableList.of(new ServiceObject(IpProtocol.TCP, "so1", new SubRange(2, 3))))
+                .build());
 
     beanBookMatch(bean, bean.toAddressBook());
   }

@@ -21,7 +21,7 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
     SpecifiersReachabilityQuestion question = (SpecifiersReachabilityQuestion) _question;
     AnswerElement answer = _batfish.standard(question.getReachabilityParameters());
     if (answer instanceof TraceWrapperAsAnswerElement) {
-      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata());
+      TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
       TracerouteAnswerer.flowTracesToRows(
               ((TraceWrapperAsAnswerElement) answer).getFlowTraces(), Integer.MAX_VALUE)
           .forEach(tableAnswer::addRow);

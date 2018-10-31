@@ -53,6 +53,7 @@ public abstract class Question implements IQuestion {
         BOOLEAN("boolean", false),
         COMPARATOR("comparator", true),
         DOUBLE("double", false),
+        DISPOSITION_SPEC("dispositionSpec", true),
         FLOAT("float", false),
         HEADER_CONSTRAINT("headerConstraint", false),
         INTEGER("integer", false),

@@ -19,14 +19,12 @@ public class ReferenceAddressGroupIpSpaceSpecifierTest {
   @Test
   public void resolve() {
     ReferenceBook book =
-        new ReferenceBook(
-            ImmutableList.of(
-                new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2:0.0.0.8"), "group1")),
-            null,
-            "book1",
-            null,
-            null,
-            null);
+        ReferenceBook.builder("book1")
+            .setAddressGroups(
+                ImmutableList.of(
+                    new AddressGroup(
+                        ImmutableSortedSet.of("1.1.1.1", "2.2.2.2:0.0.0.8"), "group1")))
+            .build();
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setReferenceBooks(ImmutableSortedSet.of(book)).build();
 

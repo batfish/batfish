@@ -124,7 +124,7 @@ public class EdgesAnswererTest {
     _includeRemoteNodes = ImmutableSortedSet.of("host1", "host2");
 
     // Sending an  edge from host1 to host2 in layer 3
-    _topology = new Topology(ImmutableSortedSet.of(new Edge("host1", "int1", "host2", "int2")));
+    _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
   }
 
   @Test
@@ -205,10 +205,10 @@ public class EdgesAnswererTest {
     OspfProcess ospf2 = new OspfProcess();
 
     NetworkFactory nf = new NetworkFactory();
-    OspfArea one = OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).build();
-    OspfArea two = OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).build();
-    one.getInterfaces().add("int1");
-    two.getInterfaces().add("int2");
+    OspfArea one =
+        OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
+    OspfArea two =
+        OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).addInterface("int2").build();
     ospf1.getAreas().put(1L, one);
     ospf2.getAreas().put(1L, two);
 
@@ -370,7 +370,7 @@ public class EdgesAnswererTest {
   @Test
   public void testGetLayer3Edges() {
     Topology layer3Topology =
-        new Topology(ImmutableSortedSet.of(new Edge("host1", "int1", "host2", "int2")));
+        new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
 
     Multiset<Row> rows =
         getLayer3Edges(_configurations, _includeNodes, _includeRemoteNodes, layer3Topology);
@@ -510,7 +510,7 @@ public class EdgesAnswererTest {
   public void testLayer3ToRow() {
     Map<String, Configuration> configurationMap =
         ImmutableSortedMap.of("host1", _host1, "host2", _host2);
-    Row row = layer3EdgeToRow(configurationMap, new Edge("host1", "int1", "host2", "int2"));
+    Row row = layer3EdgeToRow(configurationMap, Edge.of("host1", "int1", "host2", "int2"));
     assertThat(
         row,
         allOf(

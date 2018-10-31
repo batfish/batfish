@@ -88,6 +88,7 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
@@ -1540,9 +1541,13 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param networkName Name of the network containing the original snapshot
    * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
+   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot
+   *     or if item to restore had not been deactivated.
+   * @throws IOException If the base network or snapshot are missing or if there is an error reading
+   *     or writing snapshot files.
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
-      throws IOException {
+      throws IllegalArgumentException, IOException {
     Path networkDir = getdirNetwork(networkName);
     NetworkId networkId = _idManager.getNetworkId(networkName);
 
@@ -1623,13 +1628,27 @@ public class WorkMgr extends AbstractCoordinator {
         forkSnapshotBean.deactivateNodes,
         new TypeReference<List<String>>() {});
 
+    // Remove user-specified items from blacklists
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreInterfaces,
+        new TypeReference<List<NodeInterfacePair>>() {});
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreLinks,
+        new TypeReference<List<Edge>>() {});
+    removeFromSerializedList(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE),
+        forkSnapshotBean.restoreNodes,
+        new TypeReference<List<String>>() {});
+
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
         networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
   }
 
-  // Visible for testing
-  /** Helper method to add the specified collection to the serialized list at the specified path. */
+  @VisibleForTesting
+  /* Helper method to add the specified collection to the serialized list at the specified path. */
   static <T> void addToSerializedList(
       Path serializedObjectPath, @Nullable Collection<T> addition, TypeReference<List<T>> type)
       throws IOException {
@@ -1645,6 +1664,40 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       baseList = ImmutableList.copyOf(addition);
     }
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+  }
+
+  @VisibleForTesting
+  /*
+   * Helper method to remove the specified collection from the serialized list at the specified
+   * path.
+   */
+  static <T> void removeFromSerializedList(
+      Path serializedObjectPath, @Nullable Collection<T> subtraction, TypeReference<List<T>> type)
+      throws IOException {
+    if (subtraction == null || subtraction.isEmpty()) {
+      return;
+    }
+
+    List<T> baseList;
+    if (serializedObjectPath.toFile().exists()) {
+      baseList =
+          BatfishObjectMapper.mapper().readValue(CommonUtil.readFile(serializedObjectPath), type);
+    } else {
+      throw new IllegalArgumentException("Cannot remove element(s) from non-existent blacklist.");
+    }
+
+    List<T> missing =
+        subtraction
+            .stream()
+            .filter(s -> !baseList.contains(s))
+            .collect(ImmutableList.toImmutableList());
+    checkArgument(
+        missing.isEmpty(),
+        "Existing blacklist does not contain element(s) specified for removal: '%s'",
+        missing);
+
+    baseList.removeAll(subtraction);
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
   }
 
@@ -2395,13 +2448,21 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Reads the {@link NodeRolesData} object for the provided network. If none exists, initializes a
-   * new object.
+   * Reads the {@link NodeRolesData} object for the provided network. If none previously set for
+   * this network, first initialize node roles to the inferred roles of the earliest completed
+   * snapshot if one exists, and return them. If no suitable snapshot exists, return empty node
+   * roles. Returns {@code null} if network does not exist.
    *
    * @throws IOException If there is an error
    */
-  public NodeRolesData getNetworkNodeRoles(String network) throws IOException {
+  public @Nullable NodeRolesData getNetworkNodeRoles(@Nonnull String network) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
+      initializeNetworkNodeRolesFromEarliestSnapshot(network);
+    }
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
       return NodeRolesData.builder().build();
     }
@@ -2414,14 +2475,46 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private void initializeNetworkNodeRolesFromEarliestSnapshot(@Nonnull String network)
+      throws IOException {
+    Optional<String> snapshot =
+        listSnapshotsWithMetadata(network)
+            .stream()
+            .filter(WorkMgr::isParsed)
+            .sorted(Comparator.comparing(e -> e.getMetadata().getCreationTimestamp()))
+            .map(SnapshotMetadataEntry::getName)
+            .findFirst();
+    if (snapshot.isPresent()) {
+      putNetworkNodeRoles(getSnapshotNodeRoles(network, snapshot.get()), network);
+    }
+  }
+
+  private static boolean isParsed(@Nonnull SnapshotMetadataEntry snapshotMetadataEntry) {
+    ProcessingStatus processingStatus =
+        snapshotMetadataEntry.getMetadata().getInitializationMetadata().getProcessingStatus();
+    switch (processingStatus) {
+      case DATAPLANED:
+      case DATAPLANING:
+      case DATAPLANING_FAIL:
+      case PARSED:
+        return true;
+
+      case PARSING:
+      case PARSING_FAIL:
+      case UNINITIALIZED:
+      default:
+        return false;
+    }
+  }
+
   /**
    * Returns the {@link NodeRolesData} object containing only inferred roles for the provided
    * network and snapshot, or {@code null} if either the network or snapshot does not exist.
    *
    * @throws IOException If there is an error
    */
-  public @Nullable NodeRolesData getSnapshotNodeRoles(String network, String snapshot)
-      throws IOException {
+  public @Nullable NodeRolesData getSnapshotNodeRoles(
+      @Nonnull String network, @Nonnull String snapshot) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
     }

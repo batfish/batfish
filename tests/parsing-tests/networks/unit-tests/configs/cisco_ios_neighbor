@@ -1,0 +1,11 @@
+!
+hostname cisco_ios_neighbor
+!
+router bgp 12076
+ bgp router-id 207.46.160.15
+ neighbor 8075-CORE peer-group
+ neighbor LEAF peer-group
+ bgp listen range 10.10.20.0/24 peer-group LEAF
+ neighbor LEAF remote-as 65001 alternate-as 65002 65003 65004 65005
+!
+end

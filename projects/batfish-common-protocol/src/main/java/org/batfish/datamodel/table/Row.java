@@ -49,7 +49,7 @@ public class Row implements Comparable<Row>, Serializable {
 
   public abstract static class RowBuilder {
 
-    @Nonnull private final ObjectNode _data;
+    @Nonnull protected final ObjectNode _data;
 
     private RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
@@ -125,6 +125,13 @@ public class Row implements Comparable<Row>, Serializable {
               "Cannot convert '%s' to Schema '%s' of column '%s'", object, expectedSchema, column));
       super.put(column, object);
       return this;
+    }
+
+    @Override
+    public Row build() {
+      // Fill in missing columns with null entries
+      _columns.keySet().stream().filter(c -> !_data.has(c)).forEach(c -> super.put(c, null));
+      return super.build();
     }
   }
 

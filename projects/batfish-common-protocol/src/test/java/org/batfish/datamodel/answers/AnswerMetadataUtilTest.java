@@ -292,12 +292,13 @@ public class AnswerMetadataUtilTest {
   public void testComputeMajorIssueTypesNone() {
     String columnName = "col";
 
+    TableMetadata tableMetadata =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
+            new DisplayHints().getTextDesc());
     TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of());
+        new TableAnswerElement(tableMetadata)
+            .addRow(Row.builder(tableMetadata.toColumnMap()).build());
 
     assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableMap.of()));
   }

@@ -27,14 +27,13 @@ public class ReferenceLibraryBeanTest {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
-                new ReferenceBook(null, null, "book1", null, null, null),
-                new ReferenceBook(null, null, "book2", null, null, null)));
+                ReferenceBook.builder("book1").build(), ReferenceBook.builder("book2").build()));
 
     assertThat(
         new ReferenceLibraryBean(library).books,
         equalTo(
             ImmutableSet.of(
-                new ReferenceBookBean(new ReferenceBook(null, null, "book1", null, null, null)),
-                new ReferenceBookBean(new ReferenceBook(null, null, "book2", null, null, null)))));
+                new ReferenceBookBean(ReferenceBook.builder("book1").build()),
+                new ReferenceBookBean(ReferenceBook.builder("book2").build()))));
   }
 }

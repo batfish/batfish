@@ -1,5 +1,15 @@
 {
   "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
+  "headers" : {
+    "dstIps" : "ddd",
+    "srcIps" : "sss"
+  },
+  "pathConstraints" : {
+    "endLocation" : "bbb",
+    "forbiddenLocations" : "ddd",
+    "startLocation" : "aaa",
+    "transitLocations" : "ccc"
+  },
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -10,6 +20,28 @@
       "dataPlane",
       "multipath consistency",
       "reachability"
-    ]
+    ],
+    "variables" : {
+      "headers" : {
+        "description" : "Packet header constraints",
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "srcIps" : "sss",
+          "dstIps" : "ddd"
+        }
+      },
+      "pathConstraints" : {
+        "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "optional" : true,
+        "type" : "pathConstraint",
+        "value" : {
+          "startLocation" : "aaa",
+          "endLocation" : "bbb",
+          "transitLocations" : "ccc",
+          "forbiddenLocations" : "ddd"
+        }
+      }
+    }
   }
 }
