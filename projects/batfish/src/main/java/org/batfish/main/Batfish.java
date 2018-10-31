@@ -3802,8 +3802,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Requiring or forbidding Source NAT is currently unsupported");
 
     BDDPacket pkt = new BDDPacket();
+    boolean ignoreAcls = params.getIgnoreAcls();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt);
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
     Map<IngressLocation, BDD> reachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
@@ -3848,18 +3849,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     DataPlane dp = loadDataPlane();
     if (_settings.debugFlagEnabled("oldtraceroute")) {
-      getDataPlanePlugin().processFlows(flows, dp, false);
+      getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
       return getHistory();
     } else {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreAcls));
     }
   }
 
   @Override
   public Set<Flow> bddLoopDetection() {
     BDDPacket pkt = new BDDPacket();
+    // TODO add ignoreAcls parameter
+    boolean ignoreAcls = false;
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt);
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
     BDDReachabilityAnalysis analysis =
         bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
             getAllSourcesInferFromLocationIpSpaceAssignment());
@@ -3896,8 +3899,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     BDDPacket pkt = new BDDPacket();
+    // TODO add ignoreAcls parameter
+    boolean ignoreAcls = false;
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt);
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
     IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
     Set<String> finalNodes = parameters.getFinalNodes();
     Set<FlowDisposition> dropDispositions =
@@ -3965,9 +3970,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(BDDPacket pkt) {
+  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
+      BDDPacket pkt, boolean ignoreAcls) {
     return new BDDReachabilityAnalysisFactory(
-        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis());
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreAcls);
   }
 
   /**
@@ -3981,6 +3987,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
+    // TODO add ignoreAcls parameter
+    boolean ignoreAcls = false;
+
     /*
      * TODO should we have separate parameters for base and delta?
      * E.g. suppose we add a host subnet in the delta network. This would be a source of
@@ -3989,7 +3998,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
      */
     pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt)
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls)
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
                 parameters.getHeaderSpace(),
@@ -4002,7 +4011,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt)
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls)
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
                 parameters.getHeaderSpace(),
