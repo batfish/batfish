@@ -5,8 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 
-public class AclLineMatchExprLiterals
-    implements GenericAclLineMatchExprVisitor<Void> {
+public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<Void> {
 
   private Set<AclLineMatchExpr> _literals;
 
@@ -21,7 +20,7 @@ public class AclLineMatchExprLiterals
   }
 
   @Override
-  public  Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+  public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     andMatchExpr.getConjuncts().forEach(this::visit);
     return null;
   }
