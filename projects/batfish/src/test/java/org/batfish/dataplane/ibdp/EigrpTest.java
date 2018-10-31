@@ -400,7 +400,7 @@ public class EigrpTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     return (IncrementalDataPlane)
-        engine.computeDataPlane(false, configurations, topology, Collections.emptySet())._dataPlane;
+        engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
   }
 
   /**
