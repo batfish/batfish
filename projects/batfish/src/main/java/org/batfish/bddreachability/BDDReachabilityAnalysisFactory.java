@@ -200,8 +200,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   /**
    * Lazily compute the ACL BDDs, since we may only need some of them (depending on ignoreAcls,
-   * forbidden transit nodes, etc). When ignoreAcls is enabled, we still need the ACLs used in
-   * NATs. This is simpler than trying to precompute which ACLs we actually need.
+   * forbidden transit nodes, etc). When ignoreAcls is enabled, we still need the ACLs used in NATs.
+   * This is simpler than trying to precompute which ACLs we actually need.
    */
   private static Map<String, Map<String, Supplier<BDD>>> computeAclBDDs(
       BDDPacket bddPacket,
