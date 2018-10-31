@@ -2054,31 +2054,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(allPrefixes.build());
 
     if (!iface.getOspfShutdown()) {
-      Long ospfAreaLong = iface.getOspfArea();
-      if (ospfAreaLong != null) {
-        OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          if (iface.getOspfActive()) {
-            proc.getActiveInterfaceList().add(ifaceName);
-          }
-          if (iface.getOspfPassive()) {
-            proc.getPassiveInterfaceList().add(ifaceName);
-          }
-          for (InterfaceAddress address : newIface.getAllAddresses()) {
-            Prefix prefix = address.getPrefix();
-            OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
-            proc.getNetworks().add(ospfNetwork);
-          }
-        } else {
-          _w.redFlag(
-              "Interface: '"
-                  + ifaceName
-                  + "' contains OSPF settings, but there is no OSPF process");
+      OspfProcess proc = vrf.getOspfProcess();
+      if (proc != null) {
+        if (firstNonNull(iface.getOspfPassive(), proc.getPassiveInterfaceDefault())) {
+          proc.getPassiveInterfaces().add(ifaceName);
         }
+        newIface.setOspfAreaName(iface.getOspfArea());
+        newIface.setOspfCost(iface.getOspfCost());
+        newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
+        newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
+      } else {
+        _w.redFlag(
+            "Interface: '" + ifaceName + "' contains OSPF settings, but there is no OSPF process");
       }
-      newIface.setOspfCost(iface.getOspfCost());
-      newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
-      newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
 
     EigrpProcess eigrpProcess = null;
@@ -2338,38 +2326,42 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
-      String ifaceName = e.getKey();
       org.batfish.datamodel.Interface iface = e.getValue();
       InterfaceAddress interfaceAddress = iface.getAddress();
-      if (interfaceAddress == null) {
-        continue;
-      }
-      for (OspfNetwork network : networks) {
-        Prefix networkPrefix = network.getPrefix();
-        Ip networkAddress = networkPrefix.getStartIp();
-        Ip maskedInterfaceAddress =
-            interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
-        if (maskedInterfaceAddress.equals(networkAddress)) {
-          // we have a longest prefix match
-          long areaNum = network.getArea();
-          areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
-          ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
-              areaInterfacesBuilders.computeIfAbsent(
-                  areaNum, n -> ImmutableSortedSet.naturalOrder());
-          newAreaInterfacesBuilder.add(ifaceName);
-          iface.setOspfEnabled(true);
-          boolean passive =
-              proc.getPassiveInterfaceList().contains(iface.getName())
-                  || (proc.getPassiveInterfaceDefault()
-                      && !proc.getActiveInterfaceList().contains(iface.getName()));
-          iface.setOspfPassive(passive);
-          break;
+      Long areaNum = iface.getOspfAreaName();
+      // OSPF area number was not configured on the interface itself, so infer from IP address.
+      if (areaNum == null) {
+        if (interfaceAddress == null) {
+          // This interface has no IP address configured, cannot be in an OSPF area.
+          continue;
+        }
+        for (OspfNetwork network : networks) {
+          Prefix networkPrefix = network.getPrefix();
+          Ip networkAddress = networkPrefix.getStartIp();
+          Ip maskedInterfaceAddress =
+              interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
+          if (maskedInterfaceAddress.equals(networkAddress)) {
+            // we have a longest prefix match
+            areaNum = network.getArea();
+            break;
+          }
         }
       }
-      areaInterfacesBuilders.forEach(
-          (areaNum, interfacesBuilder) ->
-              areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
+      if (areaNum == null) {
+        continue;
+      }
+      String ifaceName = e.getKey();
+      areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
+      ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
+          areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
+      newAreaInterfacesBuilder.add(ifaceName);
+      iface.setOspfEnabled(true);
+      boolean passive = proc.getPassiveInterfaces().contains(iface.getName());
+      iface.setOspfPassive(passive);
     }
+    areaInterfacesBuilders.forEach(
+        (areaNum, interfacesBuilder) ->
+            areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
     proc.getNssas()
         .forEach(
             (areaId, nssaSettings) -> {

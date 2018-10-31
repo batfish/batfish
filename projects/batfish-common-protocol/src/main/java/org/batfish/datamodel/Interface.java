@@ -635,8 +635,6 @@ public final class Interface extends ComparableStructure<String> {
 
   private int _nativeVlan;
 
-  private OspfArea _ospfArea;
-
   private transient Long _ospfAreaName;
 
   private Integer _ospfCost;
@@ -995,17 +993,16 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public OspfArea getOspfArea() {
-    return _ospfArea;
+    if (_vrf.getOspfProcess() == null) {
+      return null;
+    }
+    return _vrf.getOspfProcess().getAreas().get(_ospfAreaName);
   }
 
   @JsonProperty(PROP_OSPF_AREA)
   @JsonPropertyDescription("The OSPF area to which this interface belongs.")
   public Long getOspfAreaName() {
-    if (_ospfArea != null) {
-      return _ospfArea.getAreaNumber();
-    } else {
-      return _ospfAreaName;
-    }
+    return _ospfAreaName;
   }
 
   @JsonProperty(PROP_OSPF_COST)
@@ -1189,26 +1186,6 @@ public final class Interface extends ComparableStructure<String> {
     return name.startsWith("lo");
   }
 
-  public void resolveReferences(Configuration owner) {
-    _owner = owner;
-    _vrf = owner.getVrfs().get(_vrfName);
-    if (_inboundFilterName != null) {
-      _inboundFilter = owner.getIpAccessLists().get(_inboundFilterName);
-    }
-    if (_incomingFilterName != null) {
-      _incomingFilter = owner.getIpAccessLists().get(_incomingFilterName);
-    }
-    if (_outgoingFilterName != null) {
-      _outgoingFilter = owner.getIpAccessLists().get(_outgoingFilterName);
-    }
-    if (_ospfAreaName != null) {
-      OspfProcess ospfProc = _vrf.getOspfProcess();
-      if (ospfProc != null) {
-        _ospfArea = ospfProc.getAreas().get(_ospfAreaName);
-      }
-    }
-  }
-
   @JsonProperty(PROP_ACCESS_VLAN)
   public void setAccessVlan(int vlan) {
     _accessVlan = vlan;
@@ -1354,7 +1331,11 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public void setOspfArea(OspfArea ospfArea) {
-    _ospfArea = ospfArea;
+    if (ospfArea == null) {
+      _ospfAreaName = null;
+    } else {
+      _ospfAreaName = ospfArea.getAreaNumber();
+    }
   }
 
   @JsonProperty(PROP_OSPF_AREA)
