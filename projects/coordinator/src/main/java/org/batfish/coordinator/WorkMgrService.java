@@ -294,9 +294,9 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      Question inputQuestion = Question.parseQuestion(questionTemplate);
-      Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
-      String outputQuestionStr = BatfishObjectMapper.writePrettyString(outputQuestion);
+      Question question = Question.parseQuestion(questionTemplate);
+      Question.configureTemplate(question, exceptions, assertion);
+      String outputQuestionStr = BatfishObjectMapper.writePrettyString(question);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION, outputQuestionStr));
     } catch (IllegalArgumentException | AccessControlException e) {

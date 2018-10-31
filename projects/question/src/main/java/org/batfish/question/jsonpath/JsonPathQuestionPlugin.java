@@ -410,15 +410,24 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       _paths = Collections.emptyList();
     }
 
-    @Override
-    public Question configureTemplate(@Nullable String exceptions, @Nullable String assertion) {
+    /**
+     * Creates a copy of this question with the given exclusions and assertion.
+     *
+     * @param exclusions Exclusions to configure in the new question template. If {@code null}, the
+     *     new question will copy this question's exclusions.
+     * @param assertion Assertion to configure in the new question template. If {@code null}, the
+     *     new question will copy this question's assertion. If empty string or string representing
+     *     empty object, the new question will have no assertion.
+     * @return New copy of this question configured with the given exclusions and assertion.
+     */
+    public Question configureTemplate(@Nullable String exclusions, @Nullable String assertion) {
       try {
         JsonPathQuestion question = BatfishObjectMapper.clone(this, JsonPathQuestion.class);
 
-        if (exceptions != null) {
+        if (exclusions != null) {
           Set<JsonPathException> jpExceptions =
               BatfishObjectMapper.mapper()
-                  .readValue(exceptions, new TypeReference<Set<JsonPathException>>() {});
+                  .readValue(exclusions, new TypeReference<Set<JsonPathException>>() {});
           for (JsonPathQuery query : question.getPaths()) {
             query.setExceptions(jpExceptions);
           }

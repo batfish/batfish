@@ -325,40 +325,38 @@ public abstract class Question implements IQuestion {
     _includeOneTableKeys = DEFAULT_INCLUDE_ONE_TABLE_KEYS;
   }
 
-  public Question configureTemplate(String exclusions, String assertion) {
-    Question question;
-    try {
-      question = BatfishObjectMapper.clone(this, Question.class);
-    } catch (IOException e) {
-      throw new BatfishException("Could not clone the question", e);
-    }
+  /**
+   * Reconfigures the given question to have the given exclusions and assertion.
+   *
+   * @param q Question to which exclusions and assertion will be added
+   * @param exclusions Exclusions to configure in the question. If {@code null}, the question will
+   *     retain its current exclusions.
+   * @param assertion Assertion to configure in the question. If {@code null}, the question will
+   *     retain its current assertion. If empty string or string representing empty object, the
+   *     question will be configured with no assertion.
+   */
+  public static void configureTemplate(Question q, String exclusions, String assertion) {
     if (exclusions != null) {
-      if (exclusions.equals("") || exclusions.equals("{}")) {
-        // indicates a desire to remove the exclusions
-        question.setExclusions(ImmutableList.of());
-      } else {
-        try {
-          question.setExclusions(
-              BatfishObjectMapper.mapper()
-                  .readValue(exclusions, new TypeReference<List<Exclusion>>() {}));
-        } catch (IOException e) {
-          throw new BatfishException("Unable to parse exclusions", e);
-        }
+      try {
+        q.setExclusions(
+            BatfishObjectMapper.mapper()
+                .readValue(exclusions, new TypeReference<List<Exclusion>>() {}));
+      } catch (IOException e) {
+        throw new BatfishException("Unable to parse exclusions", e);
       }
     }
     if (assertion != null) {
       if (assertion.equals("") || assertion.equals("{}")) {
         // indicates a desire to remove the assertion
-        question.setAssertion(null);
+        q.setAssertion(null);
       } else {
         try {
-          question.setAssertion(BatfishObjectMapper.mapper().readValue(assertion, Assertion.class));
+          q.setAssertion(BatfishObjectMapper.mapper().readValue(assertion, Assertion.class));
         } catch (IOException e) {
           throw new BatfishException("Unable to parse assertion", e);
         }
       }
     }
-    return question;
   }
 
   /** Returns {@code true} iff this question requires a computed data plane as input. */
