@@ -14,7 +14,7 @@ public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
 
   public MemoizedIpSpaceToBDD(
       BDDFactory factory, BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
-    super(factory, var, namedIpSpaces);
+    super(var, namedIpSpaces);
   }
 
   @Override

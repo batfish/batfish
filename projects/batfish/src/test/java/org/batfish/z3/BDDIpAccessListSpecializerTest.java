@@ -43,8 +43,7 @@ import org.junit.Test;
 public class BDDIpAccessListSpecializerTest {
   private static final BDDPacket PKT = new BDDPacket();
 
-  private static final IpSpaceToBDD DST_IP_SPACE_TO_BDD =
-      new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp());
+  private static final IpSpaceToBDD DST_IP_SPACE_TO_BDD = new IpSpaceToBDD(PKT.getDstIp());
 
   private static final IpAccessListSpecializer EMPTY_HEADERSPACE_SPECIALIZER =
       new BDDIpAccessListSpecializer(PKT, PKT.getFactory().zero(), ImmutableMap.of());
@@ -52,8 +51,7 @@ public class BDDIpAccessListSpecializerTest {
   private static final IpAccessListSpecializer FULL_HEADERSPACE_SPECIALIZER =
       new BDDIpAccessListSpecializer(PKT, PKT.getFactory().one(), ImmutableMap.of());
 
-  private static final IpSpaceToBDD SRC_IP_SPACE_TO_BDD =
-      new IpSpaceToBDD(PKT.getFactory(), PKT.getSrcIp());
+  private static final IpSpaceToBDD SRC_IP_SPACE_TO_BDD = new IpSpaceToBDD(PKT.getSrcIp());
 
   private static final HeaderSpace UNCONSTRAINED = HeaderSpace.builder().build();
 

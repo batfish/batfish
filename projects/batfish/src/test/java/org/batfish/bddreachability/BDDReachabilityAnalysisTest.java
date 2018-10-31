@@ -187,7 +187,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private static BDD dstIpBDD(Ip ip) {
-    return new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp()).toBDD(ip);
+    return new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
   }
 
   private static BDD dstPortBDD(int destPort) {

@@ -58,7 +58,7 @@ public class BDDMultipathInconsistencyTest {
 
   private String _srcName;
 
-  private IpSpaceToBDD _srcToBDD = new IpSpaceToBDD(PKT.getFactory(), PKT.getSrcIp());
+  private IpSpaceToBDD _srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
 
   private Batfish _batfish;
 
