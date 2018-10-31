@@ -119,6 +119,7 @@ l_null
       | SESSION_DISCONNECT_WARNING
       | SESSION_LIMIT
       | SESSION_TIMEOUT
+      | SPEED
       | STOPBITS
       | TERMINAL_TYPE
       | TIMEOUT

@@ -217,7 +217,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>>
+      _neighborUnreachableOrExitsNetwork;
 
   private final @Nonnull Map<String, List<String>> _nodeInterfaces;
 
@@ -285,8 +286,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _dataPlane = forwardingAnalysis != null;
     if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
-      _neighborUnreachable =
-          computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
+      _neighborUnreachableOrExitsNetwork =
+          computeNeighborUnreachableOrExitsNetwork(
+              forwardingAnalysis.getNeighborUnreachableOrExitsNetwork());
       _nullRoutedIps = computeNullRoutedIps(forwardingAnalysis.getNullRoutedIps());
       _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
@@ -297,7 +299,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _sourceNats = computeSourceNats();
     } else {
       _arpTrueEdge = null;
-      _neighborUnreachable = null;
+      _neighborUnreachableOrExitsNetwork = null;
       _nullRoutedIps = null;
       _routableIps = null;
       _ipsByHostname = null;
@@ -315,6 +317,35 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nonTransitNodes = ImmutableSortedSet.copyOf(builder._nonTransitNodes);
     _transitNodes = ImmutableSortedSet.copyOf(builder._transitNodes);
     _aclConditions = computeAclConditions();
+  }
+
+  private Map<String, Map<String, Map<String, BooleanExpr>>> computeDisposition(
+      Map<String, Map<String, Map<String, IpSpace>>> dispositionMap) {
+    return toImmutableMap(
+        dispositionMap,
+        Entry::getKey /* hostname */,
+        dispositionByHostnameEntry -> {
+          String hostname = dispositionByHostnameEntry.getKey();
+          return toImmutableMap(
+              dispositionByHostnameEntry.getValue(),
+              Entry::getKey /* vrf */,
+              dispositionByVrfEntry ->
+                  toImmutableMap(
+                      dispositionByVrfEntry.getValue(),
+                      Entry::getKey /* interface */,
+                      dispositionByOutInterfaceEntry ->
+                          new IpSpaceMatchExpr(
+                                  specialize(hostname, dispositionByOutInterfaceEntry.getValue()),
+                                  _namedIpSpaces.get(hostname),
+                                  Field.DST_IP)
+                              .getExpr()));
+        });
+  }
+
+  private Map<String, Map<String, Map<String, BooleanExpr>>>
+      computeNeighborUnreachableOrExitsNetwork(
+          Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork) {
+    return computeDisposition(neighborUnreachableOrExitsNetwork);
   }
 
   private static Map<String, IpSpaceSpecializer> computeIpSpaceSpecializers(
@@ -722,30 +753,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             toImmutableMap(e1.getValue(), Entry::getKey, e2 -> ImmutableSet.copyOf(e2.getValue())));
   }
 
-  private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
-      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
-    return toImmutableMap(
-        neighborUnreachable,
-        Entry::getKey /* hostname */,
-        neighborUnreachableByHostnameEntry -> {
-          String hostname = neighborUnreachableByHostnameEntry.getKey();
-          return toImmutableMap(
-              neighborUnreachableByHostnameEntry.getValue(),
-              Entry::getKey /* vrf */,
-              neighborUnreachableByVrfEntry ->
-                  toImmutableMap(
-                      neighborUnreachableByVrfEntry.getValue(),
-                      Entry::getKey /* interface */,
-                      neighborUnreachableByOutInterfaceEntry ->
-                          new IpSpaceMatchExpr(
-                                  specialize(
-                                      hostname, neighborUnreachableByOutInterfaceEntry.getValue()),
-                                  _namedIpSpaces.get(hostname),
-                                  Field.DST_IP)
-                              .getExpr()));
-        });
-  }
-
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
       Map<String, Map<String, IpSpace>> nullRoutedIps) {
     return toImmutableMap(
@@ -919,8 +926,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
-    return _neighborUnreachable;
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachableOrExitsNetwork() {
+    return _neighborUnreachableOrExitsNetwork;
   }
 
   @Override

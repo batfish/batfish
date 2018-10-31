@@ -151,6 +151,7 @@ public class BgpProcess implements Serializable {
   /** @return {@link #_activeNeighbors} */
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
+  @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
   }
@@ -181,6 +182,7 @@ public class BgpProcess implements Serializable {
   /** @return {@link #_passiveNeighbors} */
   @JsonProperty(PROP_PASSIVE_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
+  @Nonnull
   public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
     return _passiveNeighbors;
   }

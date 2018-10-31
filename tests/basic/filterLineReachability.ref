@@ -58,6 +58,19 @@
     "rows" : [
       {
         "Sources" : [
+          "as2dept1: RESTRICT_HOST_TRAFFIC_OUT"
+        ],
+        "Unreachable_Line_Action" : "DENY",
+        "Unreachable_Line" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+        "Blocking_Lines" : [
+          "permit ip any 2.128.0.0 0.0.255.255"
+        ],
+        "Different_Action" : true,
+        "Reason" : "BLOCKING_LINES",
+        "Additional_Info" : null
+      },
+      {
+        "Sources" : [
           "as2dept1: RESTRICT_HOST_TRAFFIC_IN"
         ],
         "Unreachable_Line_Action" : "PERMIT",
@@ -67,19 +80,8 @@
           "deny   ip any any"
         ],
         "Different_Action" : true,
-        "Reason" : "BLOCKING_LINES"
-      },
-      {
-        "Sources" : [
-          "as2dept1: RESTRICT_HOST_TRAFFIC_OUT"
-        ],
-        "Unreachable_Line_Action" : "DENY",
-        "Unreachable_Line" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
-        "Blocking_Lines" : [
-          "permit ip any 2.128.0.0 0.0.255.255"
-        ],
-        "Different_Action" : true,
-        "Reason" : "BLOCKING_LINES"
+        "Reason" : "BLOCKING_LINES",
+        "Additional_Info" : null
       }
     ],
     "summary" : {

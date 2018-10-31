@@ -2,8 +2,15 @@ package org.batfish.dataplane.traceroute;
 
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.LOOP;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -14,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -35,9 +43,13 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.dataplane.TracerouteEngineImpl;
@@ -260,7 +272,6 @@ public class TracerouteEngineImplTest {
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     // make batfish call the new traceroute engine
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
 
     b.computeDataPlane(false);
     Flow flow =
@@ -310,7 +321,6 @@ public class TracerouteEngineImplTest {
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
 
     // make batfish call the new traceroute engine
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
     b.computeDataPlane(false);
     Flow flow =
         Flow.builder()
@@ -347,7 +357,6 @@ public class TracerouteEngineImplTest {
             .build();
 
     Batfish b = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
-    b.getSettings().setDebugFlags(ImmutableList.of("traceroute"));
     b.computeDataPlane(false);
 
     Flow.Builder fb =
@@ -388,5 +397,96 @@ public class TracerouteEngineImplTest {
 
     _thrown.expect(IllegalArgumentException.class);
     TracerouteEngineImpl.getInstance().buildFlows(dp, flows, fibs, false);
+  }
+
+  /*
+   * Create a network with a forwarding loop. When we run with ACLs enabled, the loop is detected.
+   * When we run with ACLs enabled, it's not an infinite loop: we apply source NAT in the first
+   * iteration, and drop with an ingress ACL in the second iteration.
+   */
+  @Test
+  public void testLoop() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress c1Addr = new InterfaceAddress("1.0.0.0/31");
+    InterfaceAddress c2Addr = new InterfaceAddress("1.0.0.1/31");
+    Interface i1 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr).build();
+    Prefix loopPrefix = Prefix.parse("2.0.0.0/32");
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(loopPrefix)
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i1.getName())
+                .setNextHopIp(c2Addr.getIp())
+                .build()));
+    Configuration c2 = cb.build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    Interface i2 =
+        nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr).build();
+    Prefix natPoolIp = Prefix.parse("5.5.5.5/32");
+    i2.setIncomingFilter(
+        nf.aclBuilder()
+            .setOwner(c2)
+            .setLines(
+                ImmutableList.of(IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(natPoolIp))))
+            .build());
+    i2.setSourceNats(
+        ImmutableList.of(
+            SourceNat.builder()
+                .setAcl(
+                    nf.aclBuilder()
+                        .setOwner(c2)
+                        .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+                        .build())
+                .setPoolIpFirst(natPoolIp.getStartIp())
+                .setPoolIpLast(natPoolIp.getStartIp())
+                .build()));
+    v2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(loopPrefix)
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i2.getName())
+                .setNextHopIp(c1Addr.getIp())
+                .build()));
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Flow flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setDstIp(loopPrefix.getStartIp())
+            // any src Ip other than the NAT pool IP will do
+            .setSrcIp(new Ip("6.6.6.6"))
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(DENIED_IN)));
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), true);
+    assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(LOOP)));
+  }
+
+  @Test
+  public void testGetFinalActionForDisposition() {
+    assertThat(
+        getFinalActionForDisposition(DELIVERED_TO_SUBNET), equalTo(StepAction.DELIVERED_TO_SUBNET));
+    assertThat(getFinalActionForDisposition(EXITS_NETWORK), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(
+        getFinalActionForDisposition(INSUFFICIENT_INFO), equalTo(StepAction.INSUFFICIENT_INFO));
+    assertThat(
+        getFinalActionForDisposition(NEIGHBOR_UNREACHABLE),
+        equalTo(StepAction.NEIGHBOR_UNREACHABLE));
   }
 }

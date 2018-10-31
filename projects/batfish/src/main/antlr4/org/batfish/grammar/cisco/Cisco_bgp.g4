@@ -107,15 +107,10 @@ additional_paths_rb_stanza
 :
    BGP ADDITIONAL_PATHS
    (
-      SELECT ALL
-      |
-      (
-         SEND RECEIVE?
-      )
-      |
-      (
-         RECEIVE SEND?
-      )
+      INSTALL
+      | SELECT ALL
+      | SEND RECEIVE?
+      | RECEIVE SEND?
    ) NEWLINE
 ;
 
@@ -727,7 +722,7 @@ prefix_list_bgp_tail
 
 remote_as_bgp_tail
 :
-   REMOTE_AS bgp_asn NEWLINE
+   REMOTE_AS remote = bgp_asn (ALTERNATE_AS alt_ases += bgp_asn+)? NEWLINE
 ;
 
 remove_private_as_bgp_tail
@@ -803,7 +798,7 @@ redistribute_eigrp_bgp_tail
 
 redistribute_ospf_bgp_tail
 :
-   REDISTRIBUTE OSPF (procnum = DEC)?
+   REDISTRIBUTE OSPF (procname = variable)?
    (
       (
          ROUTE_MAP map = variable
@@ -825,7 +820,7 @@ redistribute_ospf_bgp_tail
 
 redistribute_ospfv3_bgp_tail
 :
-   REDISTRIBUTE (OSPFV3 | OSPF3) (procnum = DEC)?
+   REDISTRIBUTE (OSPFV3 | OSPF3) (procname = variable)?
    (
       (
          ROUTE_MAP map = variable

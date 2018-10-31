@@ -174,7 +174,11 @@ ro_distribute_list
   (
     IN
     | OUT
-  ) NEWLINE
+  )
+  (
+    iname = interface_name
+  )?
+  NEWLINE
 ;
 
 ro_max_metric
@@ -318,6 +322,8 @@ ro_passive_interface
 :
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
+
+
 
 ro_redistribute_bgp
 :
@@ -621,7 +627,7 @@ rov3_null
 
 s_ipv6_router_ospf
 :
-   IPV6 ROUTER OSPF procnum = DEC NEWLINE
+   IPV6 ROUTER OSPF procname = variable NEWLINE
    (
       ro6_area
       | ro6_auto_cost
@@ -671,15 +677,15 @@ s_router_ospf
       | ro_router_id
       | ro_summary_address
       | ro_vrf
+      | roi_priority
    )*
 ;
 
 s_router_ospfv3
 :
-   ROUTER OSPFV3 procnum = DEC NEWLINE
+   ROUTER OSPFV3 procname = variable NEWLINE
    (
       rov3_address_family
       | rov3_common
    )*
 ;
-

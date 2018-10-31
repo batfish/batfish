@@ -69,20 +69,16 @@ public class ReferenceLibraryTest {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
-                new ReferenceBook(null, null, "book1", null, null, null),
-                new ReferenceBook(null, null, "book2", null, null, null)));
+                ReferenceBook.builder("book1").build(), ReferenceBook.builder("book2").build()));
     ReferenceLibrary.write(library, tempPath);
 
     SortedSet<ReferenceBook> newBooks =
         ImmutableSortedSet.of(
-            new ReferenceBook(
-                ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
-                null,
-                "book1",
-                null,
-                null,
-                null),
-            new ReferenceBook(null, null, "book3", null, null, null));
+            ReferenceBook.builder("book1")
+                .setAddressGroups(
+                    ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")))
+                .build(),
+            ReferenceBook.builder("book3").build());
 
     ReferenceLibrary.mergeReferenceBooks(tempPath, newBooks);
 
@@ -90,14 +86,11 @@ public class ReferenceLibraryTest {
         ReferenceLibrary.read(tempPath).getReferenceBooks(),
         equalTo(
             ImmutableSortedSet.of(
-                new ReferenceBook(
-                    ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")),
-                    null,
-                    "book1",
-                    null,
-                    null,
-                    null),
-                new ReferenceBook(null, null, "book2", null, null, null),
-                new ReferenceBook(null, null, "book3", null, null, null))));
+                ReferenceBook.builder("book1")
+                    .setAddressGroups(
+                        ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "add1")))
+                    .build(),
+                ReferenceBook.builder("book2").build(),
+                ReferenceBook.builder("book3").build())));
   }
 }

@@ -4813,138 +4813,6 @@
         },
         {
           "edgeSummary" : {
-            "node1" : "as3core1",
-            "node1interface" : "GigabitEthernet2/0",
-            "node2" : "as3core1",
-            "node2interface" : "GigabitEthernet3/0"
-          },
-          "node1Interface" : {
-            "name" : "GigabitEthernet2/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "90.90.90.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet2/0"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "90.90.90.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "node2Interface" : {
-            "name" : "GigabitEthernet3/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "90.90.90.2/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet3/0"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "90.90.90.2/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        {
-          "edgeSummary" : {
-            "node1" : "as3core1",
-            "node1interface" : "GigabitEthernet3/0",
-            "node2" : "as3core1",
-            "node2interface" : "GigabitEthernet2/0"
-          },
-          "node1Interface" : {
-            "name" : "GigabitEthernet3/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "90.90.90.2/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet3/0"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "90.90.90.2/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "node2Interface" : {
-            "name" : "GigabitEthernet2/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "90.90.90.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet2/0"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "90.90.90.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        {
-          "edgeSummary" : {
             "node1" : "host1",
             "node1interface" : "eth0",
             "node2" : "as2dept1",
@@ -8339,13 +8207,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -9585,13 +9453,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -9981,7 +9849,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -9989,6 +9856,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -11248,7 +11116,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
@@ -11256,6 +11123,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -12458,7 +12326,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
@@ -12466,6 +12333,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -13066,7 +12934,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -13076,6 +12943,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -13623,7 +13491,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -13633,6 +13500,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -15337,7 +15205,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -15345,6 +15212,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -16094,7 +15962,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -16102,6 +15969,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -17220,13 +17088,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -18297,13 +18165,13 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },
@@ -18893,7 +18761,6 @@
             "ospfProcess" : {
               "areas" : {
                 "1" : {
-                  "name" : 1,
                   "injectDefaultRoute" : true,
                   "interfaces" : [
                     "GigabitEthernet0/0",
@@ -18901,6 +18768,7 @@
                     "Loopback0"
                   ],
                   "metricOfDefaultRoute" : 0,
+                  "name" : 1,
                   "stubType" : "NONE"
                 }
               },

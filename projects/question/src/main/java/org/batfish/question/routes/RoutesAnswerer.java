@@ -27,6 +27,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -245,6 +246,7 @@ public class RoutesAnswerer extends Answerer {
                             .map(CommonUtil::longToCommunity)
                             .collect(toImmutableList()))
                     .put(COL_ORIGIN_PROTOCOL, route.getSrcProtocol())
+                    .put(COL_TAG, route.getTag() == Route.UNSET_ROUTE_TAG ? null : route.getTag())
                     .build())
         .collect(toImmutableList());
   }

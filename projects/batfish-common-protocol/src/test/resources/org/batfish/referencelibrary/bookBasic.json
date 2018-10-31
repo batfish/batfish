@@ -26,6 +26,21 @@
       "filters": []
     }
   ],
+  "interfaceGroups": [
+    {
+      "name": "ig1",
+      "interfaces": [
+        {
+          "hostname": "host1",
+          "interface": "eth1"
+        }
+      ]
+    },
+    {
+      "name": "ig2",
+      "interfaces": []
+    }
+  ],
   "serviceEndpoints": [
     {
       "name": "se1",

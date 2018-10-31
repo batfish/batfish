@@ -136,11 +136,6 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Map<Ip, Set<String>> getIpOwners() {
-    return _ipOwners;
-  }
-
-  @Override
   public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
     return _ipVrfOwners;
   }

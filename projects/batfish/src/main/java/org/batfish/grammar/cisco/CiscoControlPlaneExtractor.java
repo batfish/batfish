@@ -248,6 +248,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOU
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7627,9 +7628,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.MATCH() != null) {
         todo(ctx);
       }
-      if (ctx.procnum != null) {
-        int procNum = toInteger(ctx.procnum);
-        r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      if (ctx.procname != null) {
+        r.getSpecialAttributes()
+            .put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, ctx.procname.getText());
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -7721,12 +7722,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
-    long as = toAsNum(ctx.bgp_asn());
-    if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
-      _currentPeerGroup.setRemoteAs(as);
-    } else {
+    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       throw new BatfishException(
           "no peer or peer group in context: " + getLocation(ctx) + getFullText(ctx));
+    }
+    long as = toAsNum(ctx.remote);
+    _currentPeerGroup.setRemoteAs(as);
+    if (ctx.alt_ases != null) {
+      _currentPeerGroup.setAlternateAs(
+          ctx.alt_ases
+              .stream()
+              .map(CiscoControlPlaneExtractor::toAsNum)
+              .collect(ImmutableSet.toImmutableSet()));
     }
   }
 
@@ -7845,6 +7852,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       usage = in ? OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN : OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
     }
     _configuration.referenceStructure(type, name, usage, line);
+
+    if (ctx.iname != null) {
+      String canonicalIfaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(INTERFACE, canonicalIfaceName, usage, line);
+    }
+
+    todo(ctx);
   }
 
   @Override

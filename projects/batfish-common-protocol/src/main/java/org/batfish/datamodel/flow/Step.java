@@ -17,6 +17,7 @@ import org.batfish.datamodel.Flow;
   @JsonSubTypes.Type(value = EnterInputIfaceStep.class, name = "EnterInputInterface"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface"),
   @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
+  @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
 })
 public abstract class Step<D> {

@@ -1550,7 +1550,7 @@ public class VirtualRouter implements Serializable {
           && !neighborInterface.getOspfPassive()
           && area != null
           && neighborArea != null
-          && area.getName().equals(neighborArea.getName())) {
+          && area.getAreaNumber() == (neighborArea.getAreaNumber())) {
         /*
          * We have an ospf neighbor relationship on this edge. So we
          * should add all ospf external type 1(2) routes from this
@@ -1573,7 +1573,7 @@ public class VirtualRouter implements Serializable {
           boolean withdraw = routeAdvert.isWithdrawn();
           if (neighborRoute instanceof OspfExternalType1Route) {
             long oldArea = neighborRoute.getArea();
-            long connectionArea = area.getName();
+            long connectionArea = area.getAreaNumber();
             long newArea;
             long baseMetric = neighborRoute.getMetric();
             long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
@@ -1613,7 +1613,7 @@ public class VirtualRouter implements Serializable {
 
           } else if (neighborRoute instanceof OspfExternalType2Route) {
             long oldArea = neighborRoute.getArea();
-            long connectionArea = area.getName();
+            long connectionArea = area.getAreaNumber();
             long newArea;
             long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
             if (oldArea == OspfRoute.NO_AREA) {
@@ -1727,7 +1727,7 @@ public class VirtualRouter implements Serializable {
         || neighborInterface.getOspfPassive()
         || area == null
         || neighborArea == null
-        || !area.getName().equals(neighborArea.getName())) {
+        || area.getAreaNumber() != neighborArea.getAreaNumber()) {
       return false;
     }
     /*
@@ -1741,7 +1741,7 @@ public class VirtualRouter implements Serializable {
         proc.getMaxMetricTransitLinks() != null
             ? proc.getMaxMetricTransitLinks()
             : connectingInterfaceCost;
-    Long linkAreaNum = area.getName();
+    long linkAreaNum = area.getAreaNumber();
     Configuration neighborConfiguration = neighbor.getConfiguration();
     String neighborVrfName = neighborInterface.getVrfName();
     OspfProcess neighborProc =
@@ -1807,7 +1807,7 @@ public class VirtualRouter implements Serializable {
             neighborInterface.getAddress().getIp(),
             adminCost,
             metric,
-            area.getName()));
+            area.getAreaNumber()));
   }
 
   boolean propagateOspfInterAreaRouteFromInterAreaRoute(
@@ -2597,7 +2597,7 @@ public class VirtualRouter implements Serializable {
           && !neighborInterface.getOspfPassive()
           && area != null
           && neighborArea != null
-          && area.getName().equals(neighborArea.getName())) {
+          && area.getAreaNumber() == neighborArea.getAreaNumber()) {
         neighbors.put(
             connectingInterface.getAddress().getPrefix(),
             new OspfLink(area, neighborArea, neighborVirtualRouter));

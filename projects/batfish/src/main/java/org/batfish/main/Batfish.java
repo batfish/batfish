@@ -62,6 +62,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -71,7 +72,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Directory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -120,7 +120,6 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -185,8 +184,9 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.SrcNattedConstraint;
-import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
-import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
+import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -1434,9 +1434,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (consumedEdges.contains(edge)) {
         continue;
       }
-      Edge reverseEdge = new Edge(edge.getInterface2(), edge.getInterface1());
       consumedEdges.add(edge);
-      consumedEdges.add(reverseEdge);
+      consumedEdges.add(edge.reverse());
     }
     return consumedEdges;
   }
@@ -1451,19 +1450,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Directory getTestrigFileTree() {
-    Path trPath = _testrigSettings.getInputPath();
-    Directory dir = new Directory(trPath);
-    return dir;
-  }
-
-  @Override
   public SnapshotId getTestrigName() {
     return _testrigSettings.getName();
-  }
-
-  public TestrigSettings getTestrigSettings() {
-    return _testrigSettings;
   }
 
   @Override
@@ -2071,32 +2059,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return parse(parser);
   }
 
-  private AwsConfiguration parseAwsConfigurations(Map<Path, String> configurationData) {
+  @VisibleForTesting
+  public static AwsConfiguration parseAwsConfigurations(
+      Map<Path, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
     AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
-      Path file = configFile.getKey();
+      Path path = configFile.getKey();
+      int pathLength = configFile.getKey().getNameCount();
       String fileText = configFile.getValue();
-      String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
-
-      // we stop classic link processing here because it interferes with VPC
-      // processing
-      if (file.toString().contains("classic-link")) {
-        _logger.errorf("%s has classic link configuration\n", file);
-        continue;
-      }
+      String regionName = path.getName(pathLength - 2).toString(); // parent dir name
+      String fileName = path.subpath(pathLength - 3, pathLength).toString();
+      pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
       JSONObject jsonObj = null;
       try {
         jsonObj = new JSONObject(fileText);
       } catch (JSONException e) {
-        _logger.errorf("%s does not have valid json\n", file);
+        pvcae.addRedFlagWarning(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(String.format("AWS file %s is not valid JSON", fileName), "AWS"));
       }
 
       if (jsonObj != null) {
         try {
-          config.addConfigElement(regionName, jsonObj, _logger);
+          config.addConfigElement(regionName, jsonObj, fileName, pvcae);
         } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + file, e);
+          throw new BatfishException("Problems parsing JSON in " + fileName, e);
         }
       }
     }
@@ -3112,15 +3100,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
-    Answer answer = new Answer();
+  private void serializeAwsConfigs(
+      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
     AwsConfiguration config;
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
       assert parseAwsConfigsSpan != null; // avoid unused warning
-      config = parseAwsConfigurations(configurationData);
+      config = parseAwsConfigurations(configurationData, pvcae);
     }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
@@ -3131,7 +3119,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
-    return answer;
   }
 
   private Answer serializeEnvironmentBgpTables(Path inputPath, Path outputPath) {
@@ -3419,12 +3406,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // look for AWS VPC configs
     Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
-      answer.append(serializeAwsConfigs(testRigPath, outputPath));
+      serializeAwsConfigs(testRigPath, outputPath, answerElement);
       configsFound = true;
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found in testrig path " + testRigPath);
+      throw new BatfishException("No valid configurations found in snapshot path " + testRigPath);
     }
 
     // serialize warnings
@@ -3805,18 +3792,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return bddSingleReachability(reachabilityParameters);
   }
 
-  private Synthesizer synthesizeDataPlane(
-      Map<String, Configuration> configurations, DataPlane dataPlane) {
-    return synthesizeDataPlane(
-        configurations,
-        dataPlane,
-        TRUE,
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        IpSpaceAssignment.empty(),
-        false);
-  }
-
   public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
     ResolvedReachabilityParameters params;
     try {
@@ -3875,34 +3850,72 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(ImmutableSet.toImmutableSet());
 
     DataPlane dp = loadDataPlane();
-    if (_settings.getDebugFlags().contains("traceroute")) {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
-    } else {
+    if (_settings.debugFlagEnabled("oldtraceroute")) {
       getDataPlanePlugin().processFlows(flows, dp, false);
       return getHistory();
+    } else {
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
     }
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency() {
+  public Set<Flow> bddLoopDetection() {
     BDDPacket pkt = new BDDPacket();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt);
-    IpSpaceAssignment srcIpSpaceAssignment = getAllSourcesInferFromLocationIpSpaceAssignment();
-    Set<String> finalNodes = loadConfigurations().keySet();
+    BDDReachabilityAnalysis analysis =
+        bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
+            getAllSourcesInferFromLocationIpSpaceAssignment());
+    Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
+
+    String flowTag = getFlowTag();
+    return loopBDDs
+        .entrySet()
+        .stream()
+        .map(
+            entry ->
+                pkt.getFlow(entry.getValue())
+                    .map(
+                        fb -> {
+                          IngressLocation loc = entry.getKey();
+                          fb.setTag(flowTag);
+                          fb.setIngressNode(loc.getNode());
+                          switch (loc.getType()) {
+                            case INTERFACE_LINK:
+                              fb.setIngressInterface(loc.getInterface());
+                              break;
+                            case VRF:
+                              fb.setIngressVrf(loc.getVrf());
+                              break;
+                            default:
+                              throw new BatfishException("Unknown Location Type: " + loc.getType());
+                          }
+                          return fb.build();
+                        }))
+        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
+    BDDPacket pkt = new BDDPacket();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(pkt);
+    IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
+    Set<String> finalNodes = parameters.getFinalNodes();
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
-    Set<String> forbiddenTransitNodes = ImmutableSet.of();
-    Set<String> requiredTransitNodes = ImmutableSet.of();
+    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Map<IngressLocation, BDD> acceptedBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
@@ -3912,7 +3925,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
@@ -3922,11 +3935,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
-                UniverseIpSpace.INSTANCE,
+                parameters.getHeaderSpace(),
                 forbiddenTransitNodes,
                 requiredTransitNodes,
                 finalNodes,
-                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                ImmutableSet.of(
+                    FlowDisposition.NEIGHBOR_UNREACHABLE,
+                    FlowDisposition.DELIVERED_TO_SUBNET,
+                    FlowDisposition.EXITS_NETWORK,
+                    FlowDisposition.INSUFFICIENT_INFO))
             .getIngressLocationReachableBDDs();
 
     String flowTag = getFlowTag();

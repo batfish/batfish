@@ -38,8 +38,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
-    private Map<Ip, Set<String>> _ipOwners;
-
     private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
     private Map<String, Node> _nodes;
@@ -48,11 +46,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
       _bgpTopology = bgpTopology;
-      return this;
-    }
-
-    public Builder setIpOwners(Map<Ip, Set<String>> ipOwners) {
-      _ipOwners = ImmutableMap.copyOf(ipOwners);
       return this;
     }
 
@@ -124,8 +117,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final Supplier<ForwardingAnalysis> _forwardingAnalysis =
       Suppliers.memoize(new ForwardingAnalysisSupplier());
 
-  private final Map<Ip, Set<String>> _ipOwners;
-
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
   private final Map<String, Node> _nodes;
@@ -136,7 +127,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private IncrementalDataPlane(Builder builder) {
     _bgpTopology = builder._bgpTopology;
-    _ipOwners = builder._ipOwners;
     _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
     _topology = builder._topology;
@@ -212,11 +202,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public ForwardingAnalysis getForwardingAnalysis() {
     return _forwardingAnalysis.get();
-  }
-
-  @Override
-  public Map<Ip, Set<String>> getIpOwners() {
-    return _ipOwners;
   }
 
   @Override

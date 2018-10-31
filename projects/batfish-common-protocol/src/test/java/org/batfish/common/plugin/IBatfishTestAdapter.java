@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Directory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
@@ -47,8 +46,9 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
-import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
+import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
+import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
+import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -200,11 +200,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public String getTaskId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Directory getTestrigFileTree() {
     throw new UnsupportedOperationException();
   }
 
@@ -428,7 +423,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency() {
+  public Set<Flow> bddLoopDetection() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     throw new UnsupportedOperationException();
   }
 

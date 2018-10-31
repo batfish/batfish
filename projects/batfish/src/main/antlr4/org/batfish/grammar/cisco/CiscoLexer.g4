@@ -684,6 +684,11 @@ ALTERNATE_ADDRESS
    'alternate-address'
 ;
 
+ALTERNATE_AS
+:
+   'alternate-as'
+;
+
 ALWAYS
 :
    'always'
@@ -3712,6 +3717,11 @@ ECHO_REQUEST
    'echo-request'
 ;
 
+ECHO_RX_INTERVAL
+:
+   'echo-rx-interval'
+;
+
 ECMP
 :
    'ecmp'
@@ -5182,6 +5192,11 @@ HELPER_ADDRESS
    'helper-address'
 ;
 
+HEX_KEY
+:
+   'hex-key'
+;
+
 HIDDEN_LITERAL
 :
    'hidden'
@@ -6022,6 +6037,16 @@ KEY_SOURCE
 KEY_STRING
 :
    'key-string'
+;
+
+KEYED_SHA1
+:
+   [kK][eE][yY][eE][dD]'-'[sS][hH][aA]'1'
+;
+
+KEYID
+:
+   'keyid'
 ;
 
 KEYPAIR
@@ -7282,6 +7307,16 @@ MIN_PACKET_SIZE
 MIN_RATE
 :
    'min-rate'
+;
+
+MIN_RX
+:
+   'min-rx'
+;
+
+MIN_RX_VAR
+:
+   'min_rx'
 ;
 
 MIN_TX_POWER
@@ -11196,6 +11231,11 @@ SQLNET
    'sqlnet'
 ;
 
+SRC_IP
+:
+   'src-ip'
+;
+
 SRC_NAT
 :
    'src-nat'
@@ -11436,6 +11476,11 @@ STS_1
 STUB
 :
    'stub'
+;
+
+SUBINTERFACE
+:
+   'subinterface'
 ;
 
 SUBJECT_NAME
@@ -14186,6 +14231,11 @@ M_Authentication_INCLUDE
    'include' -> type ( INCLUDE ) , popMode
 ;
 
+M_Authentication_KEYED_SHA1
+:
+   [kK][eE][yY][eE][dD]'-'[sS][hH][aA]'1' -> type ( KEYED_SHA1 ) , popMode
+;
+
 M_Authentication_LOGIN
 :
    'login' -> type ( LOGIN ) , popMode
@@ -15058,14 +15108,19 @@ M_NEIGHBOR_PASSIVE
    'passive' -> type ( PASSIVE ) , popMode
 ;
 
-M_Neighbor_VARIABLE
+M_NEIGHBOR_SRC_IP
 :
-   F_Variable_VarChar+ -> type ( VARIABLE ) , popMode
+   'src-ip' -> type ( SRC_IP ) , popMode
 ;
 
 M_NEIGHBOR_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_NEIGHBOR_VARIABLE
+:
+   F_Variable_VarChar+ -> type ( VARIABLE ) , popMode
 ;
 
 M_NEIGHBOR_WS

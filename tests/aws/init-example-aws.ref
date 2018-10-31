@@ -2,12 +2,65 @@
   {
     "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
     "fileMap" : {
-      "lhr-border-02" : "configs/lhr-border-02.cfg"
+      "aws_configs" : [
+        "aws_configs/us-west-2/Addresses.json",
+        "aws_configs/us-west-2/AvailabilityZones.json",
+        "aws_configs/us-west-2/ClassicLinkInstances.json",
+        "aws_configs/us-west-2/CustomerGateways.json",
+        "aws_configs/us-west-2/DhcpOptions.json",
+        "aws_configs/us-west-2/ElasticsearchDomains.json",
+        "aws_configs/us-west-2/Hosts.json",
+        "aws_configs/us-west-2/InstanceStatuses.json",
+        "aws_configs/us-west-2/InternetGateways.json",
+        "aws_configs/us-west-2/MovingAddressStatuses.json",
+        "aws_configs/us-west-2/NatGateways.json",
+        "aws_configs/us-west-2/NetworkAcls.json",
+        "aws_configs/us-west-2/NetworkInterfaces.json",
+        "aws_configs/us-west-2/PlacementGroups.json",
+        "aws_configs/us-west-2/PrefixLists.json",
+        "aws_configs/us-west-2/RdsInstances.json",
+        "aws_configs/us-west-2/Reservations.json",
+        "aws_configs/us-west-2/RouteTables.json",
+        "aws_configs/us-west-2/SecurityGroups.json",
+        "aws_configs/us-west-2/Subnets.json",
+        "aws_configs/us-west-2/Tags.json",
+        "aws_configs/us-west-2/VpcEndpointServices.json",
+        "aws_configs/us-west-2/VpcEndpoints.json",
+        "aws_configs/us-west-2/VpcPeeringConnections.json",
+        "aws_configs/us-west-2/Vpcs.json",
+        "aws_configs/us-west-2/VpnConnections.json",
+        "aws_configs/us-west-2/VpnGateways.json"
+      ],
+      "lhr-border-02" : [
+        "configs/lhr-border-02.cfg"
+      ]
     },
     "parseStatus" : {
       "configs/lhr-border-02.cfg" : "PASSED"
     },
-    "version" : "0.36.0"
+    "version" : "0.36.0",
+    "warnings" : {
+      "aws_configs" : {
+        "Unimplemented features" : [
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'Hosts' in AWS file aws_configs/us-west-2/Hosts.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'MovingAddressStatuses' in AWS file aws_configs/us-west-2/MovingAddressStatuses.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'PrefixLists' in AWS file aws_configs/us-west-2/PrefixLists.json"
+          },
+          {
+            "tag" : "AWS",
+            "text" : "Unrecognized element 'VpcEndpoints' in AWS file aws_configs/us-west-2/VpcEndpoints.json"
+          }
+        ]
+      }
+    }
   },
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",

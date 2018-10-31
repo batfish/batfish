@@ -65,4 +65,8 @@ public class Table2<K1, K2, V> {
   public void forEach(BiConsumer<? super K1, ? super Map<K2, V>> action) {
     _map.forEach(action);
   }
+
+  public Map<K1, Map<K2, V>> asMap() {
+    return _map;
+  }
 }

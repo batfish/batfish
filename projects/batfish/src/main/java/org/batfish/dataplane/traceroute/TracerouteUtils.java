@@ -1,16 +1,21 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.flow.StepAction.BLOCKED;
-import static org.batfish.datamodel.flow.StepAction.SENT_IN;
+import static org.batfish.datamodel.flow.StepAction.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.flow.StepAction.EXITS_NETWORK;
+import static org.batfish.datamodel.flow.StepAction.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
+import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -22,6 +27,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.StepAction;
 
 @ParametersAreNonnullByDefault
 final class TracerouteUtils {
@@ -86,18 +92,17 @@ final class TracerouteUtils {
    *     node
    * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
    *     Hop})
-   * @param dataPlane Computed {@link DataPlane} for the node
    * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
+  @Nonnull
   static EnterInputIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       String inputIfaceName,
       boolean ignoreAcls,
       Flow currentFlow,
       Map<String, IpAccessList> aclDefinitions,
-      NavigableMap<String, IpSpace> namedIpSpaces,
-      DataPlane dataPlane) {
+      NavigableMap<String, IpSpace> namedIpSpaces) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
@@ -121,7 +126,7 @@ final class TracerouteUtils {
         if (filterResult.getAction() == LineAction.DENY) {
           return enterSrcIfaceStepBuilder
               .setDetail(enterSrcStepDetailBuilder.build())
-              .setAction(BLOCKED)
+              .setAction(DENIED)
               .build();
         }
       }
@@ -130,7 +135,30 @@ final class TracerouteUtils {
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
-        .setAction(SENT_IN)
+        .setAction(RECEIVED)
         .build();
+  }
+
+  /**
+   * Gets the final actions for dispositions returned by {@link
+   * TracerouteEngineImplContext#computeDisposition(String, String, Ip)}
+   */
+  static StepAction getFinalActionForDisposition(FlowDisposition disposition) {
+    StepAction finalAction;
+    switch (disposition) {
+      case DELIVERED_TO_SUBNET:
+        finalAction = DELIVERED_TO_SUBNET;
+        break;
+      case EXITS_NETWORK:
+        finalAction = EXITS_NETWORK;
+        break;
+      case NEIGHBOR_UNREACHABLE:
+        finalAction = NEIGHBOR_UNREACHABLE;
+        break;
+      case INSUFFICIENT_INFO:
+      default:
+        finalAction = INSUFFICIENT_INFO;
+    }
+    return finalAction;
   }
 }

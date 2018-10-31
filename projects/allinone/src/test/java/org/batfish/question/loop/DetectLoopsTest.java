@@ -1,0 +1,57 @@
+package org.batfish.question.loop;
+
+import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.util.Set;
+import java.util.SortedMap;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.hamcrest.Matchers;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+public class DetectLoopsTest {
+  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+
+  Batfish _batfish;
+
+  private void initNetwork(boolean includeLoop) throws IOException {
+    SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(includeLoop);
+    _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    _batfish.computeDataPlane(false);
+  }
+
+  @Test
+  public void testNoLoops() throws IOException {
+    initNetwork(false);
+    DetectLoopsAnswerer answerer = new DetectLoopsAnswerer(new DetectLoopsQuestion(), _batfish);
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    assertThat(ae.getRows(), hasSize(0));
+  }
+
+  @Test
+  public void testLoops() throws IOException {
+    initNetwork(true);
+    Set<Flow> flows = _batfish.bddLoopDetection();
+    assertThat(flows, Matchers.hasSize(2));
+
+    DetectLoopsAnswerer answerer = new DetectLoopsAnswerer(new DetectLoopsQuestion(), _batfish);
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+
+    // we find 2 loopy flows, but they are for the same destination, so the answerer
+    // only reports 1.
+    assertThat(ae.getRows(), hasSize(1));
+
+    // same result if we use the old traceroute engine
+    _batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
+    ae = (TableAnswerElement) answerer.answer();
+    assertThat(ae.getRows(), hasSize(1));
+  }
+}

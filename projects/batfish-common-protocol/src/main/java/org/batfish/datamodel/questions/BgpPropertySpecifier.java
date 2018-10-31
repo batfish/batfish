@@ -1,15 +1,23 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
@@ -25,29 +33,34 @@ import org.batfish.datamodel.answers.Schema;
  */
 public class BgpPropertySpecifier extends PropertySpecifier {
 
-  // public static final String CLUSTER_IDS = "Cluster_IDs";
+  public static final String CLUSTER_IDS = "Cluster_IDs";
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
   public static final String MULTIPATH_IBGP = "Multipath_IBGP";
   public static final String NEIGHBORS = "Neighbors";
+  public static final String ROUTE_REFLECTOR = "Route_Reflector";
   public static final String TIE_BREAKER = "Tie_Breaker";
 
-  public static Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
+  public static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
-          /*
-          Suppressing CLUSTER_IDs until we can figure out how to get these for route reflectors only
-
+          .put(
+              ROUTE_REFLECTOR,
+              new PropertyDescriptor<>(BgpPropertySpecifier::isRouteReflector, Schema.BOOLEAN))
           .put(
               CLUSTER_IDS,
               new PropertyDescriptor<>(
-                  (process) ->
-                      process
-                          .getClusterIds()
-                          .stream()
-                          .map(Ip::new)
-                          .collect(ImmutableSet.toImmutableSet()),
-                  Schema.set(Schema.STRING)))
-          */
+                  (process) -> {
+                    if (!isRouteReflector(process)) {
+                      // Only populate cluster IDs if this device is a route reflector.
+                      return null;
+                    }
+                    return process
+                        .getClusterIds()
+                        .stream()
+                        .map(Ip::new)
+                        .collect(ImmutableSet.toImmutableSet());
+                  },
+                  Schema.set(Schema.IP)))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
@@ -70,6 +83,7 @@ public class BgpPropertySpecifier extends PropertySpecifier {
           .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
           .build();
 
+  /** A {@link BgpPropertySpecifier} that matches all BGP properties. */
   public static final BgpPropertySpecifier ALL = new BgpPropertySpecifier(".*");
 
   private final String _expression;
@@ -77,8 +91,8 @@ public class BgpPropertySpecifier extends PropertySpecifier {
   private final Pattern _pattern;
 
   @JsonCreator
-  public BgpPropertySpecifier(String expression) {
-    _expression = expression;
+  public BgpPropertySpecifier(@Nullable String expression) {
+    _expression = firstNonNull(expression, ".*");
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
@@ -103,5 +117,21 @@ public class BgpPropertySpecifier extends PropertySpecifier {
   @JsonValue
   public String toString() {
     return _expression;
+  }
+
+  /**
+   * Returns {@code true} iff the given process has any BGP peer configured as a route reflector
+   * client.
+   */
+  @VisibleForTesting
+  static boolean isRouteReflector(BgpProcess p) {
+    return p.getActiveNeighbors()
+            .values()
+            .stream()
+            .anyMatch(BgpActivePeerConfig::getRouteReflectorClient)
+        || p.getPassiveNeighbors()
+            .values()
+            .stream()
+            .anyMatch(BgpPassivePeerConfig::getRouteReflectorClient);
   }
 }

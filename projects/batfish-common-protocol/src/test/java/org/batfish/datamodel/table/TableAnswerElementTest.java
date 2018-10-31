@@ -1,13 +1,16 @@
 package org.batfish.datamodel.table;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Assertion.AssertionType;
 import org.junit.Rule;
@@ -18,6 +21,14 @@ import org.junit.rules.ExpectedException;
 public class TableAnswerElementTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static final ColumnMetadata key1ColMetadata =
+      new ColumnMetadata("key1", Schema.STRING, "desc1");
+  private static final TableMetadata oneKeyTableMetadata =
+      new TableMetadata(ImmutableList.of(key1ColMetadata));
+  private static final TableMetadata twoKeyTableMetadata =
+      new TableMetadata(
+          ImmutableList.of(key1ColMetadata, new ColumnMetadata("key2", Schema.STRING, "desc2")));
 
   /** Does computerSummary compute the correct summary? */
   @Test
@@ -58,18 +69,65 @@ public class TableAnswerElementTest {
         new Assertion(
             AssertionType.equals,
             BatfishObjectMapper.mapper()
-                .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
+                .readValue("[{\"key1\": \"value1\"}, {\"key1\": \"value2\"}]", JsonNode.class));
 
     // adding rows in different order shouldn't matter
-    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata(null, "no desc"));
-    otherRows.addRow(Row.builder().put("key2", "value2").build());
+    TableAnswerElement otherRows = new TableAnswerElement(oneKeyTableMetadata);
+    otherRows.addRow(Row.builder().put("key1", "value2").build());
     otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(Row.builder().put("key1", "value1").build());
+    otherRows.addRow(Row.builder().put("key1", "value2").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
+  }
+
+  @Test
+  public void testAddEmptyRow() {
+    TableAnswerElement table = new TableAnswerElement(oneKeyTableMetadata);
+    Row row = Row.builder().build();
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Row columns %s do not match metadata columns metadata %s",
+            row.getColumnNames(), oneKeyTableMetadata.toColumnMap().keySet()));
+    table.addRow(row);
+  }
+
+  @Test
+  public void testAddRowMissingColumn() {
+    TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
+    Row row = Row.builder().put("key1", null).build();
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Row columns %s do not match metadata columns metadata %s",
+            row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet()));
+    table.addRow(row);
+  }
+
+  @Test
+  public void testAddValidRow() {
+    TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
+    Row row = Row.builder().put("key1", null).put("key2", null).build();
+    table.addRow(row);
+    assertThat(table.getRows().getData(), contains(row));
+  }
+
+  @Test
+  public void testAddRowExtraColumn() {
+    TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
+
+    Row row = Row.builder().put("key1", null).put("key2", null).put("key3", null).build();
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Row columns %s do not match metadata columns metadata %s",
+            row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet()));
+    table.addRow(row);
   }
 }

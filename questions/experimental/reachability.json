@@ -16,7 +16,7 @@
       "actions": {
         "description": "Only return flows for which the disposition is from this set",
         "optional": true,
-        "type": "string",
+        "type": "dispositionSpec",
         "value": "success"
       },
       "headers": {
