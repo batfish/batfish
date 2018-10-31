@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -385,7 +383,7 @@ public abstract class Question implements IQuestion {
    * @param className Full name of the class
    * @return The result
    */
-  public static boolean isQuestionClass(String className) {
+  private static boolean isQuestionClass(String className) {
     try {
       Class<?> clazz = Class.forName(className);
       return Question.class.isAssignableFrom(clazz);
@@ -405,27 +403,14 @@ public abstract class Question implements IQuestion {
   }
 
   protected String prettyPrintBase() {
-    String retString = "";
     // for brevity, print only if the values are non-default
-    if (_differential) {
-      retString += String.format("differential=%s", _differential);
-    }
-    if (retString.isEmpty()) {
-      return "";
-    } else {
-      return retString + ", ";
-    }
-  }
-
-  public static Question parseQuestion(Path questionPath) {
-    return parseQuestion(CommonUtil.readFile(questionPath));
+    return _differential ? "differential=true, " : "";
   }
 
   public static Question parseQuestion(String rawQuestionText) {
     String questionText = Question.preprocessQuestion(rawQuestionText);
     try {
-      Question question = BatfishObjectMapper.mapper().readValue(questionText, Question.class);
-      return question;
+      return BatfishObjectMapper.mapper().readValue(questionText, Question.class);
     } catch (IOException e) {
       throw new BatfishException("Could not parse JSON question: " + e.getMessage(), e);
     }
@@ -443,17 +428,11 @@ public abstract class Question implements IQuestion {
           String varName = e.getKey();
           Variable variable = e.getValue();
           JsonNode value = variable.getValue();
+          // Clear optional variables with null values (for now, assume non-optional variables with
+          // null values will be handled by later validation)
           if (value == null) {
             if (variable.getOptional()) {
-              /**
-               * Recursively look for all key, value pairs and remove keys whose value is
-               * "${varName}." Is this fragile? To be doubly sure, we do this only for keys with a
-               * sibling key "class" that is a Question class
-               */
               recursivelyRemoveOptionalVar(jobj, varName);
-            } else {
-              // What to do here? For now, do nothing and assume that
-              // later validation will handle it.
             }
             continue;
           }
@@ -509,6 +488,11 @@ public abstract class Question implements IQuestion {
     }
   }
 
+  /**
+   * Recursively look for all key, value pairs and remove keys whose value is "${{@code varName}}".
+   * Is this fragile? To be doubly sure, we do this only for keys with a sibling key "class" that is
+   * a Question class
+   */
   private static void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
       throws JSONException {
     Iterator<?> iter = questionObject.keys();
