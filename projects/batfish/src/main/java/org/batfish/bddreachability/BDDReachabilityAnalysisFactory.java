@@ -793,7 +793,7 @@ public final class BDDReachabilityAnalysisFactory {
                             .values()
                             .stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
-                            .flatMap(
+                            .map(
                                 iface -> {
                                   String name = iface.getName();
                                   BDD ipSpaceBDD =
@@ -806,15 +806,11 @@ public final class BDDReachabilityAnalysisFactory {
                                   String outAcl = iface.getOutgoingFilterName();
                                   BDD outAclDenyBDD = ignorableAclDenyBDD(node, outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclDenyBDD);
-
-                                  return edgeBdd.isZero()
-                                      ? Stream.empty()
-                                      : Stream.of(
-                                          new Edge(
-                                              new PreOutVrf(node, vrf),
-                                              new NodeDropAclOut(node),
-                                              edgeBdd::and,
-                                              eraseSourceAfter(edgeBdd, node)));
+                                  return new Edge(
+                                      new PreOutVrf(node, vrf),
+                                      new NodeDropAclOut(node),
+                                      edgeBdd::and,
+                                      eraseSourceAfter(edgeBdd, node));
                                 });
                       });
             });
