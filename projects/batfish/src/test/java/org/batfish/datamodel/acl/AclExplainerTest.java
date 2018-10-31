@@ -40,7 +40,8 @@ public class AclExplainerTest {
 
   private AclLineMatchExpr explain(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return AclExplainer.explain(
-        _pkt, _mgr, invariantExpr, acl, ImmutableMap.of(), ImmutableMap.of());
+            _pkt, _mgr, invariantExpr, acl, ImmutableMap.of(), ImmutableMap.of())
+        .getMatchExpr();
   }
 
   private AclLineMatchExpr explainDifferential(IpAccessList denyAcl, IpAccessList permitAcl) {
@@ -50,15 +51,16 @@ public class AclExplainerTest {
   private AclLineMatchExpr explainDifferential(
       AclLineMatchExpr invariantExpr, IpAccessList denyAcl, IpAccessList permitAcl) {
     return AclExplainer.explainDifferential(
-        _pkt,
-        _mgr,
-        invariantExpr,
-        denyAcl,
-        ImmutableMap.of(),
-        ImmutableMap.of(),
-        permitAcl,
-        ImmutableMap.of(),
-        ImmutableMap.of());
+            _pkt,
+            _mgr,
+            invariantExpr,
+            denyAcl,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            permitAcl,
+            ImmutableMap.of(),
+            ImmutableMap.of())
+        .getMatchExpr();
   }
 
   @Test

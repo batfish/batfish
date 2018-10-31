@@ -4,7 +4,10 @@ import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -27,7 +30,7 @@ public final class AclExplainer {
    * another ({@code denyAcl}). The {@code invariantExp} allows scoping the explanation to a space
    * of interest (use {@link TrueExpr} to explain the entire difference).
    */
-  public static AclLineMatchExpr explainDifferential(
+  public static AclLineMatchExprWithProvenance<IpAccessListLine> explainDifferential(
       BDDPacket bddPacket,
       BDDSourceManager mgr,
       AclLineMatchExpr invariantExpr,
@@ -65,7 +68,7 @@ public final class AclExplainer {
    * scoping the explanation to a space of interest (use {@link TrueExpr} to explain the entire
    * space).
    */
-  public static AclLineMatchExpr explain(
+  public static AclLineMatchExprWithProvenance<IpAccessListLine> explain(
       BDDPacket bddPacket,
       BDDSourceManager mgr,
       AclLineMatchExpr invariantExpr,
@@ -80,8 +83,17 @@ public final class AclExplainer {
     return explain(ipAccessListToBDD, aclWithInvariant, namedAcls);
   }
 
-  private static AclLineMatchExpr explain(
+  private static AclLineMatchExprWithProvenance<IpAccessListLine> explain(
       IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
+
+    // create a map from each literal in the given acl to the line that it came from
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLine> literalsToLines = new IdentityHashMap<>();
+    acl.getLines()
+        .forEach(
+            line ->
+                AclLineMatchExprLiterals.getLiterals(line.getMatchCondition())
+                    .forEach(lit -> literalsToLines.put(lit, line)));
+
     // Convert acl to a single expression.
     AclLineMatchExpr aclExpr =
         AclToAclLineMatchExpr.toAclLineMatchExpr(ipAccessListToBDD, acl, namedAcls);
@@ -90,7 +102,26 @@ public final class AclExplainer {
     AclLineMatchExpr aclExprNf = AclLineMatchExprNormalizer.normalize(ipAccessListToBDD, aclExpr);
 
     // Simplify the normal form
-    return AclExplanation.explainNormalForm(aclExprNf);
+    AclLineMatchExprWithProvenance<AclLineMatchExpr> aclExprNfExplained =
+        AclExplanation.explainNormalForm(aclExprNf);
+
+    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLine>> disjunctsToLines =
+        new IdentityHashMap<>();
+
+    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry :
+        aclExprNfExplained.getProvenance().entrySet()) {
+      AclLineMatchExpr disjunct = entry.getKey();
+      disjunctsToLines.put(
+          disjunct,
+          entry
+              .getValue()
+              .stream()
+              .map(literalsToLines::get)
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
+    return new AclLineMatchExprWithProvenance<IpAccessListLine>(
+        aclExprNfExplained.getMatchExpr(), disjunctsToLines);
   }
 
   /**
