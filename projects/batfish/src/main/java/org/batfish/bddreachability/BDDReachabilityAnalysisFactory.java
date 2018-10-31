@@ -5,6 +5,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -21,8 +22,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
@@ -40,6 +43,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -95,12 +99,13 @@ import org.batfish.z3.state.Query;
  * node (e.g. forward into another node or a disposition state, or backward into another node or an
  * origination state), we erase the contraint on source by existential quantification.
  */
+@ParametersAreNonnullByDefault
 public final class BDDReachabilityAnalysisFactory {
   // node name --> acl name --> set of packets denied by the acl.
-  private final Map<String, Map<String, BDD>> _aclDenyBDDs;
+  private final Map<String, Map<String, Supplier<BDD>>> _aclDenyBDDs;
 
   // node name --> acl name --> set of packets permitted by the acl.
-  private final Map<String, Map<String, BDD>> _aclPermitBDDs;
+  private final Map<String, Map<String, Supplier<BDD>>> _aclPermitBDDs;
 
   /*
    * edge --> set of packets that will flow out the edge successfully, including that the
@@ -119,9 +124,11 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final Map<String, Configuration> _configs;
 
+  private IpSpaceToBDD _dstIpSpaceToBDD;
+
   private final ForwardingAnalysis _forwardingAnalysis;
 
-  private IpSpaceToBDD _dstIpSpaceToBDD;
+  private final boolean _ignoreAcls;
 
   /*
    * node --> vrf --> interface --> set of packets that get routed out the interface but do not
@@ -157,9 +164,18 @@ public final class BDDReachabilityAnalysisFactory {
 
   public BDDReachabilityAnalysisFactory(
       BDDPacket packet, Map<String, Configuration> configs, ForwardingAnalysis forwardingAnalysis) {
+    this(packet, configs, forwardingAnalysis, false);
+  }
+
+  public BDDReachabilityAnalysisFactory(
+      BDDPacket packet,
+      Map<String, Configuration> configs,
+      ForwardingAnalysis forwardingAnalysis,
+      boolean ignoreAcls) {
     _bddPacket = packet;
     _one = packet.getFactory().one();
     _zero = packet.getFactory().zero();
+    _ignoreAcls = ignoreAcls;
     _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
@@ -182,7 +198,12 @@ public final class BDDReachabilityAnalysisFactory {
     _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
   }
 
-  private static Map<String, Map<String, BDD>> computeAclBDDs(
+  /**
+   * Lazily compute the ACL BDDs, since we may only need some of them (depending on ignoreAcls,
+   * forbidden transit nodes, etc). When ignoreAcls is enabled, we still need the ACLs used in NATs.
+   * This is simpler than trying to precompute which ACLs we actually need.
+   */
+  private static Map<String, Map<String, Supplier<BDD>>> computeAclBDDs(
       BDDPacket bddPacket,
       Map<String, BDDSourceManager> bddSourceManagers,
       Map<String, Configuration> configs) {
@@ -200,18 +221,20 @@ public final class BDDReachabilityAnalysisFactory {
           return toImmutableMap(
               config.getIpAccessLists(),
               Entry::getKey,
-              aclEntry -> aclToBdd.toBdd(aclEntry.getValue()));
+              aclEntry -> Suppliers.memoize(() -> aclToBdd.toBdd(aclEntry.getValue())));
         });
   }
 
-  private static Map<String, Map<String, BDD>> computeAclDenyBDDs(
-      Map<String, Map<String, BDD>> aclBDDs) {
+  private static Map<String, Map<String, Supplier<BDD>>> computeAclDenyBDDs(
+      Map<String, Map<String, Supplier<BDD>>> aclBDDs) {
     return toImmutableMap(
         aclBDDs,
         Entry::getKey,
         nodeEntry ->
             toImmutableMap(
-                nodeEntry.getValue(), Entry::getKey, aclEntry -> aclEntry.getValue().not()));
+                nodeEntry.getValue(),
+                Entry::getKey,
+                aclEntry -> Suppliers.memoize(() -> aclEntry.getValue().get().not())));
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(Stream<Edge> edgeStream) {
@@ -401,13 +424,13 @@ public final class BDDReachabilityAnalysisFactory {
     return Streams.concat(
         generateRules_NodeAccept_Accept(finalNodes),
         generateRules_NodeDropAclIn_DropAclIn(finalNodes),
+        generateRules_NodeDropAclOut_DropAclOut(finalNodes),
         generateRules_NodeDropNoRoute_DropNoRoute(finalNodes),
         generateRules_NodeDropNullRoute_DropNullRoute(finalNodes),
-        generateRules_NodeDropAclOut_DropAclOut(finalNodes),
-        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
         generateRules_NodeInterfaceDeliveredToSubnet_DeliveredToSubnet(finalNodes),
         generateRules_NodeInterfaceExitsNetwork_ExitsNetwork(finalNodes),
         generateRules_NodeInterfaceInsufficientInfo_InsufficientInfo(finalNodes),
+        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_PostInVrf(),
         generateRules_PostInVrf_NodeAccept(),
@@ -583,13 +606,29 @@ public final class BDDReachabilityAnalysisFactory {
               String node = i.getOwner().getHostname();
               String iface = i.getName();
 
-              BDD aclDenyBDD = _aclDenyBDDs.get(node).get(acl);
+              BDD aclDenyBDD = ignorableAclDenyBDD(node, acl);
               return new Edge(
                   new PreInInterface(node, iface),
                   new NodeDropAclIn(node),
                   validSource(aclDenyBDD, node),
                   eraseSourceAfter(aclDenyBDD, node));
             });
+  }
+
+  private BDD aclDenyBDD(String node, String acl) {
+    return _aclDenyBDDs.get(node).get(acl).get();
+  }
+
+  private BDD aclPermitBDD(String node, String acl) {
+    return _aclPermitBDDs.get(node).get(acl).get();
+  }
+
+  private BDD ignorableAclDenyBDD(String node, String acl) {
+    return _ignoreAcls ? _zero : aclDenyBDD(node, acl);
+  }
+
+  private BDD ignorableAclPermitBDD(String node, String acl) {
+    return _ignoreAcls ? _one : aclPermitBDD(node, acl);
   }
 
   private Stream<Edge> generateRules_PreInInterface_PostInVrf() {
@@ -607,7 +646,7 @@ public final class BDDReachabilityAnalysisFactory {
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
 
-              BDD inAclBDD = aclName == null ? _one : _aclPermitBDDs.get(nodeName).get(aclName);
+              BDD inAclBDD = aclName == null ? _one : ignorableAclPermitBDD(nodeName, aclName);
               return new Edge(
                   new PreInInterface(nodeName, ifaceName),
                   new PostInVrf(nodeName, vrfName),
@@ -644,7 +683,7 @@ public final class BDDReachabilityAnalysisFactory {
                       .map(
                           sourceNat -> {
                             String aclName = sourceNat.getAcl().getName();
-                            BDD match = _aclPermitBDDs.get(node1).get(aclName);
+                            BDD match = aclPermitBDD(node1, aclName);
                             BDD setSrcIp =
                                 _bddPacket
                                     .getSrcIp()
@@ -666,6 +705,9 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdgePostNat_NodeDropAclOut() {
+    if (_ignoreAcls) {
+      return Stream.of();
+    }
     return _forwardingAnalysis
         .getArpTrueEdge()
         .keySet()
@@ -679,16 +721,18 @@ public final class BDDReachabilityAnalysisFactory {
 
               String aclName =
                   _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
-              BDD aclDenyBDD = _aclDenyBDDs.get(node1).get(aclName);
 
-              return aclDenyBDD != null
-                  ? Stream.of(
-                      new Edge(
-                          new PreOutEdgePostNat(node1, iface1, node2, iface2),
-                          new NodeDropAclOut(node1),
-                          validSource(aclDenyBDD, node1),
-                          eraseSourceAfter(aclDenyBDD, node1)))
-                  : Stream.of();
+              if (aclName == null) {
+                return Stream.of();
+              }
+
+              BDD aclDenyBDD = ignorableAclDenyBDD(node1, aclName);
+              return Stream.of(
+                  new Edge(
+                      new PreOutEdgePostNat(node1, iface1, node2, iface2),
+                      new NodeDropAclOut(node1),
+                      validSource(aclDenyBDD, node1),
+                      eraseSourceAfter(aclDenyBDD, node1)));
             });
   }
 
@@ -706,7 +750,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               String aclName =
                   _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
-              BDD aclPermitBDD = aclName == null ? _one : _aclPermitBDDs.get(node1).get(aclName);
+              BDD aclPermitBDD = aclName == null ? _one : ignorableAclPermitBDD(node1, aclName);
               assert aclPermitBDD != null;
 
               return new Edge(
@@ -718,13 +762,16 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut() {
+    if (_ignoreAcls) {
+      return Stream.of();
+    }
+
     return _configs
         .entrySet()
         .stream()
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();
-              Map<String, BDD> aclDenyBDDs = _aclDenyBDDs.get(node);
               return nodeEntry
                   .getValue()
                   .getVrfs()
@@ -745,7 +792,8 @@ public final class BDDReachabilityAnalysisFactory {
                             .getInterfaces()
                             .values()
                             .stream()
-                            .flatMap(
+                            .filter(iface -> iface.getOutgoingFilterName() != null)
+                            .map(
                                 iface -> {
                                   String name = iface.getName();
                                   BDD ipSpaceBDD =
@@ -756,18 +804,13 @@ public final class BDDReachabilityAnalysisFactory {
                                               insufficientInfoBDDs.get(name))
                                           .reduce(_zero, BDD::or);
                                   String outAcl = iface.getOutgoingFilterName();
-                                  BDD outAclDenyBDD =
-                                      outAcl == null ? _zero : aclDenyBDDs.get(outAcl);
+                                  BDD outAclDenyBDD = ignorableAclDenyBDD(node, outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclDenyBDD);
-
-                                  return edgeBdd.isZero()
-                                      ? Stream.of()
-                                      : Stream.of(
-                                          new Edge(
-                                              new PreOutVrf(node, vrf),
-                                              new NodeDropAclOut(node),
-                                              edgeBdd::and,
-                                              eraseSourceAfter(edgeBdd, node)));
+                                  return new Edge(
+                                      new PreOutVrf(node, vrf),
+                                      new NodeDropAclOut(node),
+                                      edgeBdd::and,
+                                      eraseSourceAfter(edgeBdd, node));
                                 });
                       });
             });
@@ -828,7 +871,7 @@ public final class BDDReachabilityAnalysisFactory {
                                           .get(iface)
                                           .getOutgoingFilterName();
                                   BDD outAclPermitBDD =
-                                      outAcl == null ? _one : _aclPermitBDDs.get(node).get(outAcl);
+                                      outAcl == null ? _one : ignorableAclPermitBDD(node, outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclPermitBDD);
 
                                   return edgeBdd.isZero()
@@ -928,6 +971,17 @@ public final class BDDReachabilityAnalysisFactory {
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param dstIpSpace The destination {@link IpSpace}.
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       IpSpace dstIpSpace,
@@ -944,21 +998,66 @@ public final class BDDReachabilityAnalysisFactory {
         actions);
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
-      @Nonnull Set<String> finalNodes,
+      Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    BDD initialHeaderSpaceBdd =
-        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of())
-            .visit(initialHeaderSpace);
+    return bddReachabilityAnalysis(
+        srcIpSpaceAssignment,
+        initialHeaderSpace,
+        UniverseIpSpace.INSTANCE,
+        forbiddenTransitNodes,
+        requiredTransitNodes,
+        finalNodes,
+        actions);
+  }
+
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param finalSrcIpSpace The final source {@link IpSpace} (i.e. after all packet
+   *     transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
+  public BDDReachabilityAnalysis bddReachabilityAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr initialHeaderSpace,
+      IpSpace finalSrcIpSpace,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions) {
+    IpAccessListToBDD ipAccessListToBDD =
+        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of());
+    BDD initialHeaderSpaceBdd = ipAccessListToBDD.visit(initialHeaderSpace);
 
     /*
      * erase constraints on header fields that may change
      */
-    BDD finalHeaderSpaceBdd = initialHeaderSpaceBdd.exist(_sourceIpVars);
+    BDD finalHeaderSpaceBdd =
+        initialHeaderSpaceBdd
+            .exist(_sourceIpVars)
+            .and(ipAccessListToBDD.visit(AclLineMatchExprs.matchSrc(finalSrcIpSpace)));
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
 
