@@ -23,7 +23,7 @@ public class MemoizedIpSpaceToBDDTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    _toBdd = new MemoizedIpSpaceToBDD(pkt.getFactory(), pkt.getDstIp(), ImmutableMap.of());
+    _toBdd = new MemoizedIpSpaceToBDD(pkt.getDstIp(), ImmutableMap.of());
   }
 
   @Test
