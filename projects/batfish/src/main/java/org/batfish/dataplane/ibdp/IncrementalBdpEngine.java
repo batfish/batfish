@@ -70,7 +70,6 @@ class IncrementalBdpEngine {
   }
 
   ComputeDataPlaneResult computeDataPlane(
-      boolean differentialContext,
       Map<String, Configuration> configurations,
       Topology topology,
       Set<BgpAdvertisement> externalAdverts) {

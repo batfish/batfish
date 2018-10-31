@@ -49,7 +49,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
       boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     ComputeDataPlaneResult answer =
-        _engine.computeDataPlane(differentialContext, configurations, topology, externalAdverts);
+        _engine.computeDataPlane(configurations, topology, externalAdverts);
     double averageRoutes =
         ((IncrementalDataPlane) answer._dataPlane)
             .getNodes()
