@@ -3598,15 +3598,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     !explain
                         ? null
                         : AclExplainer.explainDifferential(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            baseAcl,
-                            baseConfig.getIpAccessLists(),
-                            baseConfig.getIpSpaces(),
-                            deltaAcl,
-                            deltaConfig.getIpAccessLists(),
-                            deltaConfig.getIpSpaces())));
+                                bddPacket,
+                                mgr,
+                                new MatchHeaderSpace(headerSpace),
+                                baseAcl,
+                                baseConfig.getIpAccessLists(),
+                                baseConfig.getIpSpaces(),
+                                deltaAcl,
+                                deltaConfig.getIpAccessLists(),
+                                deltaConfig.getIpSpaces())
+                            .getMatchExpr()));
 
     Optional<SearchFiltersResult> decreasedResult =
         decreasedFlow.map(
@@ -3616,15 +3617,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     !explain
                         ? null
                         : AclExplainer.explainDifferential(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            deltaAcl,
-                            deltaConfig.getIpAccessLists(),
-                            deltaConfig.getIpSpaces(),
-                            baseAcl,
-                            baseConfig.getIpAccessLists(),
-                            baseConfig.getIpSpaces())));
+                                bddPacket,
+                                mgr,
+                                new MatchHeaderSpace(headerSpace),
+                                deltaAcl,
+                                deltaConfig.getIpAccessLists(),
+                                deltaConfig.getIpSpaces(),
+                                baseAcl,
+                                baseConfig.getIpAccessLists(),
+                                baseConfig.getIpSpaces())
+                            .getMatchExpr()));
 
     return new DifferentialSearchFiltersResult(
         increasedResult.orElse(null), decreasedResult.orElse(null));
@@ -3710,12 +3712,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     flow,
                     parameters.getGenerateExplanations()
                         ? AclExplainer.explain(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            acl,
-                            node.getIpAccessLists(),
-                            node.getIpSpaces())
+                                bddPacket,
+                                mgr,
+                                new MatchHeaderSpace(headerSpace),
+                                acl,
+                                node.getIpAccessLists(),
+                                node.getIpSpaces())
+                            .getMatchExpr()
                         : null));
   }
 

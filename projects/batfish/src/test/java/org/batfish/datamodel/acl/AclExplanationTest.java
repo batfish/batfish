@@ -93,7 +93,8 @@ public class AclExplanationTest {
     MatchSrcInterface matchSrcInterface = matchSrcInterface("foo");
     AclLineMatchExpr expr =
         AclExplanation.explainLiterals(
-            ImmutableList.of(matchHeaderSpace, notMatchHeaderSpace, matchSrcInterface));
+                ImmutableList.of(matchHeaderSpace, notMatchHeaderSpace, matchSrcInterface))
+            .getMatchExpr();
     assertThat(expr, equalTo(and(matchHeaderSpace, matchSrcInterface, notMatchHeaderSpace)));
   }
 
