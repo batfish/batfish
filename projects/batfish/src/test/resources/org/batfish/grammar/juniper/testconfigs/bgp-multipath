@@ -1,0 +1,9 @@
+#
+set system host-name bgp-multipath
+#
+set routing-options autonomous-system 1
+set protocols bgp group MYGROUP multipath
+set protocols bgp group MYGROUP local-as 1
+set protocols bgp group MYGROUP peer-as 2
+set protocols bgp group MYGROUP neighbor 1.1.1.1
+set protocols bgp group MYGROUP enforce-first-as
