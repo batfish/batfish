@@ -45,9 +45,9 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
+import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
-import org.batfish.question.reducedreachability.DifferentialReachabilityParameters;
-import org.batfish.question.reducedreachability.DifferentialReachabilityResult;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -229,6 +229,8 @@ public interface IBatfish extends IPluginConsumer {
   SpecifierContext specifierContext();
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
+
+  Set<Flow> bddLoopDetection();
 
   Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters);
 

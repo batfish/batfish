@@ -1,4 +1,4 @@
-package org.batfish.question.reducedreachability;
+package org.batfish.question.differentialreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
@@ -37,15 +37,15 @@ import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
 
-/** An {@link Answerer} for {@link ReducedReachabilityQuestion}. */
-public class ReducedReachabilityAnswerer extends Answerer {
+/** An {@link Answerer} for {@link DifferentialReachabilityQuestion}. */
+public class DifferentialReachabilityAnswerer extends Answerer {
   public static final String COL_FLOW = "flow";
 
   static final String COL_BASE_TRACES = TableDiff.baseColumnName(getTracesColumnName());
 
   static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(getTracesColumnName());
 
-  public ReducedReachabilityAnswerer(Question question, IBatfish batfish) {
+  public DifferentialReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
@@ -59,7 +59,7 @@ public class ReducedReachabilityAnswerer extends Answerer {
   }
 
   private DifferentialReachabilityParameters parameters() {
-    ReducedReachabilityQuestion question = (ReducedReachabilityQuestion) _question;
+    DifferentialReachabilityQuestion question = (DifferentialReachabilityQuestion) _question;
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
     IpSpaceSpecifierFactory flexibleIpSpaceSpecifierFactory =
         new FlexibleInferFromLocationIpSpaceSpecifierFactory();

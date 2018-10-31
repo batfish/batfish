@@ -25,9 +25,58 @@ if_bandwidth
    NO? BANDWIDTH DEC KBPS? NEWLINE
 ;
 
+if_bfd
+:
+  BFD (IPV4 | IPV6)? (
+     if_bfd_authentication
+     | if_bfd_echo
+     | if_bfd_echo_rx_interval
+     | if_bfd_interval
+     | if_bfd_neighbor
+     | if_bfd_optimize
+     | if_bfd_template
+  )
+;
+
+if_bfd_authentication
+:
+  AUTHENTICATION KEYED_SHA1 KEYID id = DEC (
+     HEX_KEY hex_key = variable
+     | KEY ascii_key = variable
+  )NEWLINE
+;
+
+if_bfd_echo
+:
+  ECHO NEWLINE
+;
+
+if_bfd_echo_rx_interval
+:
+  ECHO_RX_INTERVAL ms = DEC NEWLINE
+;
+
+if_bfd_interval
+:
+  INTERVAL tx_ms = DEC (MIN_RX | MIN_RX_VAR) tx_ms = DEC MULTIPLIER mult = DEC NEWLINE
+;
+
+if_bfd_neighbor
+:
+  NEIGHBOR SRC_IP (
+     src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
+     | src_ip = IPV6_ADDRESS DEST_IP dst_ip = IPV6_ADDRESS
+  ) NEWLINE
+;
+
+if_bfd_optimize
+:
+  OPTIMIZE SUBINTERFACE NEWLINE
+;
+
 if_bfd_template
 :
-  BFD TEMPLATE name = variable_permissive NEWLINE
+  TEMPLATE name = variable_permissive NEWLINE
 ;
 
 if_channel_group
@@ -260,7 +309,7 @@ if_ip_nbar
 
 if_ip_ospf_area
 :
-   IP OSPF procnum = DEC AREA area = DEC NEWLINE
+   IP OSPF procname = variable AREA area = DEC NEWLINE
 ;
 
 if_ip_ospf_cost
@@ -334,7 +383,7 @@ if_ip_router_isis
 
 if_ip_router_ospf_area
 :
-   IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
+   IP ROUTER OSPF procname = variable AREA area = IP_ADDRESS NEWLINE
 ;
 
 if_ip_rtp
@@ -475,6 +524,20 @@ if_mtu
 if_nameif
 :
    NAMEIF name = variable NEWLINE
+;
+
+if_no_bfd
+:
+   NO BFD (IPV4 | IPV6)?
+   (
+       AUTHENTICATION
+       | ECHO
+       | ECHO_RX_INTERVAL
+       | INTERVAL
+       | NEIGHBOR SRC_IP src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
+       | NEIGHBOR SRC_IP src_ip6 = IPV6_ADDRESS DEST_IP dst_ip6 = IPV6_ADDRESS
+       | OPTIMIZE SUBINTERFACE
+   ) NEWLINE
 ;
 
 if_no_ip_address
@@ -873,7 +936,6 @@ if_null_single
   NO?
   (
     BCMC_OPTIMIZATION
-    | (BFD INTERVAL)
     | DOT1X
     | IP TRAFFIC_EXPORT
     | JUMBO
@@ -1503,7 +1565,7 @@ if_inner
 :
    if_autostate
    | if_bandwidth
-   | if_bfd_template
+   | if_bfd
    | if_channel_group
    | if_crypto_map
    | if_default_gw
@@ -1558,6 +1620,7 @@ if_inner
    | if_load_interval
    | if_mtu
    | if_nameif
+   | if_no_bfd
    | if_no_ip_address
    | if_no_nameif
    | if_port_security

@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.PacketHeaderConstraints.IP_PROTOCOLS_WITH_PORTS;
 import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPortsCompatible;
+import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidEcn;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidIcmpTypeOrCode;
@@ -12,12 +13,18 @@ import static org.batfish.datamodel.Protocol.DNS;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.SSH;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.Collections;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -379,5 +386,73 @@ public class PacketHeaderConstraintsTest {
     assertThat(
         phc.resolveDstPorts(),
         equalTo(IntegerSpace.builder().including(Range.singleton(11)).build()));
+  }
+
+  @Test
+  public void testIpProtocolExpansion() {
+    assertThat(expandProtocols(null), nullValue());
+    assertThat(expandProtocols(""), nullValue());
+    assertThat(expandProtocols("TCP"), contains(IpProtocol.TCP));
+    assertThat(expandProtocols(" TCP , UDP"), containsInAnyOrder(IpProtocol.TCP, IpProtocol.UDP));
+    assertThat(expandProtocols("6,17"), containsInAnyOrder(IpProtocol.TCP, IpProtocol.UDP));
+    assertThat(expandProtocols("6,!17"), containsInAnyOrder(IpProtocol.TCP));
+    assertThat(expandProtocols("TCP, !UDP"), containsInAnyOrder(IpProtocol.TCP));
+    assertThat(
+        expandProtocols("!UDP"),
+        equalTo(
+            Sets.difference(
+                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(IpProtocol.UDP))));
+  }
+
+  @Test
+  public void testIpProtocolExpansionWrongValues() {
+    assertThat(expandProtocols(null), nullValue());
+    thrown.expect(IllegalArgumentException.class);
+    expandProtocols("TC!P");
+  }
+
+  @Test
+  public void testIpProtocolExpansionNoComma() {
+    thrown.expect(IllegalArgumentException.class);
+    expandProtocols("!TCP!UDP");
+  }
+
+  @Test
+  public void testIpProtocolExpansionInvalidInt() {
+    thrown.expect(BatfishException.class);
+    expandProtocols("257");
+  }
+
+  @Test
+  public void testSerialization() throws IOException {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setIpProtocols(ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP))
+            .setDstIp("1.1.1.1")
+            .setDstPorts(IntegerSpace.PORTS)
+            .build();
+
+    // test (de)serialization
+    PacketHeaderConstraints phcDup = BatfishObjectMapper.clone(phc, PacketHeaderConstraints.class);
+    assertThat(phc, equalTo(phcDup));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            PacketHeaderConstraints.unconstrained(), PacketHeaderConstraints.builder().build())
+        .addEqualityGroup(PacketHeaderConstraints.builder().setDstIp("1.1.1.1"))
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder().setSrcIp("2.2.2.2").setDstIp("1.1.1.1").build())
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder()
+                .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG))
+                .build())
+        .addEqualityGroup(
+            PacketHeaderConstraints.builder()
+                .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.SYN_ACK_TCP_FLAG))
+                .build())
+        .testEquals();
   }
 }

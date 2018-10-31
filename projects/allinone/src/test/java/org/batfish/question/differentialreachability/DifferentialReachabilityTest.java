@@ -1,4 +1,4 @@
-package org.batfish.question.reducedreachability;
+package org.batfish.question.differentialreachability;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
@@ -39,8 +39,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link ReducedReachabilityQuestion}. */
-public class ReducedReachabilityTest {
+/** End-to-end tests of {@link DifferentialReachabilityQuestion}. */
+public class DifferentialReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -56,7 +56,7 @@ public class ReducedReachabilityTest {
 
   private org.batfish.datamodel.Vrf.Builder _vb;
 
-  public ReducedReachabilityTest() {}
+  public DifferentialReachabilityTest() {}
 
   @Before
   public void setup() {
@@ -118,12 +118,12 @@ public class ReducedReachabilityTest {
   @Test
   public void testAccepted() throws IOException {
     Question question =
-        new ReducedReachabilityQuestion(
+        new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.unconstrained(),
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
     Ip dstIp = new Ip("2.2.2.2");
     assertThat(
         answer,
@@ -132,17 +132,17 @@ public class ReducedReachabilityTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_FLOW,
+                            DifferentialReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
                         // at least one trace in snapshot is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_BASE_TRACES,
+                            DifferentialReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
                         // no trace in reference snapshot is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_DELTA_TRACES,
+                            DifferentialReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
                             Schema.list(Schema.FLOW_TRACE)))))));
   }
@@ -150,13 +150,13 @@ public class ReducedReachabilityTest {
   @Test
   public void testHeaderSpaceConstraint1() throws IOException {
     Question question =
-        new ReducedReachabilityQuestion(
+        new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
     Ip dstIp = new Ip("2.2.2.2");
     assertThat(
         answer,
@@ -165,17 +165,17 @@ public class ReducedReachabilityTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_FLOW,
+                            DifferentialReachabilityAnswerer.COL_FLOW,
                             FlowMatchers.hasDstIp(dstIp),
                             Schema.FLOW),
                         // at least one trace in snapshot is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_BASE_TRACES,
+                            DifferentialReachabilityAnswerer.COL_BASE_TRACES,
                             hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
                             Schema.list(Schema.FLOW_TRACE)),
                         // no trace in reference snapshot is accepted
                         hasColumn(
-                            ReducedReachabilityAnswerer.COL_DELTA_TRACES,
+                            DifferentialReachabilityAnswerer.COL_DELTA_TRACES,
                             not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
                             Schema.list(Schema.FLOW_TRACE)))))));
   }
@@ -183,13 +183,13 @@ public class ReducedReachabilityTest {
   @Test
   public void testHeaderSpaceConstraint2() throws IOException {
     Question question =
-        new ReducedReachabilityQuestion(
+        new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new ReducedReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
     assertThat(answer.getRows().size(), equalTo(0));
   }
 }

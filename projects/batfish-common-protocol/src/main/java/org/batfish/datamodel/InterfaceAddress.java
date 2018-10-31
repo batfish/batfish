@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public final class InterfaceAddress implements Comparable<InterfaceAddress>, Serializable {
@@ -17,26 +18,17 @@ public final class InterfaceAddress implements Comparable<InterfaceAddress>, Ser
   private int _networkBits;
 
   public InterfaceAddress(@Nonnull Ip ip, int networkBits) {
-    if (ip == null) {
-      throw new BatfishException("Cannot create InterfaceAddress with null IP");
-    }
     _ip = ip;
     _networkBits = networkBits;
   }
 
   public InterfaceAddress(@Nonnull Ip ip, @Nonnull Ip networkMask) {
-    if (ip == null) {
-      throw new BatfishException("Cannot create InterfaceAddress with null IP");
-    }
-    if (networkMask == null) {
-      throw new BatfishException("Cannot create InterfaceAddress with null mask");
-    }
     _ip = ip;
     _networkBits = networkMask.numSubnetBits();
   }
 
   @JsonCreator
-  public InterfaceAddress(@Nonnull String text) {
+  public InterfaceAddress(@Nullable String text) {
     if (text == null) {
       throw new BatfishException("Cannot create InterfaceAddress from null string");
     }

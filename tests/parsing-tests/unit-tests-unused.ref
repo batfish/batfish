@@ -372,10 +372,10 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            33,
             34,
             35,
-            36
+            36,
+            37
           ]
         }
       },
@@ -773,8 +773,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_nxos",
           "lines" : [
-            7,
-            8
+            8,
+            9
           ]
         }
       },

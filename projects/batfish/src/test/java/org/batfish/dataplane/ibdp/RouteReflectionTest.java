@@ -222,7 +222,6 @@ public class RouteReflectionTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
-            false,
             configurations,
             topology,
             ImmutableSet.of(
@@ -350,7 +349,6 @@ public class RouteReflectionTest {
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
-                    false,
                     configurations,
                     topology,
                     ImmutableSet.of(

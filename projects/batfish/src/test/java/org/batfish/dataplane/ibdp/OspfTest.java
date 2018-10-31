@@ -255,8 +255,7 @@ public class OspfTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
-            engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
-                ._dataPlane;
+            engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }
@@ -446,8 +445,7 @@ public class OspfTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
-            engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
-                ._dataPlane;
+            engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }
