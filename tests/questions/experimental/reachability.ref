@@ -5,6 +5,7 @@
     "dstIps" : "ddd",
     "srcIps" : "sss"
   },
+  "ignoreAcls" : false,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -12,7 +13,6 @@
     "transitLocations" : "ccc"
   },
   "differential" : false,
-  "ignoreAcls" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
@@ -36,6 +36,12 @@
           "srcIps" : "sss",
           "dstIps" : "ddd"
         }
+      },
+      "ignoreAcls" : {
+        "description" : "Do not apply ACLs during analysis",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",
