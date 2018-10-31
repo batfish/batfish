@@ -9227,6 +9227,33 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet2/1" : {
+            "name" : "Ethernet2/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ethernet2/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "ipAccessLists" : {
           "copp-system-acl-icmp" : {
             "name" : "copp-system-acl-icmp",
@@ -9260,6 +9287,7 @@
         "vendorFamily" : {
           "cisco" : {
             "features" : {
+              "bfd" : true,
               "bgp" : true
             },
             "hostname" : "cisco_nxos"
@@ -9267,7 +9295,10 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet2/1"
+            ]
           }
         }
       },
