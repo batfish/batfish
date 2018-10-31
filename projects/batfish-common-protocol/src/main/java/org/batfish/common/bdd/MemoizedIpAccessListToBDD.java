@@ -6,7 +6,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -19,18 +18,15 @@ public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
   private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();
 
   public MemoizedIpAccessListToBDD(
-      BDDFactory factory,
-      BDDPacket packet,
-      Map<String, IpAccessList> aclEnv,
-      Map<String, IpSpace> namedIpSpaces) {
+      BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
     super(
         packet,
         BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
         new HeaderSpaceToBDD(
             packet,
             namedIpSpaces,
-            new MemoizedIpSpaceToBDD(factory, packet.getDstIp(), namedIpSpaces),
-            new MemoizedIpSpaceToBDD(factory, packet.getSrcIp(), namedIpSpaces)),
+            new MemoizedIpSpaceToBDD(packet.getDstIp(), namedIpSpaces),
+            new MemoizedIpSpaceToBDD(packet.getSrcIp(), namedIpSpaces)),
         aclEnv);
   }
 

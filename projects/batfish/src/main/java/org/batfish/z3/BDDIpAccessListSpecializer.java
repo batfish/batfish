@@ -88,8 +88,8 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
         flowBDD,
         namedIpSpaces,
         bddSrcManager,
-        new IpSpaceToBDD(pkt.getDstIp().getFactory(), pkt.getDstIp(), namedIpSpaces),
-        new IpSpaceToBDD(pkt.getSrcIp().getFactory(), pkt.getSrcIp(), namedIpSpaces),
+        new IpSpaceToBDD(pkt.getDstIp(), namedIpSpaces),
+        new IpSpaceToBDD(pkt.getSrcIp(), namedIpSpaces),
         simplifyToTrue);
   }
 

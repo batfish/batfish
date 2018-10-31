@@ -45,17 +45,17 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final Map<String, Supplier<BDD>> _namedIpSpaceBDDs;
 
-  public IpSpaceToBDD(BDDFactory factory, BDDInteger var) {
+  public IpSpaceToBDD(BDDInteger var) {
     _bddInteger = var;
-    _bddOps = new BDDOps(factory);
-    _factory = factory;
+    _factory = var.getFactory();
+    _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs = ImmutableMap.of();
   }
 
-  public IpSpaceToBDD(BDDFactory factory, BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
+  public IpSpaceToBDD(BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
     _bddInteger = var;
-    _bddOps = new BDDOps(factory);
-    _factory = factory;
+    _factory = var.getFactory();
+    _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs =
         toImmutableMap(
             namedIpSpaces,
