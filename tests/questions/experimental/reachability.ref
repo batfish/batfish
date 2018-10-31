@@ -12,6 +12,7 @@
     "transitLocations" : "ccc"
   },
   "differential" : false,
+  "ignoreAcls" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",

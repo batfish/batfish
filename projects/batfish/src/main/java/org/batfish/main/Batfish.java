@@ -3802,8 +3802,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Requiring or forbidding Source NAT is currently unsupported");
 
     BDDPacket pkt = new BDDPacket();
+    boolean ignoreAcls = params.getIgnoreAcls();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, params.getIgnoreAcls());
+        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
     Map<IngressLocation, BDD> reachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
@@ -3848,10 +3849,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     DataPlane dp = loadDataPlane();
     if (_settings.debugFlagEnabled("oldtraceroute")) {
-      getDataPlanePlugin().processFlows(flows, dp, false);
+      getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
       return getHistory();
     } else {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, false));
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreAcls));
     }
   }
 
