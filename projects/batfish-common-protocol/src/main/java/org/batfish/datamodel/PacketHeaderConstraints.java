@@ -4,11 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
@@ -100,7 +102,7 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
       @Nullable @JsonProperty(PROP_FLOW_STATES) Set<FlowState> flowStates,
       @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace.Builder fragmentOffsets,
-      @Nullable @JsonProperty(PROP_IP_PROTOCOLS) String ipProtocols,
+      @Nullable @JsonProperty(PROP_IP_PROTOCOLS) JsonNode ipProtocols,
       @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
       @Nullable @JsonProperty(PROP_DST_IPS) String dstIps,
       @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace.Builder icmpCodes,
@@ -116,7 +118,7 @@ public class PacketHeaderConstraints {
         processBuilder(packetLengths, VALID_PACKET_LENGTH),
         flowStates,
         processBuilder(fragmentOffsets, VALID_FRAGMENT_OFFSET),
-        expandProtocols(ipProtocols),
+        expandProtocols(parseIpProtocols(ipProtocols)),
         srcIps,
         dstIps,
         processBuilder(icmpCodes, VALID_ICMP_CODE_TYPE),
@@ -125,6 +127,32 @@ public class PacketHeaderConstraints {
         processBuilder(dstPorts, IntegerSpace.PORTS),
         applications,
         tcpFlags);
+  }
+
+  /**
+   * Parse IP protocols fields in backwards-compatible way, accepting either a list strings or a
+   * comma-separated string.
+   *
+   * @param node {@link JsonNode} to parse
+   * @return valid string representation to be used in {@link #expandProtocols(String)}
+   * @throws IllegalArgumentException if the value is not valid
+   */
+  @Nullable
+  private static String parseIpProtocols(@Nullable JsonNode node) {
+    if (node == null || node.isNull()) {
+      return null;
+    } else if (node.isTextual()) {
+      return node.textValue();
+    } else if (node.isArray()) {
+      return String.join(
+          ",",
+          Streams.stream(node.elements())
+              .map(JsonNode::textValue)
+              .collect(ImmutableSet.toImmutableSet()));
+    } else {
+      throw new IllegalArgumentException(
+          String.format("Invalid value %s for %s", node.asText(), PROP_IP_PROTOCOLS));
+    }
   }
 
   @Nullable
