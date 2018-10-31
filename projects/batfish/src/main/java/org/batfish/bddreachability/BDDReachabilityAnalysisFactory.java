@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
@@ -98,6 +99,7 @@ import org.batfish.z3.state.Query;
  * node (e.g. forward into another node or a disposition state, or backward into another node or an
  * origination state), we erase the contraint on source by existential quantification.
  */
+@ParametersAreNonnullByDefault
 public final class BDDReachabilityAnalysisFactory {
   // node name --> acl name --> set of packets denied by the acl.
   private final Map<String, Map<String, Supplier<BDD>>> _aclDenyBDDs;
@@ -196,6 +198,11 @@ public final class BDDReachabilityAnalysisFactory {
     _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
   }
 
+  /**
+   * Lazily compute the ACL BDDs, since we may only need some of them (depending on ignoreAcls,
+   * forbidden transit nodes, etc). When ignoreAcls is enabled, we still need the ACLs used in NATs.
+   * This is simpler than trying to precompute which ACLs we actually need.
+   */
   private static Map<String, Map<String, Supplier<BDD>>> computeAclBDDs(
       BDDPacket bddPacket,
       Map<String, BDDSourceManager> bddSourceManagers,
@@ -617,11 +624,11 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private BDD ignorableAclDenyBDD(String node, String acl) {
-    return _ignoreAcls ? _zero : _aclDenyBDDs.get(node).get(acl).get();
+    return _ignoreAcls ? _zero : aclDenyBDD(node, acl);
   }
 
   private BDD ignorableAclPermitBDD(String node, String acl) {
-    return _ignoreAcls ? _one : _aclPermitBDDs.get(node).get(acl).get();
+    return _ignoreAcls ? _one : aclPermitBDD(node, acl);
   }
 
   private Stream<Edge> generateRules_PreInInterface_PostInVrf() {
@@ -786,7 +793,7 @@ public final class BDDReachabilityAnalysisFactory {
                             .values()
                             .stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
-                            .flatMap(
+                            .map(
                                 iface -> {
                                   String name = iface.getName();
                                   BDD ipSpaceBDD =
@@ -799,15 +806,11 @@ public final class BDDReachabilityAnalysisFactory {
                                   String outAcl = iface.getOutgoingFilterName();
                                   BDD outAclDenyBDD = ignorableAclDenyBDD(node, outAcl);
                                   BDD edgeBdd = ipSpaceBDD.and(outAclDenyBDD);
-
-                                  return edgeBdd.isZero()
-                                      ? Stream.empty()
-                                      : Stream.of(
-                                          new Edge(
-                                              new PreOutVrf(node, vrf),
-                                              new NodeDropAclOut(node),
-                                              edgeBdd::and,
-                                              eraseSourceAfter(edgeBdd, node)));
+                                  return new Edge(
+                                      new PreOutVrf(node, vrf),
+                                      new NodeDropAclOut(node),
+                                      edgeBdd::and,
+                                      eraseSourceAfter(edgeBdd, node));
                                 });
                       });
             });
@@ -968,6 +971,17 @@ public final class BDDReachabilityAnalysisFactory {
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param dstIpSpace The destination {@link IpSpace}.
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       IpSpace dstIpSpace,
@@ -984,12 +998,23 @@ public final class BDDReachabilityAnalysisFactory {
         actions);
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
-      @Nonnull Set<String> finalNodes,
+      Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     return bddReachabilityAnalysis(
         srcIpSpaceAssignment,
@@ -1001,13 +1026,26 @@ public final class BDDReachabilityAnalysisFactory {
         actions);
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param finalSrcIpSpace The final source {@link IpSpace} (i.e. after all packet
+   *     transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
   public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
       IpSpace finalSrcIpSpace,
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
-      @Nonnull Set<String> finalNodes,
+      Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     IpAccessListToBDD ipAccessListToBDD =
         IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of());

@@ -719,6 +719,7 @@ maven_repository(
         "javax.ws.rs:javax.ws.rs-api:2.1.1",
     ],
     transitive_deps = [
+        "e6cb541461c2834bdea3eb920f1884d1eb508b50:javax.activation:activation:1.1",
         "934c04d3cfef185a8008e7bf34331b79730a9d43:javax.annotation:javax.annotation-api:1.3.2",
         "6975da39a7040257bd51d21a231b76c915872d38:javax.inject:javax.inject:1",
         "8613ae82954779d518631e05daa73a6a954817d5:javax.validation:validation-api:1.1.0.Final",
@@ -738,6 +739,7 @@ maven_repository(
         "44eaf0990dea92f4bca4b9931b2239c0e8756ee7:org.javassist:javassist:3.22.0-CR2",
     ],
     deps = [
+        "javax.activation:activation:1.1",
         "javax.xml.bind:jaxb-api:2.3.0",
         "org.glassfish.jersey.core:jersey-server:2.27",
         "org.glassfish.jersey.inject:jersey-hk2:2.27",
