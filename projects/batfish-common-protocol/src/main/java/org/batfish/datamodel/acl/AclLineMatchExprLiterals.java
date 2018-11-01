@@ -3,7 +3,6 @@ package org.batfish.datamodel.acl;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
-import org.batfish.common.BatfishException;
 
 public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<Void> {
 
@@ -63,7 +62,8 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
 
   @Override
   public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    throw new BatfishException("PermittedByAcl expressions must be inlined");
+    _literals.add(permittedByAcl);
+    return null;
   }
 
   @Override
