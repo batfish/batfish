@@ -11,6 +11,7 @@
     "variables": {
       "parameter1": {
         "description": "parameter description",
+        "displayName": "Parameter 1",
         "type": "integer",
         "value": 1
       },
