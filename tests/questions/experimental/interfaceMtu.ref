@@ -29,24 +29,28 @@
     "variables" : {
       "comparator" : {
         "description" : "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
+        "displayName" : "Comparator",
         "optional" : true,
         "type" : "comparator",
         "value" : ">"
       },
       "interfaces" : {
         "description" : "Evaluate interfaces matching this regex",
+        "displayName" : "Interfaces",
         "optional" : false,
         "type" : "javaRegex",
         "value" : "Gig.*"
       },
       "mtuBytes" : {
         "description" : "The reference MTU in bytes against which to check the configured MTU",
+        "displayName" : "MTU Bytes",
         "optional" : false,
         "type" : "integer",
         "value" : 0
       },
       "nodes" : {
         "description" : "Include nodes matching this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : "as1core2"

@@ -24,6 +24,7 @@
     "variables" : {
       "headers" : {
         "description" : "Packet header constraints",
+        "displayName" : "Headers",
         "optional" : true,
         "type" : "headerConstraint",
         "value" : {
@@ -33,6 +34,7 @@
       },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "displayName" : "Path Constraints",
         "optional" : true,
         "type" : "pathConstraint",
         "value" : {
