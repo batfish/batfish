@@ -64,9 +64,10 @@ public final class AclExplanation {
 
     @Override
     public Void visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-      if (notMatchExpr.getOperand() instanceof MatchHeaderSpace) {
-        HeaderSpace headerSpace = ((MatchHeaderSpace) notMatchExpr.getOperand()).getHeaderspace();
-        _notHeaderSpacesProvenance.put(headerSpace, notMatchExpr);
+      AclLineMatchExpr operand = notMatchExpr.getOperand();
+      if (operand instanceof MatchHeaderSpace) {
+        HeaderSpace headerSpace = ((MatchHeaderSpace) operand).getHeaderspace();
+        _notHeaderSpacesProvenance.put(headerSpace, operand);
         forbidHeaderSpace(headerSpace);
         return null;
       }

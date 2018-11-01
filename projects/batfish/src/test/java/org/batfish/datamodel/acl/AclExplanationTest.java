@@ -37,21 +37,21 @@ public class AclExplanationTest {
 
     _explanation.requireHeaderSpace(require.getHeaderspace());
     _explanation.forbidHeaderSpace(forbid.getHeaderspace());
-    assertThat(_explanation.build(), equalTo(and(require, not(forbid))));
+    assertThat(_explanation.build().getMatchExpr(), equalTo(and(require, not(forbid))));
   }
 
   @Test
   public void testIntersectOriginateFromDevice() {
     _explanation.requireOriginatingFromDevice();
     _explanation.requireOriginatingFromDevice();
-    assertThat(_explanation.build(), equalTo(ORIGINATING_FROM_DEVICE));
+    assertThat(_explanation.build().getMatchExpr(), equalTo(ORIGINATING_FROM_DEVICE));
   }
 
   @Test
   public void testIntersectSources() {
     _explanation.requireSourceInterfaces(ImmutableSet.of("foo", "bar", "baz"));
     _explanation.requireSourceInterfaces(ImmutableSet.of("foo"));
-    assertThat(_explanation.build(), equalTo(matchSrcInterface("foo")));
+    assertThat(_explanation.build().getMatchExpr(), equalTo(matchSrcInterface("foo")));
   }
 
   @Test
@@ -61,7 +61,7 @@ public class AclExplanationTest {
 
     _explanation.forbidHeaderSpace(forbid1.getHeaderspace());
     _explanation.forbidHeaderSpace(forbid2.getHeaderspace());
-    assertThat(_explanation.build(), equalTo(and(not(forbid1), not(forbid2))));
+    assertThat(_explanation.build().getMatchExpr(), equalTo(and(not(forbid1), not(forbid2))));
   }
 
   @Test
@@ -83,7 +83,7 @@ public class AclExplanationTest {
     _explanation.requireHeaderSpace(matchDstPort.getHeaderspace());
     _explanation.forbidHeaderSpace(matchDstIp.getHeaderspace());
     AclLineMatchExpr expr = and(matchDstPrefixAndPort, not(matchDstIp));
-    assertThat(_explanation.build(), equalTo(expr));
+    assertThat(_explanation.build().getMatchExpr(), equalTo(expr));
   }
 
   @Test

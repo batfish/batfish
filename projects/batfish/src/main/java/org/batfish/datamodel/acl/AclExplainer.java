@@ -6,6 +6,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.bdd.BDDPacket;
@@ -86,13 +88,18 @@ public final class AclExplainer {
   private static AclLineMatchExprWithProvenance<IpAccessListLine> explain(
       IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
 
-    // create a map from each literal in the given acl to the line that it came from
+    // create a map from each literal in the given acls to the line that it came from
     IdentityHashMap<AclLineMatchExpr, IpAccessListLine> literalsToLines = new IdentityHashMap<>();
-    acl.getLines()
-        .forEach(
-            line ->
-                AclLineMatchExprLiterals.getLiterals(line.getMatchCondition())
-                    .forEach(lit -> literalsToLines.put(lit, line)));
+    List<IpAccessList> allAcls = new LinkedList<>(namedAcls.values());
+    allAcls.add(acl);
+    allAcls.forEach(
+        currAcl ->
+            currAcl
+                .getLines()
+                .forEach(
+                    line ->
+                        AclLineMatchExprLiterals.getLiterals(line.getMatchCondition())
+                            .forEach(lit -> literalsToLines.put(lit, line))));
 
     // Convert acl to a single expression.
     AclLineMatchExpr aclExpr =
