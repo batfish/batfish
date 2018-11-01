@@ -31,7 +31,7 @@ import org.batfish.specifier.NodeSpecifierFactory;
 public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADER_CONSTRAINT = "headers";
-  private static final String PROP_IGNORE_ACLS = "ignoreAcls";
+  private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
 
   private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
@@ -41,7 +41,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
   /**
@@ -50,7 +50,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
    * @param actions set of actions/flow dispositions to search for (default is {@code success})
    * @param headerConstraints header constraints that constrain the search space of valid flows.
    *     Default is unconstrained.
-   * @param ignoreAcls whether to ignore ingress and egress ACLs.
+   * @param ignoreFilters whether to ignore ingress and egress ACLs.
    * @param pathConstraints path constraints dictating where a flow can originate/terminate/transit.
    *     Default is unconstrained.
    */
@@ -58,11 +58,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
   public SpecifiersReachabilityQuestion(
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_IGNORE_ACLS) Boolean ignoreAcls,
+      @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
     _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
-    _ignoreAcls = firstNonNull(ignoreAcls, false);
+    _ignoreFilters = firstNonNull(ignoreFilters, false);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
@@ -86,9 +86,9 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return _headerConstraints;
   }
 
-  @JsonProperty(PROP_IGNORE_ACLS)
-  public boolean getIgnoreAcls() {
-    return _ignoreAcls;
+  @JsonProperty(PROP_IGNORE_FILTERS)
+  public boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   @JsonProperty(PROP_PATH_CONSTRAINT)
@@ -158,7 +158,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         .setFinalNodesSpecifier(pathConstraints.getEndLocation())
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
         .setHeaderSpace(getHeaderSpace())
-        .setIgnoreAcls(getIgnoreAcls())
+        .setIgnoreAcls(getIgnoreFilters())
         .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
         .setSourceLocationSpecifier(pathConstraints.getStartLocation())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())

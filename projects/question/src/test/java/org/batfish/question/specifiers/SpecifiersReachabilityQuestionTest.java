@@ -48,7 +48,7 @@ public class SpecifiersReachabilityQuestionTest {
         equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
     assertThat(question.getPathConstraints().getTransitLocations(), nullValue());
     assertThat(question.getPathConstraints().getForbiddenLocations(), nullValue());
-    assertThat(question.getIgnoreAcls(), equalTo(false));
+    assertThat(question.getIgnoreFilters(), equalTo(false));
   }
 
   @Test

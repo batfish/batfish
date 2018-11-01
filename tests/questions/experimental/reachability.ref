@@ -5,7 +5,7 @@
     "dstIps" : "ddd",
     "srcIps" : "sss"
   },
-  "ignoreAcls" : false,
+  "ignoreFilters" : false,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -37,8 +37,8 @@
           "dstIps" : "ddd"
         }
       },
-      "ignoreAcls" : {
-        "description" : "Do not apply ACLs during analysis",
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
         "optional" : true,
         "type" : "boolean",
         "value" : false
