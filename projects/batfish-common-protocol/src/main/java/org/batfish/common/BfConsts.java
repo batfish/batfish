@@ -99,6 +99,7 @@ public class BfConsts {
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_DISPLAY_HINTS = "displayHints";
+  public static final String PROP_DISPLAY_NAME = "displayName";
   public static final String PROP_EXCLUSIONS = "exclusions";
   public static final String PROP_EMPTY_COLUMNS = "emptyColumns";
   public static final String PROP_FILTERS = "filters";
