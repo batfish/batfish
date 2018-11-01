@@ -3,6 +3,7 @@
   "differential": true,
   "actions": "${actions}",
   "headers": "${headers}",
+  "ignoreFilters": "${ignoreFilters}",
   "pathConstraints": "${pathConstraints}",
   "instance": {
     "description": "Detect differential reachability.",
@@ -24,6 +25,12 @@
         "description": "Packet header constraints",
         "optional": true,
         "type": "headerConstraint"
+      },
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "pathConstraints": {
         "description": "Constraint the path a flow can take (start/end/transit locations)",

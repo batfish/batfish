@@ -12,6 +12,7 @@ public class DifferentialReachabilityParameters {
   private final Set<String> _forbiddenTransitNodes;
   private final Set<String> _finalNodes;
   private final AclLineMatchExpr _headerSpace;
+  private final boolean _ignoreFilters;
   private final IpSpaceAssignment _ipSpaceAssignment;
   private final Set<String> _requiredTransitNodes;
 
@@ -20,12 +21,14 @@ public class DifferentialReachabilityParameters {
       Set<String> forbiddenTransitNodes,
       Set<String> finalNodes,
       AclLineMatchExpr headerSpace,
+      boolean ignoreFilters,
       IpSpaceAssignment ipSpaceAssignment,
       Set<String> requiredTransitNodes) {
     _flowDispositions = ImmutableSet.copyOf(flowDispositions);
     _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
     _finalNodes = ImmutableSet.copyOf(finalNodes);
     _headerSpace = headerSpace;
+    _ignoreFilters = ignoreFilters;
     _ipSpaceAssignment = ipSpaceAssignment;
     _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
   }
@@ -63,6 +66,11 @@ public class DifferentialReachabilityParameters {
    */
   public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
+  }
+
+  /** @return Whether to ignore filters/ACLs and only analyze forwarding behavior. */
+  public boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   /**
