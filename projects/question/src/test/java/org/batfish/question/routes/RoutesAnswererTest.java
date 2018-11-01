@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -268,7 +269,6 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetTableMetadataBGP() {
-    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
     ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
     expectedBuilder.add(
         COL_NODE,
@@ -285,12 +285,15 @@ public class RoutesAnswererTest {
         COL_TAG);
     List<String> expected = expectedBuilder.build();
 
-    assertThat(
-        columnMetadata
-            .stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(expected));
+    for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
+      List<ColumnMetadata> columnMetadata = getTableMetadata(rib).getColumnMetadata();
+      assertThat(
+          columnMetadata
+              .stream()
+              .map(ColumnMetadata::getName)
+              .collect(ImmutableList.toImmutableList()),
+          equalTo(expected));
+    }
   }
 
   @Test
