@@ -28,6 +28,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -119,6 +120,8 @@ public abstract class Question implements IQuestion {
 
       private String _description;
 
+      private String _displayName;
+
       private String _longDescription;
 
       private Integer _minElements;
@@ -149,6 +152,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public String getDescription() {
         return _description;
+      }
+
+      @JsonProperty(BfConsts.PROP_DISPLAY_NAME)
+      public @Nullable String getDisplayName() {
+        return _displayName;
       }
 
       @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
@@ -202,6 +210,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public void setDescription(String description) {
         _description = description;
+      }
+
+      @JsonProperty(BfConsts.PROP_DISPLAY_NAME)
+      public void setDisplayName(@Nullable String displayName) {
+        _displayName = displayName;
       }
 
       @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
