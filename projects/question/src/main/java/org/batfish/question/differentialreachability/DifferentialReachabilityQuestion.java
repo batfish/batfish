@@ -16,24 +16,24 @@ import org.batfish.question.specifiers.PathConstraintsInput;
 public final class DifferentialReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADERS = "headers";
-  private static final String PROP_IGNORE_ACLS = "ignoreAcls";
+  private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
   @JsonCreator
   public DifferentialReachabilityQuestion(
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_IGNORE_ACLS) Boolean ignoreAcls,
+      @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
     setDifferential(true);
     _actions = firstNonNull(actions, SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
-    _ignoreAcls = firstNonNull(ignoreAcls, false);
+    _ignoreFilters = firstNonNull(ignoreFilters, false);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
@@ -52,9 +52,9 @@ public final class DifferentialReachabilityQuestion extends Question {
     return _headerConstraints;
   }
 
-  @JsonProperty(PROP_IGNORE_ACLS)
-  boolean getIgnoreAcls() {
-    return _ignoreAcls;
+  @JsonProperty(PROP_IGNORE_FILTERS)
+  boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   @JsonProperty(PROP_PATH_CONSTRAINTS)

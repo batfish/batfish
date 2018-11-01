@@ -3,7 +3,7 @@
   "differential": true,
   "actions": "${actions}",
   "headers": "${headers}",
-  "ignoreAcls": "${ignoreAcls}",
+  "ignoreFilters": "${ignoreFilters}",
   "pathConstraints": "${pathConstraints}",
   "instance": {
     "description": "Detect differential reachability.",
@@ -26,17 +26,12 @@
         "optional": true,
         "type": "headerConstraint"
       },
-      "ignoreAcls" : {
-        "description" : "Do not apply ACLs during analysis",
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
         "optional" : true,
         "type" : "boolean",
         "value" : false
       },
-      "ignoreAcls": {
-        "description": "Do not apply ACLs during analysis",
-        "optional": true,
-        "type": "boolean"
-      },      
       "pathConstraints": {
         "description": "Constraint the path a flow can take (start/end/transit locations)",
         "optional": true,

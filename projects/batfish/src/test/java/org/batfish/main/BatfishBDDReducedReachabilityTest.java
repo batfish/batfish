@@ -145,13 +145,13 @@ public class BatfishBDDReducedReachabilityTest {
       Batfish batfish,
       Set<FlowDisposition> dispositions,
       AclLineMatchExpr headerSpace,
-      boolean ignoreAcls) {
+      boolean ignoreFilters) {
     return new DifferentialReachabilityParameters(
         dispositions,
         ImmutableSet.of(),
         batfish.loadConfigurations().keySet(),
         headerSpace,
-        ignoreAcls,
+        ignoreFilters,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
         ImmutableSet.of());
@@ -594,7 +594,7 @@ public class BatfishBDDReducedReachabilityTest {
   }
 
   /** Delta network adds an outgoing deny-all ACL. */
-  class IgnoreAclsNetworkGenerator implements NetworkGenerator {
+  class IgnoreFiltersNetworkGenerator implements NetworkGenerator {
     @Override
     public SortedMap<String, Configuration> generateConfigs(boolean delta) {
       Configuration node1 = _cb.setHostname(NODE1).build();
@@ -622,8 +622,8 @@ public class BatfishBDDReducedReachabilityTest {
   }
 
   @Test
-  public void testIgnoreAcls() throws IOException {
-    Batfish batfish = initBatfish(new IgnoreAclsNetworkGenerator());
+  public void testIgnoreFilters() throws IOException {
+    Batfish batfish = initBatfish(new IgnoreFiltersNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddReducedReachability(
             parameters(batfish, ImmutableSet.of(ACCEPTED), AclLineMatchExprs.TRUE, true));

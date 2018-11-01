@@ -3995,7 +3995,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
      */
     pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreAcls())
+        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
                 parameters.getHeaderSpace(),
@@ -4008,7 +4008,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreAcls())
+        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
                 parameters.getHeaderSpace(),
