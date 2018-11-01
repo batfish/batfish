@@ -6,8 +6,7 @@
     "instance": {
         "description": "Return named structure definitions",
         "instanceName": "namedStructures",
-        "tags": [
-        ],
+        "tags": [],
         "variables": {
             "nodes": {
                 "description": "Include nodes matching this name or regex",

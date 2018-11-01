@@ -6,7 +6,7 @@
         "description": "Returns the mapping of IP address, interface, node and VRF for all devices in the snapshot",
         "instanceName": "ipOwners",
         "tags": [
-            "ip", 
+            "ip",
             "configuration"
         ],
         "variables": {
