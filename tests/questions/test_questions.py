@@ -3,12 +3,14 @@ import re
 from glob import glob
 from json import load
 from os import pardir, path
+import re
 
 import pytest
 
 REPO = path.abspath(path.join(path.dirname(__file__), pardir, pardir))
 QUESTIONS = glob(REPO + '/questions*/**/*.json', recursive=True)
 
+camel_case_pattern = re.compile(r'^[a-z][a-z0-9]*([A-Z][a-z0-9]+)*$')
 
 @pytest.fixture(scope='module', params=QUESTIONS)
 def question_path(request):
@@ -45,6 +47,25 @@ def test_instance_vars_present(question, question_text):
     for v in instance.get('variables', {}):
         v_pattern = '${' + v + '}'
         assert v_pattern in question_text
+
+
+def test_instance_vars_have_valid_names(question):
+    """Tests that variables have display names."""
+    instance = question['instance']
+    qname = instance['instanceName']
+    for name in instance.get('variables', {}).keys():
+        assert camel_case_pattern.match(name), 'variable {} not slouchingCamelCase'.format(name)
+
+
+def test_instance_vars_have_valid_display_names(question):
+    """Tests that variables have display names."""
+    instance = question['instance']
+    qname = instance['instanceName']
+    for name, var in instance.get('variables', {}).items():
+        assert 'displayName' in var, 'variable {} missing displayName'.format(name)
+        display_name = var['displayName']
+        assert display_name != name, 'variable {} has eponymous displayName'.format(name)
+        assert display_name[0].isupper(), 'variable {} has displayName that does not begin with capital letter: {}'.format(name,display_name)
 
 
 def test_instance_vars_with_values(question):
