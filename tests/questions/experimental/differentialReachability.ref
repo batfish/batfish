@@ -4,6 +4,7 @@
     "dstIps" : "ddd",
     "srcIps" : "sss"
   },
+  "ignoreFilters" : false,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -36,6 +37,12 @@
           "srcIps" : "sss",
           "dstIps" : "ddd"
         }
+      },
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",
