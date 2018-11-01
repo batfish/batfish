@@ -19,23 +19,27 @@
                 "description": "Only return flows for which the disposition is from this set",
                 "optional": true,
                 "type": "dispositionSpec",
-                "value": "success"
+                "value": "success",
+                "displayName": "Actions"
             },
             "headers": {
                 "description": "Packet header constraints",
                 "optional": true,
-                "type": "headerConstraint"
+                "type": "headerConstraint",
+                "displayName": "Headers"
             },
             "ignoreFilters": {
                 "description": "Do not apply filters/ACLs during analysis",
                 "optional": true,
                 "type": "boolean",
-                "value": false
+                "value": false,
+                "displayName": "Ignore Filters"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
                 "optional": true,
-                "type": "pathConstraint"
+                "type": "pathConstraint",
+                "displayName": "Path Constraints"
             }
         }
     }

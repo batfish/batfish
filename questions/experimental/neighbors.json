@@ -39,17 +39,20 @@
                 "description": "Types of neighbor relationships to include",
                 "minElements": 0,
                 "optional": true,
-                "type": "string"
+                "type": "string",
+                "displayName": "Neighbor Types"
             },
             "nodes": {
                 "description": "Include neighbors whose first node matches this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             },
             "remoteNodes": {
                 "description": "Include neighbors whose second node matches this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Remote Nodes"
             },
             "style": {
                 "values": [
@@ -65,12 +68,14 @@
                 ],
                 "description": "String indicating the style of information requested about each neighbor",
                 "type": "string",
-                "value": "summary"
+                "value": "summary",
+                "displayName": "Style"
             },
             "roleDimension": {
                 "description": "Role dimension to run the question on",
                 "type": "string",
-                "optional": true
+                "optional": true,
+                "displayName": "Role Dimension"
             }
         }
     },

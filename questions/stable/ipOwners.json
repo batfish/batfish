@@ -13,7 +13,8 @@
             "duplicatesOnly": {
                 "description": "Restrict output to only IP addresses that are duplicated (configured on a different node or VRF) in the snapshot",
                 "type": "boolean",
-                "value": false
+                "value": false,
+                "displayName": "Duplicates Only"
             }
         }
     }

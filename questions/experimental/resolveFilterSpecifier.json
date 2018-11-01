@@ -13,12 +13,14 @@
             "filters": {
                 "description": "Input to the FilterSpecifier",
                 "optional": true,
-                "type": "string"
+                "type": "string",
+                "displayName": "Filters"
             },
             "nodes": {
                 "description": "Input to the NodeSpecifier",
                 "optional": true,
-                "type": "string"
+                "type": "string",
+                "displayName": "Nodes"
             }
         }
     }

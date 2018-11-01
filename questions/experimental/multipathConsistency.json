@@ -16,12 +16,14 @@
             "headers": {
                 "description": "Packet header constraints",
                 "optional": true,
-                "type": "headerConstraint"
+                "type": "headerConstraint",
+                "displayName": "Headers"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
                 "optional": true,
-                "type": "pathConstraint"
+                "type": "pathConstraint",
+                "displayName": "Path Constraints"
             }
         }
     }

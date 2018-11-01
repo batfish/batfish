@@ -38,17 +38,20 @@
                 ],
                 "description": "Types of edges to include",
                 "optional": true,
-                "type": "string"
+                "type": "string",
+                "displayName": "Edge Type"
             },
             "nodes": {
                 "description": "Include edges whose first node matches this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             },
             "remoteNodes": {
                 "description": "Include edges whose second node matches this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Remote Nodes"
             }
         }
     },

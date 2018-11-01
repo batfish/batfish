@@ -18,22 +18,26 @@
             "ignoreAcls": {
                 "description": "If set to True, ACLs encountered along the path are ignored",
                 "optional": true,
-                "type": "boolean"
+                "type": "boolean",
+                "displayName": "Ignore ACLs"
             },
             "maxTraces": {
                 "description": "Limit the number of traces returned",
                 "optional": true,
-                "type": "integer"
+                "type": "integer",
+                "displayName": "Max Traces"
             },
             "headers": {
                 "description": "Packet header constraints",
                 "optional": true,
-                "type": "headerConstraint"
+                "type": "headerConstraint",
+                "displayName": "Headers"
             },
             "startLocation": {
                 "description": "Location (node and interface combination) to start tracing from",
                 "minLength": 1,
-                "type": "string"
+                "type": "string",
+                "displayName": "Start Location"
             }
         }
     }

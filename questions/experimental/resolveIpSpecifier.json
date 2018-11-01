@@ -13,7 +13,8 @@
                 "description": "Input to the IpSpaceSpecifier",
                 "optional": true,
                 "value": "0.0.0.0/0",
-                "type": "string"
+                "type": "string",
+                "displayName": "IPs"
             }
         }
     }

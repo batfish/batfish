@@ -13,22 +13,26 @@
             "nodes": {
                 "description": "Examine routes on nodes matching this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             },
             "vrfs": {
                 "description": "Examine routes on VRFs matching this name or regex",
                 "type": "javaRegex",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "VRFs"
             },
             "network": {
                 "description": "Examine routes for networks matching this prefix",
                 "type": "prefix",
-                "optional": true
+                "optional": true,
+                "displayName": "Network"
             },
             "protocols": {
                 "description": "Examine routes for protocols matching this name or regex",
                 "type": "javaRegex",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Protocols"
             },
             "rib": {
                 "description": "Only return routes from a given protocol RIB",
@@ -44,7 +48,8 @@
                     {
                         "name": "bgpmp"
                     }
-                ]
+                ],
+                "displayName": "Rib"
             }
         }
     },

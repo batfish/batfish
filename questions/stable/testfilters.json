@@ -19,23 +19,27 @@
             "filters": {
                 "description": "Only consider filters that match this regular expression",
                 "type": "javaRegex",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Filters"
             },
             "nodes": {
                 "description": "Only examine filters on nodes matching this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             },
             "headers": {
                 "description": "Packet header constraints",
                 "optional": true,
-                "type": "headerConstraint"
+                "type": "headerConstraint",
+                "displayName": "Headers"
             },
             "startLocation": {
                 "description": "Location to start tracing from",
                 "minLength": 1,
                 "type": "string",
-                "optional": true
+                "optional": true,
+                "displayName": "Start Location"
             }
         }
     }
