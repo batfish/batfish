@@ -4,6 +4,7 @@
   "includeOneTableKeys": true,
   "actions": "${actions}",
   "headers": "${headers}",
+  "ignoreFilters": "${ignoreFilters}",
   "pathConstraints": "${pathConstraints}",
   "instance": {
     "description": "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
@@ -23,6 +24,11 @@
         "description": "Packet header constraints",
         "optional": true,
         "type": "headerConstraint"
+      },
+      "ignoreFilters": {
+        "description": "Do not apply filters/ACLs during analysis",
+        "optional": true,
+        "type": "boolean"
       },
       "pathConstraints": {
         "description": "Constraint the path a flow can take (start/end/transit locations)",

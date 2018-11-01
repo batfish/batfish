@@ -2,15 +2,19 @@ package org.batfish.bddreachability;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Pattern;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
@@ -27,10 +31,15 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.question.ReachabilityParameters;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.NameRegexNodeSpecifier;
+import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
 import org.batfish.z3.IngressLocation;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -188,5 +197,27 @@ public class BDDReachabilityAnalysisIgnoreAclsTest {
         initAnalysis(NAT_MATCH_IP.toIpSpace(), NAT_MATCH_IP.toIpSpace(), ACCEPTED, true)
             .getIngressLocationReachableBDDs();
     assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+  }
+
+  @Test
+  public void testParameters() {
+    ReachabilityParameters.Builder parameters =
+        ReachabilityParameters.builder()
+            .setActions(ImmutableSortedSet.of(ACCEPTED))
+            .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
+            .setSourceLocationSpecifier(
+                new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile(NODE1)))
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(DENIED_OUT_SRC_IP.toIpSpace()))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceSpecifier(NODE2_ADDR.getIp().toIpSpace()));
+
+    TraceWrapperAsAnswerElement traceWrapper =
+        (TraceWrapperAsAnswerElement) batfish.bddSingleReachability(parameters.build());
+    assertThat(traceWrapper.getFlowTraces().entrySet(), empty());
+
+    traceWrapper =
+        (TraceWrapperAsAnswerElement)
+            batfish.bddSingleReachability(parameters.setIgnoreAcls(true).build());
+    assertThat(traceWrapper.getFlowTraces().entrySet(), hasSize(1));
   }
 }
