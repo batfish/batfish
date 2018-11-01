@@ -25,8 +25,7 @@ public class MemoizedIpAccessListToBDDTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    _toBdd =
-        new MemoizedIpAccessListToBDD(pkt.getFactory(), pkt, ImmutableMap.of(), ImmutableMap.of());
+    _toBdd = new MemoizedIpAccessListToBDD(pkt, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test

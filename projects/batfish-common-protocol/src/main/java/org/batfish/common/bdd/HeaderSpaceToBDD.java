@@ -32,8 +32,8 @@ public final class HeaderSpaceToBDD {
     _bddOps = new BDDOps(_bddFactory);
     _bddPacket = bddPacket;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
-    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddFactory, _bddPacket.getDstIp(), _namedIpSpaces);
-    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddFactory, _bddPacket.getSrcIp(), _namedIpSpaces);
+    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getDstIp(), _namedIpSpaces);
+    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getSrcIp(), _namedIpSpaces);
   }
 
   public HeaderSpaceToBDD(

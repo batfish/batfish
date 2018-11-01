@@ -31,7 +31,7 @@ public class HeaderSpaceToBDDTest {
   public void setup() {
     _pkt = new BDDPacket();
     _toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
-    _dstIpSpaceToBdd = new IpSpaceToBDD(_pkt.getFactory(), _pkt.getDstIp());
+    _dstIpSpaceToBdd = new IpSpaceToBDD(_pkt.getDstIp());
   }
 
   @Test

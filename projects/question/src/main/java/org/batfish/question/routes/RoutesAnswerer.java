@@ -258,6 +258,7 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumnsAtStart(columnBuilder);
     switch (rib) {
       case BGP:
+      case BGPMP:
         columnBuilder.add(
             new ColumnMetadata(
                 COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
