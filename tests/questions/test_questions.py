@@ -3,7 +3,6 @@ import re
 from glob import glob
 from json import load
 from os import pardir, path
-import re
 
 import pytest
 
@@ -65,7 +64,6 @@ def test_instance_vars_have_valid_display_names(question):
         assert 'displayName' in var, 'variable {} missing displayName'.format(name)
         display_name = var['displayName']
         assert display_name != name, 'variable {} has eponymous displayName'.format(name)
-        assert display_name[0].isupper(), 'variable {} has displayName that does not begin with capital letter: {}'.format(name,display_name)
 
 
 def test_instance_vars_with_values(question):
@@ -99,14 +97,12 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], int)
 
 
-def test_indented_with_spaces(question_text):
+def test_indented_with_spaces(question_text, question_path):
     """Tests that JSON is indented with spaces, and not tabs."""
-    pattern = re.compile(r"\t+")
-    for line in question_text:
-        if re.search(pattern, line) is not None:
-            raise ValueError(
-                "Found tab indentation in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(
-                    question, path.join(REPO, question)))
+    if '\t' in question_text:
+        raise ValueError(
+            "Found tab indentation in question {}. Please run \"sed -i '' 's/\\\\t/    /g' {}\" to switch to spaces.".format(
+                    question_path, path.join(REPO, question_path)))
 
 
 if __name__ == '__main__':
