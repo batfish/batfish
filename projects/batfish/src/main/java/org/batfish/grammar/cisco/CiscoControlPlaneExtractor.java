@@ -5093,6 +5093,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
+        } else if (feature.LOG() != null) {
+          // Do nothing.
         } else if (feature.NETWORK_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
@@ -5297,6 +5299,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (feature.HOST_UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.HOST_UNREACHABLE;
+      } else if (feature.LOG() != null) {
+        // Do nothing.
       } else if (feature.NETWORK_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
