@@ -1136,6 +1136,8 @@ if_service_policy
    (
       TYPE (
          CONTROL SUBSCRIBER
+         | PBR
+         | QOS
          | QUEUING
       )
    )?
@@ -1319,6 +1321,7 @@ if_tunnel
        | iftunnel_destination
        | iftunnel_key
        | iftunnel_mode
+       | iftunnel_path_mtu_discovery
        | iftunnel_protection
        | iftunnel_source
    )
@@ -1513,6 +1516,11 @@ iftunnel_mode
      | MULTIPOINT
    )
    NEWLINE
+;
+
+iftunnel_path_mtu_discovery
+:
+   PATH_MTU_DISCOVERY NEWLINE
 ;
 
 iftunnel_protection

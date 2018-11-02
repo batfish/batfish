@@ -275,6 +275,7 @@ interface Ethernet0
  tunnel key 123
  tunnel mode gre ipv4
  tunnel mode gre multipoint
+ tunnel path-mtu-discovery
  tunnel source 2.3.4.5
  tunnel source Cellular0
  tunnel source Ethernet0
