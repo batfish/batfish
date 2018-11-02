@@ -643,6 +643,18 @@ public class Client extends AbstractClient implements IClient {
       questionName = parameters.get("questionName").asText();
       parameters.remove("questionName");
     }
+    // check if differential parameter was provided
+    boolean differentialParamValue = false;
+    if (parameters.containsKey("differential")) {
+      if (!parameters.get("differential").isBoolean()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "The value of 'differential' should be boolean. Got '%s'",
+                parameters.get("differential").asText()));
+      }
+      differentialParamValue = parameters.get("differential").asBoolean();
+      parameters.remove("differential");
+    }
     try {
       questionJson = QuestionHelper.fillTemplate(questionJson, parameters, questionName);
     } catch (IOException | JSONException e) {
@@ -653,8 +665,9 @@ public class Client extends AbstractClient implements IClient {
     boolean questionJsonDifferential;
     try {
       questionJsonDifferential =
-          questionJson.has(BfConsts.PROP_DIFFERENTIAL)
-              && questionJson.getBoolean(BfConsts.PROP_DIFFERENTIAL);
+          differentialParamValue
+              || (questionJson.has(BfConsts.PROP_DIFFERENTIAL)
+                  && questionJson.getBoolean(BfConsts.PROP_DIFFERENTIAL));
     } catch (JSONException e) {
       throw new BatfishException("Could not find whether question is explicitly differential", e);
     }
