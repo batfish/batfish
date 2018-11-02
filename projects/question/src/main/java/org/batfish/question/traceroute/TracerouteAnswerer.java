@@ -103,13 +103,13 @@ public final class TracerouteAnswerer extends Answerer {
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.processFlows(flows, question.getIgnoreAcls());
+      _batfish.processFlows(flows, question.getIgnoreFilters());
       FlowHistory flowHistory = _batfish.getHistory();
       rows = flowHistoryToRows(flowHistory, false);
       table = new TableAnswerElement(createMetadata(false));
     } else {
       SortedMap<Flow, List<Trace>> flowTraces =
-          _batfish.buildFlows(flows, question.getIgnoreAcls());
+          _batfish.buildFlows(flows, question.getIgnoreFilters());
       rows = flowTracesToRows(flowTraces, question.getMaxTraces());
       table = new TableAnswerElement(metadata(false));
     }
@@ -120,17 +120,17 @@ public final class TracerouteAnswerer extends Answerer {
   @Override
   public AnswerElement answerDiff() {
     TracerouteQuestion question = ((TracerouteQuestion) _question);
-    boolean ignoreAcls = question.getIgnoreAcls();
+    boolean ignoreFilters = question.getIgnoreFilters();
     Set<Flow> flows = getFlows(_batfish.getDifferentialFlowTag());
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
       _batfish.pushBaseSnapshot();
-      _batfish.processFlows(flows, ignoreAcls);
+      _batfish.processFlows(flows, ignoreFilters);
       _batfish.popSnapshot();
 
       _batfish.pushDeltaSnapshot();
-      _batfish.processFlows(flows, ignoreAcls);
+      _batfish.processFlows(flows, ignoreFilters);
       _batfish.popSnapshot();
 
       FlowHistory flowHistory = _batfish.getHistory();
@@ -138,11 +138,11 @@ public final class TracerouteAnswerer extends Answerer {
       table = new TableAnswerElement(createMetadata(true));
     } else {
       _batfish.pushBaseSnapshot();
-      Map<Flow, List<Trace>> baseFlowTraces = _batfish.buildFlows(flows, ignoreAcls);
+      Map<Flow, List<Trace>> baseFlowTraces = _batfish.buildFlows(flows, ignoreFilters);
       _batfish.popSnapshot();
 
       _batfish.pushDeltaSnapshot();
-      Map<Flow, List<Trace>> deltaFlowTraces = _batfish.buildFlows(flows, ignoreAcls);
+      Map<Flow, List<Trace>> deltaFlowTraces = _batfish.buildFlows(flows, ignoreFilters);
       _batfish.popSnapshot();
 
       rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, question.getMaxTraces());

@@ -158,7 +158,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         .setFinalNodesSpecifier(pathConstraints.getEndLocation())
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
         .setHeaderSpace(getHeaderSpace())
-        .setIgnoreAcls(getIgnoreFilters())
+        .setIgnoreFilters(getIgnoreFilters())
         .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
         .setSourceLocationSpecifier(pathConstraints.getStartLocation())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
@@ -176,7 +176,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
     private DispositionSpecifier _actions;
     private PacketHeaderConstraints _headerConstraints;
     private PathConstraintsInput _pathConstraints;
-    private Boolean _ignoreAcls;
+    private Boolean _ignoreFilters;
 
     private Builder() {}
 
@@ -190,8 +190,8 @@ public final class SpecifiersReachabilityQuestion extends Question {
       return this;
     }
 
-    public Builder setIgnoreAcls(boolean ignoreAcls) {
-      _ignoreAcls = ignoreAcls;
+    public Builder setIgnoreFilters(boolean ignoreFilters) {
+      _ignoreFilters = ignoreFilters;
       return this;
     }
 
@@ -202,7 +202,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
     public SpecifiersReachabilityQuestion build() {
       return new SpecifiersReachabilityQuestion(
-          _actions, _headerConstraints, _ignoreAcls, _pathConstraints);
+          _actions, _headerConstraints, _ignoreFilters, _pathConstraints);
     }
   }
 }

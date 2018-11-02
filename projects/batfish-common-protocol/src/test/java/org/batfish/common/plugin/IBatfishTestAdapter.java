@@ -70,7 +70,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 
@@ -302,7 +302,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 

@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.traceroute.TracerouteQuestion",
   "headers" : { },
-  "ignoreAcls" : false,
+  "ignoreFilters" : false,
   "maxTraces" : 0,
   "startLocation" : "location",
   "differential" : false,
@@ -21,8 +21,8 @@
         "optional" : true,
         "type" : "headerConstraint"
       },
-      "ignoreAcls" : {
-        "description" : "If set to True, ACLs encountered along the path are ignored",
+      "ignoreFilters" : {
+        "description" : "If set to True, filters/ACLs encountered along the path are ignored",
         "optional" : true,
         "type" : "boolean",
         "value" : false

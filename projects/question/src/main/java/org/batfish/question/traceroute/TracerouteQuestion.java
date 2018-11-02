@@ -24,28 +24,28 @@ import org.batfish.datamodel.questions.Question;
  */
 public final class TracerouteQuestion extends Question {
 
-  private static final String PROP_IGNORE_ACLS = "ignoreAcls";
+  private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_SOURCE_LOCATION = "startLocation";
   private static final String PROP_HEADER_CONSTRAINTS = "headers";
   private static final String PROP_MAX_TRACES = "maxTraces";
 
   @VisibleForTesting static final int DEFAULT_MAX_TRACES = 32;
 
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
   private final @Nullable String _sourceLocationStr;
   private final PacketHeaderConstraints _headerConstraints;
   private final int _maxTraces;
 
   @JsonCreator
   private static TracerouteQuestion create(
-      @JsonProperty(PROP_IGNORE_ACLS) boolean ignoreAcls,
+      @JsonProperty(PROP_IGNORE_FILTERS) boolean ignoreFilters,
       @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints,
       @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces) {
     return new TracerouteQuestion(
         sourceLocationStr,
         firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
-        ignoreAcls,
+        ignoreFilters,
         firstNonNull(maxTraces, DEFAULT_MAX_TRACES));
   }
 
@@ -55,15 +55,15 @@ public final class TracerouteQuestion extends Question {
    * @param sourceLocationStr string representation of location that results in a {@link
    *     org.batfish.specifier.LocationSpecifier}
    * @param headerConstraints {@link PacketHeaderConstraints} specifying what flow to construct when
-   * @param ignoreAcls whether or not to evaluate ACLs on interfaces when performing a traceroute
+   * @param ignoreFilters whether or not to evaluate ACLs on interfaces when performing a traceroute
    * @param maxTraces the maximum number of traces to include in the answer
    */
   public TracerouteQuestion(
       @Nullable String sourceLocationStr,
       @Nonnull PacketHeaderConstraints headerConstraints,
-      boolean ignoreAcls,
+      boolean ignoreFilters,
       int maxTraces) {
-    _ignoreAcls = ignoreAcls;
+    _ignoreFilters = ignoreFilters;
     _sourceLocationStr = sourceLocationStr;
     _headerConstraints = headerConstraints;
     _maxTraces = maxTraces;
@@ -84,9 +84,9 @@ public final class TracerouteQuestion extends Question {
     return _headerConstraints;
   }
 
-  @JsonProperty(PROP_IGNORE_ACLS)
-  public boolean getIgnoreAcls() {
-    return _ignoreAcls;
+  @JsonProperty(PROP_IGNORE_FILTERS)
+  public boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   @JsonProperty(PROP_MAX_TRACES)
