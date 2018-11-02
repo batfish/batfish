@@ -105,7 +105,7 @@ public class DifferentialReachabilityAnswerer extends Answerer {
   @Override
   public TableAnswerElement answerDiff() {
     DifferentialReachabilityParameters parameters = parameters();
-    DifferentialReachabilityResult result = _batfish.bddReducedReachability(parameters);
+    DifferentialReachabilityResult result = _batfish.bddDifferentialReachability(parameters);
 
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
