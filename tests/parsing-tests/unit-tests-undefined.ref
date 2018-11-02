@@ -779,7 +779,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            129
+            130
           ]
         }
       },
@@ -791,7 +791,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            137
+            138
           ]
         }
       },
@@ -827,7 +827,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            91
+            92
           ]
         }
       },
@@ -839,7 +839,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            88
+            89
           ]
         }
       },
@@ -857,13 +857,25 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "hpaccesslist",
+        "Context" : "interface igmp host-proxy access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "nat pool",
         "Ref_Name" : "beeble",
         "Context" : "ip nat source pool",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            92
+            93
           ]
         }
       },
@@ -875,7 +887,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            135
+            136
           ]
         }
       },
@@ -887,7 +899,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            125
+            126
           ]
         }
       },
@@ -899,7 +911,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            290
+            291
           ]
         }
       },
@@ -3034,10 +3046,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 246 results",
+      "notes" : "Found 247 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 246
+      "numResults" : 247
     }
   }
 ]
