@@ -665,9 +665,8 @@ public class Client extends AbstractClient implements IClient {
     boolean questionJsonDifferential;
     try {
       questionJsonDifferential =
-          differentialParamValue
-              || (questionJson.has(BfConsts.PROP_DIFFERENTIAL)
-                  && questionJson.getBoolean(BfConsts.PROP_DIFFERENTIAL));
+          questionJson.has(BfConsts.PROP_DIFFERENTIAL)
+              && questionJson.getBoolean(BfConsts.PROP_DIFFERENTIAL);
     } catch (JSONException e) {
       throw new BatfishException("Could not find whether question is explicitly differential", e);
     }
@@ -697,7 +696,7 @@ public class Client extends AbstractClient implements IClient {
             _currContainerName,
             _currTestrig,
             _currDeltaTestrig,
-            questionJsonDifferential,
+            questionJsonDifferential || differentialParamValue,
             isDelta);
     return execute(wItemAs, outWriter);
   }
