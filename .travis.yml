@@ -7,11 +7,11 @@ jdk:
 
 env:
   - BF_BUILDER="mvn"
-  - BF_BUILDER="bazel" V="0.17.1"
+  - BF_BUILDER="bazel" V="0.18.1"
 matrix:
   fast_finish: true
   allow_failures:
-  - env: BF_BUILDER="bazel" V="0.17.1"
+  - env: BF_BUILDER="bazel" V="0.18.1"
 
 before_install:
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
@@ -38,7 +38,6 @@ script:
     if [ ${BF_BUILDER} == "bazel" ]; then
       bazel \
       --output_base=$HOME/.cache/bazel \
-      --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
       test \
