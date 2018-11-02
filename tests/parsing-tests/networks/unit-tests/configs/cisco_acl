@@ -25,6 +25,7 @@ ip access-list BLAH-BLAH
    280 permit icmp any any 5 2
    290 permit icmp any any time-exceeded ! believe this is type 11, any code
    300 permit icmp any any ttl-exceeded  ! type 11, code 0
+   410 deny ip any any log
 !
 ! 'extended' is the name
 ip access-list extended
