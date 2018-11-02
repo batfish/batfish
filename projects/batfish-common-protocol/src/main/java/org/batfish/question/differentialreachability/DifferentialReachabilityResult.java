@@ -6,8 +6,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 
 /**
- * The result of {@link IBatfish#bddReducedReachability} -- sets of flows demonstrating increased
- * and reduced reachability.
+ * The result of {@link IBatfish#bddDifferentialReachability} -- sets of flows demonstrating
+ * increased and reduced reachability.
  */
 public final class DifferentialReachabilityResult {
   private final Set<Flow> _increasedReachabilityFlows;

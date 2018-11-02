@@ -57,7 +57,7 @@ import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
 
-  DifferentialReachabilityResult bddReducedReachability(
+  DifferentialReachabilityResult bddDifferentialReachability(
       DifferentialReachabilityParameters parameters);
 
   /**

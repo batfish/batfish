@@ -64,7 +64,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public DifferentialReachabilityResult bddReducedReachability(
+  public DifferentialReachabilityResult bddDifferentialReachability(
       DifferentialReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
