@@ -8604,6 +8604,11 @@ PATH_JITTER
    'path-jitter'
 ;
 
+PATH_MTU_DISCOVERY
+:
+   'path-mtu-discovery'
+;
+
 PATH_OPTION
 :
    'path-option'
