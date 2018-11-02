@@ -119,7 +119,8 @@ public final class TracerouteAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
-    boolean ignoreAcls = ((TracerouteQuestion) _question).getIgnoreAcls();
+    TracerouteQuestion question = ((TracerouteQuestion) _question);
+    boolean ignoreAcls = question.getIgnoreAcls();
     Set<Flow> flows = getFlows(_batfish.getDifferentialFlowTag());
     Multiset<Row> rows;
     TableAnswerElement table;
@@ -144,7 +145,7 @@ public final class TracerouteAnswerer extends Answerer {
       Map<Flow, List<Trace>> deltaFlowTraces = _batfish.buildFlows(flows, ignoreAcls);
       _batfish.popSnapshot();
 
-      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces);
+      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, question.getMaxTraces());
       table = new TableAnswerElement(metadata(true));
     }
     table.postProcessAnswer(_question, rows);
@@ -297,7 +298,9 @@ public final class TracerouteAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<Row> diffFlowTracesToRows(
-      Map<Flow, List<Trace>> baseFlowTraces, Map<Flow, List<Trace>> deltaFlowTraces) {
+      Map<Flow, List<Trace>> baseFlowTraces,
+      Map<Flow, List<Trace>> deltaFlowTraces,
+      int maxTraces) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     checkArgument(
         baseFlowTraces.keySet().equals(deltaFlowTraces.keySet()),
@@ -308,11 +311,11 @@ public final class TracerouteAnswerer extends Answerer {
               COL_FLOW,
               flow,
               TableDiff.baseColumnName(COL_TRACES),
-              baseFlowTraces.get(flow),
+              TracePruner.prune(baseFlowTraces.get(flow), maxTraces),
               TableDiff.baseColumnName(COL_TRACE_COUNT),
               baseFlowTraces.get(flow).size(),
               TableDiff.deltaColumnName(COL_TRACES),
-              deltaFlowTraces.get(flow),
+              TracePruner.prune(deltaFlowTraces.get(flow), maxTraces),
               TableDiff.deltaColumnName(COL_TRACE_COUNT),
               deltaFlowTraces.get(flow).size()));
     }
