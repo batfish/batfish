@@ -55,7 +55,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -445,10 +444,9 @@ public class TracerouteTest {
    *
    * traceroute R1 -> 1.0.0.130
    *
-   * Case 1: mask < 24 : R1 -> DELIVERED_TO_SUBNET
-   * Case 2: mask = 24 : same above,
-   * since connected route has higher priority than static route
-   * Case 3: mask > 24 : DELIVERED_TO_SUBNET with trace R1 -> R2
+   * Case 1: mask <= 24 : R1 -> DELIVERED_TO_SUBNET
+   *  since connected route has higher priority than static route
+   * Case 2: mask > 24 : DELIVERED_TO_SUBNET with trace R1 -> R2
    *
    * Note: in practice, R2 would complain about overlapping interfaces
    */
@@ -526,28 +524,8 @@ public class TracerouteTest {
     return answer;
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2528")
   @Test
   public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
-    TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("22");
-    assertThat(answer.getRows().getData(), hasSize(1));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
-  }
-
-  @Test
-  public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -566,7 +544,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDeliveredToSubnetVSStaticRoute3() throws IOException {
+  public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("26");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -605,11 +583,6 @@ public class TracerouteTest {
    * R2: 1.0.0.128/24 -> interface2
    *
    * Traceroute: R1 -> 1.0.0.131
-   *
-   * Case 1: mask < 24: DELIVERD_TO_SUBNET (to R2)
-   * Case 2: mask = 24: DELIVERD_TO_SUBNET (to R1)
-   * Case 3: mask > 24: DELIVERD_TO_SUBNET (to R1)
-   *
    */
   private TableAnswerElement testDispositionMultiInterfaces(String mask) throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -692,57 +665,11 @@ public class TracerouteTest {
     return answer;
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2528")
+  /*
+   * If mask > 24: DELIVERD_TO_SUBNET (to R1)
+   */
   @Test
   public void testDispositionMultiInterfaces1() throws IOException {
-    TableAnswerElement answer = testDispositionMultiInterfaces("22");
-    assertThat(answer.getRows().getData(), hasSize(2));
-
-    // check that packet should reach R1 and R2
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasHop(1, hasEdge(hasNode1(equalTo("~Configuration_1~"))))),
-                Schema.set(Schema.FLOW_TRACE))));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
-  }
-
-  @Test
-  public void testDispositionMultiInterfaces2() throws IOException {
-    TableAnswerElement answer = testDispositionMultiInterfaces("24");
-    assertThat(answer.getRows().getData(), hasSize(2));
-
-    // check that packet should reach R1 but R2 no response
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
-  }
-
-  @Test
-  public void testDispositionMultiInterfaces3() throws IOException {
     TableAnswerElement answer = testDispositionMultiInterfaces("25");
     assertThat(answer.getRows().getData(), hasSize(2));
 
@@ -777,12 +704,10 @@ public class TracerouteTest {
    *
    * Traceroute: R1 -> 1.0.0.4
    *
-   * Case 1: mask < 24: Delivered To Subnet (out of R3)
-   *    This is because R3 forwards packets through its static route, and no next hop found
-   * Case 2: mask = 24: LOOP (R1->R2->R3->R2), since packets
+   * Case 1: mask = 24: LOOP (R1->R2->R3->R2), since packets
    *   take interface1 on R1, and then R2 followed by R3 before coming back to R2.
    *   Note that R1 does not reply arp request from R3, but R2 does.
-   * Case 3: mask >= 25: NEIGHBOR_UNREACHABLE
+   * Case 2: mask >= 25: NEIGHBOR_UNREACHABLE
    *    since the connected route is taken, and R1 should deliver the packet to subnet
    */
   private TableAnswerElement testDispositionMultipleRouters(String mask) throws IOException {
@@ -887,38 +812,8 @@ public class TracerouteTest {
     return answer;
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2528")
   @Test
   public void testDispositionMultipleRouters1() throws IOException {
-    TableAnswerElement answer = testDispositionMultipleRouters("22");
-    assertThat(answer.getRows().getData(), hasSize(1));
-
-    // check that packet should be reach R3
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(3))), Schema.set(Schema.FLOW_TRACE))));
-
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasHop(2, hasEdge(hasNode1(equalTo("~Configuration_2~"))))),
-                Schema.set(Schema.FLOW_TRACE))));
-
-    // check disposition
-    assertThat(
-        answer.getRows().getData(),
-        everyItem(
-            hasColumn(
-                COL_TRACES,
-                everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
-  }
-
-  @Test
-  public void testDispositionMultipleRouters2() throws IOException {
     TableAnswerElement answer = testDispositionMultipleRouters("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -947,7 +842,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDispositionMultipleRouters3() throws IOException {
+  public void testDispositionMultipleRouters2() throws IOException {
     TableAnswerElement answer = testDispositionMultipleRouters("25");
     assertThat(answer.getRows().getData(), hasSize(1));
 
