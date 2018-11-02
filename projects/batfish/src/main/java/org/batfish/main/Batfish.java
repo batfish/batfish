@@ -3981,7 +3981,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * reduced by the change from base to delta snapshot.
    */
   @Override
-  public DifferentialReachabilityResult bddReducedReachability(
+  public DifferentialReachabilityResult bddDifferentialReachability(
       DifferentialReachabilityParameters parameters) {
     checkArgument(
         !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");

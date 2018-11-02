@@ -161,10 +161,10 @@ public class ReducedReachabilityTest {
   }
 
   @Test
-  public void testBDDReducedReachability() throws IOException {
+  public void testBDDDifferentialReachability() throws IOException {
     Batfish batfish = initBatfish();
     DifferentialReachabilityResult differentialReachabilityResult =
-        batfish.bddReducedReachability(parameters(batfish));
+        batfish.bddDifferentialReachability(parameters(batfish));
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
     Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
     assertThat(flows, hasSize(1));
