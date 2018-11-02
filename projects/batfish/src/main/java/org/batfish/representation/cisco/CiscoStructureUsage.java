@@ -92,6 +92,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
+  INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
   INTERFACE_INCOMING_FILTER("interface incoming ip access-list"),
   INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),

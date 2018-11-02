@@ -9831,6 +9831,11 @@ REMOVE
    'remove'
 ;
 
+REOPTIMIZE
+:
+   'reoptimize'
+;
+
 REPLACE_AS
 :
    'replace-as'
@@ -9841,9 +9846,9 @@ REPLY_TO
    'reply-to'
 ;
 
-REOPTIMIZE
+REPORT_INTERVAL
 :
-   'reoptimize'
+   'report-interval'
 ;
 
 REQ_RESP

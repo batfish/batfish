@@ -279,6 +279,7 @@ if_ip_igmp
    (
       NEWLINE
       | ifigmp_access_group
+      | ifigmp_host_proxy
       | ifigmp_null
       | ifigmp_static_group
    )
@@ -1414,11 +1415,35 @@ ifigmp_access_group
    ACCESS_GROUP name = variable NEWLINE
 ;
 
+ifigmp_host_proxy
+:
+   HOST_PROXY (
+       ifigmphp_access_list
+       | ifigmphp_null
+   )
+;
+
+ifigmphp_access_list
+:
+   ACCESS_LIST name = variable NEWLINE
+;
+
+ifigmphp_null
+:
+   (
+      EXCLUDE
+      | INCLUDE
+      | IP_ADDRESS
+      | REPORT_INTERVAL
+      | VERSION
+   ) null_rest_of_line
+
+;
+
 ifigmp_null
 :
    (
       GROUP_TIMEOUT
-      | HOST_PROXY
       | JOIN_GROUP
       | LAST_MEMBER_QUERY_COUNT
       | LAST_MEMBER_QUERY_INTERVAL

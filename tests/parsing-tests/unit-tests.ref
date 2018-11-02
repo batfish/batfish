@@ -13848,6 +13848,19 @@
             "          ANY:'any')",
             "        (extended_access_list_additional_feature",
             "          TTL_EXCEEDED:'ttl-exceeded')",
+            "        NEWLINE:'\\n')",
+            "      (extended_access_list_tail",
+            "        num = DEC:'410'",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (extended_access_list_stanza",
@@ -22107,6 +22120,17 @@
             "            GROUP_TIMEOUT:'group-timeout'",
             "            (null_rest_of_line",
             "              DEC:'260'",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner",
+            "        (if_ip_igmp",
+            "          IP:'ip'",
+            "          IGMP:'igmp'",
+            "          (ifigmp_host_proxy",
+            "            HOST_PROXY:'host-proxy'",
+            "            (ifigmphp_access_list",
+            "              ACCESS_LIST:'access-list'",
+            "              name = (variable",
+            "                VARIABLE:'hpaccesslist')",
             "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_ip_igmp",
@@ -57288,7 +57312,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 276,
+              "Line" : 277,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -58400,34 +58424,35 @@
                 24,
                 25,
                 26,
-                27
+                27,
+                28
               ],
               "numReferrers" : 0
             },
             "blah" : {
               "definitionLines" : [
-                34,
-                35
+                35,
+                36
               ],
               "numReferrers" : 0
             },
             "extended" : {
               "definitionLines" : [
-                30
+                31
               ],
               "numReferrers" : 0
             },
             "standard" : {
               "definitionLines" : [
-                32
+                33
               ],
               "numReferrers" : 0
             },
             "test-codes" : {
               "definitionLines" : [
-                61,
                 62,
-                63
+                63,
+                64
               ],
               "numReferrers" : 0
             }
@@ -58435,15 +58460,15 @@
           "ipv4 prefix-list" : {
             "allowprefix" : {
               "definitionLines" : [
-                37,
-                38
+                38,
+                39
               ],
               "numReferrers" : 0
             },
             "allowprefix-asa" : {
               "definitionLines" : [
-                40,
-                41
+                41,
+                42
               ],
               "numReferrers" : 0
             }
@@ -62781,17 +62806,17 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                129
+                130
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                137
+                138
               ]
             },
             "abc" : {
               "ip nat source dynamic access-list" : [
-                92
+                93
               ]
             },
             "ag1" : {
@@ -62806,12 +62831,12 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                91
+                92
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                88
+                89
               ]
             }
           },
@@ -62820,24 +62845,29 @@
               "interface igmp access-group acl" : [
                 78
               ]
+            },
+            "hpaccesslist" : {
+              "interface igmp host-proxy access-list" : [
+                80
+              ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                92
+                93
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                135
+                136
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                125
+                126
               ]
             }
           },
@@ -64954,12 +64984,12 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                129
+                130
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                137
+                138
               ]
             },
             "ag1" : {
@@ -64974,12 +65004,12 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                91
+                92
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                88
+                89
               ]
             }
           },
@@ -64988,24 +65018,29 @@
               "interface igmp access-group acl" : [
                 78
               ]
+            },
+            "hpaccesslist" : {
+              "interface igmp host-proxy access-list" : [
+                80
+              ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                92
+                93
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                135
+                136
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                125
+                126
               ]
             }
           },
