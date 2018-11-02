@@ -152,7 +152,7 @@ public class TracerouteAnswererTest {
         ImmutableMap.of(
             flow, ImmutableList.of(new Trace(FlowDisposition.DENIED_IN, ImmutableList.of())));
 
-    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces);
+    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, Integer.MAX_VALUE);
     assertThat(
         rows.iterator().next(),
         allOf(
