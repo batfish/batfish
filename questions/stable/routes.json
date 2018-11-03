@@ -49,7 +49,7 @@
                         "name": "bgpmp"
                     }
                 ],
-                "displayName": "Rib"
+                "displayName": "RIB"
             }
         }
     },
