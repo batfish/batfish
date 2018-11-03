@@ -46,7 +46,6 @@ public final class HasRoute extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @JsonProperty(PROP_EXPR)

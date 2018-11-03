@@ -157,14 +157,12 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Layer1Topology getLayer1Topology() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public Layer2Topology getLayer2Topology() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

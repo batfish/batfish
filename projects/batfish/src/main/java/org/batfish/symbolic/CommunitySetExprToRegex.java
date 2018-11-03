@@ -23,20 +23,17 @@ public class CommunitySetExprToRegex implements CommunitySetExprVisitor<RegexCom
 
   @Override
   public RegexCommunitySet visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public RegexCommunitySet visitCommunityList(CommunityList communityList) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public RegexCommunitySet visitEmptyCommunitySetExpr(EmptyCommunitySetExpr emptyCommunitySetExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -48,20 +45,17 @@ public class CommunitySetExprToRegex implements CommunitySetExprVisitor<RegexCom
   @Override
   public RegexCommunitySet visitLiteralCommunityConjunction(
       LiteralCommunityConjunction literalCommunityConjunction) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public RegexCommunitySet visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public RegexCommunitySet visitNamedCommunitySet(NamedCommunitySet namedCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

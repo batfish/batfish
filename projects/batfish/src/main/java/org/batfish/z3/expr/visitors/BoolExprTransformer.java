@@ -147,8 +147,7 @@ public class BoolExprTransformer
 
   @Override
   public BoolExpr visitComment(Comment comment) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

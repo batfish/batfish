@@ -98,7 +98,6 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
 
   @Override
   public BoolExpr visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 }
