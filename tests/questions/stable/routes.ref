@@ -44,7 +44,7 @@
           "main"
         ],
         "description" : "Only return routes from a given protocol RIB",
-        "displayName" : "Rib",
+        "displayName" : "RIB",
         "optional" : true,
         "type" : "string",
         "value" : "main",
