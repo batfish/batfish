@@ -146,9 +146,9 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testIgnoreAcls() {
+  public void testIgnoreFilters() {
     SpecifiersReachabilityQuestion q =
-        SpecifiersReachabilityQuestion.builder().setIgnoreAcls(true).build();
-    assertThat(q.getReachabilityParameters().getIgnoreAcls(), equalTo(true));
+        SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
+    assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
   }
 }

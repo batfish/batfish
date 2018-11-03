@@ -62,16 +62,15 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
   }
 
   /**
-   * Given a {@link Set} of {@link Flow}s it populates the {@link List} of {@link Trace}s for them
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
    *
-   * @param flows {@link Set} of {@link Flow}s for which {@link Trace}s are to be found
-   * @param dataPlane {@link DataPlane} for the snapshot of the network for which {@link Flow}s are
-   *     to be built
-   * @param ignoreAcls if true, ACLs encountered while building the {@link Flow}s are ignored
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
+   * @param dataPlane {@link DataPlane} for this network snapshot
+   * @param ignoreFilters if true, will ignore filters/ACLs encountered in the network
    * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
    */
   public abstract SortedMap<Flow, List<Trace>> buildFlows(
-      Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
+      Set<Flow> flows, DataPlane dataPlane, boolean ignoreFilters);
 
   public abstract ComputeDataPlaneResult computeDataPlane(boolean differentialContext);
 
@@ -89,7 +88,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 
-  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
+  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreFilters);
 
   /** Return the name of this plugin */
   public abstract String getName();

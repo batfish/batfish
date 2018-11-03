@@ -86,7 +86,7 @@ final class TracerouteUtils {
    *
    * @param node Name of the {@link Hop}
    * @param inputIfaceName Name of the source interface
-   * @param ignoreAcls if set to true, ACLs are ignored
+   * @param ignoreFilters if set to true, ACLs are ignored
    * @param currentFlow {@link Flow} for the current packet entering the source interface
    * @param aclDefinitions {@link Map} from ACL names to definitions ({@link IpAccessList}) for the
    *     node
@@ -99,7 +99,7 @@ final class TracerouteUtils {
   static EnterInputIfaceStep createEnterSrcIfaceStep(
       Configuration node,
       String inputIfaceName,
-      boolean ignoreAcls,
+      boolean ignoreFilters,
       Flow currentFlow,
       Map<String, IpAccessList> aclDefinitions,
       NavigableMap<String, IpSpace> namedIpSpaces) {
@@ -119,7 +119,7 @@ final class TracerouteUtils {
     if (inputFilter != null) {
       enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
       // check input filter
-      if (!ignoreAcls) {
+      if (!ignoreFilters) {
         FilterResult filterResult =
             inputFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
         enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());

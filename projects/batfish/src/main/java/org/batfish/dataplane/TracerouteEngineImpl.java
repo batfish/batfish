@@ -27,8 +27,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls) {
-    return new org.batfish.dataplane.TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls)
+      boolean ignoreFilters) {
+    return new org.batfish.dataplane.TracerouteEngineImplContext(
+            dataPlane, flows, fibs, ignoreFilters)
         .processFlows();
   }
 
@@ -38,7 +39,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
    * @param dataPlane {@link DataPlane} for this network snapshot
    * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
    * @param fibs {@link Fib} for the dataplane
-   * @param ignoreAcls if true, will ignore ACLs
+   * @param ignoreFilters if true, will ignore ACLs
    * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
    */
   @Override
@@ -46,7 +47,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls) {
-    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).buildFlows();
+      boolean ignoreFilters) {
+    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreFilters).buildFlows();
   }
 }

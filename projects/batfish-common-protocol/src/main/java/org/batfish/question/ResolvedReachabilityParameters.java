@@ -32,7 +32,7 @@ public final class ResolvedReachabilityParameters {
 
     private AclLineMatchExpr _headerSpace;
 
-    private boolean _ignoreAcls;
+    private boolean _ignoreFilters;
 
     private int _maxChunkSize;
 
@@ -80,8 +80,8 @@ public final class ResolvedReachabilityParameters {
       return this;
     }
 
-    public Builder setIgnoreAcls(boolean ignoreAcls) {
-      _ignoreAcls = ignoreAcls;
+    public Builder setIgnoreFilters(boolean ignoreFilters) {
+      _ignoreFilters = ignoreFilters;
       return this;
     }
 
@@ -128,7 +128,7 @@ public final class ResolvedReachabilityParameters {
 
   private final AclLineMatchExpr _headerSpace;
 
-  private boolean _ignoreAcls;
+  private boolean _ignoreFilters;
 
   private final int _maxChunkSize;
 
@@ -149,7 +149,7 @@ public final class ResolvedReachabilityParameters {
     _finalNodes = builder._finalNodes;
     _forbiddenTransitNodes = builder._forbiddenTransitNodes;
     _headerSpace = builder._headerSpace;
-    _ignoreAcls = builder._ignoreAcls;
+    _ignoreFilters = builder._ignoreFilters;
     _maxChunkSize = builder._maxChunkSize;
     _sourceIpSpaceByLocations = builder._sourceIpSpaceAssignment;
     _srcNatted = builder._srcNatted;
@@ -186,8 +186,8 @@ public final class ResolvedReachabilityParameters {
     return _headerSpace;
   }
 
-  public boolean getIgnoreAcls() {
-    return _ignoreAcls;
+  public boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   public int getMaxChunkSize() {
