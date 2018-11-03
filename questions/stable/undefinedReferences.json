@@ -13,7 +13,8 @@
             "nodes": {
                 "description": "Look for undefined references on nodes matching this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             }
         }
     }

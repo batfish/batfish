@@ -18,18 +18,21 @@
     "variables" : {
       "network" : {
         "description" : "Examine routes for networks matching this prefix",
+        "displayName" : "Network",
         "optional" : true,
         "type" : "prefix",
         "value" : "1.1.1.1/24"
       },
       "nodes" : {
         "description" : "Examine routes on nodes matching this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "protocols" : {
         "description" : "Examine routes for protocols matching this name or regex",
+        "displayName" : "Protocols",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
@@ -41,6 +44,7 @@
           "main"
         ],
         "description" : "Only return routes from a given protocol RIB",
+        "displayName" : "RIB",
         "optional" : true,
         "type" : "string",
         "value" : "main",
@@ -58,6 +62,7 @@
       },
       "vrfs" : {
         "description" : "Examine routes on VRFs matching this name or regex",
+        "displayName" : "VRFs",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"

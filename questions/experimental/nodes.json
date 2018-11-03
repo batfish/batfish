@@ -12,18 +12,21 @@
             "nodes": {
                 "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             },
             "nodeTypes": {
                 "description": "Include nodes of the specified types",
                 "minElements": 0,
                 "optional": true,
-                "type": "string"
+                "type": "string",
+                "displayName": "Node Types"
             },
             "summary": {
                 "description": "Whether to provide only summary information about each node rather than the full data model",
                 "type": "boolean",
-                "value": true
+                "value": true,
+                "displayName": "Summary"
             }
         }
     },
