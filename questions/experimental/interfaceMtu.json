@@ -1,7 +1,10 @@
 {
     "class": "org.batfish.question.filtertable.FilterTableQuestion",
     "differential": false,
-    "columns": ["mtu", "interface"],
+    "columns": [
+        "mtu",
+        "interface"
+    ],
     "filter": "mtu ${comparator} ${mtuBytes}",
     "innerQuestion": {
         "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
@@ -21,25 +24,29 @@
         ],
         "variables": {
             "comparator": {
-              "description": "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
-              "optional": true,
-              "type": "comparator",
-              "value": "<"
+                "description": "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
+                "optional": true,
+                "type": "comparator",
+                "value": "<",
+                "displayName": "Comparator"
             },
             "interfaces": {
-              "description": "Evaluate interfaces matching this regex",
-              "type": "javaRegex",
-              "value": ".*"
+                "description": "Evaluate interfaces matching this regex",
+                "type": "javaRegex",
+                "value": ".*",
+                "displayName": "Interfaces"
             },
             "mtuBytes": {
-              "description": "The reference MTU in bytes against which to check the configured MTU",
-              "type": "integer",
-              "value": 1500
+                "description": "The reference MTU in bytes against which to check the configured MTU",
+                "type": "integer",
+                "value": 1500,
+                "displayName": "MTU Bytes"
             },
             "nodes": {
-              "description": "Include nodes matching this name or regex",
-              "type": "nodeSpec",
-              "value": ".*"
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
             }
         }
     }

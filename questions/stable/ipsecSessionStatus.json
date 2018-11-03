@@ -8,24 +8,27 @@
         "description": "Returns the status of configured IPSec sessions",
         "instanceName": "ipsecSessionStatus",
         "tags": [
-            "ip", 
+            "ip",
             "configuration"
         ],
         "variables": {
-           "nodes": {
+            "nodes": {
                 "description": "Include sessions whose first node matches this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             },
-             "remoteNodes": {
+            "remoteNodes": {
                 "description": "Include sessions whose second node matches this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Remote Nodes"
             },
             "status": {
                 "description": "Only include IPSec sessions for which status matches this regex",
                 "type": "javaRegex",
-                "optional": true
+                "optional": true,
+                "displayName": "Status"
             }
         }
     }

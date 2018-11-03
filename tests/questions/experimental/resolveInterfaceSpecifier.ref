@@ -13,12 +13,14 @@
     "variables" : {
       "interfaces" : {
         "description" : "Input to the interfaceSpecifier",
+        "displayName" : "Interfaces",
         "optional" : true,
         "type" : "string",
         "value" : "input"
       },
       "nodes" : {
         "description" : "Input to the NodeSpecifier",
+        "displayName" : "Nodes",
         "optional" : true,
         "type" : "string",
         "value" : "input"

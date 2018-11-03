@@ -15,6 +15,7 @@
     "variables" : {
       "nodes" : {
         "description" : "Examine AAA Authentication on nodes matching this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"

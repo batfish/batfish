@@ -1,40 +1,44 @@
 {
-  "class": "org.batfish.question.traceroute.TracerouteQuestion",
-  "differential": false,
-  "headers": "${headers}",
-  "ignoreAcls": "${ignoreAcls}",
-  "maxTraces": "${maxTraces}",
-  "startLocation": "${startLocation}",
-  "instance": {
-    "description": "Trace the path(s) for the specified flow.",
-    "instanceName": "traceroute",
-    "longDescription": "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nUnlike a real traceroute, this traceroute is directional. That is, for it to succeed, the reverse connectivity is not needed. This feature can help debug connectivity issues by decoupling the two directions.",
-    "tags": [
-      "dataPlane",
-      "reachability",
-      "traceroute"
-    ],
-    "variables": {
-      "ignoreAcls": {
-        "description": "If set to True, ACLs encountered along the path are ignored",
-        "optional": true,
-        "type": "boolean"
-      },
-      "maxTraces": {
-        "description": "Limit the number of traces returned",
-        "optional": true,
-        "type": "integer"
-      },
-      "headers": {
-        "description": "Packet header constraints",
-        "optional": true,
-        "type": "headerConstraint"
-      },
-      "startLocation": {
-        "description": "Location (node and interface combination) to start tracing from",
-        "minLength": 1,
-        "type": "string"
-      }
+    "class": "org.batfish.question.traceroute.TracerouteQuestion",
+    "differential": false,
+    "headers": "${headers}",
+    "ignoreAcls": "${ignoreAcls}",
+    "maxTraces": "${maxTraces}",
+    "startLocation": "${startLocation}",
+    "instance": {
+        "description": "Trace the path(s) for the specified flow.",
+        "instanceName": "traceroute",
+        "longDescription": "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nUnlike a real traceroute, this traceroute is directional. That is, for it to succeed, the reverse connectivity is not needed. This feature can help debug connectivity issues by decoupling the two directions.",
+        "tags": [
+            "dataPlane",
+            "reachability",
+            "traceroute"
+        ],
+        "variables": {
+            "ignoreAcls": {
+                "description": "If set to True, ACLs encountered along the path are ignored",
+                "optional": true,
+                "type": "boolean",
+                "displayName": "Ignore ACLs"
+            },
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
+            },
+            "headers": {
+                "description": "Packet header constraints",
+                "optional": true,
+                "type": "headerConstraint",
+                "displayName": "Headers"
+            },
+            "startLocation": {
+                "description": "Location (node and interface combination) to start tracing from",
+                "minLength": 1,
+                "type": "string",
+                "displayName": "Start Location"
+            }
+        }
     }
-  }
 }

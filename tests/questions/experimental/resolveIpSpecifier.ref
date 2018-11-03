@@ -13,6 +13,7 @@
     "variables" : {
       "ips" : {
         "description" : "Input to the IpSpaceSpecifier",
+        "displayName" : "IPs",
         "optional" : true,
         "type" : "string",
         "value" : "1.1.1.1/24"

@@ -10,19 +10,22 @@
                 "description": "Include structures whose name matches this string or regex",
                 "type": "javaRegex",
                 "value": ".*",
-                "optional": true
+                "optional": true,
+                "displayName": "Names"
             },
             "nodes": {
                 "description": "Include files used to generate nodes whose name matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             },
             "types": {
                 "description": "Include structures whose vendor-specific type matches this string or regex",
                 "type": "javaRegex",
                 "value": ".*",
-                "optional": true
+                "optional": true,
+                "displayName": "Types"
             }
         }
     },

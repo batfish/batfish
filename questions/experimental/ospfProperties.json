@@ -13,12 +13,14 @@
             "nodes": {
                 "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             },
             "properties": {
                 "description": "Include properties matching this regex",
                 "type": "ospfPropertySpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Properties"
             }
         }
     }
