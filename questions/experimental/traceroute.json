@@ -2,7 +2,7 @@
     "class": "org.batfish.question.traceroute.TracerouteQuestion",
     "differential": false,
     "headers": "${headers}",
-    "ignoreAcls": "${ignoreAcls}",
+    "ignoreFilters": "${ignoreFilters}",
     "maxTraces": "${maxTraces}",
     "startLocation": "${startLocation}",
     "instance": {
@@ -15,11 +15,11 @@
             "traceroute"
         ],
         "variables": {
-            "ignoreAcls": {
-                "description": "If set to True, ACLs encountered along the path are ignored",
+            "ignoreFilters": {
+                "description": "If set, filters/ACLs encountered along the path are ignored",
                 "optional": true,
                 "type": "boolean",
-                "displayName": "Ignore ACLs"
+                "displayName": "Ignore Filters"
             },
             "maxTraces": {
                 "description": "Limit the number of traces returned",

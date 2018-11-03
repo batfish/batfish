@@ -128,7 +128,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final ForwardingAnalysis _forwardingAnalysis;
 
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
 
   /*
    * node --> vrf --> interface --> set of packets that get routed out the interface but do not
@@ -171,11 +171,11 @@ public final class BDDReachabilityAnalysisFactory {
       BDDPacket packet,
       Map<String, Configuration> configs,
       ForwardingAnalysis forwardingAnalysis,
-      boolean ignoreAcls) {
+      boolean ignoreFilters) {
     _bddPacket = packet;
     _one = packet.getFactory().one();
     _zero = packet.getFactory().zero();
-    _ignoreAcls = ignoreAcls;
+    _ignoreFilters = ignoreFilters;
     _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
     _configs = configs;
@@ -198,9 +198,9 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   /**
-   * Lazily compute the ACL BDDs, since we may only need some of them (depending on ignoreAcls,
-   * forbidden transit nodes, etc). When ignoreAcls is enabled, we still need the ACLs used in NATs.
-   * This is simpler than trying to precompute which ACLs we actually need.
+   * Lazily compute the ACL BDDs, since we may only need some of them (depending on ignoreFilters,
+   * forbidden transit nodes, etc). When ignoreFilters is enabled, we still need the ACLs used in
+   * NATs. This is simpler than trying to precompute which ACLs we actually need.
    */
   private static Map<String, Map<String, Supplier<BDD>>> computeAclBDDs(
       BDDPacket bddPacket,
@@ -623,11 +623,11 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private BDD ignorableAclDenyBDD(String node, String acl) {
-    return _ignoreAcls ? _zero : aclDenyBDD(node, acl);
+    return _ignoreFilters ? _zero : aclDenyBDD(node, acl);
   }
 
   private BDD ignorableAclPermitBDD(String node, String acl) {
-    return _ignoreAcls ? _one : aclPermitBDD(node, acl);
+    return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
   private Stream<Edge> generateRules_PreInInterface_PostInVrf() {
@@ -704,7 +704,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdgePostNat_NodeDropAclOut() {
-    if (_ignoreAcls) {
+    if (_ignoreFilters) {
       return Stream.of();
     }
     return _forwardingAnalysis
@@ -761,7 +761,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut() {
-    if (_ignoreAcls) {
+    if (_ignoreFilters) {
       return Stream.of();
     }
 

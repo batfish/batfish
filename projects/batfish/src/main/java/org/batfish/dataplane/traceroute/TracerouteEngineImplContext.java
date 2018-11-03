@@ -148,18 +148,18 @@ public class TracerouteEngineImplContext {
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
 
   public TracerouteEngineImplContext(
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls) {
+      boolean ignoreFilters) {
     _configurations = dataPlane.getConfigurations();
     _dataPlane = dataPlane;
     _flows = flows;
     _fibs = fibs;
-    _ignoreAcls = ignoreAcls;
+    _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
   }
 
@@ -284,7 +284,7 @@ public class TracerouteEngineImplContext {
             .getAllInterfaces()
             .get(nextHopInterfaceName)
             .getOutgoingFilter();
-    if (!_ignoreAcls && outFilter != null) {
+    if (!_ignoreFilters && outFilter != null) {
       FilterResult filterResult =
           outFilter.filter(
               transmissionContext._transformedFlow,
@@ -428,7 +428,7 @@ public class TracerouteEngineImplContext {
           createEnterSrcIfaceStep(
               currentConfiguration,
               inputIfaceName,
-              _ignoreAcls,
+              _ignoreFilters,
               currentFlow,
               aclDefinitions,
               namedIpSpaces);
@@ -660,7 +660,7 @@ public class TracerouteEngineImplContext {
       ImmutableList.Builder<Step<?>> stepsTillNow) {
     IpAccessList outFilter = outInterface.getOutgoingFilter();
     boolean denied = false;
-    if (!_ignoreAcls && outFilter != null) {
+    if (!_ignoreFilters && outFilter != null) {
       FilterResult filterResult =
           outFilter.filter(
               transmissionContext._transformedFlow,

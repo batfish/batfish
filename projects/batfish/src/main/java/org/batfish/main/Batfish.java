@@ -2562,22 +2562,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
+    getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
   }
 
   /**
    * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
    *
    * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
-   * @param ignoreAcls if true, will ignore ACLs
+   * @param ignoreFilters if true, will ignore ACLs
    * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
    */
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
     DataPlane dp = loadDataPlane();
-    return getDataPlanePlugin().buildFlows(flows, dp, ignoreAcls);
+    return getDataPlanePlugin().buildFlows(flows, dp, ignoreFilters);
   }
 
   /**
@@ -3802,9 +3802,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Requiring or forbidding Source NAT is currently unsupported");
 
     BDDPacket pkt = new BDDPacket();
-    boolean ignoreAcls = params.getIgnoreAcls();
+    boolean ignoreFilters = params.getIgnoreFilters();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
+        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
     Map<IngressLocation, BDD> reachableBDDs =
         bddReachabilityAnalysisFactory
             .bddReachabilityAnalysis(
@@ -3849,20 +3849,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     DataPlane dp = loadDataPlane();
     if (_settings.debugFlagEnabled("oldtraceroute")) {
-      getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
+      getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
       return getHistory();
     } else {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreAcls));
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
     }
   }
 
   @Override
   public Set<Flow> bddLoopDetection() {
     BDDPacket pkt = new BDDPacket();
-    // TODO add ignoreAcls parameter
-    boolean ignoreAcls = false;
+    // TODO add ignoreFilters parameter
+    boolean ignoreFilters = false;
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
+        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
     BDDReachabilityAnalysis analysis =
         bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
             getAllSourcesInferFromLocationIpSpaceAssignment());
@@ -3899,10 +3899,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
     BDDPacket pkt = new BDDPacket();
-    // TODO add ignoreAcls parameter
-    boolean ignoreAcls = false;
+    // TODO add ignoreFilters parameter
+    boolean ignoreFilters = false;
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreAcls);
+        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
     IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
     Set<String> finalNodes = parameters.getFinalNodes();
     Set<FlowDisposition> dropDispositions =
@@ -3971,9 +3971,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
-      BDDPacket pkt, boolean ignoreAcls) {
+      BDDPacket pkt, boolean ignoreFilters) {
     return new BDDReachabilityAnalysisFactory(
-        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreAcls);
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters);
   }
 
   /**

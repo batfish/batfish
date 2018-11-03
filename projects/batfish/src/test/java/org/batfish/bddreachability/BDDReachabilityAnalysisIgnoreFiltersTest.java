@@ -46,7 +46,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class BDDReachabilityAnalysisIgnoreAclsTest {
+public class BDDReachabilityAnalysisIgnoreFiltersTest {
   private static final BDDPacket PKT = new BDDPacket();
   private static final String NODE1 = "node1";
   private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
@@ -135,15 +135,18 @@ public class BDDReachabilityAnalysisIgnoreAclsTest {
   }
 
   BDDReachabilityAnalysis initAnalysis(
-      IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreAcls) {
-    return initAnalysis(initialSrcIp, UniverseIpSpace.INSTANCE, disposition, ignoreAcls);
+      IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreFilters) {
+    return initAnalysis(initialSrcIp, UniverseIpSpace.INSTANCE, disposition, ignoreFilters);
   }
 
   BDDReachabilityAnalysis initAnalysis(
-      IpSpace initialSrcIp, IpSpace finalSrcIp, FlowDisposition disposition, boolean ignoreAcls) {
+      IpSpace initialSrcIp,
+      IpSpace finalSrcIp,
+      FlowDisposition disposition,
+      boolean ignoreFilters) {
     Map<String, Configuration> configs = batfish.loadConfigurations();
     return new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreAcls)
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreFilters)
         .bddReachabilityAnalysis(
             IpSpaceAssignment.builder().assign(IFACE1_LOCATION, initialSrcIp).build(),
             AclLineMatchExprs.matchDst(NODE2_ADDR.getIp().toIpSpace()),
@@ -217,7 +220,7 @@ public class BDDReachabilityAnalysisIgnoreAclsTest {
 
     traceWrapper =
         (TraceWrapperAsAnswerElement)
-            batfish.bddSingleReachability(parameters.setIgnoreAcls(true).build());
+            batfish.bddSingleReachability(parameters.setIgnoreFilters(true).build());
     assertThat(traceWrapper.getFlowTraces().entrySet(), hasSize(1));
   }
 }
