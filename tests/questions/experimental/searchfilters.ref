@@ -25,24 +25,28 @@
     "variables" : {
       "action" : {
         "description" : "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
+        "displayName" : "Action",
         "optional" : true,
         "type" : "string",
         "value" : "matchLine 0"
       },
       "explain" : {
         "description" : "Include a description of the flow space matching the query.",
+        "displayName" : "Explain",
         "optional" : true,
         "type" : "boolean",
         "value" : false
       },
       "filters" : {
         "description" : "Only evaluate filters that match this regex",
+        "displayName" : "Filters",
         "optional" : true,
         "type" : "javaRegex",
         "value" : ".*"
       },
       "headers" : {
         "description" : "Packet header constraints on the flows being searched",
+        "displayName" : "Headers",
         "optional" : true,
         "type" : "headerConstraint",
         "value" : {
@@ -55,18 +59,21 @@
       },
       "invertSearch" : {
         "description" : "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "displayName" : "Invert Search",
         "optional" : true,
         "type" : "boolean",
         "value" : false
       },
       "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this regex",
+        "displayName" : "Nodes",
         "optional" : true,
         "type" : "string",
         "value" : ".*"
       },
       "startLocation" : {
         "description" : "Only consider specified locations as possible sources",
+        "displayName" : "Start Location",
         "optional" : true,
         "type" : "string",
         "value" : "somenode"

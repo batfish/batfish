@@ -1,42 +1,46 @@
 {
-  "class": "org.batfish.question.testfilters.TestFiltersQuestion",
-  "differential": false,
-  "filters": "${filters}",
-  "headers": "${headers}",
-  "nodes": "${nodes}",
-  "startLocation": "${startLocation}",
-  "instance": {
-    "description": "Evaluate the processing of a flow by a given filter/ACL",
-    "instanceName": "testfilters",
-    "longDescription": "Find how the specified flow is processed through the specified filters/ACLs.",
-    "tags": [
-      "dataPlane",
-      "filter",
-      "flow",
-      "trace"
-    ],
-    "variables": {
-      "filters": {
-        "description": "Only consider filters that match this regular expression",
-        "type": "javaRegex",
-        "value": ".*"
-      },
-      "nodes": {
-        "description": "Only examine filters on nodes matching this name or regex",
-        "type": "nodeSpec",
-        "value": ".*"
-      },
-      "headers": {
-        "description": "Packet header constraints",
-        "optional": true,
-        "type": "headerConstraint"
-      },
-      "startLocation": {
-        "description": "Location to start tracing from",
-        "minLength": 1,
-        "type": "string",
-        "optional": true
-      }      
+    "class": "org.batfish.question.testfilters.TestFiltersQuestion",
+    "differential": false,
+    "filters": "${filters}",
+    "headers": "${headers}",
+    "nodes": "${nodes}",
+    "startLocation": "${startLocation}",
+    "instance": {
+        "description": "Evaluate the processing of a flow by a given filter/ACL",
+        "instanceName": "testfilters",
+        "longDescription": "Find how the specified flow is processed through the specified filters/ACLs.",
+        "tags": [
+            "dataPlane",
+            "filter",
+            "flow",
+            "trace"
+        ],
+        "variables": {
+            "filters": {
+                "description": "Only consider filters that match this regular expression",
+                "type": "javaRegex",
+                "value": ".*",
+                "displayName": "Filters"
+            },
+            "nodes": {
+                "description": "Only examine filters on nodes matching this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "headers": {
+                "description": "Packet header constraints",
+                "optional": true,
+                "type": "headerConstraint",
+                "displayName": "Headers"
+            },
+            "startLocation": {
+                "description": "Location to start tracing from",
+                "minLength": 1,
+                "type": "string",
+                "optional": true,
+                "displayName": "Start Location"
+            }
+        }
     }
-  }
 }

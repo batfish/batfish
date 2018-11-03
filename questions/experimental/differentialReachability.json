@@ -1,42 +1,46 @@
 {
-  "class": "org.batfish.question.differentialreachability.DifferentialReachabilityQuestion",
-  "differential": true,
-  "actions": "${actions}",
-  "headers": "${headers}",
-  "ignoreFilters": "${ignoreFilters}",
-  "pathConstraints": "${pathConstraints}",
-  "instance": {
-    "description": "Detect differential reachability.",
-    "instanceName": "differentialReachability",
-    "longDescription": "Finds flows that are accepted in one snapshot but dropped in another",
-    "tags": [
-      "dataPlane",
-      "reachability",
-      "differential"
-    ],
-    "variables": {
-      "actions": {
-        "description": "Only return flows for which the disposition is from this set",
-        "optional": true,
-        "type": "dispositionSpec",
-        "value": "success"
-      },
-      "headers": {
-        "description": "Packet header constraints",
-        "optional": true,
-        "type": "headerConstraint"
-      },
-      "ignoreFilters" : {
-        "description" : "Do not apply filters/ACLs during analysis",
-        "optional" : true,
-        "type" : "boolean",
-        "value" : false
-      },
-      "pathConstraints": {
-        "description": "Constraint the path a flow can take (start/end/transit locations)",
-        "optional": true,
-        "type": "pathConstraint"
-      }
+    "class": "org.batfish.question.differentialreachability.DifferentialReachabilityQuestion",
+    "differential": true,
+    "actions": "${actions}",
+    "headers": "${headers}",
+    "ignoreFilters": "${ignoreFilters}",
+    "pathConstraints": "${pathConstraints}",
+    "instance": {
+        "description": "Detect differential reachability.",
+        "instanceName": "differentialReachability",
+        "longDescription": "Finds flows that are accepted in one snapshot but dropped in another",
+        "tags": [
+            "dataPlane",
+            "reachability",
+            "differential"
+        ],
+        "variables": {
+            "actions": {
+                "description": "Only return flows for which the disposition is from this set",
+                "optional": true,
+                "type": "dispositionSpec",
+                "value": "success",
+                "displayName": "Actions"
+            },
+            "headers": {
+                "description": "Packet header constraints",
+                "optional": true,
+                "type": "headerConstraint",
+                "displayName": "Headers"
+            },
+            "ignoreFilters": {
+                "description": "Do not apply filters/ACLs during analysis",
+                "optional": true,
+                "type": "boolean",
+                "value": false,
+                "displayName": "Ignore Filters"
+            },
+            "pathConstraints": {
+                "description": "Constraint the path a flow can take (start/end/transit locations)",
+                "optional": true,
+                "type": "pathConstraint",
+                "displayName": "Path Constraints"
+            }
+        }
     }
-  }
 }

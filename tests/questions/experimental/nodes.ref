@@ -12,6 +12,7 @@
     "variables" : {
       "nodeTypes" : {
         "description" : "Include nodes of the specified types",
+        "displayName" : "Node Types",
         "minElements" : 0,
         "optional" : true,
         "type" : "string",
@@ -21,12 +22,14 @@
       },
       "nodes" : {
         "description" : "Include nodes matching this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "summary" : {
         "description" : "Whether to provide only summary information about each node rather than the full data model",
+        "displayName" : "Summary",
         "optional" : false,
         "type" : "boolean",
         "value" : true
