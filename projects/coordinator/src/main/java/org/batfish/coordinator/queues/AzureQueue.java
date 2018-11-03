@@ -33,19 +33,16 @@ public class AzureQueue implements WorkQueue {
   @Override
   public boolean delete(QueuedWork qWork) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @Override
   public QueuedWork deque() {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @Override
   public boolean enque(QueuedWork work) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @Override
@@ -65,12 +62,10 @@ public class AzureQueue implements WorkQueue {
   @Override
   public QueuedWork getWork(UUID workItemId) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @Override
   public Iterator<QueuedWork> iterator() {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 }

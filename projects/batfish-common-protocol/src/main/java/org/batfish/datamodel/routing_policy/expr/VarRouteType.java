@@ -42,7 +42,6 @@ public class VarRouteType extends RouteTypeExpr {
   @Override
   public RouteType evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public String getVar() {

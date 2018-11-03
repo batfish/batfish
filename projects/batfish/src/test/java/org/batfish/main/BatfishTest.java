@@ -520,8 +520,7 @@ public class BatfishTest {
         new Answerer(testQuestion, batfish) {
           @Override
           public AnswerElement answer() {
-            throw new UnsupportedOperationException(
-                "no implementation for generated method"); // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("no implementation for generated method");
           }
         };
 

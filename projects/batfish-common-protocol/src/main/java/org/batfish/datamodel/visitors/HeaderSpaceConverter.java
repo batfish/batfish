@@ -25,8 +25,7 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
 
   @Override
   public HeaderSpace visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -41,32 +40,27 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
 
   @Override
   public HeaderSpace visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public HeaderSpace visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public HeaderSpace visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public HeaderSpace visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public HeaderSpace visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
