@@ -797,9 +797,7 @@ public class VirtualRouter implements Serializable {
             transformedOutgoingRoute.getReceivedFromIp());
 
         // Incoming clusterList
-        transformedIncomingRouteBuilder
-            .getClusterList()
-            .addAll(transformedOutgoingRoute.getClusterList());
+        transformedIncomingRouteBuilder.addClusterList(transformedOutgoingRoute.getClusterList());
 
         // Incoming receivedFromRouteReflectorClient
         transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
@@ -809,9 +807,7 @@ public class VirtualRouter implements Serializable {
         transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
 
         // Incoming communities
-        transformedIncomingRouteBuilder
-            .getCommunities()
-            .addAll(transformedOutgoingRoute.getCommunities());
+        transformedIncomingRouteBuilder.addCommunities(transformedOutgoingRoute.getCommunities());
 
         // Incoming protocol
         transformedIncomingRouteBuilder.setProtocol(targetProtocol);
