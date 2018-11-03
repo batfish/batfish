@@ -43,7 +43,6 @@ public class VarOrigin extends OriginExpr {
   @Override
   public OriginType evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public String getVar() {

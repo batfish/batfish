@@ -39,8 +39,7 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   @Override
   public void visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -71,8 +70,7 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
   @Override
   public void visitLiteralCommunityConjunction(
       LiteralCommunityConjunction literalCommunityConjunction) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

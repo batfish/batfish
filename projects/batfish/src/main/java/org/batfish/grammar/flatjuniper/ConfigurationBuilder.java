@@ -4746,7 +4746,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else {
       throw new UnsupportedOperationException("no implementation for generated method");
-      // TODO Auto-generated method stub
     }
   }
 

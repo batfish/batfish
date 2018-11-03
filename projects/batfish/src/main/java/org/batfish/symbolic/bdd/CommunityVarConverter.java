@@ -33,20 +33,17 @@ public final class CommunityVarConverter implements CommunitySetExprVisitor<Comm
 
   @Override
   public CommunityVar visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public CommunityVar visitCommunityList(CommunityList communityList) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public CommunityVar visitEmptyCommunitySetExpr(EmptyCommunitySetExpr emptyCommunitySetExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -57,20 +54,17 @@ public final class CommunityVarConverter implements CommunitySetExprVisitor<Comm
   @Override
   public CommunityVar visitLiteralCommunityConjunction(
       LiteralCommunityConjunction literalCommunityConjunction) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public CommunityVar visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public CommunityVar visitNamedCommunitySet(NamedCommunitySet namedCommunitySet) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

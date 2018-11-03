@@ -130,8 +130,7 @@ public class Simplifier
 
   @Override
   public IntExpr visitBitVecExpr(BitVecExpr bitVecExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -154,8 +153,7 @@ public class Simplifier
 
   @Override
   public IntExpr visitExtractExpr(ExtractExpr extractExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -170,8 +168,7 @@ public class Simplifier
 
   @Override
   public Expr visitIdExpr(IdExpr idExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -232,14 +229,12 @@ public class Simplifier
 
   @Override
   public Expr visitListExpr(ListExpr listExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public IntExpr visitLitIntExpr(LitIntExpr litIntExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

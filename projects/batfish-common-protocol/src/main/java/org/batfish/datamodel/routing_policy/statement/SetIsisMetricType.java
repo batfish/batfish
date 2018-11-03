@@ -44,7 +44,6 @@ public final class SetIsisMetricType extends Statement {
   @Override
   public Result execute(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @JsonProperty(PROP_METRIC_TYPE)
