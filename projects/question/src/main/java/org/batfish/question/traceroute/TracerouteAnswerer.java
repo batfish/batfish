@@ -64,6 +64,10 @@ public final class TracerouteAnswerer extends Answerer {
   public static final String COL_FLOW = "Flow";
   public static final String COL_TRACES = "Traces";
   public static final String COL_TRACE_COUNT = "TraceCount";
+  public static final String COL_BASE_TRACES = TableDiff.baseColumnName(COL_TRACES);
+  public static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(COL_TRACES);
+  public static final String COL_BASE_TRACE_COUNT = TableDiff.baseColumnName(COL_TRACE_COUNT);
+  public static final String COL_DELTA_TRACE_COUNT = TableDiff.deltaColumnName(COL_TRACE_COUNT);
   private static final int TRACEROUTE_PORT = 33434;
 
   private final Map<String, Configuration> _configurations;
@@ -296,8 +300,7 @@ public final class TracerouteAnswerer extends Answerer {
     return rows;
   }
 
-  @VisibleForTesting
-  static Multiset<Row> diffFlowTracesToRows(
+  public static Multiset<Row> diffFlowTracesToRows(
       Map<Flow, List<Trace>> baseFlowTraces,
       Map<Flow, List<Trace>> deltaFlowTraces,
       int maxTraces) {
