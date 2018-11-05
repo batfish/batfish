@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -91,6 +92,8 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -104,7 +107,11 @@ import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPropertySpecifier;
@@ -137,6 +144,26 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
+
+  private static final Comparator<AclTrace> COMPARATOR_ACL_TRACE =
+      Comparator.comparing(
+          AclTrace::getEvents,
+          Comparators.lexicographical(Comparator.comparing(TraceEvent::getDescription)));
+
+  private static final Comparator<Node> COMPARATOR_NODE = Comparator.comparing(Node::getName);
+
+  private static final Comparator<Trace> COMPARATOR_TRACE =
+      Comparator.comparing(Trace::getDisposition)
+          .thenComparing(
+              Trace::getHops,
+              Comparators.lexicographical(
+                  Comparator.comparing(Hop::getNode, Comparator.comparing(Node::getName))
+                      .thenComparing(
+                          Hop::getSteps,
+                          Comparators.lexicographical(
+                              Comparator.<Step<?>, String>comparing(
+                                      step -> step.getDetail().toString())
+                                  .thenComparing(Step::getAction)))));
 
   static final class AssignWorkTask implements Runnable {
     @Override
@@ -2320,16 +2347,46 @@ public class WorkMgr extends AbstractCoordinator {
   Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
     Schema schema = columnMetadata.getSchema();
     String column = columnMetadata.getName();
-    if (schema.equals(Schema.INTEGER)) {
+    if (schema.equals(Schema.ACL_TRACE)) {
+      return Comparator.comparing(r -> r.getAclTrace(column), COMPARATOR_ACL_TRACE);
+    } else if (schema.equals(Schema.BOOLEAN)) {
+      return Comparator.comparing(r -> r.getBoolean(column));
+    } else if (schema.equals(Schema.DOUBLE)) {
+      return Comparator.comparing(r -> r.getDouble(column));
+    } else if (schema.equals(Schema.FILE_LINE)) {
+      return Comparator.comparing(r -> r.getFileLine(column));
+    } else if (schema.equals(Schema.FLOW)) {
+      return Comparator.comparing(r -> r.getFlow(column));
+    } else if (schema.equals(Schema.FLOW_TRACE)) {
+      return Comparator.comparing(r -> r.getFlowTrace(column));
+    } else if (schema.equals(Schema.INTEGER)) {
       return Comparator.comparing(r -> r.getInteger(column));
+    } else if (schema.equals(Schema.INTERFACE)) {
+      return Comparator.comparing(r -> r.getInterface(column));
+    } else if (schema.equals(Schema.IP)) {
+      return Comparator.comparing(r -> r.getIp(column));
     } else if (schema.equals(Schema.ISSUE)) {
       return Comparator.comparing(r -> r.getIssue(column).getSeverity());
+    } else if (schema.getType() == Type.LIST) {
+      return Comparator.comparing(
+          r -> (List<?>) r.get(column, schema),
+          Comparators.lexicographical(Comparator.comparing(Object::toString)));
+    } else if (schema.equals(Schema.LONG)) {
+      return Comparator.comparing(r -> r.getLong(column));
+    } else if (schema.equals(Schema.NODE)) {
+      return Comparator.comparing(r -> r.getNode(column), COMPARATOR_NODE);
+    } else if (schema.equals(Schema.PREFIX)) {
+      return Comparator.comparing(r -> r.getPrefix(column));
+    } else if (schema.getType() == Type.SET) {
+      return Comparator.comparing(
+          r -> (Set<?>) r.get(column, schema),
+          Comparators.lexicographical(Comparator.comparing(Object::toString)));
     } else if (schema.equals(Schema.STRING)) {
       return Comparator.comparing(r -> r.getString(column));
+    } else if (schema.equals(Schema.TRACE)) {
+      return Comparator.comparing(r -> r.getTrace(column), COMPARATOR_TRACE);
     } else {
-      String message = String.format("Unsupported Schema for sorting: %s", schema);
-      _logger.error(message);
-      throw new UnsupportedOperationException(message);
+      return Comparator.comparing(r -> r.get(column, Schema.OBJECT).toString());
     }
   }
 
