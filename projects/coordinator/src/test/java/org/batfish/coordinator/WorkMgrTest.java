@@ -91,6 +91,7 @@ import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -2055,6 +2056,17 @@ public final class WorkMgrTest {
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
     Row r1 = Row.of(col, "a");
     Row r2 = Row.of(col, "b");
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorSelfDescribingObject() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.SELF_DESCRIBING, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new SelfDescribingObject(Schema.STRING, "a"));
+    Row r2 = Row.of(col, new SelfDescribingObject(Schema.STRING, "b"));
 
     assertThat(comparator.compare(r1, r2), lessThan(0));
   }
