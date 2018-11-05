@@ -134,8 +134,8 @@ public class BgpRoute extends AbstractRoute {
     }
 
     /** Add to the cluster list attribute */
-    public Builder addToClusterList(Long clusterList) {
-      _clusterList.add(clusterList);
+    public Builder addToClusterList(Long cluster) {
+      _clusterList.add(cluster);
       return getThis();
     }
 
