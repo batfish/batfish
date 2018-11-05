@@ -1,7 +1,6 @@
 package org.batfish.question.differentialreachability;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -29,11 +28,13 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.FlowMatchers;
+import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.question.specifiers.DispositionSpecifier;
 import org.batfish.question.specifiers.PathConstraintsInput;
+import org.batfish.question.traceroute.TracerouteAnswerer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -133,19 +134,23 @@ public class DifferentialReachabilityTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_FLOW,
-                            FlowMatchers.hasDstIp(dstIp),
-                            Schema.FLOW),
+                            TracerouteAnswerer.COL_FLOW, FlowMatchers.hasDstIp(dstIp), Schema.FLOW),
                         // at least one trace in snapshot is accepted
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_BASE_TRACES,
-                            hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
-                            Schema.list(Schema.FLOW_TRACE)),
+                            TracerouteAnswerer.COL_BASE_TRACES,
+                            hasItem(TraceMatchers.hasDisposition(FlowDisposition.ACCEPTED)),
+                            Schema.list(Schema.TRACE)),
+                        hasColumn(
+                            TracerouteAnswerer.COL_BASE_TRACE_COUNT, equalTo(1), Schema.INTEGER),
                         // no trace in reference snapshot is accepted
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_DELTA_TRACES,
-                            not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
-                            Schema.list(Schema.FLOW_TRACE)))))));
+                            TracerouteAnswerer.COL_DELTA_TRACES,
+                            not(hasItem(TraceMatchers.hasDisposition(FlowDisposition.ACCEPTED))),
+                            Schema.list(Schema.TRACE)),
+                        hasColumn(
+                            TracerouteAnswerer.COL_DELTA_TRACE_COUNT,
+                            equalTo(1),
+                            Schema.INTEGER))))));
   }
 
   @Test
@@ -167,19 +172,23 @@ public class DifferentialReachabilityTest {
                 ImmutableList.of(
                     allOf(
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_FLOW,
-                            FlowMatchers.hasDstIp(dstIp),
-                            Schema.FLOW),
+                            TracerouteAnswerer.COL_FLOW, FlowMatchers.hasDstIp(dstIp), Schema.FLOW),
                         // at least one trace in snapshot is accepted
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_BASE_TRACES,
-                            hasItem(hasDisposition(FlowDisposition.ACCEPTED)),
-                            Schema.list(Schema.FLOW_TRACE)),
+                            TracerouteAnswerer.COL_BASE_TRACES,
+                            hasItem(TraceMatchers.hasDisposition(FlowDisposition.ACCEPTED)),
+                            Schema.list(Schema.TRACE)),
+                        hasColumn(
+                            TracerouteAnswerer.COL_BASE_TRACE_COUNT, equalTo(1), Schema.INTEGER),
                         // no trace in reference snapshot is accepted
                         hasColumn(
-                            DifferentialReachabilityAnswerer.COL_DELTA_TRACES,
-                            not(hasItem(hasDisposition(FlowDisposition.ACCEPTED))),
-                            Schema.list(Schema.FLOW_TRACE)))))));
+                            TracerouteAnswerer.COL_DELTA_TRACES,
+                            not(hasItem(TraceMatchers.hasDisposition(FlowDisposition.ACCEPTED))),
+                            Schema.list(Schema.TRACE)),
+                        hasColumn(
+                            TracerouteAnswerer.COL_DELTA_TRACE_COUNT,
+                            equalTo(1),
+                            Schema.INTEGER))))));
   }
 
   @Test
