@@ -120,7 +120,7 @@ public class BgpProtocolHelper {
            */
           return null;
         }
-        transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRemoteRoute.getClusterList());
+        transformedOutgoingRouteBuilder.addClusterList(bgpRemoteRoute.getClusterList());
         if (!remoteRouteOriginatedByRemoteNeighbor) {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
@@ -130,7 +130,7 @@ public class BgpProtocolHelper {
                   .getActiveNeighbors()
                   .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
-          transformedOutgoingRouteBuilder.getClusterList().add(newClusterId);
+          transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
         }
         Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
         Set<Long> outgoingClusterList = transformedOutgoingRouteBuilder.getClusterList();
@@ -149,7 +149,7 @@ public class BgpProtocolHelper {
       BgpRoute bgpRemoteRoute = (BgpRoute) route;
       transformedOutgoingRouteBuilder.setAsPath(bgpRemoteRoute.getAsPath());
       if (fromNeighbor.getSendCommunity()) {
-        transformedOutgoingRouteBuilder.getCommunities().addAll(bgpRemoteRoute.getCommunities());
+        transformedOutgoingRouteBuilder.addCommunities(bgpRemoteRoute.getCommunities());
       }
     }
     if (sessionProperties.isEbgp()) {
@@ -223,11 +223,11 @@ public class BgpProtocolHelper {
     BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
     transformedIncomingRouteBuilder.setOriginatorIp(route.getOriginatorIp());
     transformedIncomingRouteBuilder.setReceivedFromIp(route.getReceivedFromIp());
-    transformedIncomingRouteBuilder.getClusterList().addAll(route.getClusterList());
+    transformedIncomingRouteBuilder.addClusterList(route.getClusterList());
     transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
         route.getReceivedFromRouteReflectorClient());
     transformedIncomingRouteBuilder.setAsPath(route.getAsPath());
-    transformedIncomingRouteBuilder.getCommunities().addAll(route.getCommunities());
+    transformedIncomingRouteBuilder.addCommunities(route.getCommunities());
     transformedIncomingRouteBuilder.setProtocol(targetProtocol);
     transformedIncomingRouteBuilder.setNetwork(route.getNetwork());
     transformedIncomingRouteBuilder.setNextHopIp(route.getNextHopIp());

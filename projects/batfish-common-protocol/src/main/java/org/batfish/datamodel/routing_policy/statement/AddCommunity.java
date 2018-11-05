@@ -50,9 +50,9 @@ public class AddCommunity extends Statement {
   public Result execute(Environment environment) {
     BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
     SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
-    bgpRoute.getCommunities().addAll(communities);
+    bgpRoute.addCommunities(communities);
     if (environment.getWriteToIntermediateBgpAttributes()) {
-      environment.getIntermediateBgpAttributes().getCommunities().addAll(communities);
+      environment.getIntermediateBgpAttributes().addCommunities(communities);
     }
     Result result = new Result();
     return result;
