@@ -3,12 +3,16 @@ package org.batfish.question.differentialreachability;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
+import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
+import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -23,6 +27,7 @@ import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -109,17 +114,33 @@ public class DifferentialReachabilityAnswerer extends Answerer {
 
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
+    Multiset<Row> rows;
+    TableAnswerElement table;
+    if (_batfish.debugFlagEnabled("oldtraceroute")) {
+      _batfish.pushBaseSnapshot();
+      _batfish.processFlows(flows, parameters.getIgnoreFilters());
+      _batfish.popSnapshot();
+      _batfish.pushDeltaSnapshot();
+      _batfish.processFlows(flows, parameters.getIgnoreFilters());
+      _batfish.popSnapshot();
 
-    _batfish.pushBaseSnapshot();
-    _batfish.processFlows(flows, parameters.getIgnoreFilters());
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
-    _batfish.processFlows(flows, parameters.getIgnoreFilters());
-    _batfish.popSnapshot();
+      FlowHistory flowHistory = _batfish.getHistory();
+      rows = flowHistoryToRows(flowHistory);
+      table = new TableAnswerElement(createMetadata());
+    } else {
+      _batfish.pushBaseSnapshot();
+      Map<Flow, List<Trace>> baseFlowTraces =
+          _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+      _batfish.popSnapshot();
 
-    FlowHistory flowHistory = _batfish.getHistory();
-    Multiset<Row> rows = flowHistoryToRows(flowHistory);
-    TableAnswerElement table = new TableAnswerElement(createMetadata());
+      _batfish.pushDeltaSnapshot();
+      Map<Flow, List<Trace>> deltaFlowTraces =
+          _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+      _batfish.popSnapshot();
+
+      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, Integer.MAX_VALUE);
+      table = new TableAnswerElement(metadata(true));
+    }
     table.postProcessAnswer(_question, rows);
     return table;
   }

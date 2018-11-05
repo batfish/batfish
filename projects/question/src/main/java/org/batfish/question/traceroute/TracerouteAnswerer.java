@@ -296,8 +296,7 @@ public final class TracerouteAnswerer extends Answerer {
     return rows;
   }
 
-  @VisibleForTesting
-  static Multiset<Row> diffFlowTracesToRows(
+  public static Multiset<Row> diffFlowTracesToRows(
       Map<Flow, List<Trace>> baseFlowTraces,
       Map<Flow, List<Trace>> deltaFlowTraces,
       int maxTraces) {
