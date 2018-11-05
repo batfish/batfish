@@ -130,7 +130,7 @@ public class BgpProtocolHelper {
                   .getActiveNeighbors()
                   .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
-          transformedOutgoingRouteBuilder.addClusterList(newClusterId);
+          transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
         }
         Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
         Set<Long> outgoingClusterList = transformedOutgoingRouteBuilder.getClusterList();

@@ -10,10 +10,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
 
 /**
@@ -22,9 +24,11 @@ import org.batfish.common.util.CommonUtil;
  * <p>For computational efficiency may contain additional attributes (that would otherwise be
  * present only in BGP advertisements on the wire)
  */
+@ParametersAreNonnullByDefault
 public class BgpRoute extends AbstractRoute {
 
   /** Builder for {@link BgpRoute} */
+  @ParametersAreNonnullByDefault
   public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
     @Nonnull private AsPath _asPath;
@@ -117,33 +121,33 @@ public class BgpRoute extends AbstractRoute {
     }
 
     /** Overwrite the clusterList attribute */
-    public Builder setClusterList(SortedSet<Long> clusterList) {
+    public Builder setClusterList(Set<Long> clusterList) {
       _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
       _clusterList.addAll(clusterList);
       return getThis();
     }
 
     /** Add to the cluster list attribute */
-    public Builder addClusterList(SortedSet<Long> clusterList) {
+    public Builder addClusterList(Set<Long> clusterList) {
       _clusterList.addAll(clusterList);
       return getThis();
     }
 
     /** Add to the cluster list attribute */
-    public Builder addClusterList(Long clusterList) {
+    public Builder addToClusterList(Long clusterList) {
       _clusterList.add(clusterList);
       return getThis();
     }
 
     /** Overwrite communities */
-    public Builder setCommunities(SortedSet<Long> communities) {
+    public Builder setCommunities(Set<Long> communities) {
       _communities = new TreeSet<>();
       _communities.addAll(communities);
       return getThis();
     }
 
     /** Add communities */
-    public Builder addCommunities(SortedSet<Long> communities) {
+    public Builder addCommunities(Set<Long> communities) {
       _communities.addAll(communities);
       return getThis();
     }
@@ -155,7 +159,7 @@ public class BgpRoute extends AbstractRoute {
     }
 
     /** Add communities */
-    public Builder removeCommunities(SortedSet<Long> communities) {
+    public Builder removeCommunities(Set<Long> communities) {
       _communities.removeAll(communities);
       return getThis();
     }
@@ -185,7 +189,7 @@ public class BgpRoute extends AbstractRoute {
       return getThis();
     }
 
-    public Builder setReceivedFromIp(Ip receivedFromIp) {
+    public Builder setReceivedFromIp(@Nullable Ip receivedFromIp) {
       _receivedFromIp = receivedFromIp;
       return getThis();
     }
@@ -195,7 +199,7 @@ public class BgpRoute extends AbstractRoute {
       return getThis();
     }
 
-    public Builder setSrcProtocol(RoutingProtocol srcProtocol) {
+    public Builder setSrcProtocol(@Nullable RoutingProtocol srcProtocol) {
       _srcProtocol = srcProtocol;
       return getThis();
     }
@@ -349,7 +353,7 @@ public class BgpRoute extends AbstractRoute {
         _med,
         _nextHopIp,
         _originatorIp,
-        _originType,
+        _originType.ordinal(),
         _protocol.ordinal(),
         _receivedFromIp,
         _receivedFromRouteReflectorClient,
