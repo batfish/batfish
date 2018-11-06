@@ -87,7 +87,7 @@ public class DifferentialIpAccessListTest {
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
                     .add(rejecting(permittedByAcl(DENY_ACL_NAME)))
-                    .addAll(permitAclLines)
+                    .add(accepting(permittedByAcl(permitAcl.getName())))
                     .build())
             .build();
 
@@ -96,7 +96,7 @@ public class DifferentialIpAccessListTest {
     /*
      * Test named ACLs
      */
-    assertThat(differential.getNamedAcls().entrySet(), hasSize(3));
+    assertThat(differential.getNamedAcls().entrySet(), hasSize(4));
     // the deny ACL itself is present and renamed
     assertThat(
         differential.getNamedAcls(),
@@ -110,6 +110,8 @@ public class DifferentialIpAccessListTest {
             renamedDenyAclReferenceName,
             createAcl(
                 renamedDenyAclReferenceName, renamedDenyAclReferenceName, renamedDenyIpSpace)));
+    // permitAcl is present and not renamed
+    assertThat(differential.getNamedAcls(), hasEntry(permitAcl.getName(), permitAcl));
     // permitNamedAcls are present and not renamed
     assertThat(
         differential.getNamedAcls(), hasEntry(permitAclReferenceName, permitAclReferenceAcl));
