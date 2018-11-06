@@ -11,8 +11,10 @@ public abstract class QuestionPlugin extends Plugin implements IQuestionPlugin {
 
   protected abstract Answerer createAnswerer(Question question, IBatfish batfish);
 
+  @Deprecated
   protected abstract Question createQuestion();
 
+  @SuppressWarnings("deprecation")
   @Override
   protected final void pluginInitialize() {
     Question question = createQuestion();

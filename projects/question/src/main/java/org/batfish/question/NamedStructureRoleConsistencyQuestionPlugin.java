@@ -66,7 +66,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
           (NamedStructureRoleConsistencyQuestion) _question;
       _answerElement = new NamedStructureRoleConsistencyAnswerElement();
 
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      OutliersQuestion innerQ = new OutliersQuestion();
       innerQ.setHypothesis(question.getHypothesis());
       SortedSet<String> structTypes = new TreeSet<>();
       structTypes.add(question.getStructType());

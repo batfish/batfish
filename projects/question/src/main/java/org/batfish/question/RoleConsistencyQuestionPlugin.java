@@ -81,7 +81,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
       RoleConsistencyQuestion question = (RoleConsistencyQuestion) _question;
       _answerElement = new RoleConsistencyAnswerElement();
 
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      OutliersQuestion innerQ = new OutliersQuestion();
       innerQ.setHypothesis(OutliersHypothesis.SAME_SERVERS);
       SortedSet<String> serverSets = new TreeSet<>();
       serverSets.add(question.getPropertyName());

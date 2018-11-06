@@ -139,7 +139,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       PerRoleOutliersQuestion question = (PerRoleOutliersQuestion) _question;
       _answerElement = new PerRoleOutliersAnswerElement();
 
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      OutliersQuestion innerQ = new OutliersQuestion();
       innerQ.setNamedStructTypes(question.getNamedStructTypes());
       innerQ.setHypothesis(question.getHypothesis());
 

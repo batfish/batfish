@@ -336,7 +336,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
     // obtain all outlier sets for the given hypothesis
     private SortedMap<String, AnswerElement> perRoleOutlierInfo(OutliersHypothesis hypothesis) {
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      OutliersQuestion innerQ = new OutliersQuestion();
       innerQ.setHypothesis(hypothesis);
       innerQ.setVerbose(true);
 
