@@ -2349,6 +2349,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @VisibleForTesting
+  @Nonnull
   Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
     Schema schema = columnMetadata.getSchema();
     Comparator valueComparator = nullsFirst(schemaComparator(schema));
@@ -2356,8 +2357,7 @@ public class WorkMgr extends AbstractCoordinator {
         r -> r.get(columnMetadata.getName(), schema), valueComparator);
   }
 
-  @VisibleForTesting
-  Comparator<?> schemaComparator(Schema schema) {
+  private @Nonnull Comparator<?> schemaComparator(Schema schema) {
     if (schema.equals(Schema.ACL_TRACE)) {
       return COMPARATOR_ACL_TRACE;
     } else if (schema.equals(Schema.BOOLEAN)) {
