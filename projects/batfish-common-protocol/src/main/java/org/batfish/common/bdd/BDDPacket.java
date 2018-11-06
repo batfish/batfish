@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,8 +19,10 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -279,11 +282,60 @@ public class BDDPacket {
   }
 
   /**
+   * Get a representative flow in a BDD. First, try to get an ICMP echo request flow; second, try to
+   * get a UDP flow used for traceroute; third, try to get a TCP flow with a named port; finally try
+   * to get an arbitrary one.
+   *
    * @param bdd a BDD representing a set of packet headers
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    return bdd.isZero() ? Optional.empty() : Optional.of(getFlowFromAssignment(bdd.fullSatOne()));
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
+
+    BDD representativeICMPPackets = getRepresentativeICMPPackets(bdd);
+    if (!representativeICMPPackets.isZero()) {
+      return Optional.of(getFlowFromAssignment(representativeICMPPackets.fullSatOne()));
+    }
+
+    BDD representativeUDPPackets = getRepresentativeUDPPackets(bdd);
+    if (!representativeUDPPackets.isZero()) {
+      return Optional.of(getFlowFromAssignment(representativeUDPPackets.fullSatOne()));
+    }
+
+    BDD representativeTCPPackets = getRepresentativeTCPPackets(bdd);
+    if (!representativeTCPPackets.isZero()) {
+      return Optional.of(getFlowFromAssignment(representativeTCPPackets.fullSatOne()));
+    }
+
+    return Optional.of(getFlowFromAssignment(bdd.fullSatOne()));
+  }
+
+  // Get ICMP echo request packets
+  @VisibleForTesting
+  BDD getRepresentativeICMPPackets(BDD bdd) {
+    return bdd.and(
+        _ipProtocol
+            .value(IpProtocol.ICMP.number())
+            .and(_icmpType.value(IcmpType.ECHO_REQUEST).and(_icmpCode.value(0))));
+  }
+
+  // Get TCP packets with names ports
+  @VisibleForTesting
+  BDD getRepresentativeTCPPackets(BDD bdd) {
+    BDD result = _factory.zero();
+    for (NamedPort namedPort : NamedPort.values()) {
+      result = result.or(_dstPort.value(namedPort.number()));
+    }
+
+    return bdd.and(_ipProtocol.value(IpProtocol.TCP.number())).and(_srcPort.geq(1024)).and(result);
+  }
+
+  // Get UDP packets for traceroute
+  @VisibleForTesting
+  BDD getRepresentativeUDPPackets(BDD bdd) {
+    return bdd.and(_ipProtocol.value(IpProtocol.UDP.number())).and(_dstPort.geq(33434));
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
