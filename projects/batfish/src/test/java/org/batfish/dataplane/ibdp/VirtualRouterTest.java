@@ -742,6 +742,4 @@ public class VirtualRouterTest {
                     new IsisNode(c1.getHostname(), i1.getName()),
                     new IsisNode(c2.getHostname(), i2.getName())))));
   }
-
-
 }
