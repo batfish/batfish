@@ -122,6 +122,7 @@ public class DifferentialReachabilityTest {
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.unconstrained(),
             false,
+            false,
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
@@ -154,6 +155,7 @@ public class DifferentialReachabilityTest {
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            false,
             false,
             PathConstraintsInput.unconstrained());
 
@@ -188,6 +190,7 @@ public class DifferentialReachabilityTest {
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
+            false,
             false,
             PathConstraintsInput.unconstrained());
 

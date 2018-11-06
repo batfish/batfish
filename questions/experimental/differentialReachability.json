@@ -4,6 +4,7 @@
     "actions": "${actions}",
     "headers": "${headers}",
     "ignoreFilters": "${ignoreFilters}",
+    "invertSearch": "${invertSearch}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
         "description": "Detect differential reachability.",
@@ -34,6 +35,12 @@
                 "type": "boolean",
                 "value": false,
                 "displayName": "Ignore Filters"
+            },
+            "invertSearch": {
+                "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",
+                "optional": true,
+                "type": "boolean",
+                "displayName": "Invert Search"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
