@@ -133,7 +133,13 @@ public class RibDeltaTest {
   /** Test that deltas are chained correctly using the {@link RibDelta.Builder#from} function */
   @Test
   public void testChainDeltas() {
-    BgpRib rib = new BgpRib(null, null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
+    BgpRib rib =
+        new BgpRib(
+            null,
+            null,
+            BgpTieBreaker.CLUSTER_LIST_LENGTH,
+            null,
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
     routeBuilder
         .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
