@@ -669,7 +669,7 @@ public class TracerouteTest {
    * If mask > 24: DELIVERD_TO_SUBNET (to R1)
    */
   @Test
-  public void testDispositionMultiInterfaces1() throws IOException {
+  public void testDispositionMultiInterfaces() throws IOException {
     TableAnswerElement answer = testDispositionMultiInterfaces("25");
     assertThat(answer.getRows().getData(), hasSize(2));
 
