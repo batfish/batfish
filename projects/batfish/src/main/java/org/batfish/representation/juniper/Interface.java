@@ -34,8 +34,6 @@ public class Interface implements Serializable {
     }
   }
 
-  private String _8023adInterface;
-
   private String _accessVlan;
 
   private boolean _active;
@@ -43,6 +41,9 @@ public class Interface implements Serializable {
   private Set<Ip> _additionalArpIps;
 
   private final Set<InterfaceAddress> _allAddresses;
+
+  // Dumb name to appease checkstyle
+  private String _agg8023adInterface;
 
   private final Set<Ip> _allAddressIps;
 
@@ -118,7 +119,7 @@ public class Interface implements Serializable {
   }
 
   public String get8023adInterface() {
-    return _8023adInterface;
+    return _agg8023adInterface;
   }
 
   public String getAccessVlan() {
@@ -259,7 +260,7 @@ public class Interface implements Serializable {
   }
 
   public void set8023adInterface(String interfaceName) {
-    _8023adInterface = interfaceName;
+    _agg8023adInterface = interfaceName;
   }
 
   public void setAccessVlan(String vlan) {
