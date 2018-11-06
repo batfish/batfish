@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -76,7 +77,7 @@ public final class DifferentialIpAccessList {
                 ImmutableList.<IpAccessListLine>builder()
                     // reject if permitted by denyAcl
                     .add(rejecting(new PermittedByAcl(DENY_ACL_NAME)))
-                    .addAll(permitAcl.getLines())
+                    .add(accepting(new PermittedByAcl(permitAcl.getName())))
                     .build())
             .build();
     /*
@@ -96,7 +97,8 @@ public final class DifferentialIpAccessList {
                     .collect(Collectors.toList()))
             // include denyAcl (with a special name to avoid collisions).
             .put(DENY_ACL_NAME, aclRenamer.apply(denyAcl))
-            // include all the permitNamedAcls (no need to rename).
+            // include the permitAcl and all the permitNamedAcls (no need to rename).
+            .put(permitAcl.getName(), permitAcl)
             .putAll(permitNamedAcls)
             .build();
     /*

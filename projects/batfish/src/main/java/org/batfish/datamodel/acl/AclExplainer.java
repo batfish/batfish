@@ -1,15 +1,18 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.IntStream;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -82,17 +85,18 @@ public final class AclExplainer {
             permitNamedAcls,
             permitNamedIpSpaces);
 
+    // add the newly created differential acl to the list of named acls, because below we are going
+    // to create a new top-level acl to take into account the given invariant
+    Map<String, IpAccessList> namedAcls = new TreeMap<>(differentialIpAccessList.getNamedAcls());
+    IpAccessList diffAcl = differentialIpAccessList.getAcl();
+    namedAcls.put(diffAcl.getName(), diffAcl);
+    namedAcls = ImmutableMap.copyOf(namedAcls);
+
     IpAccessListToBDD ipAccessListToBDD =
         MemoizedIpAccessListToBDD.create(
-            bddPacket,
-            mgr,
-            differentialIpAccessList.getNamedAcls(),
-            differentialIpAccessList.getNamedIpSpaces());
+            bddPacket, mgr, namedAcls, differentialIpAccessList.getNamedIpSpaces());
 
-    return explainWithProvenance(
-        ipAccessListToBDD,
-        scopedAcl(invariantExpr, differentialIpAccessList.getAcl()),
-        differentialIpAccessList.getNamedAcls());
+    return explainWithProvenance(ipAccessListToBDD, scopedAcl(invariantExpr, diffAcl), namedAcls);
   }
 
   /**
@@ -126,9 +130,14 @@ public final class AclExplainer {
     IpAccessListToBDD ipAccessListToBDD =
         MemoizedIpAccessListToBDD.create(bddPacket, mgr, namedAcls, namedIpSpaces);
 
+    // add the top-level acl to the list of named acls, because we are going to create
+    // a new top-level acl to take into account the given invariant
+    Map<String, IpAccessList> finalNamedAcls = new TreeMap<>(namedAcls);
+    finalNamedAcls.put(acl.getName(), acl);
     IpAccessList aclWithInvariant = scopedAcl(invariantExpr, acl);
 
-    return explainWithProvenance(ipAccessListToBDD, aclWithInvariant, namedAcls);
+    return explainWithProvenance(
+        ipAccessListToBDD, aclWithInvariant, ImmutableMap.copyOf(finalNamedAcls));
   }
 
   private static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
@@ -187,11 +196,11 @@ public final class AclExplainer {
    */
   private static IpAccessList scopedAcl(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return IpAccessList.builder()
-        .setName(acl.getName())
+        .setName("_user_provided_invariant_")
         .setLines(
             ImmutableList.<IpAccessListLine>builder()
                 .add(rejecting(not(invariantExpr)))
-                .addAll(acl.getLines())
+                .add(accepting(new PermittedByAcl(acl.getName())))
                 .build())
         .build();
   }
