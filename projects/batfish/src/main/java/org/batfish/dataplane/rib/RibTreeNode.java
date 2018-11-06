@@ -153,6 +153,15 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     }
   }
 
+  /** Retrieve an immutable copy of the routes currently available for the given prefix. */
+  Set<R> getRoutes(Prefix p) {
+    RibTreeNode<R> node = findRouteNode(p.getStartIp().asLong(), p.getPrefixLength(), 0);
+    if (node == null) {
+      return ImmutableSet.of();
+    }
+    return ImmutableSet.copyOf(node._routes);
+  }
+
   private void assignChild(RibTreeNode<R> parent, RibTreeNode<R> child, boolean branchRight) {
     if (branchRight) {
       parent._right = child;
