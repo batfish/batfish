@@ -21,12 +21,14 @@
     "variables" : {
       "filters" : {
         "description" : "Only consider filters that match this regular expression",
+        "displayName" : "Filters",
         "optional" : false,
         "type" : "javaRegex",
         "value" : ".*"
       },
       "headers" : {
         "description" : "Packet header constraints",
+        "displayName" : "Headers",
         "optional" : true,
         "type" : "headerConstraint",
         "value" : {
@@ -35,12 +37,14 @@
       },
       "nodes" : {
         "description" : "Only examine filters on nodes matching this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "startLocation" : {
         "description" : "Location to start tracing from",
+        "displayName" : "Start Location",
         "minLength" : 1,
         "optional" : true,
         "type" : "string",

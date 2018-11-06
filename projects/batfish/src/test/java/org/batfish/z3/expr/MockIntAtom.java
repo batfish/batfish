@@ -37,8 +37,7 @@ public class MockIntAtom extends IntExpr {
     } else if (visitor instanceof IsComplexVisitor) {
       return;
     }
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -55,8 +54,7 @@ public class MockIntAtom extends IntExpr {
 
   @Override
   public void accept(IntExprVisitor visitor) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

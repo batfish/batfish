@@ -13,7 +13,8 @@
             "nodes": {
                 "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             }
         }
     }

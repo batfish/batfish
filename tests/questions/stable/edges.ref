@@ -25,6 +25,7 @@
           "rip"
         ],
         "description" : "Types of edges to include",
+        "displayName" : "Edge Type",
         "optional" : true,
         "type" : "string",
         "value" : "bgp",
@@ -57,12 +58,14 @@
       },
       "nodes" : {
         "description" : "Include edges whose first node matches this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "remoteNodes" : {
         "description" : "Include edges whose second node matches this name or regex",
+        "displayName" : "Remote Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"

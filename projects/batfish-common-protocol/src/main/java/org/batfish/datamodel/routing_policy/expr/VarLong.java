@@ -42,7 +42,6 @@ public class VarLong extends LongExpr {
   @Override
   public long evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public String getVar() {

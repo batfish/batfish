@@ -152,6 +152,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
@@ -603,6 +604,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_modeContext;
@@ -5091,6 +5093,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
+        } else if (feature.LOG() != null) {
+          // Do nothing.
         } else if (feature.NETWORK_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
@@ -5295,6 +5299,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (feature.HOST_UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.HOST_UNREACHABLE;
+      } else if (feature.LOG() != null) {
+        // Do nothing.
       } else if (feature.NETWORK_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
@@ -5639,15 +5645,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_ospf_passive_interface(If_ip_ospf_passive_interfaceContext ctx) {
-    boolean active = ctx.NO() != null;
-    if (active) {
-      for (Interface iface : _currentInterfaces) {
-        iface.setOspfActive(true);
-      }
-    } else {
-      for (Interface iface : _currentInterfaces) {
-        iface.setOspfPassive(true);
-      }
+    boolean passive = ctx.NO() == null;
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfPassive(passive);
     }
   }
 
@@ -5993,6 +5993,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IGMP_ACCESS_GROUP_ACL, line);
+  }
+
+  @Override
+  public void exitIfigmphp_access_list(Ifigmphp_access_listContext ctx) {
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST,
+        ctx.name.getText(),
+        INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
+        ctx.getStart().getLine());
   }
 
   @Override
@@ -7900,12 +7909,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
     boolean passive = ctx.NO() == null;
-    String iname = ctx.i.getText();
+    String iname = toInterfaceName(ctx.i);
     OspfProcess proc = _currentOspfProcess;
     if (passive) {
-      proc.getPassiveInterfaceList().add(iname);
+      proc.getPassiveInterfaces().add(iname);
     } else {
-      proc.getActiveInterfaceList().add(iname);
+      proc.getPassiveInterfaces().remove(iname);
     }
   }
 
@@ -8099,7 +8108,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoi_passive(Roi_passiveContext ctx) {
     if (ctx.ENABLE() != null) {
-      _currentOspfProcess.getPassiveInterfaceList().add(_currentOspfInterface);
+      _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
     }
   }
 

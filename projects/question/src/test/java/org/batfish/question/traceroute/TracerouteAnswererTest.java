@@ -152,7 +152,7 @@ public class TracerouteAnswererTest {
         ImmutableMap.of(
             flow, ImmutableList.of(new Trace(FlowDisposition.DENIED_IN, ImmutableList.of())));
 
-    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces);
+    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, Integer.MAX_VALUE);
     assertThat(
         rows.iterator().next(),
         allOf(
@@ -161,17 +161,17 @@ public class TracerouteAnswererTest {
                 allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
                 Schema.FLOW),
             hasColumn(
-                "Base_Traces",
+                TracerouteAnswerer.COL_BASE_TRACES,
                 containsInAnyOrder(
                     ImmutableList.of(TraceMatchers.hasDisposition(FlowDisposition.DENIED_OUT))),
                 Schema.set(Schema.TRACE)),
-            hasColumn("Base_TraceCount", equalTo(1), Schema.INTEGER),
+            hasColumn(TracerouteAnswerer.COL_BASE_TRACE_COUNT, equalTo(1), Schema.INTEGER),
             hasColumn(
-                "Delta_Traces",
+                TracerouteAnswerer.COL_DELTA_TRACES,
                 containsInAnyOrder(
                     ImmutableList.of(TraceMatchers.hasDisposition(FlowDisposition.DENIED_IN))),
                 Schema.set(Schema.TRACE)),
-            hasColumn("Delta_TraceCount", equalTo(1), Schema.INTEGER)));
+            hasColumn(TracerouteAnswerer.COL_DELTA_TRACE_COUNT, equalTo(1), Schema.INTEGER)));
   }
 
   @Test
@@ -197,7 +197,12 @@ public class TracerouteAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(COL_FLOW, "Base_Traces", "Base_TraceCount", "Delta_Traces", "Delta_TraceCount"));
+        contains(
+            COL_FLOW,
+            TracerouteAnswerer.COL_BASE_TRACES,
+            TracerouteAnswerer.COL_BASE_TRACE_COUNT,
+            TracerouteAnswerer.COL_DELTA_TRACES,
+            TracerouteAnswerer.COL_DELTA_TRACE_COUNT));
 
     assertThat(
         diffColumnMetadata

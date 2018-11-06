@@ -5,6 +5,7 @@
     "dstIps" : "ddd",
     "srcIps" : "sss"
   },
+  "ignoreFilters" : false,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -23,12 +24,14 @@
     "variables" : {
       "actions" : {
         "description" : "Only return flows for which the disposition is from this set",
+        "displayName" : "Actions",
         "optional" : true,
         "type" : "dispositionSpec",
         "value" : "success"
       },
       "headers" : {
         "description" : "Packet header constraints",
+        "displayName" : "Headers",
         "optional" : true,
         "type" : "headerConstraint",
         "value" : {
@@ -36,8 +39,16 @@
           "dstIps" : "ddd"
         }
       },
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
+        "displayName" : "Ignore Filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "displayName" : "Path Constraints",
         "optional" : true,
         "type" : "pathConstraint",
         "value" : {

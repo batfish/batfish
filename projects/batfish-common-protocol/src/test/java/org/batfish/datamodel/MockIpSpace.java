@@ -17,8 +17,7 @@ public class MockIpSpace extends IpSpace {
 
   @Override
   public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -28,14 +27,12 @@ public class MockIpSpace extends IpSpace {
 
   @Override
   public IpSpace complement() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

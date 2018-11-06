@@ -154,8 +154,6 @@ public class Interface implements Serializable {
 
   private int _nativeVlan;
 
-  private boolean _ospfActive;
-
   private Long _ospfArea;
 
   private Integer _ospfCost;
@@ -164,7 +162,7 @@ public class Interface implements Serializable {
 
   private int _ospfHelloMultiplier;
 
-  private boolean _ospfPassive;
+  @Nullable private Boolean _ospfPassive;
 
   private boolean _ospfPointToPoint;
 
@@ -363,10 +361,6 @@ public class Interface implements Serializable {
     return _nativeVlan;
   }
 
-  public boolean getOspfActive() {
-    return _ospfActive;
-  }
-
   public Long getOspfArea() {
     return _ospfArea;
   }
@@ -383,7 +377,8 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
-  public boolean getOspfPassive() {
+  @Nullable
+  public Boolean getOspfPassive() {
     return _ospfPassive;
   }
 
@@ -528,10 +523,6 @@ public class Interface implements Serializable {
     _nativeVlan = vlan;
   }
 
-  public void setOspfActive(boolean ospfActive) {
-    _ospfActive = ospfActive;
-  }
-
   public void setOspfArea(Long ospfArea) {
     _ospfArea = ospfArea;
   }
@@ -548,7 +539,7 @@ public class Interface implements Serializable {
     _ospfHelloMultiplier = multiplier;
   }
 
-  public void setOspfPassive(boolean ospfPassive) {
+  public void setOspfPassive(@Nullable Boolean ospfPassive) {
     _ospfPassive = ospfPassive;
   }
 

@@ -14,7 +14,8 @@
             "nodes": {
                 "description": "Examine AAA Authentication on nodes matching this name or regex",
                 "type": "nodeSpec",
-                "value": ".*"
+                "value": ".*",
+                "displayName": "Nodes"
             }
         }
     },

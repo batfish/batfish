@@ -12,6 +12,8 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirst
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -231,7 +233,7 @@ public class FlatJuniperGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
-  private static String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -581,6 +583,21 @@ public class FlatJuniperGrammarTest {
 
     assertThat(neighbor1, hasClusterId(new Ip("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(new Ip("1.1.1.1").asLong()));
+  }
+
+  @Test
+  public void testBgpMultipath() throws IOException {
+    assertThat(
+        parseConfig("bgp-multipath").getDefaultVrf(),
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
+
+    assertThat(
+        parseConfig("bgp-multipath-internal").getDefaultVrf(),
+        hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(true))));
+
+    assertThat(
+        parseConfig("bgp-multipath-external").getDefaultVrf(),
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
   }
 
   @Test

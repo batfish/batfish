@@ -16,22 +16,26 @@
             "excludeShutInterfaces": {
                 "description": "Exclude interfaces that are shutdown",
                 "type": "boolean",
-                "optional": true
+                "optional": true,
+                "displayName": "Exclude Shut Interfaces"
             },
             "interfaces": {
                 "description": "Include interfaces matching this regex",
                 "type": "javaRegex",
-                "optional": true
+                "optional": true,
+                "displayName": "Interfaces"
             },
             "nodes": {
                 "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             },
             "properties": {
                 "description": "Include properties matching this regex",
                 "type": "interfacePropertySpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Properties"
             }
         }
     }

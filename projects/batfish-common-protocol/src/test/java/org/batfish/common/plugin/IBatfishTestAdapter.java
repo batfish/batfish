@@ -64,13 +64,13 @@ import org.batfish.specifier.SpecifierContextImpl;
 public class IBatfishTestAdapter implements IBatfish {
 
   @Override
-  public DifferentialReachabilityResult bddReducedReachability(
+  public DifferentialReachabilityResult bddDifferentialReachability(
       DifferentialReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 
@@ -157,14 +157,12 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Layer1Topology getLayer1Topology() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public Layer2Topology getLayer2Topology() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -302,7 +300,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 

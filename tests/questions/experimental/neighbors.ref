@@ -29,6 +29,7 @@
           "rip"
         ],
         "description" : "Types of neighbor relationships to include",
+        "displayName" : "Neighbor Types",
         "minElements" : 0,
         "optional" : true,
         "type" : "string",
@@ -64,18 +65,21 @@
       },
       "nodes" : {
         "description" : "Include neighbors whose first node matches this name or regex",
+        "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "remoteNodes" : {
         "description" : "Include neighbors whose second node matches this name or regex",
+        "displayName" : "Remote Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "roleDimension" : {
         "description" : "Role dimension to run the question on",
+        "displayName" : "Role Dimension",
         "optional" : true,
         "type" : "string",
         "value" : "default"
@@ -87,6 +91,7 @@
           "verbose"
         ],
         "description" : "String indicating the style of information requested about each neighbor",
+        "displayName" : "Style",
         "optional" : false,
         "type" : "string",
         "value" : "summary",

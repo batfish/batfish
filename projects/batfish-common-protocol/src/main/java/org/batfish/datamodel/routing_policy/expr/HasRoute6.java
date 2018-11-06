@@ -43,7 +43,6 @@ public class HasRoute6 extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public Prefix6SetExpr getExpr() {

@@ -104,6 +104,7 @@ final class ReachabilityParametersResolver {
         .setFinalNodes(finalNodes)
         .setForbiddenTransitNodes(forbiddenTransitNodes)
         .setHeaderSpace(resolver.resolveHeaderSpace())
+        .setIgnoreFilters(params.getIgnoreFilters())
         .setMaxChunkSize(params.getMaxChunkSize())
         .setSourceIpSpaceAssignment(resolver.resolveSourceIpSpaceAssignment())
         .setSrcNatted(params.getSrcNatted())

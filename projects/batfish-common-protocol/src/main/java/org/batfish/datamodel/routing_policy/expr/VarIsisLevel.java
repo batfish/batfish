@@ -43,7 +43,6 @@ public class VarIsisLevel extends IsisLevelExpr {
   @Override
   public IsisLevel evaluate(Environment env) {
     throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   public String getVar() {
