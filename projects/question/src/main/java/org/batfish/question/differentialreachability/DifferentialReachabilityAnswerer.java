@@ -103,6 +103,7 @@ public class DifferentialReachabilityAnswerer extends Answerer {
         finalNodes,
         headerSpace,
         question.getIgnoreFilters(),
+        question.getInvertSearch(),
         ipSpaceAssignment,
         question.getMaxTraces(),
         requiredTransitNodes);

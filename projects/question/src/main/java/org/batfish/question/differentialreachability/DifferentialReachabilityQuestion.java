@@ -18,12 +18,14 @@ public final class DifferentialReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADERS = "headers";
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
+  private static final String PROP_INVERT_SEARCH = "invertSearch";
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   private final boolean _ignoreFilters;
+  private final boolean _invertSearch;
   private final int _maxTraces;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
@@ -32,18 +34,20 @@ public final class DifferentialReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
+      @Nullable @JsonProperty(PROP_INVERT_SEARCH) Boolean invertSearch,
       @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
     setDifferential(true);
     _actions = firstNonNull(actions, SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _ignoreFilters = firstNonNull(ignoreFilters, false);
+    _invertSearch = firstNonNull(invertSearch, false);
     _maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   public DifferentialReachabilityQuestion() {
-    this(null, null, null, null, null);
+    this(null, null, null, null, null, null);
   }
 
   @Nonnull
@@ -60,6 +64,11 @@ public final class DifferentialReachabilityQuestion extends Question {
   @JsonProperty(PROP_IGNORE_FILTERS)
   boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  @JsonProperty(PROP_INVERT_SEARCH)
+  public boolean getInvertSearch() {
+    return _invertSearch;
   }
 
   @JsonProperty(PROP_MAX_TRACES)

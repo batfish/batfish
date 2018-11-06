@@ -124,6 +124,7 @@ public class DifferentialReachabilityTest {
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.unconstrained(),
             false,
+            false,
             TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
@@ -161,6 +162,7 @@ public class DifferentialReachabilityTest {
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
+            false,
             false,
             TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
@@ -200,6 +202,7 @@ public class DifferentialReachabilityTest {
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
             PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
+            false,
             false,
             TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());

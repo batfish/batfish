@@ -156,6 +156,7 @@ public class ReducedReachabilityTest {
         batfish.loadConfigurations().keySet(),
         TRUE,
         false,
+        false,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
         TracePruner.DEFAULT_MAX_TRACES,

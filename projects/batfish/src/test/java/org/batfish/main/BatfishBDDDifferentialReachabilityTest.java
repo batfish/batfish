@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
@@ -58,8 +59,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Test of {@link IBatfish#bddReducedReachability} */
-public class BatfishBDDReducedReachabilityTest {
+/** Test of {@link org.batfish.common.plugin.IBatfish#bddDifferentialReachability} */
+public class BatfishBDDDifferentialReachabilityTest {
   private static final Ip DST_IP = new Ip("3.3.3.3");
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -139,20 +140,22 @@ public class BatfishBDDReducedReachabilityTest {
 
   private static DifferentialReachabilityParameters parameters(
       Batfish batfish, Set<FlowDisposition> dispositions, AclLineMatchExpr headerSpace) {
-    return parameters(batfish, dispositions, headerSpace, false);
+    return parameters(batfish, dispositions, headerSpace, false, false);
   }
 
   private static DifferentialReachabilityParameters parameters(
       Batfish batfish,
       Set<FlowDisposition> dispositions,
       AclLineMatchExpr headerSpace,
-      boolean ignoreFilters) {
+      boolean ignoreFilters,
+      boolean invertSearch) {
     return new DifferentialReachabilityParameters(
         dispositions,
         ImmutableSet.of(),
         batfish.loadConfigurations().keySet(),
         headerSpace,
         ignoreFilters,
+        invertSearch,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
         TracePruner.DEFAULT_MAX_TRACES,
@@ -628,15 +631,40 @@ public class BatfishBDDReducedReachabilityTest {
     Batfish batfish = initBatfish(new IgnoreFiltersNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         batfish.bddDifferentialReachability(
-            parameters(batfish, ImmutableSet.of(ACCEPTED), AclLineMatchExprs.TRUE, true));
+            parameters(batfish, ImmutableSet.of(ACCEPTED), AclLineMatchExprs.TRUE, true, false));
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
     assertThat(differentialReachabilityResult.getDecreasedReachabilityFlows(), empty());
 
     differentialReachabilityResult =
         batfish.bddDifferentialReachability(
-            parameters(batfish, ImmutableSet.of(ACCEPTED), AclLineMatchExprs.TRUE, false));
+            parameters(batfish, ImmutableSet.of(ACCEPTED), AclLineMatchExprs.TRUE, false, false));
 
     assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
     assertThat(differentialReachabilityResult.getDecreasedReachabilityFlows(), not(empty()));
+  }
+
+  @Test
+  public void testInvertSearch() throws IOException {
+    /* Without a headerspace constraint, we get two flows, one with srcIp = NODE1_PHYSICAL_IP, one
+     * with srcIp = NODE1_PHYSICAL_LINK_IP. With the inverted headerspace constraint, we exclude
+     * NODE1_PHYSICAL_IP.
+     */
+    Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
+    DifferentialReachabilityResult differentialReachabilityResult =
+        batfish.bddDifferentialReachability(
+            parameters(
+                batfish,
+                ImmutableSet.of(FlowDisposition.EXITS_NETWORK),
+                matchSrc(NODE1_PHYSICAL_IP),
+                false,
+                true));
+    assertThat(differentialReachabilityResult.getIncreasedReachabilityFlows(), empty());
+    Set<Flow> flows = differentialReachabilityResult.getDecreasedReachabilityFlows();
+    assertThat(flows, hasSize(1));
+    assertThat(
+        flows,
+        containsInAnyOrder(
+            ImmutableList.of(allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+    checkDispositions(batfish, flows, EXITS_NETWORK);
   }
 }
