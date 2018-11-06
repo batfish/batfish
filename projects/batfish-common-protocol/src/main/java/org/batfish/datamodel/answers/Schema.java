@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
@@ -94,6 +95,8 @@ public class Schema {
 
   private String _schemaStr;
 
+  private Schema _innerSchema;
+
   @JsonCreator
   Schema(String schema) {
     _schemaStr = schema;
@@ -104,12 +107,14 @@ public class Schema {
     Matcher listMatcher = LIST_PATTERN.matcher(schema);
     if (listMatcher.find()) {
       baseTypeName = listMatcher.group(1);
+      _innerSchema = new Schema(baseTypeName);
       _type = Type.LIST;
     }
 
     Matcher setMatcher = SET_PATTERN.matcher(schema);
     if (setMatcher.find()) {
       baseTypeName = setMatcher.group(1);
+      _innerSchema = new Schema(baseTypeName);
       _type = Type.SET;
     }
 
@@ -143,6 +148,10 @@ public class Schema {
 
   public Class<?> getBaseType() {
     return _baseType;
+  }
+
+  public @Nullable Schema getInnerSchema() {
+    return _innerSchema;
   }
 
   public Type getType() {

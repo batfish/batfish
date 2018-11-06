@@ -2,6 +2,10 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Comparators.lexicographical;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
@@ -2343,50 +2347,53 @@ public class WorkMgr extends AbstractCoordinator {
     return comparator;
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @VisibleForTesting
   Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
     Schema schema = columnMetadata.getSchema();
-    String column = columnMetadata.getName();
+    Comparator valueComparator = nullsFirst(schemaComparator(schema));
+    return Comparator.<Row, Object>comparing(
+        r -> r.get(columnMetadata.getName(), schema), valueComparator);
+  }
+
+  @VisibleForTesting
+  Comparator<?> schemaComparator(Schema schema) {
     if (schema.equals(Schema.ACL_TRACE)) {
-      return Comparator.comparing(r -> r.getAclTrace(column), COMPARATOR_ACL_TRACE);
+      return COMPARATOR_ACL_TRACE;
     } else if (schema.equals(Schema.BOOLEAN)) {
-      return Comparator.comparing(r -> r.getBoolean(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.DOUBLE)) {
-      return Comparator.comparing(r -> r.getDouble(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.FILE_LINE)) {
-      return Comparator.comparing(r -> r.getFileLine(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.FLOW)) {
-      return Comparator.comparing(r -> r.getFlow(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.FLOW_TRACE)) {
-      return Comparator.comparing(r -> r.getFlowTrace(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.INTEGER)) {
-      return Comparator.comparing(r -> r.getInteger(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.INTERFACE)) {
-      return Comparator.comparing(r -> r.getInterface(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.IP)) {
-      return Comparator.comparing(r -> r.getIp(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.ISSUE)) {
-      return Comparator.comparing(r -> r.getIssue(column).getSeverity());
+      return comparing(Issue::getSeverity);
     } else if (schema.getType() == Type.LIST) {
-      return Comparator.comparing(
-          r -> (List<?>) r.get(column, schema),
-          Comparators.lexicographical(Comparator.comparing(Object::toString)));
+      return lexicographical(nullsFirst(schemaComparator(schema.getInnerSchema())));
     } else if (schema.equals(Schema.LONG)) {
-      return Comparator.comparing(r -> r.getLong(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.NODE)) {
-      return Comparator.comparing(r -> r.getNode(column), COMPARATOR_NODE);
+      return COMPARATOR_NODE;
     } else if (schema.equals(Schema.PREFIX)) {
-      return Comparator.comparing(r -> r.getPrefix(column));
+      return naturalOrder();
     } else if (schema.getType() == Type.SET) {
-      return Comparator.comparing(
-          r -> (Set<?>) r.get(column, schema),
-          Comparators.lexicographical(Comparator.comparing(Object::toString)));
+      return lexicographical(nullsFirst(schemaComparator(schema.getInnerSchema())));
     } else if (schema.equals(Schema.STRING)) {
-      return Comparator.comparing(r -> r.getString(column));
+      return naturalOrder();
     } else if (schema.equals(Schema.TRACE)) {
-      return Comparator.comparing(r -> r.getTrace(column), COMPARATOR_TRACE);
+      return COMPARATOR_TRACE;
     } else {
-      return Comparator.comparing(r -> r.get(column, Schema.OBJECT).toString());
+      return comparing(Object::toString);
     }
   }
 
