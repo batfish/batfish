@@ -40,7 +40,6 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -49,9 +48,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
-import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -75,8 +72,6 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.dataplane.rib.BgpBestPathRib;
-import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
@@ -310,16 +305,13 @@ public class VirtualRouterTest {
 
     // BGP ribs
     // Ibgp
-    assertThat(vr._ibgpBestPathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
-    assertThat(vr._ibgpMultipathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._ibgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
     assertThat(vr._ibgpStagingRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
     // Ebgp
-    assertThat(vr._ebgpBestPathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
-    assertThat(vr._ebgpMultipathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._ebgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
     assertThat(vr._ebgpStagingRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
     // Combined bgp
-    assertThat(vr._bgpBestPathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
-    assertThat(vr._bgpMultipathRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._bgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
 
     // Main RIB
     assertThat(vr._mainRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
@@ -751,300 +743,5 @@ public class VirtualRouterTest {
                     new IsisNode(c2.getHostname(), i2.getName())))));
   }
 
-  /** Test that the routes are exact route matches are removed from the RIB by default */
-  @Test
-  public void testImportRibExactRemoval() {
-    BgpMultipathRib rib = new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    BgpRoute r1 =
-        new BgpRoute.Builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-            .setProtocol(RoutingProtocol.IBGP)
-            .setOriginType(OriginType.IGP)
-            .setOriginatorIp(new Ip("7.7.7.7"))
-            .setReceivedFromIp(new Ip("7.7.7.7"))
-            .build();
-    BgpRoute r2 =
-        new BgpRoute.Builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-            .setProtocol(RoutingProtocol.BGP)
-            .setOriginType(OriginType.IGP)
-            .setOriginatorIp(new Ip("7.7.7.7"))
-            .setReceivedFromIp(new Ip("7.7.7.7"))
-            .build();
 
-    // Setup
-    rib.mergeRoute(r1);
-    RibDelta<BgpRoute> delta = new Builder<>(rib).add(r2).remove(r1, Reason.WITHDRAW).build();
-    // Test
-    RibDelta.importRibDelta(rib, delta);
-    // r1 remains due to different protocol
-    assertThat(rib.getRoutes(), contains(r2));
-  }
-
-  @Test
-  public void testMultipathAddWithReplacement() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
-    BgpMultipathRib multipathRib =
-        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-    RibDelta<BgpRoute> staging;
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
-    routeBuilder
-        .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-        .setProtocol(RoutingProtocol.IBGP)
-        .setOriginType(OriginType.IGP)
-        .setOriginatorIp(new Ip("7.7.7.7"))
-        .setReceivedFromIp(new Ip("7.7.7.1"))
-        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
-        .build();
-    BgpRoute oldRoute1 = routeBuilder.build();
-    routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
-    BgpRoute oldRoute2 = routeBuilder.build();
-
-    // Setup original RIB state
-    multipathRib.mergeRoute(oldRoute1);
-    multipathRib.mergeRoute(oldRoute2);
-    bestPathRib.mergeRoute(oldRoute1);
-    bestPathRib.mergeRoute(oldRoute2);
-    multipathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Just a sanity check
-    assertThat(bestPathRib.getRoutes(), hasSize(1));
-    assertThat(multipathRib.getRoutes(), hasSize(2));
-
-    // Create better routes
-    BgpRoute newRoute1 =
-        routeBuilder
-            .setReceivedFromIp(new Ip("7.7.7.1"))
-            .setClusterList(ImmutableSortedSet.of(1L))
-            .build();
-    BgpRoute newRoute2 =
-        routeBuilder
-            .setReceivedFromIp(new Ip("7.7.7.2"))
-            .setClusterList(ImmutableSortedSet.of(1L))
-            .build();
-    Builder<BgpRoute> builder = new Builder<>(null);
-
-    staging = builder.add(newRoute1).add(newRoute2).build();
-
-    // TEST: propagate in sync here
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-
-    // One route only, with lower cluster list length and lower receivedFromIp
-    assertThat(bestPathRib.getRoutes(), contains(newRoute1));
-    // Both new routes
-    assertThat(multipathRib.getRoutes(), containsInAnyOrder(newRoute1, newRoute2));
-
-    assert mpDelta != null;
-    // 2 removals, 2 additions
-    assertThat(mpDelta.getActions(), hasSize(4));
-  }
-
-  @Test
-  public void testMultipathAddNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
-    BgpMultipathRib multipathRib =
-        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-    RibDelta<BgpRoute> staging;
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
-    routeBuilder
-        .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-        .setProtocol(RoutingProtocol.IBGP)
-        .setOriginType(OriginType.IGP)
-        .setOriginatorIp(new Ip("7.7.7.7"))
-        .setReceivedFromIp(new Ip("7.7.7.1"))
-        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
-        .build();
-    BgpRoute oldRoute1 = routeBuilder.build();
-
-    // Setup original RIB state
-    multipathRib.mergeRoute(oldRoute1);
-    bestPathRib.mergeRoute(oldRoute1);
-    multipathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Just a sanity check
-    assertThat(bestPathRib.getRoutes(), hasSize(1));
-    assertThat(multipathRib.getRoutes(), hasSize(1));
-
-    // Create additional routes, no better than oldRoute1
-    BgpRoute addedRoute = routeBuilder.setReceivedFromIp(new Ip("7.7.7.2")).build();
-    Builder<BgpRoute> builder = new Builder<>(null);
-
-    staging = builder.add(addedRoute).build();
-
-    // TEST: propagate in sync here
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-
-    // One route only, with lower cluster list length and lower receivedFromIp
-    assertThat(bestPathRib.getRoutes(), contains(oldRoute1));
-    // Both new routes
-    assertThat(multipathRib.getRoutes(), containsInAnyOrder(oldRoute1, addedRoute));
-
-    assert mpDelta != null;
-    // 1 addition
-    assertThat(mpDelta.getActions(), hasSize(1));
-  }
-
-  @Test
-  public void testMultipathRemovalNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
-    BgpMultipathRib multipathRib =
-        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-    RibDelta<BgpRoute> staging;
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
-    routeBuilder
-        .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-        .setProtocol(RoutingProtocol.IBGP)
-        .setOriginType(OriginType.IGP)
-        .setOriginatorIp(new Ip("7.7.7.7"))
-        .setReceivedFromIp(new Ip("7.7.7.1"))
-        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
-        .build();
-    BgpRoute oldRoute1 = routeBuilder.build();
-    routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
-    BgpRoute oldRoute2 = routeBuilder.build();
-
-    // Setup original RIB state
-    multipathRib.mergeRoute(oldRoute1);
-    multipathRib.mergeRoute(oldRoute2);
-    bestPathRib.mergeRoute(oldRoute1);
-    multipathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Just a sanity check
-    assertThat(bestPathRib.getRoutes(), hasSize(1));
-    assertThat(multipathRib.getRoutes(), hasSize(2));
-
-    // Remove the worse route
-    Builder<BgpRoute> builder = new Builder<>(null);
-    staging = builder.remove(oldRoute2, Reason.WITHDRAW).build();
-
-    // TEST: propagate in sync here
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-
-    // One route only, with lower cluster list length and lower receivedFromIp
-    assertThat(bestPathRib.getRoutes(), contains(oldRoute1));
-    // Both new routes
-    assertThat(multipathRib.getRoutes(), contains(oldRoute1));
-
-    assert mpDelta != null;
-    // 1 removal
-    assertThat(mpDelta.getActions(), hasSize(1));
-  }
-
-  @Test
-  public void testMultipathReplacementBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
-    BgpMultipathRib multipathRib =
-        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-    RibDelta<BgpRoute> staging;
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
-    routeBuilder
-        .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-        .setProtocol(RoutingProtocol.IBGP)
-        .setOriginType(OriginType.IGP)
-        .setOriginatorIp(new Ip("7.7.7.7"))
-        .setReceivedFromIp(new Ip("7.7.7.1"))
-        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
-        .build();
-    BgpRoute oldRoute1 = routeBuilder.build();
-    routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
-    BgpRoute oldRoute2 = routeBuilder.build();
-
-    // Setup original RIB state
-    multipathRib.mergeRoute(oldRoute1);
-    multipathRib.mergeRoute(oldRoute2);
-    bestPathRib.mergeRoute(oldRoute1);
-    multipathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Just a sanity check
-    assertThat(bestPathRib.getRoutes(), hasSize(1));
-    assertThat(multipathRib.getRoutes(), hasSize(2));
-
-    // Create better routes
-    BgpRoute newGoodRoute1 =
-        routeBuilder
-            .setNetwork(Prefix.parse("2.2.2.2/32"))
-            .setReceivedFromIp(new Ip("7.7.7.1"))
-            .setClusterList(ImmutableSortedSet.of(1L))
-            .build();
-    BgpRoute newGoodRoute2 =
-        routeBuilder
-            .setNetwork(Prefix.parse("2.2.2.2/32"))
-            .setReceivedFromIp(new Ip("7.7.7.2"))
-            .setClusterList(ImmutableSortedSet.of(1L))
-            .build();
-    Builder<BgpRoute> builder = new Builder<>(null);
-
-    staging =
-        builder.remove(oldRoute1, Reason.REPLACE).add(newGoodRoute1).add(newGoodRoute2).build();
-    /*
-     * TEST: propagate deltas in sync here.
-     * Old routes should all be gone (no best path remains) and two
-     * new routes should exist for the new prefix
-     */
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e =
-        VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
-
-    // One route only, with lower cluster list length and lower receivedFromIp
-    assertThat(bestPathRib.getRoutes(), contains(newGoodRoute1));
-    // Both good routes
-    assertThat(multipathRib.getRoutes(), containsInAnyOrder(newGoodRoute1, newGoodRoute2));
-
-    RibDelta<BgpRoute> mpDelta = e.getValue();
-    assert e.getValue() != null;
-    // 4 operations in multipath: 2 removals, 2 additions
-    assertThat(mpDelta.getActions(), hasSize(4));
-  }
-
-  @Test
-  public void testMutipathBestPathWithdrawalMultipathAvail() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
-    BgpMultipathRib multipathRib =
-        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-
-    RibDelta<BgpRoute> staging;
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
-    routeBuilder
-        .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-        .setProtocol(RoutingProtocol.IBGP)
-        .setOriginType(OriginType.IGP)
-        .setOriginatorIp(new Ip("7.7.7.7"))
-        .setReceivedFromIp(new Ip("7.7.7.1"))
-        .setClusterList(ImmutableSortedSet.of(1L, 2L, 3L))
-        .build();
-    BgpRoute oldRoute1 = routeBuilder.build();
-    routeBuilder.setReceivedFromIp(new Ip("7.7.7.2"));
-    BgpRoute oldRoute2 = routeBuilder.build();
-    routeBuilder.setReceivedFromIp(new Ip("7.7.7.3"));
-    BgpRoute oldRoute3 = routeBuilder.build();
-
-    // Setup original RIB state
-    multipathRib.mergeRoute(oldRoute1);
-    multipathRib.mergeRoute(oldRoute2);
-    multipathRib.mergeRoute(oldRoute3);
-    bestPathRib.mergeRoute(oldRoute1);
-    multipathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Just a sanity check
-    assertThat(bestPathRib.getRoutes(), hasSize(1));
-    assertThat(multipathRib.getRoutes(), hasSize(3));
-
-    Builder<BgpRoute> builder = new Builder<>(null);
-    staging = builder.remove(oldRoute1, Reason.WITHDRAW).build();
-    /*
-     * TEST: propagate deltas in sync here.
-     * Old best path is gone. Now must choose best path from the multipath RIB.
-     * new routes should exist for the new prefix
-     */
-    VirtualRouter.syncBgpDeltaPropagation(bestPathRib, multipathRib, staging);
-
-    // One route only, taken from the multipathRib
-    assertThat(bestPathRib.getRoutes(), contains(oldRoute2));
-    // Both good routes
-    assertThat(multipathRib.getRoutes(), containsInAnyOrder(oldRoute2, oldRoute3));
-  }
 }
