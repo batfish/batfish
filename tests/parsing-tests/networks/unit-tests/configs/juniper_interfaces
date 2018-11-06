@@ -4,6 +4,7 @@ set system host-name juniper_interfaces
 #
 set interfaces ae0 unit 0 family ethernet-switching vlan members 1-1000
 set interfaces ge-0/0/0 forwarding-class-accounting
+set interfaces ge-1/0/0 ether-options 802.3ad ae0
 set interfaces xe-0/0/0:0 gigether-options loopback
 set interfaces xe-0/0/0:0 unit 0 family ethernet-switching vlan members all
 set interfaces irb unit 5 family inet address 1.2.3.1/24 vrrp-group 5 authentication-type md5

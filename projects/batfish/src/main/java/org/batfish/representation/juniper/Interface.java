@@ -34,6 +34,8 @@ public class Interface implements Serializable {
     }
   }
 
+  private String _8023adInterface;
+
   private String _accessVlan;
 
   private boolean _active;
@@ -113,6 +115,10 @@ public class Interface implements Serializable {
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
+  }
+
+  public String get8023adInterface() {
+    return _8023adInterface;
   }
 
   public String getAccessVlan() {
@@ -250,6 +256,10 @@ public class Interface implements Serializable {
     if (_ospfArea == null) {
       _ospfArea = _parent._ospfArea;
     }
+  }
+
+  public void set8023adInterface(String interfaceName) {
+    _8023adInterface = interfaceName;
   }
 
   public void setAccessVlan(String vlan) {
