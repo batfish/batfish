@@ -32,16 +32,19 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADER_CONSTRAINT = "headers";
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
+  private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
 
   private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
       LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
+  private static final int DEFAULT_MAX_TRACES = 32;
   private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
       NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   private final boolean _ignoreFilters;
+  private final int _maxTraces;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
   /**
@@ -59,10 +62,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
+      @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
     _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _ignoreFilters = firstNonNull(ignoreFilters, false);
+    _maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
@@ -71,6 +76,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         DispositionSpecifier.SUCCESS_SPECIFIER,
         PacketHeaderConstraints.unconstrained(),
         false,
+        DEFAULT_MAX_TRACES,
         PathConstraintsInput.unconstrained());
   }
 
@@ -89,6 +95,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
   @JsonProperty(PROP_IGNORE_FILTERS)
   public boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  @JsonProperty(PROP_MAX_TRACES)
+  public int getMaxTraces() {
+    return _maxTraces;
   }
 
   @JsonProperty(PROP_PATH_CONSTRAINT)
@@ -175,6 +186,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   static final class Builder {
     private DispositionSpecifier _actions;
     private PacketHeaderConstraints _headerConstraints;
+    private Integer _maxTraces;
     private PathConstraintsInput _pathConstraints;
     private Boolean _ignoreFilters;
 
@@ -195,6 +207,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
       return this;
     }
 
+    public Builder setMaxTraces(Integer maxTraces) {
+      _maxTraces = maxTraces;
+      return this;
+    }
+
     public Builder setPathConstraints(PathConstraintsInput pathConstraintsInput) {
       _pathConstraints = pathConstraintsInput;
       return this;
@@ -202,7 +219,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
     public SpecifiersReachabilityQuestion build() {
       return new SpecifiersReachabilityQuestion(
-          _actions, _headerConstraints, _ignoreFilters, _pathConstraints);
+          _actions, _headerConstraints, _ignoreFilters, _maxTraces, _pathConstraints);
     }
   }
 }

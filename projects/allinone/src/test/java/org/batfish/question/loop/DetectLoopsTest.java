@@ -31,7 +31,8 @@ public class DetectLoopsTest {
   @Test
   public void testNoLoops() throws IOException {
     initNetwork(false);
-    DetectLoopsAnswerer answerer = new DetectLoopsAnswerer(new DetectLoopsQuestion(), _batfish);
+    DetectLoopsAnswerer answerer =
+        new DetectLoopsAnswerer(new DetectLoopsQuestion(Integer.MAX_VALUE), _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
     assertThat(ae.getRows(), hasSize(0));
   }
@@ -42,7 +43,8 @@ public class DetectLoopsTest {
     Set<Flow> flows = _batfish.bddLoopDetection();
     assertThat(flows, Matchers.hasSize(2));
 
-    DetectLoopsAnswerer answerer = new DetectLoopsAnswerer(new DetectLoopsQuestion(), _batfish);
+    DetectLoopsAnswerer answerer =
+        new DetectLoopsAnswerer(new DetectLoopsQuestion(Integer.MAX_VALUE), _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();
 
     // we find 2 loopy flows, but they are for the same destination, so the answerer

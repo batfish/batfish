@@ -154,6 +154,7 @@ public class BatfishBDDReducedReachabilityTest {
         ignoreFilters,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+        Integer.MAX_VALUE,
         ImmutableSet.of());
   }
 

@@ -104,6 +104,7 @@ public class DifferentialReachabilityAnswerer extends Answerer {
         headerSpace,
         question.getIgnoreFilters(),
         ipSpaceAssignment,
+        question.getMaxTraces(),
         requiredTransitNodes);
   }
 
@@ -138,7 +139,7 @@ public class DifferentialReachabilityAnswerer extends Answerer {
           _batfish.buildFlows(flows, parameters.getIgnoreFilters());
       _batfish.popSnapshot();
 
-      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, Integer.MAX_VALUE);
+      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, parameters.getMaxTraces());
       table = new TableAnswerElement(metadata(true));
     }
     table.postProcessAnswer(_question, rows);

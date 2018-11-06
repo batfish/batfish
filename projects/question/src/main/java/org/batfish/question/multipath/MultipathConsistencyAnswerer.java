@@ -48,7 +48,8 @@ public class MultipathConsistencyAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer() {
-    Set<Flow> flows = _batfish.bddMultipathConsistency(parameters());
+    MultipathConsistencyParameters parameters = parameters();
+    Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
       _batfish.processFlows(flows, false);
       FlowHistory flowHistory = _batfish.getHistory();
@@ -59,7 +60,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
     } else {
       SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
       TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
-      TracerouteAnswerer.flowTracesToRows(flowTraces, Integer.MAX_VALUE)
+      TracerouteAnswerer.flowTracesToRows(flowTraces, parameters.getMaxTraces())
           .forEach(tableAnswer::addRow);
       return tableAnswer;
     }
@@ -126,6 +127,11 @@ public class MultipathConsistencyAnswerer extends Answerer {
                 .build());
 
     return new MultipathConsistencyParameters(
-        headerSpace, ipSpaceAssignment, finalNodes, forbiddenTransitNodes, requiredTransitNodes);
+        headerSpace,
+        ipSpaceAssignment,
+        finalNodes,
+        forbiddenTransitNodes,
+        question.getMaxTraces(),
+        requiredTransitNodes);
   }
 }
