@@ -92,11 +92,10 @@ public class BgpRib extends AbstractRib<BgpRoute> {
             // Aggregates (for non-juniper devices, won't appear on Juniper)
             .thenComparing(r -> getAggregatePreference(r.getProtocol()))
             // AS path: prefer shorter
-            // NOTE: if BGP confederations were supported, confederation segments have a length of
-            // 0.
+            // NOTE: if BGP confederations were supported, confederation segments have a length of 0
             // TODO: support `bestpath as-path ignore` (both cisco, juniper)
             .thenComparing(r -> r.getAsPath().size(), Comparator.reverseOrder())
-            // Prefer lowest origin type Internal < External < Incomplete
+            // Prefer certain origin type Internal over External over Incomplete
             .thenComparing(r -> r.getOriginType().getPreference())
             // Prefer eBGP over iBGP
             .thenComparing(r -> getTypeCost(r.getProtocol()))
@@ -116,7 +115,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
             // Evaluate AS path compatibility for multipath
             .thenComparing(this::compareRouteAsPath)
             .compare(lhs, rhs);
-    if (isMultipath()) {
+    if (multipathCompare != 0 || isMultipath()) {
       return multipathCompare;
     } else {
       return Comparator.comparing(Function.identity(), this::bestPathComparator).compare(lhs, rhs);
