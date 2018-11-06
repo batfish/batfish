@@ -6,18 +6,19 @@
     "instance": {
         "description": "Return configuration properties of nodes",
         "instanceName": "nodeProperties",
-        "tags": [
-        ],
+        "tags": [],
         "variables": {
             "nodes": {
                 "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Nodes"
             },
             "properties": {
                 "description": "Include properties matching this regex",
                 "type": "nodePropertySpec",
-                "optional": true
+                "optional": true,
+                "displayName": "Properties"
             }
         }
     }

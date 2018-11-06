@@ -8604,6 +8604,11 @@ PATH_JITTER
    'path-jitter'
 ;
 
+PATH_MTU_DISCOVERY
+:
+   'path-mtu-discovery'
+;
+
 PATH_OPTION
 :
    'path-option'
@@ -9826,6 +9831,11 @@ REMOVE
    'remove'
 ;
 
+REOPTIMIZE
+:
+   'reoptimize'
+;
+
 REPLACE_AS
 :
    'replace-as'
@@ -9836,9 +9846,9 @@ REPLY_TO
    'reply-to'
 ;
 
-REOPTIMIZE
+REPORT_INTERVAL
 :
-   'reoptimize'
+   'report-interval'
 ;
 
 REQ_RESP

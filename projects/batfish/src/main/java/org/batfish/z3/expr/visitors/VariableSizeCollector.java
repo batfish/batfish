@@ -89,8 +89,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -117,8 +116,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitIdExpr(IdExpr idExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -136,8 +134,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitListExpr(ListExpr listExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override

@@ -56,7 +56,6 @@ public class VarCommunityHalf implements CommunityHalfExpr {
 
   @Override
   public boolean matches(int communityHalf) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("no implementation for generated method");
   }
 }

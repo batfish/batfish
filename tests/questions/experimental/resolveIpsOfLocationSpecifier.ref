@@ -13,6 +13,7 @@
     "variables" : {
       "locations" : {
         "description" : "Input to the LocationSpecifier",
+        "displayName" : "Locations",
         "optional" : true,
         "type" : "string",
         "value" : "input"

@@ -42,6 +42,8 @@ public final class ReachabilityParameters {
 
     private @Nullable AclLineMatchExpr _headerSpace;
 
+    private boolean _ignoreFilters = false;
+
     private int _maxChunkSize;
 
     private @Nullable NodeSpecifier _requiredTransitNodesSpecifier = null;
@@ -123,6 +125,11 @@ public final class ReachabilityParameters {
       _useCompression = useCompression;
       return this;
     }
+
+    public Builder setIgnoreFilters(boolean ignoreFilters) {
+      _ignoreFilters = ignoreFilters;
+      return this;
+    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
@@ -134,6 +141,8 @@ public final class ReachabilityParameters {
   private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
 
   private final AclLineMatchExpr _headerSpace;
+
+  private final boolean _ignoreFilters;
 
   private final int _maxChunkSize;
 
@@ -155,6 +164,7 @@ public final class ReachabilityParameters {
     _finalNodesSpecifier = builder._finalNodesSpecifier;
     _forbiddenTransitNodesSpecifier = builder._forbiddenTransitNodesSpecifier;
     _headerSpace = builder._headerSpace;
+    _ignoreFilters = builder._ignoreFilters;
     _maxChunkSize = builder._maxChunkSize;
     _sourceLocationSpecifier = builder._sourceLocationSpecifier;
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
@@ -189,6 +199,10 @@ public final class ReachabilityParameters {
 
   public AclLineMatchExpr getHeaderSpace() {
     return _headerSpace;
+  }
+
+  public boolean getIgnoreFilters() {
+    return _ignoreFilters;
   }
 
   public int getMaxChunkSize() {

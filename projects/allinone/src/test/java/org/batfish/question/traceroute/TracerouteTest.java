@@ -226,7 +226,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testIgnoreAcls() throws IOException {
+  public void testIgnoreFilters() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
@@ -235,7 +235,7 @@ public class TracerouteTest {
 
     TracerouteQuestion question = new TracerouteQuestion(".*", header, false, DEFAULT_MAX_TRACES);
 
-    // without ignoreAcls we get DENIED_OUT
+    // without ignoreFilters we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
@@ -247,7 +247,7 @@ public class TracerouteTest {
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
                 Schema.set(Schema.FLOW_TRACE))));
 
-    // with ignoreAcls we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
+    // with ignoreFilters we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
     question = new TracerouteQuestion(".*", header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();

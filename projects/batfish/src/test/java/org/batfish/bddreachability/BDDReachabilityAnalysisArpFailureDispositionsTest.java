@@ -45,7 +45,7 @@ import org.junit.rules.TemporaryFolder;
 /** Test the dispostions when ARP failures occur. */
 public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getFactory(), PKT.getDstIp());
+  private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getDstIp());
   private static final ImmutableSet<FlowDisposition> DISPOSITIONS =
       ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK, INSUFFICIENT_INFO, NEIGHBOR_UNREACHABLE);
 

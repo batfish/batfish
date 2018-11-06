@@ -12,18 +12,21 @@
     "variables" : {
       "names" : {
         "description" : "Include structures whose name matches this string or regex",
+        "displayName" : "Names",
         "optional" : true,
         "type" : "javaRegex",
         "value" : "m1"
       },
       "nodes" : {
         "description" : "Include files used to generate nodes whose name matches this name or regex",
+        "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
       },
       "types" : {
         "description" : "Include structures whose vendor-specific type matches this string or regex",
+        "displayName" : "Types",
         "optional" : true,
         "type" : "javaRegex",
         "value" : "t1"

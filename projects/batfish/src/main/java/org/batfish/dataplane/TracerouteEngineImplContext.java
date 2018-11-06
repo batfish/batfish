@@ -176,18 +176,18 @@ class TracerouteEngineImplContext {
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
-  private final boolean _ignoreAcls;
+  private final boolean _ignoreFilters;
 
   TracerouteEngineImplContext(
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls) {
+      boolean ignoreFilters) {
     _configurations = dataPlane.getConfigurations();
     _dataPlane = dataPlane;
     _flows = flows;
     _fibs = fibs;
-    _ignoreAcls = ignoreAcls;
+    _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
   }
 
@@ -392,7 +392,7 @@ class TracerouteEngineImplContext {
                   /* Check if denied out. If not, make standard neighbor-unreachable trace. */
                   IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
                   boolean denied = false;
-                  if (!_ignoreAcls && outFilter != null) {
+                  if (!_ignoreFilters && outFilter != null) {
                     denied =
                         flowTraceFilterHelper(
                             srcInterfaceName,
@@ -599,7 +599,7 @@ class TracerouteEngineImplContext {
     Interface nextInterface =
         _configurations.get(nextNodeName).getAllInterfaces().get(edge.getInt2());
     IpAccessList inFilter = nextInterface.getIncomingFilter();
-    if (!_ignoreAcls && inFilter != null) {
+    if (!_ignoreFilters && inFilter != null) {
       FlowDisposition disposition = FlowDisposition.DENIED_IN;
       boolean denied =
           flowTraceFilterHelper(null, inFilter, disposition, null, transmissionContext);
@@ -685,7 +685,7 @@ class TracerouteEngineImplContext {
             .getAllInterfaces()
             .get(nextHopInterfaceName)
             .getOutgoingFilter();
-    if (!_ignoreAcls && outFilter != null) {
+    if (!_ignoreFilters && outFilter != null) {
       boolean denied =
           flowTraceFilterHelper(
               srcInterface,

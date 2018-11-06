@@ -48,6 +48,7 @@ public class SpecifiersReachabilityQuestionTest {
         equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
     assertThat(question.getPathConstraints().getTransitLocations(), nullValue());
     assertThat(question.getPathConstraints().getForbiddenLocations(), nullValue());
+    assertThat(question.getIgnoreFilters(), equalTo(false));
   }
 
   @Test
@@ -142,5 +143,12 @@ public class SpecifiersReachabilityQuestionTest {
             .setActions(DispositionSpecifier.FAILURE_SPECIFIER)
             .build();
     assertThat(q.getReachabilityParameters().getActions(), not(contains(FlowDisposition.LOOP)));
+  }
+
+  @Test
+  public void testIgnoreFilters() {
+    SpecifiersReachabilityQuestion q =
+        SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
+    assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
   }
 }

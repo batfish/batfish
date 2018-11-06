@@ -500,12 +500,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
 
-      /*
-       * inherit peer-as, or use local-as if internal
-       *
-       * Also set multipath
-       */
-      if (ig.getType() == BgpGroupType.INTERNAL) {
+      /* Inherit multipath */
+      if (ig.getType() == BgpGroupType.INTERNAL || ig.getType() == null) {
         boolean currentGroupMultipathIbgp = ig.getMultipath();
         if (multipathIbgpSet && currentGroupMultipathIbgp != multipathIbgp) {
           _w.redFlag(
@@ -516,7 +512,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
           multipathIbgp = currentGroupMultipathIbgp;
           multipathIbgpSet = true;
         }
-      } else {
+      }
+      if (ig.getType() == BgpGroupType.EXTERNAL || ig.getType() == null) {
         boolean currentGroupMultipathEbgp = ig.getMultipath();
         if (multipathEbgpSet && currentGroupMultipathEbgp != multipathEbgp) {
           _w.redFlag(

@@ -23,6 +23,7 @@
     "variables" : {
       "columns" : {
         "description" : "The set of columns to fetch",
+        "displayName" : "Columns",
         "minElements" : 1,
         "optional" : true,
         "type" : "string",
@@ -33,12 +34,14 @@
       },
       "filter" : {
         "description" : "The filter to use",
+        "displayName" : "Filter",
         "optional" : true,
         "type" : "string",
         "value" : "mtu == 1500"
       },
       "innerQuestion" : {
         "description" : "The inner question whose answer should be filtered",
+        "displayName" : "Inner Question",
         "optional" : false,
         "type" : "question",
         "value" : {

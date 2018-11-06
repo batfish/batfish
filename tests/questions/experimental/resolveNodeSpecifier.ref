@@ -13,6 +13,7 @@
     "variables" : {
       "nodes" : {
         "description" : "Input to the NodeSpecifier",
+        "displayName" : "Nodes",
         "optional" : true,
         "type" : "string",
         "value" : "input"

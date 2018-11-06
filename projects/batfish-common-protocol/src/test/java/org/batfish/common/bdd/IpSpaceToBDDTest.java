@@ -34,7 +34,7 @@ public class IpSpaceToBDDTest {
     _factory = BDDUtils.bddFactory(32);
     _bddOps = new BDDOps(_factory);
     _ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
-    _ipSpaceToBdd = new IpSpaceToBDD(_factory, _ipAddrBdd);
+    _ipSpaceToBdd = new IpSpaceToBDD(_ipAddrBdd);
   }
 
   @Test
@@ -137,7 +137,7 @@ public class IpSpaceToBDDTest {
     Ip ip = new Ip("1.1.1.1");
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", ip.toIpSpace());
     IpSpace reference = new IpSpaceReference("foo");
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_factory, _ipAddrBdd, namedIpSpaces);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd, namedIpSpaces);
     BDD ipBDD = ip.toIpSpace().accept(ipSpaceToBDD);
     BDD referenceBDD = reference.accept(ipSpaceToBDD);
     assertThat(referenceBDD, equalTo(ipBDD));
@@ -156,7 +156,7 @@ public class IpSpaceToBDDTest {
     IpSpace foo = new IpSpaceReference("foo");
     IpSpace bar = new IpSpaceReference("bar");
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", bar, "bar", foo);
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_factory, _ipAddrBdd, namedIpSpaces);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd, namedIpSpaces);
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular IpSpaceReference: foo");
     foo.accept(ipSpaceToBDD);
