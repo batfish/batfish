@@ -16,7 +16,7 @@ test -raw tests/questions/experimental/bgpSessionCompatibility.ref validate-temp
 test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus nodes=".*", remoteNodes=".*", status=".*", type=".*"
 
 # validate detectLoops
-test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops
+test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops maxTraces=0
 
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
@@ -28,7 +28,7 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
 # validate multipathConsistency
-test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
 
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
@@ -49,10 +49,10 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachability
-test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, maxTraces=1
 
 # validate differentialReachability
-test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false
+test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false, maxTraces=1
 
 # validate resolveFilterSpecifier
 test -raw tests/questions/experimental/resolveFilterSpecifier.ref validate-template resolveFilterSpecifier filters="input", nodes="input"

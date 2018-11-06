@@ -4,6 +4,7 @@
     "actions": "${actions}",
     "headers": "${headers}",
     "ignoreFilters": "${ignoreFilters}",
+    "maxTraces": "${maxTraces}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
         "description": "Detect differential reachability.",
@@ -34,6 +35,12 @@
                 "type": "boolean",
                 "value": false,
                 "displayName": "Ignore Filters"
+            },
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
