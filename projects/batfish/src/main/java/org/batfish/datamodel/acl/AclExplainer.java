@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -32,7 +33,7 @@ public final class AclExplainer {
    * another ({@code denyAcl}). The {@code invariantExp} allows scoping the explanation to a space
    * of interest (use {@link TrueExpr} to explain the entire difference).
    */
-  public static AclLineMatchExprWithProvenance<IpAccessListLine> explainDifferential(
+  public static AclLineMatchExpr explainDifferential(
       BDDPacket bddPacket,
       BDDSourceManager mgr,
       AclLineMatchExpr invariantExpr,
@@ -42,6 +43,35 @@ public final class AclExplainer {
       IpAccessList permitAcl,
       Map<String, IpAccessList> permitNamedAcls,
       Map<String, IpSpace> permitNamedIpSpaces) {
+    return explainDifferentialWithProvenance(
+            bddPacket,
+            mgr,
+            invariantExpr,
+            denyAcl,
+            denyNamedAcls,
+            denyNamedIpSpaces,
+            permitAcl,
+            permitNamedAcls,
+            permitNamedIpSpaces)
+        .getMatchExpr();
+  }
+
+  /**
+   * Explain the flow space permitted by one {@link IpAccessList} ({@code permitAcl}) but denied by
+   * another ({@code denyAcl}). Along with the explanation is its provenance: a map from each
+   * literal in the explanation to the set of ACL lines on which the literal depends.
+   */
+  public static AclLineMatchExprWithProvenance<IpAccessListLineIndex>
+      explainDifferentialWithProvenance(
+          BDDPacket bddPacket,
+          BDDSourceManager mgr,
+          AclLineMatchExpr invariantExpr,
+          IpAccessList denyAcl,
+          Map<String, IpAccessList> denyNamedAcls,
+          Map<String, IpSpace> denyNamedIpSpaces,
+          IpAccessList permitAcl,
+          Map<String, IpAccessList> permitNamedAcls,
+          Map<String, IpSpace> permitNamedIpSpaces) {
     // Construct an ACL that permits the difference of the two ACLs.
     DifferentialIpAccessList differentialIpAccessList =
         DifferentialIpAccessList.create(
@@ -59,7 +89,7 @@ public final class AclExplainer {
             differentialIpAccessList.getNamedAcls(),
             differentialIpAccessList.getNamedIpSpaces());
 
-    return explain(
+    return explainWithProvenance(
         ipAccessListToBDD,
         scopedAcl(invariantExpr, differentialIpAccessList.getAcl()),
         differentialIpAccessList.getNamedAcls());
@@ -70,7 +100,23 @@ public final class AclExplainer {
    * scoping the explanation to a space of interest (use {@link TrueExpr} to explain the entire
    * space).
    */
-  public static AclLineMatchExprWithProvenance<IpAccessListLine> explain(
+  public static AclLineMatchExpr explain(
+      BDDPacket bddPacket,
+      BDDSourceManager mgr,
+      AclLineMatchExpr invariantExpr,
+      IpAccessList acl,
+      Map<String, IpAccessList> namedAcls,
+      Map<String, IpSpace> namedIpSpaces) {
+    return explainWithProvenance(bddPacket, mgr, invariantExpr, acl, namedAcls, namedIpSpaces)
+        .getMatchExpr();
+  }
+
+  /**
+   * Explain the flow space permitted by an {@link IpAccessList}. Along with the explanation is its
+   * provenance: a map from each literal in the explanation to the set of ACL lines on which the
+   * literal depends.
+   */
+  public static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
       BDDPacket bddPacket,
       BDDSourceManager mgr,
       AclLineMatchExpr invariantExpr,
@@ -82,24 +128,28 @@ public final class AclExplainer {
 
     IpAccessList aclWithInvariant = scopedAcl(invariantExpr, acl);
 
-    return explain(ipAccessListToBDD, aclWithInvariant, namedAcls);
+    return explainWithProvenance(ipAccessListToBDD, aclWithInvariant, namedAcls);
   }
 
-  private static AclLineMatchExprWithProvenance<IpAccessListLine> explain(
+  private static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
       IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
 
-    // create a map from each literal in the given acls to the line that it came from
-    IdentityHashMap<AclLineMatchExpr, IpAccessListLine> literalsToLines = new IdentityHashMap<>();
+    // Create a map from each literal in the given acls to the acl and index that it came from.
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
+        new IdentityHashMap<>();
     List<IpAccessList> allAcls = new LinkedList<>(namedAcls.values());
     allAcls.add(acl);
     allAcls.forEach(
-        currAcl ->
-            currAcl
-                .getLines()
-                .forEach(
-                    line ->
-                        AclLineMatchExprLiterals.getLiterals(line.getMatchCondition())
-                            .forEach(lit -> literalsToLines.put(lit, line))));
+        currAcl -> {
+          List<IpAccessListLine> lines = currAcl.getLines();
+          IntStream.range(0, lines.size())
+              .forEach(
+                  i ->
+                      AclLineMatchExprLiterals.getLiterals(lines.get(i).getMatchCondition())
+                          .forEach(
+                              lit ->
+                                  literalsToLines.put(lit, new IpAccessListLineIndex(currAcl, i))));
+        });
 
     // Convert acl to a single expression.
     AclLineMatchExpr aclExpr =
@@ -112,7 +162,7 @@ public final class AclExplainer {
     AclLineMatchExprWithProvenance<AclLineMatchExpr> aclExprNfExplained =
         AclExplanation.explainNormalForm(aclExprNf);
 
-    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLine>> disjunctsToLines =
+    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> disjunctsToLines =
         new IdentityHashMap<>();
 
     for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry :
@@ -127,7 +177,7 @@ public final class AclExplainer {
               .collect(ImmutableSet.toImmutableSet()));
     }
 
-    return new AclLineMatchExprWithProvenance<IpAccessListLine>(
+    return new AclLineMatchExprWithProvenance<IpAccessListLineIndex>(
         aclExprNfExplained.getMatchExpr(), disjunctsToLines);
   }
 

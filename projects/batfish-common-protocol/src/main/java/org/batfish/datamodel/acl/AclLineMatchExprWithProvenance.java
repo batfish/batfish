@@ -6,6 +6,11 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+/**
+ * This class pairs an {@link AclLineMatchExpr}, which represents a single ACL line, with a set that
+ * represents its provenance -- the set of all items that the line was derived from. We sometimes
+ * want different kinds of provenance information, so the item type T is a parameter.
+ */
 public class AclLineMatchExprWithProvenance<T>
     implements Comparable<AclLineMatchExprWithProvenance<T>> {
 

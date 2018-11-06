@@ -4,6 +4,11 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
 
+/**
+ * A visitor for ACL lines that collects up the set of all atomic predicates, which we call literals
+ * (though typically that term also includes the negation of atomic predicates), within a given
+ * line.
+ */
 public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<Void> {
 
   private Set<AclLineMatchExpr> _literals;
@@ -12,6 +17,7 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
     _literals = Collections.newSetFromMap(new IdentityHashMap<>());
   }
 
+  /** This method is the public entry point for the visitor. */
   public static Set<AclLineMatchExpr> getLiterals(AclLineMatchExpr expr) {
     AclLineMatchExprLiterals aclLineMatchExprLiterals = new AclLineMatchExprLiterals();
     aclLineMatchExprLiterals.visit(expr);
@@ -62,7 +68,6 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
 
   @Override
   public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    _literals.add(permittedByAcl);
     return null;
   }
 

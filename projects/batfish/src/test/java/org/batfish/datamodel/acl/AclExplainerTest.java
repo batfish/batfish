@@ -40,8 +40,7 @@ public class AclExplainerTest {
 
   private AclLineMatchExpr explain(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return AclExplainer.explain(
-            _pkt, _mgr, invariantExpr, acl, ImmutableMap.of(), ImmutableMap.of())
-        .getMatchExpr();
+        _pkt, _mgr, invariantExpr, acl, ImmutableMap.of(), ImmutableMap.of());
   }
 
   private AclLineMatchExpr explainDifferential(IpAccessList denyAcl, IpAccessList permitAcl) {
@@ -51,16 +50,15 @@ public class AclExplainerTest {
   private AclLineMatchExpr explainDifferential(
       AclLineMatchExpr invariantExpr, IpAccessList denyAcl, IpAccessList permitAcl) {
     return AclExplainer.explainDifferential(
-            _pkt,
-            _mgr,
-            invariantExpr,
-            denyAcl,
-            ImmutableMap.of(),
-            ImmutableMap.of(),
-            permitAcl,
-            ImmutableMap.of(),
-            ImmutableMap.of())
-        .getMatchExpr();
+        _pkt,
+        _mgr,
+        invariantExpr,
+        denyAcl,
+        ImmutableMap.of(),
+        ImmutableMap.of(),
+        permitAcl,
+        ImmutableMap.of(),
+        ImmutableMap.of());
   }
 
   @Test
@@ -165,7 +163,8 @@ public class AclExplainerTest {
     IpAccessList permitAcl =
         IpAccessList.builder()
             .setName("permit")
-            .setLines(ImmutableList.of(accepting(matchDstPrefix)))
+            .setLines(
+                ImmutableList.of(rejecting(not(matchSrcIp("1.1.1.1"))), accepting(matchDstPrefix)))
             .build();
     AclLineMatchExpr explanation = explainDifferential(denyAcl, permitAcl);
     assertThat(explanation, equalTo(and(matchDstPrefix, not(matchDstIp))));
