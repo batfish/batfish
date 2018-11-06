@@ -89,34 +89,37 @@ public class Schema {
     return new Schema("Set<" + baseSchema._schemaStr + ">");
   }
 
-  private Class<?> _baseType;
+  private final Class<?> _baseType;
 
-  private Type _type;
+  private final Type _type;
 
-  private String _schemaStr;
+  private final String _schemaStr;
 
-  private Schema _innerSchema;
+  private final Schema _innerSchema;
 
   @JsonCreator
   Schema(String schema) {
     _schemaStr = schema;
 
     String baseTypeName = schema;
-    _type = Type.BASE;
+    Type type = Type.BASE;
+    Schema innerSchema = null;
 
     Matcher listMatcher = LIST_PATTERN.matcher(schema);
     if (listMatcher.find()) {
       baseTypeName = listMatcher.group(1);
-      _innerSchema = new Schema(baseTypeName);
-      _type = Type.LIST;
+      innerSchema = new Schema(baseTypeName);
+      type = Type.LIST;
     }
 
     Matcher setMatcher = SET_PATTERN.matcher(schema);
     if (setMatcher.find()) {
       baseTypeName = setMatcher.group(1);
-      _innerSchema = new Schema(baseTypeName);
-      _type = Type.SET;
+      innerSchema = new Schema(baseTypeName);
+      type = Type.SET;
     }
+    _type = type;
+    _innerSchema = innerSchema;
 
     if (!schemaAliases.containsKey(baseTypeName)) {
       throw new BatfishException("Unknown schema type: " + baseTypeName);

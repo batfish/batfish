@@ -2031,12 +2031,15 @@ public final class WorkMgrTest {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.set(Schema.STRING), "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r0 = Row.of(col, null);
     Row r1 = Row.of(col, ImmutableSet.of());
     Row r2 = Row.of(col, ImmutableSet.of("a"));
     Row r3 = Row.of(col, ImmutableSet.of("b"));
     Row r4 = Row.of(col, ImmutableSet.of("a", "b"));
     Row r5 = Row.of(col, ImmutableSet.of("b", "a"));
+    Row r6 = Row.of(col, Collections.singleton(null));
 
+    assertThat(comparator.compare(r0, r1), lessThan(0));
     assertThat(comparator.compare(r1, r2), lessThan(0));
     assertThat(comparator.compare(r1, r3), lessThan(0));
     assertThat(comparator.compare(r1, r4), lessThan(0));
@@ -2044,6 +2047,7 @@ public final class WorkMgrTest {
     assertThat(comparator.compare(r2, r3), lessThan(0));
     assertThat(comparator.compare(r2, r4), not(equalTo(0)));
     assertThat(comparator.compare(r2, r5), not(equalTo(0)));
+    assertThat(comparator.compare(r6, r2), lessThan(0));
     assertThat(comparator.compare(r3, r4), not(equalTo(0)));
     assertThat(comparator.compare(r3, r5), not(equalTo(0)));
     // sets in r4 and r5 might end up in same order, so no guarantee on comparison order
