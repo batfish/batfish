@@ -98,7 +98,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   @Override
-  public final Set<R> getRoutes() {
+  public Set<R> getRoutes() {
     if (_allRoutes == null) {
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
@@ -228,6 +228,15 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _allRoutes = null;
     }
     return d;
+  }
+
+  /**
+   * Extract routes stored for this exact prefix, if any.
+   *
+   * <p>Does not collect routes for any other prefixes. Does not alter memoized routes.
+   */
+  protected Set<R> extractRoutes(Prefix prefix) {
+    return _tree.getRoutes(prefix);
   }
 
   /**

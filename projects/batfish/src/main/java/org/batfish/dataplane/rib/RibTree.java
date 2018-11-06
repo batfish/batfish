@@ -73,6 +73,11 @@ class RibTree<R extends AbstractRoute> implements Serializable {
     return routes.build();
   }
 
+  /** Retrieve stored routes for a particular prefix only. */
+  public Set<R> getRoutes(Prefix prefix) {
+    return _root.getRoutes(prefix);
+  }
+
   /**
    * Add a new route into the RIB, potentially replacing other routes
    *
