@@ -18,8 +18,7 @@ public class DetectLoopsQuestion extends Question {
   @JsonCreator
   private static DetectLoopsQuestion create(
       @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces) {
-    maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);
-    return new DetectLoopsQuestion(maxTraces);
+    return new DetectLoopsQuestion(firstNonNull(maxTraces, DEFAULT_MAX_TRACES));
   }
 
   /**
