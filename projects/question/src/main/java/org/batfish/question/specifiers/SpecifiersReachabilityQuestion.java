@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
@@ -37,7 +38,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
       LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
-  private static final int DEFAULT_MAX_TRACES = 32;
   private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
       NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
@@ -67,7 +67,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
     _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _ignoreFilters = firstNonNull(ignoreFilters, false);
-    _maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);
+    _maxTraces = firstNonNull(maxTraces, TracePruner.DEFAULT_MAX_TRACES);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
@@ -76,7 +76,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         DispositionSpecifier.SUCCESS_SPECIFIER,
         PacketHeaderConstraints.unconstrained(),
         false,
-        DEFAULT_MAX_TRACES,
+        TracePruner.DEFAULT_MAX_TRACES,
         PathConstraintsInput.unconstrained());
   }
 
