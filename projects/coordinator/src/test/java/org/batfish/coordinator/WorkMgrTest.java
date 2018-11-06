@@ -13,8 +13,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
@@ -70,9 +72,17 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.DefaultDeniedByIpAccessList;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -81,8 +91,12 @@ import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
@@ -1822,19 +1836,262 @@ public final class WorkMgrTest {
             colString,
             "b");
 
-    assertThat(comInteger.compare(r1, r2), equalTo(-1));
-    assertThat(comIssue.compare(r1, r2), equalTo(-1));
-    assertThat(comString.compare(r1, r2), equalTo(-1));
+    assertThat(comInteger.compare(r1, r2), lessThan(0));
+    assertThat(comIssue.compare(r1, r2), lessThan(0));
+    assertThat(comString.compare(r1, r2), lessThan(0));
   }
 
   @Test
-  public void testColumnComparatorUnsupported() {
-    String colObject = "colObject";
+  public void testColumnComparatorAclTrace() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.ACL_TRACE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 =
+        Row.of(col, new AclTrace(ImmutableList.of(new DefaultDeniedByIpAccessList("a", "a", "a"))));
+    Row r2 =
+        Row.of(col, new AclTrace(ImmutableList.of(new DefaultDeniedByIpAccessList("b", "b", "b"))));
 
-    ColumnMetadata columnObject = new ColumnMetadata(colObject, Schema.OBJECT, "colObjectDesc");
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
 
-    _thrown.expect(UnsupportedOperationException.class);
-    _manager.columnComparator(columnObject);
+  @Test
+  public void testColumnComparatorBoolean() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.BOOLEAN, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, false);
+    Row r2 = Row.of(col, true);
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorFileLine() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FILE_LINE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new FileLinePair("a", 1));
+    Row r2 = Row.of(col, new FileLinePair("a", 2));
+    Row r3 = Row.of(col, new FileLinePair("b", 1));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorFlow() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").setTag("a").build());
+    Row r2 = Row.of(col, Flow.builder().setDstIp(Ip.MAX).setIngressNode("a").setTag("a").build());
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorFlowTrace() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW_TRACE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), ""));
+    Row r2 =
+        Row.of(col, new FlowTrace(FlowDisposition.DELIVERED_TO_SUBNET, ImmutableList.of(), ""));
+    Row r3 =
+        Row.of(
+            col,
+            new FlowTrace(
+                FlowDisposition.ACCEPTED,
+                ImmutableList.of(
+                    new FlowTraceHop(
+                        Edge.of("a", "a", "b", "b"),
+                        ImmutableSortedSet.of(),
+                        "a",
+                        "a",
+                        Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").setTag("a").build())),
+                ""));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorInteger() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.INTEGER, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, 0);
+    Row r2 = Row.of(col, 1);
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorInterface() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.INTERFACE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new NodeInterfacePair("a", "a"));
+    Row r2 = Row.of(col, new NodeInterfacePair("a", "b"));
+    Row r3 = Row.of(col, new NodeInterfacePair("b", "a"));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorIp() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.IP, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, Ip.ZERO);
+    Row r2 = Row.of(col, Ip.MAX);
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorIssue() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.ISSUE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new Issue("a", 1, new Issue.Type("major", "minor")));
+    Row r2 = Row.of(col, new Issue("a", 2, new Issue.Type("major", "minor")));
+    Row r3 = Row.of(col, new Issue("b", 1, new Issue.Type("major", "minor")));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), equalTo(0));
+    assertThat(comparator.compare(r2, r3), greaterThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorList() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.list(Schema.STRING), "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, ImmutableList.of());
+    Row r2 = Row.of(col, ImmutableList.of("a"));
+    Row r3 = Row.of(col, ImmutableList.of("a", "b"));
+    Row r4 = Row.of(col, ImmutableList.of("b"));
+    Row r5 = Row.of(col, ImmutableList.of("b", "a"));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r1, r4), lessThan(0));
+    assertThat(comparator.compare(r1, r5), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r4), lessThan(0));
+    assertThat(comparator.compare(r2, r5), lessThan(0));
+    assertThat(comparator.compare(r3, r4), lessThan(0));
+    assertThat(comparator.compare(r3, r5), lessThan(0));
+    assertThat(comparator.compare(r4, r5), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorLong() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.LONG, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, 0L);
+    Row r2 = Row.of(col, 1L);
+    Row r3 = Row.of(col, Long.MAX_VALUE);
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorNode() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.NODE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new Node("a"));
+    Row r2 = Row.of(col, new Node("b"));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorPrefix() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.PREFIX, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, Prefix.parse("1.1.2.1/32"));
+    Row r2 = Row.of(col, Prefix.parse("1.1.11.1/32"));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorSet() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.set(Schema.STRING), "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r0 = Row.of(col, null);
+    Row r1 = Row.of(col, ImmutableSet.of());
+    Row r2 = Row.of(col, ImmutableSet.of("a"));
+    Row r3 = Row.of(col, ImmutableSet.of("b"));
+    Row r4 = Row.of(col, ImmutableSet.of("a", "b"));
+    Row r5 = Row.of(col, ImmutableSet.of("b", "a"));
+    Row r6 = Row.of(col, Collections.singleton(null));
+
+    assertThat(comparator.compare(r0, r1), lessThan(0));
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r1, r4), lessThan(0));
+    assertThat(comparator.compare(r1, r5), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r4), not(equalTo(0)));
+    assertThat(comparator.compare(r2, r5), not(equalTo(0)));
+    assertThat(comparator.compare(r6, r2), lessThan(0));
+    assertThat(comparator.compare(r3, r4), not(equalTo(0)));
+    assertThat(comparator.compare(r3, r5), not(equalTo(0)));
+    // sets in r4 and r5 might end up in same order, so no guarantee on comparison order
+  }
+
+  @Test
+  public void testColumnComparatorString() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.STRING, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, "a");
+    Row r2 = Row.of(col, "b");
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorSelfDescribingObject() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.SELF_DESCRIBING, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new SelfDescribingObject(Schema.STRING, "a"));
+    Row r2 = Row.of(col, new SelfDescribingObject(Schema.STRING, "b"));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+  }
+
+  @Test
+  public void testColumnComparatorTrace() {
+    String col = "col1";
+    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.TRACE, "colDesc");
+    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
+    Row r1 = Row.of(col, new Trace(FlowDisposition.ACCEPTED, ImmutableList.of()));
+    Row r2 =
+        Row.of(
+            col,
+            new Trace(
+                FlowDisposition.ACCEPTED,
+                ImmutableList.of(new Hop(new Node("a"), ImmutableList.of()))));
+    Row r3 = Row.of(col, new Trace(FlowDisposition.DELIVERED_TO_SUBNET, ImmutableList.of()));
+
+    assertThat(comparator.compare(r1, r2), lessThan(0));
+    assertThat(comparator.compare(r1, r3), lessThan(0));
+    assertThat(comparator.compare(r2, r3), lessThan(0));
   }
 
   @Test
