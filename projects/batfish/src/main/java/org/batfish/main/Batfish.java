@@ -6,6 +6,7 @@ import static com.google.common.base.Verify.verify;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -3987,6 +3988,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
     BDDPacket pkt = new BDDPacket();
 
+    AclLineMatchExpr headerSpace =
+        parameters.getInvertSearch()
+            ? not(parameters.getHeaderSpace())
+            : parameters.getHeaderSpace();
+
     /*
      * TODO should we have separate parameters for base and delta?
      * E.g. suppose we add a host subnet in the delta network. This would be a source of
@@ -3998,7 +4004,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
-                parameters.getHeaderSpace(),
+                headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
@@ -4011,7 +4017,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
             .bddReachabilityAnalysis(
                 parameters.getIpSpaceAssignment(),
-                parameters.getHeaderSpace(),
+                headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
