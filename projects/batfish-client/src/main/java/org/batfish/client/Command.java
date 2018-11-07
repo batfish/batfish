@@ -195,17 +195,17 @@ public enum Command {
     descs.put(
         ANSWER,
         new Pair<>(
-            "<template-name>  [questionName=name] [param1=value1 [param2=value2] ...]",
+            "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the current snapshot"));
     descs.put(
         ANSWER_DELTA,
         new Pair<>(
-            "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
+            "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the delta snapshot"));
     descs.put(
         ANSWER_REFERENCE,
         new Pair<>(
-            "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
+            "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the reference snapshot"));
     descs.put(
         AUTOCOMPLETE,
