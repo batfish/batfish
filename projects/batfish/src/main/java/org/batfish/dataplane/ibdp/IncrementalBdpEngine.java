@@ -47,7 +47,7 @@ import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
-import org.batfish.dataplane.rib.BgpMultipathRib;
+import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.RibDelta;
 
 class IncrementalBdpEngine {
@@ -382,15 +382,10 @@ class IncrementalBdpEngine {
                 if (proc == null) {
                   continue;
                 }
-                Map<BgpMultipathRib, RibDelta<BgpRoute>> deltas =
+                Map<BgpRib, RibDelta<BgpRoute>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
-                    proc.getMultipathEbgp(),
-                    proc.getMultipathIbgp(),
-                    deltas,
-                    allNodes,
-                    bgpTopology,
-                    networkConfigurations);
+                    deltas, allNodes, bgpTopology, networkConfigurations);
               }
               propagateBgpCompleted.incrementAndGet();
             });
@@ -676,7 +671,7 @@ class IncrementalBdpEngine {
             .values()
             .stream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .mapToInt(vr -> vr.getBgpBestPathRib().getRoutes().size())
+            .mapToInt(vr -> vr.getBgpRib().getBestPathRoutes().size())
             .sum();
     ae.getBgpBestPathRibRoutesByIteration().put(dependentRoutesIterations, numBgpBestPathRibRoutes);
     int numBgpMultipathRibRoutes =
@@ -684,7 +679,7 @@ class IncrementalBdpEngine {
             .values()
             .stream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .mapToInt(vr -> vr._bgpMultipathRib.getRoutes().size())
+            .mapToInt(vr -> vr.getBgpRib().getRoutes().size())
             .sum();
     ae.getBgpMultipathRibRoutesByIteration()
         .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
