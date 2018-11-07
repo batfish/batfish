@@ -167,6 +167,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
@@ -3151,6 +3152,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitBpa_as(Bpa_asContext ctx) {
     long peerAs = toAsNum(ctx.asn);
     _currentBgpGroup.setPeerAs(peerAs);
+  }
+
+  @Override
+  public void exitEo8023ad_interface(Eo8023ad_interfaceContext ctx) {
+    // TODO: handle node
+    String interfaceName = ctx.name.getText();
+    _currentInterface.set8023adInterface(interfaceName);
   }
 
   @Override

@@ -42,6 +42,9 @@ public class Interface implements Serializable {
 
   private final Set<InterfaceAddress> _allAddresses;
 
+  // Dumb name to appease checkstyle
+  private String _agg8023adInterface;
+
   private final Set<Ip> _allAddressIps;
 
   private final List<SubRange> _allowedVlans;
@@ -113,6 +116,10 @@ public class Interface implements Serializable {
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
+  }
+
+  public String get8023adInterface() {
+    return _agg8023adInterface;
   }
 
   public String getAccessVlan() {
@@ -250,6 +257,10 @@ public class Interface implements Serializable {
     if (_ospfArea == null) {
       _ospfArea = _parent._ospfArea;
     }
+  }
+
+  public void set8023adInterface(String interfaceName) {
+    _agg8023adInterface = interfaceName;
   }
 
   public void setAccessVlan(String vlan) {

@@ -19,9 +19,7 @@ import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -99,8 +97,7 @@ import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.protocols.OspfProtocolHelper;
-import org.batfish.dataplane.rib.BgpBestPathRib;
-import org.batfish.dataplane.rib.BgpMultipathRib;
+import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
@@ -131,46 +128,34 @@ public class VirtualRouter implements Serializable {
   private transient RouteDependencyTracker<BgpRoute, AbstractRoute> _bgpAggDeps =
       new RouteDependencyTracker<>();
 
-  /** Best-path BGP RIB */
-  BgpBestPathRib _bgpBestPathRib;
-
-  /** Builder for constructing {@link RibDelta} as pertains to the best-path BGP RIB */
-  private transient RibDelta.Builder<BgpRoute> _bgpBestPathDeltaBuilder;
-
   /** Incoming messages into this router from each BGP neighbor */
   transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> _bgpIncomingRoutes;
 
-  /** BGP multipath RIB */
-  BgpMultipathRib _bgpMultipathRib;
+  /** Combined BGP (both iBGP and eBGP) */
+  BgpRib _bgpRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the multipath BGP RIB */
-  private transient RibDelta.Builder<BgpRoute> _bgpMultiPathDeltaBuilder;
+  private transient RibDelta.Builder<BgpRoute> _bgpDeltaBuilder;
 
   /** The RIB containing connected routes */
   private transient ConnectedRib _connectedRib;
 
-  /** Helper RIB containing best paths obtained with external BGP */
-  transient BgpBestPathRib _ebgpBestPathRib;
-
   /** Helper RIB containing all paths obtained with external BGP */
-  transient BgpMultipathRib _ebgpMultipathRib;
+  transient BgpRib _ebgpRib;
 
   /**
    * Helper RIB containing paths obtained with external eBGP during current iteration. An Adj-RIB of
    * sorts.
    */
-  transient BgpMultipathRib _ebgpStagingRib;
+  transient BgpRib _ebgpStagingRib;
 
-  /** Helper RIB containing best paths obtained with iBGP */
-  transient BgpBestPathRib _ibgpBestPathRib;
-
-  /** Helper RIB containing all paths obtained with iBGP */
-  transient BgpMultipathRib _ibgpMultipathRib;
+  /** Helper RIB containing paths obtained with iBGP */
+  transient BgpRib _ibgpRib;
 
   /**
    * Helper RIB containing paths obtained with iBGP during current iteration. An Adj-RIB of sorts.
    */
-  transient BgpMultipathRib _ibgpStagingRib;
+  transient BgpRib _ibgpStagingRib;
   /**
    * The independent RIB contains connected and static routes, which are unaffected by BDP
    * iterations (hence, independent).
@@ -257,7 +242,7 @@ public class VirtualRouter implements Serializable {
     _name = name;
     _vrf = c.getVrfs().get(name);
     initRibs();
-    _bgpIncomingRoutes = new TreeMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>>();
+    _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
     _virtualEigrpProcesses = ImmutableMap.of();
   }
@@ -280,61 +265,6 @@ public class VirtualRouter implements Serializable {
       Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
       queue.add(new RouteAdvertisement<>(r.getRoute(), r.isWithdrawn(), reason));
     }
-  }
-
-  static Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> syncBgpDeltaPropagation(
-      BgpBestPathRib bestPathRib, BgpMultipathRib multiPathRib, RibDelta<BgpRoute> delta) {
-
-    // Build our first attempt at best path delta
-    Builder<BgpRoute> bestDeltaBuilder = new Builder<>(bestPathRib);
-    bestDeltaBuilder.from(importRibDelta(bestPathRib, delta));
-    RibDelta<BgpRoute> bestPathDelta = bestDeltaBuilder.build();
-
-    Builder<BgpRoute> mpBuilder = new Builder<>(multiPathRib);
-
-    mpBuilder.from(importRibDelta(multiPathRib, bestPathDelta));
-    if (bestPathDelta != null) {
-      /*
-       * Handle mods to the best path RIB
-       */
-      for (Prefix p : bestPathDelta.getPrefixes()) {
-        List<RouteAdvertisement<BgpRoute>> actions = bestPathDelta.getActions(p);
-        if (actions != null) {
-          if (actions
-              .stream()
-              .map(RouteAdvertisement::getReason)
-              .anyMatch(Predicate.isEqual(Reason.REPLACE))) {
-            /*
-             * Clear routes for prefixes where best path RIB was modified, because
-             * a better route was chosen, and whatever we had in multipathRib is now invalid
-             */
-            mpBuilder.from(multiPathRib.clearRoutes(p));
-          } else if (actions
-              .stream()
-              .map(RouteAdvertisement::getReason)
-              .anyMatch(Predicate.isEqual(Reason.WITHDRAW))) {
-            /*
-             * Routes for that prefix were withdrawn. See if we have anything in the multipath RIB
-             * to fix it.
-             * Create a fake delta, let the routes fight it out for best path in the merge process
-             */
-            RibDelta<BgpRoute> fakeDelta =
-                new Builder<BgpRoute>(null).add(multiPathRib.getRoutes(p)).build();
-            bestDeltaBuilder.from(importRibDelta(bestPathRib, fakeDelta));
-          }
-        }
-      }
-    }
-    // Set the (possibly updated) best path delta
-    bestPathDelta = bestDeltaBuilder.build();
-    // Update best paths
-    multiPathRib.setBestAsPaths(bestPathRib.getBestAsPaths());
-    // Only iterate over valid prefixes (ones in best-path RIB) and see if anything should go into
-    // multi-path RIB
-    for (Prefix p : bestPathRib.getPrefixes()) {
-      mpBuilder.from(importRibDelta(multiPathRib, delta, p));
-    }
-    return new SimpleImmutableEntry<>(bestPathDelta, mpBuilder.build());
   }
 
   /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
@@ -552,10 +482,7 @@ public class VirtualRouter implements Serializable {
           .filter(RouteAdvertisement::isWithdrawn)
           .forEach(
               r -> {
-                _bgpBestPathDeltaBuilder.from(
-                    _bgpAggDeps.deleteRoute(r.getRoute(), _bgpBestPathRib));
-                _bgpMultiPathDeltaBuilder.from(
-                    _bgpAggDeps.deleteRoute(r.getRoute(), _bgpMultipathRib));
+                _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib));
               });
     }
   }
@@ -666,7 +593,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<BgpMultipathRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
     ribDeltas.put(_ebgpStagingRib, new Builder<>(_ebgpStagingRib));
     ribDeltas.put(_ibgpStagingRib, new Builder<>(_ibgpStagingRib));
 
@@ -730,7 +657,7 @@ public class VirtualRouter implements Serializable {
           throw new BatfishException("Missing or invalid bgp advertisement type");
       }
 
-      BgpMultipathRib targetRib = ebgp ? _ebgpStagingRib : _ibgpStagingRib;
+      BgpRib targetRib = ebgp ? _ebgpStagingRib : _ibgpStagingRib;
       RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
       if (received) {
@@ -870,19 +797,13 @@ public class VirtualRouter implements Serializable {
 
     // Propagate received routes through all the RIBs and send out appropriate messages
     // to neighbors
-    Map<BgpMultipathRib, RibDelta<BgpRoute>> deltas =
+    Map<BgpRib, RibDelta<BgpRoute>> deltas =
         ribDeltas
             .entrySet()
             .stream()
             .filter(e -> e.getValue().build() != null)
             .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().build()));
-    finalizeBgpRoutesAndQueueOutgoingMessages(
-        proc.getMultipathEbgp(),
-        proc.getMultipathIbgp(),
-        deltas,
-        allNodes,
-        bgpTopology,
-        networkConfigurations);
+    finalizeBgpRoutesAndQueueOutgoingMessages(deltas, allNodes, bgpTopology, networkConfigurations);
   }
 
   /** Initialize Intra-area OSPF routes from the interface prefixes */
@@ -988,11 +909,9 @@ public class VirtualRouter implements Serializable {
       // Prevent route from being merged into the main RIB.
       br.setNonRouting(true);
       /* TODO: tests for this */
-      RibDelta<BgpRoute> d1 = _bgpMultipathRib.mergeRouteGetDelta(br);
-      _bgpBestPathDeltaBuilder.from(d1);
-      RibDelta<BgpRoute> d2 = _bgpBestPathRib.mergeRouteGetDelta(br);
-      _bgpMultiPathDeltaBuilder.from(d2);
-      if (d1 != null || d2 != null) {
+      RibDelta<BgpRoute> d1 = _bgpRib.mergeRouteGetDelta(br);
+      _bgpDeltaBuilder.from(d1);
+      if (d1 != null) {
         _bgpAggDeps.addRouteDependency(br, gr);
       }
     }
@@ -1231,25 +1150,54 @@ public class VirtualRouter implements Serializable {
   /** Initialize all ribs on this router. All RIBs will be empty */
   @VisibleForTesting
   final void initRibs() {
+    // Non-learned-protocol RIBs
     _connectedRib = new ConnectedRib();
     _localRib = new LocalRib();
-    // If bgp process is null, doesn't matter
-    MultipathEquivalentAsPathMatchMode mpTieBreaker =
-        _vrf.getBgpProcess() == null
-            ? EXACT_PATH
-            : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
-    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _generatedRib = new Rib();
-    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
+
+    // Main RIB + delta builder
+    _mainRib = new Rib();
+    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
+
+    // BGP
+    BgpProcess proc = _vrf.getBgpProcess();
+    MultipathEquivalentAsPathMatchMode mpTieBreaker = getBgpMpTieBreaker();
+    BgpTieBreaker tieBreaker = getBestPathTieBreaker();
+    _ebgpRib =
+        new BgpRib(
+            null,
+            _mainRib,
+            tieBreaker,
+            proc == null || proc.getMultipathEbgp() ? null : 1,
+            mpTieBreaker);
+    _ibgpRib =
+        new BgpRib(
+            null,
+            _mainRib,
+            tieBreaker,
+            proc == null || proc.getMultipathIbgp() ? null : 1,
+            mpTieBreaker);
+    _bgpRib =
+        new BgpRib(
+            null,
+            _mainRib,
+            tieBreaker,
+            proc == null || proc.getMultipathEbgp() || proc.getMultipathIbgp() ? null : 1,
+            mpTieBreaker);
+    _bgpDeltaBuilder = new RibDelta.Builder<>(_bgpRib);
+
+    _ebgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ibgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
+
+    // ISIS
     _isisRib = new IsisRib(isL1Only());
     _isisL1Rib = new IsisLevelRib(new TreeMap<>());
     _isisL2Rib = new IsisLevelRib(new TreeMap<>());
     _isisL1StagingRib = new IsisLevelRib(null);
     _isisL2StagingRib = new IsisLevelRib(null);
-    _mainRib = new Rib();
+
+    // OSPF
     _ospfExternalType1Rib = new OspfExternalType1Rib(getHostname(), new TreeMap<>());
     _ospfExternalType2Rib = new OspfExternalType2Rib(getHostname(), new TreeMap<>());
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
@@ -1259,26 +1207,29 @@ public class VirtualRouter implements Serializable {
     _ospfIntraAreaRib = new OspfIntraAreaRib();
     _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
+
+    // RIP
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();
     _ripRib = new RipRib();
+
+    // Static
     _staticNextHopRib = new StaticRib();
     _staticInterfaceRib = new StaticRib();
-    _bgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+  }
 
-    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
-    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
-    BgpTieBreaker tieBreaker =
-        _vrf.getBgpProcess() == null
-            ? BgpTieBreaker.ARRIVAL_ORDER
-            : _vrf.getBgpProcess().getTieBreaker();
-    _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
-    _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
-    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, new TreeMap<>(), _mainRib);
+  private BgpTieBreaker getBestPathTieBreaker() {
+    BgpProcess proc = _vrf.getBgpProcess();
+    return proc == null
+        ? BgpTieBreaker.ARRIVAL_ORDER
+        : firstNonNull(_vrf.getBgpProcess().getTieBreaker(), BgpTieBreaker.ARRIVAL_ORDER);
+  }
 
-    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
-    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
-    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
+  private MultipathEquivalentAsPathMatchMode getBgpMpTieBreaker() {
+    BgpProcess proc = _vrf.getBgpProcess();
+    return proc == null
+        ? EXACT_PATH
+        : firstNonNull(proc.getMultipathEquivalentAsPathMatchMode(), EXACT_PATH);
   }
 
   private boolean isL1Only() {
@@ -1322,7 +1273,7 @@ public class VirtualRouter implements Serializable {
    * @return List of {@link RibDelta objects}
    */
   @Nullable
-  Map<BgpMultipathRib, RibDelta<BgpRoute>> processBgpMessages(
+  Map<BgpRib, RibDelta<BgpRoute>> processBgpMessages(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, NetworkConfigurations nc) {
 
     // If we have no BGP process, nothing to do
@@ -1331,7 +1282,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<BgpMultipathRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
     ribDeltas.put(_ebgpStagingRib, new Builder<>(_ebgpStagingRib));
     ribDeltas.put(_ibgpStagingRib, new Builder<>(_ibgpStagingRib));
 
@@ -1349,7 +1300,7 @@ public class VirtualRouter implements Serializable {
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().dst()));
       BgpPeerConfig remoteBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().src()));
 
-      BgpMultipathRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
+      BgpRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
 
       // Process all routes from neighbor
       while (queue.peek() != null) {
@@ -1397,12 +1348,12 @@ public class VirtualRouter implements Serializable {
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          _bgpBestPathRib.removeBackupRoute(transformedIncomingRoute);
+          _bgpRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
           if (!remoteRouteAdvert.isWithdrawn()) {
-            _bgpBestPathRib.addBackupRoute(transformedIncomingRoute);
+            _bgpRib.addBackupRoute(transformedIncomingRoute);
             _prefixTracer.installed(
                 transformedIncomingRoute.getNetwork(),
                 remoteConfigId.getHostname(),
@@ -1414,7 +1365,7 @@ public class VirtualRouter implements Serializable {
       }
     }
     // Return built deltas from RibDelta builders
-    Map<BgpMultipathRib, RibDelta<BgpRoute>> builtDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta<BgpRoute>> builtDeltas = new IdentityHashMap<>();
     ribDeltas.forEach(
         (rib, deltaBuilder) -> {
           RibDelta<BgpRoute> delta = deltaBuilder.build();
@@ -2006,10 +1957,8 @@ public class VirtualRouter implements Serializable {
   /**
    * Queue advertised BGP routes to all BGP neighbors.
    *
-   * @param ebgpBestPathDelta {@link RibDelta} indicating what changed in the {@link
-   *     #_bgpBestPathRib}
-   * @param bgpMultiPathDelta a {@link RibDelta} indicating what changed in the {@link
-   *     #_bgpMultipathRib}
+   * @param ebgpBestPathDelta {@link RibDelta} indicating what changed in the {@link #_ebgpRib}
+   * @param bgpMultiPathDelta a {@link RibDelta} indicating what changed in the {@link #_bgpRib}
    * @param mainDelta a {@link RibDelta} indicating what changed in the {@link #_mainRib}
    * @param allNodes map of all nodes in the network, keyed by hostname
    * @param bgpTopology the bgp peering relationships
@@ -2053,10 +2002,10 @@ public class VirtualRouter implements Serializable {
          */
         if (mainDelta != null) {
           for (Prefix p : mainDelta.getPrefixes()) {
-            if (_bgpBestPathRib.getRoutes(p) == null) {
+            if (_bgpRib.getRoutes(p) == null) {
               continue;
             }
-            finalBuilder.add(_bgpBestPathRib.getRoutes(p));
+            finalBuilder.add(_bgpRib.getRoutes(p));
           }
         }
       }
@@ -2207,16 +2156,12 @@ public class VirtualRouter implements Serializable {
    * Propagate BGP routes received from neighbours into the appropriate RIBs. As the propagation is
    * happening, queue appropriate outgoing messages to neighbors as well.
    *
-   * @param multipathEbgp whether or not EBGP is multipath
-   * @param multipathIbgp whether or not IBGP is multipath
    * @param stagingDeltas a map of RIB to corresponding delta. Keys are expected to contain {@link
    *     #_ebgpStagingRib} and {@link #_ibgpStagingRib}
    * @param bgpTopology the bgp peering relationships
    */
   void finalizeBgpRoutesAndQueueOutgoingMessages(
-      boolean multipathEbgp,
-      boolean multipathIbgp,
-      Map<BgpMultipathRib, RibDelta<BgpRoute>> stagingDeltas,
+      Map<BgpRib, RibDelta<BgpRoute>> stagingDeltas,
       final Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       NetworkConfigurations networkConfigurations) {
@@ -2224,34 +2169,15 @@ public class VirtualRouter implements Serializable {
     RibDelta<BgpRoute> ebgpStagingDelta = stagingDeltas.get(_ebgpStagingRib);
     RibDelta<BgpRoute> ibgpStagingDelta = stagingDeltas.get(_ibgpStagingRib);
 
-    Entry<RibDelta<BgpRoute>, RibDelta<BgpRoute>> e;
-    RibDelta<BgpRoute> ebgpBestPathDelta;
-    if (multipathEbgp) {
-      e = syncBgpDeltaPropagation(_bgpBestPathRib, _bgpMultipathRib, ebgpStagingDelta);
-      ebgpBestPathDelta = e.getKey();
-      _bgpBestPathDeltaBuilder.from(e.getKey());
-      _bgpMultiPathDeltaBuilder.from(e.getValue());
-    } else {
-      ebgpBestPathDelta = importRibDelta(_bgpBestPathRib, ebgpStagingDelta);
-      _bgpBestPathDeltaBuilder.from(ebgpBestPathDelta);
-      _bgpMultiPathDeltaBuilder.from(ebgpBestPathDelta);
-    }
-
-    if (multipathIbgp) {
-      e = syncBgpDeltaPropagation(_bgpBestPathRib, _bgpMultipathRib, ibgpStagingDelta);
-      _bgpBestPathDeltaBuilder.from(e.getKey());
-      _bgpMultiPathDeltaBuilder.from(e.getValue());
-    } else {
-      RibDelta<BgpRoute> ibgpBestPathDelta = importRibDelta(_bgpBestPathRib, ibgpStagingDelta);
-      _bgpBestPathDeltaBuilder.from(ibgpBestPathDelta);
-      _bgpMultiPathDeltaBuilder.from(ibgpBestPathDelta);
-    }
-
-    _mainRibRouteDeltaBuiler.from(importRibDelta(_mainRib, _bgpMultiPathDeltaBuilder.build()));
+    RibDelta<BgpRoute> ebgpDelta = importRibDelta(_ebgpRib, ebgpStagingDelta);
+    RibDelta<BgpRoute> ibgpDelta = importRibDelta(_ibgpRib, ibgpStagingDelta);
+    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ebgpDelta));
+    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ibgpDelta));
+    _mainRibRouteDeltaBuiler.from(importRibDelta(_mainRib, _bgpDeltaBuilder.build()));
 
     queueOutgoingBgpRoutes(
-        ebgpBestPathDelta,
-        _bgpMultiPathDeltaBuilder.build(),
+        ebgpDelta,
+        _bgpDeltaBuilder.build(),
         _mainRibRouteDeltaBuiler.build(),
         allNodes,
         bgpTopology,
@@ -2321,8 +2247,7 @@ public class VirtualRouter implements Serializable {
   /** Re-initialize RIBs (at the start of each iteration). */
   void reinitForNewIteration() {
     _mainRibRouteDeltaBuiler = new Builder<>(_mainRib);
-    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
-    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
+    _bgpDeltaBuilder = new RibDelta.Builder<>(_bgpRib);
     _ospfExternalDeltaBuiler = new RibDelta.Builder<>(null);
 
     /*
@@ -2334,12 +2259,10 @@ public class VirtualRouter implements Serializable {
     /*
      * Staging RIBs can also be re-initialized
      */
-    MultipathEquivalentAsPathMatchMode mpTieBreaker =
-        _vrf.getBgpProcess() == null
-            ? EXACT_PATH
-            : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    BgpTieBreaker tieBreaker = getBestPathTieBreaker();
+    MultipathEquivalentAsPathMatchMode mpTieBreaker = getBgpMpTieBreaker();
+    _ebgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ibgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
 
@@ -2391,8 +2314,7 @@ public class VirtualRouter implements Serializable {
   boolean hasOutstandingRoutes() {
     return _ospfExternalDeltaBuiler.build() != null
         || _mainRibRouteDeltaBuiler.build() != null
-        || _bgpBestPathDeltaBuilder.build() != null
-        || _bgpMultiPathDeltaBuilder.build() != null;
+        || _bgpDeltaBuilder.build() != null;
   }
 
   /**
@@ -2619,8 +2541,8 @@ public class VirtualRouter implements Serializable {
     return _mainRib;
   }
 
-  BgpBestPathRib getBgpBestPathRib() {
-    return _bgpBestPathRib;
+  BgpRib getBgpRib() {
+    return _bgpRib;
   }
 
   /** Convenience method to get the VirtualRouter's hostname */
@@ -2747,9 +2669,5 @@ public class VirtualRouter implements Serializable {
         ourConfig.getExportPolicy());
 
     return transformedOutgoingRoute;
-  }
-
-  public BgpMultipathRib getBgpMultipathRib() {
-    return _bgpMultipathRib;
   }
 }

@@ -13,12 +13,12 @@
       },
       "bgpMultipathRibRoutesByIteration" : {
         "1" : 28,
-        "2" : 94,
-        "3" : 106,
-        "4" : 123,
-        "5" : 124,
-        "6" : 124,
-        "7" : 124
+        "2" : 90,
+        "3" : 102,
+        "4" : 119,
+        "5" : 120,
+        "6" : 120,
+        "7" : 120
       },
       "dependentRoutesIterations" : 7,
       "eigrpInternalIterations" : 1,

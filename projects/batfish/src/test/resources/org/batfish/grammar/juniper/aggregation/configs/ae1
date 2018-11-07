@@ -1,0 +1,8 @@
+#
+set system host-name ae1
+#
+set interfaces ge-0/0/0 ether-options 802.3ad ae1
+#
+set interfaces ae1 unit 0 family inet address 1.2.3.4/31
+set interfaces ae1 unit 1 family inet address 2.3.4.4/31
+

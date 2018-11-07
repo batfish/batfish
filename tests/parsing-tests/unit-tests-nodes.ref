@@ -15992,6 +15992,32 @@
             "type" : "AGGREGATED",
             "vrf" : "SOME_INSTANCE"
           },
+          "ge-1/0/0" : {
+            "name" : "ge-1/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "channelGroup" : "ae0.0",
+            "declaredNames" : [
+              "ge-1/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "irb.5" : {
             "name" : "irb.5",
             "accessVlan" : 0,
@@ -16123,6 +16149,7 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
+              "ge-1/0/0",
               "irb.5",
               "xe-0/0/0:0.0",
               "xe-0/0/5:0.0"
