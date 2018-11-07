@@ -29,6 +29,9 @@ import org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr;
  * analogous to Disjunctive Normal Form, then simplify further if possible.
  */
 public final class AclExplainer {
+
+  static final String INVARIANT_ACL_NAME = " ~~ Invariant ACL Name ~~ ";
+
   private AclExplainer() {}
 
   /**
@@ -186,7 +189,7 @@ public final class AclExplainer {
               .collect(ImmutableSet.toImmutableSet()));
     }
 
-    return new AclLineMatchExprWithProvenance<IpAccessListLineIndex>(
+    return new AclLineMatchExprWithProvenance<>(
         aclExprNfExplained.getMatchExpr(), disjunctsToLines);
   }
 
@@ -196,7 +199,7 @@ public final class AclExplainer {
    */
   private static IpAccessList scopedAcl(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return IpAccessList.builder()
-        .setName("_user_provided_invariant_")
+        .setName(INVARIANT_ACL_NAME)
         .setLines(
             ImmutableList.<IpAccessListLine>builder()
                 .add(rejecting(not(invariantExpr)))
