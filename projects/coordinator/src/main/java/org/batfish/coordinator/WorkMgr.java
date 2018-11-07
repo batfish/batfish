@@ -2352,11 +2352,13 @@ public class WorkMgr extends AbstractCoordinator {
   @Nonnull
   Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
     Schema schema = columnMetadata.getSchema();
-    Comparator valueComparator = nullsFirst(schemaComparator(schema));
-    return Comparator.<Row, Object>comparing(
-        r -> r.get(columnMetadata.getName(), schema), valueComparator);
+    Comparator schemaComparator = schemaComparator(schema);
+    Comparator comparator =
+        comparing((Row r) -> r.get(columnMetadata.getName(), schema), nullsFirst(schemaComparator));
+    return comparator;
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private @Nonnull Comparator<?> schemaComparator(Schema schema) {
     if (schema.equals(Schema.ACL_TRACE)) {
       return COMPARATOR_ACL_TRACE;
@@ -2379,7 +2381,8 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.ISSUE)) {
       return comparing(Issue::getSeverity);
     } else if (schema.getType() == Type.LIST) {
-      return lexicographical(nullsFirst(schemaComparator(schema.getInnerSchema())));
+      Comparator schemaComparator = schemaComparator(schema.getInnerSchema());
+      return lexicographical(nullsFirst(schemaComparator));
     } else if (schema.equals(Schema.LONG)) {
       return naturalOrder();
     } else if (schema.equals(Schema.NODE)) {
@@ -2387,7 +2390,8 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.PREFIX)) {
       return naturalOrder();
     } else if (schema.getType() == Type.SET) {
-      return lexicographical(nullsFirst(schemaComparator(schema.getInnerSchema())));
+      Comparator schemaComparator = schemaComparator(schema.getInnerSchema());
+      return lexicographical(nullsFirst(schemaComparator));
     } else if (schema.equals(Schema.STRING)) {
       return naturalOrder();
     } else if (schema.equals(Schema.TRACE)) {
