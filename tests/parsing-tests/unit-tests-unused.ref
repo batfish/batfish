@@ -2031,8 +2031,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            16,
-            17
+            17,
+            18
           ]
         }
       },
