@@ -31,13 +31,15 @@ public class AclExplanationTest {
   }
 
   @Test
-  public void testSimple() {
+  public void testSimpleWithProvenance() {
     MatchHeaderSpace require = matchDst(Prefix.parse("1.2.3.0/24"));
     MatchHeaderSpace forbid = matchDst(new Ip("1.2.3.4"));
 
     _explanation.requireHeaderSpace(require.getHeaderspace());
     _explanation.forbidHeaderSpace(forbid.getHeaderspace());
-    assertThat(_explanation.build().getMatchExpr(), equalTo(and(require, not(forbid))));
+    AclLineMatchExprWithProvenance<AclLineMatchExpr> explanationWithProvenance =
+        _explanation.build();
+    assertThat(explanationWithProvenance.getMatchExpr(), equalTo(and(require, not(forbid))));
   }
 
   @Test
