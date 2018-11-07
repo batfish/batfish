@@ -5,6 +5,7 @@
     "actions": "${actions}",
     "headers": "${headers}",
     "ignoreFilters": "${ignoreFilters}",
+    "maxTraces": "${maxTraces}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
         "description": "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
@@ -32,6 +33,12 @@
                 "optional": true,
                 "type": "boolean",
                 "displayName": "Ignore Filters"
+            },
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",

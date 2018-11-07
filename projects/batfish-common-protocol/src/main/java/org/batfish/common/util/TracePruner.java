@@ -22,6 +22,9 @@ import org.batfish.datamodel.flow.Trace;
  * determinism, we choose dispositions, nodes, and traces in a consistent order.
  */
 public final class TracePruner {
+
+  public static final int DEFAULT_MAX_TRACES = 32;
+
   // Invariant: the traces in these maps are in input order
   private final Map<FlowDisposition, List<Trace>> _dispositionTraces;
   private final Map<String, List<Trace>> _nodeTraces;

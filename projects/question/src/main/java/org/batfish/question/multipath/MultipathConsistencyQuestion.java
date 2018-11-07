@@ -1,6 +1,7 @@
 package org.batfish.question.multipath;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,22 +22,26 @@ import org.batfish.specifier.Location;
  */
 public class MultipathConsistencyQuestion extends Question {
   private static final String PROP_HEADERS = "headers";
+  private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
 
-  @Nonnull private final PathConstraintsInput _pathConstraints;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
+  private final int _maxTraces;
+  @Nonnull private final PathConstraintsInput _pathConstraints;
 
   @JsonCreator
   public MultipathConsistencyQuestion(
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
+      @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINTS) PathConstraintsInput pathConstraints) {
     setDifferential(false);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
+    _maxTraces = firstNonNull(maxTraces, DEFAULT_MAX_TRACES);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   public MultipathConsistencyQuestion() {
-    this(null, null);
+    this(null, null, null);
   }
 
   @Override
@@ -48,6 +53,11 @@ public class MultipathConsistencyQuestion extends Question {
   @Nonnull
   PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
+  }
+
+  @JsonProperty(PROP_MAX_TRACES)
+  public int getMaxTraces() {
+    return _maxTraces;
   }
 
   @Override

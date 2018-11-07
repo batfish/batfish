@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.InterfaceAddress;
@@ -124,6 +125,7 @@ public class DifferentialReachabilityTest {
             PacketHeaderConstraints.unconstrained(),
             false,
             false,
+            TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
@@ -162,6 +164,7 @@ public class DifferentialReachabilityTest {
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             false,
             false,
+            TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
@@ -201,6 +204,7 @@ public class DifferentialReachabilityTest {
             PacketHeaderConstraints.builder().setDstIp("5.5.5.5").build(),
             false,
             false,
+            TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();

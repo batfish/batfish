@@ -2,6 +2,7 @@
     "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
     "differential": false,
     "headers": "${headers}",
+    "maxTraces": "${maxTraces}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
         "description": "Validate multipath consistency.",
@@ -18,6 +19,12 @@
                 "optional": true,
                 "type": "headerConstraint",
                 "displayName": "Headers"
+            },
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
             },
             "pathConstraints": {
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
