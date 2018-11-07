@@ -335,7 +335,9 @@ public class BDDPacket {
   // Get UDP packets for traceroute
   @VisibleForTesting
   BDD getRepresentativeUDPPackets(BDD bdd) {
-    return bdd.and(_ipProtocol.value(IpProtocol.UDP.number())).and(_dstPort.geq(33434));
+    return bdd.and(_ipProtocol.value(IpProtocol.UDP.number()))
+        .and(_dstPort.geq(33434))
+        .and(_dstPort.leq(33534));
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
