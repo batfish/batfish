@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.Flow;
@@ -158,6 +159,7 @@ public class ReducedReachabilityTest {
         false,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+        TracePruner.DEFAULT_MAX_TRACES,
         ImmutableSet.of());
   }
 

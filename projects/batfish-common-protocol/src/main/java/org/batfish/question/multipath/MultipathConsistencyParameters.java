@@ -10,6 +10,7 @@ public final class MultipathConsistencyParameters {
   private final IpSpaceAssignment _srcIpSpaceAssignment;
   private final Set<String> _finalNodes;
   private final Set<String> _forbiddenTransitNodes;
+  private final int _maxTraces;
   private final Set<String> _requiredTransitNodes;
 
   public MultipathConsistencyParameters(
@@ -17,11 +18,13 @@ public final class MultipathConsistencyParameters {
       IpSpaceAssignment srcIpSpaceAssignment,
       Set<String> finalNodes,
       Set<String> forbiddenTransitNodes,
+      int maxTraces,
       Set<String> requiredTransitNodes) {
     _headerSpace = headerSpace;
     _srcIpSpaceAssignment = srcIpSpaceAssignment;
     _finalNodes = finalNodes;
     _forbiddenTransitNodes = forbiddenTransitNodes;
+    _maxTraces = maxTraces;
     _requiredTransitNodes = requiredTransitNodes;
   }
 
@@ -39,6 +42,10 @@ public final class MultipathConsistencyParameters {
 
   public Set<String> getForbiddenTransitNodes() {
     return _forbiddenTransitNodes;
+  }
+
+  public int getMaxTraces() {
+    return _maxTraces;
   }
 
   public Set<String> getRequiredTransitNodes() {

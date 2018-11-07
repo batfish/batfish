@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.specifier.IpSpaceAssignment;
 
 /** Parameters for differential reachability analysis */
@@ -15,6 +16,7 @@ public class DifferentialReachabilityParameters {
   private final boolean _ignoreFilters;
   private final boolean _invertSearch;
   private final IpSpaceAssignment _ipSpaceAssignment;
+  private final int _maxTraces;
   private final Set<String> _requiredTransitNodes;
 
   public DifferentialReachabilityParameters(
@@ -25,6 +27,7 @@ public class DifferentialReachabilityParameters {
       boolean ignoreFilters,
       boolean invertSearch,
       IpSpaceAssignment ipSpaceAssignment,
+      int maxTraces,
       Set<String> requiredTransitNodes) {
     _flowDispositions = ImmutableSet.copyOf(flowDispositions);
     _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
@@ -33,6 +36,7 @@ public class DifferentialReachabilityParameters {
     _ignoreFilters = ignoreFilters;
     _invertSearch = invertSearch;
     _ipSpaceAssignment = ipSpaceAssignment;
+    _maxTraces = maxTraces;
     _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
   }
 
@@ -88,6 +92,14 @@ public class DifferentialReachabilityParameters {
    */
   public IpSpaceAssignment getIpSpaceAssignment() {
     return _ipSpaceAssignment;
+  }
+
+  /**
+   * @return The max number of {@link Trace}s that should be returned for each {@link
+   *     org.batfish.datamodel.Flow} in the answer
+   */
+  public int getMaxTraces() {
+    return _maxTraces;
   }
 
   /**

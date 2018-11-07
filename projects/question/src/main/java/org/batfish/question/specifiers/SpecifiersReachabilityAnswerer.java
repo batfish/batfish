@@ -23,7 +23,7 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
     if (answer instanceof TraceWrapperAsAnswerElement) {
       TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
       TracerouteAnswerer.flowTracesToRows(
-              ((TraceWrapperAsAnswerElement) answer).getFlowTraces(), Integer.MAX_VALUE)
+              ((TraceWrapperAsAnswerElement) answer).getFlowTraces(), question.getMaxTraces())
           .forEach(tableAnswer::addRow);
       return tableAnswer;
     } else if (answer instanceof FlowHistory) {

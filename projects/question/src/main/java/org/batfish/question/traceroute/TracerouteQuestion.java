@@ -1,10 +1,10 @@
 package org.batfish.question.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -28,8 +28,6 @@ public final class TracerouteQuestion extends Question {
   private static final String PROP_SOURCE_LOCATION = "startLocation";
   private static final String PROP_HEADER_CONSTRAINTS = "headers";
   private static final String PROP_MAX_TRACES = "maxTraces";
-
-  @VisibleForTesting static final int DEFAULT_MAX_TRACES = 32;
 
   private final boolean _ignoreFilters;
   private final @Nullable String _sourceLocationStr;
