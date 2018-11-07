@@ -46761,6 +46761,26 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = VARIABLE:'ge-1/0/0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_ether_options",
+            "                  ETHER_OPTIONS:'ether-options'",
+            "                  (ether_options",
+            "                    (eo_802_3ad",
+            "                      EIGHT02_3AD:'802.3ad'",
+            "                      (eo8023ad_interface",
+            "                        name = (variable",
+            "                          text = VARIABLE:'ae0')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface",
             "                COLON:':'",
             "                suffix = DEC:'0')",
@@ -61143,44 +61163,50 @@
               ],
               "numReferrers" : 1
             },
+            "ge-1/0/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
+            },
             "irb" : {
               "definitionLines" : [
-                9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 3
             },
             "irb.5" : {
               "definitionLines" : [
-                9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 3
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
-                7,
-                8
+                8,
+                9
               ],
               "numReferrers" : 2
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : [
-                8
+                9
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                12
+                13
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                12
+                13
               ],
               "numReferrers" : 1
             }
@@ -61188,8 +61214,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 0
             }
@@ -64110,7 +64136,7 @@
                 5
               ],
               "routing-instance interface" : [
-                14
+                15
               ]
             },
             "ge-0/0/0" : {
@@ -64118,46 +64144,51 @@
                 6
               ]
             },
+            "ge-1/0/0" : {
+              "interface" : [
+                7
+              ]
+            },
             "irb" : {
               "interface" : [
-                9,
                 10,
-                11
+                11,
+                12
               ]
             },
             "irb.5" : {
               "interface" : [
-                9,
                 10,
-                11
+                11,
+                12
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
-                7,
-                8
+                8,
+                9
               ]
             },
             "xe-0/0/0:0.0" : {
               "interface" : [
-                8
+                9
               ]
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                12
+                13
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                12
+                13
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                12
+                13
               ]
             }
           }
@@ -65943,7 +65974,7 @@
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                12
+                13
               ]
             }
           }

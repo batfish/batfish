@@ -1376,6 +1376,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // }
     // newIface.getAllAddresses().addAll(allPrefixes);
 
+    // 802.3ad link aggregation
+    if (iface.get8023adInterface() != null) {
+      // TODO: support interface-interface bindings at the physical, rather than logical, level
+      newIface.setChannelGroup(iface.get8023adInterface() + ".0");
+    }
+
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
     }
@@ -2113,17 +2119,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert interfaces
-    Map<String, Interface> allInterfaces = new LinkedHashMap<>();
+    Map<String, Interface> interfacesToConvert = new LinkedHashMap<>();
 
     for (Interface iface : _interfaces.values()) {
-      allInterfaces.putAll(iface.getUnits());
+      if (iface.get8023adInterface() != null) {
+        interfacesToConvert.put(iface.getName(), iface);
+      } else {
+        interfacesToConvert.putAll(iface.getUnits());
+      }
     }
     for (NodeDevice nd : _nodeDevices.values()) {
       for (Interface iface : nd.getInterfaces().values()) {
-        allInterfaces.putAll(iface.getUnits());
+        interfacesToConvert.putAll(iface.getUnits());
       }
     }
-    for (Entry<String, Interface> eUnit : allInterfaces.entrySet()) {
+    for (Entry<String, Interface> eUnit : interfacesToConvert.entrySet()) {
       String unitName = eUnit.getKey();
       Interface unitIface = eUnit.getValue();
       unitIface.inheritUnsetFields();
