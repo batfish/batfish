@@ -297,6 +297,15 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @Nonnull
+  public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
+    Path logPath =
+        _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
+    return FileUtils.readFileToString(logPath.toFile(), UTF_8);
+  }
+
+  @Override
   public @Nullable MajorIssueConfig loadMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType) {
     Path path = _d.getMajorIssueConfigDir(network, majorIssueType);
@@ -845,6 +854,11 @@ public final class FileBasedStorage implements StorageProvider {
         .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
   }
 
+  @Nonnull
+  private Path getWorkLoadPath(NetworkId network, SnapshotId snapshot, String workId) {
+    return _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
+  }
+
   @Override
   public @Nonnull String loadTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
@@ -875,5 +889,13 @@ public final class FileBasedStorage implements StorageProvider {
     path.getParent().toFile().mkdirs();
     FileUtils.writeStringToFile(
         path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
+  }
+
+  @Override
+  public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
+    Path path =
+        _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
+    FileUtils.writeStringToFile(path.toFile(), logOutput, UTF_8);
   }
 }

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Version;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -161,5 +162,29 @@ public final class FileBasedStorageTest {
   public void testObjectKeyToRelativePathValid() throws IOException {
     // no exception should be thrown
     objectKeyToRelativePath("foo/bar");
+  }
+
+  @Test
+  public void testLoadWorkLog() throws IOException {
+    // setup: pretend a worker logger has written a file
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    Path dir = _storage.getDirectoryProvider().getSnapshotOutputDir(network, snapshot);
+    final boolean mkdirs = dir.toFile().mkdirs();
+    assertThat(mkdirs, equalTo(true));
+    CommonUtil.writeFile(dir.resolve("workid.log"), "testoutput");
+
+    // Test: read log using storage API
+    assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+  }
+
+  @Test
+  public void testLoadWorkLogMissing() throws IOException {
+    // setup: pretend a worker logger has written a file
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+
+    _thrown.expect(IOException.class);
+    assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
   }
 }

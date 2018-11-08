@@ -1450,6 +1450,18 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getWork(workItemId);
   }
 
+  /**
+   * Load and return the log file for a given work item ID in a given snapshot.
+   *
+   * @throws BatfishException if log file cannot be found.
+   */
+  public String getWorkLog(String networkName, String snapshotName, String workId)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    return _storage.loadWorkLog(networkId, snapshotId, workId);
+  }
+
   public String initNetwork(@Nullable String network, @Nullable String networkPrefix) {
     String newNetworkName =
         isNullOrEmpty(network) ? networkPrefix + "_" + UUID.randomUUID() : network;
