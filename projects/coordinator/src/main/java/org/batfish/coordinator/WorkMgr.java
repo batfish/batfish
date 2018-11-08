@@ -1453,9 +1453,9 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Load and return the log file for a given work item ID in a given snapshot.
    *
-   * @throws FileNotFoundException if the log file does not exist.
-   * @return Content of the log file as a string; {@code null} if the network or snapshot is not
-   *     available
+   * @throws IOException if the log could not be read successfully.
+   * @return Content of the log file as a string; {@code null} if the network, snapshot or log file
+   *     is not available
    */
   @Nullable
   public String getWorkLog(String networkName, String snapshotName, String workId)
@@ -1468,7 +1468,11 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
-    return _storage.loadWorkLog(networkId, snapshotId, workId);
+    try {
+      return _storage.loadWorkLog(networkId, snapshotId, workId);
+    } catch (FileNotFoundException e) {
+      return null;
+    }
   }
 
   public String initNetwork(@Nullable String network, @Nullable String networkPrefix) {

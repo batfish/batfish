@@ -240,7 +240,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.uploadTestSnapshot(network, "snapshot", _folder);
+    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
 
     Response response = getWorkLogTarget(network, snapshot, "missingworkid").get();
 
