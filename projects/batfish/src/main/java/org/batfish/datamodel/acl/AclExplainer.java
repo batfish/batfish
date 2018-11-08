@@ -174,9 +174,10 @@ public final class AclExplainer {
     AclLineMatchExprWithProvenance<AclLineMatchExpr> aclExprNfExplained =
         AclExplanation.explainNormalForm(aclExprNf);
 
+    // join the provenance information from the normal form with the literalsToLines mapping
+    // above to obtain provenance back to the original acl lines
     IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> disjunctsToLines =
         new IdentityHashMap<>();
-
     for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry :
         aclExprNfExplained.getProvenance().entrySet()) {
       AclLineMatchExpr disjunct = entry.getKey();

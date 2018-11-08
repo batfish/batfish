@@ -8,9 +8,14 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -35,25 +40,78 @@ public class AclExplanationTest {
     MatchHeaderSpace require = matchDst(Prefix.parse("1.2.3.0/24"));
     MatchHeaderSpace forbid = matchDst(new Ip("1.2.3.4"));
 
-    _explanation.requireHeaderSpace(require.getHeaderspace());
-    _explanation.forbidHeaderSpace(forbid.getHeaderspace());
+    _explanation.requireHeaderSpace(require);
+    _explanation.forbidHeaderSpace(forbid);
+
     AclLineMatchExprWithProvenance<AclLineMatchExpr> explanationWithProvenance =
         _explanation.build();
-    assertThat(explanationWithProvenance.getMatchExpr(), equalTo(and(require, not(forbid))));
+
+    AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
+    assertThat(explanation, equalTo(and(require, not(forbid))));
+
+    IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> provenance =
+        explanationWithProvenance.getProvenance();
+    assertThat(provenance.entrySet(), hasSize(2));
+
+    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
+      AclLineMatchExpr lit = entry.getKey();
+      Set<AclLineMatchExpr> provLits = entry.getValue();
+      assertThat(provLits, hasSize(1));
+      if (lit.equals(require)) {
+        assertThat(provLits, hasItem(require));
+      } else if (lit.equals(not(forbid))) {
+        assertThat(provLits, hasItem(forbid));
+      }
+    }
   }
 
   @Test
-  public void testIntersectOriginateFromDevice() {
-    _explanation.requireOriginatingFromDevice();
-    _explanation.requireOriginatingFromDevice();
-    assertThat(_explanation.build().getMatchExpr(), equalTo(ORIGINATING_FROM_DEVICE));
+  public void testIntersectOriginateFromDeviceWithProvenance() {
+    _explanation.requireOriginatingFromDevice(ORIGINATING_FROM_DEVICE);
+    _explanation.requireOriginatingFromDevice(ORIGINATING_FROM_DEVICE);
+
+    AclLineMatchExprWithProvenance<AclLineMatchExpr> explanationWithProvenance =
+        _explanation.build();
+
+    AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
+    assertThat(explanation, equalTo(ORIGINATING_FROM_DEVICE));
+
+    IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> provenance =
+        explanationWithProvenance.getProvenance();
+    assertThat(provenance.entrySet(), hasSize(1));
+
+    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
+      AclLineMatchExpr lit = entry.getKey();
+      Set<AclLineMatchExpr> provLits = entry.getValue();
+      assertThat(provLits, hasSize(1));
+      assertThat(lit, equalTo(ORIGINATING_FROM_DEVICE));
+      assertThat(provLits, hasItem(ORIGINATING_FROM_DEVICE));
+    }
   }
 
   @Test
-  public void testIntersectSources() {
-    _explanation.requireSourceInterfaces(ImmutableSet.of("foo", "bar", "baz"));
-    _explanation.requireSourceInterfaces(ImmutableSet.of("foo"));
-    assertThat(_explanation.build().getMatchExpr(), equalTo(matchSrcInterface("foo")));
+  public void testIntersectSourcesWithProvenance() {
+    _explanation.requireSourceInterfaces(
+        new MatchSrcInterface(ImmutableSet.of("foo", "bar", "baz")));
+    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("foo")));
+    AclLineMatchExprWithProvenance<AclLineMatchExpr> explanationWithProvenance =
+        _explanation.build();
+
+    AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
+    assertThat(explanation, equalTo(matchSrcInterface("foo")));
+
+    IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> provenance =
+        explanationWithProvenance.getProvenance();
+    assertThat(provenance.entrySet(), hasSize(1));
+
+    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
+      AclLineMatchExpr lit = entry.getKey();
+      Set<AclLineMatchExpr> provLits = entry.getValue();
+      assertThat(provLits, hasSize(2));
+      assertThat(lit, equalTo(new MatchSrcInterface(ImmutableSet.of("foo"))));
+      assertThat(provLits, hasItem(new MatchSrcInterface(ImmutableSet.of("foo", "bar", "baz"))));
+      assertThat(provLits, hasItem(new MatchSrcInterface(ImmutableSet.of("foo"))));
+    }
   }
 
   @Test
@@ -61,8 +119,8 @@ public class AclExplanationTest {
     MatchHeaderSpace forbid1 = matchDst(new Ip("1.2.3.4"));
     MatchHeaderSpace forbid2 = matchDst(new Ip("1.2.3.5"));
 
-    _explanation.forbidHeaderSpace(forbid1.getHeaderspace());
-    _explanation.forbidHeaderSpace(forbid2.getHeaderspace());
+    _explanation.forbidHeaderSpace(forbid1);
+    _explanation.forbidHeaderSpace(forbid2);
     assertThat(_explanation.build().getMatchExpr(), equalTo(and(not(forbid1), not(forbid2))));
   }
 
@@ -81,9 +139,9 @@ public class AclExplanationTest {
                 .setDstPorts(ImmutableList.of(new SubRange(80, 80)))
                 .build());
 
-    _explanation.requireHeaderSpace(matchDstPrefix.getHeaderspace());
-    _explanation.requireHeaderSpace(matchDstPort.getHeaderspace());
-    _explanation.forbidHeaderSpace(matchDstIp.getHeaderspace());
+    _explanation.requireHeaderSpace(matchDstPrefix);
+    _explanation.requireHeaderSpace(matchDstPort);
+    _explanation.forbidHeaderSpace(matchDstIp);
     AclLineMatchExpr expr = and(matchDstPrefixAndPort, not(matchDstIp));
     assertThat(_explanation.build().getMatchExpr(), equalTo(expr));
   }
@@ -102,25 +160,25 @@ public class AclExplanationTest {
 
   @Test
   public void testUnsatSource1() {
-    _explanation.requireOriginatingFromDevice();
+    _explanation.requireOriginatingFromDevice(ORIGINATING_FROM_DEVICE);
     _exception.expect(IllegalStateException.class);
     _exception.expectMessage("AclExplanation is unsatisfiable");
-    _explanation.requireSourceInterfaces(ImmutableSet.of("foo"));
+    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("foo")));
   }
 
   @Test
   public void testUnsatSource2() {
-    _explanation.requireSourceInterfaces(ImmutableSet.of("foo"));
+    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("foo")));
     _exception.expect(IllegalStateException.class);
     _exception.expectMessage("AclExplanation is unsatisfiable");
-    _explanation.requireOriginatingFromDevice();
+    _explanation.requireOriginatingFromDevice(ORIGINATING_FROM_DEVICE);
   }
 
   @Test
   public void testUnsatSource3() {
-    _explanation.requireSourceInterfaces(ImmutableSet.of("foo"));
+    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("foo")));
     _exception.expect(IllegalStateException.class);
     _exception.expectMessage("AclExplanation is unsatisfiable");
-    _explanation.requireSourceInterfaces(ImmutableSet.of("bar"));
+    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("bar")));
   }
 }
