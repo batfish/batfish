@@ -29,7 +29,7 @@
             },
             "headers": {
                 "description": "Packet header constraints",
-                "optional": true,
+                "optional": false,
                 "type": "headerConstraint",
                 "displayName": "Headers",
                 "fields": {
