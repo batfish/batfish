@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
 
-import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
