@@ -47,4 +47,14 @@ public class FlexibleNodeSpecifierFactoryTest {
         new FlexibleNodeSpecifierFactory().buildNodeSpecifier("name:.*"),
         equalTo(new ShorthandNodeSpecifier(new NodesSpecifier("name:.*"))));
   }
+
+  @Test
+  public void testDifference() {
+    assertThat(
+        new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo - bar"),
+        equalTo(
+            new DifferenceNodeSpecifier(
+                new ShorthandNodeSpecifier(new NodesSpecifier("foo")),
+                new ShorthandNodeSpecifier(new NodesSpecifier("bar")))));
+  }
 }

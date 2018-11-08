@@ -14,12 +14,15 @@ import org.batfish.datamodel.questions.NodesSpecifier;
  * <ul>
  *   <li>null: returns AllNodesNodeSpecifier
  *   <li>ref.noderole(roleRegex, roleDim): returns {@link RoleRegexNodeSpecifier} (dim is optional)
+ *   <li>a - b: difference of nodes denoted by a and b
  *   <li>all other inputs go directly to {@link ShorthandNodeSpecifier}
  * </ul>
  */
 @AutoService(NodeSpecifierFactory.class)
 public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
   public static final String NAME = FlexibleNodeSpecifierFactory.class.getSimpleName();
+
+  private static final Pattern DIFFERENCE_PATTERN = Pattern.compile("^(.*)\\s+-\\s+(.*)$");
 
   private static final Pattern REF_PATTERN =
       Pattern.compile("ref\\.noderole\\((.*)\\)", Pattern.CASE_INSENSITIVE);
@@ -36,10 +39,10 @@ public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
     }
     checkArgument(input instanceof String, NAME + " requires String input");
 
-    String str = ((String) input).trim();
+    String trimmedInput = ((String) input).trim();
 
     // ref pattern
-    Matcher matcher = REF_PATTERN.matcher(str);
+    Matcher matcher = REF_PATTERN.matcher(trimmedInput);
     if (matcher.find()) {
       String[] words = matcher.group(1).trim().split(",");
       checkArgument(
@@ -52,7 +55,15 @@ public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
       return new RoleRegexNodeSpecifier(rolePattern, roleDimension);
     }
 
+    // difference pattern
+    Matcher differenceMatcher = DIFFERENCE_PATTERN.matcher(trimmedInput);
+    if (differenceMatcher.find()) {
+      return new DifferenceNodeSpecifier(
+          buildNodeSpecifier(differenceMatcher.group(1)),
+          buildNodeSpecifier(differenceMatcher.group(2)));
+    }
+
     // pass through to nodes specifier
-    return new ShorthandNodeSpecifier(new NodesSpecifier(str));
+    return new ShorthandNodeSpecifier(new NodesSpecifier(trimmedInput));
   }
 }
