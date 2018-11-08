@@ -1,6 +1,7 @@
 {
     "class": "org.batfish.question.loop.DetectLoopsQuestion",
     "differential": false,
+    "maxTraces": "${maxTraces}",
     "instance": {
         "description": "Detect forwarding loops.",
         "instanceName": "detectLoops",
@@ -10,6 +11,13 @@
             "reachability",
             "loop"
         ],
-        "variables": {}
+        "variables": {
+             "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
+            }
+        }
     }
 }

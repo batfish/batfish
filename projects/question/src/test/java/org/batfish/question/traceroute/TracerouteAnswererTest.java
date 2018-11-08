@@ -4,10 +4,13 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_BASE_TRACES;
+import static org.batfish.question.traceroute.TracerouteAnswerer.COL_DELTA_TRACES;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACE_COUNT;
 import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
+import static org.batfish.question.traceroute.TracerouteAnswerer.flowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -19,10 +22,12 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
@@ -30,9 +35,11 @@ import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableDiff;
@@ -172,6 +179,67 @@ public class TracerouteAnswererTest {
                     ImmutableList.of(TraceMatchers.hasDisposition(FlowDisposition.DENIED_IN))),
                 Schema.set(Schema.TRACE)),
             hasColumn(TracerouteAnswerer.COL_DELTA_TRACE_COUNT, equalTo(1), Schema.INTEGER)));
+  }
+
+  @Test
+  public void testFlowTracesToRowsMaxTraces() {
+    Flow flow =
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        ImmutableSortedMap.of(
+            flow,
+            ImmutableList.of(
+                new Trace(FlowDisposition.DENIED_OUT, ImmutableList.of()),
+                new Trace(FlowDisposition.DENIED_IN, ImmutableList.of())));
+    Multiset<Row> rows = flowTracesToRows(flowTraces, 1);
+
+    assertThat(
+        rows.iterator().next(),
+        allOf(
+            hasColumn(
+                COL_FLOW,
+                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                Schema.FLOW),
+            hasColumn(COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+            hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)));
+  }
+
+  @Test
+  public void testDiffFlowTracesToRowsMaxTraces() {
+    Flow flow =
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+
+    SortedMap<Flow, List<Trace>> baseflowTraces =
+        ImmutableSortedMap.of(
+            flow,
+            ImmutableList.of(
+                new Trace(
+                    FlowDisposition.DENIED_OUT,
+                    ImmutableList.of(new Hop(new Node("node1"), ImmutableList.of()))),
+                new Trace(
+                    FlowDisposition.DENIED_IN,
+                    ImmutableList.of(new Hop(new Node("node2"), ImmutableList.of())))));
+
+    SortedMap<Flow, List<Trace>> deltaFlowTraces =
+        ImmutableSortedMap.of(
+            flow,
+            ImmutableList.of(
+                new Trace(FlowDisposition.ACCEPTED, ImmutableList.of()),
+                new Trace(FlowDisposition.ACCEPTED, ImmutableList.of())));
+
+    Multiset<Row> rows = diffFlowTracesToRows(baseflowTraces, deltaFlowTraces, 1);
+
+    assertThat(
+        rows.iterator().next(),
+        allOf(
+            hasColumn(
+                COL_FLOW,
+                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                Schema.FLOW),
+            hasColumn(COL_BASE_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+            hasColumn(TracerouteAnswerer.COL_BASE_TRACE_COUNT, equalTo(2), Schema.INTEGER),
+            hasColumn(COL_DELTA_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+            hasColumn(TracerouteAnswerer.COL_DELTA_TRACE_COUNT, equalTo(2), Schema.INTEGER)));
   }
 
   @Test

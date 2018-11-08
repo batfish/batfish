@@ -1,5 +1,7 @@
 package org.batfish.question.loop;
 
+import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
+
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -17,6 +19,6 @@ public class DetectLoopsPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new DetectLoopsQuestion();
+    return new DetectLoopsQuestion(DEFAULT_MAX_TRACES);
   }
 }

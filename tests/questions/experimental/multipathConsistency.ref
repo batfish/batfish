@@ -4,6 +4,7 @@
     "dstIps" : "ddd",
     "srcIps" : "sss"
   },
+  "maxTraces" : 1,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -31,6 +32,13 @@
           "srcIps" : "sss",
           "dstIps" : "ddd"
         }
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 1
       },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",
