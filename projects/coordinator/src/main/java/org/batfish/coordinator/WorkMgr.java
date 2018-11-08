@@ -1453,7 +1453,9 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Load and return the log file for a given work item ID in a given snapshot.
    *
-   * @throws BatfishException if log file cannot be found.
+   * @throws FileNotFoundException if the log file does not exist.
+   * @return Content of the log file as a string; {@code null} if the network or snapshot is not
+   *     available
    */
   @Nullable
   public String getWorkLog(String networkName, String snapshotName, String workId)
