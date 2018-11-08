@@ -6,6 +6,7 @@
   },
   "ignoreFilters" : false,
   "invertSearch" : false,
+  "maxTraces" : 1,
   "pathConstraints" : {
     "endLocation" : "bbb",
     "forbiddenLocations" : "ddd",
@@ -54,6 +55,13 @@
         "optional" : true,
         "type" : "boolean",
         "value" : false
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 1
       },
       "pathConstraints" : {
         "description" : "Constraint the path a flow can take (start/end/transit locations)",

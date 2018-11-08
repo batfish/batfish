@@ -38,6 +38,7 @@ public final class DetectLoopsAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer() {
+    DetectLoopsQuestion question = (DetectLoopsQuestion) _question;
     Set<Flow> flows = _batfish.bddLoopDetection();
 
     /*
@@ -67,7 +68,8 @@ public final class DetectLoopsAnswerer extends Answerer {
     } else {
       SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
       TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
-      TracerouteAnswerer.flowTracesToRows(flowTraces, 4).forEach(tableAnswer::addRow);
+      TracerouteAnswerer.flowTracesToRows(flowTraces, question.getMaxTraces())
+          .forEach(tableAnswer::addRow);
       return tableAnswer;
     }
   }

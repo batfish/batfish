@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -157,6 +158,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         invertSearch,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+        TracePruner.DEFAULT_MAX_TRACES,
         ImmutableSet.of());
   }
 
