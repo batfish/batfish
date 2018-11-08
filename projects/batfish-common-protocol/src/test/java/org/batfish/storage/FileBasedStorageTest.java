@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -184,7 +185,7 @@ public final class FileBasedStorageTest {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
-    _thrown.expect(IOException.class);
+    _thrown.expect(FileNotFoundException.class);
     assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
   }
 }

@@ -300,7 +300,12 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    return FileUtils.readFileToString(getWorkLoadPath(network, snapshot, workId).toFile(), UTF_8);
+    Path filePath = getWorkLoadPath(network, snapshot, workId);
+    if (!Files.exists(filePath)) {
+      throw new FileNotFoundException(
+          String.format("Could not find log file for work ID: %s", workId));
+    }
+    return FileUtils.readFileToString(filePath.toFile(), UTF_8);
   }
 
   @Override

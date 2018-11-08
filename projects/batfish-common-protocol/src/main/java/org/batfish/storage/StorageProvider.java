@@ -114,7 +114,8 @@ public interface StorageProvider {
   /**
    * Load the log file for a given work item ID.
    *
-   * @throws IOException if the log file is not found
+   * @throws FileNotFoundException if the log file is not found.
+   * @throws IOException if there is an error reading the log file.
    */
   @Nonnull
   String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
