@@ -111,6 +111,11 @@ public interface StorageProvider {
   @Nullable
   MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
 
+  /**
+   * Load the log file for a given work item ID.
+   *
+   * @throws IOException if the log file is not found
+   */
   @Nonnull
   String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
 
