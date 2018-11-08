@@ -32,7 +32,23 @@
                 "description": "Packet header constraints",
                 "optional": true,
                 "type": "headerConstraint",
-                "displayName": "Headers"
+                "displayName": "Headers",
+                "fields": {
+                    "applications": { "optional": true },
+                    "dscps": { "optional": true },
+                    "dstIps": { "optional": true },
+                    "dstPorts": { "optional": true },
+                    "ecns": { "optional": true },
+                    "flowStates": { "optional": true },
+                    "fragmentOffsets": { "optional": true },
+                    "icmpCodes": { "optional": true },
+                    "icmpTypes": { "optional": true },
+                    "ipProtocols": { "optional": true },
+                    "packetLengths": { "optional": true },
+                    "srcIps": { "optional": true },
+                    "srcPorts": { "optional": true },
+                    "tcpFlags": { "optional": true }
+                }
             },
             "startLocation": {
                 "description": "Location to start tracing from",
