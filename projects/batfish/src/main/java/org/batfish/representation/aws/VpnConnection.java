@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.datamodel.ConfigurationFormat.AWS;
+
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.Serializable;
@@ -281,6 +283,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
         BgpActivePeerConfig.Builder cgBgpPeerConfig =
             BgpActivePeerConfig.builder()
+                .setEbgpAdmin(RoutingProtocol.BGP.getDefaultAdministrativeCost(AWS))
+                .setIbgpAdmin(RoutingProtocol.IBGP.getDefaultAdministrativeCost(AWS))
                 .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
                 .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
                 .setBgpProcess(proc)
@@ -308,6 +312,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             vpnGatewayCfgNode.getAllInterfaces().get(vpcId).getAddress().getIp();
         BgpActivePeerConfig.Builder vgwToVpcBuilder = BgpActivePeerConfig.builder();
         vgwToVpcBuilder
+            .setEbgpAdmin(RoutingProtocol.BGP.getDefaultAdministrativeCost(AWS))
+            .setIbgpAdmin(RoutingProtocol.IBGP.getDefaultAdministrativeCost(AWS))
             .setPeerAddress(vpcIfaceAddress)
             .setRemoteAs(ipsecTunnel.getVgwBgpAsn())
             .setBgpProcess(proc)
@@ -317,7 +323,10 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setSendCommunity(true);
 
         // iBGP connection from VPC
-        BgpActivePeerConfig.Builder vpcToVgwBgpPeerConfig = BgpActivePeerConfig.builder();
+        BgpActivePeerConfig.Builder vpcToVgwBgpPeerConfig =
+            BgpActivePeerConfig.builder()
+                .setEbgpAdmin(RoutingProtocol.BGP.getDefaultAdministrativeCost(AWS))
+                .setIbgpAdmin(RoutingProtocol.IBGP.getDefaultAdministrativeCost(AWS));
         vpcToVgwBgpPeerConfig.setPeerAddress(vgwToVpcIfaceAddress);
         BgpProcess vpcProc = new BgpProcess();
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);

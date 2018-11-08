@@ -91,7 +91,7 @@ public class BgpPeerConfigurationAnswererTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
 
     BgpActivePeerConfig activePeer =
-        BgpActivePeerConfig.builder()
+        nf.testBgpNeighborBuilder()
             .setLocalAs(100L)
             .setRemoteAs(200L)
             .setLocalIp(new Ip("1.1.1.1"))
@@ -103,7 +103,7 @@ public class BgpPeerConfigurationAnswererTest {
             .setSendCommunity(false)
             .build();
     BgpPassivePeerConfig passivePeer =
-        BgpPassivePeerConfig.builder()
+        nf.testBgpDynamicNeighborBuilder()
             .setLocalAs(100L)
             .setRemoteAs(ImmutableList.of(300L))
             .setLocalIp(new Ip("1.1.1.2"))

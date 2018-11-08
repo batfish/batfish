@@ -28,7 +28,8 @@ public final class BgpProtocolHelperTest {
   @Test
   public void transformBgpRouteOnExport_setTag() throws BgpRoutePropagationException {
     NetworkFactory nf = new NetworkFactory();
-    BgpActivePeerConfig fromNeighbor = nf.bgpNeighborBuilder().build();
+    BgpActivePeerConfig fromNeighbor =
+        nf.bgpNeighborBuilder().setEbgpAdmin(20).setIbgpAdmin(200).build();
     BgpPeerConfig toNeighbor = nf.bgpNeighborBuilder().build();
     BgpSessionProperties sessionProperties = BgpSessionProperties.from(fromNeighbor, toNeighbor);
     Ip fromVrfIp = new Ip("2.2.2.2");

@@ -21,14 +21,15 @@ public class BgpPropertySpecifierTest {
     BgpProcess emptyProcess = new BgpProcess();
     assertFalse("no rr clients", isRouteReflector(emptyProcess));
 
-    BgpActivePeerConfig activePeerWithRRC =
-        BgpActivePeerConfig.builder().setRouteReflectorClient(true).build();
-    BgpActivePeerConfig activePeerWithoutRRC =
-        BgpActivePeerConfig.builder().setRouteReflectorClient(false).build();
-    BgpPassivePeerConfig passivePeerWithRRC =
-        BgpPassivePeerConfig.builder().setRouteReflectorClient(true).build();
+    BgpActivePeerConfig.Builder activeBuilder =
+        BgpActivePeerConfig.builder().setEbgpAdmin(20).setIbgpAdmin(200);
+    BgpActivePeerConfig activePeerWithRRC = activeBuilder.setRouteReflectorClient(true).build();
+    BgpActivePeerConfig activePeerWithoutRRC = activeBuilder.setRouteReflectorClient(false).build();
+    BgpPassivePeerConfig.Builder passiveBuilder =
+        BgpPassivePeerConfig.builder().setEbgpAdmin(20).setIbgpAdmin(200);
+    BgpPassivePeerConfig passivePeerWithRRC = passiveBuilder.setRouteReflectorClient(true).build();
     BgpPassivePeerConfig passivePeerWithoutRRC =
-        BgpPassivePeerConfig.builder().setRouteReflectorClient(false).build();
+        passiveBuilder.setRouteReflectorClient(false).build();
     Prefix p32a = Prefix.parse("1.2.3.4/32");
     Prefix p32b = Prefix.parse("1.2.3.5/32");
     Prefix p30a = Prefix.parse("1.2.3.4/30");

@@ -27,6 +27,7 @@ import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -114,7 +115,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Configuration node3 = createConfiguration(cb, "node3", IP3, IP4, 3L, 3L);
     Configuration node4 =
         createConfigurationWithDynamicSession(
-            cb, "node4", IP4, new Prefix(IP3, 24), 3L, ImmutableList.of(3L));
+            nf, cb, "node4", IP4, new Prefix(IP3, 24), 3L, ImmutableList.of(3L));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of("node1", node1, "node2", node2, "node3", node3, "node4", node4);
@@ -143,6 +144,8 @@ public class BgpSessionCompatibilityAnswererTest {
 
     BgpActivePeerConfig peerConfig =
         BgpActivePeerConfig.builder()
+            .setEbgpAdmin(20)
+            .setIbgpAdmin(200)
             .setLocalAs(localAs)
             .setRemoteAs(remoteAs)
             .setLocalIp(localIp)
@@ -161,7 +164,8 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   private static Configuration createConfigurationWithDynamicSession(
-      Configuration.Builder cb,
+      NetworkFactory nf,
+      Builder cb,
       String nodeName,
       Ip localIp,
       Prefix remotePrefix,
@@ -174,7 +178,7 @@ public class BgpSessionCompatibilityAnswererTest {
         ImmutableList.of(new InterfaceAddress(localIp, Ip.numSubnetBitsToSubnetMask(32))));
 
     BgpPassivePeerConfig peerConfig =
-        BgpPassivePeerConfig.builder()
+        nf.testBgpDynamicNeighborBuilder()
             .setLocalAs(localAs)
             .setRemoteAs(remoteAsList)
             .setLocalIp(localIp)

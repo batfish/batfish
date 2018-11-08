@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -104,5 +105,19 @@ public class NetworkFactory {
 
   public Vrf.Builder vrfBuilder() {
     return new Vrf.Builder(this);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // Methods below here are for us in testing only as convenience methods that allow for setting
+  // some default parameters. These test methods use Cisco-specific defaults.
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  @VisibleForTesting
+  public BgpActivePeerConfig.Builder testBgpNeighborBuilder() {
+    return BgpActivePeerConfig.builder().setEbgpAdmin(20).setIbgpAdmin(200);
+  }
+
+  @VisibleForTesting
+  public BgpPassivePeerConfig.Builder testBgpDynamicNeighborBuilder() {
+    return BgpPassivePeerConfig.builder().setEbgpAdmin(20).setIbgpAdmin(200);
   }
 }

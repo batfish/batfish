@@ -18,7 +18,7 @@ public class BgpSessionAnswererTest {
   @Test
   public void testLocalIpUnknownStatically() {
     NetworkFactory nf = new NetworkFactory();
-    Builder bgpb = nf.bgpNeighborBuilder();
+    Builder bgpb = nf.testBgpNeighborBuilder();
     assertThat(
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).build(),
@@ -38,7 +38,7 @@ public class BgpSessionAnswererTest {
   @Test
   public void testNoRemoteAs() {
     NetworkFactory nf = new NetworkFactory();
-    Builder bgpb = nf.bgpNeighborBuilder();
+    Builder bgpb = nf.testBgpNeighborBuilder();
     assertThat(
         getLocallyBrokenStatus(
             bgpb.setPeerAddress(new Ip("1.1.1.1")).setLocalIp(new Ip("2.2.2.2")).build(),

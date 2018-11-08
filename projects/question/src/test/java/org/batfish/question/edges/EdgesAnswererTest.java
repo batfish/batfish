@@ -94,12 +94,13 @@ public class EdgesAnswererTest {
   private Map<String, Configuration> _configurations;
   private Set<String> _includeNodes;
   private Set<String> _includeRemoteNodes;
+  private NetworkFactory _nf;
 
   @Before
   public void setup() {
-    NetworkFactory nf = new NetworkFactory();
+    _nf = new NetworkFactory();
     Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
     _host1 = cb.setHostname("host1").build();
     _host1.setInterfaces(
@@ -159,7 +160,7 @@ public class EdgesAnswererTest {
     BgpProcess bgp1 = new BgpProcess();
     bgp1.setRouterId(new Ip("1.1.1.1"));
     BgpActivePeerConfig peer1 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
+        _nf.testBgpNeighborBuilder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
     bgp1.getActiveNeighbors().put(new Prefix(new Ip("2.2.2.2"), 24), peer1);
     BgpPeerConfigId neighborId1 =
         new BgpPeerConfigId("host1", "vrf1", new Prefix(new Ip("2.2.2.2"), 24), false);
@@ -167,7 +168,7 @@ public class EdgesAnswererTest {
     BgpProcess bgp2 = new BgpProcess();
     bgp2.setRouterId(new Ip("2.2.2.2"));
     BgpActivePeerConfig peer2 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("2.2.2.2")).setLocalAs(2L).build();
+        _nf.testBgpNeighborBuilder().setLocalIp(new Ip("2.2.2.2")).setLocalAs(2L).build();
     bgp2.getActiveNeighbors().put(new Prefix(new Ip("1.1.1.1"), 24), peer2);
     BgpPeerConfigId neighborId2 =
         new BgpPeerConfigId("host2", "vrf2", new Prefix(new Ip("1.1.1.1"), 24), false);

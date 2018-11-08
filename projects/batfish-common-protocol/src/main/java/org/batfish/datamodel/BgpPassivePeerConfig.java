@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -45,12 +46,14 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
       @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_EBGP_ADMIN) int ebgpAdmin,
       @JsonProperty(PROP_EBGP_MULTIHOP) boolean ebgpMultihop,
       @JsonProperty(PROP_ENFORCE_FIRST_AS) boolean enforceFirstAs,
       @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
       @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
       @JsonProperty(PROP_GENERATED_ROUTES) @Nullable Set<GeneratedRoute> generatedRoutes,
       @JsonProperty(PROP_GROUP) @Nullable String group,
+      @JsonProperty(PROP_IBGP_ADMIN) int ibgpAdmin,
       @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
       @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
@@ -71,12 +74,14 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         clusterId,
         defaultMetric,
         description,
+        ebgpAdmin,
         ebgpMultihop,
         enforceFirstAs,
         exportPolicy,
         exportPolicySources,
         generatedRoutes,
         group,
+        ibgpAdmin,
         importPolicy,
         importPolicySources,
         localAs,
@@ -129,17 +134,19 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     return Objects.hash(super.hashCode(), _peerPrefix, _remoteAs);
   }
 
-  public static class Builder extends BgpPeerConfig.Builder<Builder, BgpPassivePeerConfig> {
+  public static final class Builder extends BgpPeerConfig.Builder<Builder, BgpPassivePeerConfig> {
     @Nullable private Prefix _peerPrefix;
     @Nullable private List<Long> _remoteAs;
 
-    protected Builder() {
+    private Builder() {
       super();
     }
 
     @Override
     @Nonnull
     public BgpPassivePeerConfig build() {
+      checkState(_ebgpAdmin != null, "Must configure eBGP admin distance before building");
+      checkState(_ibgpAdmin != null, "Must configure iBGP admin distance before building");
       BgpPassivePeerConfig bgpPeerConfig =
           new BgpPassivePeerConfig(
               _additionalPathsReceive,
@@ -153,12 +160,14 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
               _clusterId,
               _defaultMetric,
               _description,
+              _ebgpAdmin,
               _ebgpMultihop,
               _enforceFirstAs,
               _exportPolicy,
               _exportPolicySources,
               _generatedRoutes,
               _group,
+              _ibgpAdmin,
               _importPolicy,
               _importPolicySources,
               _localAs,

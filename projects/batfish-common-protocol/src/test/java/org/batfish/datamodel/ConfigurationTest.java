@@ -63,7 +63,7 @@ public class ConfigurationTest {
     vrf.setBgpProcess(bgpProcess);
     BgpPeerConfig neighbor =
         _factory
-            .bgpNeighborBuilder()
+            .testBgpNeighborBuilder()
             .setPeerAddress(Ip.ZERO)
             .setBgpProcess(bgpProcess)
             .setExportPolicy(
@@ -77,7 +77,7 @@ public class ConfigurationTest {
             .build();
     BgpPeerConfig neighborWithMissingPolicies =
         _factory
-            .bgpNeighborBuilder()
+            .testBgpNeighborBuilder()
             .setPeerAddress(Ip.MAX)
             .setBgpProcess(bgpProcess)
             .setExportPolicy(bgpMissingExportPolicyName)

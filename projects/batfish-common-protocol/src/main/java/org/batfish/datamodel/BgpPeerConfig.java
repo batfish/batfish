@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -43,6 +42,8 @@ public abstract class BgpPeerConfig implements Serializable {
 
   static final String PROP_DESCRIPTION = "description";
 
+  static final String PROP_EBGP_ADMIN = "ebgpAdminDistance";
+
   static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
 
   static final String PROP_ENFORCE_FIRST_AS = "enforceFirstAs";
@@ -54,6 +55,8 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
   static final String PROP_GROUP = "group";
+
+  static final String PROP_IBGP_ADMIN = "ibgpAdminDistance";
 
   static final String PROP_IMPORT_POLICY = "importPolicy";
 
@@ -95,6 +98,8 @@ public abstract class BgpPeerConfig implements Serializable {
 
   protected final String _description;
 
+  private final int _ebgpAdmin;
+
   private final boolean _ebgpMultihop;
 
   private final boolean _enforceFirstAs;
@@ -116,6 +121,8 @@ public abstract class BgpPeerConfig implements Serializable {
    */
   @Nullable private final String _group;
 
+  private final int _ibgpAdmin;
+
   @Nullable private final String _importPolicy;
 
   @Nonnull private SortedSet<String> _importPolicySources;
@@ -135,32 +142,32 @@ public abstract class BgpPeerConfig implements Serializable {
    */
   private boolean _sendCommunity;
 
-  @JsonCreator
   protected BgpPeerConfig(
-      @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
-      @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) boolean additionalPathsSelectAll,
-      @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) boolean additionalPathsSend,
-      @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
-      @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive,
-      @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) boolean allowLocalAsIn,
-      @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) boolean allowRemoteAsOut,
-      @JsonProperty(PROP_AUTHENTICATION_SETTINGS) @Nullable
-          BgpAuthenticationSettings authenticationSettings,
-      @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
-      @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
-      @JsonProperty(PROP_EBGP_MULTIHOP) boolean ebgpMultihop,
-      @JsonProperty(PROP_ENFORCE_FIRST_AS) boolean enforceFirstAs,
-      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
-      @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
-      @JsonProperty(PROP_GENERATED_ROUTES) @Nullable Set<GeneratedRoute> generatedRoutes,
-      @JsonProperty(PROP_GROUP) @Nullable String group,
-      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
-      @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
-      @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
-      @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
-      @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+      boolean additionalPathsReceive,
+      boolean additionalPathsSelectAll,
+      boolean additionalPathsSend,
+      boolean advertiseExternal,
+      boolean advertiseInactive,
+      boolean allowLocalAsIn,
+      boolean allowRemoteAsOut,
+      @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Long clusterId,
+      int defaultMetric,
+      @Nullable String description,
+      int ebgpAdmin,
+      boolean ebgpMultihop,
+      boolean enforceFirstAs,
+      @Nullable String exportPolicy,
+      @Nullable SortedSet<String> exportPolicySources,
+      @Nullable Set<GeneratedRoute> generatedRoutes,
+      @Nullable String group,
+      int ibgpAdmin,
+      @Nullable String importPolicy,
+      @Nullable SortedSet<String> importPolicySources,
+      @Nullable Long localAs,
+      @Nullable Ip localIp,
+      boolean routeReflectorClient,
+      boolean sendCommunity) {
     _additionalPathsReceive = additionalPathsReceive;
     _additionalPathsSelectAll = additionalPathsSelectAll;
     _additionalPathsSend = additionalPathsSend;
@@ -172,12 +179,14 @@ public abstract class BgpPeerConfig implements Serializable {
     _clusterId = clusterId;
     _defaultMetric = defaultMetric;
     _description = description;
+    _ebgpAdmin = ebgpAdmin;
     _ebgpMultihop = ebgpMultihop;
     _enforceFirstAs = enforceFirstAs;
     _exportPolicy = exportPolicy;
     _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
     _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSet.of());
     _group = group;
+    _ibgpAdmin = ibgpAdmin;
     _importPolicy = importPolicy;
     _importPolicySources = firstNonNull(importPolicySources, ImmutableSortedSet.of());
     _localAs = localAs;
@@ -257,6 +266,13 @@ public abstract class BgpPeerConfig implements Serializable {
     return _description;
   }
 
+  @JsonProperty(PROP_EBGP_ADMIN)
+  @JsonPropertyDescription(
+      "The administrative distance applied to routes learned over eBGP from this peer")
+  public int getEbgpAdmin() {
+    return _ebgpAdmin;
+  }
+
   @JsonProperty(PROP_EBGP_MULTIHOP)
   @JsonPropertyDescription(
       "Whether to allow establishment of a multihop eBGP connection with this peer")
@@ -300,6 +316,13 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable
   public String getGroup() {
     return _group;
+  }
+
+  @JsonProperty(PROP_IBGP_ADMIN)
+  @JsonPropertyDescription(
+      "The administrative distance applied to routes learned over iBGP from this peer")
+  public int getIbgpAdmin() {
+    return _ibgpAdmin;
   }
 
   @JsonProperty(PROP_IMPORT_POLICY)
@@ -367,8 +390,10 @@ public abstract class BgpPeerConfig implements Serializable {
         && _allowLocalAsIn == that._allowLocalAsIn
         && _allowRemoteAsOut == that._allowRemoteAsOut
         && _defaultMetric == that._defaultMetric
+        && _ebgpAdmin == that._ebgpAdmin
         && _ebgpMultihop == that._ebgpMultihop
         && _enforceFirstAs == that._enforceFirstAs
+        && _ibgpAdmin == that._ibgpAdmin
         && _routeReflectorClient == that._routeReflectorClient
         && _sendCommunity == that._sendCommunity
         && Objects.equals(_authenticationSettings, that._authenticationSettings)
@@ -398,12 +423,14 @@ public abstract class BgpPeerConfig implements Serializable {
         _clusterId,
         _defaultMetric,
         _description,
+        _ebgpAdmin,
         _ebgpMultihop,
         _enforceFirstAs,
         _exportPolicy,
         _exportPolicySources,
         _generatedRoutes,
         _group,
+        _ibgpAdmin,
         _importPolicy,
         _importPolicySources,
         _localAs,
@@ -425,12 +452,14 @@ public abstract class BgpPeerConfig implements Serializable {
     protected Long _clusterId;
     protected int _defaultMetric;
     protected String _description;
+    @Nullable protected Integer _ebgpAdmin;
     protected boolean _ebgpMultihop;
     protected boolean _enforceFirstAs;
     protected String _exportPolicy;
     @Nullable protected SortedSet<String> _exportPolicySources;
     @Nullable protected Set<GeneratedRoute> _generatedRoutes;
     @Nullable protected String _group;
+    @Nullable protected Integer _ibgpAdmin;
     @Nullable protected String _importPolicy;
     @Nullable protected SortedSet<String> _importPolicySources;
     @Nullable protected Long _localAs;
@@ -511,6 +540,11 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
+    public S setEbgpAdmin(int ebgpAdmin) {
+      _ebgpAdmin = ebgpAdmin;
+      return getThis();
+    }
+
     public S setEbgpMultihop(boolean ebgpMultihop) {
       _ebgpMultihop = ebgpMultihop;
       return getThis();
@@ -538,6 +572,11 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setGroup(@Nullable String group) {
       _group = group;
+      return getThis();
+    }
+
+    public S setIbgpAdmin(int ibgpAdmin) {
+      _ibgpAdmin = ibgpAdmin;
       return getThis();
     }
 

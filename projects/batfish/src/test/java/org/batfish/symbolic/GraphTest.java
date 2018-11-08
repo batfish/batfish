@@ -52,7 +52,7 @@ public class GraphTest {
     Vrf.Builder vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = _nf.interfaceBuilder();
     BgpProcess.Builder bpb = _nf.bgpProcessBuilder();
-    BgpActivePeerConfig.Builder bnb = _nf.bgpNeighborBuilder().setLocalAs(1L).setRemoteAs(1L);
+    BgpActivePeerConfig.Builder bnb = _nf.testBgpNeighborBuilder().setLocalAs(1L).setRemoteAs(1L);
 
     Configuration c1 = cb.setHostname("r1").build();
 
