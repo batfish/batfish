@@ -8,6 +8,7 @@ import static org.batfish.common.CoordConstsV2.RSC_POJO_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
@@ -101,11 +102,13 @@ public final class SnapshotResource {
   @GET
   public Response getWorkLog(@PathParam("workid") String workId) {
     try {
-      return Response.status(Status.OK)
-          .entity(Main.getWorkMgr().getWorkLog(_network, _snapshot, workId))
-          .build();
+      String log = Main.getWorkMgr().getWorkLog(_network, _snapshot, workId);
+      if (log == null) {
+        return Response.status(Status.NOT_FOUND).build();
+      }
+      return Response.status(Status.OK).entity(log).build();
     } catch (IOException e) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(Throwables.getStackTraceAsString(e)).build();
     }
   }
 }

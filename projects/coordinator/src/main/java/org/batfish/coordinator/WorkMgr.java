@@ -1455,9 +1455,16 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws BatfishException if log file cannot be found.
    */
+  @Nullable
   public String getWorkLog(String networkName, String snapshotName, String workId)
       throws IOException {
+    if (!_idManager.hasNetworkId(networkName)) {
+      return null;
+    }
     NetworkId networkId = _idManager.getNetworkId(networkName);
+    if (!_idManager.hasSnapshotId(snapshotName, networkId)) {
+      return null;
+    }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
     return _storage.loadWorkLog(networkId, snapshotId, workId);
   }

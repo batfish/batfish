@@ -300,9 +300,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    Path logPath =
-        _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
-    return FileUtils.readFileToString(logPath.toFile(), UTF_8);
+    return FileUtils.readFileToString(getWorkLoadPath(network, snapshot, workId).toFile(), UTF_8);
   }
 
   @Override
@@ -894,8 +892,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    Path path =
-        _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
-    FileUtils.writeStringToFile(path.toFile(), logOutput, UTF_8);
+    FileUtils.writeStringToFile(
+        getWorkLoadPath(network, snapshot, workId).toFile(), logOutput, UTF_8);
   }
 }
