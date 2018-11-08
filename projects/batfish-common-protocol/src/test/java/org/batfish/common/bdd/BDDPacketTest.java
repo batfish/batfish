@@ -109,70 +109,6 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetICMPFlow() {
-    BDDPacket pkt = new BDDPacket();
-    Ip srcIp = new Ip("255.255.255.255");
-    Ip dstIp = new Ip("123.456.789.0");
-
-    int icmpCode = 0x00;
-    int icmpType = 0x08;
-    IpProtocol ipProtocol = IpProtocol.ICMP;
-
-    BDD bdd =
-        pkt.getDstIp()
-            .value(dstIp.asLong())
-            .and(pkt.getIcmpCode().value(icmpCode))
-            .and(pkt.getIcmpType().value(icmpType))
-            .and(pkt.getIpProtocol().value(ipProtocol.number()))
-            .and(pkt.getSrcIp().value(srcIp.asLong()));
-
-    BDD result = pkt.getRepresentativeICMPPackets(bdd);
-    assertThat(result, equalTo(bdd));
-  }
-
-  @Test
-  public void testGetUDPFlow() {
-    BDDPacket pkt = new BDDPacket();
-    Ip srcIp = new Ip("255.255.255.255");
-    Ip dstIp = new Ip("123.456.789.0");
-    IpProtocol ipProtocol = IpProtocol.UDP;
-    int srcPort = 5555;
-    int dstPort = 33435;
-
-    BDD bdd =
-        pkt.getDstIp()
-            .value(dstIp.asLong())
-            .and(pkt.getIpProtocol().value(ipProtocol.number()))
-            .and(pkt.getSrcIp().value(srcIp.asLong()))
-            .and(pkt.getSrcPort().value(srcPort))
-            .and(pkt.getDstPort().value(dstPort));
-
-    BDD result = pkt.getRepresentativeUDPPackets(bdd);
-    assertThat(result, equalTo(bdd));
-  }
-
-  @Test
-  public void testGetTCPFlow() {
-    BDDPacket pkt = new BDDPacket();
-    Ip srcIp = new Ip("255.255.255.255");
-    Ip dstIp = new Ip("123.456.789.0");
-    IpProtocol ipProtocol = IpProtocol.TCP;
-    int srcPort = 5555;
-    int dstPort = 22;
-
-    BDD bdd =
-        pkt.getDstIp()
-            .value(dstIp.asLong())
-            .and(pkt.getIpProtocol().value(ipProtocol.number()))
-            .and(pkt.getSrcIp().value(srcIp.asLong()))
-            .and(pkt.getSrcPort().value(srcPort))
-            .and(pkt.getDstPort().value(dstPort));
-
-    BDD result = pkt.getRepresentativeTCPPackets(bdd);
-    assertThat(result, equalTo(bdd));
-  }
-
-  @Test
   public void testGetFlowPreference1() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = new Ip("123.456.789.0");
@@ -210,7 +146,6 @@ public class BDDPacketTest {
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.UDP));
-    assertThat(flow, hasDstPort(33434));
   }
 
   @Test
