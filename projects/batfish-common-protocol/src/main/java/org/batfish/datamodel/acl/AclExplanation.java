@@ -30,6 +30,9 @@ import org.batfish.datamodel.IntersectHeaderSpaces;
  * <p>Generated explanations have the format: at most 1 positive {@link MatchHeaderSpace} constraint
  * (default meaning unconstrained), at most 1 location constraint ({@link OriginatingFromDevice} or
  * {@link MatchSrcInterface}), and some number of negative {@link MatchHeaderSpace} constraints.
+ *
+ * <p>Along with the explanation we produce a provenance, which is a map from each literal in the
+ * explanation to the set of original literals on which it depends.
  */
 public final class AclExplanation {
 
@@ -50,15 +53,13 @@ public final class AclExplanation {
 
     @Override
     public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-      requireHeaderSpace(matchHeaderSpace.getHeaderspace());
-      _headerSpaceProvenance.add(matchHeaderSpace);
+      requireHeaderSpace(matchHeaderSpace);
       return null;
     }
 
     @Override
     public Void visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      requireSourceInterfaces(matchSrcInterface.getSrcInterfaces());
-      _sourceInterfacesProvenance.add(matchSrcInterface);
+      requireSourceInterfaces(matchSrcInterface);
       return null;
     }
 
@@ -66,9 +67,7 @@ public final class AclExplanation {
     public Void visitNotMatchExpr(NotMatchExpr notMatchExpr) {
       AclLineMatchExpr operand = notMatchExpr.getOperand();
       if (operand instanceof MatchHeaderSpace) {
-        HeaderSpace headerSpace = ((MatchHeaderSpace) operand).getHeaderspace();
-        _notHeaderSpacesProvenance.put(headerSpace, operand);
-        forbidHeaderSpace(headerSpace);
+        forbidHeaderSpace((MatchHeaderSpace) operand);
         return null;
       }
       throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
@@ -76,8 +75,7 @@ public final class AclExplanation {
 
     @Override
     public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      _sourcesProvenance.add(originatingFromDevice);
-      requireOriginatingFromDevice();
+      requireOriginatingFromDevice(originatingFromDevice);
       return null;
     }
 
@@ -125,7 +123,8 @@ public final class AclExplanation {
   private final @Nonnull AclLineMatchExprVisitor _visitor = new AclLineMatchExprVisitor();
 
   @VisibleForTesting
-  void requireSourceInterfaces(Set<String> sourceInterfaces) {
+  void requireSourceInterfaces(MatchSrcInterface matchSrcInterface) {
+    Set<String> sourceInterfaces = matchSrcInterface.getSrcInterfaces();
     checkState(_sources != Sources.DEVICE, "AclExplanation is unsatisfiable");
     _sources = Sources.INTERFACES;
     _sourceInterfaces =
@@ -133,16 +132,19 @@ public final class AclExplanation {
             ? sourceInterfaces
             : Sets.intersection(_sourceInterfaces, sourceInterfaces);
     checkState(!_sourceInterfaces.isEmpty(), "AclExplanation is unsatisfiable");
+    _sourceInterfacesProvenance.add(matchSrcInterface);
   }
 
   @VisibleForTesting
-  void requireOriginatingFromDevice() {
+  void requireOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
     checkState(_sources != Sources.INTERFACES, "AclExplanation is unsatisfiable");
     _sources = Sources.DEVICE;
+    _sourcesProvenance.add(originatingFromDevice);
   }
 
   @VisibleForTesting
-  void requireHeaderSpace(HeaderSpace headerSpace) {
+  void requireHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
     if (_headerSpace == null) {
       _headerSpace = headerSpace;
     } else {
@@ -151,11 +153,14 @@ public final class AclExplanation {
       checkState(intersection.isPresent(), "AclExplanation is unsatisfiable");
       _headerSpace = intersection.get();
     }
+    _headerSpaceProvenance.add(matchHeaderSpace);
   }
 
   @VisibleForTesting
-  void forbidHeaderSpace(HeaderSpace headerSpace) {
+  void forbidHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
     _notHeaderSpaces.add(headerSpace);
+    _notHeaderSpacesProvenance.put(headerSpace, matchHeaderSpace);
   }
 
   @VisibleForTesting
