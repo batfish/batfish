@@ -30,6 +30,7 @@ is_interface
   (
     apply
     | isi_bfd_liveness_detection
+    | isi_disable
     | isi_level
     | isi_null
     | isi_passive
@@ -100,11 +101,17 @@ isi_bfd_liveness_detection
   )
 ;
 
+isi_disable
+:
+  DISABLE
+;
+
 isi_level
 :
   LEVEL DEC
   (
-    isil_enable
+    isil_disable
+    | isil_enable
     | isil_hello_authentication_key
     | isil_hello_authentication_type
     | isil_hello_interval
@@ -144,6 +151,11 @@ isib_minimum_interval
 isib_multiplier
 :
   MULTIPLIER DEC
+;
+
+isil_disable
+:
+  DISABLE
 ;
 
 isil_enable
