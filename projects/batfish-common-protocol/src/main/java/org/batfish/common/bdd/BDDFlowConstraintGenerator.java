@@ -11,7 +11,7 @@ import org.batfish.datamodel.NamedPort;
 /**
  This class generates common useful flow constraints as BDDs.
  */
-public class BDDFlowConstraintGenerator {
+public final class BDDFlowConstraintGenerator {
   /**
    * Difference preferences of flow constraints:
    * DEBUGGING: 1. ICMP 2. UDP 3. TCP
