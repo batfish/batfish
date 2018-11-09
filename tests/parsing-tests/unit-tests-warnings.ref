@@ -541,7 +541,7 @@
       },
       {
         "Filename" : "juniper_isis",
-        "Line" : 4,
+        "Line" : 5,
         "Text" : "priority 65",
         "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"

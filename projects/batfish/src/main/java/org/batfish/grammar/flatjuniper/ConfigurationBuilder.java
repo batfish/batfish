@@ -248,6 +248,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_minimum_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_multiplierContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_typeContext;
@@ -3722,6 +3723,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIsib_multiplier(Isib_multiplierContext ctx) {
     _currentIsisInterface.getIsisSettings().setBfdLivenessDetectionMultiplier(toInt(ctx.DEC()));
+  }
+
+  @Override
+  public void exitIsil_disable(Isil_disableContext ctx) {
+    _currentIsisInterfaceLevelSettings.setEnabled(false);
   }
 
   @Override
