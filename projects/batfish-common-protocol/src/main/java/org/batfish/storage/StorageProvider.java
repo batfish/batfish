@@ -112,6 +112,15 @@ public interface StorageProvider {
   MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
 
   /**
+   * Load the log file for a given work item ID.
+   *
+   * @throws FileNotFoundException if the log file is not found.
+   * @throws IOException if there is an error reading the log file.
+   */
+  @Nonnull
+  String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
+
+  /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
    * {@link MajorIssueConfig}s
    *
@@ -432,5 +441,9 @@ public interface StorageProvider {
    */
   void storePojoTopology(
       org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /** Store a given string as a log file for a given work item ID. */
+  void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException;
 }
