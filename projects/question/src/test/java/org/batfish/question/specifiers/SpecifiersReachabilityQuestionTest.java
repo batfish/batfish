@@ -4,13 +4,10 @@ import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedSet;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -134,15 +131,6 @@ public class SpecifiersReachabilityQuestionTest {
         equalTo(
             NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
                 .buildNodeSpecifier("bar")));
-  }
-
-  @Test
-  public void testSkipLoops() {
-    SpecifiersReachabilityQuestion q =
-        SpecifiersReachabilityQuestion.builder()
-            .setActions(DispositionSpecifier.FAILURE_SPECIFIER)
-            .build();
-    assertThat(q.getReachabilityParameters().getActions(), not(contains(FlowDisposition.LOOP)));
   }
 
   @Test
