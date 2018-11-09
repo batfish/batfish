@@ -31,7 +31,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -694,15 +693,18 @@ public class BatfishBDDDifferentialReachabilityTest {
     DifferentialReachabilityResult result =
         batfish.bddDifferentialReachability(reachabilityParameters);
 
-    Set<Flow> flows =
-        Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
+    assertThat(result.getDecreasedReachabilityFlows(), hasSize(0));
+    // one increased flow per source location
+    assertThat(result.getIncreasedReachabilityFlows(), hasSize(2));
 
     batfish.pushBaseSnapshot();
-    Map<Flow, List<Trace>> baseFlowTraces = batfish.buildFlows(flows, false);
+    Map<Flow, List<Trace>> baseFlowTraces =
+        batfish.buildFlows(result.getIncreasedReachabilityFlows(), false);
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
-    Map<Flow, List<Trace>> deltaFlowTraces = batfish.buildFlows(flows, false);
+    Map<Flow, List<Trace>> deltaFlowTraces =
+        batfish.buildFlows(result.getIncreasedReachabilityFlows(), false);
     batfish.popSnapshot();
 
     Set<FlowDisposition> baseFlowDispositions =
