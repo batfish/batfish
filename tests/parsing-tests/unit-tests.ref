@@ -47007,6 +47007,45 @@
             "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
+            "                (isi_disable",
+            "                  DISABLE:'disable')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_interface",
+            "                INTERFACE:'interface'",
+            "                id = (interface_id",
+            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')",
+            "                (isi_level",
+            "                  LEVEL:'level'",
+            "                  DEC:'1'",
+            "                  (isil_disable",
+            "                    DISABLE:'disable'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_interface",
+            "                INTERFACE:'interface'",
+            "                id = (interface_id",
+            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')",
             "                (isi_level",
             "                  LEVEL:'level'",
             "                  DEC:'2'",
@@ -57762,7 +57801,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 4,
+              "Line" : 6,
               "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "priority 65"
             }
@@ -64199,7 +64238,9 @@
               "isis interface" : [
                 4,
                 5,
-                6
+                6,
+                7,
+                8
               ]
             }
           }
@@ -65985,7 +66026,9 @@
               "isis interface" : [
                 4,
                 5,
-                6
+                6,
+                7,
+                8
               ]
             }
           }
