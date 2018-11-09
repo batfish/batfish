@@ -11,13 +11,18 @@ import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -26,10 +31,20 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.loop.LoopNetwork;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -294,5 +309,80 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 }
               });
     }
+  }
+
+  @Test
+  public void testGetAllBDDsLoop() throws IOException {
+    SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(true);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+
+    ReachabilityParameters reachabilityParameters =
+        ReachabilityParameters.builder()
+            .setSourceLocationSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
+            .setActions(ImmutableSortedSet.of(FlowDisposition.LOOP))
+            .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
+            .setHeaderSpace(new HeaderSpace())
+            .build();
+
+    AnswerElement answer = batfish.bddSingleReachability(reachabilityParameters);
+
+    assertThat(answer, instanceOf(TraceWrapperAsAnswerElement.class));
+    Map<Flow, List<Trace>> flowTraces = ((TraceWrapperAsAnswerElement) answer).getFlowTraces();
+    Set<Flow> flows = flowTraces.keySet();
+    assertThat(flows, hasSize(2));
+
+    Set<Ip> srcIps = flows.stream().map(Flow::getSrcIp).collect(Collectors.toSet());
+    Set<Ip> dstIps = flows.stream().map(Flow::getDstIp).collect(Collectors.toSet());
+
+    assertThat(srcIps, contains(new Ip("1.0.0.0"), new Ip("1.0.0.1")));
+    assertThat(dstIps, contains(new Ip("2.0.0.0")));
+
+    Set<FlowDisposition> flowDispositions =
+        flowTraces
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .map(Trace::getDisposition)
+            .collect(ImmutableSet.toImmutableSet());
+    assertThat(flowDispositions, contains(FlowDisposition.LOOP));
+  }
+
+  @Test
+  public void testGetAllBDDsLoopWithAccepted() throws IOException {
+    SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(true);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+
+    ReachabilityParameters reachabilityParameters =
+        ReachabilityParameters.builder()
+            .setSourceLocationSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
+            .setActions(ImmutableSortedSet.of(FlowDisposition.LOOP, FlowDisposition.ACCEPTED))
+            .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
+            .setHeaderSpace(new HeaderSpace())
+            .build();
+
+    AnswerElement answer = batfish.bddSingleReachability(reachabilityParameters);
+
+    assertThat(answer, instanceOf(TraceWrapperAsAnswerElement.class));
+    Map<Flow, List<Trace>> flowTraces = ((TraceWrapperAsAnswerElement) answer).getFlowTraces();
+    Set<Flow> flows = flowTraces.keySet();
+    assertThat(flows, hasSize(2));
+
+    Set<Ip> srcIps = flows.stream().map(Flow::getSrcIp).collect(Collectors.toSet());
+    Set<Ip> dstIps = flows.stream().map(Flow::getDstIp).collect(Collectors.toSet());
+
+    assertThat(srcIps, contains(new Ip("1.0.0.0"), new Ip("1.0.0.1")));
+    assertThat(dstIps, contains(new Ip("1.0.0.0")));
+
+    Set<FlowDisposition> flowDispositions =
+        flowTraces
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .map(Trace::getDisposition)
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(flowDispositions, contains(FlowDisposition.ACCEPTED));
   }
 }

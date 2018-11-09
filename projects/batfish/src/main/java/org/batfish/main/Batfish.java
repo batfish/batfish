@@ -3806,16 +3806,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     boolean ignoreFilters = params.getIgnoreFilters();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+
     Map<IngressLocation, BDD> reachableBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                params.getSourceIpAssignment(),
-                params.getHeaderSpace(),
-                params.getForbiddenTransitNodes(),
-                params.getRequiredTransitNodes(),
-                params.getFinalNodes(),
-                params.getActions())
-            .getIngressLocationReachableBDDs();
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            params.getSourceIpAssignment(),
+            params.getHeaderSpace(),
+            params.getForbiddenTransitNodes(),
+            params.getRequiredTransitNodes(),
+            params.getFinalNodes(),
+            params.getActions());
 
     String flowTag = getFlowTag();
     Set<Flow> flows =
