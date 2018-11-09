@@ -21,6 +21,7 @@ import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -30,8 +31,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.util.TracePruner;
@@ -50,8 +53,10 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
+import org.batfish.question.loop.LoopNetwork;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -666,5 +671,56 @@ public class BatfishBDDDifferentialReachabilityTest {
         containsInAnyOrder(
             ImmutableList.of(allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, EXITS_NETWORK);
+  }
+
+  @Test
+  public void testLoop() throws IOException {
+    SortedMap<String, Configuration> baseConfigs = LoopNetwork.testLoopNetwork(false);
+    SortedMap<String, Configuration> deltaConfigs = LoopNetwork.testLoopNetwork(true);
+    Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
+
+    batfish.pushBaseSnapshot();
+    batfish.computeDataPlane(true);
+    batfish.popSnapshot();
+
+    batfish.pushDeltaSnapshot();
+    batfish.computeDataPlane(true);
+    batfish.popSnapshot();
+
+    DifferentialReachabilityParameters reachabilityParameters =
+        parameters(
+            batfish, ImmutableSet.of(FlowDisposition.LOOP), AclLineMatchExprs.TRUE, false, false);
+
+    DifferentialReachabilityResult result =
+        batfish.bddDifferentialReachability(reachabilityParameters);
+
+    Set<Flow> flows =
+        Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
+
+    batfish.pushBaseSnapshot();
+    Map<Flow, List<Trace>> baseFlowTraces = batfish.buildFlows(flows, false);
+    batfish.popSnapshot();
+
+    batfish.pushDeltaSnapshot();
+    Map<Flow, List<Trace>> deltaFlowTraces = batfish.buildFlows(flows, false);
+    batfish.popSnapshot();
+
+    Set<FlowDisposition> baseFlowDispositions =
+        baseFlowTraces
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .map(Trace::getDisposition)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<FlowDisposition> deltaFlowDispositions =
+        deltaFlowTraces
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .map(Trace::getDisposition)
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(baseFlowDispositions, contains(FlowDisposition.DENIED_IN));
+    assertThat(deltaFlowDispositions, contains(FlowDisposition.LOOP));
   }
 }
