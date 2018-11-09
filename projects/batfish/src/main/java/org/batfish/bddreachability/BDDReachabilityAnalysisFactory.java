@@ -14,6 +14,7 @@ import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,6 +49,7 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.LocationVisitor;
+import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.DeliveredToSubnet;
@@ -1023,6 +1025,55 @@ public final class BDDReachabilityAnalysisFactory {
         requiredTransitNodes,
         finalNodes,
         actions);
+  }
+
+  /**
+   * Given a set of parameters finds a {@link Map} of {@link IngressLocation}s to {@link BDD}s while
+   * including the results for {@link FlowDisposition#LOOP} if required
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   * @return {@link Map} of {@link IngressLocation}s to {@link BDD}s
+   */
+  public Map<IngressLocation, BDD> getAllBDDs(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr initialHeaderSpace,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions) {
+    Set<FlowDisposition> actionsCopy = new HashSet<>(actions);
+
+    boolean loopIncluded = actionsCopy.remove(FlowDisposition.LOOP);
+
+    // detecting Loops can work with any disposition, using ACCEPTED arbitrarily here
+    BDDReachabilityAnalysis analysis =
+        bddReachabilityAnalysis(
+            srcIpSpaceAssignment,
+            initialHeaderSpace,
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            actionsCopy.isEmpty() ? ImmutableSet.of(FlowDisposition.ACCEPTED) : actionsCopy);
+
+    Map<IngressLocation, BDD> bddsNoLoop =
+        actionsCopy.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
+
+    if (!loopIncluded) {
+      return bddsNoLoop;
+    } else {
+      Map<IngressLocation, BDD> bddsLoop = analysis.detectLoops();
+
+      // merging the two BDDs
+      Map<IngressLocation, BDD> mergedBDDs = new HashMap<>(bddsNoLoop);
+      bddsLoop.forEach(((ingressLocation, bdd) -> mergedBDDs.merge(ingressLocation, bdd, BDD::or)));
+      return mergedBDDs;
+    }
   }
 
   /**
