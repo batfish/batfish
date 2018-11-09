@@ -30,6 +30,7 @@ is_interface
   (
     apply
     | isi_bfd_liveness_detection
+    | isi_disable
     | isi_level
     | isi_null
     | isi_passive
@@ -98,6 +99,11 @@ isi_bfd_liveness_detection
     isib_minimum_interval
     | isib_multiplier
   )
+;
+
+isi_disable
+:
+  DISABLE
 ;
 
 isi_level

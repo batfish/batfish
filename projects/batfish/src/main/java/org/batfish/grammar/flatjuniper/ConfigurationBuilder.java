@@ -243,6 +243,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_reference_bandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointContext;
@@ -3696,6 +3697,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIs_reference_bandwidth(Is_reference_bandwidthContext ctx) {
     long referenceBandwidth = toReferenceBandwidth(ctx.reference_bandwidth());
     _currentRoutingInstance.getIsisSettings().setReferenceBandwidth((double) referenceBandwidth);
+  }
+
+  @Override
+  public void exitIsi_disable(Isi_disableContext ctx) {
+    _currentIsisInterface.getIsisSettings().setEnabled(false);
   }
 
   @Override
