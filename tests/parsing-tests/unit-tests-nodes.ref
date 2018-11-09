@@ -742,6 +742,7 @@
             "name" : "Ethernet0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -771,6 +772,7 @@
             "name" : "Ethernet1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -826,6 +828,7 @@
               "1.2.3.4/23",
               "2.3.4.5/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -1233,10 +1236,7 @@
             "allPrefixes" : [
               "1.2.3.4/5"
             ],
-            "allowedVlans" : [
-              "124-124",
-              "125-125"
-            ],
+            "allowedVlans" : "124-125",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -1679,6 +1679,7 @@
             "allPrefixes" : [
               "192.168.1.0/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -3493,6 +3494,7 @@
             "allPrefixes" : [
               "11.22.33.44/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -3523,6 +3525,7 @@
             "allPrefixes" : [
               "22.33.44.55/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -3549,6 +3552,7 @@
             "name" : "Ethernet6/1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -3574,6 +3578,7 @@
             "name" : "cable-downstream1/2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3599,6 +3604,7 @@
             "name" : "cable-downstream1/2/3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3625,6 +3631,7 @@
             "name" : "cable-downstream5/0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3650,6 +3657,7 @@
             "name" : "cable-mac1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3679,6 +3687,7 @@
             "allPrefixes" : [
               "1.2.3.0/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3712,6 +3721,7 @@
               "4.4.4.0/28",
               "5.5.0.0/23"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3739,6 +3749,7 @@
             "name" : "cable-mac2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3764,6 +3775,7 @@
             "name" : "cable-mac3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3789,6 +3801,7 @@
             "name" : "cable-upstream1/0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3815,6 +3828,7 @@
             "name" : "cable-upstream1/0/0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3841,6 +3855,7 @@
             "name" : "cable-upstream1/0/10",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -3866,6 +3881,7 @@
             "name" : "mgmt6/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -5850,6 +5866,7 @@
             "name" : "Cable1/2/3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6324,6 +6341,7 @@
             "name" : "Ethernet0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -6752,6 +6770,7 @@
             "name" : "GigabitEthernet0/1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -6822,6 +6841,7 @@
             "name" : "TenGigabitEthernet0/0/2/2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -6872,6 +6892,7 @@
             "name" : "Async1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6897,6 +6918,7 @@
             "name" : "Cable1/2/3:4",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6922,6 +6944,7 @@
             "name" : "Crypto-Engine1/2/3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6947,6 +6970,7 @@
             "name" : "Dot11Radio0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6975,6 +6999,7 @@
             "allPrefixes" : [
               "1.2.3.4/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 2.0E10,
             "channelGroup" : "Port-Channel1",
@@ -7010,6 +7035,7 @@
             "name" : "Ethernet1/11",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -7035,6 +7061,7 @@
             "name" : "Ethernet1/12",
             "accessVlan" : 3,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -7060,6 +7087,7 @@
             "name" : "Loopback0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -7085,6 +7113,7 @@
             "name" : "Modular-Cable1/2/3:4",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7110,6 +7139,7 @@
             "name" : "Null0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7135,6 +7165,7 @@
             "name" : "Vlan1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7161,6 +7192,7 @@
             "name" : "Vlan1005",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7187,6 +7219,7 @@
             "name" : "Vlan1006",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7213,6 +7246,7 @@
             "name" : "Vlan111",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7239,6 +7273,7 @@
             "name" : "Vlan1234",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7265,6 +7300,7 @@
             "name" : "Vlan2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7291,6 +7327,7 @@
             "name" : "Vlan3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7317,6 +7354,7 @@
             "name" : "Vlan4094",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7343,6 +7381,7 @@
             "name" : "Vxlan1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7368,6 +7407,7 @@
             "name" : "Wideband-Cable1/2/3:4",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -7396,6 +7436,7 @@
             "allPrefixes" : [
               "192.168.0.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -7424,6 +7465,7 @@
             "name" : "tunnel-ip6",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -8162,6 +8204,7 @@
             "name" : "GigabitEthernet0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -8199,6 +8242,7 @@
             "allPrefixes" : [
               "137.164.25.57/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -8236,6 +8280,7 @@
             "name" : "GigabitEthernet0/1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -8270,6 +8315,7 @@
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -8304,6 +8350,7 @@
             "name" : "Loopback0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -8338,6 +8385,7 @@
             "name" : "Serial4/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -9248,6 +9296,7 @@
             "name" : "Ethernet2/1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -9530,6 +9579,7 @@
             "allPrefixes" : [
               "3.3.3.0/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -9559,6 +9609,7 @@
             "allPrefixes" : [
               "4.4.4.0/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -9590,6 +9641,7 @@
             "allPrefixes" : [
               "1.1.1.1/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -10890,6 +10942,7 @@
             "allPrefixes" : [
               "1.0.0.0/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -11809,6 +11862,7 @@
             "name" : "Ethernet1/15",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -11910,6 +11964,7 @@
             "allPrefixes" : [
               "2.128.0.101/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -12192,6 +12247,7 @@
             "allPrefixes" : [
               "2.130.0.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -12224,6 +12280,7 @@
             "allPrefixes" : [
               "2.131.0.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -12636,6 +12693,7 @@
             "allPrefixes" : [
               "10.22.33.10/29"
             ],
+            "allowedVlans" : "",
             "autostate" : false,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -12666,6 +12724,7 @@
             "allPrefixes" : [
               "10.12.12.1/23"
             ],
+            "allowedVlans" : "",
             "autostate" : false,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -12723,6 +12782,7 @@
             "name" : "FastEthernet12/13",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
             "declaredNames" : [
@@ -12748,6 +12808,7 @@
             "name" : "HundredGigabitEthernet0/6/0/8",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -12773,6 +12834,7 @@
             "name" : "Port-Channel1",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "declaredNames" : [
@@ -12798,6 +12860,7 @@
             "name" : "Vlan100",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -12852,6 +12915,7 @@
             "allPrefixes" : [
               "137.164.16.80/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -12984,6 +13048,7 @@
             "name" : "GigabitEthernet1/0/1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -13034,6 +13099,7 @@
             "name" : "Vlan1000",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -13585,6 +13651,7 @@
             "name" : "GigabitEthernet0/2/1/6",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -13731,6 +13798,7 @@
             "name" : "Bundle-Ethernet101",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "declaredNames" : [
@@ -13756,6 +13824,7 @@
             "name" : "Bundle-Ethernet103",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "declaredNames" : [
@@ -13781,6 +13850,7 @@
             "name" : "Bundle-Ethernet201",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "declaredNames" : [
@@ -13807,6 +13877,7 @@
             "name" : "HundredGigabitEthernet0/2/0/0.292",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -13832,6 +13903,7 @@
             "name" : "HundredGigabitEthernet0/2/0/3",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -13857,6 +13929,7 @@
             "name" : "Loopback0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -13882,6 +13955,7 @@
             "name" : "TenGigabitEthernet0/0/0/2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -13907,6 +13981,7 @@
             "name" : "TenGigabitEthernet0/0/0/4",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -13932,6 +14007,7 @@
             "name" : "TenGigabitEthernet0/0/0/5",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -14309,6 +14385,7 @@
             "name" : "xe-0/0/1.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -14334,6 +14411,7 @@
             "name" : "xe-0/0/20:0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -14359,6 +14437,7 @@
             "name" : "xe-0/0/21:0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -15841,6 +15920,7 @@
             "name" : "et-0/0/10.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -15866,6 +15946,7 @@
             "name" : "ge-0/2/5.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -15894,6 +15975,7 @@
             "name" : "xe-1/0/0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -15971,6 +16053,7 @@
             "name" : "ae0.0",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "declaredNames" : [
@@ -15996,6 +16079,7 @@
             "name" : "ge-1/0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "channelGroup" : "ae0.0",
@@ -16026,6 +16110,7 @@
               "1.2.3.0/24",
               "1.2.3.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -16059,6 +16144,7 @@
             "name" : "xe-0/0/0:0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -16084,6 +16170,7 @@
             "name" : "xe-0/0/5:0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "declaredNames" : [
@@ -16168,6 +16255,7 @@
             "name" : "ge-0/0/0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -16751,6 +16839,7 @@
             "name" : "irb.10",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -16779,6 +16868,7 @@
             "name" : "irb.20",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -17836,6 +17926,7 @@
             "name" : "Ethernet1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -17861,6 +17952,7 @@
             "name" : "Ethernet2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
             "declaredNames" : [
@@ -17886,6 +17978,7 @@
             "name" : "Management1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -17911,6 +18004,7 @@
             "name" : "ap1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -18879,6 +18973,7 @@
             "allPrefixes" : [
               "10.10.10.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -19244,6 +19339,7 @@
             "name" : "Ethernet0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -19269,6 +19365,7 @@
             "name" : "nve1",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -21119,6 +21216,7 @@
             "allPrefixes" : [
               "137.164.17.8/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -24609,12 +24707,7 @@
             "name" : "FastEthernet0/1",
             "accessVlan" : 0,
             "active" : true,
-            "allowedVlans" : [
-              "12-12",
-              "34-34",
-              "56-78",
-              "99-99"
-            ],
+            "allowedVlans" : "12-12,34-34,56-78,99-99",
             "autostate" : true,
             "bandwidth" : 1.0E8,
             "declaredNames" : [
@@ -25160,6 +25253,7 @@
             "name" : "FastEthernet0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
             "declaredNames" : [
@@ -25210,6 +25304,7 @@
             "name" : "FastEthernet0/0",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
             "declaredNames" : [
