@@ -13,11 +13,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 
-public class TestNetworkWithMPCandLoop {
+public class TestNetworkWithMPIandLoop {
 
   public final SortedMap<String, Configuration> _configurations;
 
-  public TestNetworkWithMPCandLoop() {
+  public TestNetworkWithMPIandLoop() {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
