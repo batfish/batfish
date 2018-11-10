@@ -7,7 +7,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BfConsts;
 
-public class InstanceData {
+/**
+ * Configuration and template description for a specific instance of a {@link
+ * org.batfish.datamodel.Question}.
+ */
+public final class InstanceData {
 
   private String _description;
 
