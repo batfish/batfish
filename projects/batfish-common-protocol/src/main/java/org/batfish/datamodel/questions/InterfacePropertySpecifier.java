@@ -75,9 +75,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               ADDITIONAL_ARP_IPS,
               new PropertyDescriptor<>(Interface::getAdditionalArpIps, Schema.list(Schema.IP)))
-          .put(
-              ALLOWED_VLANS,
-              new PropertyDescriptor<>(Interface::getAllowedVlans, Schema.list(Schema.STRING)))
+          .put(ALLOWED_VLANS, new PropertyDescriptor<>(Interface::getAllowedVlans, Schema.STRING))
           .put(
               ALL_PREFIXES,
               new PropertyDescriptor<>(Interface::getAllAddresses, Schema.list(Schema.STRING)))
