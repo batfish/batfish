@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsRst;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Optional;
@@ -105,5 +106,69 @@ public class BDDPacketTest {
     assertThat(flow, hasTcpFlagsPsh(tcpPsh));
     assertThat(flow, hasTcpFlagsRst(tcpRst));
     assertThat(flow, hasTcpFlagsUrg(tcpUrg));
+  }
+
+  @Test
+  public void testGetFlowPreference1() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = new Ip("123.456.789.0");
+    Ip srcIp = new Ip("1.2.3.4");
+
+    BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertThat("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(IpProtocol.ICMP));
+    assertThat(flow, hasIcmpType(8));
+    assertThat(flow, hasIcmpCode(0));
+  }
+
+  @Test
+  public void testGetFlowPreference2() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = new Ip("123.456.789.0");
+    Ip srcIp = new Ip("1.2.3.4");
+
+    BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
+
+    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP.number());
+
+    bdd = bdd.and(icmpbdd.not());
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertThat("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(IpProtocol.UDP));
+  }
+
+  @Test
+  public void testGetFlowPreference3() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = new Ip("123.456.789.0");
+    Ip srcIp = new Ip("1.2.3.4");
+
+    BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
+
+    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP.number());
+
+    BDD udpbdd = pkt.getIpProtocol().value(IpProtocol.UDP.number());
+
+    bdd = bdd.and(icmpbdd.not()).and(udpbdd.not());
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertThat("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(IpProtocol.TCP));
+    assertThat(flow, not(hasDstPort(0)));
   }
 }
