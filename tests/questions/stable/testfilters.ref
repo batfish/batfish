@@ -37,7 +37,7 @@
             "optional" : true
           },
           "dstIps" : {
-            "optional" : true
+            "optional" : false
           },
           "dstPorts" : {
             "optional" : true
@@ -73,7 +73,7 @@
             "optional" : true
           }
         },
-        "optional" : true,
+        "optional" : false,
         "type" : "headerConstraint",
         "value" : {
           "srcIps" : "1.1.1.1/32"
