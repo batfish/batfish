@@ -50,6 +50,7 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1393,7 +1394,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setAccessVlan(vlan.getVlanId());
       }
     }
-    newIface.setAllowedVlans(iface.getAllowedVlans());
+    newIface.setAllowedVlans(IntegerSpace.unionOf(iface.getAllowedVlans()));
     newIface.setNativeVlan(iface.getNativeVlan());
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
