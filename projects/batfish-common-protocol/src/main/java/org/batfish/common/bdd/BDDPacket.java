@@ -16,6 +16,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
@@ -279,11 +280,23 @@ public class BDDPacket {
   }
 
   /**
+   * Get a representative flow in a BDD. First, try to get an ICMP echo request flow; second, try to
+   * get a UDP flow used for traceroute; third, try to get a TCP flow with a named port; finally try
+   * to get an arbitrary one.
+   *
    * @param bdd a BDD representing a set of packet headers
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    return bdd.isZero() ? Optional.empty() : Optional.of(getFlowFromAssignment(bdd.fullSatOne()));
+    BDDFlowConstraintGenerator bddFlowConstraint = new BDDFlowConstraintGenerator(this);
+    BDDRepresentativePicker picker =
+        new BDDRepresentativePicker(
+            bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
+    BDD representativeBDD = picker.pickRepresentative(bdd);
+    if (representativeBDD.isZero()) {
+      return Optional.empty();
+    }
+    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {

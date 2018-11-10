@@ -593,7 +593,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<Ip> _additionalArpIps;
 
-  private List<SubRange> _allowedVlans;
+  private IntegerSpace _allowedVlans;
 
   private SortedSet<InterfaceAddress> _allAddresses;
 
@@ -713,7 +713,7 @@ public final class Interface extends ComparableStructure<String> {
     super(name);
     _active = true;
     _autoState = true;
-    _allowedVlans = ImmutableList.of();
+    _allowedVlans = IntegerSpace.EMPTY;
     _allAddresses = ImmutableSortedSet.of();
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
@@ -731,7 +731,9 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
-    _allowedVlans = ImmutableList.<SubRange>builder().addAll(_allowedVlans).addAll(ranges).build();
+    IntegerSpace.Builder b = IntegerSpace.builder().including(_allowedVlans);
+    ranges.forEach(b::including);
+    _allowedVlans = b.build();
   }
 
   @Override
@@ -831,7 +833,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ALLOWED_VLANS)
   @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
-  public List<SubRange> getAllowedVlans() {
+  public IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -1202,7 +1204,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
-  public void setAllowedVlans(List<SubRange> allowedVlans) {
+  public void setAllowedVlans(IntegerSpace allowedVlans) {
     _allowedVlans = allowedVlans;
   }
 

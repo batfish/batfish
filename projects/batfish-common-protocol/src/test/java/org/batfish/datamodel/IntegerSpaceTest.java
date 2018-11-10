@@ -7,12 +7,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
@@ -212,6 +215,17 @@ public class IntegerSpaceTest {
   }
 
   @Test
+  public void testCreationFromInts() {
+    assertThat(
+        IntegerSpace.builder().including(3).including(4).build(),
+        equalTo(IntegerSpace.of(Range.closed(3, 4))));
+
+    assertThat(
+        IntegerSpace.builder().including(Range.closed(3, 5)).excluding(5).build(),
+        equalTo(IntegerSpace.of(Range.closed(3, 4))));
+  }
+
+  @Test
   public void testCreationFromString() {
     assertThat(
         IntegerSpace.create("10"),
@@ -248,13 +262,12 @@ public class IntegerSpaceTest {
   @Test
   public void testCreationFromStringNull() {
     assertThat(IntegerSpace.create(null), equalTo(EMPTY));
-    assertThat(IntegerSpace.Builder.create(null), nullValue());
+    assertThat(IntegerSpace.Builder.create(null).build(), equalTo(EMPTY));
   }
 
   @Test
   public void testCreationFromStringInvalidEmpty() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create("");
+    assertTrue("empty string, empty space", IntegerSpace.create("").isEmpty());
   }
 
   @Test
@@ -292,6 +305,11 @@ public class IntegerSpaceTest {
     _expected.expect(IllegalArgumentException.class);
     // read: [-2..-1]
     IntegerSpace.create("-2--1");
+  }
+
+  @Test
+  public void testCreationFromSubRange() {
+    assertThat(IntegerSpace.of(new SubRange(3, 4)), equalTo(IntegerSpace.create("3-4")));
   }
 
   @Test
@@ -374,5 +392,12 @@ public class IntegerSpaceTest {
     Builder b = Builder.create("10-20");
     assertThat(b, not(nullValue()));
     assertThat(b.build(), equalTo(IntegerSpace.of(Range.closed(10, 20))));
+  }
+
+  @Test
+  public void testStream() {
+    IntegerSpace space = IntegerSpace.unionOf(new SubRange(1, 5), new SubRange(-3, -1));
+    List<Integer> streamed = space.stream().boxed().collect(ImmutableList.toImmutableList());
+    assertThat(streamed, equalTo(ImmutableList.of(-3, -2, -1, 1, 2, 3, 4, 5)));
   }
 }

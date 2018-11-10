@@ -17,6 +17,7 @@
             "allPrefixes" : [
               "192.168.1.2/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
@@ -45,6 +46,7 @@
             "allPrefixes" : [
               "192.168.2.2/28"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
@@ -234,6 +236,7 @@
             "allPrefixes" : [
               "240.0.0.2/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -294,6 +297,7 @@
             "allPrefixes" : [
               "240.0.0.4/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -354,6 +358,7 @@
             "allPrefixes" : [
               "240.0.0.0/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -545,6 +550,7 @@
             "name" : "Ethernet0/0",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -573,6 +579,7 @@
             "allPrefixes" : [
               "10.10.10.38/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -605,6 +612,7 @@
             "allPrefixes" : [
               "10.10.10.46/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -634,6 +642,7 @@
             "name" : "Ethernet1/2",
             "accessVlan" : 0,
             "active" : true,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -662,6 +671,7 @@
             "allPrefixes" : [
               "10.10.30.1/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -690,6 +700,7 @@
             "name" : "Ethernet1/4",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -715,6 +726,7 @@
             "name" : "Ethernet1/5",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -740,6 +752,7 @@
             "name" : "Ethernet1/6",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -765,6 +778,7 @@
             "name" : "Ethernet1/7",
             "accessVlan" : 0,
             "active" : false,
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "declaredNames" : [
@@ -793,6 +807,7 @@
             "allPrefixes" : [
               "192.168.60.37/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -822,6 +837,7 @@
             "allPrefixes" : [
               "172.16.1.2/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "declaredNames" : [
@@ -852,6 +868,7 @@
             "allPrefixes" : [
               "10.10.255.8/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "declaredNames" : [
@@ -883,6 +900,7 @@
             "allPrefixes" : [
               "169.254.15.194/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -912,6 +930,7 @@
             "allPrefixes" : [
               "169.254.13.238/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -2059,6 +2078,7 @@
             "allPrefixes" : [
               "192.168.2.17/28"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2085,6 +2105,7 @@
             "allPrefixes" : [
               "240.0.0.10/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
@@ -2206,6 +2227,7 @@
             "allPrefixes" : [
               "192.168.1.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2232,6 +2254,7 @@
             "allPrefixes" : [
               "240.0.0.18/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
@@ -2353,6 +2376,7 @@
             "allPrefixes" : [
               "172.31.0.1/20"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2379,6 +2403,7 @@
             "allPrefixes" : [
               "240.0.0.12/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
@@ -2512,6 +2537,7 @@
             "allPrefixes" : [
               "192.168.2.33/28"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2538,6 +2564,7 @@
             "allPrefixes" : [
               "240.0.0.26/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
@@ -2659,6 +2686,7 @@
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2685,6 +2713,7 @@
             "allPrefixes" : [
               "240.0.0.22/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
@@ -2806,6 +2835,7 @@
             "allPrefixes" : [
               "192.168.2.1/28"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2832,6 +2862,7 @@
             "allPrefixes" : [
               "240.0.0.14/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
@@ -2953,6 +2984,7 @@
             "allPrefixes" : [
               "10.0.1.1/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -2979,6 +3011,7 @@
             "allPrefixes" : [
               "240.0.0.8/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
@@ -3100,6 +3133,7 @@
             "allPrefixes" : [
               "172.31.32.1/20"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3126,6 +3160,7 @@
             "allPrefixes" : [
               "240.0.0.16/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
@@ -3259,6 +3294,7 @@
             "allPrefixes" : [
               "172.31.16.1/20"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3285,6 +3321,7 @@
             "allPrefixes" : [
               "240.0.0.24/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
@@ -3418,6 +3455,7 @@
             "allPrefixes" : [
               "192.168.2.49/28"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3444,6 +3482,7 @@
             "allPrefixes" : [
               "240.0.0.20/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
@@ -3565,6 +3604,7 @@
             "allPrefixes" : [
               "192.168.1.3/24"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
@@ -3814,6 +3854,7 @@
             "allPrefixes" : [
               "52.27.166.152/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3840,6 +3881,7 @@
             "allPrefixes" : [
               "52.39.121.126/32"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3866,6 +3908,7 @@
             "allPrefixes" : [
               "240.0.0.6/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3892,6 +3935,7 @@
             "allPrefixes" : [
               "169.254.15.193/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -3918,6 +3962,7 @@
             "allPrefixes" : [
               "169.254.13.237/30"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4250,6 +4295,7 @@
             "allPrefixes" : [
               "240.0.0.7/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4355,6 +4401,7 @@
             "allPrefixes" : [
               "240.0.0.1/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4381,6 +4428,7 @@
             "allPrefixes" : [
               "240.0.0.23/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4407,6 +4455,7 @@
             "allPrefixes" : [
               "240.0.0.9/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4488,6 +4537,7 @@
             "allPrefixes" : [
               "240.0.0.5/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4514,6 +4564,7 @@
             "allPrefixes" : [
               "240.0.0.11/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4540,6 +4591,7 @@
             "allPrefixes" : [
               "240.0.0.19/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4566,6 +4618,7 @@
             "allPrefixes" : [
               "240.0.0.27/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4592,6 +4645,7 @@
             "allPrefixes" : [
               "240.0.0.15/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4618,6 +4672,7 @@
             "allPrefixes" : [
               "240.0.0.21/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4729,6 +4784,7 @@
             "allPrefixes" : [
               "240.0.0.3/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4755,6 +4811,7 @@
             "allPrefixes" : [
               "240.0.0.13/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4781,6 +4838,7 @@
             "allPrefixes" : [
               "240.0.0.17/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
@@ -4807,6 +4865,7 @@
             "allPrefixes" : [
               "240.0.0.25/31"
             ],
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,

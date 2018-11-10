@@ -20,6 +20,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
+import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
 
@@ -309,15 +310,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     if (getTaskId() == null) {
       return null;
     }
-    String tr = getTestrig().getId();
+    SnapshotId tr = getTestrig();
     if (getDeltaTestrig() != null && !getDifferential()) {
-      tr = getDeltaTestrig().getId();
+      tr = getDeltaTestrig();
     }
-    return getStorageBase()
-        .resolve(getContainer().getId())
-        .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
-        .resolve(tr)
-        .resolve(BfConsts.RELPATH_OUTPUT)
+    return new FileBasedStorageDirectoryProvider(getStorageBase())
+        .getSnapshotOutputDir(getContainer(), tr)
         .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
         .toString();
   }
