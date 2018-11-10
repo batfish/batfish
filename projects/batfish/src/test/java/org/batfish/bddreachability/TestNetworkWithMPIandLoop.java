@@ -42,11 +42,9 @@ public class TestNetworkWithMPIandLoop {
     Configuration c3 = cb.setHostname("configuration3").build();
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
     InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
-    Interface i31 =
-        nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
+    nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
     InterfaceAddress c3Addr2 = new InterfaceAddress("2.2.2.2/32");
-    Interface i32 =
-        nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr2).build();
+    nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr2).build();
 
     // we want to get to c3
     Prefix targetPrefix = Prefix.parse("2.2.2.2/32");
