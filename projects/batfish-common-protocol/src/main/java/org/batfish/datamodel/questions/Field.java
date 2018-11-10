@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 
-/** Settings for field of complex {@link org.batfish.datamodel.Variable}. */
+/** Settings for field of complex {@link org.batfish.datamodel.questions.Variable}. */
 @ParametersAreNonnullByDefault
 public final class Field {
 

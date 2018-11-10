@@ -9,7 +9,7 @@ import org.batfish.common.BfConsts;
 
 /**
  * Configuration and template description for a specific instance of a {@link
- * org.batfish.datamodel.Question}.
+ * org.batfish.datamodel.questions.Question}.
  */
 public final class InstanceData {
 
