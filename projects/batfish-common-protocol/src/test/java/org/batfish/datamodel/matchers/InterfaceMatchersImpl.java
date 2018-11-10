@@ -5,12 +5,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -55,13 +55,13 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasAllowedVlans extends FeatureMatcher<Interface, List<SubRange>> {
-    HasAllowedVlans(@Nonnull Matcher<? super List<SubRange>> subMatcher) {
+  static final class HasAllowedVlans extends FeatureMatcher<Interface, IntegerSpace> {
+    HasAllowedVlans(@Nonnull Matcher<? super IntegerSpace> subMatcher) {
       super(subMatcher, "an Interface with allowedVlans:", "allowedVlans");
     }
 
     @Override
-    protected List<SubRange> featureValueOf(Interface actual) {
+    protected IntegerSpace featureValueOf(Interface actual) {
       return actual.getAllowedVlans();
     }
   }

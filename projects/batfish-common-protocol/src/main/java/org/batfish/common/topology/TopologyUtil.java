@@ -34,7 +34,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -52,10 +51,7 @@ public final class TopologyUtil {
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       i1.getAllowedVlans()
           .stream()
-          .flatMapToInt(SubRange::asStream)
-          .filter(
-              i1AllowedVlan ->
-                  i2.getAllowedVlans().stream().anyMatch(sr -> sr.includes(i1AllowedVlan)))
+          .filter(i2.getAllowedVlans()::contains)
           .forEach(
               allowedVlan ->
                   edges.add(new Layer2Edge(node1, allowedVlan, node2, allowedVlan, allowedVlan)));
@@ -86,13 +82,11 @@ public final class TopologyUtil {
                     .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::asStream)
                     .forEach(
-                        allowedVlan -> {
-                          switchportsByVlan
-                              .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
-                              .add(i.getName());
-                        });
+                        allowedVlan ->
+                            switchportsByVlan
+                                .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
+                                .add(i.getName()));
               }
               if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
                 switchportsByVlan
@@ -213,13 +207,11 @@ public final class TopologyUtil {
                     .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::asStream)
                     .forEach(
-                        allowedVlan -> {
-                          switchportsByVlan
-                              .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
-                              .add(i.getName());
-                        });
+                        allowedVlan ->
+                            switchportsByVlan
+                                .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
+                                .add(i.getName()));
               }
               if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
                 switchportsByVlan
