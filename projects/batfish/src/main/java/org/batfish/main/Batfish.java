@@ -4002,27 +4002,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .bddReachabilityAnalysis(
+            .getAllBDDs(
                 parameters.getIpSpaceAssignment(),
                 headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
-                parameters.getFlowDispositions())
-            .getIngressLocationReachableBDDs();
+                parameters.getFlowDispositions());
     popSnapshot();
 
     pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .bddReachabilityAnalysis(
+            .getAllBDDs(
                 parameters.getIpSpaceAssignment(),
                 headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
-                parameters.getFlowDispositions())
-            .getIngressLocationReachableBDDs();
+                parameters.getFlowDispositions());
     popSnapshot();
 
     Set<IngressLocation> commonSources =
