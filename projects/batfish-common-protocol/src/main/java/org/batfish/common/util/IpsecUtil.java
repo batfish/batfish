@@ -61,7 +61,7 @@ public class IpsecUtil {
 
     // populating the graph
     for (IpsecPeerConfigId ipsecPeerConfigId : graph.nodes()) {
-      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpecPeerConfig(ipsecPeerConfigId);
+      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpsecPeerConfig(ipsecPeerConfigId);
       if (ipsecPeerConfig == null || ipsecPeerConfig instanceof IpsecDynamicPeerConfig) {
         continue;
       }
@@ -80,7 +80,7 @@ public class IpsecUtil {
       for (IpsecPeerConfigId candidateIpsecPeerConfigId : candidateIpsecPeerConfigIds) {
 
         IpsecPeerConfig candidateIpsecPeer =
-            networkConfigurations.getIpecPeerConfig(candidateIpsecPeerConfigId);
+            networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
         if (candidateIpsecPeer == null) {
           continue;
         }

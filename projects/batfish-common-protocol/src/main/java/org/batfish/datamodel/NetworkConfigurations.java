@@ -2,20 +2,24 @@ package org.batfish.datamodel;
 
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Represents a set of configurations in a network. Has helper methods to "walk the configuration
  * tree" and extract specific objects based on their keys.
  */
+@ParametersAreNonnullByDefault
 public final class NetworkConfigurations {
   @Nonnull private final Map<String, Configuration> _configurations;
 
   /** Wrap a configurations map */
-  private NetworkConfigurations(@Nonnull Map<String, Configuration> configurations) {
-    _configurations = requireNonNull(configurations);
+  private NetworkConfigurations(Map<String, Configuration> configurations) {
+    _configurations = ImmutableMap.copyOf(requireNonNull(configurations));
   }
 
   @Nonnull
@@ -23,9 +27,9 @@ public final class NetworkConfigurations {
     return _configurations;
   }
 
-  @Nullable
-  public Configuration get(@Nonnull String hostname) {
-    return _configurations.get(hostname);
+  @Nonnull
+  public Optional<Configuration> get(String hostname) {
+    return Optional.ofNullable(_configurations.get(hostname));
   }
 
   @Nullable
@@ -54,44 +58,27 @@ public final class NetworkConfigurations {
     return p.getActiveNeighbors().get(id.getRemotePeerPrefix());
   }
 
-  @Nullable
-  public Interface getInterface(@Nonnull String hostname, @Nonnull String interfaceName) {
-    Configuration c = get(hostname);
-    if (c == null) {
-      return null;
-    }
-    return c.getAllInterfaces().get(interfaceName);
+  /** Return an interface identified by hostname and interface name */
+  @Nonnull
+  public Optional<Interface> getInterface(String hostname, String interfaceName) {
+    return get(hostname).map(Configuration::getAllInterfaces).map(m -> m.get(interfaceName));
   }
 
   @Nullable
-  public Interface getInterface(
-      @Nonnull String hostname, @Nonnull String vrfName, @Nonnull String interfaceName) {
-    Configuration c = get(hostname);
-    if (c == null) {
-      return null;
-    }
-    Vrf v = c.getVrfs().get(vrfName);
-    if (v == null) {
-      return null;
-    }
-    return v.getInterfaces().get(interfaceName);
-  }
-
-  @Nullable
-  public IpsecPeerConfig getIpecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
-    Configuration c = get(ipsecPeerConfigId.getHostName());
+  public IpsecPeerConfig getIpsecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
+    Configuration c = get(ipsecPeerConfigId.getHostName()).orElse(null);
     return c == null
         ? null
         : c.getIpsecPeerconfigs().get(ipsecPeerConfigId.getIpsecPeerConfigName());
   }
 
-  @Nullable
-  public Vrf getVrf(@Nonnull String hostname, @Nonnull String vrfName) {
+  /** Return a VRF identified by hostname and VRF name */
+  public Optional<Vrf> getVrf(String hostname, String vrfName) {
     Configuration c = _configurations.get(hostname);
     if (c == null) {
-      return null;
+      return Optional.empty();
     }
-    return c.getVrfs().get(vrfName);
+    return Optional.ofNullable(c.getVrfs().get(vrfName));
   }
 
   /** Wrap a configurations map */
