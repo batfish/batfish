@@ -58,23 +58,23 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.BOOLEAN;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.COMPARATOR;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.DOUBLE;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.FLOAT;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.INTEGER;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_PROTOCOL;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_WILDCARD;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JAVA_REGEX;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JSON_PATH;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JSON_PATH_REGEX;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.LONG;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX_RANGE;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PROTOCOL;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.STRING;
-import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
+import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
+import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
+import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
+import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
+import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
+import static org.batfish.datamodel.questions.Variable.Type.IP;
+import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
+import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
+import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
+import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
+import static org.batfish.datamodel.questions.Variable.Type.LONG;
+import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
+import static org.batfish.datamodel.questions.Variable.Type.PREFIX_RANGE;
+import static org.batfish.datamodel.questions.Variable.Type.PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.STRING;
+import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -107,9 +107,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.AllowedValue;
-import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable.Type;
+import org.batfish.datamodel.questions.Variable;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -960,8 +959,8 @@ public class ClientTest {
 
   @Test
   public void testMissingNonOptionalParameterNoValue() {
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Map<String, Variable> variables = new HashMap<>();
+    Variable integerVariable = new Variable();
     variables.put("integer", integerVariable);
     _thrown.expect(BatfishException.class);
     String errorMessage = "Missing parameter: integer";
@@ -971,8 +970,8 @@ public class ClientTest {
 
   @Test
   public void testMissingOptionalParameterNoValue() {
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Map<String, Variable> variables = new HashMap<>();
+    Variable integerVariable = new Variable();
     integerVariable.setOptional(true);
     Client.checkVariableState(variables);
   }
@@ -1100,8 +1099,8 @@ public class ClientTest {
 
   @Test
   public void testProvideNonOptionalParameterWithValue() throws IOException {
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Map<String, Variable> variables = new HashMap<>();
+    Variable integerVariable = new Variable();
     integerVariable.setValue(_mapper.readTree("3"));
     variables.put("integer", integerVariable);
     Client.checkVariableState(variables);
@@ -1109,8 +1108,8 @@ public class ClientTest {
 
   @Test
   public void testProvideOptionalParameterWithValue() throws IOException {
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Map<String, Variable> variables = new HashMap<>();
+    Variable integerVariable = new Variable();
     integerVariable.setOptional(true);
     integerVariable.setValue(_mapper.readTree("3"));
     variables.put("integer", integerVariable);
@@ -1157,11 +1156,11 @@ public class ClientTest {
   @Test
   public void testSatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+    Map<String, Variable> variables = new HashMap<>();
     String jsonArray =
         "[\"action1\", \"action2\", \"action3\", " + "\"action4\", \"action5\", \"action6\"]";
     parameters.put("actions", _mapper.readTree(jsonArray));
-    Question.InstanceData.Variable actionsVariable = new Question.InstanceData.Variable();
+    Variable actionsVariable = new Variable();
     actionsVariable.setType(STRING);
     actionsVariable.setMinElements(5);
     variables.put("actions", actionsVariable);
@@ -1171,7 +1170,7 @@ public class ClientTest {
   @Test
   public void testSatisfiedMinLengthValue() throws IOException {
     String longString = "\"long enough\"";
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setMinLength(8);
     variable.setType(STRING);
     Client.validateType(_mapper.readTree(longString), variable);
@@ -1360,7 +1359,7 @@ public class ClientTest {
   @Test
   public void testUnsatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+    Map<String, Variable> variables = new HashMap<>();
     JsonNode jsonArray = _mapper.readTree("[\"action1\", \"action2\"]");
     parameters.put("actions", jsonArray);
     Variable actionsVariable = new Variable();
@@ -1380,7 +1379,7 @@ public class ClientTest {
   @Test
   public void testUnsatisfiedMinLengthValue() throws IOException {
     String shortString = "\"short\"";
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setMinLength(8);
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Must be at least 8 characters in length"));
@@ -1409,7 +1408,7 @@ public class ClientTest {
   public void testValidateInvalidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("\"I am string\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(BOOLEAN);
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(
@@ -1421,7 +1420,7 @@ public class ClientTest {
   public void testValidateNodeNotAllowedValue() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(BOOLEAN);
     List<AllowedValue> allowedValues = ImmutableList.of(new AllowedValue("true", "description"));
     variable.setValues(allowedValues);
@@ -1435,7 +1434,7 @@ public class ClientTest {
   public void testValidateValidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(BOOLEAN);
     List<AllowedValue> allowedValues = ImmutableList.of(new AllowedValue("false", "description"));
     variable.setValues(allowedValues);
@@ -1445,13 +1444,13 @@ public class ClientTest {
   @Test
   public void testValidateWithInvalidInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+    Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Variable integerVariable = new Variable();
     integerVariable.setType(INTEGER);
     variables.put("integer", integerVariable);
     parameters.put("boolean", _mapper.readTree("\"true\""));
-    Question.InstanceData.Variable booleanVariable = new Question.InstanceData.Variable();
+    Variable booleanVariable = new Variable();
     booleanVariable.setType(BOOLEAN);
     variables.put("boolean", booleanVariable);
     _thrown.expect(BatfishException.class);
@@ -1463,7 +1462,7 @@ public class ClientTest {
   @Test
   public void testValidateWithNullVariableInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+    Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
     variables.put("integer", null);
     _thrown.expect(BatfishException.class);
@@ -1475,13 +1474,13 @@ public class ClientTest {
   @Test
   public void testValidateWithValidInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
-    Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+    Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
-    Question.InstanceData.Variable integerVariable = new Question.InstanceData.Variable();
+    Variable integerVariable = new Variable();
     integerVariable.setType(INTEGER);
     variables.put("integer", integerVariable);
     parameters.put("boolean", _mapper.readTree("true"));
-    Question.InstanceData.Variable booleanVariable = new Question.InstanceData.Variable();
+    Variable booleanVariable = new Variable();
     booleanVariable.setType(BOOLEAN);
     variables.put("boolean", booleanVariable);
     Client.validateAndSet(parameters, variables);
@@ -1490,7 +1489,7 @@ public class ClientTest {
   @Test
   public void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(BOOLEAN);
     Client.validateType(booleanNode, variable);
   }
@@ -1498,7 +1497,7 @@ public class ClientTest {
   @Test
   public void testValidComparatorValue() throws IOException {
     JsonNode comparatorNode = _mapper.readTree("\">=\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(COMPARATOR);
     Client.validateType(comparatorNode, variable);
   }
@@ -1506,7 +1505,7 @@ public class ClientTest {
   @Test
   public void testValidDoubleValue() throws IOException {
     JsonNode doubleNode = _mapper.readTree("15.0");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(DOUBLE);
     Client.validateType(doubleNode, variable);
   }
@@ -1515,7 +1514,7 @@ public class ClientTest {
   public void testValidFloatValue() {
     Float floatValue = 15.0f;
     JsonNode floatNode = _mapper.valueToTree(floatValue);
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(FLOAT);
     Client.validateType(floatNode, variable);
   }
@@ -1523,7 +1522,7 @@ public class ClientTest {
   @Test
   public void testValidIntegerValue() throws IOException {
     JsonNode integerNode = _mapper.readTree("15");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(INTEGER);
     Client.validateType(integerNode, variable);
   }
@@ -1531,7 +1530,7 @@ public class ClientTest {
   @Test
   public void testValidIpProtocolValue() throws IOException {
     JsonNode ipProtocolNode = _mapper.readTree("\"visa\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(IP_PROTOCOL);
     Client.validateType(ipProtocolNode, variable);
   }
@@ -1539,7 +1538,7 @@ public class ClientTest {
   @Test
   public void testValidIPValue() throws IOException {
     JsonNode ipNode = _mapper.readTree("\"0.0.0.0\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(IP);
     Client.validateType(ipNode, variable);
   }
@@ -1547,7 +1546,7 @@ public class ClientTest {
   @Test
   public void testValidIpWildcardValue() throws IOException {
     JsonNode ipWildcardNode = _mapper.readTree("\"10.168.5.5:10.168.100.100\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(IP_WILDCARD);
     Client.validateType(ipWildcardNode, variable);
   }
@@ -1555,7 +1554,7 @@ public class ClientTest {
   @Test
   public void testValidJavaRegexValue() throws IOException {
     JsonNode inputNode = _mapper.readTree("\".*\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(JAVA_REGEX);
     Client.validateType(inputNode, variable);
   }
@@ -1569,7 +1568,7 @@ public class ClientTest {
   @Test
   public void testValidJsonPathRegexValue() throws IOException {
     JsonNode jsonPathRegexNode = _mapper.readTree("\"/.*/\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(JSON_PATH_REGEX);
     Client.validateType(jsonPathRegexNode, variable);
   }
@@ -1577,7 +1576,7 @@ public class ClientTest {
   @Test
   public void testValidJsonPathValue() throws IOException {
     JsonNode jsonPathNode = _mapper.readTree("{\"path\" : \"I am path.\", \"suffix\" : true}");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(JSON_PATH);
     Client.validateType(jsonPathNode, variable);
   }
@@ -1586,7 +1585,7 @@ public class ClientTest {
   public void testValidLongValue() {
     Long longValue = 15L;
     JsonNode floatNode = _mapper.valueToTree(longValue);
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(LONG);
     Client.validateType(floatNode, variable);
   }
@@ -1600,7 +1599,7 @@ public class ClientTest {
   @Test
   public void testValidPrefixRangeValue() throws IOException {
     JsonNode prefixRangeNode = _mapper.readTree("\"10.168.5.5/30:10-50\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(PREFIX_RANGE);
     Client.validateType(prefixRangeNode, variable);
   }
@@ -1608,7 +1607,7 @@ public class ClientTest {
   @Test
   public void testValidPrefixValue() throws IOException {
     JsonNode prefixNode = _mapper.readTree("\"10.168.5.5/30\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(PREFIX);
     Client.validateType(prefixNode, variable);
   }
@@ -1616,7 +1615,7 @@ public class ClientTest {
   @Test
   public void testValidProtocolValue() throws IOException {
     JsonNode prefixRangeNode = _mapper.readTree("\"http\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(PROTOCOL);
     Client.validateType(prefixRangeNode, variable);
   }
@@ -1624,7 +1623,7 @@ public class ClientTest {
   @Test
   public void testValidSubRangeIntegerValue() throws IOException {
     JsonNode subRangeNode = _mapper.readTree("10");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(SUBRANGE);
     Client.validateType(subRangeNode, variable);
   }
@@ -1632,7 +1631,7 @@ public class ClientTest {
   @Test
   public void testValidSubRangeStringValue() throws IOException {
     JsonNode subRangeNode = _mapper.readTree("\"10-50\"");
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(SUBRANGE);
     Client.validateType(subRangeNode, variable);
   }
@@ -1641,7 +1640,7 @@ public class ClientTest {
       String input, Class<? extends Throwable> expectedException, String expectedMessage, Type type)
       throws IOException {
     JsonNode node = _mapper.readTree(input);
-    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    Variable variable = new Variable();
     variable.setType(type);
     _thrown.expect(expectedException);
     _thrown.expectMessage(equalTo(expectedMessage));
