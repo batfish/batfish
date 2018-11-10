@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import org.batfish.common.util.TracePruner;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -29,29 +27,28 @@ public class BDDMultipathInonsistencyWithLoop {
 
   @Test
   public void testLoopInMultipathConsistency() throws IOException {
-    SortedMap<String, Configuration> configurations =
-        new TestNetworkWithMPIandLoop()._configurations;
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(new TestNetworkWithMPIandLoop()._configurations, temp);
     batfish.computeDataPlane(false);
 
     MultipathConsistencyParameters multipathConsistencyParameters =
         new MultipathConsistencyParameters(
             AclLineMatchExprs.TRUE,
             batfish.getAllSourcesInferFromLocationIpSpaceAssignment(),
-            configurations.keySet(),
+            batfish.loadConfigurations().keySet(),
             ImmutableSet.of(),
             TracePruner.DEFAULT_MAX_TRACES,
             ImmutableSet.of());
 
     Set<Flow> flows = batfish.bddMultipathConsistency(multipathConsistencyParameters);
 
-    // Flows starting from configuration 1 and configuration 2 both should result in inconsistent
+    // Flows starting from configuration 1 and configuration 2 should result in inconsistent
     // dispositions
     assertThat(flows, hasSize(2));
 
     Map<Flow, List<Trace>> flowTraces = batfish.buildFlows(flows, false);
 
-    // each flow should give out a list of traces with both the inconsistent dispositions
+    // each flow should give out a list of traces where the list will have inconsistent dispositions
     for (List<Trace> tracePerFlow : flowTraces.values()) {
       Set<FlowDisposition> flowDispositions =
           tracePerFlow.stream().map(Trace::getDisposition).collect(ImmutableSet.toImmutableSet());
