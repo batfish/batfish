@@ -9,9 +9,9 @@ import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.Variable;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
