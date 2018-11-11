@@ -8,12 +8,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.IntStream;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -78,6 +75,7 @@ public final class AclExplainer {
           IpAccessList permitAcl,
           Map<String, IpAccessList> permitNamedAcls,
           Map<String, IpSpace> permitNamedIpSpaces) {
+
     // Construct an ACL that permits the difference of the two ACLs.
     DifferentialIpAccessList differentialIpAccessList =
         DifferentialIpAccessList.create(
@@ -94,12 +92,17 @@ public final class AclExplainer {
     IpAccessList diffAcl = differentialIpAccessList.getAcl();
     namedAcls.put(diffAcl.getName(), diffAcl);
     namedAcls = ImmutableMap.copyOf(namedAcls);
+    IpAccessList diffAclWithInvariant = scopedAcl(invariantExpr, diffAcl);
 
     IpAccessListToBDD ipAccessListToBDD =
         MemoizedIpAccessListToBDD.create(
             bddPacket, mgr, namedAcls, differentialIpAccessList.getNamedIpSpaces());
 
-    return explainWithProvenance(ipAccessListToBDD, scopedAcl(invariantExpr, diffAcl), namedAcls);
+    return explainWithProvenance(
+        ipAccessListToBDD,
+        diffAclWithInvariant,
+        namedAcls,
+        differentialIpAccessList.getLiteralsToLines());
   }
 
   /**
@@ -140,28 +143,17 @@ public final class AclExplainer {
     IpAccessList aclWithInvariant = scopedAcl(invariantExpr, acl);
 
     return explainWithProvenance(
-        ipAccessListToBDD, aclWithInvariant, ImmutableMap.copyOf(finalNamedAcls));
+        ipAccessListToBDD,
+        aclWithInvariant,
+        ImmutableMap.copyOf(finalNamedAcls),
+        AclLineMatchExprLiterals.literalsToLines(finalNamedAcls.values()));
   }
 
   private static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
-      IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
-
-    // Create a map from each literal in the given acls to the acl and index that it came from.
-    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
-        new IdentityHashMap<>();
-    List<IpAccessList> allAcls = new LinkedList<>(namedAcls.values());
-    allAcls.add(acl);
-    allAcls.forEach(
-        currAcl -> {
-          List<IpAccessListLine> lines = currAcl.getLines();
-          IntStream.range(0, lines.size())
-              .forEach(
-                  i ->
-                      AclLineMatchExprLiterals.getLiterals(lines.get(i).getMatchCondition())
-                          .forEach(
-                              lit ->
-                                  literalsToLines.put(lit, new IpAccessListLineIndex(currAcl, i))));
-        });
+      IpAccessListToBDD ipAccessListToBDD,
+      IpAccessList acl,
+      Map<String, IpAccessList> namedAcls,
+      IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines) {
 
     // Convert acl to a single expression.
     AclLineMatchExpr aclExpr =
@@ -176,13 +168,13 @@ public final class AclExplainer {
 
     // join the provenance information from the normal form with the literalsToLines mapping
     // above to obtain provenance back to the original acl lines
-    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> disjunctsToLines =
+    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> conjunctsToLines =
         new IdentityHashMap<>();
     for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry :
         aclExprNfExplained.getProvenance().entrySet()) {
-      AclLineMatchExpr disjunct = entry.getKey();
-      disjunctsToLines.put(
-          disjunct,
+      AclLineMatchExpr conjunct = entry.getKey();
+      conjunctsToLines.put(
+          conjunct,
           entry
               .getValue()
               .stream()
@@ -191,7 +183,7 @@ public final class AclExplainer {
     }
 
     return new AclLineMatchExprWithProvenance<>(
-        aclExprNfExplained.getMatchExpr(), disjunctsToLines);
+        aclExprNfExplained.getMatchExpr(), conjunctsToLines);
   }
 
   /**

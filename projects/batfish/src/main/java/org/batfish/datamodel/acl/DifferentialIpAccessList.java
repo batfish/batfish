@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,9 +41,15 @@ public final class DifferentialIpAccessList {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
+  private final IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> _literalsToLines;
+
   private DifferentialIpAccessList(
-      IpAccessList acl, Map<String, IpAccessList> namedAcls, Map<String, IpSpace> namedIpSpaces) {
+      IpAccessList acl,
+      IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines,
+      Map<String, IpAccessList> namedAcls,
+      Map<String, IpSpace> namedIpSpaces) {
     _acl = acl;
+    _literalsToLines = literalsToLines;
     _namedAcls = ImmutableMap.copyOf(namedAcls);
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
@@ -101,6 +109,30 @@ public final class DifferentialIpAccessList {
             .put(permitAcl.getName(), permitAcl)
             .putAll(permitNamedAcls)
             .build();
+
+    /*
+     * Create a map from literals to their original ACL lines.
+     */
+    // start with the map for the permit named ACLs and the permit ACL
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
+        AclLineMatchExprLiterals.literalsToLines(permitNamedAcls.values());
+    literalsToLines.putAll(
+        AclLineMatchExprLiterals.literalsToLines(Collections.singleton(permitAcl)));
+    // include the map for the deny ACLs, but change the keys to use the new literals
+    // from the renamed versions of the deny ACLs
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> denyLiteralsToLines =
+        AclLineMatchExprLiterals.literalsToLines(denyNamedAcls.values());
+    denyLiteralsToLines.putAll(
+        AclLineMatchExprLiterals.literalsToLines(Collections.singleton(denyAcl)));
+    for (Map.Entry<AclLineMatchExpr, IpAccessListLineIndex> entry :
+        denyLiteralsToLines.entrySet()) {
+      AclLineMatchExpr newLit = entry.getKey();
+      if (aclRenamer.getLiteralsMap().containsKey(newLit)) {
+        newLit = aclRenamer.getLiteralsMap().get(newLit);
+      }
+      literalsToLines.put(newLit, entry.getValue());
+    }
+
     /*
      * Create namedIpSpaces map for differentialAcl
      */
@@ -120,11 +152,15 @@ public final class DifferentialIpAccessList {
             // include add the permitIpSpaces (no need to rename).
             .putAll(permitNamedIpSpaces)
             .build();
-    return new DifferentialIpAccessList(differentialAcl, namedAcls, namedIpSpaces);
+    return new DifferentialIpAccessList(differentialAcl, literalsToLines, namedAcls, namedIpSpaces);
   }
 
   public IpAccessList getAcl() {
     return _acl;
+  }
+
+  public IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> getLiteralsToLines() {
+    return _literalsToLines;
   }
 
   public Map<String, IpAccessList> getNamedAcls() {

@@ -176,10 +176,12 @@ public final class AclExplanation {
     }
     _notHeaderSpaces.forEach(
         notHeaderSpace -> {
-          NotMatchExpr notMatchExpr = new NotMatchExpr(new MatchHeaderSpace(notHeaderSpace));
+          MatchHeaderSpace matchHeaderSpace = new MatchHeaderSpace(notHeaderSpace);
+          NotMatchExpr notMatchExpr = new NotMatchExpr(matchHeaderSpace);
           conjunctsBuilder.add(notMatchExpr);
           conjunctsProvenance.put(
-              notMatchExpr, Collections.singleton(_notHeaderSpacesProvenance.get(notHeaderSpace)));
+              matchHeaderSpace,
+              Collections.singleton(_notHeaderSpacesProvenance.get(notHeaderSpace)));
         });
     switch (_sources) {
       case DEVICE:

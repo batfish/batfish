@@ -12,14 +12,13 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -108,18 +107,10 @@ public class AclExplainerTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(2));
 
-    for (Map.Entry<AclLineMatchExpr, Set<IpAccessListLineIndex>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      int index = -1;
-      if (lit.equals(matchDstIp1)) {
-        index = 0;
-      } else if (lit.equals(matchDstIp2)) {
-        index = 1;
-      }
-      Set<IpAccessListLineIndex> lineIndices = entry.getValue();
-      assertThat(lineIndices, hasSize(1));
-      assertThat(lineIndices, hasItem(new IpAccessListLineIndex(acl, index)));
-    }
+    assertThat(
+        provenance, hasEntry(matchDstIp1, ImmutableSet.of(new IpAccessListLineIndex(acl, 0))));
+    assertThat(
+        provenance, hasEntry(matchDstIp2, ImmutableSet.of(new IpAccessListLineIndex(acl, 1))));
   }
 
   @Test
@@ -141,11 +132,8 @@ public class AclExplainerTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(1));
 
-    for (Map.Entry<AclLineMatchExpr, Set<IpAccessListLineIndex>> entry : provenance.entrySet()) {
-      Set<IpAccessListLineIndex> lineIndices = entry.getValue();
-      assertThat(lineIndices, hasSize(1));
-      assertThat(lineIndices, hasItem(new IpAccessListLineIndex(acl, 1)));
-    }
+    assertThat(
+        provenance, hasEntry(matchDstIp2, ImmutableSet.of(new IpAccessListLineIndex(acl, 1))));
   }
 
   @Test
@@ -236,20 +224,11 @@ public class AclExplainerTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(2));
 
-    for (Map.Entry<AclLineMatchExpr, Set<IpAccessListLineIndex>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      IpAccessList expectedAcl = permitAcl;
-      if (lit.equals(not(matchDstIp))) {
-        expectedAcl =
-            IpAccessList.builder()
-                .setName(DifferentialIpAccessList.DENY_ACL_NAME)
-                .setLines(ImmutableList.of(accepting(matchDstIp)))
-                .build();
-      }
-      Set<IpAccessListLineIndex> lineIndices = entry.getValue();
-      assertThat(lineIndices, hasSize(1));
-      assertThat(lineIndices, hasItem(new IpAccessListLineIndex(expectedAcl, 0)));
-    }
+    assertThat(
+        provenance,
+        hasEntry(matchDstPrefix, ImmutableSet.of(new IpAccessListLineIndex(permitAcl, 0))));
+    assertThat(
+        provenance, hasEntry(matchDstIp, ImmutableSet.of(new IpAccessListLineIndex(denyAcl, 0))));
   }
 
   @Test
@@ -271,40 +250,27 @@ public class AclExplainerTest {
     AclLineMatchExprWithProvenance<IpAccessListLineIndex> explanationWithProvenance =
         explainDifferentialWithProvenance(TRUE, denyAcl, permitAcl);
 
+    MatchHeaderSpace permitHeaderSpace =
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setDstIps(Prefix.parse("1.2.3.0/24").toIpSpace())
+                .setSrcIps(new Ip("1.1.1.1").toIpSpace())
+                .build());
     AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
-    assertThat(
-        explanation,
-        equalTo(
-            and(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder()
-                        .setDstIps(Prefix.parse("1.2.3.0/24").toIpSpace())
-                        .setSrcIps(new Ip("1.1.1.1").toIpSpace())
-                        .build()),
-                not(matchDstIp))));
+    assertThat(explanation, equalTo(and(permitHeaderSpace, not(matchDstIp))));
 
     IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> provenance =
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(2));
 
-    for (Map.Entry<AclLineMatchExpr, Set<IpAccessListLineIndex>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      if (lit.equals(not(matchDstIp))) {
-        IpAccessList expectedAcl =
-            IpAccessList.builder()
-                .setName(DifferentialIpAccessList.DENY_ACL_NAME)
-                .setLines(ImmutableList.of(accepting(matchDstIp)))
-                .build();
-        Set<IpAccessListLineIndex> lineIndices = entry.getValue();
-        assertThat(lineIndices, hasSize(1));
-        assertThat(lineIndices, hasItem(new IpAccessListLineIndex(expectedAcl, 0)));
-      } else {
-        Set<IpAccessListLineIndex> lineIndices = entry.getValue();
-        assertThat(lineIndices, hasSize(2));
-        assertThat(lineIndices, hasItem(new IpAccessListLineIndex(permitAcl, 0)));
-        assertThat(lineIndices, hasItem(new IpAccessListLineIndex(permitAcl, 1)));
-      }
-    }
+    assertThat(
+        provenance,
+        hasEntry(
+            permitHeaderSpace,
+            ImmutableSet.of(
+                new IpAccessListLineIndex(permitAcl, 0), new IpAccessListLineIndex(permitAcl, 1))));
+    assertThat(
+        provenance, hasEntry(matchDstIp, ImmutableSet.of(new IpAccessListLineIndex(denyAcl, 0))));
   }
 
   @Test
