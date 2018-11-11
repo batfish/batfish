@@ -97,7 +97,7 @@ public class BgpPropertySpecifier extends PropertySpecifier {
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
-  /** Returns a specifier that maps to all properties in {@Code properties} */
+  /** Returns a specifier that maps to all properties in {@code properties} */
   public BgpPropertySpecifier(Collection<String> properties) {
     // quote and join
     _expression =
