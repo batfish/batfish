@@ -1,6 +1,7 @@
 {
   "class" : "org.batfish.question.bgpproperties.BgpPeerConfigurationQuestion",
   "nodes" : ".*",
+  "properties" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {

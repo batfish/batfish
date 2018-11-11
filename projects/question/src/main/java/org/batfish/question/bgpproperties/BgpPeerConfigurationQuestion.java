@@ -3,6 +3,7 @@ package org.batfish.question.bgpproperties;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,7 +28,7 @@ public class BgpPeerConfigurationQuestion extends Question {
   @JsonCreator
   public BgpPeerConfigurationQuestion(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_NODES) @Nullable BgpPeerPropertySpecifier properties) {
+      @JsonProperty(PROP_PROPERTIES) @Nullable BgpPeerPropertySpecifier properties) {
     _nodes = nodes;
     _properties = firstNonNull(properties, BgpPeerPropertySpecifier.ALL);
   }
@@ -54,6 +55,7 @@ public class BgpPeerConfigurationQuestion extends Question {
     return _properties;
   }
 
+  @JsonIgnore
   @Nonnull
   NodeSpecifier getNodesSpecifier() {
     return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME).buildNodeSpecifier(_nodes);
