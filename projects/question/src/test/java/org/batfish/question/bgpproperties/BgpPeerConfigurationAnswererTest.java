@@ -1,16 +1,17 @@
 package org.batfish.question.bgpproperties;
 
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_EXPORT_POLICY;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_IMPORT_POLICY;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_AS;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_IP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_IP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROUP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_IP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_NODE;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_PEER_GROUP;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_AS;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_IP;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_ROUTE_REFLECTOR_CLIENT;
-import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_SEND_COMMUNITY;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_VRF;
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.getColumnName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -53,33 +54,33 @@ public class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
-            .put(COL_LOCAL_AS, 100L)
-            .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, 200L))
-            .put(COL_LOCAL_IP, new Ip("1.1.1.1"))
-            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
-            .put(COL_ROUTE_REFLECTOR_CLIENT, false)
-            .put(COL_PEER_GROUP, "g1")
-            .put(COL_IMPORT_POLICY, ImmutableSet.of("p1"))
-            .put(COL_EXPORT_POLICY, ImmutableSet.of("p2"))
-            .put(COL_SEND_COMMUNITY, false)
+            .put(getColumnName(LOCAL_AS), 100L)
+            .put(getColumnName(REMOTE_AS), new SelfDescribingObject(Schema.LONG, 200L))
+            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
+            .put(getColumnName(REMOTE_IP), new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
+            .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
+            .put(getColumnName(PEER_GROUP), "g1")
+            .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p1"))
+            .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p2"))
+            .put(getColumnName(SEND_COMMUNITY), false)
             .build());
     expected.add(
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
-            .put(COL_LOCAL_AS, 100L)
+            .put(getColumnName(LOCAL_AS), 100L)
             .put(
-                COL_REMOTE_AS,
+                getColumnName(REMOTE_AS),
                 new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(300L)))
-            .put(COL_LOCAL_IP, new Ip("1.1.1.2"))
+            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.2"))
             .put(
-                COL_REMOTE_IP,
+                getColumnName(REMOTE_IP),
                 new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
-            .put(COL_ROUTE_REFLECTOR_CLIENT, false)
-            .put(COL_PEER_GROUP, "g2")
-            .put(COL_IMPORT_POLICY, ImmutableSet.of("p3"))
-            .put(COL_EXPORT_POLICY, ImmutableSet.of("p4"))
-            .put(COL_SEND_COMMUNITY, false)
+            .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
+            .put(getColumnName(PEER_GROUP), "g2")
+            .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))
+            .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p4"))
+            .put(getColumnName(SEND_COMMUNITY), false)
             .build());
 
     assertThat(rows, equalTo(expected));

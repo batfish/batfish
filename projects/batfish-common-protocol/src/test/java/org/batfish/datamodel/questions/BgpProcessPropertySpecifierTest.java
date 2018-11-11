@@ -1,6 +1,6 @@
 package org.batfish.datamodel.questions;
 
-import static org.batfish.datamodel.questions.BgpPropertySpecifier.isRouteReflector;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.isRouteReflector;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -13,9 +13,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests of {@link BgpPropertySpecifier}. */
+/** Tests of {@link BgpProcessPropertySpecifier}. */
 @RunWith(JUnit4.class)
-public class BgpPropertySpecifierTest {
+public class BgpProcessPropertySpecifierTest {
   @Test
   public void testIsRouteReflector() {
     BgpProcess emptyProcess = new BgpProcess();
