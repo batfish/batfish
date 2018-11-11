@@ -35,6 +35,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   public static final String LOCAL_AS = "Local_AS";
   public static final String LOCAL_IP = "Local_IP";
+  public static final String IS_PASSIVE = "Is_Passive";
   public static final String REMOTE_AS = "Remote_AS";
   public static final String REMOTE_IP = "Remote_IP";
   public static final String ROUTE_REFLECTOR_CLIENT = "Route_Reflector_Client";
@@ -47,6 +48,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpPeerConfig>>()
           .put(LOCAL_AS, new PropertyDescriptor<>(BgpPeerConfig::getLocalAs, Schema.LONG))
           .put(LOCAL_IP, new PropertyDescriptor<>(BgpPeerConfig::getLocalIp, Schema.IP))
+          .put(IS_PASSIVE, new PropertyDescriptor<>((peer) -> getIsPassive(peer), Schema.BOOLEAN))
           .put(
               REMOTE_AS,
               new PropertyDescriptor<>((peer) -> getRemoteAs(peer), Schema.SELF_DESCRIBING))
@@ -106,6 +108,18 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
         .stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(Collectors.toSet());
+  }
+
+  @VisibleForTesting
+  static boolean getIsPassive(@Nonnull BgpPeerConfig peer) {
+    if (peer instanceof BgpActivePeerConfig) {
+      return false;
+    }
+    if (peer instanceof BgpPassivePeerConfig) {
+      return true;
+    }
+    throw new IllegalArgumentException(
+        String.format("Peer is neither Active nor Passive: %s", peer));
   }
 
   @VisibleForTesting

@@ -2,6 +2,7 @@ package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_IP;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROUP;
@@ -58,6 +59,7 @@ public class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(REMOTE_AS), new SelfDescribingObject(Schema.LONG, 200L))
             .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
             .put(getColumnName(REMOTE_IP), new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
+            .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
             .put(getColumnName(PEER_GROUP), "g1")
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p1"))
@@ -76,6 +78,7 @@ public class BgpPeerConfigurationAnswererTest {
             .put(
                 getColumnName(REMOTE_IP),
                 new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
+            .put(getColumnName(IS_PASSIVE), true)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
             .put(getColumnName(PEER_GROUP), "g2")
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))

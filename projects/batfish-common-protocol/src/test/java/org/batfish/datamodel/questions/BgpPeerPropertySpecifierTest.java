@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getIsPassive;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getRemoteAs;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getRemoteIp;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -15,6 +16,12 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.junit.Test;
 
 public class BgpPeerPropertySpecifierTest {
+
+  @Test
+  public void getIsPassiveTest() {
+    assertThat(getIsPassive(BgpActivePeerConfig.builder().build()), equalTo(false));
+    assertThat(getIsPassive(BgpPassivePeerConfig.builder().build()), equalTo(true));
+  }
 
   @Test
   public void getRemoteAsActivePeer() {
