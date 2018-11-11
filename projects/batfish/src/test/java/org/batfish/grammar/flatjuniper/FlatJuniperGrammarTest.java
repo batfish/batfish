@@ -164,6 +164,7 @@ import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1461,7 +1462,7 @@ public class FlatJuniperGrammarTest {
     // Expecting an Interface in TRUNK mode with VLANs 1-5
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
-        c, hasInterface("ge-0/3/0.0", hasAllowedVlans(ImmutableList.of(new SubRange("1-5")))));
+        c, hasInterface("ge-0/3/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("1-5")))));
   }
 
   @Test

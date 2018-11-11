@@ -29,4 +29,5 @@ public class CoordConstsV2 {
   public static final String RSC_SETTINGS = "settings";
   public static final String RSC_SNAPSHOTS = "snapshots";
   public static final String RSC_TOPOLOGY = "topology";
+  public static final String RSC_WORK_LOG = "worklog";
 }
