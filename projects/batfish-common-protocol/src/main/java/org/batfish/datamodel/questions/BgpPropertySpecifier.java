@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +95,14 @@ public class BgpPropertySpecifier extends PropertySpecifier {
   public BgpPropertySpecifier(@Nullable String expression) {
     _expression = firstNonNull(expression, ".*");
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  }
+
+  /** Returns a specifier that maps to all properties in {@Code properties} */
+  public BgpPropertySpecifier(Collection<String> properties) {
+    // quote and join
+    _expression =
+        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   /**
