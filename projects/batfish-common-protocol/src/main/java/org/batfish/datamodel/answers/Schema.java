@@ -1,7 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
@@ -31,9 +29,9 @@ public class Schema {
     SET
   }
 
-  private static final Pattern LIST_PATTERN = Pattern.compile("^List<(.+)>$");
+  private static final Pattern LIST_PATTERN = Pattern.compile("List<(.+)>");
 
-  private static final Pattern SET_PATTERN = Pattern.compile("^Set<(.+)>$");
+  private static final Pattern SET_PATTERN = Pattern.compile("Set<(.+)>");
 
   private static String getClassString(Class<?> cls) {
     return String.format("class:%s", cls.getCanonicalName());
@@ -101,52 +99,45 @@ public class Schema {
 
   @JsonCreator
   Schema(String schema) {
+    _schemaStr = schema;
 
-    // base case
-    Schema innerSchema = null;
+    String baseTypeName = schema;
     Type type = Type.BASE;
-    Class<?> baseType = null;
+    Schema innerSchema = null;
 
-    // list case
     Matcher listMatcher = LIST_PATTERN.matcher(schema);
     if (listMatcher.find()) {
-      innerSchema = new Schema(listMatcher.group(1));
+      baseTypeName = listMatcher.group(1);
+      innerSchema = new Schema(baseTypeName);
       type = Type.LIST;
-      baseType = innerSchema._baseType;
     }
 
-    // set case
     Matcher setMatcher = SET_PATTERN.matcher(schema);
     if (setMatcher.find()) {
-      innerSchema = new Schema(setMatcher.group(1));
+      baseTypeName = setMatcher.group(1);
+      innerSchema = new Schema(baseTypeName);
       type = Type.SET;
-      baseType = innerSchema._baseType;
     }
-
-    if (type == Type.BASE) {
-      if (!schemaAliases.containsKey(schema)) {
-        throw new BatfishException("Unknown schema type: " + schema);
-      }
-
-      String baseTypeName = schemaAliases.get(schema);
-
-      checkArgument(
-          baseTypeName.startsWith("class:"),
-          "Only class-based schemas are supported. Got " + baseTypeName);
-
-      baseTypeName = baseTypeName.replaceFirst("class:", "");
-
-      try {
-        baseType = Class.forName(baseTypeName);
-      } catch (ClassNotFoundException e) {
-        throw new BatfishException("Could not get a class from " + baseTypeName);
-      }
-    }
-
-    _innerSchema = innerSchema;
     _type = type;
-    _schemaStr = schema;
-    _baseType = baseType;
+    _innerSchema = innerSchema;
+
+    if (!schemaAliases.containsKey(baseTypeName)) {
+      throw new BatfishException("Unknown schema type: " + baseTypeName);
+    }
+
+    baseTypeName = schemaAliases.get(baseTypeName);
+
+    if (!baseTypeName.startsWith("class:")) {
+      throw new BatfishException("Only class-based schemas are supported. Got " + baseTypeName);
+    }
+
+    baseTypeName = baseTypeName.replaceFirst("class:", "");
+
+    try {
+      _baseType = Class.forName(baseTypeName);
+    } catch (ClassNotFoundException e) {
+      throw new BatfishException("Could not get a class from " + baseTypeName);
+    }
   }
 
   @Override
@@ -173,11 +164,6 @@ public class Schema {
   @Override
   public int hashCode() {
     return Objects.hash(_baseType, _type);
-  }
-
-  /** Whether this Schema is List or Set */
-  public boolean isCollection() {
-    return _type == Type.LIST || _type == Type.SET;
   }
 
   /** Whether this Schema object is Integer-based (base, list, or set) */

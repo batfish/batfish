@@ -24,11 +24,6 @@ public class SchemaUtilsTest {
     assertThat(
         SchemaUtils.convertType(toJson(ImmutableList.of(1, 2)), Schema.list(Schema.INTEGER)),
         equalTo(ImmutableList.of(1, 2)));
-    assertThat(
-        SchemaUtils.convertType(
-            toJson(ImmutableList.of(ImmutableList.of(1), ImmutableList.of(2))),
-            Schema.list(Schema.list(Schema.INTEGER))),
-        equalTo(ImmutableList.of(ImmutableList.of(1), ImmutableList.of(2))));
   }
 
   @Test
