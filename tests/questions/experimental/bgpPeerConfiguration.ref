@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.bgpproperties.BgpPeerConfigurationQuestion",
   "nodes" : ".*",
-  "properties" : ".*",
+  "properties" : "local_.*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -18,6 +18,13 @@
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
+      },
+      "properties" : {
+        "description" : "Include properties matching this regex",
+        "displayName" : "Properties",
+        "optional" : true,
+        "type" : "bgpPeerPropertySpec",
+        "value" : "local_.*"
       }
     }
   }

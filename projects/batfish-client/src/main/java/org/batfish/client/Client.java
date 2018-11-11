@@ -98,6 +98,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
@@ -328,7 +329,14 @@ public class Client extends AbstractClient implements IClient {
               String.format("Could not cast value to AnswerElement: %s", value), e);
         }
         break;
-      case BGP_PROPERTY_SPEC:
+      case BGP_PEER_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new BgpPeerPropertySpecifier(value.textValue());
+        break;
+      case BGP_PROCESS_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));

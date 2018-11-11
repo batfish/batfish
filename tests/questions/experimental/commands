@@ -4,7 +4,7 @@ load-questions questions/experimental
 test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", nodes=".*"
 
 # validate bgpPeerConfiguration
-test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*"
+test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*", properties="local_.*"
 
 # validate bgpProcessConfiguration
 test -raw tests/questions/experimental/bgpProcessConfiguration.ref validate-template bgpProcessConfiguration nodes=".*", properties="multipath-.*"
