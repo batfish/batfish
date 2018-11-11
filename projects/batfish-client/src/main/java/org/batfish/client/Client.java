@@ -99,14 +99,14 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.Variable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -275,8 +275,8 @@ public class Client extends AbstractClient implements IClient {
   /**
    * This method calls {@link Client#validateType(JsonNode, Variable)} to check that the contents
    * encoded in {@code value} match the requirement specified in {@code variable}. Also, this method
-   * validates the input {@code value} is allowed according to {@link
-   * Question.InstanceData.Variable#_values values} specified in {@code variable}.
+   * validates the input {@code value} is allowed according to {@link Variable#_values values}
+   * specified in {@code variable}.
    *
    * @throws BatfishException if the content type encoded in input {@code value} does not satisfy
    *     the type requirements specified in {@code variable}, or the input {@code value} is not an
