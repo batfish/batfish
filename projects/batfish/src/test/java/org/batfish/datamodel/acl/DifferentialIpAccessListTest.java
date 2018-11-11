@@ -128,5 +128,36 @@ public class DifferentialIpAccessListTest {
     assertThat(
         differential.getNamedIpSpaces(),
         hasEntry(permitNamedIpSpace, new IpSpaceReference(permitNamedIpSpace)));
+
+    /*
+     * Test literals to lines map
+     */
+    assertThat(differential.getLiteralsToLines().entrySet(), hasSize(4));
+    // literals from renamed deny Acls are present and map back to the original deny Acls
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            differential.getNamedAcls().get(DENY_ACL_NAME).getLines().get(1).getMatchCondition(),
+            new IpAccessListLineIndex(denyAcl, 1)));
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            differential
+                .getNamedAcls()
+                .get(renamedDenyAclReferenceName)
+                .getLines()
+                .get(1)
+                .getMatchCondition(),
+            new IpAccessListLineIndex(denyNamedAcls.get(denyAclReferenceName), 1)));
+    // literals from permit Acls are present and not renamed
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            permitAclLines.get(0).getMatchCondition(), new IpAccessListLineIndex(permitAcl, 0)));
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            permitAclReferenceAcl.getLines().get(1).getMatchCondition(),
+            new IpAccessListLineIndex(permitAclReferenceAcl, 1)));
   }
 }

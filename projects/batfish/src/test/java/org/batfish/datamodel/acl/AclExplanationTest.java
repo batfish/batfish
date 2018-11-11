@@ -8,13 +8,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -53,16 +52,8 @@ public class AclExplanationTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(2));
 
-    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      Set<AclLineMatchExpr> provLits = entry.getValue();
-      assertThat(provLits, hasSize(1));
-      if (lit.equals(require)) {
-        assertThat(provLits, hasItem(require));
-      } else if (lit.equals(not(forbid))) {
-        assertThat(provLits, hasItem(forbid));
-      }
-    }
+    assertThat(provenance, hasEntry(require, ImmutableSet.of(require)));
+    assertThat(provenance, hasEntry(forbid, ImmutableSet.of(forbid)));
   }
 
   @Test
@@ -80,20 +71,17 @@ public class AclExplanationTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(1));
 
-    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      Set<AclLineMatchExpr> provLits = entry.getValue();
-      assertThat(provLits, hasSize(1));
-      assertThat(lit, equalTo(ORIGINATING_FROM_DEVICE));
-      assertThat(provLits, hasItem(ORIGINATING_FROM_DEVICE));
-    }
+    assertThat(
+        provenance, hasEntry(ORIGINATING_FROM_DEVICE, ImmutableSet.of(ORIGINATING_FROM_DEVICE)));
   }
 
   @Test
   public void testIntersectSourcesWithProvenance() {
-    _explanation.requireSourceInterfaces(
-        new MatchSrcInterface(ImmutableSet.of("foo", "bar", "baz")));
-    _explanation.requireSourceInterfaces(new MatchSrcInterface(ImmutableSet.of("foo")));
+    MatchSrcInterface matchSrcInterface1 =
+        new MatchSrcInterface(ImmutableSet.of("foo", "bar", "baz"));
+    MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableSet.of("foo"));
+    _explanation.requireSourceInterfaces(matchSrcInterface1);
+    _explanation.requireSourceInterfaces(matchSrcInterface2);
     AclLineMatchExprWithProvenance<AclLineMatchExpr> explanationWithProvenance =
         _explanation.build();
 
@@ -104,14 +92,8 @@ public class AclExplanationTest {
         explanationWithProvenance.getProvenance();
     assertThat(provenance.entrySet(), hasSize(1));
 
-    for (Map.Entry<AclLineMatchExpr, Set<AclLineMatchExpr>> entry : provenance.entrySet()) {
-      AclLineMatchExpr lit = entry.getKey();
-      Set<AclLineMatchExpr> provLits = entry.getValue();
-      assertThat(provLits, hasSize(2));
-      assertThat(lit, equalTo(new MatchSrcInterface(ImmutableSet.of("foo"))));
-      assertThat(provLits, hasItem(new MatchSrcInterface(ImmutableSet.of("foo", "bar", "baz"))));
-      assertThat(provLits, hasItem(new MatchSrcInterface(ImmutableSet.of("foo"))));
-    }
+    assertThat(
+        provenance, hasEntry(explanation, ImmutableSet.of(matchSrcInterface1, matchSrcInterface2)));
   }
 
   @Test
