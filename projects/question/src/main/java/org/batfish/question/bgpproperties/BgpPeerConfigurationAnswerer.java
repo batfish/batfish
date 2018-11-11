@@ -45,12 +45,13 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
    *
    * @return The {@link List} of {@link ColumnMetadata}s
    */
-  public static List<ColumnMetadata> createColumnMetadata() {
+  public static List<ColumnMetadata> createColumnMetadata(
+      BgpPeerPropertySpecifier propertySpecifier) {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
         .addAll(
-            BgpPeerPropertySpecifier.ALL
+            propertySpecifier
                 .getMatchingProperties()
                 .stream()
                 .map(
@@ -78,7 +79,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
   }
 
   @Override
@@ -90,7 +91,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows = getAnswerRows(configurations, nodes, tableMetadata.toColumnMap());
+    Multiset<Row> propertyRows =
+        getAnswerRows(configurations, nodes, tableMetadata.toColumnMap(), question.getProperties());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
@@ -100,7 +102,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public static Multiset<Row> getAnswerRows(
       Map<String, Configuration> configurations,
       Set<String> nodes,
-      Map<String, ColumnMetadata> columnMetadata) {
+      Map<String, ColumnMetadata> columnMetadata,
+      BgpPeerPropertySpecifier propertySpecifier) {
 
     Multiset<Row> rows = HashMultiset.create();
 
@@ -112,10 +115,10 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
         }
         Node node = new Node(nodeName);
         for (BgpActivePeerConfig peer : bgpProcess.getActiveNeighbors().values()) {
-          rows.add(getRow(node, vrf.getName(), peer, columnMetadata));
+          rows.add(getRow(node, vrf.getName(), peer, columnMetadata, propertySpecifier));
         }
         for (BgpPassivePeerConfig peer : bgpProcess.getPassiveNeighbors().values()) {
-          rows.add(getRow(node, vrf.getName(), peer, columnMetadata));
+          rows.add(getRow(node, vrf.getName(), peer, columnMetadata, propertySpecifier));
         }
       }
     }
@@ -123,9 +126,13 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   }
 
   private static Row getRow(
-      Node node, String vrfName, BgpPeerConfig peer, Map<String, ColumnMetadata> columnMetadata) {
+      Node node,
+      String vrfName,
+      BgpPeerConfig peer,
+      Map<String, ColumnMetadata> columnMetadata,
+      BgpPeerPropertySpecifier propertySpecifier) {
     RowBuilder rowBuilder = Row.builder(columnMetadata).put(COL_NODE, node).put(COL_VRF, vrfName);
-    for (String property : BgpPeerPropertySpecifier.ALL.getMatchingProperties()) {
+    for (String property : propertySpecifier.getMatchingProperties()) {
       PropertyDescriptor<BgpPeerConfig> propertyDescriptor =
           BgpPeerPropertySpecifier.JAVA_MAP.get(property);
       try {

@@ -35,6 +35,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
@@ -46,8 +47,10 @@ public class BgpPeerConfigurationAnswererTest {
         BgpPeerConfigurationAnswerer.getAnswerRows(
             ImmutableMap.of("c", getConfig()),
             ImmutableSet.of("c"),
-            BgpPeerConfigurationAnswerer.createTableMetadata(new BgpPeerConfigurationQuestion(null))
-                .toColumnMap());
+            BgpPeerConfigurationAnswerer.createTableMetadata(
+                    new BgpPeerConfigurationQuestion(null, null))
+                .toColumnMap(),
+            BgpPeerPropertySpecifier.ALL);
 
     Node node = new Node("c");
     Multiset<Row> expected = HashMultiset.create();
