@@ -34,7 +34,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -42,6 +41,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class TopologyUtil {
 
+  /** Returns true iff the given trunk interface allows its own native vlan. */
+  private static boolean trunkWithNativeVlanAllowed(Interface i) {
+    return i.getSwitchportMode() == SwitchportMode.TRUNK
+        && i.getAllowedVlans().contains(i.getNativeVlan());
+  }
+
+  // Precondition: at least one of i1 and i2 is a trunk
   private static void addLayer2TrunkEdges(
       Interface i1,
       Interface i2,
@@ -50,21 +56,28 @@ public final class TopologyUtil {
       Layer1Node node2) {
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
+      // Both sides are trunks, so add edges from n1,v to n2,v for all shared VLANs.
       i1.getAllowedVlans()
           .stream()
-          .flatMapToInt(SubRange::asStream)
-          .filter(
-              i1AllowedVlan ->
-                  i2.getAllowedVlans().stream().anyMatch(sr -> sr.includes(i1AllowedVlan)))
           .forEach(
-              allowedVlan ->
-                  edges.add(new Layer2Edge(node1, allowedVlan, node2, allowedVlan, allowedVlan)));
-      edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, i2.getNativeVlan(), null));
-    } else if (i1.getSwitchportMode() == SwitchportMode.TRUNK) {
+              vlan -> {
+                if (i1.getNativeVlan() == vlan && trunkWithNativeVlanAllowed(i2)) {
+                  // This frame will not be tagged by i1, and i2 accepts untagged frames.
+                  edges.add(new Layer2Edge(node1, vlan, node2, vlan, null /* untagged */));
+                } else if (i2.getAllowedVlans().contains(vlan)) {
+                  // This frame will be tagged by i1 and we can directly check whether i2 allows.
+                  edges.add(new Layer2Edge(node1, vlan, node2, vlan, vlan));
+                }
+              });
+    } else if (trunkWithNativeVlanAllowed(i1)) {
+      // i1 is a trunk, but the other side is not. The only edge that will come up is i2 receiving
+      // untagged packets.
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
       edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, node2VlanId, null));
-    } else if (i2.getSwitchportMode() == SwitchportMode.TRUNK) {
+    } else if (trunkWithNativeVlanAllowed(i2)) {
+      // i1 is not a trunk, but the other side is. The only edge that will come up is the other
+      // side receiving untagged packets and treating them as native VLAN.
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
       edges.add(new Layer2Edge(node1, node1VlanId, node2, i2.getNativeVlan(), null));
@@ -81,18 +94,13 @@ public final class TopologyUtil {
         .forEach(
             i -> {
               if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-                switchportsByVlan
-                    .computeIfAbsent(i.getNativeVlan(), n -> ImmutableList.builder())
-                    .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::asStream)
                     .forEach(
-                        allowedVlan -> {
-                          switchportsByVlan
-                              .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
-                              .add(i.getName());
-                        });
+                        vlan ->
+                            switchportsByVlan
+                                .computeIfAbsent(vlan, n -> ImmutableList.builder())
+                                .add(i.getName()));
               }
               if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
                 switchportsByVlan
@@ -208,18 +216,13 @@ public final class TopologyUtil {
         .forEach(
             i -> {
               if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-                switchportsByVlan
-                    .computeIfAbsent(i.getNativeVlan(), n -> ImmutableList.builder())
-                    .add(i.getName());
                 i.getAllowedVlans()
                     .stream()
-                    .flatMapToInt(SubRange::asStream)
                     .forEach(
-                        allowedVlan -> {
-                          switchportsByVlan
-                              .computeIfAbsent(allowedVlan, n -> ImmutableList.builder())
-                              .add(i.getName());
-                        });
+                        vlan ->
+                            switchportsByVlan
+                                .computeIfAbsent(vlan, n -> ImmutableList.builder())
+                                .add(i.getName()));
               }
               if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
                 switchportsByVlan

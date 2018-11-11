@@ -77,6 +77,7 @@
                   "name" : "Ethernet0/0",
                   "accessVlan" : 0,
                   "active" : false,
+                  "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 1.0E7,
                   "declaredNames" : [
@@ -105,6 +106,7 @@
                   "allPrefixes" : [
                     "10.12.11.2/24"
                   ],
+                  "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 1.0E9,
                   "declaredNames" : [
@@ -136,6 +138,7 @@
                   "allPrefixes" : [
                     "2.12.11.1/24"
                   ],
+                  "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 1.0E9,
                   "declaredNames" : [
@@ -167,6 +170,7 @@
                   "allPrefixes" : [
                     "2.12.12.1/24"
                   ],
+                  "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 1.0E9,
                   "declaredNames" : [
@@ -198,6 +202,7 @@
                   "allPrefixes" : [
                     "2.1.1.1/32"
                   ],
+                  "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 8.0E9,
                   "declaredNames" : [

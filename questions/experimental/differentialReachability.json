@@ -28,7 +28,23 @@
                 "description": "Packet header constraints",
                 "optional": true,
                 "type": "headerConstraint",
-                "displayName": "Headers"
+                "displayName": "Headers",
+                "fields": {
+                    "applications": { "optional": true },
+                    "dscps": { "optional": true },
+                    "dstIps": { "optional": true },
+                    "dstPorts": { "optional": true },
+                    "ecns": { "optional": true },
+                    "flowStates": { "optional": true },
+                    "fragmentOffsets": { "optional": true },
+                    "icmpCodes": { "optional": true },
+                    "icmpTypes": { "optional": true },
+                    "ipProtocols": { "optional": true },
+                    "packetLengths": { "optional": true },
+                    "srcIps": { "optional": true },
+                    "srcPorts": { "optional": true },
+                    "tcpFlags": { "optional": true }
+                }
             },
             "ignoreFilters": {
                 "description": "Do not apply filters/ACLs during analysis",
@@ -53,7 +69,13 @@
                 "description": "Constraint the path a flow can take (start/end/transit locations)",
                 "optional": true,
                 "type": "pathConstraint",
-                "displayName": "Path Constraints"
+                "displayName": "Path Constraints",
+                "fields": {
+                    "startLocation": { "optional": true },
+                    "endLocation": { "optional": true },
+                    "transitLocations": { "optional": true },
+                    "forbiddenLocations": { "optional": true }
+                }
             }
         }
     }

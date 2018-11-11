@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
@@ -242,12 +241,6 @@ public final class ReachabilityParameters {
   @Nonnull
   public static Set<FlowDisposition> filterDispositions(Set<FlowDisposition> dispositions) {
     checkArgument(!dispositions.isEmpty(), "Invalid empty set of actions specified");
-    Set<FlowDisposition> result =
-        dispositions
-            .stream()
-            .filter(disposition -> FlowDisposition.LOOP != disposition)
-            .collect(Collectors.toSet());
-    checkArgument(!result.isEmpty(), "Unsupported set of actions specified: %s", dispositions);
-    return result;
+    return dispositions;
   }
 }

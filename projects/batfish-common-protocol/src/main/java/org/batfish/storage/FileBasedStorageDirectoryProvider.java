@@ -112,4 +112,8 @@ public class FileBasedStorageDirectoryProvider {
   public Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
   }
+
+  public Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_OUTPUT);
+  }
 }

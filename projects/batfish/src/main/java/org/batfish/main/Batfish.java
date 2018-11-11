@@ -110,6 +110,7 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -999,22 +1000,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       // Update vlanMemberCounts:
       for (Interface iface : nonVlanInterfaces) {
-        List<SubRange> vlans = new ArrayList<>();
+        IntegerSpace.Builder vlans = IntegerSpace.builder();
         if (iface.getSwitchportMode() == SwitchportMode.TRUNK) { // vlan trunked interface
-          Collection<SubRange> allowed = iface.getAllowedVlans();
+          IntegerSpace allowed = iface.getAllowedVlans();
           if (!allowed.isEmpty()) {
             // Explicit list of allowed VLANs
-            vlans.addAll(allowed);
+            vlans.including(allowed);
           } else {
             // No explicit list, so all VLANs are allowed.
-            vlanInterfaces.keySet().forEach(v -> vlans.add(new SubRange(v, v)));
+            vlanInterfaces.keySet().forEach(vlans::including);
           }
           // Add the native VLAN as well.
           vlanNumber = iface.getNativeVlan();
-          vlans.add(new SubRange(vlanNumber, vlanNumber));
+          vlans.including(vlanNumber);
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
-          vlans.add(new SubRange(vlanNumber, vlanNumber));
+          vlans.including(vlanNumber);
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
@@ -1022,11 +1023,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               iface.getSwitchportMode(), hostname, iface.getName());
         }
 
-        for (SubRange sr : vlans) {
-          for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
-            vlanMemberCounts.compute(vlanId, (k, v) -> (v == null) ? 1 : (v + 1));
-          }
-        }
+        vlans
+            .build()
+            .stream()
+            .forEach(
+                vlanId -> vlanMemberCounts.compute(vlanId, (k, v) -> (v == null) ? 1 : (v + 1)));
       }
       // Disable all "normal" vlan interfaces with zero member counts:
       SubRange normalVlanRange = c.getNormalVlanRange();
@@ -3806,16 +3807,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     boolean ignoreFilters = params.getIgnoreFilters();
     BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
         getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+
     Map<IngressLocation, BDD> reachableBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                params.getSourceIpAssignment(),
-                params.getHeaderSpace(),
-                params.getForbiddenTransitNodes(),
-                params.getRequiredTransitNodes(),
-                params.getFinalNodes(),
-                params.getActions())
-            .getIngressLocationReachableBDDs();
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            params.getSourceIpAssignment(),
+            params.getHeaderSpace(),
+            params.getForbiddenTransitNodes(),
+            params.getRequiredTransitNodes(),
+            params.getFinalNodes(),
+            params.getActions());
 
     String flowTag = getFlowTag();
     Set<Flow> flows =
@@ -4002,27 +4002,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseSnapshot();
     Map<IngressLocation, BDD> baseAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .bddReachabilityAnalysis(
+            .getAllBDDs(
                 parameters.getIpSpaceAssignment(),
                 headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
-                parameters.getFlowDispositions())
-            .getIngressLocationReachableBDDs();
+                parameters.getFlowDispositions());
     popSnapshot();
 
     pushDeltaSnapshot();
     Map<IngressLocation, BDD> deltaAcceptBDDs =
         getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .bddReachabilityAnalysis(
+            .getAllBDDs(
                 parameters.getIpSpaceAssignment(),
                 headerSpace,
                 parameters.getForbiddenTransitNodes(),
                 parameters.getRequiredTransitNodes(),
                 parameters.getFinalNodes(),
-                parameters.getFlowDispositions())
-            .getIngressLocationReachableBDDs();
+                parameters.getFlowDispositions());
     popSnapshot();
 
     Set<IngressLocation> commonSources =
