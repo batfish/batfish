@@ -13,11 +13,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 
-public class TestNetworkWithMPIandLoop {
+public class MPIWithLoopNetwork {
 
-  public final SortedMap<String, Configuration> _configurations;
-
-  public TestNetworkWithMPIandLoop() {
+  public static SortedMap<String, Configuration> testMPIWithLoopNetwork() {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
@@ -75,7 +73,6 @@ public class TestNetworkWithMPIandLoop {
                 .setNextHopIp(c1Addr1.getIp())
                 .build()));
 
-    _configurations =
-        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
+    return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
   }
 }
