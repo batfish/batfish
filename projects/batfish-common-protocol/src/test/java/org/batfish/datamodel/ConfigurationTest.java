@@ -102,7 +102,7 @@ public class ConfigurationTest {
     vrf.getGeneratedRoutes().add(gr);
 
     // OSPF
-    OspfProcess ospfProcess = new OspfProcess();
+    OspfProcess ospfProcess = OspfProcess.builder().setReferenceBandwidth(1e8).build();
     vrf.setOspfProcess(ospfProcess);
     RoutingPolicy ospfExportPolicy =
         c.getRoutingPolicies().computeIfAbsent(ospfExportPolicyName, n -> new RoutingPolicy(n, c));
