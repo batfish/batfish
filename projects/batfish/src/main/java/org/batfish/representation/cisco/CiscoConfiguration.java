@@ -3174,7 +3174,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // IPSec vpns
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
-    ipsecPeerConfigBuilder.putAll(c.getIpsecPeerconfigs());
+    ipsecPeerConfigBuilder.putAll(c.getIpsecPeerConfigs());
     for (Entry<String, Interface> e : _interfaces.entrySet()) {
       String name = e.getKey();
       Interface iface = e.getValue();

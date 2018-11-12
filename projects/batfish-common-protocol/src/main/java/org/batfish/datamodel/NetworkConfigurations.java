@@ -40,22 +40,20 @@ public final class NetworkConfigurations {
 
   @Nullable
   public BgpPassivePeerConfig getBgpDynamicPeerConfig(BgpPeerConfigId id) {
-    BgpProcess p =
-        _configurations.get(id.getHostname()).getVrfs().get(id.getVrfName()).getBgpProcess();
-    if (p == null) {
-      return null;
-    }
-    return p.getPassiveNeighbors().get(id.getRemotePeerPrefix());
+    return getVrf(id.getHostname(), id.getVrfName())
+        .map(Vrf::getBgpProcess)
+        .map(BgpProcess::getPassiveNeighbors)
+        .map(m -> m.get(id.getRemotePeerPrefix()))
+        .orElse(null);
   }
 
   @Nullable
   public BgpActivePeerConfig getBgpPointToPointPeerConfig(BgpPeerConfigId id) {
-    BgpProcess p =
-        _configurations.get(id.getHostname()).getVrfs().get(id.getVrfName()).getBgpProcess();
-    if (p == null) {
-      return null;
-    }
-    return p.getActiveNeighbors().get(id.getRemotePeerPrefix());
+    return getVrf(id.getHostname(), id.getVrfName())
+        .map(Vrf::getBgpProcess)
+        .map(BgpProcess::getActiveNeighbors)
+        .map(m -> m.get(id.getRemotePeerPrefix()))
+        .orElse(null);
   }
 
   /** Return an interface identified by hostname and interface name */
@@ -66,23 +64,19 @@ public final class NetworkConfigurations {
 
   @Nullable
   public IpsecPeerConfig getIpsecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
-    Configuration c = get(ipsecPeerConfigId.getHostName()).orElse(null);
-    return c == null
-        ? null
-        : c.getIpsecPeerconfigs().get(ipsecPeerConfigId.getIpsecPeerConfigName());
+    return get(ipsecPeerConfigId.getHostName())
+        .map(Configuration::getIpsecPeerConfigs)
+        .map(m -> m.get(ipsecPeerConfigId.getIpsecPeerConfigName()))
+        .orElse(null);
   }
 
   /** Return a VRF identified by hostname and VRF name */
   public Optional<Vrf> getVrf(String hostname, String vrfName) {
-    Configuration c = _configurations.get(hostname);
-    if (c == null) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(c.getVrfs().get(vrfName));
+    return get(hostname).map(Configuration::getVrfs).map(m -> m.get(vrfName));
   }
 
   /** Wrap a configurations map */
-  public static NetworkConfigurations of(@Nonnull Map<String, Configuration> configurations) {
+  public static NetworkConfigurations of(Map<String, Configuration> configurations) {
     return new NetworkConfigurations(configurations);
   }
 }

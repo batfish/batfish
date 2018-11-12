@@ -47,7 +47,7 @@ public class IpsecUtil {
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     for (Configuration node : configurations.values()) {
-      for (Entry<String, IpsecPeerConfig> entry : node.getIpsecPeerconfigs().entrySet()) {
+      for (Entry<String, IpsecPeerConfig> entry : node.getIpsecPeerConfigs().entrySet()) {
         IpsecPeerConfig ipsecPeerConfig = entry.getValue();
         Set<IpsecPeerConfigId> ipsecPeerConfigIdsWithIp =
             localIpIpsecPeerConfigIds.computeIfAbsent(

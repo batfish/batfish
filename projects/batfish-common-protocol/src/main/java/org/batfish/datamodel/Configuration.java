@@ -544,7 +544,7 @@ public final class Configuration implements Serializable {
 
   @JsonPropertyDescription("Dictionary of all IPSec peer configs for this node")
   @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
-  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerconfigs() {
+  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerConfigs() {
     return _ipsecPeerConfigs;
   }
 
