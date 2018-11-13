@@ -1430,18 +1430,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
-  private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
-    Set<Edge> consumedEdges = new LinkedHashSet<>();
-    for (Edge edge : edges) {
-      if (consumedEdges.contains(edge)) {
-        continue;
-      }
-      consumedEdges.add(edge);
-      consumedEdges.add(edge.reverse());
-    }
-    return consumedEdges;
-  }
-
   @Override
   public String getTaskId() {
     return _settings.getTaskId();
@@ -2476,35 +2464,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         }));
   }
 
-  private void printSymmetricEdgePairs() {
-    Map<String, Configuration> configs = loadConfigurations();
-    SortedSet<Edge> edges = CommonUtil.synthesizeTopology(configs).getEdges();
-    Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
-    List<Edge> edgeList = new ArrayList<>(symmetricEdgePairs);
-    for (int i = 0; i < edgeList.size() / 2; i++) {
-      Edge edge1 = edgeList.get(2 * i);
-      Edge edge2 = edgeList.get(2 * i + 1);
-      _logger.output(
-          edge1.getNode1()
-              + ":"
-              + edge1.getInt1()
-              + ","
-              + edge1.getNode2()
-              + ":"
-              + edge1.getInt2()
-              + " "
-              + edge2.getNode1()
-              + ":"
-              + edge2.getInt1()
-              + ","
-              + edge2.getNode2()
-              + ":"
-              + edge2.getInt2()
-              + "\n");
-    }
-    _logger.printElapsedTime();
-  }
-
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
@@ -3024,11 +2983,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     loadPlugins();
     boolean action = false;
     Answer answer = new Answer();
-
-    if (_settings.getPrintSymmetricEdgePairs()) {
-      printSymmetricEdgePairs();
-      return answer;
-    }
 
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
