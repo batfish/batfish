@@ -1229,6 +1229,16 @@ FILTER
    'filter'
 ;
 
+FILTER_DUPLICATES
+:
+    'filter-duplicates'
+;
+
+FILTER_INTERFACES
+:
+    'filter-interfaces'
+;
+
 FINGER
 :
    'finger'
@@ -3241,6 +3251,11 @@ LSP_LIFETIME
    'lsp-lifetime'
 ;
 
+LSP_TELEMETRY
+:
+   'lsp-telemetry'
+;
+
 LSPING
 :
    'lsping'
@@ -3711,6 +3726,16 @@ NO_PEER_LOOP_CHECK
    'no-peer-loop-check'
 ;
 
+NO_PING_RECORD_ROUTE
+:
+   'no-ping-record-route'
+;
+
+NO_PING_TIME_STAMP
+:
+   'no-ping-time-stamp'
+;
+
 NO_READVERTISE
 :
    'no-readvertise'
@@ -3719,6 +3744,11 @@ NO_READVERTISE
 NO_REDIRECTS
 :
    'no-redirects'
+;
+
+NO_REDIRECTS_IPV6
+:
+   'no-redirects-ipv6'
 ;
 
 NO_RESOLVE
@@ -4921,6 +4951,11 @@ STATION_PORT
    'station-port'
 ;
 
+STATS_CACHE_LIFETIME
+:
+   'stats-cache-lifetime'
+;
+
 STORM_CONTROL
 :
    'storm-control'
@@ -5553,6 +5588,11 @@ BACKSLASH
    '\\'
 ;
 
+BANG
+:
+   '!'
+;
+
 CARAT
 :
    '^'
@@ -5755,6 +5795,11 @@ OPEN_PAREN
 PERIOD
 :
    '.'
+;
+
+PIPE
+:
+   '|'
 ;
 
 PLUS
@@ -6190,6 +6235,18 @@ M_InterfaceQuote_VARIABLE
 M_InterfaceQuote_WILDCARD
 :
    '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}
+;
+
+INTERFACE_REGEX
+:
+   (
+        F_Variable_InterfaceVarChar
+        | [[{(^.*+\\]
+   )
+   (
+        F_Variable_InterfaceVarChar
+        | [[{(^.*+\\ ,|\-\]})?$]
+   )*
 ;
 
 mode M_ISO;
