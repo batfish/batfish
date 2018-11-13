@@ -46995,6 +46995,33 @@
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
+            "      (s_groups",
+            "        GROUPS:'groups'",
+            "        (s_groups_named",
+            "          name = (variable",
+            "            text = VARIABLE:'gname')",
+            "          (s_groups_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_isis",
+            "                    ISIS:'isis'",
+            "                    (is_interface",
+            "                      INTERFACE:'interface'",
+            "                      (wildcard",
+            "                        WILDCARD:'<*.*>'  <== mode:M_Interface)",
+            "                      FAMILY:'family'",
+            "                      INET:'inet'",
+            "                      (isi_bfd_liveness_detection",
+            "                        BFD_LIVENESS_DETECTION:'bfd-liveness-detection'",
+            "                        (isib_minimum_interval",
+            "                          MINIMUM_INTERVAL:'minimum-interval'",
+            "                          DEC:'100')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
             "      (statement",
             "        (s_common",
             "          (s_protocols",
@@ -57920,7 +57947,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 6,
+              "Line" : 8,
               "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "priority 65"
             }
@@ -64355,11 +64382,11 @@
           "interface" : {
             "ge-0/0/0.0" : {
               "isis interface" : [
-                4,
-                5,
                 6,
                 7,
-                8
+                8,
+                9,
+                10
               ]
             }
           }
@@ -66143,11 +66170,11 @@
           "interface" : {
             "ge-0/0/0.0" : {
               "isis interface" : [
-                4,
-                5,
                 6,
                 7,
-                8
+                8,
+                9,
+                10
               ]
             }
           }

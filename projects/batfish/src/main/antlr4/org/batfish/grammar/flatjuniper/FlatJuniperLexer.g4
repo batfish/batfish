@@ -5588,11 +5588,6 @@ BACKSLASH
    '\\'
 ;
 
-BANG
-:
-   '!'
-;
-
 CARAT
 :
    '^'
@@ -5795,11 +5790,6 @@ OPEN_PAREN
 PERIOD
 :
    '.'
-;
-
-PIPE
-:
-   '|'
 ;
 
 PLUS

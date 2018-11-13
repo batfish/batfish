@@ -28,6 +28,13 @@ is_interface
     | wildcard
   )
   (
+    FAMILY
+    (
+        INET
+        | INET6
+    )
+  )?
+  (
     apply
     | isi_bfd_liveness_detection
     | isi_disable
