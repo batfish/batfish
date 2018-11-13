@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public class FibImpl implements Fib {
@@ -46,7 +47,14 @@ public class FibImpl implements Fib {
       GenericRib<AbstractRoute> rib, AbstractRoute route) {
     Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = new HashMap<>();
     collectNextHopInterfaces(
-        rib, route, Route.UNSET_ROUTE_NEXT_HOP_IP, nextHopInterfaces, new HashSet<>(), 0);
+        rib,
+        route,
+        Route.UNSET_ROUTE_NEXT_HOP_IP,
+        nextHopInterfaces,
+        new HashSet<>(),
+        0,
+        Prefix.MAX_PREFIX_LENGTH,
+        null);
     return ImmutableMap.copyOf(nextHopInterfaces);
   }
 
@@ -56,7 +64,9 @@ public class FibImpl implements Fib {
       Ip mostRecentNextHopIp,
       Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces,
       Set<Prefix> seenNetworks,
-      int depth) {
+      int depth,
+      int maxPrefixLength,
+      @Nullable AbstractRoute parentRoute) {
     Prefix network = route.getNetwork();
     if (seenNetworks.contains(network)) {
       return;
@@ -67,6 +77,25 @@ public class FibImpl implements Fib {
       // TODO: Declare this a loop using some warning mechanism
       // https://github.com/batfish/batfish/issues/1469
       return;
+    }
+
+    // For non-forwarding routes, try to find a less specific route
+    if (route.getNonForwarding()) {
+      if (parentRoute == null) {
+        return;
+      } else {
+        seenNetworks.remove(parentRoute.getNetwork());
+        collectNextHopInterfaces(
+            rib,
+            parentRoute,
+            mostRecentNextHopIp,
+            nextHopInterfaces,
+            seenNetworks,
+            depth + 1,
+            maxPrefixLength - 1,
+            null);
+        return;
+      }
     }
 
     /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
@@ -95,7 +124,8 @@ public class FibImpl implements Fib {
     } else {
       Ip nextHopIp = route.getNextHopIp();
       if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = rib.longestPrefixMatch(nextHopIp);
+        Set<AbstractRoute> nextHopLongestPrefixMatchRoutes =
+            rib.longestPrefixMatch(nextHopIp, maxPrefixLength);
         for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {
           collectNextHopInterfaces(
               rib,
@@ -103,7 +133,9 @@ public class FibImpl implements Fib {
               nextHopIp,
               nextHopInterfaces,
               newSeenNetworks,
-              depth + 1);
+              depth + 1,
+              Prefix.MAX_PREFIX_LENGTH,
+              route);
         }
       } else {
         // TODO: Declare this using some warning mechanism
