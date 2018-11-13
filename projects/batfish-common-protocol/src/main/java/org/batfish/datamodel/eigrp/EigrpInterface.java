@@ -75,7 +75,7 @@ public class EigrpInterface implements Comparable<EigrpInterface> {
   }
 
   public @Nonnull Interface getInterface(@Nonnull NetworkConfigurations nc) {
-    return requireNonNull(nc.getInterface(_hostname, _interfaceName));
+    return nc.getInterface(_hostname, _interfaceName).get();
   }
 
   public @Nonnull String getInterfaceName() {
