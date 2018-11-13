@@ -2984,11 +2984,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     boolean action = false;
     Answer answer = new Answer();
 
-    if (_settings.getSynthesizeJsonTopology()) {
-      writeJsonTopology();
-      return answer;
-    }
-
     if (_settings.getFlatten()) {
       Path flattenSource = _testrigSettings.getInputPath();
       Path flattenDestination = _settings.getFlattenDestination();
@@ -4172,32 +4167,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(structuredAnswerString);
-    }
-  }
-
-  private void writeJsonTopology() {
-    try {
-      Map<String, Configuration> configs = loadConfigurations();
-      SortedSet<Edge> textEdges = CommonUtil.synthesizeTopology(configs).getEdges();
-      JSONArray jEdges = new JSONArray();
-      for (Edge textEdge : textEdges) {
-        Configuration node1 = configs.get(textEdge.getNode1());
-        Configuration node2 = configs.get(textEdge.getNode2());
-        Interface interface1 = node1.getAllInterfaces().get(textEdge.getInt1());
-        Interface interface2 = node2.getAllInterfaces().get(textEdge.getInt2());
-        JSONObject jEdge = new JSONObject();
-        jEdge.put("interface1", interface1.toJSONObject());
-        jEdge.put("interface2", interface2.toJSONObject());
-        jEdges.put(jEdge);
-      }
-      JSONObject master = new JSONObject();
-      JSONObject topology = new JSONObject();
-      topology.put("edges", jEdges);
-      master.put("topology", topology);
-      String text = master.toString(3);
-      _logger.output(text);
-    } catch (JSONException e) {
-      throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
 

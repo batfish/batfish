@@ -457,10 +457,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
   }
 
-  public boolean getSynthesizeJsonTopology() {
-    return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
-  }
-
   @Nullable
   public String getTaskId() {
     return _config.getString(TASK_ID);
@@ -599,7 +595,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
     setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
-    setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
     setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
@@ -810,10 +805,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
 
     addBooleanOption(
-        BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
-        "synthesize json topology from interface ip subnet information");
-
-    addBooleanOption(
         BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
         "synthesize topology from interface ip subnet information");
 
@@ -957,7 +948,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
     getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
-    getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
     getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
