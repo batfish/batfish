@@ -7,7 +7,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -26,6 +30,9 @@ import org.batfish.datamodel.IntersectHeaderSpaces;
  * <p>Generated explanations have the format: at most 1 positive {@link MatchHeaderSpace} constraint
  * (default meaning unconstrained), at most 1 location constraint ({@link OriginatingFromDevice} or
  * {@link MatchSrcInterface}), and some number of negative {@link MatchHeaderSpace} constraints.
+ *
+ * <p>Along with the explanation we produce a provenance, which is a map from each literal in the
+ * explanation to the set of original literals on which it depends.
  */
 public final class AclExplanation {
 
@@ -46,21 +53,21 @@ public final class AclExplanation {
 
     @Override
     public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-      requireHeaderSpace(matchHeaderSpace.getHeaderspace());
+      requireHeaderSpace(matchHeaderSpace);
       return null;
     }
 
     @Override
     public Void visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      requireSourceInterfaces(matchSrcInterface.getSrcInterfaces());
+      requireSourceInterfaces(matchSrcInterface);
       return null;
     }
 
     @Override
     public Void visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-      if (notMatchExpr.getOperand() instanceof MatchHeaderSpace) {
-        HeaderSpace headerSpace = ((MatchHeaderSpace) notMatchExpr.getOperand()).getHeaderspace();
-        forbidHeaderSpace(headerSpace);
+      AclLineMatchExpr operand = notMatchExpr.getOperand();
+      if (operand instanceof MatchHeaderSpace) {
+        forbidHeaderSpace((MatchHeaderSpace) operand);
         return null;
       }
       throw new IllegalArgumentException("Can only explain AclLineMatchExpr literals.");
@@ -68,7 +75,7 @@ public final class AclExplanation {
 
     @Override
     public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      requireOriginatingFromDevice();
+      requireOriginatingFromDevice(originatingFromDevice);
       return null;
     }
 
@@ -103,10 +110,21 @@ public final class AclExplanation {
 
   private @Nullable Set<String> _sourceInterfaces = null;
 
+  // provenance for the above data -- the set of literals that each depends upon
+  private @Nonnull Set<AclLineMatchExpr> _headerSpaceProvenance =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+  private @Nonnull IdentityHashMap<HeaderSpace, AclLineMatchExpr> _notHeaderSpacesProvenance =
+      new IdentityHashMap<>();
+  private @Nonnull Set<AclLineMatchExpr> _sourcesProvenance =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+  private @Nonnull Set<AclLineMatchExpr> _sourceInterfacesProvenance =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
   private final @Nonnull AclLineMatchExprVisitor _visitor = new AclLineMatchExprVisitor();
 
   @VisibleForTesting
-  void requireSourceInterfaces(Set<String> sourceInterfaces) {
+  void requireSourceInterfaces(MatchSrcInterface matchSrcInterface) {
+    Set<String> sourceInterfaces = matchSrcInterface.getSrcInterfaces();
     checkState(_sources != Sources.DEVICE, "AclExplanation is unsatisfiable");
     _sources = Sources.INTERFACES;
     _sourceInterfaces =
@@ -114,16 +132,19 @@ public final class AclExplanation {
             ? sourceInterfaces
             : Sets.intersection(_sourceInterfaces, sourceInterfaces);
     checkState(!_sourceInterfaces.isEmpty(), "AclExplanation is unsatisfiable");
+    _sourceInterfacesProvenance.add(matchSrcInterface);
   }
 
   @VisibleForTesting
-  void requireOriginatingFromDevice() {
+  void requireOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
     checkState(_sources != Sources.INTERFACES, "AclExplanation is unsatisfiable");
     _sources = Sources.DEVICE;
+    _sourcesProvenance.add(originatingFromDevice);
   }
 
   @VisibleForTesting
-  void requireHeaderSpace(HeaderSpace headerSpace) {
+  void requireHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
     if (_headerSpace == null) {
       _headerSpace = headerSpace;
     } else {
@@ -132,29 +153,46 @@ public final class AclExplanation {
       checkState(intersection.isPresent(), "AclExplanation is unsatisfiable");
       _headerSpace = intersection.get();
     }
+    _headerSpaceProvenance.add(matchHeaderSpace);
   }
 
   @VisibleForTesting
-  void forbidHeaderSpace(HeaderSpace headerSpace) {
+  void forbidHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
     _notHeaderSpaces.add(headerSpace);
+    _notHeaderSpacesProvenance.put(headerSpace, matchHeaderSpace);
   }
 
   @VisibleForTesting
-  AclLineMatchExpr build() {
+  AclLineMatchExprWithProvenance<AclLineMatchExpr> build() {
     ImmutableSortedSet.Builder<AclLineMatchExpr> conjunctsBuilder =
         new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+    IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> conjunctsProvenance =
+        new IdentityHashMap<>();
     if (_headerSpace != null) {
-      conjunctsBuilder.add(new MatchHeaderSpace(_headerSpace));
+      MatchHeaderSpace matchHeaderSpace = new MatchHeaderSpace(_headerSpace);
+      conjunctsBuilder.add(matchHeaderSpace);
+      conjunctsProvenance.put(matchHeaderSpace, _headerSpaceProvenance);
     }
     _notHeaderSpaces.forEach(
-        notHeaderSpace ->
-            conjunctsBuilder.add(new NotMatchExpr(new MatchHeaderSpace(notHeaderSpace))));
+        notHeaderSpace -> {
+          MatchHeaderSpace matchHeaderSpace = new MatchHeaderSpace(notHeaderSpace);
+          NotMatchExpr notMatchExpr = new NotMatchExpr(matchHeaderSpace);
+          conjunctsBuilder.add(notMatchExpr);
+          conjunctsProvenance.put(
+              matchHeaderSpace,
+              Collections.singleton(_notHeaderSpacesProvenance.get(notHeaderSpace)));
+        });
     switch (_sources) {
       case DEVICE:
-        conjunctsBuilder.add(OriginatingFromDevice.INSTANCE);
+        OriginatingFromDevice originatingFromDevice = OriginatingFromDevice.INSTANCE;
+        conjunctsBuilder.add(originatingFromDevice);
+        conjunctsProvenance.put(originatingFromDevice, _sourcesProvenance);
         break;
       case INTERFACES:
-        conjunctsBuilder.add(new MatchSrcInterface(_sourceInterfaces));
+        MatchSrcInterface matchSrcInterface = new MatchSrcInterface(_sourceInterfaces);
+        conjunctsBuilder.add(matchSrcInterface);
+        conjunctsProvenance.put(matchSrcInterface, _sourceInterfacesProvenance);
         break;
       case ANY:
         break;
@@ -163,29 +201,31 @@ public final class AclExplanation {
     }
     SortedSet<AclLineMatchExpr> conjuncts = conjunctsBuilder.build();
     if (conjuncts.isEmpty()) {
-      return TrueExpr.INSTANCE;
+      return new AclLineMatchExprWithProvenance<>(TrueExpr.INSTANCE, new IdentityHashMap<>());
     }
     if (conjuncts.size() == 1) {
-      return conjuncts.first();
+      return new AclLineMatchExprWithProvenance<>(conjuncts.first(), conjunctsProvenance);
     }
-    return new AndMatchExpr(conjuncts);
+    return new AclLineMatchExprWithProvenance<>(new AndMatchExpr(conjuncts), conjunctsProvenance);
   }
 
-  public static AclLineMatchExpr explainLiterals(Iterable<AclLineMatchExpr> conjuncts) {
+  public static AclLineMatchExprWithProvenance<AclLineMatchExpr> explainLiterals(
+      Iterable<AclLineMatchExpr> conjuncts) {
     AclExplanation explanation = new AclExplanation();
     conjuncts.forEach(explanation._visitor::visit);
     return explanation.build();
   }
 
   /** A factor is either a literal or a conjunction of literals. */
-  static AclLineMatchExpr explainFactor(AclLineMatchExpr factor) {
+  static AclLineMatchExprWithProvenance<AclLineMatchExpr> explainFactor(AclLineMatchExpr factor) {
     if (factor instanceof AndMatchExpr) {
       return explainLiterals(((AndMatchExpr) factor).getConjuncts());
     }
     return explainLiterals(ImmutableList.of(factor));
   }
 
-  public static AclLineMatchExpr explainNormalForm(AclLineMatchExpr nf) {
+  public static AclLineMatchExprWithProvenance<AclLineMatchExpr> explainNormalForm(
+      AclLineMatchExpr nf) {
     /*
      * A normal form is either a factor or a disjunction of factors.
      */
@@ -193,12 +233,20 @@ public final class AclExplanation {
       /*
        * Each disjunct is a factor.
        */
-      return new OrMatchExpr(
+      SortedSet<AclLineMatchExprWithProvenance<AclLineMatchExpr>> disjunctsWithProvenance =
           ((OrMatchExpr) nf)
               .getDisjuncts()
               .stream()
               .map(AclExplanation::explainFactor)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+      List<AclLineMatchExpr> disjuncts = new LinkedList<>();
+      IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> provenance = new IdentityHashMap<>();
+      for (AclLineMatchExprWithProvenance<AclLineMatchExpr> matchExprWithProvenance :
+          disjunctsWithProvenance) {
+        disjuncts.add(matchExprWithProvenance.getMatchExpr());
+        provenance.putAll(matchExprWithProvenance.getProvenance());
+      }
+      return new AclLineMatchExprWithProvenance<>(new OrMatchExpr(disjuncts), provenance);
     }
     return explainFactor(nf);
   }
