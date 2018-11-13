@@ -511,10 +511,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
   }
 
-  public boolean getValidateSnapshot() {
-    return _config.getBoolean(BfConsts.COMMAND_VALIDATE_SNAPSHOT);
-  }
-
   public boolean getVerboseParse() {
     return _config.getBoolean(BfConsts.ARG_VERBOSE_PARSE);
   }
@@ -623,7 +619,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
-    setDefaultProperty(BfConsts.COMMAND_VALIDATE_SNAPSHOT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
     setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
@@ -862,9 +857,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "serialize vendor configs");
 
-    addBooleanOption(
-        BfConsts.COMMAND_VALIDATE_SNAPSHOT, "validate a snapshot that has been initialized");
-
     addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
 
     addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
@@ -876,7 +868,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     // deprecated and ignored
     for (String deprecatedStringArg :
-        new String[] {"deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv"}) {
+        new String[] {
+          "deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv", "venv"
+        }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
     }
     for (String deprecatedBooleanArg : new String[] {"gs"}) {
@@ -978,7 +972,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
     getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-    getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_SNAPSHOT);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     getIntegerOptionValue(ARG_Z3_TIMEOUT);
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
@@ -1115,10 +1108,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setThrowOnParserError(boolean throwOnParserError) {
     _config.setProperty(ARG_THROW_ON_PARSER_ERROR, throwOnParserError);
-  }
-
-  public void setValidateSnapshot(boolean validate) {
-    _config.setProperty(BfConsts.COMMAND_VALIDATE_SNAPSHOT, validate);
   }
 
   public void setVerboseParse(boolean verboseParse) {
