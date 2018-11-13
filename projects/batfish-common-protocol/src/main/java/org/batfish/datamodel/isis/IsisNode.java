@@ -57,7 +57,7 @@ public final class IsisNode implements Comparable<IsisNode> {
   }
 
   public @Nullable Interface getInterface(@Nonnull NetworkConfigurations nc) {
-    return nc.getInterface(_node, _interfaceName);
+    return nc.getInterface(_node, _interfaceName).orElse(null);
   }
 
   @JsonProperty(PROP_INTERFACE)

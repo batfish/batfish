@@ -181,7 +181,7 @@ class CiscoConversions {
         ImmutableSortedMap.naturalOrder();
     c.setIpsecPeerConfigs(
         ipsecPeerConfigsBuilder
-            .putAll(c.getIpsecPeerconfigs())
+            .putAll(c.getIpsecPeerConfigs())
             .putAll(
                 toIpsecPeerConfigs(
                     c,
