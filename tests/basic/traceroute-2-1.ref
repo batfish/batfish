@@ -124,6 +124,11 @@
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
+                        },
+                        {
+                          "network" : "1.0.1.0/24",
+                          "nextHopIp" : "2.34.201.3",
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -362,6 +367,11 @@
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
+                        },
+                        {
+                          "network" : "1.0.1.0/24",
+                          "nextHopIp" : "2.34.201.3",
+                          "protocol" : "bgp"
                         }
                       ]
                     }
@@ -595,6 +605,11 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "routes" : [
+                        {
+                          "network" : "1.0.1.0/24",
+                          "nextHopIp" : "2.34.101.3",
+                          "protocol" : "bgp"
+                        },
                         {
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.201.3",
@@ -832,6 +847,11 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "routes" : [
+                        {
+                          "network" : "1.0.1.0/24",
+                          "nextHopIp" : "2.34.101.3",
+                          "protocol" : "bgp"
+                        },
                         {
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.201.3",

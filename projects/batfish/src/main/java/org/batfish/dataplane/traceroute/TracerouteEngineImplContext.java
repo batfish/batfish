@@ -513,18 +513,15 @@ public class TracerouteEngineImplContext {
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
           currentFib.getNextHopInterfacesByRoute(dstIp);
 
-      Set<AbstractRoute> matchedRibRoutes = _dataPlane.getRibs()
-          .get(currentNodeName)
-          .get(vrfName)
-          .longestPrefixMatch(dstIp);
-
-      List<RouteInfo> routesForThisNextHopInterface =
-          matchedRibRoutes
+      List<RouteInfo> matchedRibRouteInfo =
+          _dataPlane
+              .getRibs()
+              .get(currentNodeName)
+              .get(vrfName)
+              .longestPrefixMatch(dstIp)
               .stream()
-              .map(
-                  rc ->
-                      new RouteInfo(
-                          rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
+              .sorted()
+              .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
               .distinct()
               .collect(ImmutableList.toImmutableList());
 
@@ -570,9 +567,7 @@ public class TracerouteEngineImplContext {
                   clonedStepsBuilder.add(
                       RoutingStep.builder()
                           .setDetail(
-                              RoutingStepDetail.builder()
-                                  .setRoutes(routesForThisNextHopInterface)
-                                  .build())
+                              RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
                           .setAction(StepAction.FORWARDED)
                           .build());
 
