@@ -281,7 +281,7 @@ final class ConfigurationMatchersImpl {
 
     @Override
     protected IpsecPeerConfig featureValueOf(Configuration actual) {
-      return actual.getIpsecPeerconfigs().get(_name);
+      return actual.getIpsecPeerConfigs().get(_name);
     }
   }
 
