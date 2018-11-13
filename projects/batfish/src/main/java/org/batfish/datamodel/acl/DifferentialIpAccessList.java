@@ -7,7 +7,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -116,14 +115,12 @@ public final class DifferentialIpAccessList {
     // start with the map for the permit named ACLs and the permit ACL
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
         AclLineMatchExprLiterals.literalsToLines(permitNamedAcls.values());
-    literalsToLines.putAll(
-        AclLineMatchExprLiterals.literalsToLines(Collections.singleton(permitAcl)));
+    literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(permitAcl));
     // include the map for the deny ACLs, but change the keys to use the new literals
     // from the renamed versions of the deny ACLs
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> denyLiteralsToLines =
         AclLineMatchExprLiterals.literalsToLines(denyNamedAcls.values());
-    denyLiteralsToLines.putAll(
-        AclLineMatchExprLiterals.literalsToLines(Collections.singleton(denyAcl)));
+    denyLiteralsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(denyAcl));
     for (Map.Entry<AclLineMatchExpr, IpAccessListLineIndex> entry :
         denyLiteralsToLines.entrySet()) {
       AclLineMatchExpr newLit = entry.getKey();

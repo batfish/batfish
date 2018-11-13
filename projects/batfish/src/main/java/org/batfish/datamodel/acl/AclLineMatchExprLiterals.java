@@ -22,6 +22,11 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
     _literals = Collections.newSetFromMap(new IdentityHashMap<>());
   }
 
+  public static IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines(
+      IpAccessList acl) {
+    return literalsToLines(Collections.singleton(acl));
+  }
+
   // Create a map from each literal in the given acls to the acl and index that it came from.
   public static IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines(
       Collection<IpAccessList> acls) {

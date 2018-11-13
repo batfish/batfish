@@ -4,6 +4,7 @@ import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -92,11 +93,18 @@ public final class AclExplainer {
     IpAccessList diffAcl = differentialIpAccessList.getAcl();
     namedAcls.put(diffAcl.getName(), diffAcl);
     namedAcls = ImmutableMap.copyOf(namedAcls);
+
     IpAccessList diffAclWithInvariant = scopedAcl(invariantExpr, diffAcl);
 
     IpAccessListToBDD ipAccessListToBDD =
         MemoizedIpAccessListToBDD.create(
             bddPacket, mgr, namedAcls, differentialIpAccessList.getNamedIpSpaces());
+
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
+        differentialIpAccessList.getLiteralsToLines();
+    // add the newly created ACL's literals here to get provenance tracking for the
+    // user-provided invariant as well
+    literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(diffAclWithInvariant));
 
     return explainWithProvenance(
         ipAccessListToBDD,
@@ -142,11 +150,14 @@ public final class AclExplainer {
     finalNamedAcls.put(acl.getName(), acl);
     IpAccessList aclWithInvariant = scopedAcl(invariantExpr, acl);
 
+    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
+        AclLineMatchExprLiterals.literalsToLines(finalNamedAcls.values());
+    // add the newly created ACL's literals here to get provenance tracking for the
+    // user-provided invariant as well
+    literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(aclWithInvariant));
+
     return explainWithProvenance(
-        ipAccessListToBDD,
-        aclWithInvariant,
-        ImmutableMap.copyOf(finalNamedAcls),
-        AclLineMatchExprLiterals.literalsToLines(finalNamedAcls.values()));
+        ipAccessListToBDD, aclWithInvariant, ImmutableMap.copyOf(finalNamedAcls), literalsToLines);
   }
 
   private static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
@@ -190,7 +201,8 @@ public final class AclExplainer {
    * Scope the headerspace permitted by an {@link IpAccessList} to those flows that also match
    * {@code invariantExpr}.
    */
-  private static IpAccessList scopedAcl(AclLineMatchExpr invariantExpr, IpAccessList acl) {
+  @VisibleForTesting
+  static IpAccessList scopedAcl(AclLineMatchExpr invariantExpr, IpAccessList acl) {
     return IpAccessList.builder()
         .setName(INVARIANT_ACL_NAME)
         .setLines(
