@@ -87,7 +87,7 @@ public class DifferentialIpAccessListTest {
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
                     .add(rejecting(permittedByAcl(DENY_ACL_NAME)))
-                    .addAll(permitAclLines)
+                    .add(accepting(permittedByAcl(permitAcl.getName())))
                     .build())
             .build();
 
@@ -96,7 +96,7 @@ public class DifferentialIpAccessListTest {
     /*
      * Test named ACLs
      */
-    assertThat(differential.getNamedAcls().entrySet(), hasSize(3));
+    assertThat(differential.getNamedAcls().entrySet(), hasSize(4));
     // the deny ACL itself is present and renamed
     assertThat(
         differential.getNamedAcls(),
@@ -110,6 +110,8 @@ public class DifferentialIpAccessListTest {
             renamedDenyAclReferenceName,
             createAcl(
                 renamedDenyAclReferenceName, renamedDenyAclReferenceName, renamedDenyIpSpace)));
+    // permitAcl is present and not renamed
+    assertThat(differential.getNamedAcls(), hasEntry(permitAcl.getName(), permitAcl));
     // permitNamedAcls are present and not renamed
     assertThat(
         differential.getNamedAcls(), hasEntry(permitAclReferenceName, permitAclReferenceAcl));
@@ -126,5 +128,36 @@ public class DifferentialIpAccessListTest {
     assertThat(
         differential.getNamedIpSpaces(),
         hasEntry(permitNamedIpSpace, new IpSpaceReference(permitNamedIpSpace)));
+
+    /*
+     * Test literals to lines map
+     */
+    assertThat(differential.getLiteralsToLines().entrySet(), hasSize(4));
+    // literals from renamed deny Acls are present and map back to the original deny Acls
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            differential.getNamedAcls().get(DENY_ACL_NAME).getLines().get(1).getMatchCondition(),
+            new IpAccessListLineIndex(denyAcl, 1)));
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            differential
+                .getNamedAcls()
+                .get(renamedDenyAclReferenceName)
+                .getLines()
+                .get(1)
+                .getMatchCondition(),
+            new IpAccessListLineIndex(denyNamedAcls.get(denyAclReferenceName), 1)));
+    // literals from permit Acls are present and not renamed
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            permitAclLines.get(0).getMatchCondition(), new IpAccessListLineIndex(permitAcl, 0)));
+    assertThat(
+        differential.getLiteralsToLines(),
+        hasEntry(
+            permitAclReferenceAcl.getLines().get(1).getMatchCondition(),
+            new IpAccessListLineIndex(permitAclReferenceAcl, 1)));
   }
 }
