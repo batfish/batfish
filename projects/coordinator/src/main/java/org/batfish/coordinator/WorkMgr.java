@@ -1577,8 +1577,12 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  /** Helper function to assert that the specified snapshot subdir contains configs
-   * @throws BatfishException */
+  /**
+   * Helper function to assert that the specified dir contains configs
+   *
+   * @throws BatfishException when specified dir does not contain network configs dir, AWS configs
+   *     dir, or a hosts dir
+   */
   private static void validateSnapshotDir(Path subDir) {
     // Confirm there is a configs, hosts, or AWS configs dir
     boolean configsFound = false;
