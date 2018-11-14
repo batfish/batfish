@@ -6155,11 +6155,6 @@ M_Interface_APPLY_GROUPS_EXCEPT
    'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
 ;
 
-M_Interface_DOUBLE_QUOTED_STRING
-:
-    '"' ~'"'* '"' -> type ( DOUBLE_QUOTED_STRING ), popMode
-;
-
 M_Interface_NEWLINE
 :
    F_NewlineChar+
@@ -6237,16 +6232,9 @@ M_InterfaceQuote_WILDCARD
    '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}
 ;
 
-INTERFACE_REGEX
+M_InterfaceQuote_DOUBLE_QUOTED_STRING
 :
-   (
-        F_Variable_InterfaceVarChar
-        | [[{(^.*+\\]
-   )
-   (
-        F_Variable_InterfaceVarChar
-        | [[{(^.*+\\ ,|\-\]})?$]
-   )*
+    ~'"'+ -> type ( DOUBLE_QUOTED_STRING )
 ;
 
 mode M_ISO;

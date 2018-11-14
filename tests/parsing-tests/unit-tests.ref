@@ -48838,7 +48838,7 @@
             "            (snmp_filter_interfaces",
             "              FILTER_INTERFACES:'filter-interfaces'",
             "              INTERFACES:'interfaces'",
-            "              DOUBLE_QUOTED_STRING:'\"^lc|^pf|^lo0\\.1638\"'  <== mode:M_Interface)))))",
+            "              DOUBLE_QUOTED_STRING:'^lc|^pf|^lo0\\.1638'  <== mode:M_InterfaceQuote)))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
