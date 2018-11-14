@@ -23,14 +23,14 @@ public final class TableDiff {
 
   private TableDiff() {}
 
-  private static final String COL_BASE_PREFIX = "Base_";
-  private static final String COL_DELTA_PREFIX = "Delta_";
+  private static final String COL_BASE_PREFIX = "Snapshot_";
+  private static final String COL_DELTA_PREFIX = "Reference_";
 
   public static final String COL_KEY_PRESENCE = "KeyPresence";
   public static final String COL_KEY_PRESENCE_DESC = "In which table(s) is the key present";
   public static final String COL_KEY_STATUS_BOTH = "In both";
-  public static final String COL_KEY_STATUS_ONLY_BASE = "Only in Base";
-  public static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Delta";
+  public static final String COL_KEY_STATUS_ONLY_BASE = "Only in Snapshot";
+  public static final String COL_KEY_STATUS_ONLY_DELTA = "Only in Reference";
 
   /** Returns the modified column name to represent the delta value of the original column */
   public static String baseColumnName(String originalColumnName) {
