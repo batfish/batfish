@@ -42,7 +42,7 @@ import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.FileBasedIdManager;
-import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -122,8 +122,8 @@ public class Main {
     if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
       JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
       String instanceDataStr = instanceDataObj.toString();
-      Question.InstanceData instanceData =
-          BatfishObjectMapper.mapper().readValue(instanceDataStr, Question.InstanceData.class);
+      InstanceData instanceData =
+          BatfishObjectMapper.mapper().readValue(instanceDataStr, InstanceData.class);
       String name = instanceData.getInstanceName();
       String key = name.toLowerCase();
       if (templates.containsKey(key) && _logger != null) {

@@ -88,7 +88,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
     Multiset<IpsecSessionInfo> ipsecSessionInfos = HashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
-      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpecPeerConfig(node);
+      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpsecPeerConfig(node);
       if (ipsecPeerConfig == null
           || ipsecPeerConfig instanceof IpsecDynamicPeerConfig
           || !initiatorNodes.contains(node.getHostName())) {
@@ -117,7 +117,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
         if (ipsecSession == null) {
           continue;
         }
-        IpsecPeerConfig ipsecPeerConfigNeighbor = networkConfigurations.getIpecPeerConfig(neighbor);
+        IpsecPeerConfig ipsecPeerConfigNeighbor =
+            networkConfigurations.getIpsecPeerConfig(neighbor);
         if (ipsecPeerConfigNeighbor == null) {
           continue;
         }

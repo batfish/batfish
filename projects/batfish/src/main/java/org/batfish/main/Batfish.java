@@ -1901,28 +1901,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement() {
-    return loadValidateSnapshotAnswerElement(true);
-  }
-
-  private ValidateSnapshotAnswerElement loadValidateSnapshotAnswerElement(boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getValidateSnapshotAnswerPath();
-    if (Files.exists(answerPath)) {
-      ValidateSnapshotAnswerElement veae =
-          deserializeObject(answerPath, ValidateSnapshotAnswerElement.class);
-      if (Version.isCompatibleVersion("Service", "Old processed environment", veae.getVersion())) {
-        return veae;
-      }
-    }
-    if (firstAttempt) {
-      parseConfigurationsAndApplyEnvironment();
-      return loadValidateSnapshotAnswerElement(false);
-    } else {
-      throw new BatfishException(
-          "Version error repairing environment for validate environment answer element");
-    }
-  }
-
   private void mergeConvertAnswer(
       boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
     ConvertConfigurationAnswerElement convertAnswer =
@@ -3083,11 +3061,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       action = true;
     }
 
-    if (_settings.getValidateSnapshot()) {
-      answer.append(validateSnapshot());
-      action = true;
-    }
-
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
@@ -3910,44 +3883,39 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
+            FlowDisposition.LOOP,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
     Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
     Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Map<IngressLocation, BDD> acceptedBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                srcIpSpaceAssignment,
-                parameters.getHeaderSpace(),
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                finalNodes,
-                ImmutableSet.of(FlowDisposition.ACCEPTED))
-            .getIngressLocationReachableBDDs();
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            srcIpSpaceAssignment,
+            parameters.getHeaderSpace(),
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            ImmutableSet.of(FlowDisposition.ACCEPTED));
     Map<IngressLocation, BDD> droppedBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                srcIpSpaceAssignment,
-                parameters.getHeaderSpace(),
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                finalNodes,
-                dropDispositions)
-            .getIngressLocationReachableBDDs();
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            srcIpSpaceAssignment,
+            parameters.getHeaderSpace(),
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            dropDispositions);
     Map<IngressLocation, BDD> neighborUnreachableBDDs =
-        bddReachabilityAnalysisFactory
-            .bddReachabilityAnalysis(
-                srcIpSpaceAssignment,
-                parameters.getHeaderSpace(),
-                forbiddenTransitNodes,
-                requiredTransitNodes,
-                finalNodes,
-                ImmutableSet.of(
-                    FlowDisposition.NEIGHBOR_UNREACHABLE,
-                    FlowDisposition.DELIVERED_TO_SUBNET,
-                    FlowDisposition.EXITS_NETWORK,
-                    FlowDisposition.INSUFFICIENT_INFO))
-            .getIngressLocationReachableBDDs();
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            srcIpSpaceAssignment,
+            parameters.getHeaderSpace(),
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            ImmutableSet.of(
+                FlowDisposition.NEIGHBOR_UNREACHABLE,
+                FlowDisposition.DELIVERED_TO_SUBNET,
+                FlowDisposition.EXITS_NETWORK,
+                FlowDisposition.INSUFFICIENT_INFO));
 
     String flowTag = getFlowTag();
     return Streams.concat(
@@ -4163,16 +4131,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .setTopology(topology)
         .setTransitNodes(transitNodes)
         .build();
-  }
-
-  private Answer validateSnapshot() {
-    Answer answer = new Answer();
-    ValidateSnapshotAnswerElement ae = loadValidateSnapshotAnswerElement();
-    answer.addAnswerElement(ae);
-    Topology envTopology = computeEnvironmentTopology(loadConfigurations());
-    serializeAsJson(
-        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
-    return answer;
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {

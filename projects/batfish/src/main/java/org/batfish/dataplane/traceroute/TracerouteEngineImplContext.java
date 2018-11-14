@@ -513,6 +513,18 @@ public class TracerouteEngineImplContext {
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
           currentFib.getNextHopInterfacesByRoute(dstIp);
 
+      List<RouteInfo> matchedRibRouteInfo =
+          _dataPlane
+              .getRibs()
+              .get(currentNodeName)
+              .get(vrfName)
+              .longestPrefixMatch(dstIp)
+              .stream()
+              .sorted()
+              .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
+              .distinct()
+              .collect(ImmutableList.toImmutableList());
+
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
         TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
@@ -549,24 +561,13 @@ public class TracerouteEngineImplContext {
                       Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
                           ? null
                           : resolvedNextHopIp;
-                  List<RouteInfo> routesForThisNextHopInterface =
-                      routeCandidates
-                          .stream()
-                          .map(
-                              rc ->
-                                  new RouteInfo(
-                                      rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
-                          .distinct()
-                          .collect(ImmutableList.toImmutableList());
 
                   ImmutableList.Builder<Step<?>> clonedStepsBuilder = ImmutableList.builder();
                   clonedStepsBuilder.addAll(steps);
                   clonedStepsBuilder.add(
                       RoutingStep.builder()
                           .setDetail(
-                              RoutingStepDetail.builder()
-                                  .setRoutes(routesForThisNextHopInterface)
-                                  .build())
+                              RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
                           .setAction(StepAction.FORWARDED)
                           .build());
 

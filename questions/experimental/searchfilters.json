@@ -39,7 +39,23 @@
                 "description": "Packet header constraints on the flows being searched",
                 "optional": true,
                 "type": "headerConstraint",
-                "displayName": "Headers"
+                "displayName": "Headers",
+                "fields": {
+                    "applications": { "optional": true },
+                    "dscps": { "optional": true },
+                    "dstIps": { "optional": true },
+                    "dstPorts": { "optional": true },
+                    "ecns": { "optional": true },
+                    "flowStates": { "optional": true },
+                    "fragmentOffsets": { "optional": true },
+                    "icmpCodes": { "optional": true },
+                    "icmpTypes": { "optional": true },
+                    "ipProtocols": { "optional": true },
+                    "packetLengths": { "optional": true },
+                    "srcIps": { "optional": true },
+                    "srcPorts": { "optional": true },
+                    "tcpFlags": { "optional": true }
+                }
             },
             "invertSearch": {
                 "description": "Search for packet headers outside the specified headerspace, rather than inside the space.",

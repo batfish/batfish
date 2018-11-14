@@ -89,7 +89,10 @@ sy_null
       | MAX_CONFIGURATIONS_ON_FLASH
       | MAX_CONFIGURATION_ROLLBACKS
       | NAME_RESOLUTION
+      | NO_PING_RECORD_ROUTE
+      | NO_PING_TIME_STAMP
       | NO_REDIRECTS
+      | NO_REDIRECTS_IPV6
       | PROCESSES
       | RADIUS_OPTIONS
       | RADIUS_SERVER
@@ -211,7 +214,27 @@ syn_null
 
 syn_server
 :
-   SERVER hostname = variable PREFER?
+   SERVER hostname = variable
+   (
+       syn_server_key
+       | syn_server_version
+       | syn_server_prefer
+   )*
+;
+
+syn_server_key
+:
+    KEY DEC
+;
+
+syn_server_prefer
+:
+    PREFER
+;
+
+syn_server_version
+:
+    VERSION VERSION_STRING
 ;
 
 syp_disable
