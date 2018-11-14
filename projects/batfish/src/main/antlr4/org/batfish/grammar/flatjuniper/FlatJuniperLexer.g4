@@ -3501,6 +3501,11 @@ MVPN
    'mvpn'
 ;
 
+NAME
+:
+   'name'
+;
+
 NAME_RESOLUTION
 :
    'name-resolution'
@@ -6148,6 +6153,11 @@ M_Interface_APPLY_GROUPS
 M_Interface_APPLY_GROUPS_EXCEPT
 :
    'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
+;
+
+M_Interface_DOUBLE_QUOTED_STRING
+:
+    '"' ~'"'* '"' -> type ( DOUBLE_QUOTED_STRING ), popMode
 ;
 
 M_Interface_NEWLINE

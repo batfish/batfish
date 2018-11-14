@@ -214,7 +214,27 @@ syn_null
 
 syn_server
 :
-   SERVER hostname = variable (KEY DEC)? (VERSION VERSION_STRING)? PREFER?
+   SERVER hostname = variable
+   (
+       syn_server_key
+       | syn_server_version
+       | syn_server_prefer
+   )*
+;
+
+syn_server_key
+:
+    KEY DEC
+;
+
+syn_server_prefer
+:
+    PREFER
+;
+
+syn_server_version
+:
+    VERSION VERSION_STRING
 ;
 
 syp_disable

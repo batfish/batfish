@@ -12,6 +12,7 @@ s_snmp
    (
       snmp_community
       | snmp_filter_interfaces
+      | snmp_name
       | snmp_null
       | snmp_trap_group
    )
@@ -30,7 +31,12 @@ snmp_community
 
 snmp_filter_interfaces
 :
-    FILTER_INTERFACES INTERFACES INTERFACE_REGEX
+    FILTER_INTERFACES INTERFACES DOUBLE_QUOTED_STRING
+;
+
+snmp_name
+:
+    NAME name = variable
 ;
 
 snmp_null

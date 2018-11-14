@@ -11,6 +11,7 @@ set snmp filter-duplicates
 set snmp filter-interfaces interfaces "^lc|^pf|^lo0\.1638"
 set snmp location "some location"
 set snmp interface ge-0/0/0.0
+set snmp name my-snmp-name
 set snmp stats-cache-lifetime 30
 set snmp traceoptions flag pdu
 set snmp trap-group mytrapgroup categories authentication
