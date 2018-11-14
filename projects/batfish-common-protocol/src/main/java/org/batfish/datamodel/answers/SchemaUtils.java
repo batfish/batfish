@@ -37,7 +37,7 @@ public final class SchemaUtils {
                       BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
                       new TypeReference<List<JsonNode>>() {});
           return list.stream()
-              .map(in -> convertType(in, schema.getBaseType()))
+              .map(in -> convertType(in, schema.getInnerSchema()))
               .collect(Collectors.toList());
         case SET:
           Set<JsonNode> set =
@@ -46,7 +46,7 @@ public final class SchemaUtils {
                       BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
                       new TypeReference<Set<JsonNode>>() {});
           return set.stream()
-              .map(in -> convertType(in, schema.getBaseType()))
+              .map(in -> convertType(in, schema.getInnerSchema()))
               .collect(Collectors.toSet());
         default:
           throw new IllegalArgumentException("Cannot handle Schema of type: " + schema.getType());
