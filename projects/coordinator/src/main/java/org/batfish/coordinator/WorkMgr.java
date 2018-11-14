@@ -1500,6 +1500,8 @@ public class WorkMgr extends AbstractCoordinator {
       boolean autoAnalyze,
       @Nullable SnapshotId parentSnapshotId) {
     Path subDir = getSnapshotSubdir(srcDir);
+    validateSnapshotDir(subDir);
+
     SortedSet<Path> subFileList = CommonUtil.getEntries(subDir);
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
@@ -1572,6 +1574,35 @@ public class WorkMgr extends AbstractCoordinator {
           _logger.errorf("Unable to queue work while auto processing: %s", workItem);
         }
       }
+    }
+  }
+
+  /** Helper function to assert that the specified snapshot subdir contains configs
+   * @throws BatfishException */
+  private static void validateSnapshotDir(Path subDir) {
+    // Confirm there is a configs, hosts, or AWS configs dir
+    boolean configsFound = false;
+    Path hostConfigsPath = subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    if (Files.exists(hostConfigsPath)) {
+      configsFound = true;
+    }
+    Path networkConfigsPath = subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+    if (Files.exists(networkConfigsPath)) {
+      configsFound = true;
+    }
+    Path awsConfigsPath = subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    if (Files.exists(awsConfigsPath)) {
+      configsFound = true;
+    }
+
+    if (!configsFound) {
+      Path srcDir = subDir.getParent();
+      throw new BatfishException(
+          String.format(
+              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', or hosts dir '%s' found.",
+              srcDir.relativize(networkConfigsPath),
+              srcDir.relativize(awsConfigsPath),
+              srcDir.relativize(hostConfigsPath)));
     }
   }
 
@@ -2253,7 +2284,8 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);
     } catch (Exception e) {
-      throw new BatfishException("Error initializing snapshot", e);
+      throw new BatfishException(
+          String.format("Error initializing snapshot: %s", e.getMessage()), e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }
