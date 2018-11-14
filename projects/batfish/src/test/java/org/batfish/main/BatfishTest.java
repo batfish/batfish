@@ -533,11 +533,43 @@ public class BatfishTest {
     assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
   }
 
+  // all of these interfaces should not be ignored by processManagementInterfaces()
   @Test
-  public void testProcessManagementInterfaces() throws IOException {
+  public void testNotIgnoredManagementInterfaces() {
+    String notIgnored = "notIgnored";
+    String notIgnored2 = "them0";
+    String notIgnored3 = "mgt-me0";
+    String notIgnored4 = "manage";
+    String notIgnored5 = "Afxp0";
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config1 =
+        BatfishTestUtils.createTestConfiguration(
+            "config1",
+            ConfigurationFormat.HOST,
+            notIgnored,
+            notIgnored2,
+            notIgnored3,
+            notIgnored4,
+            notIgnored5);
+    config1.getAllInterfaces().get(notIgnored).setVrfName("vrf-mgmt");
+    config1.getAllInterfaces().get(notIgnored2).setVrfName("Manageme");
+    config1.getAllInterfaces().get(notIgnored3).setVrfName("fxp0");
+    configs.put("config1", config1);
+
+    Batfish.processManagementInterfaces(configs);
+
+    // all of the interfaces should still be active
+    assertThat(
+        config1.activeInterfaces(),
+        equalTo(ImmutableSet.of(notIgnored, notIgnored2, notIgnored3, notIgnored4, notIgnored5)));
+  }
+
+  // all of these interfaces should be ignored by processManagementInterfaces()
+  @Test
+  public void testIgnoredManagementInterfaces() {
     String ignoredIface1 = "ignoredIface1";
     String ignoredIface2 = "ignoredIface2";
-    String notIgnored = "notIgnored";
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config1 =
@@ -546,19 +578,18 @@ public class BatfishTest {
             ConfigurationFormat.HOST,
             ignoredIface1,
             ignoredIface2,
-            notIgnored,
             "mgmt0",
             "Management",
-            "fxp0",
-            "em0",
-            "me0");
+            "fxp0-0",
+            "em0.0",
+            "me0.10");
     config1.getAllInterfaces().get(ignoredIface1).setVrfName("Mgmt-intf");
-    config1.getAllInterfaces().get(ignoredIface2).setVrfName("Management");
+    config1.getAllInterfaces().get(ignoredIface2).setVrfName("ManagementVrf");
     configs.put("config1", config1);
 
     Batfish.processManagementInterfaces(configs);
 
-    // the only interface that should be active is the "notIgnored" interface
-    assertThat(config1.activeInterfaces(), equalTo(ImmutableSet.of(notIgnored)));
+    // none of the interfaces should be active
+    assertThat(config1.activeInterfaces(), equalTo(ImmutableSet.of()));
   }
 }

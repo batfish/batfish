@@ -241,10 +241,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   private static final Pattern MANAGEMENT_INTERFACES =
-      Pattern.compile("(mgmt)|(management)|(fxp0)|(em0)|(me0)", CASE_INSENSITIVE);
+      Pattern.compile("(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)", CASE_INSENSITIVE);
 
   private static final Pattern MANAGEMENT_VRFS =
-      Pattern.compile("(mgmt)|(management)", CASE_INSENSITIVE);
+      Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
 
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {

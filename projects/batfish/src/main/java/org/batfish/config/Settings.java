@@ -735,7 +735,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "ignore configuration files containing these strings",
         ARGNAME_STRINGS);
 
-    addBooleanOption(BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES, "ignore interfaces that are part of the management network");
+    addBooleanOption(
+        BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES,
+        "infer and ignore interfaces that are part of the management network");
 
     addBooleanOption(
         ARG_IGNORE_UNKNOWN, "ignore configuration files with unknown format instead of crashing");
