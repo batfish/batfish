@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -32,8 +34,9 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_VRF = "VRF";
   public static final String COL_LOCAL_AS = "Local_AS";
-  public static final String COL_REMOTE_AS = "Remote_AS";
+  public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_LOCAL_IP = "Local_IP";
+  public static final String COL_REMOTE_AS = "Remote_AS";
   public static final String COL_REMOTE_IP = "Remote_IP";
   public static final String COL_ROUTE_REFLECTOR_CLIENT = "Route_Reflector_Client";
   public static final String COL_CLUSTER_ID = "Cluster_ID";
@@ -56,6 +59,9 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
         .add(new ColumnMetadata(COL_LOCAL_AS, Schema.LONG, "Local AS", false, false))
+        .add(
+            new ColumnMetadata(
+                COL_LOCAL_INTERFACE, Schema.INTERFACE, "Local Interface", false, false))
         .add(new ColumnMetadata(COL_LOCAL_IP, Schema.IP, "Local IP", false, false))
         .add(new ColumnMetadata(COL_REMOTE_AS, Schema.SELF_DESCRIBING, "Remote AS", false, false))
         .add(new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false))
@@ -111,20 +117,23 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      for (Vrf vrf : configurations.get(nodeName).getVrfs().values()) {
+      Configuration config = configurations.get(nodeName);
+      for (Vrf vrf : config.getVrfs().values()) {
         BgpProcess bgpProcess = vrf.getBgpProcess();
         if (bgpProcess == null) {
           continue;
         }
         Node node = new Node(nodeName);
         for (BgpActivePeerConfig peer : bgpProcess.getActiveNeighbors().values()) {
+          Ip localIp = peer.getLocalIp();
           RowBuilder rowBuilder =
               Row.builder(columnMetadata)
                   .put(COL_NODE, node)
                   .put(COL_VRF, vrf.getName())
                   .put(COL_LOCAL_AS, peer.getLocalAs())
+                  .put(COL_LOCAL_INTERFACE, getInterface(localIp, config))
+                  .put(COL_LOCAL_IP, localIp)
                   .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, peer.getRemoteAs()))
-                  .put(COL_LOCAL_IP, peer.getLocalIp())
                   .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, peer.getPeerAddress()))
                   .put(COL_ROUTE_REFLECTOR_CLIENT, peer.getRouteReflectorClient())
                   .put(
@@ -139,15 +148,17 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
           rows.add(rowBuilder.build());
         }
         for (BgpPassivePeerConfig peer : bgpProcess.getPassiveNeighbors().values()) {
+          Ip localIp = peer.getLocalIp();
           RowBuilder rowBuilder =
               Row.builder(columnMetadata)
                   .put(COL_NODE, node)
                   .put(COL_VRF, vrf.getName())
                   .put(COL_LOCAL_AS, peer.getLocalAs())
+                  .put(COL_LOCAL_INTERFACE, getInterface(localIp, config))
+                  .put(COL_LOCAL_IP, localIp)
                   .put(
                       COL_REMOTE_AS,
                       new SelfDescribingObject(Schema.list(Schema.LONG), peer.getRemoteAs()))
-                  .put(COL_LOCAL_IP, peer.getLocalIp())
                   .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, peer.getPeerPrefix()))
                   .put(COL_ROUTE_REFLECTOR_CLIENT, peer.getRouteReflectorClient())
                   .put(
@@ -164,5 +175,11 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       }
     }
     return rows;
+  }
+
+  private static NodeInterfacePair getInterface(Ip ip, Configuration config) {
+    return CommonUtil.getActiveInterfaceWithIp(ip, config)
+        .map(iface -> new NodeInterfacePair(config.getHostname(), iface.getName()))
+        .orElse(null);
   }
 }
