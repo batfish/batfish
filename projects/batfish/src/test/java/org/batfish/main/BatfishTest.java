@@ -532,4 +532,33 @@ public class BatfishTest {
     // should get null answerer if no creator available
     assertThat(batfish.createAnswerer(testQuestionMissing), nullValue());
   }
+
+  @Test
+  public void testProcessManagementInterfaces() throws IOException {
+    String ignoredIface1 = "ignoredIface1";
+    String ignoredIface2 = "ignoredIface2";
+    String notIgnored = "notIgnored";
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config1 =
+        BatfishTestUtils.createTestConfiguration(
+            "config1",
+            ConfigurationFormat.HOST,
+            ignoredIface1,
+            ignoredIface2,
+            notIgnored,
+            "mgmt0",
+            "Management",
+            "fxp0",
+            "em0",
+            "me0");
+    config1.getAllInterfaces().get(ignoredIface1).setVrfName("Mgmt-intf");
+    config1.getAllInterfaces().get(ignoredIface2).setVrfName("Management");
+    configs.put("config1", config1);
+
+    Batfish.processManagementInterfaces(configs);
+
+    // the only interface that should be active is the "notIgnored" interface
+    assertThat(config1.activeInterfaces(), equalTo(ImmutableSet.of(notIgnored)));
+  }
 }
