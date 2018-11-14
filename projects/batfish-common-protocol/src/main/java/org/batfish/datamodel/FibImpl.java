@@ -126,16 +126,39 @@ public class FibImpl implements Fib {
       if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         Set<AbstractRoute> nextHopLongestPrefixMatchRoutes =
             rib.longestPrefixMatch(nextHopIp, maxPrefixLength);
-        for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {
+
+        /* Filter out any non-forwarding routes from the matches */
+        Set<AbstractRoute> forwardingRoutes =
+            nextHopLongestPrefixMatchRoutes
+                .stream()
+                .filter(r -> !r.getNonForwarding())
+                .collect(ImmutableSet.toImmutableSet());
+
+        if (forwardingRoutes.isEmpty()) {
+          // Re-resolve *this route* with less specific prefix match
+          seenNetworks.remove(route.getNetwork());
           collectNextHopInterfaces(
               rib,
-              nextHopLongestPrefixMatchRoute,
-              nextHopIp,
+              route,
+              mostRecentNextHopIp,
               nextHopInterfaces,
-              newSeenNetworks,
+              seenNetworks,
               depth + 1,
-              Prefix.MAX_PREFIX_LENGTH,
-              route);
+              maxPrefixLength - 1,
+              parentRoute);
+        } else {
+          // We have at least one valid longest-prefix match
+          for (AbstractRoute nextHopLongestPrefixMatchRoute : forwardingRoutes) {
+            collectNextHopInterfaces(
+                rib,
+                nextHopLongestPrefixMatchRoute,
+                nextHopIp,
+                nextHopInterfaces,
+                newSeenNetworks,
+                depth + 1,
+                Prefix.MAX_PREFIX_LENGTH,
+                route);
+          }
         }
       } else {
         // TODO: Declare this using some warning mechanism
