@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
@@ -39,6 +40,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final String REMOTE_AS = "Remote_AS";
   public static final String REMOTE_IP = "Remote_IP";
   public static final String ROUTE_REFLECTOR_CLIENT = "Route_Reflector_Client";
+  public static final String CLUSTER_ID = "Cluster_ID";
   public static final String PEER_GROUP = "Peer_Group";
   public static final String IMPORT_POLICY = "Import_Policy";
   public static final String EXPORT_POLICY = "Export_Policy";
@@ -58,6 +60,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR_CLIENT,
               new PropertyDescriptor<>(BgpPeerConfig::getRouteReflectorClient, Schema.BOOLEAN))
+          .put(CLUSTER_ID, new PropertyDescriptor<>((peer) -> getClusterId(peer), Schema.IP))
           .put(PEER_GROUP, new PropertyDescriptor<>(BgpPeerConfig::getGroup, Schema.STRING))
           .put(
               IMPORT_POLICY,
@@ -99,6 +102,13 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
     return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
+  }
+
+  /** Returns cluster ID of this peer */
+  private static Object getClusterId(BgpPeerConfig peer) {
+    return !peer.getRouteReflectorClient() || peer.getClusterId() == null
+        ? null
+        : new Ip(peer.getClusterId());
   }
 
   @Override

@@ -11,11 +11,18 @@
           "schema" : "Flow"
         },
         {
-          "description" : "The flow traces",
+          "description" : "The traces for this flow",
           "isKey" : false,
           "isValue" : true,
           "name" : "Traces",
-          "schema" : "Set<FlowTrace>"
+          "schema" : "Set<Trace>"
+        },
+        {
+          "description" : "The total number traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "TraceCount",
+          "schema" : "Integer"
         }
       ],
       "textDesc" : "Paths for flow ${Flow}"
@@ -52,335 +59,1156 @@
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet0/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2core1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dist1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet0/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2core1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core1",
-                  "node1interface" : "GigabitEthernet3/0",
-                  "node2" : "as2dist2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet3/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet0/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2core2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dist2",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet0/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2core2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core2",
-                  "node1interface" : "GigabitEthernet3/0",
-                  "node2" : "as2dist1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet3/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           }
-        ]
+        ],
+        "TraceCount" : 4
       },
       {
         "Flow" : {
@@ -413,335 +1241,1156 @@
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet1/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2core1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dist1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet1/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2core1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core1",
-                  "node1interface" : "GigabitEthernet3/0",
-                  "node2" : "as2dist2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2core1",
+                  "name" : "as2core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core1",
+                        "interface" : "GigabitEthernet3/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet1/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2core2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dist2",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist2",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2dist2",
+                  "name" : "as2dist2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist2",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           },
           {
             "disposition" : "DENIED_IN",
             "hops" : [
               {
-                "edge" : {
-                  "node1" : "traceroute_source_node",
-                  "node1interface" : "traceroute_source_interface",
-                  "node2" : "as1core1",
-                  "node2interface" : "GigabitEthernet1/0"
-                }
-              },
-              {
-                "edge" : {
-                  "node1" : "as1core1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as1border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1core1",
+                  "name" : "as1core1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1core1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as1border1",
-                  "node1interface" : "GigabitEthernet1/0",
-                  "node2" : "as2border1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as1border1",
+                  "name" : "as1border1"
                 },
-                "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
-                "routes" : [
-                  "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/16",
+                          "nextHopIp" : "10.12.11.2",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as1border1",
+                        "interface" : "GigabitEthernet1/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2border1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2core2",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2border1",
+                  "name" : "as2border1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2",
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputFilter" : "OUTSIDE_TO_INSIDE",
+                      "inputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2border1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2core2",
-                  "node1interface" : "GigabitEthernet3/0",
-                  "node2" : "as2dist1",
-                  "node2interface" : "GigabitEthernet1/0"
+                "node" : {
+                  "id" : "node-as2core2",
+                  "name" : "as2core2"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "ibgp"
+                        },
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.201.4",
+                          "protocol" : "ibgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2core2",
+                        "interface" : "GigabitEthernet3/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dist1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "as2dept1",
-                  "node2interface" : "GigabitEthernet0/0"
+                "node" : {
+                  "id" : "node-as2dist1",
+                  "name" : "as2dist1"
                 },
-                "routes" : [
-                  "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet1/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "2.34.101.4",
+                          "protocol" : "bgp"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dist1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
                 ]
               },
               {
-                "edge" : {
-                  "node1" : "as2dept1",
-                  "node1interface" : "GigabitEthernet2/0",
-                  "node2" : "host1",
-                  "node2interface" : "eth0"
+                "node" : {
+                  "id" : "node-as2dept1",
+                  "name" : "as2dept1"
                 },
-                "filterIn" : "{filter::INPUT}{default}",
-                "routes" : [
-                  "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null"
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet0/0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "2.128.0.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "as2dept1",
+                        "interface" : "GigabitEthernet2/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-host1",
+                  "name" : "host1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "inputFilter" : "filter::INPUT",
+                      "inputInterface" : {
+                        "hostname" : "host1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  }
                 ]
               }
-            ],
-            "notes" : "DENIED_IN{filter::INPUT}{default}"
+            ]
           }
-        ]
+        ],
+        "TraceCount" : 4
       }
     ],
     "summary" : {

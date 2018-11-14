@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -46,15 +47,18 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
       IpSpace srcIps = rename(headerSpace.getSrcIps());
       IpSpace notSrcIps = rename(headerSpace.getNotSrcIps());
       IpSpace srcOrDstIps = rename(headerSpace.getSrcOrDstIps());
-      return new MatchHeaderSpace(
-          headerSpace
-              .toBuilder()
-              .setDstIps(dstIps)
-              .setNotDstIps(notDstIps)
-              .setSrcIps(srcIps)
-              .setNotSrcIps(notSrcIps)
-              .setSrcOrDstIps(srcOrDstIps)
-              .build());
+      MatchHeaderSpace newMatchHeaderSpace =
+          new MatchHeaderSpace(
+              headerSpace
+                  .toBuilder()
+                  .setDstIps(dstIps)
+                  .setNotDstIps(notDstIps)
+                  .setSrcIps(srcIps)
+                  .setNotSrcIps(notSrcIps)
+                  .setSrcOrDstIps(srcOrDstIps)
+                  .build());
+      _literalsMap.put(matchHeaderSpace, newMatchHeaderSpace);
+      return newMatchHeaderSpace;
     }
 
     @Override
@@ -85,10 +89,13 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
 
     @Override
     public AclLineMatchExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      return new PermittedByAcl(
-          _aclRenamer.apply(permittedByAcl.getAclName()),
-          permittedByAcl.getDefaultAccept(),
-          permittedByAcl.getDescription());
+      PermittedByAcl newPermittedByAcl =
+          new PermittedByAcl(
+              _aclRenamer.apply(permittedByAcl.getAclName()),
+              permittedByAcl.getDefaultAccept(),
+              permittedByAcl.getDescription());
+      _literalsMap.put(permittedByAcl, newPermittedByAcl);
+      return newPermittedByAcl;
     }
 
     @Override
@@ -101,11 +108,16 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
 
   private IpSpaceRenamer _ipSpaceRenamer;
 
+  // a map from each literal in the original ACLs to its replacement in the renamed ACLs,
+  // if a new one was created
+  private IdentityHashMap<AclLineMatchExpr, AclLineMatchExpr> _literalsMap;
+
   private final Visitor _visitor;
 
   public IpAccessListRenamer(Function<String, String> aclRenamer, IpSpaceRenamer ipSpaceRenamer) {
     _aclRenamer = aclRenamer;
     _ipSpaceRenamer = ipSpaceRenamer;
+    _literalsMap = new IdentityHashMap<>();
     _visitor = new Visitor();
   }
 
@@ -129,5 +141,9 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
   @VisibleForTesting
   Visitor getAclLineMatchExprVisitor() {
     return _visitor;
+  }
+
+  IdentityHashMap<AclLineMatchExpr, AclLineMatchExpr> getLiteralsMap() {
+    return _literalsMap;
   }
 }
