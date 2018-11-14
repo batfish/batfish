@@ -88,6 +88,7 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasMetricOfDefault
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
@@ -2374,6 +2375,30 @@ public class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasGeneratedRoutes(
                 hasItem(allOf(hasPrefix(Prefix.parse("10.0.1.0/24")), isDiscard())))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(
+                    1L,
+                    allOf(
+                        hasStubType(equalTo(StubType.STUB)),
+                        hasSummary(Prefix.parse("10.0.1.0/24"), isAdvertised()))))));
+    String summaryFilterName =
+        c.getDefaultVrf().getOspfProcess().getAreas().get(1L).getSummaryFilter();
+    assertThat(summaryFilterName, not(nullValue()));
+    assertThat(c.getRouteFilterLists().get(summaryFilterName), not(nullValue()));
+    Prefix blockPrefix = Prefix.parse("10.0.1.0/24");
+    assertThat(
+        c.getRouteFilterLists().get(summaryFilterName).getLines(),
+        equalTo(
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.DENY,
+                    blockPrefix,
+                    new SubRange(blockPrefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)),
+                new RouteFilterLine(
+                    LineAction.PERMIT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)))));
   }
 
   @Test

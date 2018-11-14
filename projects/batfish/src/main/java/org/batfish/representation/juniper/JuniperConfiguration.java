@@ -58,6 +58,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -737,7 +738,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // areas
     Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> newAreaBuilders =
         CommonUtil.toImmutableMap(
-            routingInstance.getOspfAreas(), Entry::getKey, e -> toOspfAreaBuilder(e.getValue()));
+            routingInstance.getOspfAreas(),
+            Entry::getKey,
+            e -> {
+              String summaryFilterName =
+                  "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + e.getValue().getName() + "~";
+              RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+              _c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+              return toOspfAreaBuilder(e.getValue(), summaryFilter);
+            });
     // place interfaces into areas
     for (Entry<String, Interface> e : routingInstance.getInterfaces().entrySet()) {
       String name = e.getKey();
@@ -774,7 +783,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newProc;
   }
 
-  private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(OspfArea area) {
+  private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(
+      OspfArea area, RouteFilterList summaryFilter) {
     org.batfish.datamodel.ospf.OspfArea.Builder newAreaBuilder =
         org.batfish.datamodel.ospf.OspfArea.builder();
     newAreaBuilder.setNumber(area.getName());
@@ -784,6 +794,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newAreaBuilder.addSummaries(area.getSummaries());
     newAreaBuilder.setInjectDefaultRoute(area.getInjectDefaultRoute());
     newAreaBuilder.setMetricOfDefaultRoute(area.getMetricOfDefaultRoute());
+
+    // Add summary filters for each area summary
+    for (Entry<Prefix, OspfAreaSummary> e2 : area.getSummaries().entrySet()) {
+      Prefix prefix = e2.getKey();
+      OspfAreaSummary summary = e2.getValue();
+      int prefixLength = prefix.getPrefixLength();
+      int filterMinPrefixLength =
+          summary.getAdvertised()
+              ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+              : prefixLength;
+      summaryFilter.addLine(
+          new org.batfish.datamodel.RouteFilterLine(
+              LineAction.DENY,
+              new IpWildcard(prefix),
+              new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+    }
+    summaryFilter.addLine(
+        new org.batfish.datamodel.RouteFilterLine(
+            LineAction.PERMIT,
+            new IpWildcard(Prefix.ZERO),
+            new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+    newAreaBuilder.setSummaryFilter(summaryFilter.getName());
     return newAreaBuilder;
   }
 
