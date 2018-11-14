@@ -126,6 +126,22 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return new PrefixIpSpace(this);
   }
 
+  /**
+   * Returns an {@link IpSpace} that contains this prefix except for the network and broadcast
+   * addresses, if applicable. Following RFC 3021, the entire {@code /31} is treated as host IP
+   * space. A prefix of length {@code /32} is preserved, though may be a degenerate case.
+   */
+  public IpSpace toHostIpSpace() {
+    if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
+      return toIpSpace();
+    }
+    return AclIpSpace.builder()
+        .thenRejecting(getStartIp().toIpSpace())
+        .thenRejecting(getEndIp().toIpSpace())
+        .thenPermitting(toIpSpace())
+        .build();
+  }
+
   @Override
   @JsonValue
   public String toString() {

@@ -35,8 +35,8 @@ public class OspfProtocolHelper {
       long areaNum,
       boolean useMin) {
     Prefix contributingRoutePrefix = route.getNetwork();
-    // Only update metric for different areas and if the area prefix contains the route prefix
-    if (areaNum == route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
+    // Only update metric for different areas that can contribute to the summary
+    if (areaNum != route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
       return currentMetric;
     }
     long contributingRouteMetric = route.getMetric();

@@ -1,5 +1,6 @@
 package org.batfish.question.bgpproperties;
 
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_CLUSTER_ID;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_EXPORT_POLICY;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_IMPORT_POLICY;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_AS;
@@ -58,6 +59,7 @@ public class BgpPeerConfigurationAnswererTest {
             .put(COL_LOCAL_IP, new Ip("1.1.1.1"))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
             .put(COL_ROUTE_REFLECTOR_CLIENT, false)
+            .put(COL_CLUSTER_ID, null)
             .put(COL_PEER_GROUP, "g1")
             .put(COL_IMPORT_POLICY, ImmutableSet.of("p1"))
             .put(COL_EXPORT_POLICY, ImmutableSet.of("p2"))
@@ -75,7 +77,8 @@ public class BgpPeerConfigurationAnswererTest {
             .put(
                 COL_REMOTE_IP,
                 new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
-            .put(COL_ROUTE_REFLECTOR_CLIENT, false)
+            .put(COL_ROUTE_REFLECTOR_CLIENT, true)
+            .put(COL_CLUSTER_ID, new Ip("5.5.5.5"))
             .put(COL_PEER_GROUP, "g2")
             .put(COL_IMPORT_POLICY, ImmutableSet.of("p3"))
             .put(COL_EXPORT_POLICY, ImmutableSet.of("p4"))
@@ -108,7 +111,8 @@ public class BgpPeerConfigurationAnswererTest {
             .setRemoteAs(ImmutableList.of(300L))
             .setLocalIp(new Ip("1.1.1.2"))
             .setPeerPrefix(new Prefix(new Ip("3.3.3.0"), 24))
-            .setRouteReflectorClient(false)
+            .setRouteReflectorClient(true)
+            .setClusterId(new Ip("5.5.5.5").asLong())
             .setGroup("g2")
             .setImportPolicySources(ImmutableSortedSet.of("p3"))
             .setExportPolicySources(ImmutableSortedSet.of("p4"))
