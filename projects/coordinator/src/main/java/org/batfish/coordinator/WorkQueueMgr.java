@@ -464,7 +464,9 @@ public class WorkQueueMgr {
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
                 Task fakeTask =
-                    new Task(TaskStatus.RequeueFailure, "Couldn't requeue after unblocking");
+                    new Task(
+                        TaskStatus.RequeueFailure,
+                        String.format("Couldn't requeue after unblocking.\n%s", e.getMessage()));
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }
