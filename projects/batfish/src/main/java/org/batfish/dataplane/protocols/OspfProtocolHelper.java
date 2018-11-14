@@ -166,8 +166,14 @@ public class OspfProtocolHelper {
       return false;
     }
 
+    /*
+     * Neighbor proc is an ABR, so *it* will the have summary filters configured.
+     * Get the summary filter for the **route's area** on the neighbor, because a filter
+     * on the link's are does not suppress routes for other areas.
+     */
     Prefix neighborRouteNetwork = neighborRoute.getNetwork();
-    String neighborSummaryFilterName = neighborArea.getSummaryFilter();
+    String neighborSummaryFilterName =
+        neighborProc.getAreas().get(neighborRouteAreaNum).getSummaryFilter();
     boolean hasSummaryFilter = neighborSummaryFilterName != null;
     boolean allowed = !hasSummaryFilter;
 
