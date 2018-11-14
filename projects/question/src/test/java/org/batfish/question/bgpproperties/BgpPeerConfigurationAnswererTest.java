@@ -84,7 +84,7 @@ public class BgpPeerConfigurationAnswererTest {
                 getColumnName(REMOTE_IP),
                 new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
             .put(getColumnName(IS_PASSIVE), true)
-            .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
+            .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
             .put(getColumnName(CLUSTER_ID), new Ip("5.5.5.5"))
             .put(getColumnName(PEER_GROUP), "g2")
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))
