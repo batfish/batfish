@@ -1,5 +1,7 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
@@ -7,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
@@ -29,9 +32,9 @@ public class Schema {
     SET
   }
 
-  private static final Pattern LIST_PATTERN = Pattern.compile("List<(.+)>");
+  private static final Pattern LIST_PATTERN = Pattern.compile("^List<(.+)>$");
 
-  private static final Pattern SET_PATTERN = Pattern.compile("Set<(.+)>");
+  private static final Pattern SET_PATTERN = Pattern.compile("^Set<(.+)>$");
 
   private static String getClassString(Class<?> cls) {
     return String.format("class:%s", cls.getCanonicalName());
@@ -89,55 +92,66 @@ public class Schema {
     return new Schema("Set<" + baseSchema._schemaStr + ">");
   }
 
-  private final Class<?> _baseType;
+  /** Captures what this Schema finally contains after levels of nesting */
+  @Nonnull private final Class<?> _baseType;
 
-  private final Type _type;
+  /** For list/set types this field represents what is inside; for base types it is null */
+  @Nullable private final Schema _innerSchema;
 
-  private final String _schemaStr;
+  /** The string representaion from which this Schema was derived; kept around for printing */
+  @Nonnull private final String _schemaStr;
 
-  private final Schema _innerSchema;
+  /** Is this Schema a list, set, or base? */
+  @Nonnull private final Type _type;
 
   @JsonCreator
   Schema(String schema) {
-    _schemaStr = schema;
 
-    String baseTypeName = schema;
-    Type type = Type.BASE;
+    // base case
     Schema innerSchema = null;
+    Type type = Type.BASE;
+    Class<?> baseType = null;
 
+    // list case
     Matcher listMatcher = LIST_PATTERN.matcher(schema);
     if (listMatcher.find()) {
-      baseTypeName = listMatcher.group(1);
-      innerSchema = new Schema(baseTypeName);
+      innerSchema = new Schema(listMatcher.group(1));
       type = Type.LIST;
+      baseType = innerSchema._baseType;
     }
 
+    // set case
     Matcher setMatcher = SET_PATTERN.matcher(schema);
     if (setMatcher.find()) {
-      baseTypeName = setMatcher.group(1);
-      innerSchema = new Schema(baseTypeName);
+      innerSchema = new Schema(setMatcher.group(1));
       type = Type.SET;
+      baseType = innerSchema._baseType;
     }
-    _type = type;
+
+    if (type == Type.BASE) {
+      if (!schemaAliases.containsKey(schema)) {
+        throw new BatfishException("Unknown schema type: " + schema);
+      }
+
+      String baseTypeName = schemaAliases.get(schema);
+
+      checkArgument(
+          baseTypeName.startsWith("class:"),
+          "Only class-based schemas are supported. Got " + baseTypeName);
+
+      baseTypeName = baseTypeName.replaceFirst("class:", "");
+
+      try {
+        baseType = Class.forName(baseTypeName);
+      } catch (ClassNotFoundException e) {
+        throw new BatfishException("Could not get a class from " + baseTypeName);
+      }
+    }
+
     _innerSchema = innerSchema;
-
-    if (!schemaAliases.containsKey(baseTypeName)) {
-      throw new BatfishException("Unknown schema type: " + baseTypeName);
-    }
-
-    baseTypeName = schemaAliases.get(baseTypeName);
-
-    if (!baseTypeName.startsWith("class:")) {
-      throw new BatfishException("Only class-based schemas are supported. Got " + baseTypeName);
-    }
-
-    baseTypeName = baseTypeName.replaceFirst("class:", "");
-
-    try {
-      _baseType = Class.forName(baseTypeName);
-    } catch (ClassNotFoundException e) {
-      throw new BatfishException("Could not get a class from " + baseTypeName);
-    }
+    _type = type;
+    _schemaStr = schema;
+    _baseType = baseType;
   }
 
   @Override
@@ -146,6 +160,7 @@ public class Schema {
       return false;
     }
     return Objects.equals(_baseType, ((Schema) o)._baseType)
+        && Objects.equals(_innerSchema, ((Schema) o)._innerSchema)
         && Objects.equals(_type, ((Schema) o)._type);
   }
 
@@ -153,7 +168,8 @@ public class Schema {
     return _baseType;
   }
 
-  public @Nullable Schema getInnerSchema() {
+  @Nullable
+  public Schema getInnerSchema() {
     return _innerSchema;
   }
 
@@ -163,10 +179,19 @@ public class Schema {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_baseType, _type);
+    return Objects.hash(_baseType, _innerSchema, _type);
   }
 
-  /** Whether this Schema object is Integer-based (base, list, or set) */
+  /** Whether this Schema is List or Set */
+  public boolean isCollection() {
+    return _type == Type.LIST || _type == Type.SET;
+  }
+
+  /**
+   * Whether this Schema object ultimately resolves to an Integer-based (base, list, or set)
+   *
+   * <p>TODO: Get rid of this call; clients can just do this logic on their end.
+   */
   public boolean isIntBased() {
     return _baseType.equals(Integer.class);
   }
