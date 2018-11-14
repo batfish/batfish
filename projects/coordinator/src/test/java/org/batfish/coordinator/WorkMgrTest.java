@@ -4,6 +4,7 @@ import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
+import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
@@ -1404,6 +1405,45 @@ public final class WorkMgrTest {
                 .parse("2018-04-19T12:34:56-08:00")
                 .query(Instant::from)),
         equalTo("foo_2018-04-19T20-34-56.000"));
+  }
+
+  @Test
+  public void testInitSnapshot() throws Exception {
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+    String fileName = "file.type";
+    String fileContents = "! empty config";
+
+    _manager.initNetwork(networkName, null);
+
+    // Create zip with a new file to add to the forked snapshot
+    Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
+
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false);
+
+    // Confirm the forked snapshot exists
+    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotName)));
+  }
+
+  @Test
+  public void testInitSnapshotBadPackaging() throws Exception {
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+    String fileName = "file.type";
+    String fileContents = "! empty config";
+
+    _manager.initNetwork(networkName, null);
+
+    // Create zip with a new file to add to the forked snapshot
+    Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
+
+    // Init should fail with improperly formatted source dir
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(containsString("Unexpected packaging of snapshot"));
+
+    // Pass in path to subdir so init sees improperly formatted dir
+    // i.e. sees dir containing 'configs/' instead of 'snapshotName/configs/'
+    _manager.initSnapshot(networkName, snapshotName, srcDir.resolve(snapshotName), false);
   }
 
   @Test

@@ -1585,21 +1585,12 @@ public class WorkMgr extends AbstractCoordinator {
    */
   private static void validateSnapshotDir(Path subDir) {
     // Confirm there is a configs, hosts, or AWS configs dir
-    boolean configsFound = false;
     Path hostConfigsPath = subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    if (Files.exists(hostConfigsPath)) {
-      configsFound = true;
-    }
     Path networkConfigsPath = subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    if (Files.exists(networkConfigsPath)) {
-      configsFound = true;
-    }
     Path awsConfigsPath = subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    if (Files.exists(awsConfigsPath)) {
-      configsFound = true;
-    }
-
-    if (!configsFound) {
+    if (!Files.exists(hostConfigsPath)
+        && !Files.exists(networkConfigsPath)
+        && !Files.exists(awsConfigsPath)) {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
