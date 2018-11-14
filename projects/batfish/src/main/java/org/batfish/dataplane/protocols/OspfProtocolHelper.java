@@ -92,21 +92,23 @@ public class OspfProtocolHelper {
       OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
     /*
-     * Once an inter-area route has been propagated across a link of a given area, it may continue to propagate throughout that area.
-     * To propagate into a different area, the propagator must be an ABR, and type-3 LSAs must be allowed across the link.
+     * Once an inter-area route has been propagated across a link of a given area,
+     * it may continue to propagate throughout that area.
+     * To propagate into a different area, the propagator *must* be an ABR.
      */
-    if (linkAreaNum != neighborRouteAreaNum) {
-      if (!neighborProc.isAreaBorderRouter()) {
-        return false;
-      }
-      // Don't propagate inter-area routes into a [not-so-stubby-]stub area for which type-3 LSAs
-      // are
-      // suppressed.
-      if ((neighborArea.getStubType() == StubType.STUB && neighborArea.getStub().getSuppressType3())
-          || (neighborArea.getStubType() == StubType.NSSA
-              && neighborArea.getNssa().getSuppressType3())) {
-        return false;
-      }
+
+    if (linkAreaNum != neighborRouteAreaNum && !neighborProc.isAreaBorderRouter()) {
+      // trying to cross an area boundary but neighbor is not an ABR
+      return false;
+    }
+    /*
+     * Don't propagate inter-area routes into a [not-so-stubby-]stub area for which type-3 LSAs
+     * are suppressed. Stub types are known/configured at the *neighbor* because the neighbor is an ABR.
+     */
+    if ((neighborArea.getStubType() == StubType.STUB && neighborArea.getStub().getSuppressType3())
+        || (neighborArea.getStubType() == StubType.NSSA
+            && neighborArea.getNssa().getSuppressType3())) {
+      return false;
     }
 
     // ABR should not accept OSPF internal default route
