@@ -53,6 +53,7 @@ public class BfConsts {
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
+  public static final String ARG_IGNORE_MANAGEMENT_INTERFACES = "ignoremanagementinterfaces";
   public static final String ARG_LOG_LEVEL = "loglevel";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";

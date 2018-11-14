@@ -3,6 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
@@ -238,6 +239,12 @@ import org.codehaus.jettison.json.JSONObject;
 public class Batfish extends PluginConsumer implements IBatfish {
 
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
+
+  private static final Pattern MANAGEMENT_INTERFACES =
+      Pattern.compile("(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)", CASE_INSENSITIVE);
+
+  private static final Pattern MANAGEMENT_VRFS =
+      Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
 
   /** The name of the [optional] topology file within a test-rig */
   public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {
@@ -2615,6 +2622,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  @VisibleForTesting
+  static void processManagementInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .stream()
+        .forEach(
+            configuration -> {
+              for (Interface iface : configuration.getAllInterfaces().values()) {
+                if (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
+                    || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find()) {
+                  iface.setActive(false);
+                  iface.setBlacklisted(true);
+                }
+              }
+            });
+  }
+
   @Override
   public void pushBaseSnapshot() {
     _testrigSettingsStack.add(_testrigSettings);
@@ -2947,6 +2971,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
     processNodeBlacklist(configurations, veae);
     processInterfaceBlacklist(configurations, veae);
+    if (_settings.ignoreManagementInterfaces()) {
+      processManagementInterfaces(configurations);
+    }
+
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
     // deleted from the Topology (aka list of edges) that is used along with configurations in
     // answering questions.

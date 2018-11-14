@@ -520,6 +520,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return l == null ? ImmutableList.of() : l;
   }
 
+  public boolean ignoreManagementInterfaces() {
+    return _config.getBoolean(BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES);
+  }
+
   public boolean ignoreUnknown() {
     return _config.getBoolean(ARG_IGNORE_UNKNOWN);
   }
@@ -568,6 +572,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_HISTOGRAM, false);
     setDefaultProperty(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, ImmutableList.of());
+    setDefaultProperty(BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES, true);
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
@@ -729,6 +734,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         BfConsts.ARG_IGNORE_FILES_WITH_STRINGS,
         "ignore configuration files containing these strings",
         ARGNAME_STRINGS);
+
+    addBooleanOption(
+        BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES,
+        "infer and ignore interfaces that are part of the management network");
 
     addBooleanOption(
         ARG_IGNORE_UNKNOWN, "ignore configuration files with unknown format instead of crashing");
@@ -926,6 +935,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);
     getStringListOptionValue(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
+    getBooleanOptionValue(BfConsts.ARG_IGNORE_MANAGEMENT_INTERFACES);
     getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
     getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
     getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
