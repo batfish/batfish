@@ -1416,12 +1416,12 @@ public final class WorkMgrTest {
 
     _manager.initNetwork(networkName, null);
 
-    // Create zip with a new file to add to the forked snapshot
+    // Create snapshot dir to pass into init
     Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
 
     _manager.initSnapshot(networkName, snapshotName, srcDir, false);
 
-    // Confirm the forked snapshot exists
+    // Confirm the new snapshot exists
     assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotName)));
   }
 
@@ -1434,7 +1434,7 @@ public final class WorkMgrTest {
 
     _manager.initNetwork(networkName, null);
 
-    // Create zip with a new file to add to the forked snapshot
+    // Create snapshot dir to pass into init
     Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
 
     // Init should fail with improperly formatted source dir
