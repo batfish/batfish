@@ -13,6 +13,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -35,6 +36,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public static final String COL_LOCAL_IP = "Local_IP";
   public static final String COL_REMOTE_IP = "Remote_IP";
   public static final String COL_ROUTE_REFLECTOR_CLIENT = "Route_Reflector_Client";
+  public static final String COL_CLUSTER_ID = "Cluster_ID";
   public static final String COL_PEER_GROUP = "Peer_Group";
   public static final String COL_IMPORT_POLICY = "Import_Policy";
   public static final String COL_EXPORT_POLICY = "Export_Policy";
@@ -60,6 +62,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_ROUTE_REFLECTOR_CLIENT, Schema.BOOLEAN, "Route reflector client", false, false))
+        .add(new ColumnMetadata(COL_CLUSTER_ID, Schema.IP, "Cluster ID", false, false))
         .add(new ColumnMetadata(COL_PEER_GROUP, Schema.STRING, "Peer group", false, false))
         .add(
             new ColumnMetadata(
@@ -124,6 +127,11 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                   .put(COL_LOCAL_IP, peer.getLocalIp())
                   .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, peer.getPeerAddress()))
                   .put(COL_ROUTE_REFLECTOR_CLIENT, peer.getRouteReflectorClient())
+                  .put(
+                      COL_CLUSTER_ID,
+                      !peer.getRouteReflectorClient() || peer.getClusterId() == null
+                          ? null
+                          : new Ip(peer.getClusterId()))
                   .put(COL_PEER_GROUP, peer.getGroup())
                   .put(COL_IMPORT_POLICY, peer.getImportPolicySources())
                   .put(COL_EXPORT_POLICY, peer.getExportPolicySources())
@@ -142,6 +150,11 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                   .put(COL_LOCAL_IP, peer.getLocalIp())
                   .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, peer.getPeerPrefix()))
                   .put(COL_ROUTE_REFLECTOR_CLIENT, peer.getRouteReflectorClient())
+                  .put(
+                      COL_CLUSTER_ID,
+                      !peer.getRouteReflectorClient() || peer.getClusterId() == null
+                          ? null
+                          : new Ip(peer.getClusterId()))
                   .put(COL_PEER_GROUP, peer.getGroup())
                   .put(COL_IMPORT_POLICY, peer.getImportPolicySources())
                   .put(COL_EXPORT_POLICY, peer.getExportPolicySources())

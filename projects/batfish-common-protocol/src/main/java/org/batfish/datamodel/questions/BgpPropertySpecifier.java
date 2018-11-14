@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
@@ -33,7 +31,6 @@ import org.batfish.datamodel.answers.Schema;
  */
 public class BgpPropertySpecifier extends PropertySpecifier {
 
-  public static final String CLUSTER_IDS = "Cluster_IDs";
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
   public static final String MULTIPATH_IBGP = "Multipath_IBGP";
@@ -46,21 +43,6 @@ public class BgpPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR,
               new PropertyDescriptor<>(BgpPropertySpecifier::isRouteReflector, Schema.BOOLEAN))
-          .put(
-              CLUSTER_IDS,
-              new PropertyDescriptor<>(
-                  (process) -> {
-                    if (!isRouteReflector(process)) {
-                      // Only populate cluster IDs if this device is a route reflector.
-                      return null;
-                    }
-                    return process
-                        .getClusterIds()
-                        .stream()
-                        .map(Ip::new)
-                        .collect(ImmutableSet.toImmutableSet());
-                  },
-                  Schema.set(Schema.IP)))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
