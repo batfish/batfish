@@ -169,7 +169,7 @@ public class FibImplTest {
             .setAdministrativeCost(1)
             .build();
 
-    StaticRoute forwardingRoute =
+    StaticRoute testRoute =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
             .setNextHopIp(new Ip("1.1.1.1")) // matches both routes defined above
@@ -178,7 +178,7 @@ public class FibImplTest {
 
     rib.mergeRoute(nonForwardingRoute);
     rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(forwardingRoute);
+    rib.mergeRoute(testRoute);
 
     Fib fib = new FibImpl(rib);
     Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
@@ -224,30 +224,31 @@ public class FibImplTest {
             .build();
 
     final Prefix TEST_PREFIX = Prefix.parse("2.2.2.0/24");
-    StaticRoute forwardingRoute =
+    StaticRoute testRoute =
         StaticRoute.builder()
             .setNetwork(TEST_PREFIX)
-            .setNextHopIp(new Ip("1.1.1.1")) // matches both routes defined above
+            .setNextHopIp(new Ip("1.1.1.1")) // matches multiple routes defined above
             .setAdministrativeCost(1)
             .build();
 
     rib.mergeRoute(nonForwardingRoute);
     rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(forwardingRoute);
+    rib.mergeRoute(testRoute);
     rib.mergeRoute(ecmpForwardingRoute1);
     rib.mergeRoute(ecmpForwardingRoute2);
 
     Fib fib = new FibImpl(rib);
-    Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
     assertThat(fib.getRoutesByNextHopInterface().get("Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
 
-    /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" because more specific eth3/4*/
-    assertThat(fibRoutesEth1, not(hasItem(hasPrefix(TEST_PREFIX))));
+    /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" (and thus Eth1)
+     * because more specific eth3/4
+     */
+    assertThat(fib.getRoutesByNextHopInterface().get("Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
 
-    /* Nothing can resolve to "eth2" */
+    /* Nothing can resolve to eth2 */
     Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
     assertThat(fibRoutesEth2, nullValue());
   }
