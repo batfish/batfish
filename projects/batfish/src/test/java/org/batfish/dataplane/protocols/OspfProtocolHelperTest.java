@@ -1,6 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import static org.batfish.dataplane.protocols.OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -32,7 +33,7 @@ public class OspfProtocolHelperTest {
             Ip.MAX,
             RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
             definedMetric,
-            0);
+            definedArea);
 
     // The route is in the prefix and existing metric is null, so return the route's metric
     assertThat(
@@ -71,12 +72,12 @@ public class OspfProtocolHelperTest {
             Ip.MAX,
             RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
             definedMetric,
-            1); // the area is the same as definedArea
-    // Thus the metric should remain null
+            99);
+    // The area is different from definedArea thus the metric should remain null
     assertThat(
         OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
             sameAreaRoute, Prefix.ZERO, null, definedArea, true),
-        equalTo(null));
+        nullValue());
   }
 
   @Test
