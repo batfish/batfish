@@ -1,30 +1,40 @@
 package org.batfish.datamodel.answers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 
 public class SchemaTest {
 
   @Test
   public void constructorBase() {
-    assertThat(new Schema("Integer"), equalTo(Schema.INTEGER));
-    assertThat(new Schema("String"), not(equalTo(Schema.INTEGER)));
+    new EqualsTester()
+        .addEqualityGroup(new Schema("Integer"), Schema.INTEGER)
+        .addEqualityGroup(Schema.STRING)
+        .testEquals();
   }
 
   @Test
   public void constructorCollection() {
-    assertThat(new Schema("List<Integer>"), equalTo(Schema.list(Schema.INTEGER)));
-    assertThat(new Schema("Set<Integer>"), equalTo(Schema.set(Schema.INTEGER)));
-    assertThat(new Schema("Set<Integer>"), not(equalTo(Schema.list(Schema.INTEGER))));
+    new EqualsTester()
+        .addEqualityGroup(new Schema("List<Integer>"), Schema.list(Schema.INTEGER))
+        .addEqualityGroup(Schema.set(Schema.INTEGER))
+        .addEqualityGroup(Schema.INTEGER)
+        .testEquals();
   }
 
   @Test
   public void constructorNestedCollection() {
-    assertThat(new Schema("Set<List<Integer>>"), equalTo(Schema.set(Schema.list(Schema.INTEGER))));
-    assertThat(new Schema("Set<Set<Integer>>"), equalTo(Schema.set(Schema.set(Schema.INTEGER))));
+    new EqualsTester()
+        .addEqualityGroup(new Schema("Set<List<Integer>>"), Schema.set(Schema.list(Schema.INTEGER)))
+        .addEqualityGroup(Schema.set(Schema.set(Schema.INTEGER)))
+        .addEqualityGroup(Schema.list(Schema.list(Schema.INTEGER)))
+        .addEqualityGroup(Schema.set(Schema.INTEGER))
+        .addEqualityGroup(Schema.list(Schema.INTEGER))
+        .addEqualityGroup(Schema.INTEGER)
+        .testEquals();
   }
 
   @Test
