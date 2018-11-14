@@ -600,6 +600,11 @@ CERTIFICATES
    'certificates'
 ;
 
+CHANGE_LOG
+:
+    'change-log'
+;
+
 CHASSIS
 :
    'chassis'
