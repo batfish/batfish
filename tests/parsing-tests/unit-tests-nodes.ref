@@ -14461,6 +14461,21 @@
           }
         },
         "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:66051~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "1.2.0.0/16",
+                "lengthRange" : "17-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:66051~"
+          },
           "~SUMMARY1_2_0_0_16_RF~" : {
             "lines" : [
               {
@@ -14613,7 +14628,8 @@
                       "advertise" : true,
                       "metric" : 100
                     }
-                  }
+                  },
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:66051~"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -16469,6 +16485,28 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:46~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:46~"
+          },
+          "~OSPF_SUMMARY_FILTER:default:7~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:7~"
+          }
+        },
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:default~" : {
             "name" : "~OSPF_EXPORT_POLICY:default~",
@@ -16556,7 +16594,8 @@
                   "stub" : {
                     "suppressType3" : false
                   },
-                  "stubType" : "STUB"
+                  "stubType" : "STUB",
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:7~"
                 },
                 "46" : {
                   "injectDefaultRoute" : false,
@@ -16565,7 +16604,8 @@
                   "stub" : {
                     "suppressType3" : true
                   },
-                  "stubType" : "STUB"
+                  "stubType" : "STUB",
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:46~"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
