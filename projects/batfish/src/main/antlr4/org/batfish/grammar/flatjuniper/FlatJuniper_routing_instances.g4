@@ -211,6 +211,7 @@ ro_null
 :
    (
       GRACEFUL_RESTART
+      | LSP_TELEMETRY
       | MULTICAST
       | MULTIPATH
       | NONSTOP_ROUTING
