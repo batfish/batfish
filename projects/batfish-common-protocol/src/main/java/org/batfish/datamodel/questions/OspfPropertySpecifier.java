@@ -85,6 +85,14 @@ public class OspfPropertySpecifier extends PropertySpecifier {
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
+  @JsonCreator
+  public OspfPropertySpecifier(Set<String> properties) {
+    // quote and join
+    _expression =
+        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  }
+
   /**
    * Returns a list of suggestions based on the query, based on {@link
    * PropertySpecifier#baseAutoComplete}.
