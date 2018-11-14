@@ -1,11 +1,17 @@
 package org.batfish.dataplane;
 
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Set;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -18,6 +24,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.dataplane.rib.Rib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
@@ -113,5 +120,136 @@ public class FibImplTest {
             .get(Configuration.DEFAULT_VRF_NAME);
 
     assertThat(fib.getNextHopInterfaces(DST_IP), contains(FAST_ETHERNET_0));
+  }
+
+  @Test
+  public void testNonForwardingRouteNotInFib() {
+    Rib rib = new Rib();
+
+    StaticRoute nonForwardingRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+    nonForwardingRoute.setNonForwarding(true);
+    StaticRoute forwardingRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(nonForwardingRoute);
+    rib.mergeRoute(forwardingRoute);
+
+    Fib fib = new FibImpl(rib);
+    Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
+
+    assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
+    assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
+  }
+
+  @Test
+  public void testResolutionWhenNextHopMatchesNonForwardingRoute() {
+    Rib rib = new Rib();
+
+    StaticRoute nonForwardingRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth2")
+            .setAdministrativeCost(1)
+            .build();
+    nonForwardingRoute.setNonForwarding(true);
+
+    StaticRoute forwardingLessSpecificRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/31"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute testRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopIp(new Ip("1.1.1.1")) // matches both routes defined above
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(nonForwardingRoute);
+    rib.mergeRoute(forwardingLessSpecificRoute);
+    rib.mergeRoute(testRoute);
+
+    Fib fib = new FibImpl(rib);
+    Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
+
+    /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
+    assertThat(fibRoutesEth1, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
+
+    /* Nothing can resolve to "eth2" */
+    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
+    assertThat(fibRoutesEth2, nullValue());
+  }
+
+  @Test
+  public void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
+    Rib rib = new Rib();
+
+    StaticRoute nonForwardingRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth2")
+            .setAdministrativeCost(1)
+            .build();
+    nonForwardingRoute.setNonForwarding(true);
+
+    StaticRoute ecmpForwardingRoute1 =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth3")
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute ecmpForwardingRoute2 =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth4")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute forwardingLessSpecificRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/31"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    final Prefix TEST_PREFIX = Prefix.parse("2.2.2.0/24");
+    StaticRoute testRoute =
+        StaticRoute.builder()
+            .setNetwork(TEST_PREFIX)
+            .setNextHopIp(new Ip("1.1.1.1")) // matches multiple routes defined above
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(nonForwardingRoute);
+    rib.mergeRoute(forwardingLessSpecificRoute);
+    rib.mergeRoute(testRoute);
+    rib.mergeRoute(ecmpForwardingRoute1);
+    rib.mergeRoute(ecmpForwardingRoute2);
+
+    Fib fib = new FibImpl(rib);
+
+    /* 2.2.2.0/24 should resolve to eth3 and eth4*/
+    assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(fib.getRoutesByNextHopInterface().get("Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
+
+    /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" (and thus Eth1)
+     * because more specific eth3/4
+     */
+    assertThat(fib.getRoutesByNextHopInterface().get("Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
+
+    /* Nothing can resolve to eth2 */
+    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
+    assertThat(fibRoutesEth2, nullValue());
   }
 }
