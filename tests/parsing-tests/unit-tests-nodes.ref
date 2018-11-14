@@ -823,7 +823,7 @@
           "Vlan1" : {
             "name" : "Vlan1",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "allPrefixes" : [
               "1.2.3.4/23",
               "2.3.4.5/24"
@@ -3880,7 +3880,7 @@
           "mgmt6/0" : {
             "name" : "mgmt6/0",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -17977,7 +17977,7 @@
           "Management1" : {
             "name" : "Management1",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
