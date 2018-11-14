@@ -65,6 +65,7 @@ set system syslog host 1.2.3.4 any any
 set system syslog host 1.2.3.4 any emergency
 set system syslog host 1.2.3.4 any info
 set system syslog host 1.2.3.4 any notice
+set system syslog host 1.2.3.4 change-log any
 set system syslog host 1.2.3.4 daemon info
 set system syslog host 1.2.3.4 explicit-priority
 set system syslog host 1.2.3.4 facility-override local0

@@ -280,6 +280,7 @@ sysh_null
 :
    (
       ANY
+      | CHANGE_LOG
       | DAEMON
       | EXPLICIT_PRIORITY
       | FACILITY_OVERRIDE
