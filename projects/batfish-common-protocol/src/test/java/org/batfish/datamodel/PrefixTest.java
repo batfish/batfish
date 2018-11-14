@@ -5,6 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDUtils;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,5 +62,25 @@ public class PrefixTest {
     assertThat(ipSpace, not(containsIp(new Ip("0.0.0.0"))));
     assertThat(ipSpace, not(containsIp(new Ip("128.128.128.128"))));
     assertThat(ipSpace, not(containsIp(new Ip("255.255.255.255"))));
+  }
+
+  @Test
+  public void testToHostIpSpace() {
+    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0, true);
+    IpSpaceToBDD toBDD = new IpSpaceToBDD(ipAddrBdd);
+    assertThat(
+        "/32 host space is preserved",
+        toBDD.visit(Prefix.parse("1.2.3.4/32").toHostIpSpace()),
+        equalTo(toBDD.visit(Prefix.parse("1.2.3.4/32").toIpSpace())));
+    assertThat(
+        "/31 host space is preserved",
+        toBDD.visit(Prefix.parse("1.2.3.4/31").toHostIpSpace()),
+        equalTo(toBDD.visit(Prefix.parse("1.2.3.4/31").toIpSpace())));
+    BDD slash30Filtered =
+        toBDD.visit(new Ip("1.2.3.5").toIpSpace()).or(toBDD.visit(new Ip("1.2.3.6").toIpSpace()));
+    assertThat(
+        "/30 host space is two IPs",
+        toBDD.visit(Prefix.parse("1.2.3.4/30").toHostIpSpace()),
+        equalTo(slash30Filtered));
   }
 }
