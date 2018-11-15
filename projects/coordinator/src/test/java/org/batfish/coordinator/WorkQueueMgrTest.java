@@ -250,15 +250,21 @@ public final class WorkQueueMgrTest {
     assertThat(works0.entrySet(), iterableWithSize(0));
 
     // Confirm we only see the one work item in the complete queue
-    assertThat(works1.entrySet(), iterableWithSize(1));
     assertThat(works1.keySet(), contains(work1.getWorkItem().getId().toString()));
 
     // Confirm we see both work items after they're both complete
-    assertThat(works2.entrySet(), iterableWithSize(2));
     assertThat(
         works2.keySet(),
         containsInAnyOrder(
             work1.getWorkItem().getId().toString(), work2.getWorkItem().getId().toString()));
+  }
+
+  @Test
+  public void getCompletedWorkBadFilter() throws Exception {
+    // Make sure we get no results or error filtering on a bogus snapshot
+    Map<String, String> works0 =
+        _workQueueMgr.getCompletedWork(new NetworkId("bogus"), new SnapshotId("bogus"));
+    assertThat(works0.entrySet(), iterableWithSize(0));
   }
 
   @Test
@@ -298,7 +304,6 @@ public final class WorkQueueMgrTest {
 
     // Confirm we only see the network 1, snapshot 1 work item in the complete queue
     // i.e. make sure we don't see items from the other network or snapshot
-    assertThat(works1.entrySet(), iterableWithSize(1));
     assertThat(works1.keySet(), contains(network1snapshot1work1.getWorkItem().getId().toString()));
   }
 
