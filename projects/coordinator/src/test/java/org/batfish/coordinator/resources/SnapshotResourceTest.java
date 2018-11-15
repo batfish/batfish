@@ -32,6 +32,18 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
+  private Builder getCompletedWorkTarget(String network, String snapshot) {
+    return target(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(network)
+        .path(CoordConstsV2.RSC_SNAPSHOTS)
+        .path(snapshot)
+        .path(CoordConstsV2.RSC_COMPLETED_WORK)
+        .request()
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+  }
+
   private Builder getPojoTopologyTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_CONTAINERS)
@@ -119,6 +131,37 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
     // should fail second time
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testCompletedWorkMissingNetwork() {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Response response = getCompletedWorkTarget(network, snapshot).get();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testCompletedWorkMissingSnapshot() {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    Response response = getCompletedWorkTarget(network, snapshot).get();
+
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testCompletedWork() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
+
+    Response response = getCompletedWorkTarget(network, snapshot).get();
+
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
   }
 
   @Test

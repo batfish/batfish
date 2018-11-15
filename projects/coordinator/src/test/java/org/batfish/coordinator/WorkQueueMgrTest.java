@@ -1,7 +1,9 @@
 package org.batfish.coordinator;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -211,6 +214,92 @@ public final class WorkQueueMgrTest {
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
+  }
+
+  @Test
+  public void getCompletedWork() throws Exception {
+    String snapshot1 = "snapshot1";
+    String network1 = "network1";
+    Main.getWorkMgr().initNetwork(network1, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot1, ImmutableSet.of());
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idManager.getNetworkId(network1);
+    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot1, networkId);
+
+    QueuedWork work1 =
+        resolvedQueuedWork(
+            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+    QueuedWork work2 =
+        resolvedQueuedWork(
+            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    // No items in complete queue yet
+    Map<String, String> works0 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+
+    // Move one item from incomplete to complete queue
+    _workQueueMgr.markAssignmentError(work1);
+    Map<String, String> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+
+    // Move a second item from incomplete to complete queue
+    _workQueueMgr.markAssignmentError(work2);
+    Map<String, String> works2 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+
+    // Confirm we don't see any work items when the complete queue is empty
+    assertThat(works0.entrySet(), iterableWithSize(0));
+
+    // Confirm we only see the one work item in the complete queue
+    assertThat(works1.entrySet(), iterableWithSize(1));
+    assertThat(works1.keySet(), contains(work1.getWorkItem().getId().toString()));
+
+    // Confirm we see both work items after they're both complete
+    assertThat(works2.entrySet(), iterableWithSize(2));
+    assertThat(
+        works2.keySet(),
+        containsInAnyOrder(
+            work1.getWorkItem().getId().toString(), work2.getWorkItem().getId().toString()));
+  }
+
+  @Test
+  public void getCompletedWorkFilter() throws Exception {
+    String snapshot1 = "snapshot1";
+    String snapshot2 = "snapshot2";
+    String network1 = "network1";
+    String network2 = "network2";
+    Main.getWorkMgr().initNetwork(network1, null);
+    Main.getWorkMgr().initNetwork(network2, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot1, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot2, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network2, snapshot1, ImmutableSet.of());
+
+    IdManager idManager = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idManager.getNetworkId(network1);
+    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot1, networkId);
+
+    QueuedWork network1snapshot1work1 =
+        resolvedQueuedWork(
+            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+    QueuedWork network1snapshot2work =
+        resolvedQueuedWork(
+            new WorkItem(network1, snapshot2), new WorkDetails(snapshot2, WorkType.UNKNOWN));
+    QueuedWork network2snapshot1work =
+        resolvedQueuedWork(
+            new WorkItem(network2, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+    _workQueueMgr.queueUnassignedWork(network1snapshot1work1);
+    _workQueueMgr.queueUnassignedWork(network1snapshot2work);
+    _workQueueMgr.queueUnassignedWork(network2snapshot1work);
+
+    // Move one item for each network and snapshot from incomplete to complete queue
+    _workQueueMgr.markAssignmentError(network1snapshot1work1);
+    _workQueueMgr.markAssignmentError(network1snapshot2work);
+    _workQueueMgr.markAssignmentError(network2snapshot1work);
+    Map<String, String> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+
+    // Confirm we only see the network 1, snapshot 1 work item in the complete queue
+    // i.e. make sure we don't see items from the other network or snapshot
+    assertThat(works1.entrySet(), iterableWithSize(1));
+    assertThat(works1.keySet(), contains(network1snapshot1work1.getWorkItem().getId().toString()));
   }
 
   @Test

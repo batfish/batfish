@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -232,6 +234,24 @@ public class WorkQueueMgr {
         throw new BatfishException(
             "Unknown snapshot processingStatus: " + metadata.getProcessingStatus());
     }
+  }
+
+  /**
+   * Get all completed work for the specified network and snapshot.
+   *
+   * @param network {@link NetworkId} to get completed work for.
+   * @param snapshot {@link SnapshotId} to get completed work for.
+   * @return {@link Map} work id to status.
+   */
+  public synchronized Map<String, String> getCompletedWork(NetworkId network, SnapshotId snapshot) {
+    Map<String, String> completedWork = new TreeMap<>();
+    for (QueuedWork work : _queueCompletedWork) {
+      if (work.getWorkItem().getContainerName().equals(network.getId())
+          && work.getWorkItem().getTestrigName().equals(snapshot.getId())) {
+        completedWork.put(work.getId().toString(), work.getStatus().toString());
+      }
+    }
+    return completedWork;
   }
 
   private synchronized QueuedWork getIncompleteWork(

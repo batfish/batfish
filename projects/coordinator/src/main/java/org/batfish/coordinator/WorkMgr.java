@@ -840,6 +840,16 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  public @Nullable Map<String, String> getCompletedWork(String networkName, String snapshotName) {
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    try {
+      return _workQueueMgr.getCompletedWork(
+          networkId, _idManager.getSnapshotId(snapshotName, networkId));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
   private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
