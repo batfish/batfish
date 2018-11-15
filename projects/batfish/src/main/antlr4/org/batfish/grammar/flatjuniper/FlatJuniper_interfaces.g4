@@ -501,7 +501,7 @@ ifiav_authentication_type
 
 ifiav_preempt
 :
-   PREEMPT (HOLD_TIME DEC)?
+   PREEMPT
 ;
 
 ifiav_priority

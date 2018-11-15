@@ -17,4 +17,3 @@ set routing-instances SOME_INSTANCE interface ae0.0
 set vlans unused-vlan
 set vlans unused-vlan vlan-id 2000
 #
-set groups VRRP-A logical-systems <*> interfaces <*> unit <*> family inet address <*> vrrp-group <*> preempt hold-time 60
