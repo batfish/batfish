@@ -97,8 +97,8 @@ public final class WorkMgrTestUtils {
     }
   }
 
-  /** Creates a snapshot zip with the specified config and returns the path to that zip */
-  public static Path createSnapshotZip(
+  /** Creates and returns path to a snapshot dir with the specified config */
+  public static Path createSnapshot(
       String snapshot, String fileName, String content, TemporaryFolder folder) {
     Path tmpSnapshotSrcDir = folder.getRoot().toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
@@ -107,9 +107,17 @@ public final class WorkMgrTestUtils {
             .resolve(snapshot)
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)
             .resolve(fileName);
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
     tmpSnapshotConfig.getParent().toFile().mkdirs();
     CommonUtil.writeFile(tmpSnapshotConfig, content);
+    return tmpSnapshotSrcDir;
+  }
+
+  /** Creates a snapshot zip with the specified config and returns the path to that zip */
+  public static Path createSnapshotZip(
+      String snapshot, String fileName, String content, TemporaryFolder folder) {
+    Path tmpSnapshotSrcDir = createSnapshot(snapshot, fileName, content, folder);
+
+    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
     ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
     return tmpSnapshotZip;
   }
