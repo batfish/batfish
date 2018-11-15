@@ -122,6 +122,34 @@ ipsec_protocol
    | ESP
 ;
 
+nat_interface
+:
+   INTERFACE
+   (
+      nati_port_overloading
+      | nati_port_overloading_factor
+   )
+;
+
+nat_pool
+:
+   POOL name = variable
+   (
+      natp_address
+      | natp_description
+   )
+;
+
+nat_pool_utilization_alarm
+:
+    POOL_UTILIZATION_ALARM null_filler
+;
+
+nat_port_randomization
+:
+   PORT_RANDOMIZATION DISABLE
+;
+
 nat_rule_set
 :
    RULE_SET name = variable
@@ -130,6 +158,29 @@ nat_rule_set
       | rs_rule
       | rs_to
    )
+;
+
+nati_port_overloading
+:
+   PORT_OVERLOADING OFF
+;
+
+nati_port_overloading_factor
+:
+   PORT_OVERLOADING_FACTOR factor = DEC
+;
+
+natp_address
+:
+   ADDRESS IP_PREFIX
+   (
+      TO IP_PREFIX
+   )?
+;
+
+natp_description
+:
+   DESCRIPTION null_filler
 ;
 
 proposal_set_type
@@ -179,8 +230,10 @@ rsr_match
    MATCH
    (
       rsrm_destination_address
+      | rsrm_destination_address_name
       | rsrm_destination_port
       | rsrm_source_address
+      | rsrm_source_address_name
    )
 ;
 
@@ -198,6 +251,11 @@ rsrm_destination_address
    DESTINATION_ADDRESS IP_PREFIX
 ;
 
+rsrm_destination_address_name
+:
+   DESTINATION_ADDRESS_NAME name = variable
+;
+
 rsrm_destination_port
 :
    DESTINATION_PORT from = DEC
@@ -209,6 +267,11 @@ rsrm_destination_port
 rsrm_source_address
 :
    SOURCE_ADDRESS IP_PREFIX
+;
+
+rsrm_source_address_name
+:
+   SOURCE_ADDRESS_NAME name = variable
 ;
 
 rsrt_source_nat
@@ -380,7 +443,8 @@ se_nat
 :
    NAT
    (
-      sen_proxy_arp
+      sen_destination
+      | sen_proxy_arp
       | sen_source
       | sen_static
    )
@@ -873,6 +937,18 @@ seipvv_source_interface
    SOURCE_INTERFACE interface_id
 ;
 
+sen_destination
+:
+   DESTINATION
+   (
+      nat_rule_set
+      | nat_interface
+      | nat_pool
+      | nat_pool_utilization_alarm
+      | nat_port_randomization
+   )
+;
+
 sen_proxy_arp
 :
    PROXY_ARP
@@ -887,9 +963,10 @@ sen_source
    SOURCE
    (
       nat_rule_set
-      | sens_interface
-      | sens_pool
-      | sens_port_randomization
+      | nat_interface
+      | nat_pool
+      | nat_pool_utilization_alarm
+      | nat_port_randomization
    )
 ;
 
@@ -921,52 +998,6 @@ senpi_address
          | to = IP_PREFIX
       )
    )?
-;
-
-sens_interface
-:
-   INTERFACE
-   (
-      sensi_port_overloading
-      | sensi_port_overloading_factor
-   )
-;
-
-sens_pool
-:
-   POOL name = variable
-   (
-      sensp_address
-      | sensp_description
-   )
-;
-
-sens_port_randomization
-:
-   PORT_RANDOMIZATION DISABLE
-;
-
-sensi_port_overloading
-:
-   PORT_OVERLOADING OFF
-;
-
-sensi_port_overloading_factor
-:
-   PORT_OVERLOADING_FACTOR factor = DEC
-;
-
-sensp_address
-:
-   ADDRESS IP_PREFIX
-   (
-      TO IP_PREFIX
-   )?
-;
-
-sensp_description
-:
-   DESCRIPTION null_filler
 ;
 
 sep_default_policy

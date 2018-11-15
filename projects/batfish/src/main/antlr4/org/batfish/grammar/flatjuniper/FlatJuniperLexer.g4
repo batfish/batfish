@@ -859,6 +859,11 @@ DESCRIPTION
    'description' -> pushMode ( M_Description )
 ;
 
+DESTINATION
+:
+   'destination'
+;
+
 DESTINATION_ADDRESS
 :
    'destination-address'
@@ -867,6 +872,11 @@ DESTINATION_ADDRESS
 DESTINATION_ADDRESS_EXCLUDED
 :
    'destination-address-excluded'
+;
+
+DESTINATION_ADDRESS_NAME
+:
+    'destination-address-name'
 ;
 
 DESTINATION_HOST_PROHIBITED
@@ -4066,6 +4076,11 @@ POOL
    'pool'
 ;
 
+POOL_UTILIZATION_ALARM
+:
+    'pool-utilization-alarm'
+;
+
 POP3
 :
    'pop3'
@@ -4864,6 +4879,11 @@ SOURCE_ADDRESS
 SOURCE_ADDRESS_FILTER
 :
    'source-address-filter'
+;
+
+SOURCE_ADDRESS_NAME
+:
+    'source-address-name'
 ;
 
 SOURCE_HOST_ISOLATED
