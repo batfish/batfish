@@ -61,7 +61,7 @@ Once you have installed the container, the first thing we recommend is walking t
 
 To run through the example Jupyter notebooks, start the docker container:
 
-	`docker run -p 8888:8888 batfish/allinone`
+  `docker run -p 8888:8888 batfish/allinone`
 
 When this container starts, Jupyter will show a token required for access (e.g. **token=abcdef123456...**). Make note of this, as you will need it to access the Jupyter server.
 
@@ -72,12 +72,13 @@ Now just open your web-browser and navigate to [http://localhost:8888](http://lo
 
 Now that you have familiarized yourself with the capabilities of Batfish by running through the example notebooks, you are ready to see what it can do on your network configurations. The first thing to do is create a local data directory. This is a folder on the host machine running the docker container, where Batfish will persist data across container reboots. 
 
-	`mkdir -p data`
+  `mkdir -p data`
 
 Stop and restart the container. 
 
-	`docker stop $(docker ps -f "ancestor=batfish/allinone" -q)`
-	`docker run -v $(pwd)/data:/data -p 9997:9997 -p 9996:9996 batfish/allinone`
+  `docker stop $(docker ps -f "ancestor=batfish/allinone" -q)`
+  
+  `docker run -v $(pwd)/data:/data -p 9997:9997 -p 9996:9996 batfish/allinone`
 
 
 This starts the service after mapping the local data folder to the data folder within the container and exposing the TCP ports required by the Batfish service. 
@@ -87,22 +88,26 @@ Next, you need to install [Pybatfish])(https://www.github.com/batfish/pybatfish)
 ## Download and install Pybatfish
 First, clone the Github repository. Change to the directory where you would like to clone the repository and issue the git command below.
 
-	`cd /path/to/directory/where/you/want/to/clone/repo`
-	`git clone git@github.com:batfish/pybatfish.git`
+  `cd /path/to/directory/where/you/want/to/clone/repo`
+  
+  `git clone git@github.com:batfish/pybatfish.git`
 
 Then, install Pybatfish. We highly recommend that you install Pybatfish in a Python 3 virtual environment. Details on how to set one up can be found [here](https://docs.python.org/3/library/venv.html). 
 
 Once your virtual environment is setup and activated, issue the following commands
 
-	`cd /path/to/directory/where/you/want/to/clone/repo/pybatfish`
-	`pip install -e .`
+  `cd /path/to/directory/where/you/want/to/clone/repo/pybatfish`
+  
+  `pip install -e .`
 
 Now, you are ready to evaluate your own network with Batfish.We encourage you to use Jupyter notebooks as your starting point, but you can use other methods that you are a comfortable with, e.g., an IDE like PyCharm or an interactive Python shell.
 If you choose to use Jupyter notebooks as your starting point, you need to install Jupyter in your virtual environment. Jupyter documentation can be found [here](http://jupyter.org/install) - but the commands below will get you going.
 
- 	`pip install --upgrade pip`
-	`pip install jupyter`
-	`jupyter notebook`
+   `pip install --upgrade pip`
+   
+   `pip install jupyter`
+   
+   `jupyter notebook`
 
 Our notebooks provide a quick start guide for different use cases. Beyond that, the complete documentation is available on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html). 
 
