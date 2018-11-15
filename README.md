@@ -16,9 +16,9 @@ While pre-change validation is the primary use-case, Batfish can also be used to
 **The Batfish service does NOT require direct access to network devices**, as the core analysis just requires the configuration of network devices. However, additional information from the network can also be fed into Batfish to enhance the analysis. That information includes, but is not limited to:
 
 * BGP routes received from external peers
- * This enables route policy validation
+	* This enables route policy validation
 * Topology information represented by LLDP/CDP
- * This enables Layer 2 analysis - Spanning Tree, VLAN connectivity, etc…
+	* This enables Layer 2 analysis - Spanning Tree, VLAN connectivity, etc…
 
 
 See [www.batfish.org](http://www.batfish.org) for technical information on how it works. ![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
