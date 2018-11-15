@@ -894,6 +894,11 @@ DESTINATION_IP
    'destination-ip'
 ;
 
+DESTINATION_NAT
+:
+   'destination-nat'
+;
+
 DESTINATION_NETWORK_PROHIBITED
 :
    'destination-network-prohibited'

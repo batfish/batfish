@@ -241,7 +241,8 @@ rsr_then
 :
    THEN
    (
-      rsrt_source_nat
+      rsrt_destination_nat
+      | rsrt_source_nat
       | rsrt_static_nat
    )
 ;
@@ -274,13 +275,42 @@ rsrm_source_address_name
    SOURCE_ADDRESS_NAME name = variable
 ;
 
+rsrt_destination_nat
+:
+   DESTINATION_NAT
+   (
+      rsrt_nat_interface
+      | rsrt_nat_off
+      | rsrt_nat_pool
+   )
+;
+
+rsrt_nat_interface
+:
+   INTERFACE
+;
+
+rsrt_nat_off
+:
+   OFF
+;
+
+rsrt_nat_pool
+:
+   POOL
+   (
+      rsrtnp_common
+      | rsrtnp_named
+   )
+;
+
 rsrt_source_nat
 :
    SOURCE_NAT
    (
-      rsrts_interface
-      | rsrts_off
-      | rsrts_pool
+      rsrt_nat_interface
+      | rsrt_nat_off
+      | rsrt_nat_pool
    )
 ;
 
@@ -292,58 +322,39 @@ rsrt_static_nat
    )
 ;
 
-rsrts_interface
-:
-   INTERFACE
-;
-
-rsrts_off
-:
-   OFF
-;
-
-rsrts_pool
-:
-   POOL
-   (
-      rsrtsp_common
-      | rsrtsp_named
-   )
-;
-
-rsrtsp_common
+rsrtnp_common
 :
    apply
-   | rsrtsp_persistent_nat
+   | rsrtnp_persistent_nat
 ;
 
-rsrtsp_named
+rsrtnp_named
 :
-   name = variable rsrtsp_common
+   name = variable rsrtnp_common
 ;
 
-rsrtsp_persistent_nat
+rsrtnp_persistent_nat
 :
    PERSISTENT_NAT
    (
       apply
-      | rsrtspp_inactivity_timeout
-      | rsrtspp_max_session_number
-      | rsrtspp_permit
+      | rsrtnpp_inactivity_timeout
+      | rsrtnpp_max_session_number
+      | rsrtnpp_permit
    )
 ;
 
-rsrtspp_inactivity_timeout
+rsrtnpp_inactivity_timeout
 :
    INACTIVITY_TIMEOUT seconds = DEC
 ;
 
-rsrtspp_max_session_number
+rsrtnpp_max_session_number
 :
    MAX_SESSION_NUMBER max = DEC
 ;
 
-rsrtspp_permit
+rsrtnpp_permit
 :
    PERMIT
    (
