@@ -39,7 +39,6 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 public class BgpPeerConfigurationAnswererTest {
@@ -144,9 +143,7 @@ public class BgpPeerConfigurationAnswererTest {
   public void getRemoteIpActivePeer() {
     Ip ip = new Ip("1.1.1.1");
     BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setPeerAddress(ip).build();
-    assertThat(
-        getRemoteIp(activePeerConfig),
-        CoreMatchers.equalTo(new SelfDescribingObject(Schema.IP, ip)));
+    assertThat(getRemoteIp(activePeerConfig), equalTo(new SelfDescribingObject(Schema.IP, ip)));
   }
 
   @Test
@@ -155,7 +152,6 @@ public class BgpPeerConfigurationAnswererTest {
     BgpPassivePeerConfig passivePeerConfig =
         BgpPassivePeerConfig.builder().setPeerPrefix(prefix).build();
     assertThat(
-        getRemoteIp(passivePeerConfig),
-        CoreMatchers.equalTo(new SelfDescribingObject(Schema.PREFIX, prefix)));
+        getRemoteIp(passivePeerConfig), equalTo(new SelfDescribingObject(Schema.PREFIX, prefix)));
   }
 }
