@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +84,14 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   public OspfPropertySpecifier(String expression) {
     _expression = expression;
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  }
+
+  @JsonCreator
+  public OspfPropertySpecifier(Collection<String> properties) {
+    // quote and join
+    _expression =
+        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   /**
