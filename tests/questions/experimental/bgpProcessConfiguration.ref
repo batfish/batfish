@@ -23,7 +23,7 @@
         "description" : "Include properties matching this regex",
         "displayName" : "Properties",
         "optional" : true,
-        "type" : "bgpPropertySpec",
+        "type" : "bgpProcessPropertySpec",
         "value" : "multipath-.*"
       }
     }

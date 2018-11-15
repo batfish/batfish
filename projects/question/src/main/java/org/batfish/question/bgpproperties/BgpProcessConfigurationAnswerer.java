@@ -15,7 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.BgpPropertySpecifier;
+import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -40,10 +40,12 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
    * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
    * propertySpecifier}.
    *
-   * @param propertySpecifier {@link BgpPropertySpecifier} that describes the set of properties
+   * @param propertySpecifier {@link BgpProcessPropertySpecifier} that describes the set of
+   *     properties
    * @return The {@link List} of {@link ColumnMetadata}s
    */
-  public static List<ColumnMetadata> createColumnMetadata(BgpPropertySpecifier propertySpecifier) {
+  public static List<ColumnMetadata> createColumnMetadata(
+      BgpProcessPropertySpecifier propertySpecifier) {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
@@ -56,7 +58,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            BgpPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                            BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
                             "Property " + prop,
                             false,
                             true))
@@ -102,7 +104,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
    * propertySpecifier}.
    */
   public static Multiset<Row> getProperties(
-      BgpPropertySpecifier propertySpecifier,
+      BgpProcessPropertySpecifier propertySpecifier,
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Map<String, ColumnMetadata> columnMetadata) {
@@ -129,7 +131,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
 
                     for (String property : propertySpecifier.getMatchingProperties()) {
                       PropertyDescriptor<BgpProcess> propertyDescriptor =
-                          BgpPropertySpecifier.JAVA_MAP.get(property);
+                          BgpProcessPropertySpecifier.JAVA_MAP.get(property);
                       try {
                         PropertySpecifier.fillProperty(
                             propertyDescriptor, bgpProcess, property, rowBuilder);

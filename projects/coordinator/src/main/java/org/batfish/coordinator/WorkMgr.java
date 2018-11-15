@@ -118,7 +118,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.datamodel.questions.BgpPropertySpecifier;
+import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -390,7 +390,8 @@ public class WorkMgr extends AbstractCoordinator {
     switch (completionType) {
       case BGP_PROPERTY:
         {
-          List<AutocompleteSuggestion> suggestions = BgpPropertySpecifier.autoComplete(query);
+          List<AutocompleteSuggestion> suggestions =
+              BgpProcessPropertySpecifier.autoComplete(query);
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case INTERFACE_PROPERTY:

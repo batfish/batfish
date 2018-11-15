@@ -17,6 +17,6 @@ public class BgpPeerConfigurationPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new BgpPeerConfigurationQuestion(null);
+    return new BgpPeerConfigurationQuestion(null, null);
   }
 }

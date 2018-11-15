@@ -22,7 +22,7 @@ public class SelfDescribingObject {
   @Nullable private Object _value;
 
   public SelfDescribingObject(
-      @JsonProperty(PROP_SCHEMA) Schema schema, @JsonProperty(PROP_VALUE) Object value) {
+      @JsonProperty(PROP_SCHEMA) Schema schema, @Nullable @JsonProperty(PROP_VALUE) Object value) {
     checkArgument(schema != null, "'schema' cannot be null");
     checkArgument(
         SchemaUtils.isValidObject(value, schema), "'object' is not consistent with 'schema'");

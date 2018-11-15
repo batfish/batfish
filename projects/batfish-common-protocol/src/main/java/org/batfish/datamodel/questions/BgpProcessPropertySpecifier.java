@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,16 +21,16 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
 /**
- * Enables specification a set of Ospf process properties.
+ * Enables specification a set of BGP process properties.
  *
  * <p>Example specifiers:
  *
  * <ul>
- *   <li>multipath-ebgp —&gt; gets the process's corresponding value
- *   <li>multipath-.* --&gt; gets all properties that start with 'max-metric-'
+ *   <li>multipath_ebgp —&gt; gets the process's corresponding value
+ *   <li>multipath.* --&gt; gets all properties that start with 'multipath'
  * </ul>
  */
-public class BgpPropertySpecifier extends PropertySpecifier {
+public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
@@ -42,7 +43,8 @@ public class BgpPropertySpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
           .put(
               ROUTE_REFLECTOR,
-              new PropertyDescriptor<>(BgpPropertySpecifier::isRouteReflector, Schema.BOOLEAN))
+              new PropertyDescriptor<>(
+                  BgpProcessPropertySpecifier::isRouteReflector, Schema.BOOLEAN))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
@@ -65,17 +67,25 @@ public class BgpPropertySpecifier extends PropertySpecifier {
           .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
           .build();
 
-  /** A {@link BgpPropertySpecifier} that matches all BGP properties. */
-  public static final BgpPropertySpecifier ALL = new BgpPropertySpecifier(".*");
+  /** A {@link BgpProcessPropertySpecifier} that matches all BGP properties. */
+  public static final BgpProcessPropertySpecifier ALL = new BgpProcessPropertySpecifier(".*");
 
   private final String _expression;
 
   private final Pattern _pattern;
 
   @JsonCreator
-  public BgpPropertySpecifier(@Nullable String expression) {
+  public BgpProcessPropertySpecifier(@Nullable String expression) {
     _expression = firstNonNull(expression, ".*");
     _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  }
+
+  /** Returns a specifier that maps to all properties in {@code properties} */
+  public BgpProcessPropertySpecifier(Collection<String> properties) {
+    // quote and join
+    _expression =
+        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   /**
