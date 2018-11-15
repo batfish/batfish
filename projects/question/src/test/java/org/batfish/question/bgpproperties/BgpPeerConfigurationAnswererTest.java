@@ -8,12 +8,13 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_IP;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROUP;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
-import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_IP;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_NODE;
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_VRF;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.getColumnName;
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.getRemoteIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -38,6 +39,7 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 public class BgpPeerConfigurationAnswererTest {
@@ -59,10 +61,10 @@ public class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
             .put(getColumnName(LOCAL_AS), 100L)
             .put(getColumnName(REMOTE_AS), new SelfDescribingObject(Schema.LONG, 200L))
             .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
-            .put(getColumnName(REMOTE_IP), new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
             .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
             .put(getColumnName(CLUSTER_ID), null)
@@ -77,12 +79,12 @@ public class BgpPeerConfigurationAnswererTest {
             .put(COL_VRF, "v")
             .put(getColumnName(LOCAL_AS), 100L)
             .put(
+                COL_REMOTE_IP,
+                new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
+            .put(
                 getColumnName(REMOTE_AS),
                 new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(300L)))
             .put(getColumnName(LOCAL_IP), new Ip("1.1.1.2"))
-            .put(
-                getColumnName(REMOTE_IP),
-                new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
             .put(getColumnName(IS_PASSIVE), true)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
             .put(getColumnName(CLUSTER_ID), new Ip("5.5.5.5"))
@@ -136,5 +138,24 @@ public class BgpPeerConfigurationAnswererTest {
 
     c.setVrfs(ImmutableMap.of("v", vrf, "emptyVrf", new Vrf("emptyVrf")));
     return c;
+  }
+
+  @Test
+  public void getRemoteIpActivePeer() {
+    Ip ip = new Ip("1.1.1.1");
+    BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setPeerAddress(ip).build();
+    assertThat(
+        getRemoteIp(activePeerConfig),
+        CoreMatchers.equalTo(new SelfDescribingObject(Schema.IP, ip)));
+  }
+
+  @Test
+  public void getRemoteIpPassivePeer() {
+    Prefix prefix = new Prefix(new Ip("1.1.1.1"), 23);
+    BgpPassivePeerConfig passivePeerConfig =
+        BgpPassivePeerConfig.builder().setPeerPrefix(prefix).build();
+    assertThat(
+        getRemoteIp(passivePeerConfig),
+        CoreMatchers.equalTo(new SelfDescribingObject(Schema.PREFIX, prefix)));
   }
 }

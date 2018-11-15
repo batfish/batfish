@@ -38,7 +38,6 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final String LOCAL_IP = "Local_IP";
   public static final String IS_PASSIVE = "Is_Passive";
   public static final String REMOTE_AS = "Remote_AS";
-  public static final String REMOTE_IP = "Remote_IP";
   public static final String ROUTE_REFLECTOR_CLIENT = "Route_Reflector_Client";
   public static final String CLUSTER_ID = "Cluster_ID";
   public static final String PEER_GROUP = "Peer_Group";
@@ -54,9 +53,6 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               REMOTE_AS,
               new PropertyDescriptor<>((peer) -> getRemoteAs(peer), Schema.SELF_DESCRIBING))
-          .put(
-              REMOTE_IP,
-              new PropertyDescriptor<>((peer) -> getRemoteIp(peer), Schema.SELF_DESCRIBING))
           .put(
               ROUTE_REFLECTOR_CLIENT,
               new PropertyDescriptor<>(BgpPeerConfig::getRouteReflectorClient, Schema.BOOLEAN))
@@ -140,18 +136,6 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
     if (peer instanceof BgpPassivePeerConfig) {
       return new SelfDescribingObject(
           Schema.list(Schema.LONG), ((BgpPassivePeerConfig) peer).getRemoteAs());
-    }
-    throw new IllegalArgumentException(
-        String.format("Peer is neither Active nor Passive: %s", peer));
-  }
-
-  @VisibleForTesting
-  static SelfDescribingObject getRemoteIp(@Nonnull BgpPeerConfig peer) {
-    if (peer instanceof BgpActivePeerConfig) {
-      return new SelfDescribingObject(Schema.IP, ((BgpActivePeerConfig) peer).getPeerAddress());
-    }
-    if (peer instanceof BgpPassivePeerConfig) {
-      return new SelfDescribingObject(Schema.PREFIX, ((BgpPassivePeerConfig) peer).getPeerPrefix());
     }
     throw new IllegalArgumentException(
         String.format("Peer is neither Active nor Passive: %s", peer));
