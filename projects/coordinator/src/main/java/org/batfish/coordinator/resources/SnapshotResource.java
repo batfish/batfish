@@ -67,10 +67,15 @@ public final class SnapshotResource {
     return Response.ok().build();
   }
 
+  /**
+   * Get completed work for the specified network's snapshot.
+   *
+   * @return Map of work item ids to work item status
+   */
   @Path(RSC_COMPLETED_WORK)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
-  public Response getCompletedWork() throws IOException {
+  public Response getCompletedWork() {
     Map<String, String> completedWork = Main.getWorkMgr().getCompletedWork(_network, _snapshot);
     if (completedWork == null) {
       return Response.status(Status.NOT_FOUND).build();

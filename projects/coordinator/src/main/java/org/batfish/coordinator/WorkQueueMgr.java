@@ -241,7 +241,7 @@ public class WorkQueueMgr {
    *
    * @param network {@link NetworkId} to get completed work for.
    * @param snapshot {@link SnapshotId} to get completed work for.
-   * @return {@link Map} work id to status.
+   * @return {@link Map} or work id to status.
    */
   public synchronized Map<String, String> getCompletedWork(NetworkId network, SnapshotId snapshot) {
     Map<String, String> completedWork = new TreeMap<>();

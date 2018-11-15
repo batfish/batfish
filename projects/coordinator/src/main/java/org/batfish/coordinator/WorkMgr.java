@@ -840,6 +840,13 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  /**
+   * Get all completed work for the specified network and snapshot.
+   *
+   * @param networkName name of the network to get completed work for.
+   * @param snapshotName name of the snapshot to get completed work for.
+   * @return {@link Map} of work id to status.
+   */
   public @Nullable Map<String, String> getCompletedWork(String networkName, String snapshotName) {
     NetworkId networkId = _idManager.getNetworkId(networkName);
     try {

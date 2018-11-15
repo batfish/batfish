@@ -218,20 +218,20 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void getCompletedWork() throws Exception {
-    String snapshot1 = "snapshot1";
-    String network1 = "network1";
-    Main.getWorkMgr().initNetwork(network1, null);
-    WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot1, ImmutableSet.of());
+    String snapshot = "snapshot";
+    String network = "network";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network1);
-    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot1, networkId);
+    NetworkId networkId = idManager.getNetworkId(network);
+    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot, networkId);
 
     QueuedWork work1 =
         resolvedQueuedWork(
-            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+            new WorkItem(network, snapshot), new WorkDetails(snapshot, WorkType.UNKNOWN));
     QueuedWork work2 =
         resolvedQueuedWork(
-            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
+            new WorkItem(network, snapshot), new WorkDetails(snapshot, WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
