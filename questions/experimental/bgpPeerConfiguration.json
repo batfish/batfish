@@ -2,6 +2,7 @@
     "class": "org.batfish.question.bgpproperties.BgpPeerConfigurationQuestion",
     "differential": false,
     "nodes": "${nodes}",
+    "properties": "${properties}",
     "instance": {
         "description": "Return BGP peer configuration properties",
         "instanceName": "bgpPeerConfiguration",
@@ -15,7 +16,14 @@
                 "type": "nodeSpec",
                 "optional": true,
                 "displayName": "Nodes"
+            },
+            "properties": {
+                "description": "Include properties matching this regex",
+                "type": "bgpPeerPropertySpec",
+                "optional": true,
+                "displayName": "Properties"
             }
+
         }
     }
 }

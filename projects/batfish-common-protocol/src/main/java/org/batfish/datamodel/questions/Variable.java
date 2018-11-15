@@ -22,7 +22,8 @@ public class Variable {
 
   public enum Type {
     ANSWER_ELEMENT("answerElement", true),
-    BGP_PROPERTY_SPEC("bgpPropertySpec", true),
+    BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
+    BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
     BOOLEAN("boolean", false),
     COMPARATOR("comparator", true),
     DOUBLE("double", false),

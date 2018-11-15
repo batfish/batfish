@@ -19,7 +19,7 @@
             },
             "properties": {
                 "description": "Include properties matching this regex",
-                "type": "bgpPropertySpec",
+                "type": "bgpProcessPropertySpec",
                 "optional": true,
                 "displayName": "Properties"
             }

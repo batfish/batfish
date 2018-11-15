@@ -4,7 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.questions.BgpPropertySpecifier;
+import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
@@ -19,13 +19,13 @@ public class BgpProcessConfigurationQuestion extends Question {
   private static final String PROP_PROPERTIES = "properties";
 
   @Nonnull private NodesSpecifier _nodes;
-  @Nonnull private BgpPropertySpecifier _properties;
+  @Nonnull private BgpProcessPropertySpecifier _properties;
 
   public BgpProcessConfigurationQuestion(
       @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
-      @JsonProperty(PROP_PROPERTIES) BgpPropertySpecifier propertySpec) {
+      @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
     _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _properties = firstNonNull(propertySpec, BgpPropertySpecifier.ALL);
+    _properties = firstNonNull(propertySpec, BgpProcessPropertySpecifier.ALL);
   }
 
   @Override
@@ -44,7 +44,7 @@ public class BgpProcessConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public BgpPropertySpecifier getProperties() {
+  public BgpProcessPropertySpecifier getProperties() {
     return _properties;
   }
 }
