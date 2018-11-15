@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -35,6 +37,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_VRF = "VRF";
+  public static final String COL_REMOTE_IP = "Remote_IP";
 
   public BgpPeerConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -50,6 +53,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
+        .add(new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false))
         .addAll(
             propertySpecifier
                 .getMatchingProperties()
@@ -70,11 +74,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   static TableMetadata createTableMetadata(BgpPeerConfigurationQuestion question) {
     String textDesc =
         String.format(
-            "Properties of BGP peer ${%s}:${%s}: ${%s} to ${%s}",
-            COL_NODE,
-            COL_VRF,
-            getColumnName(BgpPeerPropertySpecifier.LOCAL_IP),
-            getColumnName(BgpPeerPropertySpecifier.REMOTE_IP));
+            "Properties of BGP peer ${%s}:${%s}: ${%s}", COL_NODE, COL_VRF, COL_REMOTE_IP);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -131,7 +131,11 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       BgpPeerConfig peer,
       Map<String, ColumnMetadata> columnMetadata,
       BgpPeerPropertySpecifier propertySpecifier) {
-    RowBuilder rowBuilder = Row.builder(columnMetadata).put(COL_NODE, node).put(COL_VRF, vrfName);
+    RowBuilder rowBuilder =
+        Row.builder(columnMetadata)
+            .put(COL_NODE, node)
+            .put(COL_VRF, vrfName)
+            .put(COL_REMOTE_IP, getRemoteIp(peer));
     for (String property : propertySpecifier.getMatchingProperties()) {
       PropertyDescriptor<BgpPeerConfig> propertyDescriptor =
           BgpPeerPropertySpecifier.JAVA_MAP.get(property);
@@ -152,6 +156,18 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       }
     }
     return rowBuilder.build();
+  }
+
+  @VisibleForTesting
+  static SelfDescribingObject getRemoteIp(@Nonnull BgpPeerConfig peer) {
+    if (peer instanceof BgpActivePeerConfig) {
+      return new SelfDescribingObject(Schema.IP, ((BgpActivePeerConfig) peer).getPeerAddress());
+    }
+    if (peer instanceof BgpPassivePeerConfig) {
+      return new SelfDescribingObject(Schema.PREFIX, ((BgpPassivePeerConfig) peer).getPeerPrefix());
+    }
+    throw new IllegalArgumentException(
+        String.format("Peer is neither Active nor Passive: %s", peer));
   }
 
   /** Returns the name of the column that contains the value of property {@code property} */
