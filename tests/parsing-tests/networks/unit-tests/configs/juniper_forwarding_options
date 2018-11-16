@@ -81,4 +81,6 @@ set forwarding-options sampling traceoptions file sampled size 10m files 10 worl
 set forwarding-options sampling traceoptions flag all
 set forwarding-options storm-control-profiles default all
 #
-
+set groups DHCP forwarding-options helpers bootp interface <*> server 1.2.4.11
+set forwarding-options helpers bootp apply-groups DHCP
+#

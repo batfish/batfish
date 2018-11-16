@@ -94,7 +94,8 @@ foh_bootp
 :
    BOOTP
    (
-      fohb_common
+      apply
+      | fohb_common
       | fohb_interface
       | fohb_null
    )
@@ -119,6 +120,7 @@ fohb_interface
    (
       ALL
       | interface_id
+      | wildcard
    )
    (
       apply
