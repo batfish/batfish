@@ -2332,6 +2332,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // snmp
       SnmpServer snmpServer = ri.getSnmpServer();
       vrf.setSnmpServer(snmpServer);
+      if (snmpServer != null) {
+        _c.getSnmpTrapServers().addAll(snmpServer.getHosts().keySet());
+      }
 
       // static routes
       for (StaticRoute route :
