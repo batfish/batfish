@@ -3322,6 +3322,27 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testOspfPassive() throws IOException {
+    String testrigName = "ospf-passive";
+    String hostname = "ospf-passive";
+    String ifaceName = "Ethernet1";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(configurations, hasKey(hostname));
+    Configuration c = configurations.get(hostname);
+    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
+  }
+
+  @Test
   public void testOspfPointToPoint() throws IOException {
     String testrigName = "ospf-point-to-point";
     String iosOspfPointToPoint = "ios-ospf-point-to-point";
