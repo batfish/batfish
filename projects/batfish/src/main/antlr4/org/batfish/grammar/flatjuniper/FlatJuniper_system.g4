@@ -167,6 +167,7 @@ sy_services_null
 :
    (
       DATABASE_REPLICATION
+      | DHCP
       | DHCP_LOCAL_SERVER
       | DNS
       | DTCP_ONLY
