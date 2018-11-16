@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -383,6 +384,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_start_timeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.SecretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_proposalContext;
@@ -4972,16 +4974,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSyt_secret(Syt_secretContext ctx) {
-    String cipherText = unquote(ctx.secret.getText());
-    _currentTacplusServer.setSecret(decryptIfNeededAndHash(cipherText, getLine(ctx.secret)));
+    _currentTacplusServer.setSecret(applySecret(ctx.secret()));
   }
 
-  private String decryptIfNeededAndHash(String text, int line) {
+  private @Nonnull String applySecret(@Nonnull SecretContext ctx) {
+    String text = ctx.getText();
+    if (ctx.SCRUBBED() != null) {
+      return saltAndHash(text);
+    }
+    return decryptIfNeededAndHash(unquote(text), getLine(ctx.start));
+  }
+
+  private @Nonnull String saltAndHash(@Nonnull String text) {
+    return CommonUtil.sha256Digest(String.format("%s%s", text, CommonUtil.salt()));
+  }
+
+  private @Nonnull String decryptIfNeededAndHash(@Nonnull String text, int line) {
     if (JuniperUtils.isJuniper9CipherText(text)) {
       return JuniperUtils.decryptAndHashJuniper9CipherText(text);
     } else {
       _w.redFlag(String.format("Unencrypted key stored at line: %d", line));
-      return CommonUtil.sha256Digest(text + CommonUtil.salt());
+      return saltAndHash(text);
     }
   }
 

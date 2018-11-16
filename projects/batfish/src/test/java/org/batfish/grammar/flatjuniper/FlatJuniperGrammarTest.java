@@ -2412,8 +2412,8 @@ public class FlatJuniperGrammarTest {
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(extractor, ctx);
 
-    assertThat(extractor.getNumSets(), equalTo(8));
-    assertThat(extractor.getNumErrorNodes(), equalTo(8));
+    assertThat(extractor.getNumSets(), equalTo(9));
+    assertThat(extractor.getNumErrorNodes(), equalTo(7));
   }
 
   @Test
