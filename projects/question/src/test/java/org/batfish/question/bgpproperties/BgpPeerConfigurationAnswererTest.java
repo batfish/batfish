@@ -43,11 +43,54 @@ import org.junit.Test;
 
 public class BgpPeerConfigurationAnswererTest {
 
+  private final Configuration _c;
+
+  public BgpPeerConfigurationAnswererTest() {
+    NetworkFactory nf = new NetworkFactory();
+    _c = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+
+    BgpActivePeerConfig activePeer =
+        BgpActivePeerConfig.builder()
+            .setLocalAs(100L)
+            .setRemoteAs(200L)
+            .setLocalIp(new Ip("1.1.1.1"))
+            .setPeerAddress(new Ip("2.2.2.2"))
+            .setRouteReflectorClient(false)
+            .setGroup("g1")
+            .setImportPolicySources(ImmutableSortedSet.of("p1"))
+            .setExportPolicySources(ImmutableSortedSet.of("p2"))
+            .setSendCommunity(false)
+            .build();
+    BgpPassivePeerConfig passivePeer =
+        BgpPassivePeerConfig.builder()
+            .setLocalAs(100L)
+            .setRemoteAs(ImmutableList.of(300L))
+            .setLocalIp(new Ip("1.1.1.2"))
+            .setPeerPrefix(new Prefix(new Ip("3.3.3.0"), 24))
+            .setRouteReflectorClient(true)
+            .setClusterId(new Ip("5.5.5.5").asLong())
+            .setGroup("g2")
+            .setImportPolicySources(ImmutableSortedSet.of("p3"))
+            .setExportPolicySources(ImmutableSortedSet.of("p4"))
+            .setSendCommunity(false)
+            .build();
+
+    BgpProcess process = new BgpProcess();
+    process.setNeighbors(ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), activePeer));
+    process.setPassiveNeighbors(
+        ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), passivePeer));
+
+    Vrf vrf = new Vrf("v");
+    vrf.setBgpProcess(process);
+
+    _c.setVrfs(ImmutableMap.of("v", vrf, "emptyVrf", new Vrf("emptyVrf")));
+  }
+
   @Test
   public void testAnswer() {
     Multiset<Row> rows =
         BgpPeerConfigurationAnswerer.getAnswerRows(
-            ImmutableMap.of("c", getConfig()),
+            ImmutableMap.of("c", _c),
             ImmutableSet.of("c"),
             BgpPeerConfigurationAnswerer.createTableMetadata(
                     new BgpPeerConfigurationQuestion(null, null))
@@ -96,47 +139,38 @@ public class BgpPeerConfigurationAnswererTest {
     assertThat(rows, equalTo(expected));
   }
 
-  private static Configuration getConfig() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+  @Test
+  public void testFilteredAnswer() {
+    Multiset<Row> rows =
+        BgpPeerConfigurationAnswerer.getAnswerRows(
+            ImmutableMap.of("c", _c),
+            ImmutableSet.of("c"),
+            BgpPeerConfigurationAnswerer.createTableMetadata(
+                    new BgpPeerConfigurationQuestion(
+                        null, new BgpPeerPropertySpecifier("Local_IP")))
+                .toColumnMap(),
+            new BgpPeerPropertySpecifier("Local_IP"));
 
-    BgpActivePeerConfig activePeer =
-        BgpActivePeerConfig.builder()
-            .setLocalAs(100L)
-            .setRemoteAs(200L)
-            .setLocalIp(new Ip("1.1.1.1"))
-            .setPeerAddress(new Ip("2.2.2.2"))
-            .setRouteReflectorClient(false)
-            .setGroup("g1")
-            .setImportPolicySources(ImmutableSortedSet.of("p1"))
-            .setExportPolicySources(ImmutableSortedSet.of("p2"))
-            .setSendCommunity(false)
-            .build();
-    BgpPassivePeerConfig passivePeer =
-        BgpPassivePeerConfig.builder()
-            .setLocalAs(100L)
-            .setRemoteAs(ImmutableList.of(300L))
-            .setLocalIp(new Ip("1.1.1.2"))
-            .setPeerPrefix(new Prefix(new Ip("3.3.3.0"), 24))
-            .setRouteReflectorClient(true)
-            .setClusterId(new Ip("5.5.5.5").asLong())
-            .setGroup("g2")
-            .setImportPolicySources(ImmutableSortedSet.of("p3"))
-            .setExportPolicySources(ImmutableSortedSet.of("p4"))
-            .setSendCommunity(false)
-            .build();
+    Node node = new Node("c");
+    Multiset<Row> expected = HashMultiset.create();
+    expected.add(
+        Row.builder()
+            .put(COL_NODE, node)
+            .put(COL_VRF, "v")
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
+            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
+            .build());
+    expected.add(
+        Row.builder()
+            .put(COL_NODE, node)
+            .put(COL_VRF, "v")
+            .put(
+                COL_REMOTE_IP,
+                new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
+            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.2"))
+            .build());
 
-    BgpProcess process = new BgpProcess();
-    process.setNeighbors(ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), activePeer));
-    process.setPassiveNeighbors(
-        ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), passivePeer));
-
-    Vrf vrf = new Vrf("v");
-    vrf.setBgpProcess(process);
-
-    c.setVrfs(ImmutableMap.of("v", vrf, "emptyVrf", new Vrf("emptyVrf")));
-    return c;
+    assertThat(rows, equalTo(expected));
   }
 
   @Test
