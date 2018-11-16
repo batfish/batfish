@@ -10,7 +10,8 @@ s_system
 :
    SYSTEM
    (
-      sy_authentication_order
+      apply
+      | sy_authentication_order
       | sy_default_address_selection
       | sy_domain_name
       | sy_host_name
@@ -190,10 +191,11 @@ sy_services_null
 
 sy_tacplus_server
 :
-   TACPLUS_SERVER hostname =
+   TACPLUS_SERVER
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      hostname = IP_ADDRESS
+      | hostname = IPV6_ADDRESS
+      | wildcard
    )
    (
       apply
@@ -323,7 +325,7 @@ sysl_null
 
 syt_secret
 :
-   SECRET secret = DOUBLE_QUOTED_STRING
+  SECRET secret
 ;
 
 syt_source_address

@@ -554,6 +554,12 @@ sc_named
   | NO_EXPORT
 ;
 
+secret
+:
+  DOUBLE_QUOTED_STRING
+  | SCRUBBED
+;
+
 standard_community
 :
   sc_literal

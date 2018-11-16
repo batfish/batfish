@@ -4711,6 +4711,11 @@ SCTP
    'sctp'
 ;
 
+SCRUBBED
+:
+  '<SCRUBBED>'
+;
+
 SECRET
 :
    'secret'
