@@ -70,16 +70,6 @@ public class IpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testNodeNameRegexConnecgtedHostsIpSpaceSpecifierFactory() {
-    assertThat(
-        load(NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.NAME),
-        Matchers.instanceOf(NodeNameRegexConnectedHostsIpSpaceSpecifierFactory.class));
-    assertThat(
-        new NodeNameRegexConnectedHostsIpSpaceSpecifierFactory().buildIpSpaceSpecifier("foo"),
-        equalTo(new NodeNameRegexConnectedHostsIpSpaceSpecifier(Pattern.compile("foo"))));
-  }
-
-  @Test
   public void testConstantWildcardSetIpSpaceSpecifierFactory() {
     assertThat(
         load(ConstantWildcardSetIpSpaceSpecifierFactory.NAME),
