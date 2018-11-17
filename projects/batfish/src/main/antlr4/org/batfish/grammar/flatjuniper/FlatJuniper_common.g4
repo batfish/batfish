@@ -152,6 +152,14 @@ icmp_type
   | UNREACHABLE
 ;
 
+icmp6_type
+:
+    NEIGHBOR_ADVERTISEMENT
+    | NEIGHBOR_SOLICIT
+    | PACKET_TOO_BIG
+;
+
+
 interface_id
 :
   (
