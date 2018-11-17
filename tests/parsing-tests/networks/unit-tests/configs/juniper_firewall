@@ -26,3 +26,6 @@ set firewall family inet filter blah term blorp from protocol pim
 set firewall family inet filter blah term blorp from source-address 2.4.6.8/30
 set firewall family inet filter blah term blorp from ip-source-address 2.4.6.9/32
 #
+set firewall family inet6 filter blah6 term blorp6 from icmp-type packet-too-big
+set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-advertisement
+set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-solicit

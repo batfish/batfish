@@ -1204,6 +1204,11 @@ EXTERNAL_ROUTER_ID
    'external-router-id'
 ;
 
+EXTENSION_HEADER
+:
+    'extension-header'
+;
+
 EXTENSIONS
 :
    'extensions'

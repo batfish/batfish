@@ -61,7 +61,8 @@ o_no_active_backbone
 o_null
 :
    (
-      NO_RFC_1583
+      GRACEFUL_RESTART
+      | NO_RFC_1583
       | OVERLOAD
       | SPF_OPTIONS
       | TRACEOPTIONS

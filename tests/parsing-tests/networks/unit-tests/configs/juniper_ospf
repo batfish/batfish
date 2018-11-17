@@ -11,4 +11,4 @@ set protocols ospf3 area 0.1.2.3 nssa no-summaries
 set protocols ospf3 area 0.1.2.3 area-range dead:beef::/56 override-metric 100
 set protocols ospf3 area 0.1.2.3 interface xe-0/0/1.0
 #
-
+set protocols ospf graceful-restart restart-duration 60
