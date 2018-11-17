@@ -211,7 +211,7 @@ fftf_icmp_type
    ICMP_TYPE
    (
       icmp_type
-      | icmp6_type
+      | icmp6_only_type
       | subrange
    )
 ;
