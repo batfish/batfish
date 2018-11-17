@@ -43,7 +43,7 @@ Batfish can provide correctness guarantees for a wide range of network behaviors
   
 ## How do I get started?
 
-Getting started with Batfish is easy, just grab the latest Batfish [Docker container](https://github.com/batfish/docker/).
+Getting started with Batfish is easy, just grab the latest `allinone` Batfish Docker container:
 
   `docker pull batfish/allinone`
 
