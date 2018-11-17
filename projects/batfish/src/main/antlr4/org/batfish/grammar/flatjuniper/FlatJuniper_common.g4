@@ -152,7 +152,7 @@ icmp_type
   | UNREACHABLE
 ;
 
-icmp6_type
+icmp6_only_type
 :
     NEIGHBOR_ADVERTISEMENT
     | NEIGHBOR_SOLICIT
