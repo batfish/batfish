@@ -2989,6 +2989,35 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfPassive() throws IOException {
+    String testrigName = "ios-ospf-passive";
+    String host1name = "ios-ospf-passive1";
+    String host2name = "ios-ospf-passive2";
+    String iface1Name = "Ethernet1";
+    String iface2Name = "Ethernet2";
+    List<String> configurationNames = ImmutableList.of(host1name, host2name);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    Configuration c1 = configurations.get(host1name);
+    Configuration c2 = configurations.get(host2name);
+
+    // in host1, default is active which is overridden for iface1
+    assertThat(c1, hasInterface(iface1Name, isOspfPassive(equalTo(true))));
+    assertThat(c1, hasInterface(iface2Name, isOspfPassive(equalTo(false))));
+
+    // in host2, default is passive which is overridden for iface1
+    assertThat(c2, hasInterface(iface1Name, isOspfPassive(equalTo(false))));
+    assertThat(c2, hasInterface(iface2Name, isOspfPassive(equalTo(true))));
+  }
+
+  @Test
   public void testIpsecTransformset() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(
@@ -3319,27 +3348,6 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
-  }
-
-  @Test
-  public void testOspfPassive() throws IOException {
-    String testrigName = "ospf-passive";
-    String hostname = "ospf-passive";
-    String ifaceName = "Ethernet1";
-    List<String> configurationNames = ImmutableList.of(hostname);
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-
-    /* Ensure bidirectional references between OSPF area and interface */
-    assertThat(configurations, hasKey(hostname));
-    Configuration c = configurations.get(hostname);
-    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
   }
 
   @Test
