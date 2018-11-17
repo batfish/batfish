@@ -1,5 +1,5 @@
 !
-hostname ospf-passive
+hostname nxos-ospf-area
 feature privilege
 !
 interface Ethernet1

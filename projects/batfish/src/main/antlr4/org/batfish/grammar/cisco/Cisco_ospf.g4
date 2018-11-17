@@ -315,7 +315,7 @@ ro_rfc1583_compatibility
 
 ro_passive_interface_default
 :
-   PASSIVE_INTERFACE DEFAULT NEWLINE
+   NO? PASSIVE_INTERFACE DEFAULT NEWLINE
 ;
 
 ro_passive_interface

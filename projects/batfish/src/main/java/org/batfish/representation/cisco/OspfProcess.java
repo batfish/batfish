@@ -53,8 +53,6 @@ public class OspfProcess implements Serializable {
 
   private Long _defaultMetric;
 
-  private Set<String> _interfaceBlacklist;
-
   private Long _maxMetricExternalLsa;
 
   private boolean _maxMetricIncludeStub;
@@ -67,11 +65,15 @@ public class OspfProcess implements Serializable {
 
   private Set<OspfNetwork> _networks;
 
+  private Set<String> _nonDefaultInterfaces;
+
   private Map<Long, NssaSettings> _nssas;
 
   private Map<Long, StubSettings> _stubs;
 
   private boolean _passiveInterfaceDefault;
+
+  private Set<String> _passiveInterfaces;
 
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
 
@@ -145,8 +147,9 @@ public class OspfProcess implements Serializable {
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
+    _nonDefaultInterfaces = new HashSet<>();
     _nssas = new HashMap<>();
-    _interfaceBlacklist = new HashSet<>();
+    _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
@@ -230,6 +233,10 @@ public class OspfProcess implements Serializable {
     return _networks;
   }
 
+  public Set<String> getNonDefaultInterfaces() {
+    return _nonDefaultInterfaces;
+  }
+
   public Map<Long, NssaSettings> getNssas() {
     return _nssas;
   }
@@ -239,7 +246,7 @@ public class OspfProcess implements Serializable {
   }
 
   public Set<String> getPassiveInterfaces() {
-    return _interfaceBlacklist;
+    return _passiveInterfaces;
   }
 
   public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {

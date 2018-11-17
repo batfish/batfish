@@ -2056,7 +2056,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (!iface.getOspfShutdown()) {
       OspfProcess proc = vrf.getOspfProcess();
       if (proc != null) {
-        if (firstNonNull(iface.getOspfPassive(), proc.getPassiveInterfaceDefault())) {
+        if (firstNonNull(
+            iface.getOspfPassive(),
+            proc.getPassiveInterfaceDefault()
+                ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
           proc.getPassiveInterfaces().add(ifaceName);
         }
         newIface.setOspfAreaName(iface.getOspfArea());

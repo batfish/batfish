@@ -7911,16 +7911,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean passive = ctx.NO() == null;
     String iname = toInterfaceName(ctx.i);
     OspfProcess proc = _currentOspfProcess;
-    if (passive) {
-      proc.getPassiveInterfaces().add(iname);
-    } else {
-      proc.getPassiveInterfaces().remove(iname);
+    if (passive ^ proc.getPassiveInterfaceDefault()) {
+      proc.getNonDefaultInterfaces().add(iname);
     }
   }
 
   @Override
   public void exitRo_passive_interface_default(Ro_passive_interface_defaultContext ctx) {
-    _currentOspfProcess.setPassiveInterfaceDefault(true);
+    boolean passive = ctx.NO() == null;
+    OspfProcess proc = _currentOspfProcess;
+    proc.setPassiveInterfaceDefault(passive);
+    if (_configuration.getVendor() == CISCO_IOS) {
+      proc.getNonDefaultInterfaces().clear();
+    }
   }
 
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
