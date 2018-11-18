@@ -1,33 +1,35 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class NatRuleSet implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<NatRule> _rules;
+  private final NatPacketLocation _fromLocation;
+
+  private final Map<String, NatRule> _rules;
+
+  private final NatPacketLocation _toLocation;
 
   public NatRuleSet() {
-    _rules = new LinkedList<>();
+    _fromLocation = new NatPacketLocation();
+    _rules = new TreeMap<>();
+    _toLocation = new NatPacketLocation();
   }
 
-  public List<NatRule> getRules() {
+  public NatPacketLocation getFromLocation() {
+    return _fromLocation;
+  }
+
+  public Map<String, NatRule> getRules() {
     return _rules;
   }
 
-  public void setFromInterface(String name) {}
-
-  public void setFromRoutingInstance(String name) {}
-
-  public void setFromZone(String name) {}
-
-  public void setToInterface(String name) {}
-
-  public void setToRoutingInstance(String name) {}
-
-  public void setToZone(String name) {}
+  public NatPacketLocation getToLocation() {
+    return _toLocation;
+  }
 }

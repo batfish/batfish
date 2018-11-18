@@ -114,6 +114,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -213,17 +214,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private transient boolean _lo0Initialized;
 
-  private final Map<String, NatPool> _natDstPools;
+  @Nullable private Nat _natDestination = null;
 
-  private final Map<String, NatRuleSet> _natDstRuleSets;
+  @Nullable private Nat _natSource = null;
 
-  private final Map<String, NatPool> _natSrcPools;
-
-  private final Map<String, NatRuleSet> _natSrcRuleSets;
-
-  private final Map<String, NatPool> _natStaticPools;
-
-  private final Map<String, NatRuleSet> _natStaticRuleSets;
+  @Nullable private Nat _natStatic = null;
 
   private final Map<String, NodeDevice> _nodeDevices;
 
@@ -268,12 +263,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
     _jf = new JuniperFamily();
-    _natDstPools = new TreeMap<>();
-    _natDstRuleSets = new TreeMap<>();
-    _natSrcPools = new TreeMap<>();
-    _natSrcRuleSets = new TreeMap<>();
-    _natStaticPools = new TreeMap<>();
-    _natStaticRuleSets = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
@@ -945,28 +934,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _jf;
   }
 
-  public Map<String, NatPool> getNatDstPools() {
-    return _natDstPools;
+  public Nat getNatDestination() {
+    return _natDestination;
   }
 
-  public Map<String, NatRuleSet> getNatDstRuleSets() {
-    return _natDstRuleSets;
+  public Nat getNatSource() {
+    return _natSource;
   }
 
-  public Map<String, NatPool> getNatSrcPools() {
-    return _natSrcPools;
+  public Nat getNatStatic() {
+    return _natStatic;
   }
 
-  public Map<String, NatRuleSet> getNatSrcRuleSets() {
-    return _natSrcRuleSets;
-  }
-
-  public Map<String, NatPool> getNatStaticPools() {
-    return _natStaticPools;
-  }
-
-  public Map<String, NatRuleSet> getNatStaticRuleSets() {
-    return _natStaticRuleSets;
+  public Nat getOrCreateNat(Nat.Type natType) {
+    switch (natType) {
+      case DESTINATION:
+        if (_natDestination == null) {
+          _natDestination = new Nat(Type.DESTINATION);
+        }
+        return _natDestination;
+      case SOURCE:
+        if (_natSource == null) {
+          _natSource = new Nat(Type.SOURCE);
+        }
+        return _natSource;
+      case STATIC:
+        if (_natStatic == null) {
+          _natStatic = new Nat(Type.STATIC);
+        }
+        return _natStatic;
+      default:
+        throw new IllegalArgumentException("Unknnown nat type " + natType);
+    }
   }
 
   public Map<String, NodeDevice> getNodeDevices() {
@@ -2452,6 +2451,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    // destination nats
+    if (_natDestination != null) {
+      _w.unimplemented("Destination NAT is not currently implemented");
+    }
+
+    // source nats
+    if (_natSource != null) {
+      _w.unimplemented("Source NAT is not currently implemented");
+    }
+
+    // static nats
+    if (_natStatic != null) {
+      _w.unimplemented("Static NAT is not currently implemented");
+    }
+
     // mark forwarding table export policy if it exists
     String forwardingTableExportPolicyName =
         _defaultRoutingInstance.getForwardingTableExportPolicy();
@@ -2531,6 +2545,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL);
     markConcreteStructure(
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY);
+
+    markConcreteStructure(
+        JuniperStructureType.NAT_POOL,
+        JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
 
     warnEmptyPrefixLists();
 

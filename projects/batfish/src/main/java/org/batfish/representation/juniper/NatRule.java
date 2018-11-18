@@ -1,30 +1,26 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import org.batfish.datamodel.Prefix;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NatRule implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
+  private List<NatRuleMatch> _matches;
+
   private NatRuleThen _then;
 
-  public void setDestinationAddress(Prefix prefix) {}
+  public NatRule() {
+    _matches = new LinkedList<>();
+    _then = null;
+  }
 
-  public void setDestinationAddressName(String name) {}
-
-  public void setDestinationPortFrom(int port) {}
-
-  public void setDestinationPortTo(int toPort) {}
-
-  public void setSourceAddress(Prefix prefix) {}
-
-  public void setSourceAddressName(String name) {}
-
-  public void setSourcePortFrom(int fromPort) {}
-
-  public void setSourcePortTo(int toPort) {}
+  public List<NatRuleMatch> getMatches() {
+    return _matches;
+  }
 
   public void setThen(NatRuleThen then) {
     _then = then;

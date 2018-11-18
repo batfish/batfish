@@ -194,18 +194,14 @@ proposal_set_type
    | STANDARD
 ;
 
-rs_common
-:
-   (
-      rs_interface
-      | rs_routing_instance
-      |  rs_zone
-    )
-;
-
 rs_from
 :
-   FROM rs_common
+   FROM
+   (
+     rs_interface
+     | rs_routing_instance
+     |  rs_zone
+   )
 ;
 
 rs_interface
@@ -230,7 +226,12 @@ rs_rule
 
 rs_to
 :
-   TO rs_common
+   TO
+   (
+     rs_interface
+     | rs_routing_instance
+     |  rs_zone
+   )
 ;
 
 rs_zone
