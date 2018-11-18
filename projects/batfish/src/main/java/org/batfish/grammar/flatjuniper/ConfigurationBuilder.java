@@ -1,6 +1,8 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.grammar.flatjuniper.NatType.DESTINATION;
+import static org.batfish.grammar.flatjuniper.NatType.SOURCE;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -15,6 +17,9 @@ import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOS
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
+import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
+import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
@@ -266,6 +271,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protoco
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
@@ -365,6 +373,20 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_fromContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_toContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_zoneContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_address_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_address_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
@@ -414,6 +436,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipv_bind_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
@@ -537,6 +562,11 @@ import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
 import org.batfish.representation.juniper.NamedBgpGroup;
+import org.batfish.representation.juniper.NatPool;
+import org.batfish.representation.juniper.NatRule;
+import org.batfish.representation.juniper.NatRuleSet;
+import org.batfish.representation.juniper.NatRuleThenOff;
+import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
 import org.batfish.representation.juniper.OspfArea;
@@ -1769,6 +1799,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Interface _currentOspfInterface;
 
+  private NatPool _currentNatPool;
+
+  private NatRule _currentNatRule;
+
+  private NatRuleSet _currentNatRuleSet;
+
+  private NatRuleSetDirection _currentNatRuleSetDirection;
+
+  private NatType _currentNatType;
+
   private PolicyStatement _currentPolicyStatement;
 
   private PrefixList _currentPrefixList;
@@ -2219,6 +2259,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterNat_pool(Nat_poolContext ctx) {
+    String poolName = ctx.name.getText();
+    Map<String, NatPool> poolMap =
+        _currentNatType == DESTINATION
+            ? _configuration.getNatDstPools()
+            : _currentNatType == SOURCE
+                ? _configuration.getNatSrcPools()
+                : _configuration.getNatStaticPools();
+    _currentNatPool = poolMap.computeIfAbsent(poolName, p -> new NatPool());
+    defineStructure(NAT_POOL, poolName, ctx);
+  }
+
+  @Override
+  public void exitNat_pool(Nat_poolContext ctx) {
+    _currentNatPool = null;
+  }
+
+  @Override
+  public void enterNat_rule_set(Nat_rule_setContext ctx) {
+    String rulesetName = ctx.name.getText();
+    Map<String, NatRuleSet> map =
+        _currentNatType == DESTINATION
+            ? _configuration.getNatDstRuleSets()
+            : _currentNatType == SOURCE
+                ? _configuration.getNatSrcRuleSets()
+                : _configuration.getNatStaticRuleSets();
+    _currentNatRuleSet = map.computeIfAbsent(rulesetName, p -> new NatRuleSet());
+    defineStructure(NAT_RULE_SET, rulesetName, ctx);
+  }
+
+  @Override
+  public void exitNat_rule_set(Nat_rule_setContext ctx) {
+    _currentNatRuleSet = null;
+  }
+
+  @Override
   public void enterO_area(O_areaContext ctx) {
     Ip areaIp = new Ip(ctx.area.getText());
     Map<Long, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
@@ -2573,6 +2649,43 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterRs_from(Rs_fromContext ctx) {
+    _currentNatRuleSetDirection = NatRuleSetDirection.FROM;
+  }
+
+  @Override
+  public void exitRs_from(Rs_fromContext ctx) {
+    _currentNatRuleSetDirection = null;
+  }
+
+  @Override
+  public void enterRs_rule(Rs_ruleContext ctx) {
+    String name = ctx.name.getText();
+    _currentNatRule = new NatRule();
+    _currentNatRuleSet.getRules().add(_currentNatRule);
+    defineStructure(NAT_RULE, name, ctx);
+  }
+
+  @Override
+  public void exitRs_rule(Rs_ruleContext ctx) {
+    _currentNatRule = null;
+  }
+
+  @Override
+  public void enterRs_to(Rs_toContext ctx) {
+    if (_currentNatType != SOURCE) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "TO direction is not legal for destination and static NATs");
+    }
+    _currentNatRuleSetDirection = NatRuleSetDirection.TO;
+  }
+
+  @Override
+  public void exitRs_to(Rs_toContext ctx) {
+    _currentNatRuleSetDirection = null;
+  }
+
+  @Override
   public void enterS_firewall(S_firewallContext ctx) {
     _currentFirewallFamily = Family.INET;
   }
@@ -2729,6 +2842,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSeip_vpn(Seip_vpnContext ctx) {
     String name = ctx.name.getText();
     _currentIpsecVpn = _configuration.getIpsecVpns().computeIfAbsent(name, IpsecVpn::new);
+  }
+
+  @Override
+  public void enterSen_destination(Sen_destinationContext ctx) {
+    _currentNatType = DESTINATION;
+  }
+
+  @Override
+  public void exitSen_destination(Sen_destinationContext ctx) {
+    _currentNatType = null;
+  }
+
+  @Override
+  public void enterSen_source(Sen_sourceContext ctx) {
+    _currentNatType = NatType.SOURCE;
+  }
+
+  @Override
+  public void exitSen_source(Sen_sourceContext ctx) {
+    _currentNatType = null;
+  }
+
+  @Override
+  public void enterSen_static(Sen_staticContext ctx) {
+    _currentNatType = NatType.STATIC;
+  }
+
+  @Override
+  public void exitSen_static(Sen_staticContext ctx) {
+    _currentNatType = null;
   }
 
   @Override
@@ -3810,6 +3953,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitNatp_address(Natp_addressContext ctx) {
+    if (ctx.IP_PREFIX() != null) {
+      Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
+      _currentNatPool.setFromAddress(prefix.getStartIp());
+      _currentNatPool.setToAddress(prefix.getEndIp());
+    } else {
+      _currentNatPool.setFromAddress(new Ip(ctx.from.getText()));
+      _currentNatPool.setToAddress(new Ip(ctx.to.getText()));
+    }
+  }
+
+  @Override
   public void exitO_area(O_areaContext ctx) {
     _currentArea = null;
   }
@@ -4405,6 +4560,95 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRosr_tag(Rosr_tagContext ctx) {
     int tag = toInt(ctx.tag);
     _currentStaticRoute.setTag(tag);
+  }
+
+  @Override
+  public void exitRs_interface(Rs_interfaceContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentNatRuleSetDirection == NatRuleSetDirection.FROM) {
+      _currentNatRuleSet.setFromInterface(name);
+    } else {
+      _currentNatRuleSet.setToInterface(name);
+    }
+  }
+
+  @Override
+  public void exitRs_routing_instance(Rs_routing_instanceContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentNatRuleSetDirection == NatRuleSetDirection.FROM) {
+      _currentNatRuleSet.setFromRoutingInstance(name);
+    } else {
+      _currentNatRuleSet.setToRoutingInstance(name);
+    }
+  }
+
+  @Override
+  public void exitRs_zone(Rs_zoneContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentNatRuleSetDirection == NatRuleSetDirection.FROM) {
+      _currentNatRuleSet.setFromZone(name);
+    } else {
+      _currentNatRuleSet.setToZone(name);
+    }
+  }
+
+  @Override
+  public void exitRsrm_destination_address(Rsrm_destination_addressContext ctx) {
+    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
+    _currentNatRule.setDestinationAddress(prefix);
+  }
+
+  @Override
+  public void exitRsrm_destination_address_name(Rsrm_destination_address_nameContext ctx) {
+    String name = ctx.name.getText();
+    _currentNatRule.setDestinationAddressName(name);
+  }
+
+  @Override
+  public void exitRsrm_destination_port(Rsrm_destination_portContext ctx) {
+    int fromPort = toInt(ctx.from);
+    _currentNatRule.setDestinationPortFrom(fromPort);
+    if (ctx.TO() != null) {
+      int toPort = toInt(ctx.to);
+      _currentNatRule.setDestinationPortTo(toPort);
+    } else {
+      _currentNatRule.setDestinationPortTo(fromPort);
+    }
+  }
+
+  @Override
+  public void exitRsrm_source_address(Rsrm_source_addressContext ctx) {
+    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
+    _currentNatRule.setSourceAddress(prefix);
+  }
+
+  @Override
+  public void exitRsrm_source_address_name(Rsrm_source_address_nameContext ctx) {
+    String name = ctx.name.getText();
+    _currentNatRule.setSourceAddressName(name);
+  }
+
+  @Override
+  public void exitRsrm_source_port(Rsrm_source_portContext ctx) {
+    int fromPort = toInt(ctx.from);
+    _currentNatRule.setSourcePortFrom(fromPort);
+    if (ctx.TO() != null) {
+      int toPort = toInt(ctx.to);
+      _currentNatRule.setSourcePortTo(toPort);
+    } else {
+      _currentNatRule.setSourcePortTo(fromPort);
+    }
+  }
+
+  @Override
+  public void exitRsrt_nat_off(Rsrt_nat_offContext ctx) {
+    _currentNatRule.setThen(NatRuleThenOff.INSTANCE);
+  }
+
+  @Override
+  public void exitRsrt_nat_pool(Rsrt_nat_poolContext ctx) {
+    String name = ctx.name.getText();
+    _currentNatRule.setThen(new NatRuleThenPool(name));
   }
 
   @Override

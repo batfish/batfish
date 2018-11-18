@@ -213,6 +213,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private transient boolean _lo0Initialized;
 
+  private final Map<String, NatPool> _natDstPools;
+
+  private final Map<String, NatRuleSet> _natDstRuleSets;
+
+  private final Map<String, NatPool> _natSrcPools;
+
+  private final Map<String, NatRuleSet> _natSrcRuleSets;
+
+  private final Map<String, NatPool> _natStaticPools;
+
+  private final Map<String, NatRuleSet> _natStaticRuleSets;
+
   private final Map<String, NodeDevice> _nodeDevices;
 
   private NavigableSet<String> _ntpServers;
@@ -256,6 +268,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();
     _jf = new JuniperFamily();
+    _natDstPools = new TreeMap<>();
+    _natDstRuleSets = new TreeMap<>();
+    _natSrcPools = new TreeMap<>();
+    _natSrcRuleSets = new TreeMap<>();
+    _natStaticPools = new TreeMap<>();
+    _natStaticRuleSets = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
@@ -925,6 +943,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public JuniperFamily getJf() {
     return _jf;
+  }
+
+  public Map<String, NatPool> getNatDstPools() {
+    return _natDstPools;
+  }
+
+  public Map<String, NatRuleSet> getNatDstRuleSets() {
+    return _natDstRuleSets;
+  }
+
+  public Map<String, NatPool> getNatSrcPools() {
+    return _natSrcPools;
+  }
+
+  public Map<String, NatRuleSet> getNatSrcRuleSets() {
+    return _natSrcRuleSets;
+  }
+
+  public Map<String, NatPool> getNatStaticPools() {
+    return _natStaticPools;
+  }
+
+  public Map<String, NatRuleSet> getNatStaticRuleSets() {
+    return _natStaticRuleSets;
   }
 
   public Map<String, NodeDevice> getNodeDevices() {
