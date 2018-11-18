@@ -47683,11 +47683,8 @@
             "                        DESTINATION_NAT:'destination-nat'",
             "                        (rsrt_nat_pool",
             "                          POOL:'pool'",
-            "                          (rsrtnp_named",
-            "                            name = (variable",
-            "                              text = VARIABLE:'OFF')",
-            "                            (rsrtnp_common",
-            "                              (apply))))))))))))))",
+            "                          name = (variable",
+            "                            text = VARIABLE:'OFF'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -47714,11 +47711,8 @@
             "                        DESTINATION_NAT:'destination-nat'",
             "                        (rsrt_nat_pool",
             "                          POOL:'pool'",
-            "                          (rsrtnp_named",
-            "                            name = (variable",
-            "                              text = VARIABLE:'POOL')",
-            "                            (rsrtnp_common",
-            "                              (apply))))))))))))))",
+            "                          name = (variable",
+            "                            text = VARIABLE:'POOL'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -47745,11 +47739,8 @@
             "                        DESTINATION_NAT:'destination-nat'",
             "                        (rsrt_nat_pool",
             "                          POOL:'pool'",
-            "                          (rsrtnp_named",
-            "                            name = (variable",
-            "                              text = VARIABLE:'OFF')",
-            "                            (rsrtnp_common",
-            "                              (apply))))))))))))))",
+            "                          name = (variable",
+            "                            text = VARIABLE:'OFF'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -47776,11 +47767,8 @@
             "                        DESTINATION_NAT:'destination-nat'",
             "                        (rsrt_nat_pool",
             "                          POOL:'pool'",
-            "                          (rsrtnp_named",
-            "                            name = (variable",
-            "                              text = VARIABLE:'POOL')",
-            "                            (rsrtnp_common",
-            "                              (apply))))))))))))))",
+            "                          name = (variable",
+            "                            text = VARIABLE:'POOL'))))))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -62180,7 +62168,70 @@
         "configs/juniper_isis" : { },
         "configs/juniper_l2_learning" : { },
         "configs/juniper_misc" : { },
-        "configs/juniper_nat" : { },
+        "configs/juniper_nat" : {
+          "nat pool" : {
+            "POOL" : {
+              "definitionLines" : [
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "nat rule" : {
+            "DST-RULE" : {
+              "definitionLines" : [
+                11,
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 0
+            },
+            "RULE" : {
+              "definitionLines" : [
+                19,
+                20,
+                22,
+                23
+              ],
+              "numReferrers" : 0
+            },
+            "SRC-RULE" : {
+              "definitionLines" : [
+                6,
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "nat rule set" : {
+            "DST-NAT" : {
+              "definitionLines" : [
+                11,
+                12,
+                13,
+                14,
+                22,
+                23
+              ],
+              "numReferrers" : 0
+            },
+            "SRC-NAT" : {
+              "definitionLines" : [
+                6,
+                7,
+                8,
+                9,
+                19,
+                20
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_ntp" : { },
         "configs/juniper_ospf" : { },
         "configs/juniper_ospf_stub_areas" : { },
@@ -67457,6 +67508,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'blah', term: 'blorp'"
+            }
+          ]
+        },
+        "juniper_nat" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "Destination NAT is not currently implemented"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "Source NAT is not currently implemented"
             }
           ]
         },
