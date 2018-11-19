@@ -358,7 +358,7 @@ public final class FileBasedStorage implements StorageProvider {
       Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot) {
     Path snapshotDir = _d.getSnapshotDir(network, snapshot);
 
-    if (!snapshotDir.toFile().exists() && !snapshotDir.toFile().mkdirs()) {
+    if (!snapshotDir.toFile().mkdirs() && !snapshotDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create snapshot directory '%s'", snapshotDir));
     }
@@ -383,14 +383,14 @@ public final class FileBasedStorage implements StorageProvider {
       NetworkId network,
       SnapshotId snapshot) {
     Path snapshotDir = _d.getSnapshotDir(network, snapshot);
-    if (!snapshotDir.toFile().exists() && !snapshotDir.toFile().mkdirs()) {
+    if (!snapshotDir.toFile().mkdirs() && !snapshotDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create snapshot directory '%s'", snapshotDir));
     }
 
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
-    if (!ccaePath.toFile().exists() && !ccaePath.toFile().mkdirs()) {
+    if (!ccaePath.toFile().mkdirs() && !ccaePath.toFile().exists()) {
       throw new BatfishException(String.format("Unable to create directory '%s'", ccaePath));
     }
     CommonUtil.deleteIfExists(ccaePath);
@@ -418,7 +418,7 @@ public final class FileBasedStorage implements StorageProvider {
 
     // Delete any existing output, then recreate.
     CommonUtil.deleteDirectory(outputDir);
-    if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {
+    if (!outputDir.toFile().mkdirs() && !outputDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create output directory '%s'", outputDir));
     }
@@ -438,7 +438,7 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeAnswer(String answerStr, AnswerId answerId) {
     Path answerPath = getAnswerPath(answerId);
     Path answerDir = answerPath.getParent();
-    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+    if (!answerDir.toFile().mkdirs() && !answerDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create answer directory '%s'", answerDir));
     }
@@ -455,7 +455,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
     Path answerMetadataPath = getAnswerMetadataPath(answerId);
     Path answerDir = answerMetadataPath.getParent();
-    if (!answerDir.toFile().exists() && !answerDir.toFile().mkdirs()) {
+    if (!answerDir.toFile().mkdirs() && !answerDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create answer metadata directory '%s'", answerDir));
     }
@@ -607,7 +607,7 @@ public final class FileBasedStorage implements StorageProvider {
       String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
     Path questionPath = getQuestionPath(network, question, analysis);
     Path questionDir = questionPath.getParent();
-    if (!questionDir.toFile().exists() && !questionDir.toFile().mkdirs()) {
+    if (!questionDir.toFile().mkdirs() && !questionDir.toFile().exists()) {
       throw new BatfishException(
           String.format("Unable to create question directory '%s'", questionDir));
     }
