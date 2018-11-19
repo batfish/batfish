@@ -216,10 +216,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
@@ -3552,6 +3554,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitI_native_vlan_id(I_native_vlan_idContext ctx) {
+    _currentInterface.setNativeVlan(toInt(ctx.id));
+  }
+
+  @Override
   public void exitI_unit(I_unitContext ctx) {
     _currentInterface = _currentMasterInterface;
   }
@@ -3562,6 +3569,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = filter.name.getText();
     int line = getLine(filter.name.getStart());
     _configuration.referenceStructure(FIREWALL_FILTER, name, INTERFACE_FILTER, line);
+  }
+
+  @Override
+  public void exitIfe_native_vlan_id(Ife_native_vlan_idContext ctx) {
+    _currentInterface.setNativeVlan(toInt(ctx.id));
   }
 
   @Override
@@ -3577,6 +3589,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.range() != null) {
         List<SubRange> subRanges = toRange(ctx.range());
         subRanges.forEach(subRange -> _currentInterface.getAllowedVlans().add(subRange));
+      } else if (ctx.name != null) {
+        String name = ctx.name.getText();
+        _currentInterface.getAllowedVlanNames().add(name);
+        _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
       }
     } else if (ctx.name != null) {
       // SwitchPortMode here can be ACCESS or NONE, overwrite both with ACCESS(considered default)
