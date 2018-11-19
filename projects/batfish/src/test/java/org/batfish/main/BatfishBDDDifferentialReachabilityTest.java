@@ -69,13 +69,12 @@ public class BatfishBDDDifferentialReachabilityTest {
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final String PHYSICAL = "FastEthernet0/0";
-  private static final InterfaceAddress NODE1_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.0/8");
+  private static final InterfaceAddress NODE1_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.1/8");
   private static final Ip NODE1_PHYSICAL_IP = NODE1_PHYSICAL_NETWORK.getIp();
-  // the lowest IP addr of the network other than NODE1_PHYSICAL_IP.
-  private static final Ip NODE1_PHYSICAL_LINK_IP = new Ip("2.0.0.1");
+  private static final InterfaceAddress NODE2_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.2/8");
 
-  private static final InterfaceAddress NODE2_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.1/8");
-  private static final Ip NODE2_PHYSICAL_IP = NODE1_PHYSICAL_NETWORK.getIp();
+  // the lowest IP addr of the network other than NODE1_PHYSICAL_IP and NODE2_PHYSICAL_IP.
+  private static final Ip PHYSICAL_LINK_IP = new Ip("2.0.0.3");
 
   private Configuration.Builder _cb;
 
@@ -210,8 +209,16 @@ public class BatfishBDDDifferentialReachabilityTest {
         flows,
         containsInAnyOrder(
             ImmutableList.of(
-                allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_IP)),
-                allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                allOf(
+                    hasDstIp(DST_IP),
+                    hasIngressVrf(Configuration.DEFAULT_VRF_NAME),
+                    hasSrcIp(NODE1_PHYSICAL_IP)),
+                allOf(
+                    hasDstIp(DST_IP),
+                    hasIngressInterface(PHYSICAL),
+                    // Since node2 is not part of this network, its IP is assigned to the link.
+                    // This is the lowest valued IP in the subnet, so it's the one we choose.
+                    hasSrcIp(NODE2_PHYSICAL_NETWORK.getIp())))));
     checkDispositions(batfish, flows, EXITS_NETWORK);
   }
 
@@ -290,7 +297,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         containsInAnyOrder(
             ImmutableList.of(
                 allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_IP)),
-                allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                allOf(hasDstIp(DST_IP), hasSrcIp(PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, ACCEPTED);
   }
 
@@ -354,12 +361,12 @@ public class BatfishBDDDifferentialReachabilityTest {
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE1),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE1_PHYSICAL_LINK_IP)),
+                    hasSrcIp(PHYSICAL_LINK_IP)),
                 allOf(
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE2),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE2_PHYSICAL_IP)))));
+                    hasSrcIp(PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, DENIED_IN);
   }
 
@@ -419,7 +426,8 @@ public class BatfishBDDDifferentialReachabilityTest {
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE1),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                    // this network doesn't have NODE2, to its IP is the first available subnet IP.
+                    hasSrcIp(NODE2_PHYSICAL_NETWORK.getIp())))));
     checkDispositions(batfish, flows, DENIED_OUT);
   }
 
@@ -488,7 +496,7 @@ public class BatfishBDDDifferentialReachabilityTest {
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE1),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                    hasSrcIp(PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, DENIED_OUT);
   }
 
@@ -543,7 +551,7 @@ public class BatfishBDDDifferentialReachabilityTest {
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE1),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                    hasSrcIp(PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, NO_ROUTE);
   }
 
@@ -598,7 +606,7 @@ public class BatfishBDDDifferentialReachabilityTest {
                     hasDstIp(DST_IP),
                     hasIngressNode(NODE1),
                     hasIngressInterface(PHYSICAL),
-                    hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+                    hasSrcIp(PHYSICAL_LINK_IP)))));
     checkDispositions(batfish, flows, NULL_ROUTED);
   }
 
@@ -668,7 +676,11 @@ public class BatfishBDDDifferentialReachabilityTest {
     assertThat(
         flows,
         containsInAnyOrder(
-            ImmutableList.of(allOf(hasDstIp(DST_IP), hasSrcIp(NODE1_PHYSICAL_LINK_IP)))));
+            ImmutableList.of(
+                allOf(
+                    hasDstIp(DST_IP),
+                    // this network doesn't have NODE2, so its IP is the first available subnet IP.
+                    hasSrcIp(NODE2_PHYSICAL_NETWORK.getIp())))));
     checkDispositions(batfish, flows, EXITS_NETWORK);
   }
 
