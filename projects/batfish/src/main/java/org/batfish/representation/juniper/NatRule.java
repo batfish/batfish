@@ -25,4 +25,8 @@ public class NatRule implements Serializable {
   public void setThen(NatRuleThen then) {
     _then = then;
   }
+
+  public NatRuleThen getThen() {
+    return _then;
+  }
 }
