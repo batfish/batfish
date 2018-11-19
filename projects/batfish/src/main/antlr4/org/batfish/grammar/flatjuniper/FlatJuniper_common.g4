@@ -152,6 +152,14 @@ icmp_type
   | UNREACHABLE
 ;
 
+icmp6_only_type
+:
+    NEIGHBOR_ADVERTISEMENT
+    | NEIGHBOR_SOLICIT
+    | PACKET_TOO_BIG
+;
+
+
 interface_id
 :
   (
@@ -552,6 +560,12 @@ sc_named
 :
   NO_ADVERTISE
   | NO_EXPORT
+;
+
+secret
+:
+  DOUBLE_QUOTED_STRING
+  | SCRUBBED
 ;
 
 standard_community

@@ -14,6 +14,18 @@ import org.batfish.datamodel.IpSpace;
 public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
   public static final InferFromLocationIpSpaceSpecifier INSTANCE =
       new InferFromLocationIpSpaceSpecifier();
+  /**
+   * /32s are loopback interfaces -- no hosts are connected.
+   *
+   * <p>/31s are point-to-point connections between nodes -- again, no hosts.
+   *
+   * <p>/30s could have hosts, but usually do not. Historically, each subnet was required to reserve
+   * two addresses: one identifying the network itself, and a broadcast address. This made /31s
+   * invalid, since there were no usable IPs left over. A /30 had 2 usable IPs, so was used for
+   * point-to-point connections. Eventually /31s were allowed, but we assume here that any /30s are
+   * hold-over point-to-point connections in the legacy model.
+   */
+  private static final int HOST_SUBNET_MAX_PREFIX_LENGTH = 29;
 
   /** A {@link LocationVisitor} that returns the {@link IpSpace} owned by that {@link Location}. */
   class IpSpaceLocationVisitor implements LocationVisitor<IpSpace> {
@@ -45,11 +57,7 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
                   /*
                    * Only include addresses on networks that might have hosts.
                    */
-                  .filter(
-                      address ->
-                          address.getNetworkBits()
-                              <= NodeNameRegexConnectedHostsIpSpaceSpecifier
-                                  .HOST_SUBNET_MAX_PREFIX_LENGTH)
+                  .filter(address -> address.getNetworkBits() <= HOST_SUBNET_MAX_PREFIX_LENGTH)
                   .map(address -> address.getPrefix().toIpSpace())
                   .collect(Collectors.toList()));
 

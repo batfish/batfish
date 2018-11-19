@@ -16427,6 +16427,51 @@
           }
         }
       },
+      "juniper_nat" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_nat",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper_ntp" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_ntp",
@@ -17626,6 +17671,10 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "snmpTrapServers" : [
+          "1.2.3.4",
+          "2.3.4.5"
+        ],
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -17827,6 +17876,7 @@
               },
               "5.6.7.8" : {
                 "name" : "5.6.7.8",
+                "secret" : "9f69effa159caf78ac2c0d3b3b4189a50917b71f4d89993f41e0f4175f276b91",
                 "sourceAddress" : "8.7.6.5"
               }
             }
@@ -19362,7 +19412,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
+              "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : false,
               "routerId" : "0.0.0.0",

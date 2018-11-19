@@ -1194,11 +1194,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(
-          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
+      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
-    } else {
-      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1454,7 +1451,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1) {
       multipathEbgp = true;
     }
     if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
@@ -2056,7 +2053,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (!iface.getOspfShutdown()) {
       OspfProcess proc = vrf.getOspfProcess();
       if (proc != null) {
-        if (firstNonNull(iface.getOspfPassive(), proc.getPassiveInterfaceDefault())) {
+        if (firstNonNull(
+            iface.getOspfPassive(),
+            proc.getPassiveInterfaceDefault()
+                ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
           proc.getPassiveInterfaces().add(ifaceName);
         }
         newIface.setOspfAreaName(iface.getOspfArea());

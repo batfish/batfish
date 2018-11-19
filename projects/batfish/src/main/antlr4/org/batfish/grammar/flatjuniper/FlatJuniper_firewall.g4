@@ -69,6 +69,7 @@ fft_from
       | fftf_destination_prefix_list
       | fftf_dscp
       | fftf_exp
+      | fftf_extension_header
       | fftf_first_fragment
       | fftf_forwarding_class
       | fftf_fragment_offset
@@ -171,6 +172,11 @@ fftf_exp
    EXP DEC
 ;
 
+fftf_extension_header
+:
+   EXTENSION_HEADER FRAGMENT
+;
+
 fftf_first_fragment
 :
    FIRST_FRAGMENT
@@ -205,6 +211,7 @@ fftf_icmp_type
    ICMP_TYPE
    (
       icmp_type
+      | icmp6_only_type
       | subrange
    )
 ;

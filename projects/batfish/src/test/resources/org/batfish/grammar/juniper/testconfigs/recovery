@@ -16,7 +16,7 @@ set system domain-name example.5
 set system error
 # Valid
 set system domain-name example.6
-# Invalid
+# Valid
 set system
 # Valid
 set system domain-name example.7

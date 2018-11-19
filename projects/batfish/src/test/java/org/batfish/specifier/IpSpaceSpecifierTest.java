@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
@@ -146,30 +145,5 @@ public class IpSpaceSpecifierTest {
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(ImmutableSet.of(), _context);
     assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.0")), equalTo(ImmutableSet.of())));
-  }
-
-  @Test
-  public void testNodeNameRegexConnectedHostsIpSpaceSpecifier() {
-    Pattern pattern = Pattern.compile(_c1.getHostname());
-    IpSpaceAssignment assignment =
-        new NodeNameRegexConnectedHostsIpSpaceSpecifier(pattern).resolve(_allLocations, _context);
-
-    assertThat(
-        assignment,
-        hasEntry(
-            allOf(
-                containsIp(new Ip("1.0.0.1")),
-                // does not include _i1's IP.
-                not(containsIp(new Ip("1.0.0.0"))),
-                // does not include the IP of the other interface on _i1's subnet
-                not(containsIp(new Ip("1.0.0.3"))),
-                // does not include any IPs from 2.0.0.0/30 because it's not a host subnet.
-                not(
-                    anyOf(
-                        containsIp(new Ip("2.0.0.0")),
-                        containsIp(new Ip("2.0.0.1")),
-                        containsIp(new Ip("2.0.0.2")),
-                        containsIp(new Ip("2.0.0.3"))))),
-            equalTo(_allLocations)));
   }
 }

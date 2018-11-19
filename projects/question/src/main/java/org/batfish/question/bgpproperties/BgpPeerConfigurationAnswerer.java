@@ -1,13 +1,27 @@
 package org.batfish.question.bgpproperties;
 
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CLUSTER_ID;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_IP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROUP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -39,6 +53,22 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public static final String COL_VRF = "VRF";
   public static final String COL_REMOTE_IP = "Remote_IP";
 
+  private static final List<String> COLUMN_ORDER =
+      ImmutableList.of(
+          COL_NODE,
+          COL_VRF,
+          LOCAL_AS,
+          LOCAL_IP,
+          REMOTE_AS,
+          COL_REMOTE_IP,
+          ROUTE_REFLECTOR_CLIENT,
+          CLUSTER_ID,
+          PEER_GROUP,
+          IMPORT_POLICY,
+          EXPORT_POLICY,
+          SEND_COMMUNITY,
+          IS_PASSIVE);
+
   public BgpPeerConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -50,24 +80,43 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
    */
   public static List<ColumnMetadata> createColumnMetadata(
       BgpPeerPropertySpecifier propertySpecifier) {
-    return ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
-        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
-        .add(new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false))
-        .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
-                .map(
+    Map<String, ColumnMetadata> columnMetadatas =
+        propertySpecifier
+            .getMatchingProperties()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    Function.identity(),
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
                             BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
                             "Property " + prop,
                             false,
-                            true))
-                .collect(Collectors.toList()))
-        .build();
+                            true)));
+    columnMetadatas.put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
+    columnMetadatas.put(COL_VRF, new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.put(
+        COL_REMOTE_IP,
+        new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false));
+
+    // Check for unknown columns (present in BgpPeerPropertySpecifier but not COLUMN_ORDER)
+    List<ColumnMetadata> unknownColumns =
+        columnMetadatas
+            .entrySet()
+            .stream()
+            .filter(e -> !COLUMN_ORDER.contains(e.getKey()))
+            .map(Entry::getValue)
+            .collect(ImmutableList.toImmutableList());
+
+    // List the metadatas in order, with any unknown columns tacked onto the end of the table
+    return Stream.concat(
+            COLUMN_ORDER
+                .stream()
+                .filter(prop -> columnMetadatas.containsKey(prop))
+                .map(prop -> columnMetadatas.get(prop)),
+            unknownColumns.stream())
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Creates a {@link TableMetadata} object from the question. */
