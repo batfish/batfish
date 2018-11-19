@@ -19412,7 +19412,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : true,
+              "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : false,
               "routerId" : "0.0.0.0",

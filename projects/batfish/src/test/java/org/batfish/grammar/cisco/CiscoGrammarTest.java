@@ -2254,9 +2254,9 @@ public class CiscoGrammarTest {
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
-    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(aristaEnabled, hasMultipathEbgp(false));
     assertThat(nxosDisabled, hasMultipathEbgp(false));
-    assertThat(nxosEnabled, hasMultipathEbgp(true));
+    assertThat(nxosEnabled, hasMultipathEbgp(false));
   }
 
   @Test
