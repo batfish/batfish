@@ -52,25 +52,26 @@ class ConversionWarningAnswerer extends Answerer {
   static Row getRow(String nodeName, Warning warning) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODE, new Node(nodeName))
-        .put(COL_TYPE, warning.getTag())
-        .put(COL_DESCRIPTION, warning.getText())
+        .put(COL_TYPE, ImmutableList.of(warning.getTag()))
+        .put(COL_COMMENT, warning.getText())
         .build();
   }
 
   static final String COL_NODE = "Node";
-  static final String COL_DESCRIPTION = "Description";
+  static final String COL_COMMENT = "Comment";
   static final String COL_TYPE = "Type";
 
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
           new ColumnMetadata(
               COL_NODE, Schema.NODE, "The node that caused the warning", true, false),
-          new ColumnMetadata(COL_TYPE, Schema.STRING, "The type of the warning", true, false),
           new ColumnMetadata(
-              COL_DESCRIPTION, Schema.STRING, "The description of the warning", true, false));
+              COL_TYPE, Schema.list(Schema.STRING), "The type of the warning", true, false),
+          new ColumnMetadata(
+              COL_COMMENT, Schema.STRING, "The description of the warning", true, false));
 
   private static final String TEXT_DESC =
-      String.format("Warning for node ${%s}: ${%s} :: ${%s}", COL_NODE, COL_TYPE, COL_DESCRIPTION);
+      String.format("Warning for node ${%s}: ${%s} :: ${%s}", COL_NODE, COL_TYPE, COL_COMMENT);
 
   private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

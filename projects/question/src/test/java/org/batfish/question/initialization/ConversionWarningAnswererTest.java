@@ -1,11 +1,12 @@
 package org.batfish.question.initialization;
 
-import static org.batfish.question.initialization.ConversionWarningAnswerer.COL_DESCRIPTION;
+import static org.batfish.question.initialization.ConversionWarningAnswerer.COL_COMMENT;
 import static org.batfish.question.initialization.ConversionWarningAnswerer.COL_NODE;
 import static org.batfish.question.initialization.ConversionWarningAnswerer.COL_TYPE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -33,16 +34,16 @@ public class ConversionWarningAnswererTest {
                         COL_NODE,
                         new Node("node1"),
                         COL_TYPE,
-                        Warnings.TAG_UNIMPLEMENTED,
-                        COL_DESCRIPTION,
+                        ImmutableList.of(Warnings.TAG_UNIMPLEMENTED),
+                        COL_COMMENT,
                         "unimplemented1"))
                 .add(
                     Row.of(
                         COL_NODE,
                         new Node("node2"),
                         COL_TYPE,
-                        Warnings.TAG_RED_FLAG,
-                        COL_DESCRIPTION,
+                        ImmutableList.of(Warnings.TAG_RED_FLAG),
+                        COL_COMMENT,
                         "redflag2"))));
   }
 
