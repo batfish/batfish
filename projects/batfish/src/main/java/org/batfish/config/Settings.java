@@ -74,8 +74,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
 
-  private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
-
   public static final String ARG_RUN_MODE = "runmode";
 
   private static final String ARG_SEQUENTIAL = "sequential";
@@ -373,10 +371,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_PRINT_PARSE_TREE_LINE_NUMS);
   }
 
-  public boolean getPrintSymmetricEdgePairs() {
-    return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
-  }
-
   public @Nullable QuestionId getQuestionName() {
     String name = _config.getString(BfConsts.ARG_QUESTION_NAME);
     return name != null ? new QuestionId(name) : null;
@@ -461,10 +455,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public Path getStorageBase() {
     return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
-  }
-
-  public boolean getSynthesizeJsonTopology() {
-    return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
 
   @Nullable
@@ -589,7 +579,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
-    setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
@@ -607,7 +596,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
     setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
-    setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
     setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
@@ -785,9 +773,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         ARG_PRINT_PARSE_TREE_LINE_NUMS, "print line numbers when printing parse trees");
 
-    addBooleanOption(
-        ARG_PRINT_SYMMETRIC_EDGES, "print topology with symmetric edges adjacent in listing");
-
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
 
     addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
@@ -822,10 +807,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "whether to trust all SSL certificates during communication with coordinator");
 
     addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
-
-    addBooleanOption(
-        BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
-        "synthesize json topology from interface ip subnet information");
 
     addBooleanOption(
         BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
@@ -950,7 +931,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
-    getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
     getStringOptionValue(ARG_RUN_MODE);
@@ -972,7 +952,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
     getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
-    getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
     getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
