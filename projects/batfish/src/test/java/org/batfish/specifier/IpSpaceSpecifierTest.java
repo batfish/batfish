@@ -151,12 +151,6 @@ public class IpSpaceSpecifierTest {
   }
 
   @Test
-  public void testInferFromLocationIpSpaceSpecifier_ownedIps() {
-    IpSpaceAssignment assignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(_allLocations, _context);
-  }
-
-  @Test
   public void testLocationIpSpaceSpecifier() {
     IpSpaceAssignment assignment =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
