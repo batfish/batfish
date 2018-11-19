@@ -46,6 +46,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
     DYNAMIC_LISTEN,
     LOCAL_IP_UNKNOWN_STATICALLY,
     NO_LOCAL_IP,
+    NO_REMOTE_IP,
     NO_REMOTE_AS,
     INVALID_LOCAL_IP,
     UNKNOWN_REMOTE,
@@ -83,7 +84,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
 
     if (!allInterfaceIps.contains(localIp)) {
       return ConfiguredSessionStatus.INVALID_LOCAL_IP;
-    } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
+    } else if (!allInterfaceIps.contains(remoteIp)) {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;
     } else if (configuredBgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
@@ -105,6 +106,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
       } else {
         return ConfiguredSessionStatus.NO_LOCAL_IP;
       }
+    } else if (neighbor.getPeerAddress() == null) {
+      return ConfiguredSessionStatus.NO_REMOTE_IP;
     } else if (neighbor.getRemoteAs() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
