@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -39,6 +40,7 @@ public class IpSpaceSpecifierTest {
 
   private static final Interface _i1;
   private static final Interface _i2;
+  private static final Interface _i3;
 
   static {
     NetworkFactory nf = new NetworkFactory();
@@ -54,13 +56,14 @@ public class IpSpaceSpecifierTest {
      * NodeNameRegexConnectedHostsIpSpaceSpecifier.HOST_SUBNET_MAX_PREFIX_LENGTH).
      */
     _i1 =
-        ib.setAddresses(new InterfaceAddress("1.0.0.0/24"), new InterfaceAddress("2.0.0.0/30"))
+        ib.setAddresses(new InterfaceAddress("1.0.0.1/24"), new InterfaceAddress("2.0.0.0/30"))
             .build();
 
     // another interface on _i1's subnet
-    ib.setAddress(new InterfaceAddress("1.0.0.3/24")).build();
+    _i2 = ib.setAddresses(new InterfaceAddress("1.0.0.2/24")).build();
 
-    _i2 = nf.interfaceBuilder().setOwner(_c1).build();
+    // another interface with no addresses
+    _i3 = nf.interfaceBuilder().setOwner(_c1).build();
 
     _configs = ImmutableMap.of(_c1.getHostname(), _c1);
     _context =
@@ -73,8 +76,14 @@ public class IpSpaceSpecifierTest {
                         _i1.getName(),
                         _i1.getAddress().getIp().toIpSpace(),
                         _i2.getName(),
+                        _i2.getAddress().getIp().toIpSpace(),
+                        _i3.getName(),
                         EmptyIpSpace.INSTANCE)))
+            .setSnapshotOwnedIps(
+                AclIpSpace.union(
+                    _i1.getAddress().getIp().toIpSpace(), _i2.getAddress().getIp().toIpSpace()))
             .build();
+
     _allLocations =
         Sets.union(
             AllInterfacesLocationSpecifier.INSTANCE.resolve(_context),
@@ -106,7 +115,7 @@ public class IpSpaceSpecifierTest {
     assertThat(
         assignment,
         hasEntry(
-            containsIp(new Ip("1.0.0.0")),
+            containsIp(new Ip("1.0.0.1")),
             contains(new InterfaceLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     assertThat(
@@ -114,9 +123,11 @@ public class IpSpaceSpecifierTest {
         hasEntry(
             allOf(
                 // contains a host IP
-                containsIp(new Ip("1.0.0.1")),
-                // does not contain the interface IP
-                not(containsIp(new Ip("1.0.0.0"))),
+                containsIp(new Ip("1.0.0.3")),
+                // does not contain i1's IP
+                not(containsIp(new Ip("1.0.0.1"))),
+                // does not contain i2's IP
+                not(containsIp(new Ip("1.0.0.2"))),
                 // does not include any IPs from 2.0.0.0/30 because it's not a host subnet.
                 not(
                     anyOf(
@@ -131,12 +142,12 @@ public class IpSpaceSpecifierTest {
         assignment,
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
-            contains(new InterfaceLocation(_i2.getOwner().getHostname(), _i2.getName()))));
+            contains(new InterfaceLocation(_i3.getOwner().getHostname(), _i3.getName()))));
     assertThat(
         assignment,
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
-            contains(new InterfaceLinkLocation(_i2.getOwner().getHostname(), _i2.getName()))));
+            contains(new InterfaceLinkLocation(_i3.getOwner().getHostname(), _i3.getName()))));
   }
 
   @Test
@@ -144,6 +155,6 @@ public class IpSpaceSpecifierTest {
     IpSpaceAssignment assignment =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(ImmutableSet.of(), _context);
-    assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.0")), equalTo(ImmutableSet.of())));
+    assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.1")), equalTo(ImmutableSet.of())));
   }
 }
