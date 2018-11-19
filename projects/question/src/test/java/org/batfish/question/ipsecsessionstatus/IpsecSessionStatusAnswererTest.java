@@ -262,7 +262,6 @@ public class IpsecSessionStatusAnswererTest {
             hasColumn(COL_STATUS, equalTo("IPSEC_SESSION_ESTABLISHED"), Schema.STRING)));
   }
 
-
   @Test
   public void testToRowTunnelMissingEndpoint() {
     IpsecSessionInfo.Builder ipsecPeeringInfoBuilder = IpsecSessionInfo.builder();
