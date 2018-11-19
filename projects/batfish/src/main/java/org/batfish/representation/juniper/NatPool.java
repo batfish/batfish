@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 
 public class NatPool implements Serializable {
 

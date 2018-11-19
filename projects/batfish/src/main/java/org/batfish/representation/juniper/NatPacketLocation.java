@@ -13,7 +13,6 @@ public class NatPacketLocation implements Serializable {
 
   private String _zone;
 
-
   public String getInterface() {
     return _interface;
   }
