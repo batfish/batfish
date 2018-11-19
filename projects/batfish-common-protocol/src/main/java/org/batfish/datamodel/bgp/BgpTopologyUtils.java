@@ -144,7 +144,7 @@ public final class BgpTopologyUtils {
           || neighbor.getRemoteAs() == null) {
         continue;
       }
-      // Check what nodes exist that could match with neighbor's peer address
+      // Find nodes that own the neighbor's peer address
       Set<String> possibleHostnames = ipOwners.get(neighbor.getPeerAddress());
       if (possibleHostnames == null) {
         continue;

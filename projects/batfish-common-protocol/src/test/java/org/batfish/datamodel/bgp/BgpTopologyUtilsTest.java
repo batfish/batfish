@@ -2,12 +2,14 @@ package org.batfish.datamodel.bgp;
 
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Set;
@@ -70,8 +72,8 @@ public class BgpTopologyUtilsTest {
 
   @Test
   public void testInitTopologyRemotePrefixNotMatchingLocalIp() {
-    // Peer 1 is active, on node1 with IP 1.1.1.1, set up to peer with 1.1.1.2
-    // Peer 2 is passive, on node2 with IP 2.2.2.2, with remote prefix 1.1.1.0/24
+    // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 2.2.2.2
+    // Peer 2 on node2 with IP 2.2.2.2 is passive, with remote prefix 1.1.1.0/24
     // Should see one edge in BGP topology: peer 1 to peer 2
 
     Ip ip1 = new Ip("1.1.1.1");
@@ -103,12 +105,15 @@ public class BgpTopologyUtilsTest {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null, null);
     assertThat(bgpTopology.edges(), hasSize(1));
+    EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
+    assertThat(edge.source().getHostname(), equalTo("node1"));
+    assertThat(edge.target().getHostname(), equalTo("node2"));
   }
 
   @Test
-  public void testInitTopologyLocalIpNotMatchingRemoteHost() {
-    // Peer 1 is active, set up to peer with 1.1.1.2
-    // Peer 2 is passive, on node2 with IP 1.1.1.2, able to peer with peer 1
+  public void testInitTopologyPeerAddressNotMatchingRemoteHost() {
+    // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.2
+    // Peer 2 on node2 with IP 1.1.1.2 is passive, able to peer with peer 1
     // Peer 3 has the same configuration as peer 2, but on node3 with IP 1.1.1.3
     // Should see one edge in BGP topology: peer 1 to peer 2
 
@@ -126,24 +131,18 @@ public class BgpTopologyUtilsTest {
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
 
-    Prefix peer2PeerPrefix = new Prefix(ip1, 24);
-    BgpPassivePeerConfig peer2 =
+    Prefix prefixForPeer1 = new Prefix(ip1, 24);
+    BgpPassivePeerConfig.Builder passivePeerBuilder =
         BgpPassivePeerConfig.builder()
             .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
             .setRemoteAs(ImmutableList.of(1L))
-            .setPeerPrefix(peer2PeerPrefix)
-            .build();
-    _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));
+            .setPeerPrefix(prefixForPeer1);
 
-    BgpPassivePeerConfig peer3 =
-        BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
-            .setLocalAs(2L)
-            .setRemoteAs(ImmutableList.of(1L))
-            .setPeerPrefix(peer2PeerPrefix)
-            .build();
-    _node3BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer3));
+    BgpPassivePeerConfig peer2 = passivePeerBuilder.build();
+    BgpPassivePeerConfig peer3 = passivePeerBuilder.build();
+    _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer2));
+    _node3BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer3));
 
     Map<Ip, Set<String>> ipOwners =
         ImmutableMap.of(
@@ -157,5 +156,8 @@ public class BgpTopologyUtilsTest {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null, null);
     assertThat(bgpTopology.edges(), hasSize(1));
+    EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
+    assertThat(edge.source().getHostname(), equalTo("node1"));
+    assertThat(edge.target().getHostname(), equalTo("node2"));
   }
 }
