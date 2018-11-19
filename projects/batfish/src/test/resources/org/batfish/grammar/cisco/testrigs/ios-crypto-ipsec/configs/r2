@@ -25,6 +25,11 @@ crypto isakmp profile ISAKMP-PROFILE-FOR-R3
    match identity address 2.3.4.11 255.255.255.255
    keepalive 10 retry 3
 !
+crypto isakmp profile ISAKMP-PROFILE-FOR-R1
+   keyring KEYRING_FOR_R3
+   match identity address 2.3.4.6 255.255.255.255
+   keepalive 10 retry 3
+!
 crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
  mode tunnel
 !
@@ -55,6 +60,13 @@ interface Tunnel23
  tunnel source 2.3.4.10
  tunnel mode ipsec ipv4
  tunnel destination 2.3.4.11
+ tunnel protection ipsec profile ipsec-profile
+!
+interface Tunnel21
+ ip address 11.12.13.16 255.255.255.0
+ tunnel source 2.3.4.8
+ tunnel mode ipsec ipv4
+ tunnel destination 2.3.4.6
  tunnel protection ipsec profile ipsec-profile
 !
 interface TenGigabitEthernet0/0

@@ -3182,7 +3182,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
         if (tunnel.getIpsecProfileName() == null) {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
