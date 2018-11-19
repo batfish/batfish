@@ -227,9 +227,8 @@ public class VirtualRouter implements Serializable {
 
   private transient Map<Prefix, OspfLink> _ospfNeighbors;
 
-  // TODO: make non-transient. Currently transient because de-serialization crashes.
   /** Metadata about propagated prefixes to/from neighbors */
-  private transient PrefixTracer _prefixTracer;
+  private PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
   @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
