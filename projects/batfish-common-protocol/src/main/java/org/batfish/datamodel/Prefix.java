@@ -57,7 +57,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   private final int _prefixLength;
 
-  public Prefix(@Nonnull Ip ip, int prefixLength) {
+  public Prefix(Ip ip, int prefixLength) {
     if (ip.valid()) {
       // TODO: stop using Ip as a holder for invalid values.
       _ip = ip.getNetworkAddress(prefixLength);
@@ -67,12 +67,12 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     _prefixLength = prefixLength;
   }
 
-  public Prefix(@Nonnull Ip address, @Nonnull Ip mask) {
+  public Prefix(Ip address, Ip mask) {
     this(address, mask.numSubnetBits());
   }
 
   @Override
-  public int compareTo(@Nonnull Prefix rhs) {
+  public int compareTo(Prefix rhs) {
     int ret = _ip.compareTo(rhs._ip);
     if (ret != 0) {
       return ret;
@@ -80,19 +80,19 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return Integer.compare(_prefixLength, rhs._prefixLength);
   }
 
-  public boolean containsIp(@Nonnull Ip ip) {
+  public boolean containsIp(Ip ip) {
     long start = _ip.asLong();
     long end = getNetworkEnd(start, _prefixLength);
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
   }
 
-  public boolean containsPrefix(@Nonnull Prefix prefix) {
+  public boolean containsPrefix(Prefix prefix) {
     return containsIp(prefix._ip) && _prefixLength <= prefix._prefixLength;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof Prefix)) {
