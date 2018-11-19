@@ -49,6 +49,9 @@ public interface SpecifierContext {
         .getOrDefault(iface, EmptyIpSpace.INSTANCE);
   }
 
+  /** @return the {@link IpSpace} of IP addresses owned any device in the network. */
+  IpSpace getSnapshotDeviceOwnedIps();
+
   /**
    * @return the {@link IpSpace}s owned by each VRF in the network. Mapping: hostname -&gt; VRF name
    *     -&gt; IpSpace.

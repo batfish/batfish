@@ -58,12 +58,12 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
                    * Only include addresses on networks that might have hosts.
                    */
                   .filter(address -> address.getNetworkBits() <= HOST_SUBNET_MAX_PREFIX_LENGTH)
-                  .map(address -> address.getPrefix().toIpSpace())
+                  .map(address -> address.getPrefix().toHostIpSpace())
                   .collect(Collectors.toList()));
 
       return linkIpSpace == null
           ? EmptyIpSpace.INSTANCE
-          : AclIpSpace.difference(linkIpSpace, _specifierContext.getInterfaceOwnedIps(node, iface));
+          : AclIpSpace.difference(linkIpSpace, _specifierContext.getSnapshotDeviceOwnedIps());
     }
 
     @Override
