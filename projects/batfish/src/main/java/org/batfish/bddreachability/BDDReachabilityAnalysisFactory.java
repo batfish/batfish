@@ -37,6 +37,7 @@ import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
@@ -1168,18 +1169,28 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
       Map<String, Configuration> configs, IpSpaceToBDD ipSpaceToBDD) {
+    /*
+     * excludeInactive: true
+     * The VRF should not own (i.e. cannot accept packets destined to) the dest IP inactive interfaces. Forwarding
+     * analysis will consider these IPs to be internal to (or owned by) the network, but not owned by any particular
+     * device or link.
+     */
     Map<String, Map<String, IpSpace>> vrfOwnedIpSpaces =
         TopologyUtil.computeVrfOwnedIpSpaces(
-            TopologyUtil.computeIpVrfOwners(false, TopologyUtil.computeNodeInterfaces(configs)));
+            TopologyUtil.computeIpVrfOwners(true, TopologyUtil.computeNodeInterfaces(configs)));
 
     return CommonUtil.toImmutableMap(
-        vrfOwnedIpSpaces,
+        configs,
         Entry::getKey,
         nodeEntry ->
             CommonUtil.toImmutableMap(
-                nodeEntry.getValue(),
+                nodeEntry.getValue().getVrfs(),
                 Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
+                vrfEntry ->
+                    vrfOwnedIpSpaces
+                        .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
+                        .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
+                        .accept(ipSpaceToBDD)));
   }
 
   /*
