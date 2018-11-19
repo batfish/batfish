@@ -1,0 +1,12 @@
+{
+  "class" : "org.batfish.question.initialization.ConversionWarningQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Return Batfish warnings that occurred when converting to vendor independent model",
+    "instanceName" : "qname",
+    "tags" : [
+      "initialization"
+    ]
+  }
+}
