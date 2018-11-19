@@ -17888,6 +17888,82 @@
           }
         }
       },
+      "juniper_vlan" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_vlan",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "xe-0/0/0.0" : {
+            "name" : "xe-0/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "30-30,40-40,50-50",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 666,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "xe-0/0/0.0"
+            ]
+          }
+        }
+      },
       "l2vpn" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "l2vpn",
