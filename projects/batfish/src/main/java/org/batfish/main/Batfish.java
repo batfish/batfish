@@ -1437,18 +1437,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
-  private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
-    Set<Edge> consumedEdges = new LinkedHashSet<>();
-    for (Edge edge : edges) {
-      if (consumedEdges.contains(edge)) {
-        continue;
-      }
-      consumedEdges.add(edge);
-      consumedEdges.add(edge.reverse());
-    }
-    return consumedEdges;
-  }
-
   @Override
   public String getTaskId() {
     return _settings.getTaskId();
@@ -2461,35 +2449,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         }));
   }
 
-  private void printSymmetricEdgePairs() {
-    Map<String, Configuration> configs = loadConfigurations();
-    SortedSet<Edge> edges = CommonUtil.synthesizeTopology(configs).getEdges();
-    Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
-    List<Edge> edgeList = new ArrayList<>(symmetricEdgePairs);
-    for (int i = 0; i < edgeList.size() / 2; i++) {
-      Edge edge1 = edgeList.get(2 * i);
-      Edge edge2 = edgeList.get(2 * i + 1);
-      _logger.output(
-          edge1.getNode1()
-              + ":"
-              + edge1.getInt1()
-              + ","
-              + edge1.getNode2()
-              + ":"
-              + edge1.getInt2()
-              + " "
-              + edge2.getNode1()
-              + ":"
-              + edge2.getInt1()
-              + ","
-              + edge2.getNode2()
-              + ":"
-              + edge2.getInt2()
-              + "\n");
-    }
-    _logger.printElapsedTime();
-  }
-
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
@@ -3030,16 +2989,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     loadPlugins();
     boolean action = false;
     Answer answer = new Answer();
-
-    if (_settings.getPrintSymmetricEdgePairs()) {
-      printSymmetricEdgePairs();
-      return answer;
-    }
-
-    if (_settings.getSynthesizeJsonTopology()) {
-      writeJsonTopology();
-      return answer;
-    }
 
     if (_settings.getFlatten()) {
       Path flattenSource = _testrigSettings.getInputPath();
@@ -4209,32 +4158,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(structuredAnswerString);
-    }
-  }
-
-  private void writeJsonTopology() {
-    try {
-      Map<String, Configuration> configs = loadConfigurations();
-      SortedSet<Edge> textEdges = CommonUtil.synthesizeTopology(configs).getEdges();
-      JSONArray jEdges = new JSONArray();
-      for (Edge textEdge : textEdges) {
-        Configuration node1 = configs.get(textEdge.getNode1());
-        Configuration node2 = configs.get(textEdge.getNode2());
-        Interface interface1 = node1.getAllInterfaces().get(textEdge.getInt1());
-        Interface interface2 = node2.getAllInterfaces().get(textEdge.getInt2());
-        JSONObject jEdge = new JSONObject();
-        jEdge.put("interface1", interface1.toJSONObject());
-        jEdge.put("interface2", interface2.toJSONObject());
-        jEdges.put(jEdge);
-      }
-      JSONObject master = new JSONObject();
-      JSONObject topology = new JSONObject();
-      topology.put("edges", jEdges);
-      master.put("topology", topology);
-      String text = master.toString(3);
-      _logger.output(text);
-    } catch (JSONException e) {
-      throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
 
