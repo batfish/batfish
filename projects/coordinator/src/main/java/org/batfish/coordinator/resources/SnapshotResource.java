@@ -76,11 +76,12 @@ public final class SnapshotResource {
   @Produces(MediaType.APPLICATION_JSON)
   @GET
   public Response getCompletedWork() {
-    Map<String, String> completedWork = Main.getWorkMgr().getCompletedWork(_network, _snapshot);
-    if (completedWork == null) {
+    try {
+      Map<String, String> completedWork = Main.getWorkMgr().getCompletedWork(_network, _snapshot);
+      return Response.ok().entity(completedWork).build();
+    } catch (IllegalArgumentException e) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok().entity(completedWork).build();
   }
 
   @GET

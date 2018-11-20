@@ -847,14 +847,10 @@ public class WorkMgr extends AbstractCoordinator {
    * @param snapshotName name of the snapshot to get completed work for.
    * @return {@link Map} of work id to status.
    */
-  public @Nullable Map<String, String> getCompletedWork(String networkName, String snapshotName) {
+  public Map<String, String> getCompletedWork(String networkName, String snapshotName) {
     NetworkId networkId = _idManager.getNetworkId(networkName);
-    try {
-      return _workQueueMgr.getCompletedWork(
-          networkId, _idManager.getSnapshotId(snapshotName, networkId));
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
+    return _workQueueMgr.getCompletedWork(
+        networkId, _idManager.getSnapshotId(snapshotName, networkId));
   }
 
   private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(

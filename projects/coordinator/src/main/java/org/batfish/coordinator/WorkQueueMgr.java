@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -244,14 +244,14 @@ public class WorkQueueMgr {
    * @return {@link Map} or work id to status.
    */
   public synchronized Map<String, String> getCompletedWork(NetworkId network, SnapshotId snapshot) {
-    Map<String, String> completedWork = new TreeMap<>();
+    ImmutableMap.Builder<String, String> b = ImmutableMap.builder();
     for (QueuedWork work : _queueCompletedWork) {
       if (work.getWorkItem().getContainerName().equals(network.getId())
           && work.getWorkItem().getTestrigName().equals(snapshot.getId())) {
-        completedWork.put(work.getId().toString(), work.getStatus().toString());
+        b.put(work.getId().toString(), work.getStatus().toString());
       }
     }
-    return completedWork;
+    return b.build();
   }
 
   private synchronized QueuedWork getIncompleteWork(
