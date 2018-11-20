@@ -690,8 +690,6 @@ public class CiscoGrammarTest {
     String hostname = "asa-filters";
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     String ifaceAlias = "name1";
 
