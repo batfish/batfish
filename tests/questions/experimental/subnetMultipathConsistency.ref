@@ -1,0 +1,31 @@
+{
+  "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
+  "headers" : {
+    "dstIps" : "ofLocation(enter(.*))"
+  },
+  "maxTraces" : 1,
+  "pathConstraints" : {
+    "startLocation" : "enter(.*)"
+  },
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Validate multipath consistency between all pairs of subnets.",
+    "instanceName" : "qname",
+    "longDescription" : "Finds flows between subnets that are treated differently by different paths in the presence of multipath routing",
+    "tags" : [
+      "dataPlane",
+      "multipath consistency",
+      "reachability"
+    ],
+    "variables" : {
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 1
+      }
+    }
+  }
+}
