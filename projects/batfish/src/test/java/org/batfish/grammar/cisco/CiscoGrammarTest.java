@@ -49,6 +49,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -634,6 +635,80 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_ASA)));
+  }
+
+  @Test
+  public void testAsaFilters() throws IOException {
+    String hostname = "asa-filters";
+    Configuration c = parseConfig(hostname);
+
+    String ifaceAlias = "name1";
+
+    Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
+    Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
+
+    // Confirm access list permits only traffic matching ACL
+    assertThat(c, hasInterface(ifaceAlias, hasOutgoingFilter(accepts(flowPass, null, c))));
+    assertThat(c, hasInterface(ifaceAlias, hasOutgoingFilter(not(accepts(flowFail, null, c)))));
+  }
+
+  @Test
+  public void testAsaFiltersGlobal() throws IOException {
+    String hostname = "asa-filters-global";
+    Configuration c = parseConfig(hostname);
+
+    String iface1Alias = "name1";
+    String iface2Alias = "name2";
+
+    Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
+    Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
+
+    // Confirm global ACL affects all interfaces
+    assertThat(c, hasInterface(iface1Alias, hasIncomingFilter(accepts(flowPass, null, c))));
+    assertThat(c, hasInterface(iface2Alias, hasIncomingFilter(accepts(flowPass, null, c))));
+    assertThat(c, hasInterface(iface1Alias, hasIncomingFilter(not(accepts(flowFail, null, c)))));
+    assertThat(c, hasInterface(iface2Alias, hasIncomingFilter(not(accepts(flowFail, null, c)))));
+  }
+
+  @Test
+  public void testAsaFiltersReference() throws IOException {
+    String hostname = "asa-filters";
+    String filename = "configs/" + hostname;
+    parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference tracking is correct for ASA access lists in access group
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_OUT", 1));
+    assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "FILTER_UNDEF"));
+  }
+
+  @Test
+  public void testAsaSecurityLevelAndFilters() throws IOException {
+    String hostname = "asa-filters";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String ifaceAlias = "name1";
+
+    Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
+    Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
+
+    // Confirm access list permits only traffic matching both ACL and security level restrictions
+    assertThat(
+        c, hasInterface(ifaceAlias, hasOutgoingFilter(accepts(flowPass, "GigabitEthernet0/1", c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias, hasOutgoingFilter(not(accepts(flowPass, "GigabitEthernet0/2", c)))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias, hasOutgoingFilter(not(accepts(flowFail, "GigabitEthernet0/2", c)))));
   }
 
   @Test
