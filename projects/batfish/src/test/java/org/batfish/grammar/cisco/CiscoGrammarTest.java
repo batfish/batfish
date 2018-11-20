@@ -689,7 +689,6 @@ public class CiscoGrammarTest {
   public void testAsaSecurityLevelAndFilters() throws IOException {
     String hostname = "asa-filters";
     Configuration c = parseConfig(hostname);
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
 
     String ifaceAlias = "name1";
 
