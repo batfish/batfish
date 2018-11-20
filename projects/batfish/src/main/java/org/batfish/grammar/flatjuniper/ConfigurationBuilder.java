@@ -371,9 +371,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_fromContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_toContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_portContext;
@@ -4528,28 +4527,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitRs_from(Rs_fromContext ctx) {
-    NatPacketLocation packetLocation = _currentNatRuleSet.getFromLocation();
-    if (ctx.rs_interface() != null) {
-      packetLocation.setInterface(ctx.rs_interface().name.getText());
-    } else if (ctx.rs_routing_instance() != null) {
-      packetLocation.setRoutingInstance(ctx.rs_routing_instance().name.getText());
-    } else if (ctx.rs_zone() != null) {
-      packetLocation.setZone(ctx.rs_zone().name.getText());
+  public void exitRs_packet_location(Rs_packet_locationContext ctx) {
+    NatPacketLocation packetLocation;
+    if (ctx.FROM() != null) {
+      packetLocation = _currentNatRuleSet.getFromLocation();
+    } else { // TO
+      if (_currentNat.getType() != Nat.Type.SOURCE) {
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            "'to' is illegal for non-source NATs. Ignoring statement.");
+        return;
+      }
+      packetLocation = _currentNatRuleSet.getToLocation();
     }
-  }
-
-  @Override
-  public void exitRs_to(Rs_toContext ctx) {
-    if (_currentNat.getType() != Nat.Type.SOURCE) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "'to' is illegal for non-source NATs. Ignoring statement.");
-      return;
-    }
-    NatPacketLocation packetLocation = _currentNatRuleSet.getToLocation();
     if (ctx.rs_interface() != null) {
       packetLocation.setInterface(ctx.rs_interface().name.getText());
     } else if (ctx.rs_routing_instance() != null) {

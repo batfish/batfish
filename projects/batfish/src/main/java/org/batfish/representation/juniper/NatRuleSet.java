@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /** Represents a Juniper nat rule set */
-public class NatRuleSet implements Serializable {
+public final class NatRuleSet implements Serializable {
 
   private static final long serialVersionUID = 1L;
 

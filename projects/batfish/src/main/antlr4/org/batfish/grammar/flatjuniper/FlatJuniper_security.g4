@@ -154,9 +154,8 @@ nat_rule_set
 :
    RULE_SET name = variable
    (
-      rs_from
+      rs_packet_location
       | rs_rule
-      | rs_to
    )
 ;
 
@@ -194,19 +193,22 @@ proposal_set_type
    | STANDARD
 ;
 
-rs_from
-:
-   FROM
-   (
-     rs_interface
-     | rs_routing_instance
-     |  rs_zone
-   )
-;
-
 rs_interface
 :
     INTERFACE name = variable
+;
+
+rs_packet_location
+:
+   (
+     FROM
+     | TO
+   )
+   (
+     rs_interface
+     | rs_routing_instance
+     | rs_zone
+   )
 ;
 
 rs_routing_instance
@@ -221,16 +223,6 @@ rs_rule
       rsr_description
       | rsr_match
       | rsr_then
-   )
-;
-
-rs_to
-:
-   TO
-   (
-     rs_interface
-     | rs_routing_instance
-     |  rs_zone
    )
 ;
 
