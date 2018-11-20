@@ -527,10 +527,10 @@ class AbstractionBuilder {
 
       OspfProcess ospf = vrf.getOspfProcess();
       if (ospf != null) {
-        OspfProcess abstractOspf = new OspfProcess();
+        OspfProcess abstractOspf =
+            OspfProcess.builder().setReferenceBandwidth(ospf.getReferenceBandwidth()).build();
         abstractOspf.setAreas(ospf.getAreas());
         abstractOspf.setExportPolicy(ospf.getExportPolicy());
-        abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
         abstractOspf.setRouterId(ospf.getRouterId());
         // Copy over neighbors
         Map<IpLink, OspfNeighbor> abstractNeighbors = new HashMap<>();

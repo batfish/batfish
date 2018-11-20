@@ -707,7 +707,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
-    OspfProcess newProc = new OspfProcess();
+    OspfProcess newProc =
+        OspfProcess.builder()
+            .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
+            .build();
     String vrfName = routingInstance.getName();
     // export policies
     String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
@@ -779,7 +782,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                 .setOspfArea(area)));
 
     newProc.setRouterId(getOspfRouterId(routingInstance));
-    newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
 
