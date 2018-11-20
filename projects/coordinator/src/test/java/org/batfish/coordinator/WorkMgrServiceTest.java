@@ -17,10 +17,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -33,6 +36,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
@@ -982,5 +986,42 @@ public class WorkMgrServiceTest {
         (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
 
     assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
+  }
+
+  @Test
+  public void testGetWorkStatus() throws InterruptedException, ExecutionException, IOException {
+    initNetwork();
+    WorkMgrTestUtils.uploadTestSnapshot(_networkName, _snapshotName, _networksFolder);
+    final CompletableFuture<String> networkArg = new CompletableFuture<>();
+
+    WorkItem workItem = new WorkItem(_networkName, _snapshotName);
+    Main.getWorkMgr().queueWork(workItem);
+
+    Main.setAuthorizer(
+        new Authorizer() {
+
+          @Override
+          public void authorizeContainer(String apiKey, String containerName) {
+            assert Boolean.TRUE;
+          }
+
+          @Override
+          public boolean isAccessibleContainer(
+              String apiKey, String containerName, boolean logError) {
+            networkArg.complete(containerName);
+            return true;
+          }
+
+          @Override
+          public boolean isValidWorkApiKey(String apiKey) {
+            return true;
+          }
+        });
+    _service.getWorkStatus(
+        CoordConsts.DEFAULT_API_KEY, Version.getVersion(), workItem.getId().toString());
+
+    // networkArg should be name, not ID
+    assertTrue(networkArg.isDone());
+    assertThat(networkArg.get(), equalTo(_networkName));
   }
 }
