@@ -88,8 +88,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;
     } else if (configuredBgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
-      // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-    } else if (configuredBgpTopology.degree(bgpPeerConfigId) > 2) {
+    } else if (configuredBgpTopology.outDegree(bgpPeerConfigId) > 1) {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;
