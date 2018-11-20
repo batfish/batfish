@@ -18,6 +18,7 @@ import org.batfish.datamodel.questions.InterfacesSpecifier;
  *       ReferenceInterfaceGroupInterfaceSpecifier};
  *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
+ *   <li>type(regex): returns {@link TypeNameRegexInterfaceSpecifier}
  *   <li>all other inputs go directly to {@link ShorthandInterfaceSpecifier}
  * </ul>
  */
@@ -30,6 +31,9 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
 
   private static final Pattern REF_PATTERN =
       Pattern.compile("ref\\.interfacegroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
+
+  private static final Pattern TYPE_PATTERN =
+      Pattern.compile("type\\((.*)\\)", Pattern.CASE_INSENSITIVE);
 
   private static final Pattern VRF_PATTERN =
       Pattern.compile("vrf\\((.*)\\)", Pattern.CASE_INSENSITIVE);
@@ -67,6 +71,13 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
           "ref.interfaceGroup() needs interface group and reference book names separated by ','");
 
       return new ReferenceInterfaceGroupInterfaceSpecifier(words[0], words[1]);
+    }
+
+    // interface type pattern
+    matcher = TYPE_PATTERN.matcher(str);
+    if (matcher.find()) {
+      Pattern typeRegex = Pattern.compile(matcher.group(1).trim(), Pattern.CASE_INSENSITIVE);
+      return new TypeNameRegexInterfaceSpecifier(typeRegex);
     }
 
     // VRF pattern
