@@ -427,6 +427,8 @@ import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaCo
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Banner_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
@@ -5494,6 +5496,51 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       default:
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
         return null;
+    }
+  }
+
+  @Override
+  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    // Interface iface = _configuration.getInterfaces().get(ifaceName);
+    Optional<Interface> optionalIface =
+        _configuration
+            .getInterfaces()
+            .values()
+            .stream()
+            .filter(i -> i.getAlias().equals(ifaceName))
+            .findFirst();
+    Interface iface;
+    if (optionalIface.isPresent()) {
+      iface = optionalIface.get();
+    } else {
+      // Should never get here with valid config, ASA prevents referencing a non-existant iface here
+      _w.redFlag(
+          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
+      iface = new Interface(ifaceName, _configuration);
+      initInterface(iface, _configuration.getVendor());
+      _configuration.getInterfaces().put(ifaceName, iface);
+    }
+    CiscoStructureUsage usage = null;
+    String aclName = ctx.name.getText();
+    if (ctx.IN() != null) {
+      iface.setIncomingFilter(aclName);
+      usage = INTERFACE_INCOMING_FILTER;
+    } else if (ctx.OUT() != null) {
+      iface.setOutgoingFilter(aclName);
+      usage = INTERFACE_OUTGOING_FILTER;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
+    String aclName = ctx.name.getText();
+    for (Interface iface : _configuration.getInterfaces().values()) {
+      iface.setIncomingFilter(aclName);
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, aclName, INTERFACE_INCOMING_FILTER, ctx.name.getStart().getLine());
     }
   }
 
