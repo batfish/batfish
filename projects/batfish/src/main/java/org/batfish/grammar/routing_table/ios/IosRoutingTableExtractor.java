@@ -2,6 +2,7 @@ package org.batfish.grammar.routing_table.ios;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
 
   private final String _hostname;
 
-  private final Map<Ip, String> _ipOwners;
+  private final Map<Ip, Set<String>> _ipOwners;
 
   @SuppressWarnings("unused")
   private IosRoutingTableCombinedParser _parser;
@@ -64,8 +65,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
     _parser = parser;
     _w = w;
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, String> ipOwnersSimple = TopologyUtil.computeIpOwnersSimple(configurations, true);
-    _ipOwners = ipOwnersSimple;
+    _ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -156,9 +156,9 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
       }
       if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         rb.setNextHopIp(nextHopIp);
-        String nextHop = _ipOwners.get(nextHopIp);
-        if (nextHop != null) {
-          rb.setNextHop(nextHop);
+        Set<String> nextHops = _ipOwners.get(nextHopIp);
+        if (nextHops != null && nextHops.size() == 1) {
+          rb.setNextHop(nextHops.iterator().next());
         }
       }
       if (nextHopInterface != null) {
