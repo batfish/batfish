@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 /** A {@link NatRule} that matches on source port */
-public class NatRuleMatchSrcPort implements NatRuleMatch {
+public final class NatRuleMatchSrcPort implements NatRuleMatch {
 
   private static final long serialVersionUID = 1L;
 

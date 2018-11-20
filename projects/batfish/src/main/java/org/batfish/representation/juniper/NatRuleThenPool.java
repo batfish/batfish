@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 
 /** A {@link NatRule} that nats using the specified pool */
-public class NatRuleThenPool implements NatRuleThen, Serializable {
+public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
   private static final long serialVersionUID = 1L;
 
