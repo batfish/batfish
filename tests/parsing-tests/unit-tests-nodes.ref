@@ -1533,7 +1533,7 @@
         }
       },
       "asa_acl" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_ASA",
         "name" : "asa_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -1631,8 +1631,13 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "asa_acl",
-            "logging" : {
-              "on" : true
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
             }
           }
         },
