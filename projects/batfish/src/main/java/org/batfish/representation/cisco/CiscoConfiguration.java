@@ -2299,7 +2299,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
         org.batfish.datamodel.ospf.OspfProcess.builder()
-            .setReferenceBandwidth(firstNonNull(proc.getReferenceBandwidth(), 1e8))
+            .setReferenceBandwidth(proc.getReferenceBandwidth())
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 

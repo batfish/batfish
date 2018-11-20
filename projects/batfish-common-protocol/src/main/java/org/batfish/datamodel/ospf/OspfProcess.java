@@ -259,7 +259,7 @@ public final class OspfProcess implements Serializable {
 
     String interfaceName = i.getName();
     if (interfaceName.startsWith("Vlan")) {
-      // Special handling fro VLAN interfaces
+      // Special handling for VLAN interfaces
       // TODO: fix for non-cisco
       return DEFAULT_CISCO_VLAN_OSPF_COST;
     } else {
@@ -290,6 +290,10 @@ public final class OspfProcess implements Serializable {
     return _exportPolicy;
   }
 
+  /**
+   * Return the names of policies that contribute to the unified export policy. The resulting set is
+   * immutable.
+   */
   @Nonnull
   @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
   public SortedSet<String> getExportPolicySources() {
@@ -391,7 +395,7 @@ public final class OspfProcess implements Serializable {
 
   public void addArea(OspfArea area) {
     _areas =
-        new ImmutableSortedMap.Builder<Long, OspfArea>(Ordering.natural())
+        ImmutableSortedMap.<Long, OspfArea>naturalOrder()
             .putAll(_areas)
             .put(area.getAreaNumber(), area)
             .build();
@@ -410,7 +414,7 @@ public final class OspfProcess implements Serializable {
    * routes.
    */
   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
-    _generatedRoutes = generatedRoutes;
+    _generatedRoutes = ImmutableSortedSet.copyOf(generatedRoutes);
   }
 
   /** Add a generated route. See {@link #getGeneratedRoutes} for explanation of generated routes. */
