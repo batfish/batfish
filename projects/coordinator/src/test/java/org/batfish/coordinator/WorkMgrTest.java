@@ -2694,4 +2694,33 @@ public final class WorkMgrTest {
                 new SnapshotMetadataEntry(
                     snapshot, Main.getWorkMgr().getSnapshotMetadata(network, snapshot)))));
   }
+
+  @Test
+  public void testGetSnapshotSubdirInvalid() {
+    Path root = _folder.getRoot().toPath();
+    Path s1Path = root.resolve("s1");
+    s1Path.toFile().mkdirs();
+    Path s2Path = root.resolve("s2");
+    s2Path.toFile().mkdirs();
+    CommonUtil.writeFile(s1Path.resolve("file1"), "content");
+    CommonUtil.writeFile(s2Path.resolve("file2"), "content");
+
+    // invalid because there are two top-level dirs
+    _thrown.expect(BatfishException.class);
+    WorkMgr.getSnapshotSubdir(root);
+  }
+
+  @Test
+  public void testGetSnapshotSubdirValid() {
+    Path root = _folder.getRoot().toPath();
+    Path s1Path = root.resolve("s1");
+    s1Path.toFile().mkdirs();
+    Path s2Path = root.resolve("__MACOSX"); // ignored dir
+    s2Path.toFile().mkdirs();
+    CommonUtil.writeFile(s1Path.resolve("file1"), "content");
+    CommonUtil.writeFile(s2Path.resolve("file2"), "content");
+
+    // extra dir should be ignored, and s1Path should be considered the snapshot subdir
+    assertThat(WorkMgr.getSnapshotSubdir(root), equalTo(s1Path));
+  }
 }
