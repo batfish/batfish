@@ -12,6 +12,9 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 /**
  * Network Factory -- helpful in creating test networks, as it allows child builders to
  * automatically generate names/ID for objects they create.
+ *
+ * <p>Some builders pre-populate required fields with a default (usually based on Cisco IOS, if
+ * vendor-dependent).
  */
 public class NetworkFactory {
 
@@ -90,8 +93,9 @@ public class NetworkFactory {
     return OspfArea.builder(this);
   }
 
+  /** Return an OSPF builder. Pre-defines required fields (e.g., reference bandwidth) */
   public OspfProcess.Builder ospfProcessBuilder() {
-    return OspfProcess.builder(this);
+    return OspfProcess.builder(this).setReferenceBandwidth(1e8);
   }
 
   public RipProcess.Builder ripProcessBuilder() {

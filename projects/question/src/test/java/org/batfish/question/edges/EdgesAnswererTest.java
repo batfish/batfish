@@ -201,16 +201,12 @@ public class EdgesAnswererTest {
 
   @Test
   public void testGetOspfEdges() {
-    OspfProcess ospf1 = new OspfProcess();
-    OspfProcess ospf2 = new OspfProcess();
+    OspfProcess ospf1 = OspfProcess.builder().setReferenceBandwidth(1e8).build();
+    OspfProcess ospf2 = OspfProcess.builder().setReferenceBandwidth(1e8).build();
 
     NetworkFactory nf = new NetworkFactory();
-    OspfArea one =
-        OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
-    OspfArea two =
-        OspfArea.builder(nf).setNumber(2L).setOspfProcess(ospf2).addInterface("int2").build();
-    ospf1.getAreas().put(1L, one);
-    ospf2.getAreas().put(1L, two);
+    OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
+    OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf2).addInterface("int2").build();
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setOspfProcess(ospf1);
