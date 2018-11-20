@@ -1,39 +1,43 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import javax.annotation.Nullable;
 
-public class NatPacketLocation implements Serializable {
+/** Represents how packets enter and exit a Nat */
+public final class NatPacketLocation implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  private String _interface;
+  @Nullable private String _interface;
 
-  private String _routingInstance;
+  @Nullable private String _routingInstance;
 
-  private String _zone;
+  @Nullable private String _zone;
 
+  @Nullable
   public String getInterface() {
     return _interface;
   }
 
+  @Nullable
   public String getRoutingInstance() {
     return _routingInstance;
   }
 
+  @Nullable
   public String getZone() {
     return _zone;
   }
 
-  public void setInterface(String interfaceName) {
+  public void setInterface(@Nullable String interfaceName) {
     _interface = interfaceName;
   }
 
-  public void setRoutingInstance(String routingInstance) {
+  public void setRoutingInstance(@Nullable String routingInstance) {
     _routingInstance = routingInstance;
   }
 
-  public void setZone(String zone) {
+  public void setZone(@Nullable String zone) {
     _zone = zone;
   }
 }

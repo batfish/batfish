@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
-public class NatRuleMatchDstPort implements NatRuleMatch {
+/** A {@link NatRule} that matches on destination port */
+public final class NatRuleMatchDstPort implements NatRuleMatch {
 
   private static final long serialVersionUID = 1L;
 

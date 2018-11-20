@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+/** A {@link NatRule} that matches on destination address name */
 public class NatRuleMatchDstAddrName implements NatRuleMatch {
 
   private static final long serialVersionUID = 1L;

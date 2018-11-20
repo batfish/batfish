@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Nat implements Serializable {
+/** Represents a Juniper Nat */
+public final class Nat implements Serializable {
 
   public enum Type {
     DESTINATION,
@@ -12,7 +13,6 @@ public class Nat implements Serializable {
     STATIC
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Map<String, NatPool> _pools;
