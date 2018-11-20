@@ -359,7 +359,7 @@ ife_interface_mode
 
 ife_native_vlan_id
 :
-   NATIVE_VLAN_ID name = variable
+   NATIVE_VLAN_ID id = DEC
 ;
 
 ife_port_mode

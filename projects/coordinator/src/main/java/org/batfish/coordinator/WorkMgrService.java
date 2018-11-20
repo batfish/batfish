@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
@@ -1478,7 +1479,17 @@ public class WorkMgrService {
         return failureResponse("work with the specified id does not exist or is not inaccessible");
       }
 
-      checkNetworkAccessibility(apiKey, work.getWorkItem().getContainerName());
+      String networkId = work.getWorkItem().getContainerName();
+      Optional<String> networkOpt =
+          Main.getWorkMgr()
+              .getNetworkNames()
+              .stream()
+              .filter(
+                  n -> Main.getWorkMgr().getIdManager().getNetworkId(n).getId().equals(networkId))
+              .findFirst();
+      checkArgument(networkOpt.isPresent(), "Invalid network ID: %s", networkId);
+
+      checkNetworkAccessibility(apiKey, networkOpt.get());
 
       String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
 

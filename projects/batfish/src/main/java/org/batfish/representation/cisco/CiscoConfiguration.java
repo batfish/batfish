@@ -1194,11 +1194,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(
-          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
+      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
-    } else {
-      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1454,7 +1451,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1) {
       multipathEbgp = true;
     }
     if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
@@ -2301,7 +2298,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
-        new org.batfish.datamodel.ospf.OspfProcess();
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setReferenceBandwidth(proc.getReferenceBandwidth())
+            .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getMaxMetricRouterLsa()) {
@@ -2422,6 +2421,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+
     // set pointers from interfaces to their parent areas
     newProcess
         .getAreas()
@@ -2467,7 +2467,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           route.setNetwork(Prefix.ZERO);
           route.setAdmin(MAX_ADMINISTRATIVE_COST);
           route.setGenerationPolicy(defaultOriginateMapName);
-          newProcess.getGeneratedRoutes().add(route.build());
+          newProcess.addGeneratedRoute(route.build());
         }
       } else if (proc.getDefaultInformationOriginateAlways()) {
         useAggregateDefaultOnly = true;
@@ -2475,7 +2475,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         GeneratedRoute.Builder route = new GeneratedRoute.Builder();
         route.setNetwork(Prefix.ZERO);
         route.setAdmin(MAX_ADMINISTRATIVE_COST);
-        newProcess.getGeneratedRoutes().add(route.build());
+        newProcess.addGeneratedRoute(route.build());
       } else {
         // do not generate an aggregate default route;
         // just redistribute any existing default route with the new metric
@@ -2490,7 +2490,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefault.setGuard(ospfExportDefaultConditions);
     }
 
-    newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
       routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());

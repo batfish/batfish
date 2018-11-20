@@ -1,20 +1,29 @@
 package org.batfish.storage;
 
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
+import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
@@ -187,5 +196,77 @@ public final class FileBasedStorageTest {
 
     _thrown.expect(FileNotFoundException.class);
     assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+  }
+
+  @Test
+  public void testMkdirs() throws IOException {
+    Path dir = _folder.newFolder().toPath().resolve("parentDir").resolve("subDir");
+
+    // Confirm mkdirs creates the non-existent dir
+    mkdirs(dir);
+    assertThat(dir.toFile(), anExistingDirectory());
+  }
+
+  /**
+   * Run multiple threads trying to create the same dir, many times. Goal here is for mkdirs to not
+   * throw an exception.
+   */
+  @Test
+  public void testMkdirsConcurrency() throws Exception {
+    int numThreads = 2;
+    // Try many times, since false negatives are possible
+    int numTries = 100;
+
+    final Path dir = _folder.newFolder().toPath().resolve("testDir");
+    final CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    final AtomicInteger exceptions = new AtomicInteger(0);
+    List<Thread> threads = new ArrayList<>();
+
+    for (int i = 0; i < numTries; i++) {
+      for (int j = 0; j < numThreads; j++) {
+        Thread thread =
+            new Thread(
+                () -> {
+                  try {
+                    // Wait until all threads are at the barrier
+                    barrier.await();
+                    mkdirs(dir);
+                  } catch (Exception e) {
+                    // Track exceptions with int since they are not directly surfaced
+                    exceptions.addAndGet(1);
+                    throw new BatfishException(e.getMessage());
+                  }
+                });
+        threads.add(thread);
+        thread.start();
+      }
+      for (Thread thread : threads) {
+        thread.join();
+      }
+      Files.delete(dir);
+    }
+
+    // Confirm mkdirs runs successfully even with multiple concurrent calls
+    assertThat(exceptions.get(), equalTo(0));
+  }
+
+  @Test
+  public void testMkdirsExists() throws IOException {
+    Path dir = _folder.newFolder().toPath();
+
+    // Confirm mkdirs succeeds when the dir already exists
+    mkdirs(dir);
+    assertThat(dir.toFile(), anExistingDirectory());
+  }
+
+  @Test
+  public void testMkdirsFail() throws IOException {
+    File parentDir = _folder.newFolder();
+    parentDir.setReadOnly();
+    Path dir = parentDir.toPath().resolve("testDir");
+
+    // Confirm mkdirs throws when creating a dir within a read-only dir
+    _thrown.expectMessage(containsString("Unable to create directory"));
+    mkdirs(dir);
   }
 }

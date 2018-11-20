@@ -59,7 +59,7 @@ public class OspfArea implements Serializable {
               _summaries.build(),
               _summaryFilter);
       if (_ospfProcess != null) {
-        _ospfProcess.getAreas().put(number, ospfArea);
+        _ospfProcess.addArea(ospfArea);
       }
       return ospfArea;
     }

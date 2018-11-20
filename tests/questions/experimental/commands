@@ -21,6 +21,9 @@ test -raw tests/questions/experimental/detectLoops.ref validate-template detectL
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
 
+# validate loopbackMultipathConsistency
+test -raw tests/questions/experimental/loopbackMultipathConsistency.ref validate-template loopbackMultipathConsistency maxTraces=1
+
 # validate interfaceMtu
 test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaces='Gig.*', mtuBytes=0, nodes='as1core2'
 
@@ -74,6 +77,9 @@ test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-templat
 
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
+
+# validate subnetMultipathConsistency
+test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
 
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
