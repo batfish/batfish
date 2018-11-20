@@ -1,9 +1,9 @@
 package org.batfish.specifier;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -49,7 +49,7 @@ public final class TypeNameRegexInterfaceSpecifier implements InterfaceSpecifier
       return false;
     }
     TypeNameRegexInterfaceSpecifier that = (TypeNameRegexInterfaceSpecifier) o;
-    return Objects.equal(_interfaceTypes, that._interfaceTypes);
+    return Objects.equals(_interfaceTypes, that._interfaceTypes);
   }
 
   @Override
