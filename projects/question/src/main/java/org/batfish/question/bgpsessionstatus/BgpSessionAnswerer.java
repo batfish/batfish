@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +16,6 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -62,9 +60,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
   }
 
   static @Nullable NodeInterfacePair getInterface(Configuration config, Ip localIp) {
-    Optional<Interface> iface = CommonUtil.getActiveInterfaceWithIp(localIp, config);
-    return iface
-        .map(anInterface -> new NodeInterfacePair(config.getHostname(), iface.get().getName()))
+    return CommonUtil.getActiveInterfaceWithIp(localIp, config)
+        .map(iface -> new NodeInterfacePair(config.getHostname(), iface.getName()))
         .orElse(null);
   }
 
