@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import com.google.common.collect.Multimap;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,6 +66,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
   }
 
+  /** Information about duplicate hostnames is collected here */
+  private Multimap<String, String> _duplicateHostnames;
+
   /** The name of the parsed file, relative to the testrig base. */
   private String _filename;
 
@@ -81,13 +85,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       String fileText,
       String filename,
       Warnings warnings,
-      ConfigurationFormat configurationFormat) {
+      ConfigurationFormat configurationFormat,
+      Multimap<String, String> duplicateHostnames) {
     super(settings);
     _fileText = fileText;
     _filename = filename;
     _ptSentences = new ParseTreeSentences();
     _warnings = warnings;
     _format = configurationFormat;
+    _duplicateHostnames = duplicateHostnames;
   }
 
   @SuppressWarnings("fallthrough")
@@ -162,7 +168,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         vc.setFilename(_filename);
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
-            elapsedTime, _logger.getHistory(), _filename, vc, _warnings, _ptSentences);
+            elapsedTime,
+            _logger.getHistory(),
+            _filename,
+            vc,
+            _warnings,
+            _ptSentences,
+            _duplicateHostnames);
 
       case VYOS:
         if (_settings.flattenOnTheFly()) {
@@ -387,6 +399,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ParseVendorConfigurationResult(
-        elapsedTime, _logger.getHistory(), _filename, vc, _warnings, _ptSentences);
+        elapsedTime,
+        _logger.getHistory(),
+        _filename,
+        vc,
+        _warnings,
+        _ptSentences,
+        _duplicateHostnames);
   }
 }

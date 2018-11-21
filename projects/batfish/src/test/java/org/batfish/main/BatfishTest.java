@@ -53,6 +53,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
+import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -152,6 +153,42 @@ public class BatfishTest {
     assertThat(
         configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
+  }
+
+  @Test
+  public void testInitTestrigWithDuplicateHostnames() throws IOException {
+    // rtr1 and rtr2 have the same hostname
+    String testrigResourcePrefix = "org/batfish/main/snapshots/duplicate_hostnames";
+    List<String> configurationNames = ImmutableList.of("rtr1", "rtr2", "rtr3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .build(),
+            _folder);
+
+    // We should get all three configs, with modified hostnames for the first two
+    assertThat(
+        batfish.loadConfigurations().keySet(),
+        containsInAnyOrder(
+            ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
+            ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
+            "rtr3"));
+
+    // hostnames are unique in rtr1 and rtr2
+    String testrigResourcePrefix2 = "org/batfish/main/snapshots/duplicate_hostnames2";
+    List<String> configurationNames2 = ImmutableList.of("rtr1", "rtr2");
+
+    Batfish batfish2 =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix2, configurationNames2)
+                .build(),
+            _folder);
+
+    // we should get only two configs, with real names -- no memory of old duplicates
+    assertThat(batfish2.loadConfigurations().keySet(), equalTo(ImmutableSet.of("rtr1", "rtr2")));
   }
 
   @Test
