@@ -1041,6 +1041,7 @@
         "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
+        "hosts/hostEmpty.json" : "EMPTY",
         "iptables/host1.iptables" : "PASSED",
         "iptables/host2.iptables" : "PASSED"
       },
@@ -68184,6 +68185,7 @@
         "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
+        "hosts/hostEmpty.json" : "EMPTY",
         "iptables/host1.iptables" : "PASSED",
         "iptables/host2.iptables" : "PASSED"
       }
