@@ -1,5 +1,7 @@
 package org.batfish.grammar.routing_table.ios;
 
+import static org.batfish.datamodel.Route.AMBIGUOUS_NEXT_HOP;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,8 +159,12 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
       if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         rb.setNextHopIp(nextHopIp);
         Set<String> nextHops = _ipOwners.get(nextHopIp);
-        if (nextHops != null && nextHops.size() == 1) {
-          rb.setNextHop(nextHops.iterator().next());
+        if (nextHops != null) {
+          if (nextHops.size() == 1) {
+            rb.setNextHop(nextHops.iterator().next());
+          } else if (nextHops.size() > 1) {
+            rb.setNextHop(AMBIGUOUS_NEXT_HOP);
+          }
         }
       }
       if (nextHopInterface != null) {
