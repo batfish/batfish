@@ -63053,7 +63053,7 @@
                 180,
                 181
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "lbpp" : {
               "definitionLines" : [
@@ -66669,6 +66669,11 @@
             "export-loopback" : {
               "bgp export policy-statement" : [
                 120
+              ]
+            },
+            "fabric" : {
+              "routing-instance vrf-import" : [
+                203
               ]
             },
             "lbpp" : {

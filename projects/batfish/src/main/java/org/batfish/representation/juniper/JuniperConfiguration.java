@@ -2534,7 +2534,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
         JuniperStructureUsage.GENERATED_ROUTE_POLICY,
         JuniperStructureUsage.OSPF_EXPORT_POLICY,
-        JuniperStructureUsage.POLICY_STATEMENT_POLICY);
+        JuniperStructureUsage.POLICY_STATEMENT_POLICY,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,

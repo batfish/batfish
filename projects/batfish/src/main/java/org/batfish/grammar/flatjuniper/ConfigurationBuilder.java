@@ -55,6 +55,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
@@ -349,6 +351,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_aggregateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
@@ -4398,6 +4402,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRi_named_routing_instance(Ri_named_routing_instanceContext ctx) {
     _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
+  }
+
+  @Override
+  public void exitRi_vrf_export(Ri_vrf_exportContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_EXPORT, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitRi_vrf_import(Ri_vrf_importContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
   }
 
   @Override
