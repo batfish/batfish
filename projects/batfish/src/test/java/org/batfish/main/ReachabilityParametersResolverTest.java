@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -33,7 +32,6 @@ import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -112,40 +110,6 @@ public class ReachabilityParametersResolverTest {
     exception.expectMessage("Empty destination IpSpace");
     new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot)
         .resolveDestinationIpSpace();
-  }
-
-  @Test
-  public void testResolveNodes_null() throws InvalidReachabilityParametersException {
-    ReachabilityParameters reachabilityParameters =
-        ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPTED))
-            .setFinalNodesSpecifier(null)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
-            .setSourceLocationSpecifier(
-                new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("")))
-            .build();
-    ReachabilityParametersResolver resolver =
-        new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot);
-    assertThat(
-        resolver.resolveNodes("foo", reachabilityParameters.getFinalNodesSpecifier()),
-        equalTo(ImmutableSet.of()));
-  }
-
-  @Test
-  public void testResolveNodes_noMatch() throws InvalidReachabilityParametersException {
-    ReachabilityParameters reachabilityParameters =
-        ReachabilityParameters.builder()
-            .setActions(ImmutableSortedSet.of(ACCEPTED))
-            .setFinalNodesSpecifier(NoNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
-            .setSourceLocationSpecifier(
-                new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("")))
-            .build();
-    ReachabilityParametersResolver resolver =
-        new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot);
-    exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("No nodes match foo specifier");
-    resolver.resolveNodes("foo", reachabilityParameters.getFinalNodesSpecifier());
   }
 
   @Test

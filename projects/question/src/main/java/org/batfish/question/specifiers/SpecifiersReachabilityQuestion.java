@@ -1,6 +1,7 @@
 package org.batfish.question.specifiers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -72,12 +73,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   SpecifiersReachabilityQuestion() {
-    this(
-        DispositionSpecifier.SUCCESS_SPECIFIER,
-        PacketHeaderConstraints.unconstrained(),
-        false,
-        TracePruner.DEFAULT_MAX_TRACES,
-        PathConstraintsInput.unconstrained());
+    this(null, null, null, null, null);
   }
 
   @Nonnull
@@ -120,27 +116,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   PathConstraints getPathConstraints() {
-    PathConstraints.Builder builder =
-        PathConstraints.builder()
-            .withStartLocation(
-                LOCATION_SPECIFIER_FACTORY.buildLocationSpecifier(
-                    _pathConstraints.getStartLocation()))
-            .withEndLocation(
-                NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getEndLocation()));
-    /*
-     * Explicit check for null, because null expands into ALL nodes, which is usually not the
-     * desired behavior for waypointing constraints
-     */
-
-    if (_pathConstraints.getTransitLocations() != null) {
-      builder.through(
-          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getTransitLocations()));
-    }
-    if (_pathConstraints.getForbiddenLocations() != null) {
-      builder.avoid(
-          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getForbiddenLocations()));
-    }
-    return builder.build();
+    return createPathConstraints(_pathConstraints);
   }
 
   @Override
