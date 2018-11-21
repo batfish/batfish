@@ -119,6 +119,11 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     if (format == ConfigurationFormat.UNKNOWN) {
       format = VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
     }
+
+    if (_fileText.trim().isEmpty()) {
+      format = ConfigurationFormat.EMPTY;
+    }
+
     switch (format) {
       case EMPTY:
         _warnings.redFlag("Empty file: '" + _filename + "'\n");
