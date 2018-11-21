@@ -1,6 +1,9 @@
 package org.batfish.representation.juniper;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /** A {@link NatRule} that matches on destination port */
+@ParametersAreNonnullByDefault
 public final class NatRuleMatchDstPort implements NatRuleMatch {
 
   private static final long serialVersionUID = 1L;

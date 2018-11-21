@@ -3,8 +3,11 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents a Juniper Nat */
+@ParametersAreNonnullByDefault
 public final class Nat implements Serializable {
 
   public enum Type {
@@ -27,14 +30,17 @@ public final class Nat implements Serializable {
     _ruleSets = new TreeMap<>();
   }
 
+  @Nonnull
   public Map<String, NatPool> getPools() {
     return _pools;
   }
 
+  @Nonnull
   public Map<String, NatRuleSet> getRuleSets() {
     return _ruleSets;
   }
 
+  @Nonnull
   public Type getType() {
     return _type;
   }

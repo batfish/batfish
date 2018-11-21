@@ -1,10 +1,13 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 /** Represents Juniper nat pools */
+@ParametersAreNonnullByDefault
 public final class NatPool implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -18,10 +21,12 @@ public final class NatPool implements Serializable {
     _toAddress = Prefix.ZERO.getEndIp();
   }
 
+  @Nonnull
   public Ip getFromAddress() {
     return _fromAddress;
   }
 
+  @Nonnull
   public Ip getToAddress() {
     return _toAddress;
   }
