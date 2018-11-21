@@ -31,6 +31,10 @@ crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
 crypto ipsec transform-set ts2 esp-aes 256 esp-sha-hmac
  mode tunnel
 !
+crypto ipsec profile ipsec-profile
+ set transform-set ts1
+ set pfs group2
+!
 crypto map mymap 20 ipsec-isakmp
  match address ACL
  set transform-set ts1 ts2
@@ -53,3 +57,12 @@ interface TenGigabitEthernet0/0
 interface TenGigabitEthernet0/1
  ip address 2.3.4.7 255.255.255.0
  crypto map mysecondmap
+!
+interface Tunnel21
+ ip address 11.12.13.17 255.255.255.0
+ shutdown
+ tunnel source 2.3.4.6
+ tunnel mode ipsec ipv4
+ tunnel destination 2.3.4.8
+ tunnel protection ipsec profile ipsec-profile
+!
