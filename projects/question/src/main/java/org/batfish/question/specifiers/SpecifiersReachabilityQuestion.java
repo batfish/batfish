@@ -17,14 +17,10 @@ import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifierFactory;
-import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
  * A version of reachability question that supports {@link LocationSpecifier location} and {@link
@@ -36,11 +32,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
-
-  private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
-      LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
-  private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
-      NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
