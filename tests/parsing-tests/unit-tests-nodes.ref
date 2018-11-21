@@ -16128,7 +16128,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "irb.5"
             ],
@@ -16929,7 +16929,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "irb.10"
             ],
@@ -16958,7 +16958,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "irb.20"
             ],
