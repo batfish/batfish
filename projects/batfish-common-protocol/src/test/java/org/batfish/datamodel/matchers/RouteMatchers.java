@@ -46,8 +46,7 @@ public final class RouteMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * Route}'s nextHopInterface.
    */
-  public static @Nonnull HasNextHop hasNextHop(
-      @Nonnull Matcher<? super String> subMatcher) {
+  public static @Nonnull HasNextHop hasNextHop(@Nonnull Matcher<? super String> subMatcher) {
     return new HasNextHop(subMatcher);
   }
 
