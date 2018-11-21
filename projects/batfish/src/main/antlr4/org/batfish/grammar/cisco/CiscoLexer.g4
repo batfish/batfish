@@ -14,6 +14,7 @@ private boolean enableCOMMUNITY_LIST_NUM = false;
 private boolean enableREGEX = false;
 private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
+private boolean _asa = false;
 private boolean _foundry = false;
 private boolean _cadant = false;
 
@@ -23,6 +24,10 @@ public void emit(Token token) {
     if (token.getChannel() != HIDDEN) {
        lastTokenType = token.getType();
     }
+}
+
+public void setAsa(boolean asa) {
+   _asa = asa;
 }
 
 public void setCadant(boolean cadant) {
@@ -5755,7 +5760,7 @@ INTERCEPT
 INTERFACE
 :
    'int' 'erface'?
-   { enableIPV6_ADDRESS = false; if (!_inAccessList) {pushMode(M_Interface);}}
+   { enableIPV6_ADDRESS = false; if (!_asa || lastTokenType == NEWLINE || lastTokenType == -1) {pushMode(M_Interface);}}
 
 ;
 

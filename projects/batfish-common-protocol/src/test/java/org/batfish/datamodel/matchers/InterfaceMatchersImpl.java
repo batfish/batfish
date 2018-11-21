@@ -216,6 +216,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasIncomingFilter extends FeatureMatcher<Interface, IpAccessList> {
+    HasIncomingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(subMatcher, "an Interface with incomingFilter:", "incomingFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getIncomingFilter();
+    }
+  }
+
   static final class HasOutgoingFilter extends FeatureMatcher<Interface, IpAccessList> {
     HasOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
       super(subMatcher, "an Interface with outgoingFilter:", "outgoingFilter");

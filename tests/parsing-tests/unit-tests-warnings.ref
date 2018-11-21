@@ -58,7 +58,7 @@
       },
       {
         "Filename" : "asa_acl",
-        "Line" : 7,
+        "Line" : 9,
         "Text" : "interface outside",
         "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

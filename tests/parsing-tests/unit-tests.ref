@@ -7123,6 +7123,13 @@
           "sentences" : [
             "(cisco_configuration",
             "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
             "      VARIABLE:'asa_acl'",
@@ -58329,7 +58336,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 7,
+              "Line" : 9,
               "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "interface outside"
             }
@@ -59138,13 +59145,13 @@
           "extended ipv4 access-list" : {
             "outside" : {
               "definitionLines" : [
-                7
+                9
               ],
               "numReferrers" : 0
             },
             "outside_in" : {
               "definitionLines" : [
-                4
+                6
               ],
               "numReferrers" : 0
             }
@@ -59152,7 +59159,7 @@
           "standard ipv4 access-list" : {
             "Local_LAN_Access" : {
               "definitionLines" : [
-                5
+                7
               ],
               "numReferrers" : 0
             }
@@ -63313,7 +63320,7 @@
           "object-group network" : {
             "drawbridge_hosts" : {
               "extended access-list network object-group" : [
-                7
+                9
               ]
             }
           }
@@ -65959,7 +65966,7 @@
           "object-group network" : {
             "drawbridge_hosts" : {
               "extended access-list network object-group" : [
-                7
+                9
               ]
             }
           }
