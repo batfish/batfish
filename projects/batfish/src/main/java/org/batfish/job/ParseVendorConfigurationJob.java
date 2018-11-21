@@ -120,7 +120,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       format = VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
     }
 
-    if (_fileText.length() == 0) {
+    if (_fileText.trim().isEmpty()) {
       format = ConfigurationFormat.EMPTY;
     }
 
