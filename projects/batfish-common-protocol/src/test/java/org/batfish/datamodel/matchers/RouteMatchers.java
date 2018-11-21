@@ -16,6 +16,7 @@ import org.batfish.datamodel.matchers.RouteMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.RouteMatchersImpl.HasProtocol;
 import org.hamcrest.Matcher;
 
+/** Matchers for {@link Route}. */
 public final class RouteMatchers {
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
