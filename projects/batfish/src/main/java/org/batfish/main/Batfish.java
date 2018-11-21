@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
@@ -3861,52 +3860,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
     IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
     Set<String> finalNodes = parameters.getFinalNodes();
-    Set<FlowDisposition> dropDispositions =
+    Set<FlowDisposition> failureDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.LOOP,
+            FlowDisposition.INSUFFICIENT_INFO,
+            FlowDisposition.NEIGHBOR_UNREACHABLE,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
+    Set<FlowDisposition> successDispositions =
+        ImmutableSet.of(
+            FlowDisposition.ACCEPTED,
+            FlowDisposition.DELIVERED_TO_SUBNET,
+            FlowDisposition.EXITS_NETWORK);
     Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
     Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
-    Map<IngressLocation, BDD> acceptedBDDs =
+    Map<IngressLocation, BDD> successBdds =
         bddReachabilityAnalysisFactory.getAllBDDs(
             srcIpSpaceAssignment,
             parameters.getHeaderSpace(),
             forbiddenTransitNodes,
             requiredTransitNodes,
             finalNodes,
-            ImmutableSet.of(FlowDisposition.ACCEPTED));
-    Map<IngressLocation, BDD> droppedBDDs =
+            successDispositions);
+    Map<IngressLocation, BDD> failureBdds =
         bddReachabilityAnalysisFactory.getAllBDDs(
             srcIpSpaceAssignment,
             parameters.getHeaderSpace(),
             forbiddenTransitNodes,
             requiredTransitNodes,
             finalNodes,
-            dropDispositions);
-    Map<IngressLocation, BDD> neighborUnreachableBDDs =
-        bddReachabilityAnalysisFactory.getAllBDDs(
-            srcIpSpaceAssignment,
-            parameters.getHeaderSpace(),
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            finalNodes,
-            ImmutableSet.of(
-                FlowDisposition.NEIGHBOR_UNREACHABLE,
-                FlowDisposition.DELIVERED_TO_SUBNET,
-                FlowDisposition.EXITS_NETWORK,
-                FlowDisposition.INSUFFICIENT_INFO));
+            failureDispositions);
 
-    String flowTag = getFlowTag();
-    return Streams.concat(
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, droppedBDDs).stream(),
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
-                .stream(),
-            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
-                .stream())
-        .collect(ImmutableSet.toImmutableSet());
+    return ImmutableSet.copyOf(
+        computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
   }
 
   @Nonnull
