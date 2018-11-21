@@ -2321,6 +2321,12 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNatSource() throws IOException {
+    parseConfig("nat-source");
+    // TODO: finish this test after conversion of source nat to vi model
+  }
+
+  @Test
   public void testOspfInterfaceAreaAssignment() throws IOException {
     Configuration c = parseConfig("ospfInterfaceAreaAssignment");
 
