@@ -5518,9 +5518,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // Should never get here with valid config, ASA prevents referencing a non-existant iface here
       _w.redFlag(
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
-      iface = new Interface(ifaceName, _configuration);
-      initInterface(iface, _configuration.getVendor());
-      _configuration.getInterfaces().put(ifaceName, iface);
+      return;
     }
     CiscoStructureUsage usage = null;
     String aclName = ctx.name.getText();
