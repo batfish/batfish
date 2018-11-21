@@ -470,6 +470,11 @@ AUTHORIZED_KEYS_COMMAND_USER
    'authorized-keys-command-user'
 ;
 
+AUTO
+:
+   'auto'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -628,6 +633,11 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT
+:
+   'client'
 ;
 
 CLIENT_ALIVE_COUNT_MAX
@@ -809,6 +819,11 @@ DEFAULT_ADDRESS_SELECTION
    'default-address-selection'
 ;
 
+DEFAULT_GATEWAY
+:
+   'default-gateway'
+;
+
 DEFAULT_LSA
 :
    'default-lsa'
@@ -857,6 +872,11 @@ DES_CBC
 DESCRIPTION
 :
    'description' -> pushMode ( M_Description )
+;
+
+DESIGNATED_FORWARDER_ELECTION_HOLD_TIME
+:
+   'designated-forwarder-election-hold-time'
 ;
 
 DESTINATION
@@ -1134,6 +1154,11 @@ EVENT_OPTIONS
    'event-options'
 ;
 
+EVPN
+:
+   'evpn'
+;
+
 EXACT
 :
    'exact'
@@ -1172,6 +1197,11 @@ EXPORT_RIB
 EXPRESSION
 :
    'expression'
+;
+
+EXTENDED_VNI_LIST
+:
+   'extended-vni-list'
 ;
 
 EXTENSIBLE_SUBSCRIBER
@@ -1797,6 +1827,11 @@ INFO_REQUEST
 INGRESS
 :
   'ingress'
+;
+
+INGRESS_REPLICATION
+:
+  'ingress-replication'
 ;
 
 INNER
@@ -3496,6 +3531,11 @@ MULTICAST_MAC
    'multicast-mac' -> pushMode ( M_MacAddress )
 ;
 
+MULTICAST_MODE
+:
+   'multicast-mode'
+;
+
 MULTIHOP
 :
    'multihop'
@@ -3719,6 +3759,11 @@ NO_EXPORT
 NO_FLOW_CONTROL
 :
    'no-flow-control'
+;
+
+NO_GATEWAY_COMMUNITY
+:
+   'no-gateway-community'
 ;
 
 NO_INSTALL
@@ -4316,6 +4361,11 @@ PROXY_IDENTITY
    'proxy-identity'
 ;
 
+PROXY_MACIP_ADVERTISEMENT
+:
+   'proxy-macip-advertisement'
+;
+
 PSH
 :
    'psh'
@@ -4576,6 +4626,11 @@ ROUTE_DISTINGUISHER
    'route-distinguisher' -> pushMode ( M_RouteDistinguisher )
 ;
 
+ROUTE_DISTINGUISHER_ID
+:
+   'route-distinguisher-id'
+;
+
 ROUTE_FILTER
 :
    'route-filter'
@@ -4809,6 +4864,11 @@ SHARED_IKE_ID
 SHORTCUTS
 :
    'shortcuts'
+;
+
+SIGNALING
+:
+   'signaling'
 ;
 
 SIMPLE
@@ -5460,6 +5520,16 @@ VLAN_TAGGING
    'vlan-tagging'
 ;
 
+VNI
+:
+   'vni'
+;
+
+VNI_OPTIONS
+:
+   'vni-options'
+;
+
 VPLS
 :
    'vpls'
@@ -5513,6 +5583,16 @@ VRRP_GROUP
 VSTP
 :
    'vstp'
+;
+
+VTEP_SOURCE_INTERFACE
+:
+   'vtep-source-interface'
+;
+
+VXLAN
+:
+   'vxlan'
 ;
 
 WEB_MANAGEMENT

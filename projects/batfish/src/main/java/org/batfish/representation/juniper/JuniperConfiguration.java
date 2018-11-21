@@ -2525,7 +2525,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
         JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
         JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
-        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE);
+        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        JuniperStructureUsage.VTEP_SOURCE_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,
@@ -2533,7 +2534,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
         JuniperStructureUsage.GENERATED_ROUTE_POLICY,
         JuniperStructureUsage.OSPF_EXPORT_POLICY,
-        JuniperStructureUsage.POLICY_STATEMENT_POLICY);
+        JuniperStructureUsage.POLICY_STATEMENT_POLICY,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
