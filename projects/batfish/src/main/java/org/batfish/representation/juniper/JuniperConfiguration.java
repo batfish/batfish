@@ -114,6 +114,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -212,6 +213,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private transient Interface _lo0;
 
   private transient boolean _lo0Initialized;
+
+  @Nullable private Nat _natDestination = null;
+
+  @Nullable private Nat _natSource = null;
+
+  @Nullable private Nat _natStatic = null;
 
   private final Map<String, NodeDevice> _nodeDevices;
 
@@ -927,6 +934,40 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public JuniperFamily getJf() {
     return _jf;
+  }
+
+  public Nat getNatDestination() {
+    return _natDestination;
+  }
+
+  public Nat getNatSource() {
+    return _natSource;
+  }
+
+  public Nat getNatStatic() {
+    return _natStatic;
+  }
+
+  public Nat getOrCreateNat(Nat.Type natType) {
+    switch (natType) {
+      case DESTINATION:
+        if (_natDestination == null) {
+          _natDestination = new Nat(Type.DESTINATION);
+        }
+        return _natDestination;
+      case SOURCE:
+        if (_natSource == null) {
+          _natSource = new Nat(Type.SOURCE);
+        }
+        return _natSource;
+      case STATIC:
+        if (_natStatic == null) {
+          _natStatic = new Nat(Type.STATIC);
+        }
+        return _natStatic;
+      default:
+        throw new IllegalArgumentException("Unknnown nat type " + natType);
+    }
   }
 
   public Map<String, NodeDevice> getNodeDevices() {
@@ -2423,6 +2464,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    // destination nats
+    if (_natDestination != null) {
+      _w.unimplemented("Destination NAT is not currently implemented");
+    }
+
+    // source nats
+    if (_natSource != null) {
+      _w.unimplemented("Source NAT is not currently implemented");
+    }
+
+    // static nats
+    if (_natStatic != null) {
+      _w.unimplemented("Static NAT is not currently implemented");
+    }
+
     // mark forwarding table export policy if it exists
     String forwardingTableExportPolicyName =
         _defaultRoutingInstance.getForwardingTableExportPolicy();
@@ -2502,6 +2558,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL);
     markConcreteStructure(
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY);
+
+    markConcreteStructure(
+        JuniperStructureType.NAT_POOL,
+        JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
 
     warnEmptyPrefixLists();
 
