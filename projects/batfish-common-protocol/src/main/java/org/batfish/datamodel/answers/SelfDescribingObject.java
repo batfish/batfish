@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,17 +16,32 @@ import org.batfish.common.util.BatfishObjectMapper;
 @ParametersAreNonnullByDefault
 public class SelfDescribingObject {
 
+  static final String PROP_NAME = "name";
   static final String PROP_SCHEMA = "schema";
   static final String PROP_VALUE = "value";
 
-  @Nonnull private Schema _schema;
-  @Nullable private Object _value;
+  @Nullable private final String _name;
+  @Nonnull private final Schema _schema;
+  @Nullable private final Object _value;
 
-  public SelfDescribingObject(
-      @JsonProperty(PROP_SCHEMA) Schema schema, @Nullable @JsonProperty(PROP_VALUE) Object value) {
+  @JsonCreator
+  static @Nonnull SelfDescribingObject create(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_SCHEMA) Schema schema,
+      @Nullable @JsonProperty(PROP_VALUE) Object value) {
+    return new SelfDescribingObject(name, schema, value);
+  }
+
+  public SelfDescribingObject(Schema schema, @Nullable Object value) {
+    this(null, schema, value);
+  }
+
+  @JsonCreator
+  public SelfDescribingObject(@Nullable String name, Schema schema, @Nullable Object value) {
     checkArgument(schema != null, "'schema' cannot be null");
     checkArgument(
         SchemaUtils.isValidObject(value, schema), "'object' is not consistent with 'schema'");
+    _name = name;
     _schema = schema;
     _value = value;
   }
@@ -39,7 +55,15 @@ public class SelfDescribingObject {
       return false;
     }
     SelfDescribingObject rhs = (SelfDescribingObject) obj;
-    return _schema.equals(rhs._schema) && Objects.equals(_value, rhs._value);
+    return Objects.equals(_name, rhs._name)
+        && _schema.equals(rhs._schema)
+        && Objects.equals(_value, rhs._value);
+  }
+
+  @Nullable
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
   @JsonProperty(PROP_SCHEMA)
@@ -47,6 +71,7 @@ public class SelfDescribingObject {
     return _schema;
   }
 
+  @Nullable
   @JsonProperty(PROP_VALUE)
   public Object getValue() {
     return _value;
@@ -60,11 +85,15 @@ public class SelfDescribingObject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_schema, _value);
+    return Objects.hash(_name, _schema, _value);
   }
 
   @Override
   public String toString() {
-    return toStringHelper(getClass()).add(PROP_SCHEMA, _schema).add(PROP_VALUE, _value).toString();
+    return toStringHelper(getClass())
+        .add(PROP_NAME, _name)
+        .add(PROP_SCHEMA, _schema)
+        .add(PROP_VALUE, _value)
+        .toString();
   }
 }
