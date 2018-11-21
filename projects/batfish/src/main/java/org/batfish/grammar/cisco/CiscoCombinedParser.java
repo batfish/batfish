@@ -43,6 +43,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       default:
         throw new BatfishException("Should not be possible");
     }
+    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
     boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
