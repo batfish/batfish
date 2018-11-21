@@ -33,6 +33,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_HEADER_CONSTRAINT = "headers";
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
+  private static final String PROP_INVERT_SEARCH = "invertSearch";
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
 
@@ -44,6 +45,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   private final boolean _ignoreFilters;
+  private final boolean _invertSearch;
   private final int _maxTraces;
   @Nonnull private final PathConstraintsInput _pathConstraints;
 
@@ -62,22 +64,19 @@ public final class SpecifiersReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
       @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
+      @Nullable @JsonProperty(PROP_INVERT_SEARCH) Boolean invertSearch,
       @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
       @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
     _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _ignoreFilters = firstNonNull(ignoreFilters, false);
+    _invertSearch = firstNonNull(invertSearch, false);
     _maxTraces = firstNonNull(maxTraces, TracePruner.DEFAULT_MAX_TRACES);
     _pathConstraints = firstNonNull(pathConstraints, PathConstraintsInput.unconstrained());
   }
 
   SpecifiersReachabilityQuestion() {
-    this(
-        DispositionSpecifier.SUCCESS_SPECIFIER,
-        PacketHeaderConstraints.unconstrained(),
-        false,
-        TracePruner.DEFAULT_MAX_TRACES,
-        PathConstraintsInput.unconstrained());
+    this(null, null, null, null, null, null);
   }
 
   @Nonnull
@@ -95,6 +94,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
   @JsonProperty(PROP_IGNORE_FILTERS)
   public boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  @JsonProperty(PROP_INVERT_SEARCH)
+  public boolean getInvertSearch() {
+    return _invertSearch;
   }
 
   @JsonProperty(PROP_MAX_TRACES)
@@ -170,6 +174,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
         .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
         .setHeaderSpace(getHeaderSpace())
         .setIgnoreFilters(getIgnoreFilters())
+        .setInvertSearch(getInvertSearch())
         .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
         .setSourceLocationSpecifier(pathConstraints.getStartLocation())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
@@ -186,9 +191,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
   static final class Builder {
     private DispositionSpecifier _actions;
     private PacketHeaderConstraints _headerConstraints;
+    private Boolean _ignoreFilters;
+    private Boolean _invertSearch;
     private Integer _maxTraces;
     private PathConstraintsInput _pathConstraints;
-    private Boolean _ignoreFilters;
 
     private Builder() {}
 
@@ -207,6 +213,11 @@ public final class SpecifiersReachabilityQuestion extends Question {
       return this;
     }
 
+    public Builder setInvertSearch(boolean invertSearch) {
+      _invertSearch = invertSearch;
+      return this;
+    }
+
     public Builder setMaxTraces(Integer maxTraces) {
       _maxTraces = maxTraces;
       return this;
@@ -219,7 +230,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
     public SpecifiersReachabilityQuestion build() {
       return new SpecifiersReachabilityQuestion(
-          _actions, _headerConstraints, _ignoreFilters, _maxTraces, _pathConstraints);
+          _actions,
+          _headerConstraints,
+          _ignoreFilters,
+          _invertSearch,
+          _maxTraces,
+          _pathConstraints);
     }
   }
 }

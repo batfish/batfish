@@ -3,6 +3,7 @@ package org.batfish.question.specifiers;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -138,5 +140,14 @@ public class SpecifiersReachabilityQuestionTest {
     SpecifiersReachabilityQuestion q =
         SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
     assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
+  }
+
+  @Test
+  public void testInvertSearch() {
+    SpecifiersReachabilityQuestion q =
+        SpecifiersReachabilityQuestion.builder().setInvertSearch(true).build();
+    assertThat(
+        q.getReachabilityParameters().getHeaderSpace(),
+        equalTo(AclLineMatchExprs.not(match(HeaderSpace.builder().build()))));
   }
 }

@@ -43,6 +43,8 @@ public final class ReachabilityParameters {
 
     private boolean _ignoreFilters = false;
 
+    private boolean _invertSearch = false;
+
     private int _maxChunkSize;
 
     private @Nullable NodeSpecifier _requiredTransitNodesSpecifier = null;
@@ -85,6 +87,16 @@ public final class ReachabilityParameters {
       return this;
     }
 
+    public Builder setIgnoreFilters(boolean ignoreFilters) {
+      _ignoreFilters = ignoreFilters;
+      return this;
+    }
+
+    public Builder setInvertSearch(boolean invertSearch) {
+      _invertSearch = invertSearch;
+      return this;
+    }
+
     public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
       _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
       return this;
@@ -124,11 +136,6 @@ public final class ReachabilityParameters {
       _useCompression = useCompression;
       return this;
     }
-
-    public Builder setIgnoreFilters(boolean ignoreFilters) {
-      _ignoreFilters = ignoreFilters;
-      return this;
-    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
@@ -142,6 +149,8 @@ public final class ReachabilityParameters {
   private final AclLineMatchExpr _headerSpace;
 
   private final boolean _ignoreFilters;
+
+  private final boolean _invertSearch;
 
   private final int _maxChunkSize;
 
@@ -164,6 +173,7 @@ public final class ReachabilityParameters {
     _forbiddenTransitNodesSpecifier = builder._forbiddenTransitNodesSpecifier;
     _headerSpace = builder._headerSpace;
     _ignoreFilters = builder._ignoreFilters;
+    _invertSearch = builder._invertSearch;
     _maxChunkSize = builder._maxChunkSize;
     _sourceLocationSpecifier = builder._sourceLocationSpecifier;
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
@@ -202,6 +212,10 @@ public final class ReachabilityParameters {
 
   public boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  public boolean getInvertSearch() {
+    return _invertSearch;
   }
 
   public int getMaxChunkSize() {
