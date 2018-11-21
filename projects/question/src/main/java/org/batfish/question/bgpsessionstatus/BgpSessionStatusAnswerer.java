@@ -45,8 +45,9 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
   private static boolean isCompatible(ConfiguredSessionStatus configuredStatus) {
     switch (configuredStatus) {
       case UNIQUE_MATCH:
-      case DYNAMIC_LISTEN:
+      case DYNAMIC_MATCH:
         return true;
+      case NO_MATCH_FOUND:
       case LOCAL_IP_UNKNOWN_STATICALLY:
       case NO_LOCAL_IP:
       case NO_REMOTE_AS:

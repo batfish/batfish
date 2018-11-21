@@ -11,6 +11,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -39,18 +40,33 @@ public abstract class BgpSessionAnswerer extends Answerer {
     super(question, batfish);
   }
 
+  /** Compatibility statuses for {@link BgpSessionCompatibilityAnswerer} */
   public enum ConfiguredSessionStatus {
     // ordered by how we evaluate status
-    DYNAMIC_LISTEN,
+    /** Local peer is passive with at least one compatible remote peer */
+    DYNAMIC_MATCH,
+    /** Local peer is passive with no compatible remote peers */
+    NO_MATCH_FOUND,
+    /** No local IP is configured on active peer; session type is IBGP or EBGP multihop */
     LOCAL_IP_UNKNOWN_STATICALLY,
+    /** No local IP is configured on active peer; session type is not IBGP or EBGP multihop */
     NO_LOCAL_IP,
+    /** Local peer is active with no remote IP configured */
     NO_REMOTE_IP,
+    /** Local peer is passive with no remote prefix configured */
+    NO_REMOTE_PREFIX,
+    /** Local peer has no remote AS configured */
     NO_REMOTE_AS,
+    /** Local IP is not associated with a known interface */
     INVALID_LOCAL_IP,
+    /** Remote IP is not associated with a known interface */
     UNKNOWN_REMOTE,
+    /** Local peer is active with no compatible remote peers */
     HALF_OPEN,
+    /** Local peer is active with multiple remote peers configured compatibly */
     MULTIPLE_REMOTES,
-    UNIQUE_MATCH,
+    /** Local peer is active with exactly one compatible remote peer */
+    UNIQUE_MATCH
   }
 
   static @Nonnull BgpPeerConfig getBgpPeerConfig(
@@ -89,6 +105,15 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;
+  }
+
+  static ConfiguredSessionStatus getLocallyBrokenStatus(BgpPassivePeerConfig passivePeerConfig) {
+    if (passivePeerConfig.getPeerPrefix() == null) {
+      return ConfiguredSessionStatus.NO_REMOTE_PREFIX;
+    } else if (passivePeerConfig.getRemoteAs().isEmpty()) {
+      return ConfiguredSessionStatus.NO_REMOTE_AS;
+    }
+    return null;
   }
 
   @Nullable
