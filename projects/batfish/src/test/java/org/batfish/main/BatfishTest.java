@@ -171,11 +171,10 @@ public class BatfishTest {
     // We should get all three configs, with modified hostnames for the first two
     assertThat(
         batfish.loadConfigurations().keySet(),
-        equalTo(
-            ImmutableSet.of(
-                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
-                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
-                "rtr3")));
+        containsInAnyOrder(
+            ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
+            ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
+            "rtr3"));
 
     // hostnames are unique in rtr1 and rtr2
     String testrigResourcePrefix2 = "org/batfish/main/snapshots/duplicate_hostnames2";
