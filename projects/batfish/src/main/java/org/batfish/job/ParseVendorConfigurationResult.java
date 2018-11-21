@@ -2,6 +2,7 @@ package org.batfish.job;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import java.io.File;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
@@ -143,13 +144,18 @@ public class ParseVendorConfigurationResult
   }
 
   private static String getModifiedName(String baseName, String filename) {
-    String modifiedName = baseName + "__file__" + filename;
+    String modifiedName = getModifiedNameBase(baseName, filename);
     int index = 0;
     while (_duplicateHostnames.containsEntry(baseName, modifiedName)) {
-      modifiedName = baseName + "__file__" + filename + "." + index;
+      modifiedName = getModifiedNameBase(baseName, filename) + "." + index;
       index++;
     }
     return modifiedName;
+  }
+
+  /** Returns a modified host name to use when duplicate hostnames are encountered */
+  public static String getModifiedNameBase(String baseName, String filename) {
+    return baseName + "__" + filename.replaceAll(File.separator, "__");
   }
 
   public VendorConfiguration getVendorConfiguration() {

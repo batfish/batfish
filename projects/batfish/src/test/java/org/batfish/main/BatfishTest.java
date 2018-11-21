@@ -53,6 +53,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
+import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -152,6 +153,27 @@ public class BatfishTest {
     assertThat(
         configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
+  }
+
+  @Test
+  public void testInitTestrigWithDuplicateHostnames() throws IOException {
+    String testrigResourcePrefix = "org/batfish/main/snapshots/duplicate_hostnames";
+    List<String> configurationNames = ImmutableList.of("rtr1", "rtr2");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    assertThat(
+        configurations.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
+                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"))));
   }
 
   @Test
