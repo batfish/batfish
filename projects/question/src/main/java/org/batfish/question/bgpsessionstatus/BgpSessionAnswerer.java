@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +16,6 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -46,6 +44,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
     DYNAMIC_LISTEN,
     LOCAL_IP_UNKNOWN_STATICALLY,
     NO_LOCAL_IP,
+    NO_REMOTE_IP,
     NO_REMOTE_AS,
     INVALID_LOCAL_IP,
     UNKNOWN_REMOTE,
@@ -61,9 +60,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
   }
 
   static @Nullable NodeInterfacePair getInterface(Configuration config, Ip localIp) {
-    Optional<Interface> iface = CommonUtil.getActiveInterfaceWithIp(localIp, config);
-    return iface
-        .map(anInterface -> new NodeInterfacePair(config.getHostname(), iface.get().getName()))
+    return CommonUtil.getActiveInterfaceWithIp(localIp, config)
+        .map(iface -> new NodeInterfacePair(config.getHostname(), iface.getName()))
         .orElse(null);
   }
 
@@ -83,12 +81,11 @@ public abstract class BgpSessionAnswerer extends Answerer {
 
     if (!allInterfaceIps.contains(localIp)) {
       return ConfiguredSessionStatus.INVALID_LOCAL_IP;
-    } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
+    } else if (!allInterfaceIps.contains(remoteIp)) {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;
     } else if (configuredBgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
-      // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-    } else if (configuredBgpTopology.degree(bgpPeerConfigId) > 2) {
+    } else if (configuredBgpTopology.outDegree(bgpPeerConfigId) > 1) {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;
@@ -105,6 +102,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
       } else {
         return ConfiguredSessionStatus.NO_LOCAL_IP;
       }
+    } else if (neighbor.getPeerAddress() == null) {
+      return ConfiguredSessionStatus.NO_REMOTE_IP;
     } else if (neighbor.getRemoteAs() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }

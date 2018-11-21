@@ -619,6 +619,9 @@
         "juniper_tacplus" : [
           "configs/juniper_tacplus"
         ],
+        "juniper_vlan" : [
+          "configs/juniper_vlan"
+        ],
         "l2vpn" : [
           "configs/ios_xr_l2vpn"
         ],
@@ -989,6 +992,7 @@
         "configs/juniper_syslog" : "PASSED",
         "configs/juniper_system" : "PASSED",
         "configs/juniper_tacplus" : "PASSED",
+        "configs/juniper_vlan" : "PASSED",
         "configs/local_v6_addr" : "PASSED",
         "configs/mac_access_list" : "PASSED",
         "configs/mos_application" : "UNSUPPORTED",
@@ -51486,6 +51490,203 @@
             "  EOF:<EOF>)"
           ]
         },
+        "juniper_vlan" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'juniper_vlan'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_vlans",
+            "            VLANS:'vlans'",
+            "            (s_vlans_named",
+            "              name = (variable",
+            "                text = VARIABLE:'VLAN30')",
+            "              (s_vlans_tail",
+            "                (vlt_vlan_id",
+            "                  VLAN_ID:'vlan-id'",
+            "                  id = DEC:'30')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_vlans",
+            "            VLANS:'vlans'",
+            "            (s_vlans_named",
+            "              name = (variable",
+            "                text = VARIABLE:'VLAN30')",
+            "              (s_vlans_tail",
+            "                (vlt_l3_interface",
+            "                  L3_INTERFACE:'l3-interface'",
+            "                  (interface_id",
+            "                    name = VARIABLE:'vlan.30'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_vlans",
+            "            VLANS:'vlans'",
+            "            (s_vlans_named",
+            "              name = (variable",
+            "                text = VARIABLE:'VLAN40')",
+            "              (s_vlans_tail",
+            "                (vlt_vlan_id",
+            "                  VLAN_ID:'vlan-id'",
+            "                  id = DEC:'40')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_vlans",
+            "            VLANS:'vlans'",
+            "            (s_vlans_named",
+            "              name = (variable",
+            "                text = VARIABLE:'VLAN40')",
+            "              (s_vlans_tail",
+            "                (vlt_l3_interface",
+            "                  L3_INTERFACE:'l3-interface'",
+            "                  (interface_id",
+            "                    name = VARIABLE:'vlan.40'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_ethernet_switching",
+            "                      ETHERNET_SWITCHING:'ethernet-switching'",
+            "                      (ife_port_mode",
+            "                        PORT_MODE:'port-mode'",
+            "                        TRUNK:'trunk'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_ethernet_switching",
+            "                      ETHERNET_SWITCHING:'ethernet-switching'",
+            "                      (ife_vlan",
+            "                        VLAN:'vlan'",
+            "                        MEMBERS:'members'  <== mode:M_Vlan",
+            "                        name = (variable",
+            "                          text = VARIABLE:'VLAN30')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_ethernet_switching",
+            "                      ETHERNET_SWITCHING:'ethernet-switching'",
+            "                      (ife_vlan",
+            "                        VLAN:'vlan'",
+            "                        MEMBERS:'members'  <== mode:M_Vlan",
+            "                        name = (variable",
+            "                          text = VARIABLE:'VLAN40')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_ethernet_switching",
+            "                      ETHERNET_SWITCHING:'ethernet-switching'",
+            "                      (ife_vlan",
+            "                        VLAN:'vlan'",
+            "                        MEMBERS:'members'  <== mode:M_Vlan",
+            "                        (range",
+            "                          (subrange",
+            "                            low = DEC:'50'))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_ethernet_switching",
+            "                      ETHERNET_SWITCHING:'ethernet-switching'",
+            "                      (ife_native_vlan_id",
+            "                        NATIVE_VLAN_ID:'native-vlan-id'",
+            "                        id = DEC:'666'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "l2vpn" : {
           "sentences" : [
             "(cisco_configuration",
@@ -62322,6 +62523,46 @@
         "configs/juniper_syslog" : { },
         "configs/juniper_system" : { },
         "configs/juniper_tacplus" : { },
+        "configs/juniper_vlan" : {
+          "interface" : {
+            "xe-0/0/0" : {
+              "definitionLines" : [
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 5
+            },
+            "xe-0/0/0.0" : {
+              "definitionLines" : [
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 5
+            }
+          },
+          "vlan" : {
+            "VLAN30" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "VLAN40" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/local_v6_addr" : {
           "bgp peer-group" : {
             "NEIGH" : {
@@ -65273,6 +65514,40 @@
             }
           }
         },
+        "configs/juniper_vlan" : {
+          "interface" : {
+            "xe-0/0/0" : {
+              "interface" : [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            },
+            "xe-0/0/0.0" : {
+              "interface" : [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          },
+          "vlan" : {
+            "VLAN30" : {
+              "interface vlan" : [
+                11
+              ]
+            },
+            "VLAN40" : {
+              "interface vlan" : [
+                12
+              ]
+            }
+          }
+        },
         "configs/mos_interface" : {
           "interface" : {
             "Ethernet1" : {
@@ -67853,6 +68128,7 @@
         "configs/juniper_syslog" : "PASSED",
         "configs/juniper_system" : "PASSED",
         "configs/juniper_tacplus" : "PASSED",
+        "configs/juniper_vlan" : "PASSED",
         "configs/local_v6_addr" : "PASSED",
         "configs/mac_access_list" : "PASSED",
         "configs/mos_application" : "UNSUPPORTED",

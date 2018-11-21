@@ -7,7 +7,7 @@
     "startLocation": "${startLocation}",
     "instance": {
         "description": "Evaluate the processing of a flow by a given filter/ACL",
-        "instanceName": "testfilters",
+        "instanceName": "testFilters",
         "longDescription": "Find how the specified flow is processed through the specified filters/ACLs.",
         "tags": [
             "dataPlane",

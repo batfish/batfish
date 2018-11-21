@@ -67,7 +67,6 @@ public class BfConsts {
   public static final String ARG_SSL_TRUSTSTORE_FILE = "ssltruststorefile";
   public static final String ARG_SSL_TRUSTSTORE_PASSWORD = "ssltruststorepassword";
   public static final String ARG_STORAGE_BASE = "storagebase";
-  public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
   public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";

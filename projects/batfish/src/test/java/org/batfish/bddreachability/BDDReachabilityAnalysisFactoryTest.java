@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
@@ -31,12 +32,14 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -410,5 +413,62 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     assertThat(
         flowDispositions, containsInAnyOrder(FlowDisposition.LOOP, FlowDisposition.NO_ROUTE));
+  }
+
+  @Test
+  public void testInactiveInterface() throws IOException {
+    Ip ip = new Ip("1.2.3.4");
+    BDD ipBDD = new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setAddress(new InterfaceAddress(ip, 32))
+            .setActive(true)
+            .build();
+
+    // when interface is active and not blacklisted, its Ip belongs to the VRF
+    ImmutableSortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(config.getHostname(), config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
+    assertThat(
+        factory.getVrfAcceptBDDs(),
+        hasEntry(equalTo(config.getHostname()), hasEntry(equalTo(vrf.getName()), equalTo(ipBDD))));
+
+    // when interface is inactive, its Ip does not belong to the VRF
+    iface.setActive(false);
+    batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+    factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
+    assertThat(
+        factory.getVrfAcceptBDDs(),
+        hasEntry(
+            equalTo(config.getHostname()),
+            hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+
+    // when interface is blacklisted, its Ip does not belong to the VRF
+    iface.setActive(true);
+    iface.setBlacklisted(true);
+    batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+    factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
+    assertThat(
+        factory.getVrfAcceptBDDs(),
+        hasEntry(
+            equalTo(config.getHostname()),
+            hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
   }
 }

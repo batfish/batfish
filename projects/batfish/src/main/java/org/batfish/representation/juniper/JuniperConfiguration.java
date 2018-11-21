@@ -714,7 +714,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
-    OspfProcess newProc = new OspfProcess();
+    OspfProcess newProc =
+        OspfProcess.builder()
+            .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
+            .build();
     String vrfName = routingInstance.getName();
     // export policies
     String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
@@ -786,7 +789,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                 .setOspfArea(area)));
 
     newProc.setRouterId(getOspfRouterId(routingInstance));
-    newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
 
@@ -1467,7 +1469,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setAccessVlan(vlan.getVlanId());
       }
     }
-    newIface.setAllowedVlans(IntegerSpace.unionOf(iface.getAllowedVlans()));
+    List<SubRange> vlanIds =
+        Stream.concat(
+                iface
+                    .getAllowedVlanNames()
+                    .stream()
+                    .map(n -> getVlanNameToVlan().get(n))
+                    .filter(Objects::nonNull)
+                    .map(Vlan::getVlanId)
+                    .map(SubRange::new),
+                iface.getAllowedVlans().stream())
+            .collect(Collectors.toList());
+    newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
     newIface.setNativeVlan(iface.getNativeVlan());
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();

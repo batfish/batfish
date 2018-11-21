@@ -422,7 +422,7 @@ public final class TopologyUtil {
    * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
    * to (hostname -&gt; interface name -&gt; Ip).
    */
-  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+  private static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
 
