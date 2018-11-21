@@ -157,8 +157,9 @@ public class BatfishTest {
 
   @Test
   public void testInitTestrigWithDuplicateHostnames() throws IOException {
+    // rtr1 and rtr2 have the same hostname
     String testrigResourcePrefix = "org/batfish/main/snapshots/duplicate_hostnames";
-    List<String> configurationNames = ImmutableList.of("rtr1", "rtr2");
+    List<String> configurationNames = ImmutableList.of("rtr1", "rtr2", "rtr3");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -166,14 +167,29 @@ public class BatfishTest {
                 .setConfigurationText(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
 
+    // We should get all three configs, with modified hostnames for the first two
     assertThat(
-        configurations.keySet(),
+        batfish.loadConfigurations().keySet(),
         equalTo(
             ImmutableSet.of(
                 ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
-                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"))));
+                ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
+                "rtr3")));
+
+    // hostnames are unique in rtr1 and rtr2
+    String testrigResourcePrefix2 = "org/batfish/main/snapshots/duplicate_hostnames2";
+    List<String> configurationNames2 = ImmutableList.of("rtr1", "rtr2");
+
+    Batfish batfish2 =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix2, configurationNames2)
+                .build(),
+            _folder);
+
+    // we should get only two configs, with real names -- no memory of old duplicates
+    assertThat(batfish2.loadConfigurations().keySet(), equalTo(ImmutableSet.of("rtr1", "rtr2")));
   }
 
   @Test

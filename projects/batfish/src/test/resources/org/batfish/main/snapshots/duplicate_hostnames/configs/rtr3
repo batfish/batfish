@@ -1,4 +1,4 @@
 !
-hostname rtr1
+hostname rtr3
 feature ospf
 !

@@ -17,12 +17,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
@@ -2149,11 +2151,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileText = vendorFile.getValue();
 
       Warnings warnings = buildWarnings(_settings);
+
+      Multimap<String, String> _duplicateHostnames = HashMultimap.create();
+
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, filename, warnings, configurationFormat);
+              _settings, fileText, filename, warnings, configurationFormat, _duplicateHostnames);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(

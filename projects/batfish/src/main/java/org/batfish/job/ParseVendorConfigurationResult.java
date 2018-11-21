@@ -1,6 +1,5 @@
 package org.batfish.job;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.Map;
@@ -18,6 +17,9 @@ public class ParseVendorConfigurationResult
     extends BatfishJobResult<
         Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
+  /** Information about duplicate hostnames is collected here */
+  private Multimap<String, String> _duplicateHostnames;
+
   private final String _filename;
 
   private ParseTreeSentences _parseTree;
@@ -27,8 +29,6 @@ public class ParseVendorConfigurationResult
   private VendorConfiguration _vc;
 
   private Warnings _warnings;
-
-  private static Multimap<String, String> _duplicateHostnames = HashMultimap.create();
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
@@ -46,7 +46,8 @@ public class ParseVendorConfigurationResult
       String filename,
       VendorConfiguration vc,
       Warnings warnings,
-      ParseTreeSentences parseTree) {
+      ParseTreeSentences parseTree,
+      @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _filename = filename;
     _parseTree = parseTree;
@@ -54,6 +55,7 @@ public class ParseVendorConfigurationResult
     _warnings = warnings;
     // parse status is determined from other fields
     _status = null;
+    _duplicateHostnames = duplicateHostnames;
   }
 
   public ParseVendorConfigurationResult(
@@ -143,7 +145,7 @@ public class ParseVendorConfigurationResult
     return _history;
   }
 
-  private static String getModifiedName(String baseName, String filename) {
+  private String getModifiedName(String baseName, String filename) {
     String modifiedName = getModifiedNameBase(baseName, filename);
     int index = 0;
     while (_duplicateHostnames.containsEntry(baseName, modifiedName)) {
