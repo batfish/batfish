@@ -37,6 +37,8 @@ public class MockSpecifierContext implements SpecifierContext {
 
     private @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions = ImmutableSortedSet.of();
 
+    private @Nonnull IpSpace _snapshotOwnedIps;
+
     private @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps = ImmutableMap.of();
 
     private Builder() {}
@@ -61,6 +63,11 @@ public class MockSpecifierContext implements SpecifierContext {
       return this;
     }
 
+    public Builder setSnapshotOwnedIps(IpSpace snapshotOwnedIps) {
+      _snapshotOwnedIps = snapshotOwnedIps;
+      return this;
+    }
+
     public Builder setVrfOwnedIps(Map<String, Map<String, IpSpace>> vrfOwnedIps) {
       _vrfOwnedIps = vrfOwnedIps;
       return this;
@@ -79,6 +86,8 @@ public class MockSpecifierContext implements SpecifierContext {
 
   private final @Nonnull SortedSet<ReferenceBook> _referenceBooks;
 
+  private final @Nonnull IpSpace _snapshotOwnedIps;
+
   private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
 
   private MockSpecifierContext(Builder builder) {
@@ -86,6 +95,7 @@ public class MockSpecifierContext implements SpecifierContext {
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
     _nodeRoleDimensions = builder._nodeRoleDimensions;
+    _snapshotOwnedIps = builder._snapshotOwnedIps;
     _vrfOwnedIps = builder._vrfOwnedIps;
   }
 
@@ -99,6 +109,11 @@ public class MockSpecifierContext implements SpecifierContext {
   @Nonnull
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
     return _interfaceOwnedIps;
+  }
+
+  @Override
+  public IpSpace getSnapshotDeviceOwnedIps() {
+    return _snapshotOwnedIps;
   }
 
   @Override

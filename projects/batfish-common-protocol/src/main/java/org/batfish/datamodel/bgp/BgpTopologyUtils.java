@@ -137,7 +137,16 @@ public final class BgpTopologyUtils {
         continue;
       }
       BgpActivePeerConfig neighbor = networkConfigurations.getBgpPointToPointPeerConfig(neighborId);
-      if (neighbor == null || neighbor.getPeerAddress() == null) {
+      if (neighbor == null
+          || neighbor.getLocalIp() == null
+          || neighbor.getLocalAs() == null
+          || neighbor.getPeerAddress() == null
+          || neighbor.getRemoteAs() == null) {
+        continue;
+      }
+      // Find nodes that own the neighbor's peer address
+      Set<String> possibleHostnames = ipOwners.get(neighbor.getPeerAddress());
+      if (possibleHostnames == null) {
         continue;
       }
       Set<BgpPeerConfigId> candidates = localAddresses.get(neighbor.getPeerAddress());
@@ -147,24 +156,10 @@ public final class BgpTopologyUtils {
         if (candidates == null) {
           continue;
         }
-        candidates =
-            candidates
-                .stream()
-                .filter(c -> c.getRemotePeerPrefix().containsIp(neighbor.getPeerAddress()))
-                .collect(ImmutableSet.toImmutableSet());
-        if (candidates.isEmpty()) {
-          // No remote connection candidates
-          continue;
-        }
-      }
-      Long localLocalAs = neighbor.getLocalAs();
-      Long localRemoteAs = neighbor.getRemoteAs();
-      if (localLocalAs == null || localRemoteAs == null) {
-        // AS numbers not configured properly, cannot establish edge.
-        continue;
       }
       for (BgpPeerConfigId candidateNeighborId : candidates) {
-        if (!bgpCandidatePassesSanityChecks(neighbor, candidateNeighborId, networkConfigurations)) {
+        if (!bgpCandidatePassesSanityChecks(
+            neighbor, candidateNeighborId, possibleHostnames, networkConfigurations)) {
           // Short-circuit if there is no way the remote end will accept our connection
           continue;
         }
@@ -219,14 +214,15 @@ public final class BgpTopologyUtils {
   static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
+      @Nonnull Set<String> possibleHostnames,
       @Nonnull NetworkConfigurations nc) {
     if (candidateId.isDynamic()) {
       BgpPassivePeerConfig candidate = nc.getBgpDynamicPeerConfig(candidateId);
       return candidate != null
-          && neighbor.getLocalIp() != null
           && candidate.canConnect(neighbor.getLocalAs())
           && Objects.equals(neighbor.getRemoteAs(), candidate.getLocalAs())
-          && candidate.canConnect(neighbor.getLocalIp());
+          && candidate.canConnect(neighbor.getLocalIp())
+          && possibleHostnames.contains(candidateId.getHostname());
     } else {
       BgpActivePeerConfig candidate = nc.getBgpPointToPointPeerConfig(candidateId);
       return candidate != null

