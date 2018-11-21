@@ -2152,13 +2152,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       Warnings warnings = buildWarnings(_settings);
 
-      Multimap<String, String> _duplicateHostnames = HashMultimap.create();
+      Multimap<String, String> duplicateHostnames = HashMultimap.create();
 
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, filename, warnings, configurationFormat, _duplicateHostnames);
+              _settings, fileText, filename, warnings, configurationFormat, duplicateHostnames);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
