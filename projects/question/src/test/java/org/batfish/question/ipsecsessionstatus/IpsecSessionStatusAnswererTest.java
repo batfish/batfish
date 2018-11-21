@@ -257,7 +257,7 @@ public class IpsecSessionStatusAnswererTest {
         allOf(
             hasColumn(
                 COL_TUNNEL_INTERFACES,
-                equalTo("Tunnel_interface->Tunnel1_interface"),
+                equalTo("Tunnel_interface -> Tunnel1_interface"),
                 Schema.STRING),
             hasColumn(COL_STATUS, equalTo("IPSEC_SESSION_ESTABLISHED"), Schema.STRING)));
   }
@@ -283,7 +283,10 @@ public class IpsecSessionStatusAnswererTest {
     assertThat(
         row,
         allOf(
-            hasColumn(COL_TUNNEL_INTERFACES, equalTo("Tunnel1_interface->"), Schema.STRING),
+            hasColumn(
+                COL_TUNNEL_INTERFACES,
+                equalTo("Tunnel1_interface -> Missing Responder"),
+                Schema.STRING),
             hasColumn(COL_STATUS, equalTo("MISSING_END_POINT"), Schema.STRING)));
   }
 

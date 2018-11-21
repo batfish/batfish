@@ -184,9 +184,9 @@ class IpsecSessionStatusAnswerer extends Answerer {
             info.getInitiatorTunnelInterface() == null && info.getResponderTunnelInterface() == null
                 ? NOT_APPLICABLE
                 : String.format(
-                    "%s->%s",
-                    firstNonNull(info.getInitiatorTunnelInterface(), ""),
-                    firstNonNull(info.getResponderTunnelInterface(), "")))
+                    "%s -> %s",
+                    firstNonNull(info.getInitiatorTunnelInterface(), "Missing Initiator"),
+                    firstNonNull(info.getResponderTunnelInterface(), "Missing Responder")))
         .put(COL_STATUS, info.getIpsecSessionStatus());
     return row.build();
   }
