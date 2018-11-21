@@ -671,6 +671,19 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaFiltersGlobalReference() throws IOException {
+    String hostname = "asa-filters-global";
+    String filename = "configs/" + hostname;
+    parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference tracking is correct for globally applied ASA access list in access group
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_GLOBAL", 1));
+  }
+
+  @Test
   public void testAsaFiltersReference() throws IOException {
     String hostname = "asa-filters";
     String filename = "configs/" + hostname;

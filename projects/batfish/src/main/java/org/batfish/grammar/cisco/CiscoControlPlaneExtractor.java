@@ -67,6 +67,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -5539,9 +5540,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String aclName = ctx.name.getText();
     for (Interface iface : _configuration.getInterfaces().values()) {
       iface.setIncomingFilter(aclName);
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, aclName, INTERFACE_INCOMING_FILTER, ctx.name.getStart().getLine());
     }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
   }
 
   @Override

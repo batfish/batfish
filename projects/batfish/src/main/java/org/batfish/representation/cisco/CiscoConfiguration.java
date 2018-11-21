@@ -3337,6 +3337,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
         CiscoStructureUsage.SSH_IPV6_ACL);
     markAcls(
+        CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
         CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
