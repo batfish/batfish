@@ -62965,7 +62965,7 @@
                 93,
                 94
               ],
-              "numReferrers" : 2
+              "numReferrers" : 3
             },
             "lo0.1" : {
               "definitionLines" : [
@@ -66621,6 +66621,9 @@
               ],
               "policy-statement from interface" : [
                 163
+              ],
+              "routing-instances vtep-source-interface" : [
+                201
               ]
             },
             "lo0.1" : {

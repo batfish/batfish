@@ -2525,7 +2525,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
         JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
         JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
-        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE);
+        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        JuniperStructureUsage.VTEP_SOURCE_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,
