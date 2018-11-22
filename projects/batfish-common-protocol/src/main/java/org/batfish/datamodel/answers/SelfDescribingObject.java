@@ -28,7 +28,7 @@ public class SelfDescribingObject {
   static @Nonnull SelfDescribingObject create(
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SCHEMA) Schema schema,
-      @Nullable @JsonProperty(PROP_VALUE) Object value) {
+      @JsonProperty(PROP_VALUE) Object value) {
     return new SelfDescribingObject(name, schema, value);
   }
 
@@ -36,7 +36,6 @@ public class SelfDescribingObject {
     this(null, schema, value);
   }
 
-  @JsonCreator
   public SelfDescribingObject(@Nullable String name, Schema schema, @Nullable Object value) {
     checkArgument(schema != null, "'schema' cannot be null");
     checkArgument(
