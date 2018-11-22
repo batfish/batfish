@@ -25,7 +25,7 @@ public class SelfDescribingObject {
   @Nullable private final Object _value;
 
   @JsonCreator
-  static @Nonnull SelfDescribingObject create(
+  private static @Nonnull SelfDescribingObject create(
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SCHEMA) Schema schema,
       @JsonProperty(PROP_VALUE) Object value) {
@@ -90,6 +90,7 @@ public class SelfDescribingObject {
   @Override
   public String toString() {
     return toStringHelper(getClass())
+        .omitNullValues()
         .add(PROP_NAME, _name)
         .add(PROP_SCHEMA, _schema)
         .add(PROP_VALUE, _value)
