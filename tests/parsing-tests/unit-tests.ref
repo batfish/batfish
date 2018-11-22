@@ -60237,16 +60237,6 @@
             }
           ]
         },
-        "cisco_vrf" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
-              "Text" : "ip route 0.0.0.0/0 1.2.3.4"
-            }
-          ]
-        },
         "foundry_access_list" : {
           "Parse warnings" : [
             {
@@ -60490,16 +60480,6 @@
               "Line" : 4,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "ip default-gateway 128.125.253.254"
-            }
-          ]
-        },
-        "vrf_context" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 7,
-              "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
-              "Text" : "ip route 0.0.0.0/0 1.2.3.4"
             }
           ]
         }
