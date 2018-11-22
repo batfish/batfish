@@ -13,6 +13,10 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
 
+/**
+ * Represents an object that carries its own Schema. Useful for insertion into answers when the
+ * columns contain mixed Schemas
+ */
 @ParametersAreNonnullByDefault
 public class SelfDescribingObject {
 
@@ -65,6 +69,7 @@ public class SelfDescribingObject {
     return _name;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SCHEMA)
   public Schema getSchema() {
     return _schema;
