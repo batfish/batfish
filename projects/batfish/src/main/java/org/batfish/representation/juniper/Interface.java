@@ -29,6 +29,8 @@ public class Interface implements Serializable {
       return 1E9;
     } else if (name.startsWith("fe")) {
       return 1E8;
+    } else if (name.startsWith("irb")) {
+      return 1E9;
     } else {
       return 1E12;
     }

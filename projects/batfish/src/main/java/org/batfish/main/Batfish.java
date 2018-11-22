@@ -17,14 +17,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
@@ -2149,11 +2150,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileText = vendorFile.getValue();
 
       Warnings warnings = buildWarnings(_settings);
+
+      Multimap<String, String> duplicateHostnames = HashMultimap.create();
+
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, filename, warnings, configurationFormat);
+              _settings, fileText, filename, warnings, configurationFormat, duplicateHostnames);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -3856,52 +3860,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
     IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
     Set<String> finalNodes = parameters.getFinalNodes();
-    Set<FlowDisposition> dropDispositions =
+    Set<FlowDisposition> failureDispositions =
         ImmutableSet.of(
             FlowDisposition.DENIED_IN,
             FlowDisposition.DENIED_OUT,
             FlowDisposition.LOOP,
+            FlowDisposition.INSUFFICIENT_INFO,
+            FlowDisposition.NEIGHBOR_UNREACHABLE,
             FlowDisposition.NO_ROUTE,
             FlowDisposition.NULL_ROUTED);
+    Set<FlowDisposition> successDispositions =
+        ImmutableSet.of(
+            FlowDisposition.ACCEPTED,
+            FlowDisposition.DELIVERED_TO_SUBNET,
+            FlowDisposition.EXITS_NETWORK);
     Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
     Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
-    Map<IngressLocation, BDD> acceptedBDDs =
+    Map<IngressLocation, BDD> successBdds =
         bddReachabilityAnalysisFactory.getAllBDDs(
             srcIpSpaceAssignment,
             parameters.getHeaderSpace(),
             forbiddenTransitNodes,
             requiredTransitNodes,
             finalNodes,
-            ImmutableSet.of(FlowDisposition.ACCEPTED));
-    Map<IngressLocation, BDD> droppedBDDs =
+            successDispositions);
+    Map<IngressLocation, BDD> failureBdds =
         bddReachabilityAnalysisFactory.getAllBDDs(
             srcIpSpaceAssignment,
             parameters.getHeaderSpace(),
             forbiddenTransitNodes,
             requiredTransitNodes,
             finalNodes,
-            dropDispositions);
-    Map<IngressLocation, BDD> neighborUnreachableBDDs =
-        bddReachabilityAnalysisFactory.getAllBDDs(
-            srcIpSpaceAssignment,
-            parameters.getHeaderSpace(),
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            finalNodes,
-            ImmutableSet.of(
-                FlowDisposition.NEIGHBOR_UNREACHABLE,
-                FlowDisposition.DELIVERED_TO_SUBNET,
-                FlowDisposition.EXITS_NETWORK,
-                FlowDisposition.INSUFFICIENT_INFO));
+            failureDispositions);
 
-    String flowTag = getFlowTag();
-    return Streams.concat(
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, droppedBDDs).stream(),
-            computeMultipathInconsistencies(pkt, flowTag, acceptedBDDs, neighborUnreachableBDDs)
-                .stream(),
-            computeMultipathInconsistencies(pkt, flowTag, droppedBDDs, neighborUnreachableBDDs)
-                .stream())
-        .collect(ImmutableSet.toImmutableSet());
+    return ImmutableSet.copyOf(
+        computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
   }
 
   @Nonnull

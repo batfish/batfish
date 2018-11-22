@@ -33,7 +33,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -660,22 +659,6 @@ public final class TopologyUtil {
                 nodeEntry.getValue(),
                 Entry::getKey, /* vrf */
                 vrfEntry -> vrfEntry.getValue().build()));
-  }
-
-  public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
-    Map<Ip, String> ipOwnersSimple = new HashMap<>();
-    ipOwners.forEach(
-        (ip, owners) -> {
-          String hostname =
-              owners.size() == 1 ? owners.iterator().next() : Route.AMBIGUOUS_NEXT_HOP;
-          ipOwnersSimple.put(ip, hostname);
-        });
-    return ipOwnersSimple;
-  }
-
-  public static Map<Ip, String> computeIpOwnersSimple(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwnersSimple(computeIpNodeOwners(configurations, excludeInactive));
   }
 
   /**

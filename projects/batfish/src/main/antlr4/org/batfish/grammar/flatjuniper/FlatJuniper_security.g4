@@ -154,9 +154,8 @@ nat_rule_set
 :
    RULE_SET name = variable
    (
-      rs_from
+      rs_packet_location
       | rs_rule
-      | rs_to
    )
 ;
 
@@ -172,10 +171,14 @@ nati_port_overloading_factor
 
 natp_address
 :
-   ADDRESS IP_PREFIX
+   ADDRESS
    (
-      TO IP_PREFIX
-   )?
+      IP_PREFIX
+      |
+      (
+         from = IP_ADDRESS TO to = IP_ADDRESS
+      )
+   )
 ;
 
 natp_description
@@ -190,9 +193,27 @@ proposal_set_type
    | STANDARD
 ;
 
-rs_from
+rs_interface
 :
-   FROM rsf_common
+    INTERFACE name = variable
+;
+
+rs_packet_location
+:
+   (
+     FROM
+     | TO
+   )
+   (
+     rs_interface
+     | rs_routing_instance
+     | rs_zone
+   )
+;
+
+rs_routing_instance
+:
+    ROUTING_INSTANCE name = variable
 ;
 
 rs_rule
@@ -205,17 +226,7 @@ rs_rule
    )
 ;
 
-rs_to
-:
-   TO rsf_common
-;
-
-rsf_common
-:
-   rsf_zone
-;
-
-rsf_zone
+rs_zone
 :
    ZONE name = variable
 ;
@@ -234,6 +245,7 @@ rsr_match
       | rsrm_destination_port
       | rsrm_source_address
       | rsrm_source_address_name
+      | rsrm_source_port
    )
 ;
 
@@ -275,12 +287,19 @@ rsrm_source_address_name
    SOURCE_ADDRESS_NAME name = variable
 ;
 
+rsrm_source_port
+:
+   SOURCE_PORT from = DEC
+    (
+        TO to = DEC
+    )?
+;
+
 rsrt_destination_nat
 :
    DESTINATION_NAT
    (
-      rsrt_nat_interface
-      | rsrt_nat_off
+      rsrt_nat_off
       | rsrt_nat_pool
    )
 ;
@@ -297,11 +316,10 @@ rsrt_nat_off
 
 rsrt_nat_pool
 :
-   POOL
+   POOL name = variable
    (
-      rsrtnp_common
-      | rsrtnp_named
-   )
+      rsrtnp_persistent_nat
+   )?
 ;
 
 rsrt_source_nat
@@ -320,17 +338,6 @@ rsrt_static_nat
    (
       rsrtst_prefix
    )
-;
-
-rsrtnp_common
-:
-   apply
-   | rsrtnp_persistent_nat
-;
-
-rsrtnp_named
-:
-   name = variable rsrtnp_common
 ;
 
 rsrtnp_persistent_nat

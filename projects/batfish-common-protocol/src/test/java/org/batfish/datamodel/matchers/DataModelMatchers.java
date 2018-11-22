@@ -102,6 +102,15 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code incomingFilter}.
+   */
+  public static @Nonnull Matcher<Interface> hasIncomingFilter(
+      @Nonnull Matcher<? super IpAccessList> subMatcher) {
+    return new InterfaceMatchersImpl.HasIncomingFilter(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
    * Interface}'s {@code outgoingFilterName}.
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilter(

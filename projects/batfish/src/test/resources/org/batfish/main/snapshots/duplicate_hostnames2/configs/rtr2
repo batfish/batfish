@@ -1,0 +1,4 @@
+!
+hostname rtr2
+feature ospf
+!

@@ -127,7 +127,8 @@ b_family
 :
    FAMILY
    (
-      bf_inet
+      bf_evpn
+      | bf_inet
       | bf_inet6
       | bf_null
    ) bf_accepted_prefix_limit?
@@ -275,6 +276,11 @@ bf_accepted_prefix_limit
          )?
       )
    )*
+;
+
+bf_evpn
+:
+   EVPN SIGNALING
 ;
 
 bf_inet

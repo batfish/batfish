@@ -67,6 +67,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -427,6 +428,8 @@ import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaCo
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Banner_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
@@ -1036,7 +1039,6 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
@@ -5498,6 +5500,49 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    // Interface iface = _configuration.getInterfaces().get(ifaceName);
+    Optional<Interface> optionalIface =
+        _configuration
+            .getInterfaces()
+            .values()
+            .stream()
+            .filter(i -> i.getAlias().equals(ifaceName))
+            .findFirst();
+    Interface iface;
+    if (optionalIface.isPresent()) {
+      iface = optionalIface.get();
+    } else {
+      // Should never get here with valid config, ASA prevents referencing a non-existant iface here
+      _w.redFlag(
+          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+    CiscoStructureUsage usage = null;
+    String aclName = ctx.name.getText();
+    if (ctx.IN() != null) {
+      iface.setIncomingFilter(aclName);
+      usage = INTERFACE_INCOMING_FILTER;
+    } else if (ctx.OUT() != null) {
+      iface.setOutgoingFilter(aclName);
+      usage = INTERFACE_OUTGOING_FILTER;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
+    String aclName = ctx.name.getText();
+    for (Interface iface : _configuration.getInterfaces().values()) {
+      iface.setIncomingFilter(aclName);
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     CiscoStructureUsage usage = null;
@@ -9095,11 +9140,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
-  }
-
-  @Override
-  public void exitVrfc_ip_route(Vrfc_ip_routeContext ctx) {
-    todo(ctx);
   }
 
   @Override
