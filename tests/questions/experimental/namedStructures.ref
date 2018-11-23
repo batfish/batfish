@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
   "nodes" : ".*",
-  "properties" : ".*",
+  "structureTypes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -15,9 +15,9 @@
         "type" : "nodeSpec",
         "value" : ".*"
       },
-      "properties" : {
-        "description" : "Include properties matching this regex",
-        "displayName" : "Properties",
+      "structureTypes" : {
+        "description" : "Include structures of this type",
+        "displayName" : "Structure types",
         "optional" : true,
         "type" : "namedStructureSpec",
         "value" : ".*"
