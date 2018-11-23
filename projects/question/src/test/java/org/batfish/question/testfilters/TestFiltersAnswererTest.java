@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
@@ -37,13 +39,21 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TestFiltersAnswererTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private NetworkFactory _nf = new NetworkFactory();
   private Configuration.Builder _cb;
@@ -87,7 +97,7 @@ public class TestFiltersAnswererTest {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(c);
 
     /*
-    Reference ACL contains 1 line: Permit 1.0.0.0/24
+    Reference ACL contains 1 line: Permit 1.0.0.0/32
     Main ACL contains 2 lines:
     0. Permit anything that reference ACL permits
     1. Permit 1.0.0.0/24
@@ -130,7 +140,7 @@ public class TestFiltersAnswererTest {
      * Trace should be present for referencing acl with one event:
      * Permitted by referencing acl
      *
-     * NO event for referenced ACL since it's action was not match (default deny)
+     * NO event for referenced ACL since its action was not match (default deny)
      */
     assertThat(
         answer,
@@ -230,5 +240,82 @@ public class TestFiltersAnswererTest {
 
     // There should be 2 rows
     assertThat(answer.getRows(), hasSize(2));
+  }
+
+  @Test
+  public void testFilteringByNodeAndFilterName() throws IOException {
+    IpAccessList.Builder aclb = _nf.aclBuilder();
+    Configuration c1 = _cb.build();
+    Configuration c2 = _cb.build();
+
+    aclb.setName("acl1").setOwner(c1).build();
+    aclb.setName("acl2").build();
+    aclb.setName("acl1").setOwner(c2).build();
+    aclb.setName("acl2").build();
+
+    IBatfish batfish =
+        new MockBatfish(ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+
+    // Test that filtering by node gives only that node's ACLs
+    TestFiltersQuestion question =
+        new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), null, null, null);
+    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+    Rows rows = answerer.answer().getRows();
+
+    assertThat(rows, hasSize(2));
+    for (Row row : rows.getData()) {
+      assertThat(((Node) row.get(COL_NODE, Schema.NODE)).getName(), equalTo(c1.getHostname()));
+    }
+
+    // Test that filtering by ACL name gives only matching ACLs
+    question = new TestFiltersQuestion(null, "acl1", null, null);
+    answerer = new TestFiltersAnswerer(question, batfish);
+    rows = answerer.answer().getRows();
+
+    assertThat(rows, hasSize(2));
+    for (Row row : rows.getData()) {
+      assertThat(row.getString(COL_FILTER_NAME), equalTo("acl1"));
+    }
+
+    // Test that filtering by both gives only the one matching ACL
+    question = new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), "acl1", null, null);
+    answerer = new TestFiltersAnswerer(question, batfish);
+    rows = answerer.answer().getRows();
+
+    assertThat(rows, hasSize(1));
+  }
+
+  @Test
+  public void testErrorForNoMatchingNodes() throws IOException {
+    Configuration c1 = _cb.setHostname("c1").build();
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+    IBatfish batfish =
+        new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
+
+    // Test that exception is thrown if no nodes match
+    TestFiltersQuestion question =
+        new TestFiltersQuestion(new NodesSpecifier("fake_node"), null, null, null);
+    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("No matching filters");
+    answerer.answer();
+  }
+
+  @Test
+  public void testErrorForNoMatchingFilters() throws IOException {
+    Configuration c1 = _cb.setHostname("c1").build();
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+    IBatfish batfish =
+        new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
+
+    // Test that exception is thrown if node is found, but no filters match
+    TestFiltersQuestion question =
+        new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), "fake_filter", null, null);
+    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("No matching filters");
+    answerer.answer();
   }
 }
