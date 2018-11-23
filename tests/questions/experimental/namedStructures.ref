@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
+  "indicatePresence" : false,
   "nodes" : ".*",
   "structureTypes" : ".*",
   "differential" : false,
