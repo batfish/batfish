@@ -86,7 +86,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   @JsonCreator
   public NamedStructureSpecifier(String expression) {
     _expression = expression;
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE); // canonicalize
   }
 
   /**
