@@ -81,9 +81,7 @@ public class NamedStructuresAnswerer extends Answerer {
 
         if (namedStructuresMap != null && namedStructuresMap instanceof Map<?, ?>) {
           for (Map.Entry<?, ?> entry : ((Map<?, ?>) namedStructuresMap).entrySet()) {
-            String structureName = (String) entry.getKey();
-            Object strucutre = entry.getValue();
-            row.put(COL_STRUCTURE_NAME, (String) entry.getKey())
+            row.put(COL_STRUCTURE_NAME, entry.getKey())
                 .put(COL_STRUCTURE_DEFINITION, entry.getValue());
             rows.add(row.build());
           }
