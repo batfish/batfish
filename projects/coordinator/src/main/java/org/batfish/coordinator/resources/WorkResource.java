@@ -1,6 +1,5 @@
 package org.batfish.coordinator.resources;
 
-
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
