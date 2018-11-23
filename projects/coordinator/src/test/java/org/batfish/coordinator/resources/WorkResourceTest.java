@@ -1,28 +1,25 @@
 package org.batfish.coordinator.resources;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.UUID;
 import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Version;
+import org.batfish.common.WorkItem;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.coordinator.id.IdManager;
-import org.batfish.datamodel.SnapshotMetadata;
-import org.batfish.datamodel.Topology;
-import org.batfish.identifiers.NetworkId;
-import org.batfish.identifiers.SnapshotId;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,48 +29,11 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Builder getPojoTopologyTarget(String network, String snapshot) {
+  private Builder getWorkItemTarget(String network, String workId) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS)
-        .path(snapshot)
-        .path(CoordConstsV2.RSC_POJO_TOPOLOGY)
-        .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
-  }
-
-  private Builder getTarget(String network, String snapshot) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
-        .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS)
-        .path(snapshot)
-        .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
-  }
-
-  private Builder getTopologyTarget(String network, String snapshot) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
-        .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS)
-        .path(snapshot)
-        .path(CoordConstsV2.RSC_TOPOLOGY)
-        .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
-  }
-
-  private Builder getWorkLogTarget(String network, String snapshot, String workId) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
-        .path(network)
-        .path(CoordConstsV2.RSC_SNAPSHOTS)
-        .path(snapshot)
-        .path(CoordConstsV2.RSC_WORK_LOG)
+        .path(CoordConstsV2.RSC_WORK)
         .path(workId)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
@@ -86,183 +46,50 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteSnapshotMissingNetwork() {
+  public void testGetWorkStatusMissingNetwork() throws IOException {
     String network = "network1";
-    String snapshot = "snapshot1";
-    Response response = getTarget(network, snapshot).delete();
+    UUID workId = UUID.randomUUID();
+    Response response = getWorkItemTarget(network, workId.toString()).get();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
 
   @Test
-  public void testDeleteSnapshotMissingSnapshot() {
+  public void testGetWorkStatusMissingWorkItem() throws IOException {
     String network = "network1";
-    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, snapshot).delete();
+    Response response = getWorkItemTarget(network, workId.toString()).get();
 
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
 
   @Test
-  public void testDeleteSnapshotSuccess() throws IOException {
+  public void testGetWorkStatusInvalidUuid() throws IOException {
     String network = "network1";
-    String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    uploadTestSnapshot(network, snapshot, _folder);
-    Response response = getTarget(network, snapshot).delete();
+    Response response = getWorkItemTarget(network, "@@@").get();
 
-    // should succeed first time
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    response = getTarget(network, snapshot).delete();
-
-    // should fail second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 
   @Test
-  public void testGetPojoTopologyMissingNetwork() throws IOException {
+  public void testGetWorkStatusPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getPojoTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetPojoTopologyMissingSnapshot() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    Response response = getPojoTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetPojoTopologyPresent() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getPojoTopologyTarget(network, snapshot).get();
+    WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
+    Main.getWorkMgr().queueWork(workItem);
+    Response response = getWorkItemTarget(network, workId.toString()).get();
 
+    // work item should exist
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(org.batfish.datamodel.pojo.Topology.class), notNullValue());
-  }
 
-  @Test
-  public void testGetSnapshotMetadataMissingNetwork() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Response response = getTarget(network, snapshot).get();
+    WorkStatus workStatus = response.readEntity(WorkStatus.class);
 
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetSnapshotMetadataMissingSnapshot() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetSnapshotMetadataPresent() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(SnapshotMetadata.class), notNullValue());
-  }
-
-  @Test
-  public void testGetTopologyMissingNetwork() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetTopologyMissingSnapshot() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetTopologyPresent() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(Topology.class), notNullValue());
-  }
-
-  @Test
-  public void testGetWorkLogMissingNetwork() {
-    String network = "network1";
-    String snapshot = "snapshot1";
-
-    Response response = getWorkLogTarget(network, snapshot, "workId").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetWorkLogMissingSnapshot() {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-
-    Response response = getWorkLogTarget(network, snapshot, "workid").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetWorkLogMissingFile() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
-
-    Response response = getWorkLogTarget(network, snapshot, "missingworkid").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-  }
-
-  @Test
-  public void testGetWorkLogPresent() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
-    IdManager idm = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idm.getNetworkId(network);
-    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId);
-    Main.getWorkMgr().getStorage().storeWorkLog("logoutput", networkId, snapshotId, "workid");
-
-    Builder target = getWorkLogTarget(network, snapshot, "workid");
-    Response response = target.get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("logoutput"));
+    // work ID should match
+    assertThat(workStatus.getWorkItem().getId(), equalTo(workId));
   }
 }

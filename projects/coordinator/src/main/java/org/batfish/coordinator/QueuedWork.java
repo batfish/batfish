@@ -99,7 +99,7 @@ public class QueuedWork {
         (_lastTaskCheckResult == null) ? "null" : _lastTaskCheckResult.getStatus(),
         _dateLastTaskCheckedStatus);
   }
-  
+
   public @Nonnull WorkStatus toWorkStatus() {
     return new WorkStatus(_workItem, _status, _lastTaskCheckResult);
   }

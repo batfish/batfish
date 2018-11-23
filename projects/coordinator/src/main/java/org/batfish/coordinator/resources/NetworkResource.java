@@ -125,7 +125,7 @@ public class NetworkResource {
   public WorkResource getWorkResource() {
     return new WorkResource();
   }
-  
+
   /**
    * Fork the specified snapshot and make changes to the new snapshot
    *

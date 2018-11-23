@@ -1,10 +1,11 @@
 package org.batfish.coordinator.resources;
 
+
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -19,8 +20,8 @@ public final class WorkResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @PathParam("/{workid}")
-  public @Nonnull Response getWorkStatus(@PathParam("workid") @Nullable String workIdStr) {
+  @Path("/{workid}")
+  public @Nonnull Response getWorkStatus(@PathParam("workid") @Nonnull String workIdStr) {
     UUID workId;
     try {
       workId = UUID.fromString(workIdStr);
