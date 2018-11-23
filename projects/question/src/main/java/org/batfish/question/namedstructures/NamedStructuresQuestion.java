@@ -11,22 +11,22 @@ import org.batfish.datamodel.questions.Question;
 /**
  * A question that returns named structures of nodes in a tabular format. {@link
  * NamedStructuresQuestion#_nodes} determines which nodes are included, and {@link
- * NamedStructuresQuestion#_properties} determines which named structures are included.
+ * NamedStructuresQuestion#_structureTypes} determines which named structures are included.
  */
 public class NamedStructuresQuestion extends Question {
 
   private static final String PROP_NODES = "nodes";
-  private static final String PROP_PROPERTIES = "properties";
+  private static final String PROP_STRUCTURE_TYPES = "structureTypes";
 
   private final NodesSpecifier _nodes;
 
-  @Nonnull private NamedStructureSpecifier _properties;
+  @Nonnull private NamedStructureSpecifier _structureTypes;
 
   public NamedStructuresQuestion(
       @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @JsonProperty(PROP_PROPERTIES) NamedStructureSpecifier properties) {
+      @JsonProperty(PROP_STRUCTURE_TYPES) NamedStructureSpecifier structureTypes) {
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _properties = firstNonNull(properties, NamedStructureSpecifier.ALL);
+    _structureTypes = firstNonNull(structureTypes, NamedStructureSpecifier.ALL);
   }
 
   @Override
@@ -44,8 +44,8 @@ public class NamedStructuresQuestion extends Question {
     return _nodes;
   }
 
-  @JsonProperty(PROP_PROPERTIES)
-  public NamedStructureSpecifier getProperties() {
-    return _properties;
+  @JsonProperty(PROP_STRUCTURE_TYPES)
+  public NamedStructureSpecifier getStructureTypes() {
+    return _structureTypes;
   }
 }

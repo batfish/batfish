@@ -25,6 +25,9 @@ import org.batfish.datamodel.table.TableMetadata;
 public class NamedStructuresAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
+  public static final String COL_STRUCTURE_TYPE = "Structure_Type";
+  public static final String COL_STRUCTURE_NAME = "Structure_Name";
+  public static final String COL_STRUCTURE_DEFINITION = "Structure_Definition";
 
   public NamedStructuresAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -38,101 +41,54 @@ public class NamedStructuresAnswerer extends Answerer {
    *
    * @return The {@link List} of {@link ColumnMetadata}s
    */
-  public static TableMetadata createNamedStructuresMetadata(
-      NamedStructuresQuestion question,
-      Map<String, Configuration> configurations,
-      Set<String> nodes) {
-    ImmutableList.Builder<ColumnMetadata> columnMetadataList = ImmutableList.builder();
-    columnMetadataList.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
+  public static TableMetadata createMetadata(NamedStructuresQuestion question) {
+    List<ColumnMetadata> columns =
+        ImmutableList.of(
+            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COL_STRUCTURE_TYPE, Schema.STRING, "Structure type", true, false),
+            new ColumnMetadata(COL_STRUCTURE_NAME, Schema.STRING, "Structure name", true, false),
+            new ColumnMetadata(
+                COL_STRUCTURE_DEFINITION, Schema.OBJECT, "Structure definition", true, false));
 
-    for (String nodeName : nodes) {
-      for (String namedStructure : question.getProperties().getMatchingProperties()) {
-        Object namedStructureValues =
-            NamedStructureSpecifier.JAVA_MAP
-                .get(namedStructure)
-                .getGetter()
-                .apply(configurations.get(nodeName));
-        if (namedStructureValues != null
-            && ((namedStructureValues instanceof Map<?, ?>)
-                && !((Map<?, ?>) namedStructureValues).isEmpty())) {
-
-          for (Map.Entry<?, ?> namedStructureEntry :
-              ((Map<?, ?>) namedStructureValues).entrySet()) {
-            String namedStructureEntryKey = namedStructureEntry.getKey().toString();
-
-            Schema columnSchema = Schema.OBJECT;
-            String finalNameStructureEntry = namedStructure + ":" + namedStructureEntryKey;
-
-            if (!columnMetadataList
-                .build()
-                .stream()
-                .anyMatch(
-                    columnMetadata -> columnMetadata.getName().equals(finalNameStructureEntry))) {
-
-              columnMetadataList.add(
-                  new ColumnMetadata(
-                      finalNameStructureEntry,
-                      columnSchema,
-                      namedStructureEntryKey,
-                      Boolean.FALSE,
-                      Boolean.TRUE));
-            }
-          }
-        }
-      }
-    }
-
-    String textDesc = String.format("Properties of node ${%s}.", COL_NODE);
+    String textDesc = String.format("Structure ${%s} on node ${%s}.", COL_STRUCTURE_NAME, COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadataList.build(), textDesc);
+    return new TableMetadata(columns, textDesc);
   }
 
   @VisibleForTesting
-  static Multiset<Row> rawNamedStructuresAnswer(
-      NamedStructuresQuestion question,
-      Map<String, Configuration> configurations,
+  static Multiset<Row> rawAnswer(
+      Set<String> structureTypes,
       Set<String> nodes,
-      TableMetadata tableMetadata) {
+      Map<String, Configuration> configurations,
+      Map<String, ColumnMetadata> columns) {
 
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columns = tableMetadata.toColumnMap();
+
     for (String nodeName : nodes) {
-      RowBuilder row = Row.builder(columns);
-      row.put(COL_NODE, new Node(nodeName));
+      RowBuilder row = Row.builder(columns).put(COL_NODE, new Node(nodeName));
 
-      for (Map.Entry<String, ColumnMetadata> columnEntry : columns.entrySet()) {
-        String columnName = columnEntry.getKey();
-        if (columnName.equalsIgnoreCase(COL_NODE)) {
-          continue;
-        }
+      for (String structureType : structureTypes) {
+        row.put(COL_STRUCTURE_TYPE, structureType);
 
-        String[] columnSplits = columnName.split(":", 2);
-        String actualNameStructureType = columnSplits[0];
-
-        Object namedStructureValues =
+        Object namedStructuresMap =
             NamedStructureSpecifier.JAVA_MAP
-                .get(actualNameStructureType)
+                .get(structureType)
                 .getGetter()
                 .apply(configurations.get(nodeName));
-        if (namedStructureValues != null) {
 
-          if ((namedStructureValues instanceof Map<?, ?>)
-              && !((Map<?, ?>) namedStructureValues).isEmpty()) {
-            for (Map.Entry<?, ?> namedStructureEntry :
-                ((Map<?, ?>) namedStructureValues).entrySet()) {
-              Object namedStructutureEntryValue = namedStructureEntry.getValue();
-              row.put(columnName, namedStructutureEntryValue);
-            }
-          } else {
-            /* To fill the missing cells in the answer Table. */
-            row.put(columnName, null);
+        if (namedStructuresMap != null && namedStructuresMap instanceof Map<?, ?>) {
+          for (Map.Entry<?, ?> entry : ((Map<?, ?>) namedStructuresMap).entrySet()) {
+            String structureName = (String) entry.getKey();
+            Object strucutre = entry.getValue();
+            row.put(COL_STRUCTURE_NAME, (String) entry.getKey())
+                .put(COL_STRUCTURE_DEFINITION, entry.getValue());
+            rows.add(row.build());
           }
         }
       }
-      rows.add(row.build());
     }
     return rows;
   }
@@ -142,11 +98,12 @@ public class NamedStructuresAnswerer extends Answerer {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> properties = question.getStructureTypes().getMatchingProperties();
 
-    TableMetadata tableMetadata = createNamedStructuresMetadata(question, configurations, nodes);
+    TableMetadata tableMetadata = createMetadata(question);
 
     Multiset<Row> propertyRows =
-        rawNamedStructuresAnswer(question, configurations, nodes, tableMetadata);
+        rawAnswer(properties, nodes, configurations, tableMetadata.toColumnMap());
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     answer.postProcessAnswer(question, propertyRows);
