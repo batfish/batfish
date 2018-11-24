@@ -3525,7 +3525,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.ICMP_TYPE_OBJECT,
         CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
+        CiscoStructureType.NETWORK_OBJECT,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(
