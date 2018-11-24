@@ -1,11 +1,13 @@
 package org.batfish.question.namedstructures;
 
+import static org.batfish.question.namedstructures.NamedStructuresAnswerer.getAllStructureNamesOfType;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.Map;
 import org.batfish.datamodel.Configuration;
@@ -18,6 +20,30 @@ import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
 public class NamedStructuresAnswererTest {
+
+  @Test
+  public void testGetAllStructureNamesOfType() {
+    NetworkFactory nf = new NetworkFactory();
+
+    // c1 has both routing policies
+    Configuration c1 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.routingPolicyBuilder().setOwner(c1).setName("rp1").build();
+    nf.routingPolicyBuilder().setOwner(c1).setName("rp2").build();
+
+    // c2 has only one routing policy
+    Configuration c2 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.routingPolicyBuilder().setOwner(c1).setName("rp1").build();
+
+    Map<String, Configuration> configurations = ImmutableMap.of("node1", c1, "node2", c2);
+
+    // both policies should be returned
+    assertThat(
+        getAllStructureNamesOfType(
+            NamedStructureSpecifier.ROUTING_POLICY, configurations.keySet(), configurations),
+        equalTo(ImmutableSet.of("rp1", "rp2")));
+  }
 
   @Test
   public void testRawAnswerDefinition() {

@@ -83,41 +83,25 @@ public class NamedStructuresAnswerer extends Answerer {
       Function<Configuration, Object> structMapGetter =
           NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
 
-      // collect all names if we are only indicating presence
-      Set<String> structNames = new HashSet<>();
+      Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
 
-      for (String nodeName : nodes) {
-        row.put(COL_NODE, new Node(nodeName));
-
-        Configuration c = configurations.get(nodeName);
-        Object namedStructuresMap = structMapGetter.apply(c);
-
-        if (namedStructuresMap instanceof Map<?, ?>) {
-          for (Map.Entry<?, ?> entry : ((Map<?, ?>) namedStructuresMap).entrySet()) {
-            if (question.getIndicatePresence()) {
-              structNames.add((String) entry.getKey());
-            } else {
-              row.put(COL_STRUCTURE_NAME, entry.getKey());
-              row.put(COL_STRUCTURE_DEFINITION, entry.getValue());
-              rows.add(row.build());
-            }
-          }
-        }
-      }
-
-      // insert values if we are only indicating presence
-      if (question.getIndicatePresence()) {
+      for (String structName : structNames) {
         for (String nodeName : nodes) {
           row.put(COL_NODE, new Node(nodeName));
 
-          Configuration c = configurations.get(nodeName);
-          Object namedStructuresMap = structMapGetter.apply(c);
+          Object namedStructuresMap = structMapGetter.apply(configurations.get(nodeName));
 
           if (namedStructuresMap instanceof Map<?, ?>) {
-            for (String structName : structNames) {
+            if (question.getIndicatePresence()) {
               row.put(COL_STRUCTURE_NAME, structName);
               row.put(COL_PRESENT_ON_NODE, ((Map) namedStructuresMap).containsKey(structName));
               rows.add(row.build());
+            } else {
+              if (((Map) namedStructuresMap).containsKey(structName)) {
+                row.put(COL_STRUCTURE_NAME, structName);
+                row.put(COL_STRUCTURE_DEFINITION, ((Map) namedStructuresMap).get(structName));
+                rows.add(row.build());
+              }
             }
           }
         }
@@ -140,5 +124,26 @@ public class NamedStructuresAnswerer extends Answerer {
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     answer.postProcessAnswer(question, propertyRows);
     return answer;
+  }
+
+  /** Returns all structures of type {@code structureType} across {@code nodes} */
+  public static Set<String> getAllStructureNamesOfType(
+      String structureType, Set<String> nodes, Map<String, Configuration> configurations) {
+
+    Set<String> structNames = new HashSet<>();
+
+    Function<Configuration, Object> structMapGetter =
+        NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+
+    for (String node : nodes) {
+      Object namedStructuresMap = structMapGetter.apply(configurations.get(node));
+
+      if (namedStructuresMap instanceof Map<?, ?>) {
+        for (Map.Entry<?, ?> entry : ((Map<?, ?>) namedStructuresMap).entrySet()) {
+          structNames.add((String) entry.getKey());
+        }
+      }
+    }
+    return structNames;
   }
 }
