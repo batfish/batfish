@@ -12,7 +12,6 @@ import java.util.function.Function;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -114,7 +113,7 @@ public class NamedStructuresAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
