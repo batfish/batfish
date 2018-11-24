@@ -33,7 +33,7 @@
                 "type": "javaRegex",
                 "optional": true,
                 "displayName": "Structure names"
-            },
+            }
         }
     }
 }
