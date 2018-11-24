@@ -1670,6 +1670,69 @@
           }
         }
       },
+      "asa_object_groups" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "asa_object_groups",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "ALLOW_SERVER02" : {
+            "name" : "ALLOW_SERVER02",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "description" : "Match network object: 'server02'",
+                      "name" : "server02"
+                    },
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "permit tcp any object server02"
+              }
+            ],
+            "sourceName" : "ALLOW_SERVER02",
+            "sourceType" : "extended ipv4 access-list"
+          }
+        },
+        "ipSpaceMetadata" : {
+          "server02" : {
+            "sourceName" : "server02",
+            "sourceType" : "object network"
+          }
+        },
+        "ipSpaces" : {
+          "server02" : {
+            "class" : "org.batfish.datamodel.IpIpSpace",
+            "ip" : "192.168.126.64"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa_object_groups",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "asa_ospf" : {
         "configurationFormat" : "CISCO_ASA",
         "name" : "asa_ospf",

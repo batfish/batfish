@@ -144,6 +144,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -1105,6 +1106,7 @@ import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObject;
+import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NssaSettings;
@@ -5212,8 +5214,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.obj != null) {
-      todo(ctx);
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
+      String name = ctx.obj.getText();
+      int line = ctx.obj.getStart().getLine();
+      _configuration.referenceStructure(
+          NETWORK_OBJECT, name, EXTENDED_ACCESS_LIST_NETWORK_OBJECT, line);
+      return new NetworkObjectAddressSpecifier(name);
     } else if (ctx.og != null) {
       String name = ctx.og.getText();
       int line = ctx.og.getStart().getLine();
