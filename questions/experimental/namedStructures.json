@@ -2,7 +2,7 @@
     "class": "org.batfish.question.namedstructures.NamedStructuresQuestion",
     "differential": false,
     "nodes": "${nodes}",
-    "properties": "${properties}",
+    "structureTypes": "${structureTypes}",
     "instance": {
         "description": "Return named structure definitions",
         "instanceName": "namedStructures",
@@ -14,11 +14,11 @@
                 "optional": true,
                 "displayName": "Nodes"
             },
-            "properties": {
-                "description": "Include properties matching this regex",
+            "structureTypes": {
+                "description": "Include structures of this type",
                 "type": "namedStructureSpec",
                 "optional": true,
-                "displayName": "Properties"
+                "displayName": "Structure types"
             }
         }
     }
