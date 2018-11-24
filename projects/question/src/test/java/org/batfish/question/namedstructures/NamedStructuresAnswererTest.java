@@ -148,7 +148,7 @@ public class NamedStructuresAnswererTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     RoutingPolicy rp1 = nf.routingPolicyBuilder().setOwner(c).setName("selected-rp1").build();
-    RoutingPolicy rp2 = nf.routingPolicyBuilder().setOwner(c).setName("leftout-rp2").build();
+    nf.routingPolicyBuilder().setOwner(c).setName("leftout-rp2").build();
 
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
 
