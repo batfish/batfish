@@ -86,6 +86,9 @@ public class NamedStructuresAnswerer extends Answerer {
       Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
 
       for (String structName : structNames) {
+        if (!question.getStructureNamePattern().matcher(structName).matches()) {
+          continue;
+        }
         for (String nodeName : nodes) {
           row.put(COL_NODE, new Node(nodeName));
 

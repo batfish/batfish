@@ -89,6 +89,17 @@ public class NamedStructureSpecifier extends PropertySpecifier {
     _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE); // canonicalize
   }
 
+  public NamedStructureSpecifier(Set<String> structureTypes) {
+    // quote and join
+    _expression =
+        structureTypes
+            .stream()
+            .map(String::trim)
+            .map(Pattern::quote)
+            .collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  }
+
   /**
    * Returns a list of suggestions based on the query. The current implementation treats the query
    * as a prefix of the property string.
