@@ -143,6 +143,8 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamily.viNetworkObjectGroupName;
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamily.viNetworkObjectName;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
@@ -824,11 +826,17 @@ public class CiscoGrammarTest {
     assertThat(
         ccae, hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "UNDEFINED_GROUP_MIXED"));
 
-    assertThat(c, hasIpSpace("admin", containsIp(engHostIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("admin", containsIp(hrHostIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("admin", containsIp(financeHostIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("mixed_group", containsIp(itIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("admin", not(containsIp(otherIp, c.getIpSpaces()))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName("admin"),
+            allOf(
+                containsIp(engHostIp, c.getIpSpaces()),
+                containsIp(hrHostIp, c.getIpSpaces()),
+                containsIp(financeHostIp, c.getIpSpaces()),
+                not(containsIp(otherIp, c.getIpSpaces())))));
+    assertThat(
+        c, hasIpSpace(viNetworkObjectGroupName("mixed_group"), containsIp(itIp, c.getIpSpaces())));
   }
 
   @Test
@@ -985,9 +993,12 @@ public class CiscoGrammarTest {
                                             hasHeaderSpace(
                                                 allOf(
                                                     hasDstIps(
-                                                        isIpSpaceReferenceThat(hasName("ogn2"))),
+                                                        isIpSpaceReferenceThat(
+                                                            hasName("ogn2~network-object-group"))),
                                                     hasSrcIps(
-                                                        isIpSpaceReferenceThat(hasName("ogn1")))))),
+                                                        isIpSpaceReferenceThat(
+                                                            hasName(
+                                                                "ogn1~network-object-group")))))),
                                         isPermittedByAclThat(
                                             hasAclName(
                                                 computeServiceObjectGroupAclName("ogs1"))))))))))));
@@ -1521,22 +1532,41 @@ public class CiscoGrammarTest {
     String ognNameWildcard = "ogn_wildcard";
 
     /* Each object group should permit an IP iff it is in its space. */
-    assertThat(c, hasIpSpace(ognNameHost, containsIp(ognHostIp)));
-    assertThat(c, hasIpSpace(ognNameHost, not(containsIp(ognUnmatchedIp))));
-    assertThat(c, hasIpSpace(ognNameIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace(ognNameIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
-    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognHostIp)));
-    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognWildcardIp)));
-    assertThat(c, hasIpSpace(ognNameNetworkObject, not(containsIp(ognUnmatchedIp))));
-    assertThat(c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp, c.getIpSpaces())));
-    assertThat(
-        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
     assertThat(
         c,
-        hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
-    assertThat(c, hasIpSpace(ognNameUnused, not(containsIp(ognUnmatchedIp))));
-    assertThat(c, hasIpSpace(ognNameWildcard, containsIp(ognWildcardIp)));
-    assertThat(c, hasIpSpace(ognNameWildcard, not(containsIp(ognUnmatchedIp))));
+        hasIpSpace(
+            viNetworkObjectGroupName(ognNameHost),
+            allOf(containsIp(ognHostIp), not(containsIp(ognUnmatchedIp)))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName(ognNameIndirect),
+            allOf(
+                containsIp(ognWildcardIp, c.getIpSpaces()),
+                not(containsIp(ognUnmatchedIp, c.getIpSpaces())))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName(ognNameNetworkObject),
+            allOf(
+                containsIp(ognHostIp),
+                containsIp(ognWildcardIp),
+                not(containsIp(ognUnmatchedIp)))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName(ognNameNetworkObjectIndirect),
+            allOf(
+                containsIp(ognHostIp, c.getIpSpaces()),
+                containsIp(ognWildcardIp, c.getIpSpaces()),
+                not(containsIp(ognUnmatchedIp, c.getIpSpaces())))));
+    assertThat(
+        c, hasIpSpace(viNetworkObjectGroupName(ognNameUnused), not(containsIp(ognUnmatchedIp))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName(ognNameWildcard),
+            allOf(containsIp(ognWildcardIp), not(containsIp(ognUnmatchedIp)))));
 
     /* Confirm the used object groups have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, ognNameWildcard, 2));
@@ -2055,16 +2085,25 @@ public class CiscoGrammarTest {
     Ip inlineIp = new Ip("3.3.3.3");
 
     /* Confirm network object IpSpaces cover the correct Ip addresses */
-    assertThat(c, hasIpSpace("ON1", containsIp(on1Ip)));
-    assertThat(c, hasIpSpace("ON1", not(containsIp(on2IpStart))));
-    assertThat(c, hasIpSpace("ON2", containsIp(on2IpStart)));
-    assertThat(c, hasIpSpace("ON2", containsIp(on2IpEnd)));
-    assertThat(c, hasIpSpace("ON2", not(containsIp(on1Ip))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectName("ON1"), allOf(containsIp(on1Ip), not(containsIp(on2IpStart)))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectName("ON2"),
+            allOf(containsIp(on2IpStart), containsIp(on2IpEnd), not(containsIp(on1Ip)))));
 
     /* Confirm object-group also covers the IpSpaces its network objects cover */
-    assertThat(c, hasIpSpace("OGN", containsIp(on1Ip, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("OGN", containsIp(inlineIp, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("OGN", not(containsIp(on2IpStart, c.getIpSpaces()))));
+    assertThat(
+        c,
+        hasIpSpace(
+            viNetworkObjectGroupName("OGN"),
+            allOf(
+                containsIp(on1Ip, c.getIpSpaces()),
+                containsIp(inlineIp, c.getIpSpaces()),
+                not(containsIp(on2IpStart, c.getIpSpaces())))));
 
     /* Confirm network objects have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "ON1", 1));

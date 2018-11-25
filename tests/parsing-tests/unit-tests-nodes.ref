@@ -1586,7 +1586,7 @@
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
                       "description" : "Match network object-group: 'drawbridge_hosts'",
-                      "name" : "drawbridge_hosts"
+                      "name" : "drawbridge_hosts~network-object-group"
                     }
                   }
                 },
@@ -1688,7 +1688,7 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
                       "description" : "Match network object: 'server02'",
-                      "name" : "server02"
+                      "name" : "server02~network-object"
                     },
                     "ipProtocols" : [
                       "TCP"
@@ -1708,13 +1708,13 @@
           }
         },
         "ipSpaceMetadata" : {
-          "server02" : {
+          "server02~network-object" : {
             "sourceName" : "server02",
             "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
-          "server02" : {
+          "server02~network-object" : {
             "class" : "org.batfish.datamodel.IpIpSpace",
             "ip" : "192.168.126.64"
           }
@@ -10021,33 +10021,33 @@
           }
         },
         "ipSpaceMetadata" : {
-          "1.2.3.4-24" : {
+          "1.2.3.4-24~network-object-group" : {
             "sourceName" : "1.2.3.4-24",
             "sourceType" : "object-group network"
           },
-          "dns_servers" : {
+          "dns_servers~network-object-group" : {
             "sourceName" : "dns_servers",
             "sourceType" : "object-group network"
           },
-          "ntp_servers" : {
+          "ntp_servers~network-object-group" : {
             "sourceName" : "ntp_servers",
             "sourceType" : "object-group network"
           },
-          "obj_any" : {
+          "obj_any~network-object" : {
             "sourceName" : "obj_any",
             "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
-          "1.2.3.4-24" : {
+          "1.2.3.4-24~network-object-group" : {
             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
             "ipWildcard" : "1.2.3.0/24"
           },
-          "dns_servers" : {
+          "dns_servers~network-object-group" : {
             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
             "ipWildcard" : "1.2.2.1"
           },
-          "ntp_servers" : {
+          "ntp_servers~network-object-group" : {
             "class" : "org.batfish.datamodel.AclIpSpace",
             "lines" : [
               {
@@ -10066,7 +10066,7 @@
               }
             ]
           },
-          "obj_any" : {
+          "obj_any~network-object" : {
             "class" : "org.batfish.datamodel.PrefixIpSpace",
             "prefix" : "0.0.0.0/0"
           }

@@ -81,6 +81,21 @@ public class CiscoFamily implements Serializable {
     _users = new TreeMap<>();
   }
 
+  /**
+   * Returns the name of a Cisco network object-group when converted into the vendor independent
+   * model.
+   */
+  public static String viNetworkObjectGroupName(String name) {
+    return String.format("%s~network-object-group", name);
+  }
+
+  /**
+   * Returns the name of a Cisco network object when converted into the vendor independent model.
+   */
+  public static String viNetworkObjectName(String name) {
+    return String.format("%s~network-object", name);
+  }
+
   @JsonProperty(PROP_AAA)
   public Aaa getAaa() {
     return _aaa;

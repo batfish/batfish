@@ -8,6 +8,8 @@ import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamily.viNetworkObjectGroupName;
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamily.viNetworkObjectName;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
@@ -2987,27 +2989,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
-        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
-    _networkObjectGroups
-        .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+        (name, networkObjectGroup) -> {
+          String viName = viNetworkObjectGroupName(name);
+          c.getIpSpaces().put(viName, toIpSpace(networkObjectGroup));
+          c.getIpSpaceMetadata()
+              .put(
+                  viName,
+                  new IpSpaceMetadata(
+                      name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription()));
+        });
     _networkObjects.forEach(
-        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
-    _networkObjects
-        .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
+        (name, networkObject) -> {
+          String viName = viNetworkObjectName(name);
+          c.getIpSpaces().put(viName, networkObject.getIpSpace());
+          c.getIpSpaceMetadata()
+              .put(
+                  viName,
+                  new IpSpaceMetadata(name, CiscoStructureType.NETWORK_OBJECT.getDescription()));
+        });
 
     // convert each IcmpTypeGroup to IpAccessList
     _icmpTypeObjectGroups.forEach(

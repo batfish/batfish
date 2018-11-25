@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamily.viNetworkObjectName;
+
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -26,6 +28,7 @@ public class NetworkObjectAddressSpecifier implements AccessListAddressSpecifier
   @Override
   @Nonnull
   public IpSpace toIpSpace() {
-    return new IpSpaceReference(_name, String.format("Match network object: '%s'", _name));
+    return new IpSpaceReference(
+        viNetworkObjectName(_name), String.format("Match network object: '%s'", _name));
   }
 }

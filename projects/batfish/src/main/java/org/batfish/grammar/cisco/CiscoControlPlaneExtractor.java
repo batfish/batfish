@@ -380,6 +380,7 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.Buffered;
 import org.batfish.datamodel.vendor_family.cisco.Cable;
+import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.DepiClass;
 import org.batfish.datamodel.vendor_family.cisco.DepiTunnel;
 import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
@@ -2682,7 +2683,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOggn_group_object(Oggn_group_objectContext ctx) {
     String name = ctx.name.getText();
-    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _currentNetworkObjectGroup
+        .getLines()
+        .add(new IpSpaceReference(CiscoFamily.viNetworkObjectGroupName(name)));
     _configuration.referenceStructure(
         NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
@@ -2811,7 +2814,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOgn_group_object(Ogn_group_objectContext ctx) {
     String name = ctx.name.getText();
-    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _currentNetworkObjectGroup
+        .getLines()
+        .add(new IpSpaceReference(CiscoFamily.viNetworkObjectGroupName(name)));
     _configuration.referenceStructure(
         NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
@@ -2842,7 +2847,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
     } else if (ctx.name != null) {
       String name = ctx.name.getText();
-      ipSpace = new IpSpaceReference(name);
+      ipSpace = new IpSpaceReference(CiscoFamily.viNetworkObjectName(name));
       _configuration.referenceStructure(
           NETWORK_OBJECT, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, ctx.name.start.getLine());
     }
