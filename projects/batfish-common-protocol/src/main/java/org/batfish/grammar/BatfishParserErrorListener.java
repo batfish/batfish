@@ -41,8 +41,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
         + tokenName
         + ":"
         + tokenText
-        + "  <== mode:"
-        + mode;
+        + (!"DEFAULT_MODE".equals(mode) ? "  <== mode:" + mode : "");
   }
 
   public void syntaxError(
