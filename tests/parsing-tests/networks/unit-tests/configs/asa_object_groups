@@ -1,0 +1,5 @@
+! ASA Version 9.9
+hostname asa_object_groups
+object network server02
+ host 192.168.126.64
+access-list ALLOW_SERVER02 extended permit tcp any object server02

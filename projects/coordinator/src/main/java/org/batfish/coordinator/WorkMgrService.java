@@ -1449,7 +1449,9 @@ public class WorkMgrService {
   }
 
   /**
-   * Obtain the counts of completed and incomplete work items
+   * Obtain the counts of completed and incomplete work items <br>
+   * Deprecated in favor of {@link
+   * org.batfish.coordinator.resources.WorkResource#getWorkStatus(String) }
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1459,6 +1461,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_WORKSTATUS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray getWorkStatus(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,

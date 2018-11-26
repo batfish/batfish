@@ -2,9 +2,11 @@ package org.batfish.coordinator;
 
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.datamodel.pojo.WorkStatus;
 
 public class QueuedWork {
 
@@ -96,5 +98,9 @@ public class QueuedWork {
         _assignedWorker,
         (_lastTaskCheckResult == null) ? "null" : _lastTaskCheckResult.getStatus(),
         _dateLastTaskCheckedStatus);
+  }
+
+  public @Nonnull WorkStatus toWorkStatus() {
+    return new WorkStatus(_workItem, _status, _lastTaskCheckResult);
   }
 }

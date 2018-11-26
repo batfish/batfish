@@ -10,6 +10,7 @@ import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
+import static org.batfish.common.CoordConstsV2.RSC_WORK;
 
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
@@ -117,6 +118,12 @@ public class NetworkResource {
   @Path(RSC_SNAPSHOTS)
   public SnapshotsResource getSnapshotsResource() {
     return new SnapshotsResource(_name);
+  }
+
+  /** Relocate the request to {@link WorkResource} */
+  @Path(RSC_WORK)
+  public WorkResource getWorkResource() {
+    return new WorkResource();
   }
 
   /**

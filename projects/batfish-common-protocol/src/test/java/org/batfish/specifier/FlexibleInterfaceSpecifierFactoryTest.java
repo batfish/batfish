@@ -57,6 +57,14 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   }
 
   @Test
+  public void testType() {
+    assertThat(
+        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("type(.*)"),
+        equalTo(
+            new TypeNameRegexInterfaceSpecifier(Pattern.compile(".*", Pattern.CASE_INSENSITIVE))));
+  }
+
+  @Test
   public void testVrf() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("vrf(.*)"),

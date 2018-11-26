@@ -2298,7 +2298,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
-        new org.batfish.datamodel.ospf.OspfProcess();
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setReferenceBandwidth(proc.getReferenceBandwidth())
+            .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getMaxMetricRouterLsa()) {
@@ -2419,6 +2421,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+
     // set pointers from interfaces to their parent areas
     newProcess
         .getAreas()
@@ -2464,7 +2467,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           route.setNetwork(Prefix.ZERO);
           route.setAdmin(MAX_ADMINISTRATIVE_COST);
           route.setGenerationPolicy(defaultOriginateMapName);
-          newProcess.getGeneratedRoutes().add(route.build());
+          newProcess.addGeneratedRoute(route.build());
         }
       } else if (proc.getDefaultInformationOriginateAlways()) {
         useAggregateDefaultOnly = true;
@@ -2472,7 +2475,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         GeneratedRoute.Builder route = new GeneratedRoute.Builder();
         route.setNetwork(Prefix.ZERO);
         route.setAdmin(MAX_ADMINISTRATIVE_COST);
-        newProcess.getGeneratedRoutes().add(route.build());
+        newProcess.addGeneratedRoute(route.build());
       } else {
         // do not generate an aggregate default route;
         // just redistribute any existing default route with the new metric
@@ -2487,7 +2490,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefault.setGuard(ospfExportDefaultConditions);
     }
 
-    newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
       routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
@@ -3179,7 +3181,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
         if (tunnel.getIpsecProfileName() == null) {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
@@ -3337,12 +3339,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
         CiscoStructureUsage.SSH_IPV6_ACL);
     markAcls(
+        CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
         CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
+        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
         CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
@@ -3520,7 +3525,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.ICMP_TYPE_OBJECT,
         CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT, CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
+        CiscoStructureType.NETWORK_OBJECT,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(

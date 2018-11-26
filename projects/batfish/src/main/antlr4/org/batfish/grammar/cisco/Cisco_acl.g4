@@ -121,6 +121,31 @@ as_path_set_stanza
    )? END_SET NEWLINE
 ;
 
+asa_access_group
+:
+   ACCESS_GROUP
+   (
+      asa_ag_interface
+      | asa_ag_global
+   )
+   NEWLINE
+;
+
+asa_ag_interface
+:
+   name = variable
+   (
+      IN
+      | OUT
+   )
+   INTERFACE iface = variable
+;
+
+asa_ag_global
+:
+   name = variable GLOBAL
+;
+
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line

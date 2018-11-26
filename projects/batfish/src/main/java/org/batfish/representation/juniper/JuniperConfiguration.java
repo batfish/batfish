@@ -114,6 +114,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -212,6 +213,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private transient Interface _lo0;
 
   private transient boolean _lo0Initialized;
+
+  @Nullable private Nat _natDestination = null;
+
+  @Nullable private Nat _natSource = null;
+
+  @Nullable private Nat _natStatic = null;
 
   private final Map<String, NodeDevice> _nodeDevices;
 
@@ -707,7 +714,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
-    OspfProcess newProc = new OspfProcess();
+    OspfProcess newProc =
+        OspfProcess.builder()
+            .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
+            .build();
     String vrfName = routingInstance.getName();
     // export policies
     String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
@@ -779,7 +789,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                 .setOspfArea(area)));
 
     newProc.setRouterId(getOspfRouterId(routingInstance));
-    newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
 
@@ -925,6 +934,40 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public JuniperFamily getJf() {
     return _jf;
+  }
+
+  public Nat getNatDestination() {
+    return _natDestination;
+  }
+
+  public Nat getNatSource() {
+    return _natSource;
+  }
+
+  public Nat getNatStatic() {
+    return _natStatic;
+  }
+
+  public Nat getOrCreateNat(Nat.Type natType) {
+    switch (natType) {
+      case DESTINATION:
+        if (_natDestination == null) {
+          _natDestination = new Nat(Type.DESTINATION);
+        }
+        return _natDestination;
+      case SOURCE:
+        if (_natSource == null) {
+          _natSource = new Nat(Type.SOURCE);
+        }
+        return _natSource;
+      case STATIC:
+        if (_natStatic == null) {
+          _natStatic = new Nat(Type.STATIC);
+        }
+        return _natStatic;
+      default:
+        throw new IllegalArgumentException("Unknnown nat type " + natType);
+    }
   }
 
   public Map<String, NodeDevice> getNodeDevices() {
@@ -2421,6 +2464,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    // destination nats
+    if (_natDestination != null) {
+      _w.unimplemented("Destination NAT is not currently implemented");
+    }
+
+    // source nats
+    if (_natSource != null) {
+      _w.unimplemented("Source NAT is not currently implemented");
+    }
+
+    // static nats
+    if (_natStatic != null) {
+      _w.unimplemented("Static NAT is not currently implemented");
+    }
+
     // mark forwarding table export policy if it exists
     String forwardingTableExportPolicyName =
         _defaultRoutingInstance.getForwardingTableExportPolicy();
@@ -2467,7 +2525,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
         JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
         JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
-        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE);
+        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        JuniperStructureUsage.VTEP_SOURCE_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,
@@ -2475,7 +2534,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
         JuniperStructureUsage.GENERATED_ROUTE_POLICY,
         JuniperStructureUsage.OSPF_EXPORT_POLICY,
-        JuniperStructureUsage.POLICY_STATEMENT_POLICY);
+        JuniperStructureUsage.POLICY_STATEMENT_POLICY,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
@@ -2500,6 +2561,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL);
     markConcreteStructure(
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY);
+
+    markConcreteStructure(
+        JuniperStructureType.NAT_POOL,
+        JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
+        JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
 
     warnEmptyPrefixLists();
 

@@ -21,8 +21,7 @@ public class OspfPropertiesAnswererTest {
 
   @Test
   public void getProperties() {
-
-    OspfProcess ospf1 = new OspfProcess();
+    OspfProcess ospf1 = OspfProcess.builder().setReferenceBandwidth(1e8).build();
     ospf1.setExportPolicy("my-policy");
     ospf1.setReferenceBandwidth(42.0);
     ospf1.setProcessId("uber-proc");
