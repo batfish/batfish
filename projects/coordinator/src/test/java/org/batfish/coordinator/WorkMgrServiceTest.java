@@ -989,6 +989,7 @@ public class WorkMgrServiceTest {
   }
 
   @Test
+  @Deprecated
   public void testGetWorkStatus() throws InterruptedException, ExecutionException, IOException {
     initNetwork();
     WorkMgrTestUtils.uploadTestSnapshot(_networkName, _snapshotName, _networksFolder);

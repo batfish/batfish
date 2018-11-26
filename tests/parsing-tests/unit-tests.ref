@@ -111,6 +111,9 @@
         "asa_banner" : [
           "configs/asa_banner"
         ],
+        "asa_object_groups" : [
+          "configs/asa_object_groups"
+        ],
         "asa_ospf" : [
           "configs/asa_ospf"
         ],
@@ -821,6 +824,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
         "configs/banner" : "PASSED",
@@ -7257,6 +7261,47 @@
             "      (banner",
             "        ASA_BANNER_LINE:'**************************************************'  <== mode:M_BannerText",
             "        NEWLINE:'\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "asa_object_groups" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa_object_groups'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_object",
+            "      OBJECT:'object'",
+            "      (o_network",
+            "        NETWORK:'network'",
+            "        name = (variable_permissive",
+            "          VARIABLE:'server02')",
+            "        NEWLINE:'\\n'",
+            "        (on_host",
+            "          HOST:'host'",
+            "          address = IP_ADDRESS:'192.168.126.64'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'ALLOW_SERVER02')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit')",
+            "        prot = (protocol",
+            "          TCP:'tcp')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          OBJECT:'object'",
+            "          obj = (variable",
+            "            VARIABLE:'server02'))",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -60237,16 +60282,6 @@
             }
           ]
         },
-        "cisco_vrf" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
-              "Text" : "ip route 0.0.0.0/0 1.2.3.4"
-            }
-          ]
-        },
         "foundry_access_list" : {
           "Parse warnings" : [
             {
@@ -60492,16 +60527,6 @@
               "Text" : "ip default-gateway 128.125.253.254"
             }
           ]
-        },
-        "vrf_context" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 7,
-              "Parser_Context" : "[vrfc_ip_route s_vrf_context stanza cisco_configuration]",
-              "Text" : "ip route 0.0.0.0/0 1.2.3.4"
-            }
-          ]
         }
       }
     },
@@ -60695,6 +60720,25 @@
           }
         },
         "configs/asa_banner" : { },
+        "configs/asa_object_groups" : {
+          "extended ipv4 access-list" : {
+            "ALLOW_SERVER02" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "object network" : {
+            "server02" : {
+              "definitionLines" : [
+                3,
+                4
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/asa_ospf" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -65047,6 +65091,15 @@
             "drawbridge_hosts" : {
               "extended access-list network object-group" : [
                 9
+              ]
+            }
+          }
+        },
+        "configs/asa_object_groups" : {
+          "object network" : {
+            "server02" : {
+              "extended access-list network object" : [
+                5
               ]
             }
           }
@@ -69807,6 +69860,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
         "configs/banner" : "PASSED",
