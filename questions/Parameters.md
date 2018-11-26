@@ -101,7 +101,7 @@ A specification for interfaces in the network.
 
 * `connectedTo` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `connectedTo(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
 
-* `type` indicates all interfaces with the specified type. For example `type(loopback)` includes loopback interfaces.
+* `type` indicates all interfaces with the specified type. For example, `type(loopback)` includes loopback interfaces.
 
 * `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
 
