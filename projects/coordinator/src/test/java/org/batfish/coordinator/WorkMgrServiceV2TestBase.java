@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Application;
@@ -14,24 +15,18 @@ import org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory;
 
 public class WorkMgrServiceV2TestBase extends JerseyTest {
 
-  // Grizzly test container logger is identified by a private inner class for some reason
-  private static Logger GRIZZLY_TEST_CONTAINER_LOGGER =
-      Logger.getLogger(
-          String.format("%s$GrizzlyTestContainer", GrizzlyTestContainerFactory.class.getName()));
-
-  // must be done statically to maintain reference
-  private static Logger HTTP_SERVER_LOGGER = Logger.getLogger(HttpServer.class.getName());
-
-  // must be done statically to maintain reference
-  private static Logger NETWORK_LISTENER_LOGGER = Logger.getLogger(NetworkListener.class.getName());
-
-  /** Test log-level for HTTP server library components. */
-  private static final Level TEST_LOG_LEVEL = Level.OFF;
+  // Must be done statically to maintain references, or else 3rd-party code will not use our
+  // settings. Do not move getLogger calls out of static initialization.
+  private static final Logger[] LOGGERS =
+      new Logger[] {
+        Logger.getLogger(
+            String.format("%s$GrizzlyTestContainer", GrizzlyTestContainerFactory.class.getName())),
+        Logger.getLogger(HttpServer.class.getName()),
+        Logger.getLogger(NetworkListener.class.getName())
+      };
 
   public WorkMgrServiceV2TestBase() {
-    GRIZZLY_TEST_CONTAINER_LOGGER.setLevel(TEST_LOG_LEVEL);
-    HTTP_SERVER_LOGGER.setLevel(TEST_LOG_LEVEL);
-    NETWORK_LISTENER_LOGGER.setLevel(TEST_LOG_LEVEL);
+    Arrays.stream(LOGGERS).forEach(logger -> logger.setLevel(Level.OFF));
   }
 
   @Override
