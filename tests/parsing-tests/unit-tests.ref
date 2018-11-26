@@ -1050,6 +1050,7 @@
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
         "hosts/hostEmpty.json" : "EMPTY",
+        "hosts/hostInvalid.json" : "FAILED",
         "iptables/host1.iptables" : "PASSED",
         "iptables/host2.iptables" : "PASSED"
       },
@@ -70086,6 +70087,7 @@
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
         "hosts/hostEmpty.json" : "EMPTY",
+        "hosts/hostInvalid.json" : "FAILED",
         "iptables/host1.iptables" : "PASSED",
         "iptables/host2.iptables" : "PASSED"
       }

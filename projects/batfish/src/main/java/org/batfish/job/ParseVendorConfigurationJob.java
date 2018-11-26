@@ -169,7 +169,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         break;
 
       case HOST:
-        vc = HostConfiguration.fromJson(_fileText, _warnings);
+        try {
+          vc = HostConfiguration.fromJson(_fileText, _warnings);
+        } catch (Exception e) {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseVendorConfigurationResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _filename,
+              new BatfishException(
+                  String.format("Failed to create host from file: '%s'", _filename), e));
+        }
+
         vc.setFilename(_filename);
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
