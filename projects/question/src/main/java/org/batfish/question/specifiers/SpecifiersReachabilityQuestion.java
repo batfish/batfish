@@ -1,6 +1,7 @@
 package org.batfish.question.specifiers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,14 +17,10 @@ import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifierFactory;
-import org.batfish.specifier.NodeSpecifierFactory;
 
 /**
  * A version of reachability question that supports {@link LocationSpecifier location} and {@link
@@ -35,11 +32,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINT = "pathConstraints";
-
-  private static final LocationSpecifierFactory LOCATION_SPECIFIER_FACTORY =
-      LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
-  private static final NodeSpecifierFactory NODE_SPECIFIER_FACTORY =
-      NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
 
   @Nonnull private final DispositionSpecifier _actions;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
@@ -72,12 +64,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   SpecifiersReachabilityQuestion() {
-    this(
-        DispositionSpecifier.SUCCESS_SPECIFIER,
-        PacketHeaderConstraints.unconstrained(),
-        false,
-        TracePruner.DEFAULT_MAX_TRACES,
-        PathConstraintsInput.unconstrained());
+    this(null, null, null, null, null);
   }
 
   @Nonnull
@@ -120,27 +107,7 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   PathConstraints getPathConstraints() {
-    PathConstraints.Builder builder =
-        PathConstraints.builder()
-            .withStartLocation(
-                LOCATION_SPECIFIER_FACTORY.buildLocationSpecifier(
-                    _pathConstraints.getStartLocation()))
-            .withEndLocation(
-                NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getEndLocation()));
-    /*
-     * Explicit check for null, because null expands into ALL nodes, which is usually not the
-     * desired behavior for waypointing constraints
-     */
-
-    if (_pathConstraints.getTransitLocations() != null) {
-      builder.through(
-          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getTransitLocations()));
-    }
-    if (_pathConstraints.getForbiddenLocations() != null) {
-      builder.avoid(
-          NODE_SPECIFIER_FACTORY.buildNodeSpecifier(_pathConstraints.getForbiddenLocations()));
-    }
-    return builder.build();
+    return createPathConstraints(_pathConstraints);
   }
 
   @Override

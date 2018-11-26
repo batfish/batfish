@@ -11,8 +11,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AclIpSpace;
@@ -34,7 +32,6 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierContextImpl;
 
 /**
@@ -74,6 +71,7 @@ final class ReachabilityParametersResolver {
 
     ReachabilityParametersResolver resolver =
         new ReachabilityParametersResolver(batfish, params, snapshot);
+    SpecifierContextImpl context = resolver._context;
 
     // validate actions
     SortedSet<FlowDisposition> actions = params.getActions();
@@ -82,16 +80,14 @@ final class ReachabilityParametersResolver {
     }
 
     // resolve and validate final nodes
-    Set<String> finalNodes = resolver.resolveNodes("finalNodes", params.getFinalNodesSpecifier());
+    Set<String> finalNodes = params.getFinalNodesSpecifier().resolve(context);
     if (finalNodes.isEmpty()) {
       throw new InvalidReachabilityParametersException("No final nodes");
     }
 
     // resolve and validate transit nodes
-    Set<String> forbiddenTransitNodes =
-        resolver.resolveNodes("forbiddenTransitNodes", params.getForbiddenTransitNodesSpecifier());
-    Set<String> requiredTransitNodes =
-        resolver.resolveNodes("requiredTransitNodes", params.getRequiredTransitNodesSpecifier());
+    Set<String> forbiddenTransitNodes = params.getForbiddenTransitNodesSpecifier().resolve(context);
+    Set<String> requiredTransitNodes = params.getRequiredTransitNodesSpecifier().resolve(context);
     if (!requiredTransitNodes.isEmpty()
         && forbiddenTransitNodes.containsAll(requiredTransitNodes)) {
       throw new InvalidReachabilityParametersException(
@@ -118,20 +114,6 @@ final class ReachabilityParametersResolver {
     return and(
         firstNonNull(_params.getHeaderSpace(), AclLineMatchExprs.TRUE),
         matchDst(resolveDestinationIpSpace()));
-  }
-
-  @VisibleForTesting
-  Set<String> resolveNodes(@Nonnull String name, @Nullable NodeSpecifier spec)
-      throws InvalidReachabilityParametersException {
-    if (spec == null) {
-      return ImmutableSet.of();
-    }
-    Set<String> nodes = spec.resolve(_context);
-    if (nodes.isEmpty()) {
-      throw new InvalidReachabilityParametersException(
-          String.format("No nodes match %s specifier", name));
-    }
-    return nodes;
   }
 
   @VisibleForTesting
