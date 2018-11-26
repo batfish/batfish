@@ -23,7 +23,7 @@ public class NamedStructuresQuestion extends Question {
 
   private static final String PROP_INDICATE_PRESENCE = "indicatePresence";
   private static final String PROP_NODES = "nodes";
-  private static final String PROP_STRUCTURE_NAME = "structureNames";
+  private static final String PROP_STRUCTURE_NAMES = "structureNames";
   private static final String PROP_STRUCTURE_TYPES = "structureTypes";
 
   private final boolean _indicatePresence;
@@ -38,10 +38,10 @@ public class NamedStructuresQuestion extends Question {
 
   @JsonCreator
   private static NamedStructuresQuestion create(
-      @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @JsonProperty(PROP_STRUCTURE_TYPES) NamedStructureSpecifier structureTypes,
-      @JsonProperty(PROP_INDICATE_PRESENCE) Boolean indicatePresence,
-      @JsonProperty(PROP_STRUCTURE_NAME) String structureNameRegex) {
+      @JsonProperty(PROP_NODES) @Nullable NodesSpecifier nodes,
+      @JsonProperty(PROP_STRUCTURE_TYPES) @Nullable NamedStructureSpecifier structureTypes,
+      @JsonProperty(PROP_INDICATE_PRESENCE) @Nullable Boolean indicatePresence,
+      @JsonProperty(PROP_STRUCTURE_NAMES) @Nullable String structureNameRegex) {
     return new NamedStructuresQuestion(
         firstNonNull(nodes, NodesSpecifier.ALL),
         firstNonNull(structureTypes, NamedStructureSpecifier.ALL),
@@ -97,7 +97,7 @@ public class NamedStructuresQuestion extends Question {
   }
 
   @Nullable
-  @JsonProperty(PROP_STRUCTURE_NAME)
+  @JsonProperty(PROP_STRUCTURE_NAMES)
   public String getStructureNameRegex() {
     return _structureNameRegex;
   }
