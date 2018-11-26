@@ -68,7 +68,7 @@ java_library(
 
 junit_tests(
     name = "coordinator_tests",
-    size = "small",
+    size = "medium",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
