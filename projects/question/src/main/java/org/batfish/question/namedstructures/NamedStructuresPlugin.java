@@ -17,6 +17,6 @@ public class NamedStructuresPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new NamedStructuresQuestion(null, null, null);
+    return new NamedStructuresQuestion();
   }
 }
