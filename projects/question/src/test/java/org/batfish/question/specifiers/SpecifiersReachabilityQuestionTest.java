@@ -143,4 +143,11 @@ public class SpecifiersReachabilityQuestionTest {
         SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
     assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
   }
+
+  @Test
+  public void testInvertSearch() {
+    SpecifiersReachabilityQuestion q =
+        SpecifiersReachabilityQuestion.builder().setInvertSearch(true).build();
+    assertThat(q.getReachabilityParameters().getInvertSearch(), equalTo(true));
+  }
 }

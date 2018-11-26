@@ -10,6 +10,7 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
@@ -19,13 +20,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.matchers.FlowMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.question.traceroute.TracerouteAnswerer;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -208,5 +216,49 @@ public class SpecifiersReachabilityTest {
                         hasDstIp(
                             anyOf(equalTo(NODE1_FAST_ETHERNET_IP), equalTo(NODE1_LOOPBACK_IP)))),
                     FLOW))));
+  }
+
+  /**
+   * If we require some node is transited, then we should only get 1-hop flows (i.e. traffic sent
+   * from one node to the other).
+   */
+  @Test
+  public void testInvertSearch() {
+    // 1. with no constraints, we get some flows, all with port=0
+    AnswerElement answer =
+        new SpecifiersReachabilityAnswerer(
+                SpecifiersReachabilityQuestion.builder().build(), _batfish)
+            .answer();
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    Set<Flow> flows =
+        ((TableAnswerElement) answer)
+            .getRowsList()
+            .stream()
+            .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
+            .collect(Collectors.toSet());
+    assertThat(flows, not(empty()));
+    assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(NODE1_LOOPBACK_IP)));
+
+    // 2. with the invert search, we get some flows, none with port=0
+    answer =
+        new SpecifiersReachabilityAnswerer(
+                SpecifiersReachabilityQuestion.builder()
+                    .setHeaderConstraints(
+                        PacketHeaderConstraints.builder()
+                            .setDstIp(NODE1_LOOPBACK_IP.toString())
+                            .build())
+                    .setInvertSearch(true)
+                    .build(),
+                _batfish)
+            .answer();
+    assertThat(answer, instanceOf(TableAnswerElement.class));
+    flows =
+        ((TableAnswerElement) answer)
+            .getRowsList()
+            .stream()
+            .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
+            .collect(Collectors.toSet());
+    assertThat(flows, not(empty()));
+    assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(not(NODE1_LOOPBACK_IP))));
   }
 }
