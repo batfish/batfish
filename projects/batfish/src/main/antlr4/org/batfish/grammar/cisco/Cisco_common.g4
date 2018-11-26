@@ -541,7 +541,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | NEWLINE | REMARK | STANDARD | SESSION | WS )
+      ~( ETH | EXTENDED | IN | NEWLINE | OUT | REMARK | STANDARD | SESSION | WS )
    )+
 ;
 
