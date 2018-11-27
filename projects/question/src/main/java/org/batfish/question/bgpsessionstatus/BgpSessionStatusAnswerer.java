@@ -6,17 +6,13 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.Ses
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.TopologyUtil;
@@ -52,27 +48,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
 
   public static final String COL_ESTABLISHED_STATUS = "Established_Status";
 
-  private static boolean isCompatible(ConfiguredSessionStatus configuredStatus) {
-    switch (configuredStatus) {
-      case UNIQUE_MATCH:
-      case DYNAMIC_MATCH:
-        return true;
-      case NO_MATCH_FOUND:
-      case LOCAL_IP_UNKNOWN_STATICALLY:
-      case NO_LOCAL_IP:
-      case NO_REMOTE_IP:
-      case NO_REMOTE_PREFIX:
-      case NO_REMOTE_AS:
-      case INVALID_LOCAL_IP:
-      case UNKNOWN_REMOTE:
-      case HALF_OPEN:
-      case MULTIPLE_REMOTES:
-        return false;
-      default:
-        throw new BatfishException("Unrecognized configured status: " + configuredStatus);
-    }
-  }
-
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -81,8 +56,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
   @Override
   public AnswerElement answer() {
     BgpSessionStatusQuestion question = (BgpSessionStatusQuestion) _question;
-    TableAnswerElement answer =
-        new TableAnswerElement(BgpSessionStatusAnswerer.createMetadata(question));
+    TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, getRows(question));
     return answer;
   }
@@ -94,6 +68,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
   @Override
   public List<Row> getRows(BgpSessionQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, ColumnMetadata> metadataMap = createMetadata(question).toColumnMap();
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
     Set<String> remoteNodes = question.getRemoteNodes().getMatchingNodes(_batfish);
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
@@ -112,9 +87,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             true,
             _batfish.getDataPlanePlugin().getTracerouteEngine(),
             dp);
-
-    // Keep track of active peers' statuses to assess whether passive peers have compatible remotes.
-    Map<BgpPeerConfigId, SessionStatus> activePeerStatuses = new TreeMap<>();
 
     Stream<Row> activePeerRows =
         configuredBgpTopology
@@ -143,29 +115,22 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                     status = NOT_ESTABLISHED;
                   }
 
-                  // Add neighbor's status to activePeerStatuses. Can't filter earlier than this
-                  // because all active peers need to be represented in activePeerStatuses.
-                  activePeerStatuses.put(neighbor, status);
-
-                  // Build row. Will be null if row doesn't match question filters.
                   return buildActivePeerRow(
                       neighbor,
                       activePeer,
                       type,
                       status,
-                      nodes,
-                      remoteNodes,
-                      question,
+                      metadataMap,
                       configuredBgpTopology,
                       configurations);
                 })
-            .filter(Objects::nonNull);
+            .filter(
+                row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
 
     Stream<Row> passivePeerRows =
         configuredBgpTopology
             .nodes()
             .stream()
-            .filter(neighbor -> nodes.contains(neighbor.getHostname()))
             .flatMap(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
@@ -178,47 +143,40 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   ConfiguredSessionStatus brokenStatus = getLocallyBrokenStatus(passivePeer);
                   if (brokenStatus != null) {
                     return Stream.of(
-                        // Returns null if question filters NOT_COMPATIBLE rows
-                        buildPassivePeerWithoutRemoteRow(question, neighbor, passivePeer));
+                        buildPassivePeerWithoutRemoteRow(
+                            metadataMap, neighbor, passivePeer, NOT_COMPATIBLE));
                   }
 
                   // Find all correctly configured remote peers compatible with this peer
-                  Map<BgpPeerConfigId, SessionStatus> compatibleRemotes =
-                      configuredBgpTopology
-                          .adjacentNodes(neighbor)
-                          .stream()
-                          .filter(remoteId -> activePeerStatuses.get(remoteId) != NOT_COMPATIBLE)
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Function.identity(), peer -> activePeerStatuses.get(peer)));
+                  Set<BgpPeerConfigId> compatibleRemotes =
+                      configuredBgpTopology.adjacentNodes(neighbor);
 
-                  // If no compatible neighbors exist, generate one NO_MATCH_FOUND row
-                  // TODO Should these rows be included if question limits type or remote node?
+                  // Find all remote peers that established a session with this peer
+                  Set<BgpPeerConfigId> establishedRemotes =
+                      establishedBgpTopology.adjacentNodes(neighbor);
+
+                  // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
                   if (compatibleRemotes.isEmpty()) {
                     return Stream.of(
-                        // Returns null if question filters NOT_COMPATIBLE rows
-                        buildPassivePeerWithoutRemoteRow(question, neighbor, passivePeer));
+                        buildPassivePeerWithoutRemoteRow(
+                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
                   }
 
-                  // Compatible neighbors exist. Generate a row for each.
+                  // Compatible remotes exist. Generate a row for each.
                   return compatibleRemotes
-                      .entrySet()
                       .stream()
-                      .filter(e -> remoteNodes.contains(e.getKey().getHostname()))
                       .map(
-                          e ->
-                              // Returns null if type or status doesn't match question's filter
+                          remoteId ->
                               buildDynamicMatchRow(
-                                  question,
+                                  metadataMap,
                                   neighbor,
                                   passivePeer,
-                                  e.getKey(),
-                                  (BgpActivePeerConfig)
-                                      getBgpPeerConfig(configurations, e.getKey()),
-                                  e.getValue(),
+                                  remoteId,
+                                  (BgpActivePeerConfig) getBgpPeerConfig(configurations, remoteId),
+                                  establishedRemotes.contains(remoteId),
                                   configurations));
                 })
-            .filter(Objects::nonNull);
+            .filter(row -> matchesQuestionFilters(row, nodes, remoteNodes, question));
 
     return Streams.concat(activePeerRows, passivePeerRows).collect(ImmutableList.toImmutableList());
   }
@@ -266,27 +224,18 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     return new TableMetadata(columnMetadata, textDesc);
   }
 
-  private @Nullable Row buildActivePeerRow(
+  private static @Nonnull Row buildActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       SessionType type,
       SessionStatus status,
-      Set<String> nodes,
-      Set<String> remoteNodes,
-      BgpSessionQuestion question,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      Map<String, ColumnMetadata> metadataMap,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
       Map<String, Configuration> configurations) {
-    if (!nodes.contains(activeId.getHostname())
-        || !question.matchesType(type)
-        || !question.matchesStatus(status)) {
-      return null;
-    }
     Node remoteNode = null;
     if (status != NOT_COMPATIBLE) {
-      String remoteNodeName = bgpTopology.adjacentNodes(activeId).iterator().next().getHostname();
-      if (!remoteNodes.contains(remoteNodeName)) {
-        return null;
-      }
+      String remoteNodeName =
+          configuredBgpTopology.adjacentNodes(activeId).iterator().next().getHostname();
       remoteNode = new Node(remoteNodeName);
     }
 
@@ -294,7 +243,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     NodeInterfacePair localInterface =
         getInterface(configurations.get(activeId.getHostname()), localIp);
 
-    return Row.builder(createMetadata(question).toColumnMap())
+    return Row.builder(metadataMap)
         .put(COL_ESTABLISHED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, localInterface)
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
@@ -308,43 +257,43 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .build();
   }
 
-  private @Nullable Row buildPassivePeerWithoutRemoteRow(
-      BgpSessionQuestion question, BgpPeerConfigId passiveId, BgpPassivePeerConfig passivePeer) {
-    return question.matchesStatus(NOT_COMPATIBLE)
-        ? Row.builder(createMetadata(question).toColumnMap())
-            .put(COL_ESTABLISHED_STATUS, NOT_COMPATIBLE)
-            .put(COL_LOCAL_INTERFACE, null)
-            .put(COL_LOCAL_AS, passivePeer.getLocalAs())
-            .put(COL_LOCAL_IP, passivePeer.getLocalIp())
-            .put(COL_NODE, new Node(passiveId.getHostname()))
-            .put(
-                COL_REMOTE_AS,
-                new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAs()))
-            .put(COL_REMOTE_NODE, null)
-            .put(
-                COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
-            .put(COL_SESSION_TYPE, SessionType.UNSET)
-            .put(COL_VRF, passiveId.getVrfName())
-            .build()
-        : null;
+  // Creates a row representing the given malformed passive peer
+  private static @Nonnull Row buildPassivePeerWithoutRemoteRow(
+      Map<String, ColumnMetadata> metadataMap,
+      BgpPeerConfigId passiveId,
+      BgpPassivePeerConfig passivePeer,
+      SessionStatus status) {
+    return Row.builder(metadataMap)
+        .put(COL_ESTABLISHED_STATUS, status)
+        .put(COL_LOCAL_INTERFACE, null)
+        .put(COL_LOCAL_AS, passivePeer.getLocalAs())
+        .put(COL_LOCAL_IP, passivePeer.getLocalIp())
+        .put(COL_NODE, new Node(passiveId.getHostname()))
+        .put(
+            COL_REMOTE_AS,
+            new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAs()))
+        .put(COL_REMOTE_NODE, null)
+        .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
+        .put(COL_SESSION_TYPE, SessionType.UNSET)
+        .put(COL_VRF, passiveId.getVrfName())
+        .build();
   }
 
-  private @Nullable Row buildDynamicMatchRow(
-      BgpSessionQuestion question,
+  // Creates a row representing the session from passivePeer to activePeer with given status
+  private static @Nonnull Row buildDynamicMatchRow(
+      Map<String, ColumnMetadata> metadataMap,
       BgpPeerConfigId passiveId,
       BgpPassivePeerConfig passivePeer,
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
-      SessionStatus status,
+      boolean established,
       Map<String, Configuration> configurations) {
     SessionType type = BgpSessionProperties.getSessionType(activePeer);
-    if (!question.matchesType(type) || !question.matchesStatus(status)) {
-      return null;
-    }
+    SessionStatus status = established ? ESTABLISHED : NOT_ESTABLISHED;
     Ip localIp = activePeer.getPeerAddress();
     NodeInterfacePair localInterface =
         getInterface(configurations.get(passiveId.getHostname()), localIp);
-    return Row.builder(createMetadata(question).toColumnMap())
+    return Row.builder(metadataMap)
         .put(COL_ESTABLISHED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, localInterface)
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
@@ -356,5 +305,22 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_SESSION_TYPE, type)
         .put(COL_VRF, passiveId.getVrfName())
         .build();
+  }
+
+  static boolean matchesQuestionFilters(
+      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
+    if (!matchesNodesAndType(row, nodes, remoteNodes, question)) {
+      return false;
+    }
+
+    // Check session status
+    if (!question.getStatus().equals(".*")) {
+      String statusName = (String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING);
+      if (statusName == null || !question.matchesStatus(SessionStatus.valueOf(statusName))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

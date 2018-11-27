@@ -19,7 +19,10 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 
@@ -139,6 +142,32 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
     return null;
+  }
+
+  /**
+   * Returns true if local node, remote node, and session type in row match the question's filters
+   */
+  protected static boolean matchesNodesAndType(
+      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
+    if (!question.getNodes().equals(NodesSpecifier.ALL)) {
+      Node node = (Node) row.get(COL_NODE, Schema.NODE);
+      if (node == null || !nodes.contains(node.getName())) {
+        return false;
+      }
+    }
+    if (!question.getRemoteNodes().equals(NodesSpecifier.ALL)) {
+      Node remoteNode = (Node) row.get(COL_REMOTE_NODE, Schema.NODE);
+      if (remoteNode == null || !remoteNodes.contains(remoteNode.getName())) {
+        return false;
+      }
+    }
+    if (!question.getType().equals(".*")) {
+      String typeName = (String) row.get(COL_SESSION_TYPE, Schema.STRING);
+      if (typeName == null || !question.matchesType(SessionType.valueOf(typeName))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public abstract List<Row> getRows(BgpSessionQuestion question);
