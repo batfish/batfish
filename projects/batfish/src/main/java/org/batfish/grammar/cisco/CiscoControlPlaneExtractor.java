@@ -124,6 +124,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACT
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
@@ -507,6 +509,7 @@ import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
@@ -4794,6 +4797,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, CONTROL_PLANE_ACCESS_GROUP, line);
+  }
+
+  @Override
+  public void exitCp_service_policy(Cp_service_policyContext ctx) {
+    CiscoStructureUsage usage =
+        ctx.INPUT() != null
+            ? CONTROL_PLANE_SERVICE_POLICY_INPUT
+            : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
   }
 
   @Override
