@@ -59,9 +59,11 @@ java_library(
     deps = [
         ":coordinator",
         "//projects/batfish-common-protocol:common",
+        "@grizzly_server//:compile",
         "@guava//:compile",
         "@jersey_media_jackson//:compile",
         "@jersey_test_framework//:compile",
+        "@jersey_test_framework_grizzly2//:compile",
         "@jsr305//:compile",
     ],
 )
@@ -73,7 +75,6 @@ junit_tests(
         "src/test/java/**/*Test.java",
     ]),
     runtime_deps = [
-        "@jersey_test_framework_grizzly2//:compile",
         "@sqlite_jdbc//:compile",
     ],
     deps = [
