@@ -88,19 +88,6 @@ public class BgpSessionAnswererTest {
         getLocallyBrokenStatus(peer, BgpSessionProperties.SessionType.IBGP), equalTo(status));
   }
 
-  /*
-  static ConfiguredSessionStatus getLocallyBrokenStatus(BgpPassivePeerConfig passivePeerConfig) {
-    if (passivePeerConfig.getLocalAs() == null) {
-      return ConfiguredSessionStatus.NO_LOCAL_AS;
-    } else if (passivePeerConfig.getPeerPrefix() == null) {
-      return ConfiguredSessionStatus.NO_REMOTE_PREFIX;
-    } else if (passivePeerConfig.getRemoteAs().isEmpty()) {
-      return ConfiguredSessionStatus.NO_REMOTE_AS;
-    }
-    return null;
-  }
-   */
-
   @Test
   public void testPassiveNoLocalAs() {
     BgpPassivePeerConfig peer = _nf.bgpDynamicNeighborBuilder().build();
