@@ -2,11 +2,13 @@ package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.getSpecifiedFilters;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
@@ -39,6 +41,8 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.FilterLineReachabilityRows;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -164,25 +168,26 @@ public class FilterLineReachabilityAnswererTest {
   @Test
   public void testIgnoreGeneratedFilters() {
     // generate unreachable
-    _aclb
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
-        .setName("~aclGenerated")
-        .build();
+    IpAccessList aclGenerated =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
+            .setName("~aclGenerated")
+            .build();
 
-    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+    SpecifierContext ctxt =
+        MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c1", _c1)).build();
 
-    // run with and without the flag
-    FilterLineReachabilityRows answerIgnoreRows = new FilterLineReachabilityRows();
-    FilterLineReachabilityAnswerer.answerAclReachability(aclSpecs, answerIgnoreRows, true);
+    // we should get an empty set when we are ignoring generated filters
+    assertThat(
+        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, true), ctxt),
+        equalTo(ImmutableMap.of("c1", ImmutableSet.of())));
 
-    FilterLineReachabilityRows answerNotIgnoreRows = new FilterLineReachabilityRows();
-    FilterLineReachabilityAnswerer.answerAclReachability(aclSpecs, answerNotIgnoreRows, false);
-
-    // should ignore in one case and not another
-    assertThat(answerIgnoreRows.getRows().size(), equalTo(0));
-    assertThat(answerNotIgnoreRows.getRows().size(), equalTo(1));
+    // we should get the one acl we put in otherwise
+    assertThat(
+        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, false), ctxt),
+        equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated))));
   }
 
   @Test

@@ -24,7 +24,7 @@
         "value" : ".*"
       },
       "ignoreGenerated" : {
-        "description" : "Whether to ignore auto-generated filters",
+        "description" : "Whether to ignore filters that combine filters defined in the configs",
         "displayName" : "Ignore generated filters",
         "optional" : true,
         "type" : "boolean",
