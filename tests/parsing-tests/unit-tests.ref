@@ -10405,10 +10405,12 @@
             "            VARIABLE:'foovrf')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_enable",
+            "              ENABLE:'enable'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          IPV6:'ipv6'",
@@ -10485,19 +10487,25 @@
             "          DEC:'1234'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          VARIABLE:'traffic-filter'",
-            "          VARIABLE:'foo-filter'",
-            "          IN:'in'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_traffic_filter",
+            "              TRAFFIC_FILTER:'traffic-filter'",
+            "              acl = (variable_aclname",
+            "                VARIABLE:'foo-filter')",
+            "              IN:'in'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          VARIABLE:'traffic-filter'",
-            "          VARIABLE:'bar-filter'",
-            "          OUT:'out'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_traffic_filter",
+            "              TRAFFIC_FILTER:'traffic-filter'",
+            "              acl = (variable_aclname",
+            "                VARIABLE:'bar-filter')",
+            "              OUT:'out'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          EXIT:'exit'",
@@ -10697,10 +10705,12 @@
             "          LEVEL_1:'level-1'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_enable",
+            "              ENABLE:'enable'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          IPV6:'ipv6'",
@@ -16697,6 +16707,20 @@
             "    (s_control_plane",
             "      CONTROL_PLANE:'control-plane'",
             "      NEWLINE:'\\n'",
+            "      (s_control_plane_tail",
+            "        (cp_service_policy",
+            "          SERVICE_POLICY:'service-policy'",
+            "          INPUT:'input'",
+            "          name = (variable",
+            "            VARIABLE:'copp-policy')",
+            "          NEWLINE:'\\n'))",
+            "      (s_control_plane_tail",
+            "        (cp_service_policy",
+            "          SERVICE_POLICY:'service-policy'",
+            "          OUTPUT:'output'",
+            "          name = (variable",
+            "            VARIABLE:'copp-policy-out')",
+            "          NEWLINE:'\\n'))",
             "      (s_control_plane_tail",
             "        (cp_null",
             "          SCALE_FACTOR:'scale-factor'",
@@ -22702,10 +22726,12 @@
             "          IPV6_PREFIX:'2222::1/64'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_enable",
+            "              ENABLE:'enable'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          IPV6:'ipv6'",
@@ -25589,10 +25615,12 @@
             "          IPV6_PREFIX:'2607:f380::108:9a41:9391/122'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_enable",
+            "              ENABLE:'enable'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          IPV6:'ipv6'",
@@ -55093,10 +55121,12 @@
             "          IPV6_PREFIX:'2607:f380::108:9a41:1081/124'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ipv6",
             "          IPV6:'ipv6'",
-            "          ENABLE:'enable'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ipv6_inner",
+            "            (if_ipv6_enable",
+            "              ENABLE:'enable'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          IPV6:'ipv6'",
@@ -65352,6 +65382,18 @@
                 130
               ]
             }
+          },
+          "ipv6 acl" : {
+            "bar-filter" : {
+              "interface ipv6 traffic-filter out" : [
+                86
+              ]
+            },
+            "foo-filter" : {
+              "interface ipv6 traffic-filter in" : [
+                85
+              ]
+            }
           }
         },
         "configs/cadant_isis" : {
@@ -65560,6 +65602,20 @@
             "l2tpclass1" : {
               "depi-tunnel l2tp-class" : [
                 140
+              ]
+            }
+          }
+        },
+        "configs/cisco_control_plane" : {
+          "policy-map" : {
+            "copp-policy" : {
+              "control-plane service-policy input" : [
+                5
+              ]
+            },
+            "copp-policy-out" : {
+              "control-plane service-policy output" : [
+                6
               ]
             }
           }
@@ -67996,6 +68052,18 @@
                 130
               ]
             }
+          },
+          "ipv6 acl" : {
+            "bar-filter" : {
+              "interface ipv6 traffic-filter out" : [
+                86
+              ]
+            },
+            "foo-filter" : {
+              "interface ipv6 traffic-filter in" : [
+                85
+              ]
+            }
           }
         },
         "configs/cadant_isis" : {
@@ -68141,6 +68209,20 @@
             "l2tpclass1" : {
               "depi-tunnel l2tp-class" : [
                 140
+              ]
+            }
+          }
+        },
+        "configs/cisco_control_plane" : {
+          "policy-map" : {
+            "copp-policy" : {
+              "control-plane service-policy input" : [
+                5
+              ]
+            },
+            "copp-policy-out" : {
+              "control-plane service-policy output" : [
+                6
               ]
             }
           }

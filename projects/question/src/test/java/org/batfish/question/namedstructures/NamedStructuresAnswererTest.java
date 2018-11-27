@@ -15,6 +15,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
@@ -60,7 +61,11 @@ public class NamedStructuresAnswererTest {
     // only get routing policies
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            null, new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY), false);
+            NodesSpecifier.ALL,
+            new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY),
+            null,
+            null,
+            false);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -93,6 +98,43 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
+  public void testRawAnswerIgnoreGenerated() {
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    RoutingPolicy rp1 = nf.routingPolicyBuilder().setOwner(c).setName("rp1").build();
+    nf.routingPolicyBuilder().setOwner(c).setName("~rp2").build();
+
+    Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
+
+    NamedStructuresQuestion question =
+        new NamedStructuresQuestion(
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, true, null);
+
+    Multiset<Row> rows =
+        NamedStructuresAnswerer.rawAnswer(
+            question,
+            configurations.keySet(),
+            configurations,
+            NamedStructuresAnswerer.createMetadata(question).toColumnMap());
+
+    Multiset<Row> expected =
+        HashMultiset.create(
+            ImmutableList.of(
+                Row.builder()
+                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                        NamedStructureSpecifier.ROUTING_POLICY)
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
+                    .build()));
+
+    assertThat(rows, equalTo(expected));
+  }
+
+  @Test
   public void testRawAnswerPresence() {
 
     NetworkFactory nf = new NetworkFactory();
@@ -105,7 +147,9 @@ public class NamedStructuresAnswererTest {
 
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c1, "node2", c2);
 
-    NamedStructuresQuestion question = new NamedStructuresQuestion(null, null, true);
+    NamedStructuresQuestion question =
+        new NamedStructuresQuestion(
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, null, true);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -132,6 +176,43 @@ public class NamedStructuresAnswererTest {
                         NamedStructureSpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
                     .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, false)
+                    .build()));
+
+    assertThat(rows, equalTo(expected));
+  }
+
+  @Test
+  public void testRawAnswerStructureNameRegex() {
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    RoutingPolicy rp1 = nf.routingPolicyBuilder().setOwner(c).setName("selected-rp1").build();
+    nf.routingPolicyBuilder().setOwner(c).setName("leftout-rp2").build();
+
+    Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
+
+    NamedStructuresQuestion question =
+        new NamedStructuresQuestion(
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, "selected.*", false, null);
+
+    Multiset<Row> rows =
+        NamedStructuresAnswerer.rawAnswer(
+            question,
+            configurations.keySet(),
+            configurations,
+            NamedStructuresAnswerer.createMetadata(question).toColumnMap());
+
+    Multiset<Row> expected =
+        HashMultiset.create(
+            ImmutableList.of(
+                Row.builder()
+                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                        NamedStructureSpecifier.ROUTING_POLICY)
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "selected-rp1")
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
                     .build()));
 
     assertThat(rows, equalTo(expected));

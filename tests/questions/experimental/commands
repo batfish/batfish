@@ -34,7 +34,7 @@ test -raw tests/questions/experimental/interfaceProperties.ref validate-template
 test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
 
 # validate namedStructures
-test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", structureTypes=".*"
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures ignoreGenerated=false, indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
 
 # validate neighbors
 test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
@@ -52,7 +52,7 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachability
-test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, maxTraces=1
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, invertSearch=False, maxTraces=1
 
 # validate differentialReachability
 test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false, invertSearch=false, maxTraces=1

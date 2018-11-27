@@ -80,7 +80,7 @@ Stop and restart the container.
 
 This starts the service after mapping the local data folder to the data folder within the container and exposing the TCP ports required by the Batfish service. 
 
-Next, you need to install [Pybatfish])(https://www.github.com/batfish/pybatfish) (the Python SDK) in order to interact with the service.
+Next, you need to install [Pybatfish](https://www.github.com/batfish/pybatfish) (the Python SDK) in order to interact with the service.
 
 ## Download and install Pybatfish
 First, clone the Github repository. Change to the directory where you would like to clone the repository and issue the git command below.

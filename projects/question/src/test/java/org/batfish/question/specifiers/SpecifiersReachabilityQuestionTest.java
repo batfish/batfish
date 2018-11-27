@@ -5,7 +5,6 @@ import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.HeaderSpace;
@@ -19,6 +18,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,8 +43,12 @@ public class SpecifiersReachabilityQuestionTest {
     assertThat(
         question.getReachabilityParameters().getSourceIpSpaceSpecifier(),
         equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
-    assertThat(question.getPathConstraints().getTransitLocations(), nullValue());
-    assertThat(question.getPathConstraints().getForbiddenLocations(), nullValue());
+    assertThat(
+        question.getPathConstraints().getTransitLocations(),
+        equalTo(NoNodesNodeSpecifier.INSTANCE));
+    assertThat(
+        question.getPathConstraints().getForbiddenLocations(),
+        equalTo(NoNodesNodeSpecifier.INSTANCE));
     assertThat(question.getIgnoreFilters(), equalTo(false));
   }
 
@@ -138,5 +142,12 @@ public class SpecifiersReachabilityQuestionTest {
     SpecifiersReachabilityQuestion q =
         SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
     assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
+  }
+
+  @Test
+  public void testInvertSearch() {
+    SpecifiersReachabilityQuestion q =
+        SpecifiersReachabilityQuestion.builder().setInvertSearch(true).build();
+    assertThat(q.getReachabilityParameters().getInvertSearch(), equalTo(true));
   }
 }

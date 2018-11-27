@@ -124,6 +124,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACT
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
@@ -157,6 +159,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
@@ -505,6 +509,7 @@ import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
@@ -584,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
@@ -2484,7 +2490,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
     }
-    // TODO: verify if this is correct for nexus
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
   }
@@ -4794,6 +4799,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCp_service_policy(Cp_service_policyContext ctx) {
+    CiscoStructureUsage usage =
+        ctx.INPUT() != null
+            ? CONTROL_PLANE_SERVICE_POLICY_INPUT
+            : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitCqer_service_class(Cqer_service_classContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -5298,8 +5313,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setFin(true).build())
                 .setUseFin(true)
                 .build());
-      } else if (feature.FRAGMENTS() != null) {
-        todo(ctx);
       } else if (feature.HOST_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
@@ -5344,8 +5357,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .build());
       } else if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      } else if (feature.TTL() != null) {
-        todo(ctx);
       } else if (feature.TTL_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {
@@ -5783,6 +5794,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String map = ctx.map.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
+  }
+
+  @Override
+  public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
+    CiscoStructureUsage usage =
+        ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
   }
 
   @Override
