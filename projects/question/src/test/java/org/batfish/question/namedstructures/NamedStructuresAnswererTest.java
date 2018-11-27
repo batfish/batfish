@@ -63,6 +63,8 @@ public class NamedStructuresAnswererTest {
         new NamedStructuresQuestion(
             NodesSpecifier.ALL,
             new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY),
+            null,
+            null,
             false);
 
     Multiset<Row> rows =
@@ -96,6 +98,43 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
+  public void testRawAnswerIgnoreGenerated() {
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    RoutingPolicy rp1 = nf.routingPolicyBuilder().setOwner(c).setName("rp1").build();
+    nf.routingPolicyBuilder().setOwner(c).setName("~rp2").build();
+
+    Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
+
+    NamedStructuresQuestion question =
+        new NamedStructuresQuestion(
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, true, null);
+
+    Multiset<Row> rows =
+        NamedStructuresAnswerer.rawAnswer(
+            question,
+            configurations.keySet(),
+            configurations,
+            NamedStructuresAnswerer.createMetadata(question).toColumnMap());
+
+    Multiset<Row> expected =
+        HashMultiset.create(
+            ImmutableList.of(
+                Row.builder()
+                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                        NamedStructureSpecifier.ROUTING_POLICY)
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
+                    .build()));
+
+    assertThat(rows, equalTo(expected));
+  }
+
+  @Test
   public void testRawAnswerPresence() {
 
     NetworkFactory nf = new NetworkFactory();
@@ -109,7 +148,8 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c1, "node2", c2);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(NodesSpecifier.ALL, NamedStructureSpecifier.ALL, true);
+        new NamedStructuresQuestion(
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, null, true);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -154,7 +194,7 @@ public class NamedStructuresAnswererTest {
 
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, false, "selected.*");
+            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, "selected.*", false, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
