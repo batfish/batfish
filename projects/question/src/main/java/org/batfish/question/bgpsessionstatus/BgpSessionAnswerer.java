@@ -51,6 +51,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
     LOCAL_IP_UNKNOWN_STATICALLY,
     /** No local IP is configured on active peer; session type is not IBGP or EBGP multihop */
     NO_LOCAL_IP,
+    /** No local AS is configured */
+    NO_LOCAL_AS,
     /** Local peer is active with no remote IP configured */
     NO_REMOTE_IP,
     /** Local peer is passive with no remote prefix configured */
@@ -108,7 +110,9 @@ public abstract class BgpSessionAnswerer extends Answerer {
   }
 
   static ConfiguredSessionStatus getLocallyBrokenStatus(BgpPassivePeerConfig passivePeerConfig) {
-    if (passivePeerConfig.getPeerPrefix() == null) {
+    if (passivePeerConfig.getLocalAs() == null) {
+      return ConfiguredSessionStatus.NO_LOCAL_AS;
+    } else if (passivePeerConfig.getPeerPrefix() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_PREFIX;
     } else if (passivePeerConfig.getRemoteAs().isEmpty()) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
@@ -127,6 +131,8 @@ public abstract class BgpSessionAnswerer extends Answerer {
       } else {
         return ConfiguredSessionStatus.NO_LOCAL_IP;
       }
+    } else if (neighbor.getLocalAs() == null) {
+      return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (neighbor.getPeerAddress() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_IP;
     } else if (neighbor.getRemoteAs() == null) {
