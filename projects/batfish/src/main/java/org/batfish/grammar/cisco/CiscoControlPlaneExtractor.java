@@ -2490,7 +2490,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
     }
-    // TODO: verify if this is correct for nexus
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
   }
@@ -5314,8 +5313,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setFin(true).build())
                 .setUseFin(true)
                 .build());
-      } else if (feature.FRAGMENTS() != null) {
-        todo(ctx);
       } else if (feature.HOST_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
@@ -5360,8 +5357,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .build());
       } else if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      } else if (feature.TTL() != null) {
-        todo(ctx);
       } else if (feature.TTL_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {
