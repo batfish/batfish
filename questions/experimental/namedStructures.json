@@ -1,6 +1,7 @@
 {
     "class": "org.batfish.question.namedstructures.NamedStructuresQuestion",
     "differential": false,
+    "ignoreGenerated": "${ignoreGenerated}",
     "indicatePresence": "${indicatePresence}",
     "nodes": "${nodes}",
     "structureNames": "${structureNames}",
@@ -10,6 +11,13 @@
         "instanceName": "namedStructures",
         "tags": [],
         "variables": {
+            "ignoreGenerated": {
+                "description": "Whether to ignore auto-generated structures",
+                "type": "boolean",
+                "optional": true,
+                "value": true,
+                "displayName": "Ignore auto-generated structures"
+            },
             "indicatePresence": {
                 "description": "Output if the structure is present or absent",
                 "type": "boolean",
