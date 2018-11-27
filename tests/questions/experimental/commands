@@ -34,7 +34,7 @@ test -raw tests/questions/experimental/interfaceProperties.ref validate-template
 test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
 
 # validate namedStructures
-test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures ignoreGenerated=false, indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
 
 # validate neighbors
 test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
