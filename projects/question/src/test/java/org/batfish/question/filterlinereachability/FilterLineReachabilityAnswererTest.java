@@ -162,6 +162,30 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
+  public void testIgnoreGeneratedFilters() {
+    // generate unreachable
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
+        .setName("~aclGenerated")
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+
+    // run with and without the flag
+    FilterLineReachabilityRows answerIgnoreRows = new FilterLineReachabilityRows();
+    FilterLineReachabilityAnswerer.answerAclReachability(aclSpecs, answerIgnoreRows, true);
+
+    FilterLineReachabilityRows answerNotIgnoreRows = new FilterLineReachabilityRows();
+    FilterLineReachabilityAnswerer.answerAclReachability(aclSpecs, answerNotIgnoreRows, false);
+
+    // should ignore in one case and not another
+    assertThat(answerIgnoreRows.getRows().size(), equalTo(0));
+    assertThat(answerNotIgnoreRows.getRows().size(), equalTo(1));
+  }
+
+  @Test
   public void testIpSpaceReferenceInAndOrNotExprIsFound() {
     MatchHeaderSpace ipSpaceReference =
         new MatchHeaderSpace(

@@ -1,6 +1,9 @@
 {
   "class" : "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "filters" : ".*",
+  "ignoreGenerated" : false,
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -19,6 +22,13 @@
         "optional" : true,
         "type" : "string",
         "value" : ".*"
+      },
+      "ignoreGenerated" : {
+        "description" : "Whether to ignore auto-generated filters",
+        "displayName" : "Ignore generated filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "nodes" : {
         "description" : "Examine filters on nodes matching this name or regex",

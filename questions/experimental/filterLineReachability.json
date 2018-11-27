@@ -2,6 +2,7 @@
     "class": "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
     "differential": false,
     "filters": "${filters}",
+    "ignoreGenerated": "${ignoreGenerated}",
     "nodes": "${nodes}",
     "instance": {
         "description": "Identify ACLs/filters with unreachable lines",
@@ -17,6 +18,13 @@
                 "type": "string",
                 "optional": true,
                 "displayName": "Filters"
+            },
+            "ignoreGenerated": {
+                "description": "Whether to ignore auto-generated filters",
+                "type": "boolean",
+                "optional": true,
+                "value": true,
+                "displayName": "Ignore generated filters"
             },
             "nodes": {
                 "description": "Examine filters on nodes matching this name or regex",
