@@ -16708,6 +16708,20 @@
             "      CONTROL_PLANE:'control-plane'",
             "      NEWLINE:'\\n'",
             "      (s_control_plane_tail",
+            "        (cp_service_policy",
+            "          SERVICE_POLICY:'service-policy'",
+            "          INPUT:'input'",
+            "          name = (variable",
+            "            VARIABLE:'copp-policy')",
+            "          NEWLINE:'\\n'))",
+            "      (s_control_plane_tail",
+            "        (cp_service_policy",
+            "          SERVICE_POLICY:'service-policy'",
+            "          OUTPUT:'output'",
+            "          name = (variable",
+            "            VARIABLE:'copp-policy-out')",
+            "          NEWLINE:'\\n'))",
+            "      (s_control_plane_tail",
             "        (cp_null",
             "          SCALE_FACTOR:'scale-factor'",
             "          (null_rest_of_line",
@@ -65592,6 +65606,20 @@
             }
           }
         },
+        "configs/cisco_control_plane" : {
+          "policy-map" : {
+            "copp-policy" : {
+              "control-plane service-policy input" : [
+                5
+              ]
+            },
+            "copp-policy-out" : {
+              "control-plane service-policy output" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/cisco_crypto" : {
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
@@ -68181,6 +68209,20 @@
             "l2tpclass1" : {
               "depi-tunnel l2tp-class" : [
                 140
+              ]
+            }
+          }
+        },
+        "configs/cisco_control_plane" : {
+          "policy-map" : {
+            "copp-policy" : {
+              "control-plane service-policy input" : [
+                5
+              ]
+            },
+            "copp-policy-out" : {
+              "control-plane service-policy output" : [
+                6
               ]
             }
           }
