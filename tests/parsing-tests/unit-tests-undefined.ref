@@ -350,6 +350,30 @@
         }
       },
       {
+        "File_Name" : "configs/cadant_interface",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "bar-filter",
+        "Context" : "interface ipv6 traffic-filter out",
+        "Lines" : {
+          "filename" : "configs/cadant_interface",
+          "lines" : [
+            86
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_interface",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "foo-filter",
+        "Context" : "interface ipv6 traffic-filter in",
+        "Lines" : {
+          "filename" : "configs/cadant_interface",
+          "lines" : [
+            85
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cadant_isis",
         "Struct_Type" : "ipv4/6 acl",
         "Ref_Name" : "blah-acl-99",
@@ -600,6 +624,30 @@
           "filename" : "configs/cisco_cable",
           "lines" : [
             140
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_control_plane",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "copp-policy",
+        "Context" : "control-plane service-policy input",
+        "Lines" : {
+          "filename" : "configs/cisco_control_plane",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_control_plane",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "copp-policy-out",
+        "Context" : "control-plane service-policy output",
+        "Lines" : {
+          "filename" : "configs/cisco_control_plane",
+          "lines" : [
+            6
           ]
         }
       },
@@ -3072,10 +3120,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 249 results",
+      "notes" : "Found 253 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 249
+      "numResults" : 253
     }
   }
 ]

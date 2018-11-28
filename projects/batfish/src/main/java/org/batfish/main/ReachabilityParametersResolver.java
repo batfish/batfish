@@ -111,9 +111,11 @@ final class ReachabilityParametersResolver {
   }
 
   private AclLineMatchExpr resolveHeaderSpace() throws InvalidReachabilityParametersException {
-    return and(
-        firstNonNull(_params.getHeaderSpace(), AclLineMatchExprs.TRUE),
-        matchDst(resolveDestinationIpSpace()));
+    AclLineMatchExpr expr =
+        and(
+            firstNonNull(_params.getHeaderSpace(), AclLineMatchExprs.TRUE),
+            matchDst(resolveDestinationIpSpace()));
+    return _params.getInvertSearch() ? AclLineMatchExprs.not(expr) : expr;
   }
 
   @VisibleForTesting

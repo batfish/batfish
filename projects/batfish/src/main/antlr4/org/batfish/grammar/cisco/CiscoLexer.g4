@@ -12183,6 +12183,11 @@ TRAFFIC_EXPORT
    'traffic-export'
 ;
 
+TRAFFIC_FILTER
+:
+   'traffic-filter'
+;
+
 TRAFFIC_INDEX
 :
    'traffic-index'
