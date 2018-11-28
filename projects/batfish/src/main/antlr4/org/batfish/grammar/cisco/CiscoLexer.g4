@@ -2929,7 +2929,7 @@ DERIVATION_RULES
 
 DES
 :
-   'des' -> pushMode ( M_Des )
+   'des'
 ;
 
 DES_SHA1
@@ -10788,7 +10788,7 @@ SGBP
 
 SHA
 :
-   'sha' -> pushMode ( M_Sha )
+   'sha'
 ;
 
 SHA1
@@ -14632,33 +14632,6 @@ M_COMMENT_NON_NEWLINE
    F_NonNewline+
 ;
 
-mode M_Des;
-
-M_Des_DEC_PART
-:
-   F_Digit+
-;
-
-M_Des_HEX_PART
-:
-   F_HexDigit+ -> popMode
-;
-
-M_Des_REDACTED
-:
-   '*'+ -> popMode
-;
-
-M_Des_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_Des_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 mode M_Description;
 
 M_Description_NEWLINE
@@ -15266,33 +15239,6 @@ mode M_SeedWhitespace;
 M_Seed_WS
 :
    F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
-;
-
-mode M_Sha;
-
-M_Sha_DEC_PART
-:
-   F_Digit+
-;
-
-M_Sha_HEX_PART
-:
-   F_HexDigit+ -> popMode
-;
-
-M_Sha_REDACTED
-:
-   '*'+ -> popMode
-;
-
-M_Sha_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_Sha_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_SHA1;
