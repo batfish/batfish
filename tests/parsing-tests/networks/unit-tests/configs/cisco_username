@@ -6,4 +6,5 @@ username demo privilege 15 nohangup password 0 demo
 username network password 5 SOMEPASSWORD2  role network-operator
 username network passphrase lifetime 12345 warntime 123 gracetime 12
 username network role network-admin
+username sha privilege 15 secret 5 $1$pdQG$60trnJU5CpHjXSffvKXzd.
 !
