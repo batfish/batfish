@@ -86,7 +86,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
         .orElse(null);
   }
 
-  static ConfiguredSessionStatus getConfiguredStatus(
+  static @Nonnull ConfiguredSessionStatus getConfiguredStatus(
       BgpPeerConfigId bgpPeerConfigId,
       BgpActivePeerConfig activePeerConfig,
       SessionType sessionType,
@@ -161,11 +161,10 @@ public abstract class BgpSessionAnswerer extends Answerer {
         return false;
       }
     }
-    if (!question.getType().equals(".*")) {
-      String typeName = (String) row.get(COL_SESSION_TYPE, Schema.STRING);
-      if (typeName == null || !question.matchesType(SessionType.valueOf(typeName))) {
-        return false;
-      }
+    String typeName = (String) row.get(COL_SESSION_TYPE, Schema.STRING);
+    SessionType type = typeName == null ? null : SessionType.valueOf(typeName);
+    if (!question.matchesType(type)) {
+      return false;
     }
     return true;
   }

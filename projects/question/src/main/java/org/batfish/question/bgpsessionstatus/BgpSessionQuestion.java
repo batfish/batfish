@@ -16,6 +16,8 @@ import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionSta
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {
 
+  private static final String MATCH_ALL = ".*";
+
   public static final String PROP_NODES = "nodes";
 
   public static final String PROP_REMOTE_NODES = "remoteNodes";
@@ -51,22 +53,33 @@ public abstract class BgpSessionQuestion extends Question {
     _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
     _status =
         Strings.isNullOrEmpty(status)
-            ? Pattern.compile(".*")
+            ? Pattern.compile(MATCH_ALL)
             : Pattern.compile(status.toUpperCase());
     _type =
-        Strings.isNullOrEmpty(type) ? Pattern.compile(".*") : Pattern.compile(type.toUpperCase());
+        Strings.isNullOrEmpty(type)
+            ? Pattern.compile(MATCH_ALL)
+            : Pattern.compile(type.toUpperCase());
   }
 
   boolean matchesStatus(@Nullable ConfiguredSessionStatus status) {
+    if (_status.pattern().equals(MATCH_ALL)) {
+      return true;
+    }
     return status != null && _status.matcher(status.toString()).matches();
   }
 
   boolean matchesStatus(@Nullable SessionStatus status) {
+    if (_status.pattern().equals(MATCH_ALL)) {
+      return true;
+    }
     return status != null && _status.matcher(status.toString()).matches();
   }
 
   boolean matchesType(SessionType type) {
-    return _type.matcher(type.toString()).matches();
+    if (_type.pattern().equals(MATCH_ALL)) {
+      return true;
+    }
+    return type != null && _type.matcher(type.toString()).matches();
   }
 
   @JsonProperty(PROP_NODES)

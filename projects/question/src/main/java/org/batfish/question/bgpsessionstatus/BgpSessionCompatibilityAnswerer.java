@@ -293,12 +293,11 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     }
 
     // Check configured session status
-    if (!question.getStatus().equals(".*")) {
-      String statusName = (String) row.get(COL_CONFIGURED_STATUS, Schema.STRING);
-      if (statusName == null
-          || !question.matchesStatus(ConfiguredSessionStatus.valueOf(statusName))) {
-        return false;
-      }
+    String statusName = (String) row.get(COL_CONFIGURED_STATUS, Schema.STRING);
+    ConfiguredSessionStatus status =
+        statusName == null ? null : ConfiguredSessionStatus.valueOf(statusName);
+    if (!question.matchesStatus(status)) {
+      return false;
     }
 
     return true;

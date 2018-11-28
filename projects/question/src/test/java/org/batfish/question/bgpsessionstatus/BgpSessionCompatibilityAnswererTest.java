@@ -51,10 +51,10 @@ public class BgpSessionCompatibilityAnswererTest {
   /*
   Setup for all tests:
   node1 peers with node2.
-  node1 has a static BGP process from 1.1.1.1 to 2.2.2.2 (AS 1 to AS 2).
-  node2 has a static BGP process from 2.2.2.2 to 1.1.1.1 (AS 2 to AS 1).
-  node3 has a static BGP process from 3.3.3.3 to 3.3.3.4 (AS 3 to AS 3).
-  node4 has a dynamic BGP process from 3.3.3.4 to 3.3.3.0/30 (AS 3 to AS 3).
+  node1 has a static BGP peer from 1.1.1.1 to 2.2.2.2 (AS 1 to AS 2).
+  node2 has a static BGP peer from 2.2.2.2 to 1.1.1.1 (AS 2 to AS 1).
+  node3 has a static BGP peer from 3.3.3.3 to 3.3.3.4 (AS 3 to AS 3).
+  node4 has a dynamic BGP peer from 3.3.3.4 to 3.3.3.0/30 (AS 3 to AS 3).
   This results in four rows, represented by ROW_1, ROW_2, ROW_3, and ROW_4.
    */
 
