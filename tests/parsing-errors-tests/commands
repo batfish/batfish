@@ -8,6 +8,9 @@ test -compareall tests/parsing-errors-tests/recovery-no-verbose.ref get initinfo
 test -compareall tests/parsing-errors-tests/recovery-init-invalid-iptables.ref init-snapshot tests/parsing-errors-tests/networks/invalid-iptables
 test -compareall tests/parsing-errors-tests/recovery-invalid-ip-no-verbose.ref get initinfo
 
+#parsing hosts error
+test -compareall tests/parsing-errors-tests/invalid-hosts.ref init-snapshot tests/parsing-errors-tests/networks/invalid-hosts
+
 #all config files failed in parsing step
 test -compareall tests/parsing-errors-tests/recovery-all-parsing-failed.ref init-snapshot tests/parsing-errors-tests/networks/all-fail
 
