@@ -2,8 +2,8 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +29,8 @@ public class Interface implements Serializable {
       return 1E9;
     } else if (name.startsWith("fe")) {
       return 1E8;
+    } else if (name.startsWith("irb")) {
+      return 1E9;
     } else {
       return 1E12;
     }
@@ -48,6 +50,8 @@ public class Interface implements Serializable {
   private final Set<Ip> _allAddressIps;
 
   private final List<SubRange> _allowedVlans;
+
+  private final List<String> _allowedVlanNames;
 
   private double _bandwidth;
 
@@ -108,7 +112,8 @@ public class Interface implements Serializable {
     _nativeVlan = 1;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
-    _allowedVlans = new ArrayList<>();
+    _allowedVlans = new LinkedList<>();
+    _allowedVlanNames = new LinkedList<>();
     _ospfCost = null;
     _units = new TreeMap<>();
     _vrrpGroups = new TreeMap<>();
@@ -144,6 +149,10 @@ public class Interface implements Serializable {
 
   public List<SubRange> getAllowedVlans() {
     return _allowedVlans;
+  }
+
+  public List<String> getAllowedVlanNames() {
+    return _allowedVlanNames;
   }
 
   public double getBandwidth() {

@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
@@ -1448,7 +1449,9 @@ public class WorkMgrService {
   }
 
   /**
-   * Obtain the counts of completed and incomplete work items
+   * Obtain the counts of completed and incomplete work items <br>
+   * Deprecated in favor of {@link
+   * org.batfish.coordinator.resources.WorkResource#getWorkStatus(String) }
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1458,6 +1461,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_WORKSTATUS)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONArray getWorkStatus(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -1478,7 +1482,17 @@ public class WorkMgrService {
         return failureResponse("work with the specified id does not exist or is not inaccessible");
       }
 
-      checkNetworkAccessibility(apiKey, work.getWorkItem().getContainerName());
+      String networkId = work.getWorkItem().getContainerName();
+      Optional<String> networkOpt =
+          Main.getWorkMgr()
+              .getNetworkNames()
+              .stream()
+              .filter(
+                  n -> Main.getWorkMgr().getIdManager().getNetworkId(n).getId().equals(networkId))
+              .findFirst();
+      checkArgument(networkOpt.isPresent(), "Invalid network ID: %s", networkId);
+
+      checkNetworkAccessibility(apiKey, networkOpt.get());
 
       String taskStr = BatfishObjectMapper.writePrettyString(work.getLastTaskCheckResult());
 

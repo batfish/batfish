@@ -464,6 +464,27 @@ if_ip_vrf_sitemap
    IP VRF SITEMAP map = variable NEWLINE
 ;
 
+if_ipv6
+:
+   IPV6 if_ipv6_inner
+;
+
+if_ipv6_inner
+:
+   if_ipv6_enable
+   | if_ipv6_traffic_filter
+;
+
+if_ipv6_enable
+:
+   ENABLE NEWLINE
+;
+
+if_ipv6_traffic_filter
+:
+   TRAFFIC_FILTER acl = variable_aclname (IN | OUT) NEWLINE
+;
+
 if_isis_circuit_type
 :
    ISIS CIRCUIT_TYPE
@@ -1643,6 +1664,7 @@ if_inner
    | if_ip_vrf_receive
    | if_ip_vrf_select
    | if_ip_vrf_sitemap
+   | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable
    | if_isis_hello_interval

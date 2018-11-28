@@ -6,17 +6,19 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 
 /**
@@ -35,17 +37,19 @@ public final class ReachabilityParameters {
     private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
         new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
 
-    private @Nullable NodeSpecifier _finalNodesSpecifier = null;
+    private @Nonnull NodeSpecifier _finalNodesSpecifier = AllNodesNodeSpecifier.INSTANCE;
 
-    private @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier = null;
+    private @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
-    private @Nullable AclLineMatchExpr _headerSpace;
+    private @Nonnull AclLineMatchExpr _headerSpace = AclLineMatchExprs.TRUE;
 
     private boolean _ignoreFilters = false;
 
+    private boolean _invertSearch = false;
+
     private int _maxChunkSize;
 
-    private @Nullable NodeSpecifier _requiredTransitNodesSpecifier = null;
+    private @Nonnull NodeSpecifier _requiredTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
     private @Nonnull LocationSpecifier _sourceLocationSpecifier =
         AllInterfacesLocationSpecifier.INSTANCE;
@@ -74,14 +78,24 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setFinalNodesSpecifier(@Nullable NodeSpecifier finalNodeSpecifier) {
+    public Builder setFinalNodesSpecifier(@Nonnull NodeSpecifier finalNodeSpecifier) {
       _finalNodesSpecifier = finalNodeSpecifier;
       return this;
     }
 
     public Builder setForbiddenTransitNodesSpecifier(
-        @Nullable NodeSpecifier forbiddenTransitNodesSpecifier) {
+        @Nonnull NodeSpecifier forbiddenTransitNodesSpecifier) {
       _forbiddenTransitNodesSpecifier = forbiddenTransitNodesSpecifier;
+      return this;
+    }
+
+    public Builder setIgnoreFilters(boolean ignoreFilters) {
+      _ignoreFilters = ignoreFilters;
+      return this;
+    }
+
+    public Builder setInvertSearch(boolean invertSearch) {
+      _invertSearch = invertSearch;
       return this;
     }
 
@@ -124,24 +138,21 @@ public final class ReachabilityParameters {
       _useCompression = useCompression;
       return this;
     }
-
-    public Builder setIgnoreFilters(boolean ignoreFilters) {
-      _ignoreFilters = ignoreFilters;
-      return this;
-    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
 
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
 
-  private final @Nullable NodeSpecifier _finalNodesSpecifier;
+  private final @Nonnull NodeSpecifier _finalNodesSpecifier;
 
-  private final @Nullable NodeSpecifier _forbiddenTransitNodesSpecifier;
+  private final @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier;
 
   private final AclLineMatchExpr _headerSpace;
 
   private final boolean _ignoreFilters;
+
+  private final boolean _invertSearch;
 
   private final int _maxChunkSize;
 
@@ -153,7 +164,7 @@ public final class ReachabilityParameters {
 
   private final boolean _specialize;
 
-  private final @Nullable NodeSpecifier _requiredTransitNodesSpecifier;
+  private final @Nonnull NodeSpecifier _requiredTransitNodesSpecifier;
 
   private final boolean _useCompression;
 
@@ -164,6 +175,7 @@ public final class ReachabilityParameters {
     _forbiddenTransitNodesSpecifier = builder._forbiddenTransitNodesSpecifier;
     _headerSpace = builder._headerSpace;
     _ignoreFilters = builder._ignoreFilters;
+    _invertSearch = builder._invertSearch;
     _maxChunkSize = builder._maxChunkSize;
     _sourceLocationSpecifier = builder._sourceLocationSpecifier;
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
@@ -186,12 +198,12 @@ public final class ReachabilityParameters {
     return _destinationIpSpaceSpecifier;
   }
 
-  @Nullable
+  @Nonnull
   public NodeSpecifier getFinalNodesSpecifier() {
     return _finalNodesSpecifier;
   }
 
-  @Nullable
+  @Nonnull
   public NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return _forbiddenTransitNodesSpecifier;
   }
@@ -202,6 +214,10 @@ public final class ReachabilityParameters {
 
   public boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  public boolean getInvertSearch() {
+    return _invertSearch;
   }
 
   public int getMaxChunkSize() {
@@ -224,7 +240,7 @@ public final class ReachabilityParameters {
     return _specialize;
   }
 
-  @Nullable
+  @Nonnull
   public NodeSpecifier getRequiredTransitNodesSpecifier() {
     return _requiredTransitNodesSpecifier;
   }

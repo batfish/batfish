@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,52 +16,66 @@ import org.batfish.datamodel.answers.Schema;
 /** Enables specification a set of named structures. */
 public class NamedStructureSpecifier extends PropertySpecifier {
 
+  public static final String AS_PATH_ACCESS_LIST = "AS_Path_Access_List";
+  public static final String AUTHENTICATION_KEY_CHAIN = "Authentication_Key_Chain";
+  public static final String COMMUNITY_LIST = "Community_List";
+  public static final String IKE_POLICIES = "IKE_Policies";
+  public static final String IP_ACCESS_LIST = "IP_Access_List";
+  public static final String IP_6_ACCESS_LIST = "IP6_Access_List";
+  public static final String IPSEC_POLICY = "IPSec_Policy";
+  public static final String IPSEC_PROPOSAL = "IPSec_Proposal";
+  public static final String IPSEC_VPN = "IPSec_Vpn";
+  public static final String ROUTE_FILTER_LIST = "Route_Filter_List";
+  public static final String ROUTE_6_FILTER_LIST = "Route6_Filter_List";
+  public static final String ROUTING_POLICY = "Routing_Policy";
+  public static final String VRF = "VRF";
+  public static final String ZONE = "Zone";
+
   public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
-              "as-path-access-lists",
+              AS_PATH_ACCESS_LIST,
               new PropertyDescriptor<>(
                   Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
           .put(
-              "authentication-key-chains",
+              AUTHENTICATION_KEY_CHAIN,
               new PropertyDescriptor<>(
                   Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
           .put(
-              "community-lists",
+              COMMUNITY_LIST,
               new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
           .put(
-              "ike-policies",
+              IKE_POLICIES,
               new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
           .put(
-              "ip-access-lists",
+              IP_ACCESS_LIST,
               new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
           .put(
-              "ip6-access-lists",
+              IP_6_ACCESS_LIST,
               new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-policies",
+              IPSEC_POLICY,
               new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-proposals",
+              IPSEC_PROPOSAL,
               new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.set(Schema.STRING)))
           .put(
-              "ipsec-vpns",
+              IPSEC_VPN,
               new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
           .put(
-              "route-filter-lists",
+              ROUTE_FILTER_LIST,
               new PropertyDescriptor<>(
                   Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
           .put(
-              "route6-filter-lists",
+              ROUTE_6_FILTER_LIST,
               new PropertyDescriptor<>(
                   Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
           .put(
-              "routing-policies",
+              ROUTING_POLICY,
               new PropertyDescriptor<>(
                   Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
-          .put("vrfs", new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
-          .put(
-              "zones", new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
+          .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
+          .put(ZONE, new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
           .build();
 
   public static final NamedStructureSpecifier ALL = new NamedStructureSpecifier(".*");
@@ -72,7 +87,18 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   @JsonCreator
   public NamedStructureSpecifier(String expression) {
     _expression = expression;
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE); // canonicalize
+  }
+
+  public NamedStructureSpecifier(Collection<String> structureTypes) {
+    // quote and join
+    _expression =
+        structureTypes
+            .stream()
+            .map(String::trim)
+            .map(Pattern::quote)
+            .collect(Collectors.joining("|"));
+    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   /**

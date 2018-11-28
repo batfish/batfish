@@ -11,7 +11,6 @@ null_block
    NO?
    (
       AAA_SERVER
-      | ACCESS_GROUP
       | ACCESS
       | ACL_POLICY
       | ACLLOG

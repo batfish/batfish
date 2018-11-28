@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
+  ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY("bgp additional-paths selection route-policy"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
@@ -59,6 +60,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE("class-map activate-service-template"),
   CLASS_MAP_SERVICE_TEMPLATE("class-map service-template"),
   CONTROL_PLANE_ACCESS_GROUP("control-plane ip access-group"),
+  CONTROL_PLANE_SERVICE_POLICY_INPUT("control-plane service-policy input"),
+  CONTROL_PLANE_SERVICE_POLICY_OUTPUT("control-plane service-policy output"),
   CONTROLLER_DEPI_TUNNEL("controller rf-channel depi-tunnel"),
   COPS_LISTENER_ACCESS_LIST("cops listener access-list"),
   CRYPTO_DYNAMIC_MAP_ACL("crypto dynamic-map acl"),
@@ -81,6 +84,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   EIGRP_REDISTRIBUTE_RIP_MAP("eigrp redistribute rip route-map"),
   EIGRP_REDISTRIBUTE_STATIC_MAP("eigrp redistribute static route-map"),
   EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP("extended access-list icmp-type object-group"),
+  EXTENDED_ACCESS_LIST_NETWORK_OBJECT("extended access-list network object"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP("extended access-list network object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP("extended access-list protocol object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP(
@@ -98,6 +102,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),
   INTERFACE_IP_VERIFY_ACCESS_LIST("interface ip verify access-list"),
   INTERFACE_IP_VRF_SITEMAP("interface ip vrf sitemap"),
+  INTERFACE_IPV6_TRAFFIC_FILTER_IN("interface ipv6 traffic-filter in"),
+  INTERFACE_IPV6_TRAFFIC_FILTER_OUT("interface ipv6 traffic-filter out"),
   INTERFACE_OUTGOING_FILTER("interface outgoing ip access-list"),
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),

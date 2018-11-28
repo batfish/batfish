@@ -1,13 +1,30 @@
 {
   "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
+  "ignoreGenerated" : false,
+  "indicatePresence" : false,
   "nodes" : ".*",
-  "properties" : ".*",
+  "structureNames" : ".*",
+  "structureTypes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Return named structure definitions",
     "instanceName" : "qname",
     "variables" : {
+      "ignoreGenerated" : {
+        "description" : "Whether to ignore auto-generated structures",
+        "displayName" : "Ignore auto-generated structures",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "indicatePresence" : {
+        "description" : "Output if the structure is present or absent",
+        "displayName" : "Indicate presence",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
       "nodes" : {
         "description" : "Include nodes matching this name or regex",
         "displayName" : "Nodes",
@@ -15,9 +32,16 @@
         "type" : "nodeSpec",
         "value" : ".*"
       },
-      "properties" : {
-        "description" : "Include properties matching this regex",
-        "displayName" : "Properties",
+      "structureNames" : {
+        "description" : "Include structures matching this name or regex",
+        "displayName" : "Structure names",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : ".*"
+      },
+      "structureTypes" : {
+        "description" : "Include structures of this type",
+        "displayName" : "Structure types",
         "optional" : true,
         "type" : "namedStructureSpec",
         "value" : ".*"

@@ -21,6 +21,9 @@ test -raw tests/questions/experimental/detectLoops.ref validate-template detectL
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
 
+# validate loopbackMultipathConsistency
+test -raw tests/questions/experimental/loopbackMultipathConsistency.ref validate-template loopbackMultipathConsistency maxTraces=1
+
 # validate interfaceMtu
 test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaces='Gig.*', mtuBytes=0, nodes='as1core2'
 
@@ -31,7 +34,7 @@ test -raw tests/questions/experimental/interfaceProperties.ref validate-template
 test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
 
 # validate namedStructures
-test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures nodes=".*", properties=".*"
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures ignoreGenerated=false, indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
 
 # validate neighbors
 test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
@@ -49,7 +52,7 @@ test -raw tests/questions/experimental/ospfProperties.ref validate-template ospf
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
 # validate reachability
-test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, maxTraces=1
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, invertSearch=False, maxTraces=1
 
 # validate differentialReachability
 test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false, invertSearch=false, maxTraces=1
@@ -74,6 +77,9 @@ test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-templat
 
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
+
+# validate subnetMultipathConsistency
+test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
 
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}

@@ -110,6 +110,7 @@ i_common
    | i_fastether_options
    | i_gigether_options
    | i_family
+   | i_mac
    | i_mtu
    | i_null
    | i_redundant_ether_options
@@ -173,6 +174,11 @@ i_link_mode
    LINK_MODE FULL_DUPLEX
 ;
 
+i_mac
+:
+   MAC mac = MAC_ADDRESS
+;
+
 i_mtu
 :
    MTU size = DEC
@@ -196,6 +202,7 @@ i_null
       | INTERFACE_TRANSMIT_STATISTICS
       | MULTISERVICE_OPTIONS
       | NO_TRAPS
+      | PROXY_MACIP_ADVERTISEMENT
       | REDUNDANT_ETHER_OPTIONS
       | SONET_OPTIONS
       | TRACEOPTIONS
@@ -359,7 +366,7 @@ ife_interface_mode
 
 ife_native_vlan_id
 :
-   NATIVE_VLAN_ID name = variable
+   NATIVE_VLAN_ID id = DEC
 ;
 
 ife_port_mode

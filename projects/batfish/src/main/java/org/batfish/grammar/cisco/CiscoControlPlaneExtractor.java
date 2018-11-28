@@ -67,6 +67,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -123,6 +124,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACT
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
@@ -143,6 +146,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -155,6 +159,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
@@ -427,6 +433,8 @@ import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaCo
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Banner_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
@@ -501,6 +509,7 @@ import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
@@ -580,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
@@ -1036,7 +1046,6 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
@@ -1103,6 +1112,7 @@ import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObject;
+import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NssaSettings;
@@ -2480,7 +2490,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
     }
-    // TODO: verify if this is correct for nexus
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
   }
@@ -4790,6 +4799,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCp_service_policy(Cp_service_policyContext ctx) {
+    CiscoStructureUsage usage =
+        ctx.INPUT() != null
+            ? CONTROL_PLANE_SERVICE_POLICY_INPUT
+            : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitCqer_service_class(Cqer_service_classContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -5210,8 +5229,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.obj != null) {
-      todo(ctx);
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
+      String name = ctx.obj.getText();
+      int line = ctx.obj.getStart().getLine();
+      _configuration.referenceStructure(
+          NETWORK_OBJECT, name, EXTENDED_ACCESS_LIST_NETWORK_OBJECT, line);
+      return new NetworkObjectAddressSpecifier(name);
     } else if (ctx.og != null) {
       String name = ctx.og.getText();
       int line = ctx.og.getStart().getLine();
@@ -5291,8 +5313,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setFin(true).build())
                 .setUseFin(true)
                 .build());
-      } else if (feature.FRAGMENTS() != null) {
-        todo(ctx);
       } else if (feature.HOST_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
@@ -5337,8 +5357,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .build());
       } else if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      } else if (feature.TTL() != null) {
-        todo(ctx);
       } else if (feature.TTL_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {
@@ -5495,6 +5513,49 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
         return null;
     }
+  }
+
+  @Override
+  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    // Interface iface = _configuration.getInterfaces().get(ifaceName);
+    Optional<Interface> optionalIface =
+        _configuration
+            .getInterfaces()
+            .values()
+            .stream()
+            .filter(i -> i.getAlias().equals(ifaceName))
+            .findFirst();
+    Interface iface;
+    if (optionalIface.isPresent()) {
+      iface = optionalIface.get();
+    } else {
+      // Should never get here with valid config, ASA prevents referencing a non-existant iface here
+      _w.redFlag(
+          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+    CiscoStructureUsage usage = null;
+    String aclName = ctx.name.getText();
+    if (ctx.IN() != null) {
+      iface.setIncomingFilter(aclName);
+      usage = INTERFACE_INCOMING_FILTER;
+    } else if (ctx.OUT() != null) {
+      iface.setOutgoingFilter(aclName);
+      usage = INTERFACE_OUTGOING_FILTER;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
+    String aclName = ctx.name.getText();
+    for (Interface iface : _configuration.getInterfaces().values()) {
+      iface.setIncomingFilter(aclName);
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -5733,6 +5794,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String map = ctx.map.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
+  }
+
+  @Override
+  public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
+    CiscoStructureUsage usage =
+        ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
   }
 
   @Override
@@ -9095,11 +9164,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
-  }
-
-  @Override
-  public void exitVrfc_ip_route(Vrfc_ip_routeContext ctx) {
-    todo(ctx);
   }
 
   @Override

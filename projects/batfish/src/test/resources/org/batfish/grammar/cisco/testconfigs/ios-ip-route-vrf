@@ -1,0 +1,7 @@
+!
+hostname ios-ip-route-vrf
+!
+ip vrf management
+!
+ip route vrf management 0.0.0.0 0.0.0.0 1.2.3.4 name "mgmt vrf default route"
+!

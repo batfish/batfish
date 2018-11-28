@@ -35,3 +35,7 @@ test -raw tests/questions/stable/undefinedReferences.ref validate-template undef
 
 # validate unusedstructures
 test -raw tests/questions/stable/unusedStructures.ref validate-template unusedstructures nodes=".*"
+
+# validate viConversionWarning
+test -raw tests/questions/stable/viConversionWarning.ref validate-template viConversionWarning
+

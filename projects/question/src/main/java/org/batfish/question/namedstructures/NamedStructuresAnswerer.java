@@ -4,13 +4,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -25,6 +26,10 @@ import org.batfish.datamodel.table.TableMetadata;
 public class NamedStructuresAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
+  public static final String COL_PRESENT_ON_NODE = "Present_On_Node";
+  public static final String COL_STRUCTURE_TYPE = "Structure_Type";
+  public static final String COL_STRUCTURE_NAME = "Structure_Name";
+  public static final String COL_STRUCTURE_DEFINITION = "Structure_Definition";
 
   public NamedStructuresAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -38,118 +43,117 @@ public class NamedStructuresAnswerer extends Answerer {
    *
    * @return The {@link List} of {@link ColumnMetadata}s
    */
-  public static TableMetadata createNamedStructuresMetadata(
-      NamedStructuresQuestion question,
-      Map<String, Configuration> configurations,
-      Set<String> nodes) {
-    ImmutableList.Builder<ColumnMetadata> columnMetadataList = ImmutableList.builder();
-    columnMetadataList.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
+  public static TableMetadata createMetadata(NamedStructuresQuestion question) {
+    List<ColumnMetadata> columns =
+        ImmutableList.of(
+            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COL_STRUCTURE_TYPE, Schema.STRING, "Structure type", true, false),
+            new ColumnMetadata(COL_STRUCTURE_NAME, Schema.STRING, "Structure name", true, false),
+            question.getIndicatePresence()
+                ? new ColumnMetadata(
+                    COL_PRESENT_ON_NODE,
+                    Schema.BOOLEAN,
+                    "Whether the structure is present on the node",
+                    false,
+                    true)
+                : new ColumnMetadata(
+                    COL_STRUCTURE_DEFINITION, Schema.OBJECT, "Structure definition", false, true));
 
-    for (String nodeName : nodes) {
-      for (String namedStructure : question.getProperties().getMatchingProperties()) {
-        Object namedStructureValues =
-            NamedStructureSpecifier.JAVA_MAP
-                .get(namedStructure)
-                .getGetter()
-                .apply(configurations.get(nodeName));
-        if (namedStructureValues != null
-            && ((namedStructureValues instanceof Map<?, ?>)
-                && !((Map<?, ?>) namedStructureValues).isEmpty())) {
-
-          for (Map.Entry<?, ?> namedStructureEntry :
-              ((Map<?, ?>) namedStructureValues).entrySet()) {
-            String namedStructureEntryKey = namedStructureEntry.getKey().toString();
-
-            Schema columnSchema = Schema.OBJECT;
-            String finalNameStructureEntry = namedStructure + ":" + namedStructureEntryKey;
-
-            if (!columnMetadataList
-                .build()
-                .stream()
-                .anyMatch(
-                    columnMetadata -> columnMetadata.getName().equals(finalNameStructureEntry))) {
-
-              columnMetadataList.add(
-                  new ColumnMetadata(
-                      finalNameStructureEntry,
-                      columnSchema,
-                      namedStructureEntryKey,
-                      Boolean.FALSE,
-                      Boolean.TRUE));
-            }
-          }
-        }
-      }
-    }
-
-    String textDesc = String.format("Properties of node ${%s}.", COL_NODE);
+    String textDesc = String.format("Structure ${%s} on node ${%s}.", COL_STRUCTURE_NAME, COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadataList.build(), textDesc);
+    return new TableMetadata(columns, textDesc);
   }
 
   @VisibleForTesting
-  static Multiset<Row> rawNamedStructuresAnswer(
+  static Multiset<Row> rawAnswer(
       NamedStructuresQuestion question,
-      Map<String, Configuration> configurations,
       Set<String> nodes,
-      TableMetadata tableMetadata) {
+      Map<String, Configuration> configurations,
+      Map<String, ColumnMetadata> columns) {
 
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columns = tableMetadata.toColumnMap();
-    for (String nodeName : nodes) {
-      RowBuilder row = Row.builder(columns);
-      row.put(COL_NODE, new Node(nodeName));
 
-      for (Map.Entry<String, ColumnMetadata> columnEntry : columns.entrySet()) {
-        String columnName = columnEntry.getKey();
-        if (columnName.equalsIgnoreCase(COL_NODE)) {
+    for (String structureType : question.getStructureTypes().getMatchingProperties()) {
+      RowBuilder row = Row.builder(columns).put(COL_STRUCTURE_TYPE, structureType);
+
+      Function<Configuration, Object> structMapGetter =
+          NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+
+      Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
+
+      for (String structName : structNames) {
+        if (!question.getStructureNamePattern().matcher(structName).matches()) {
           continue;
         }
+        if (question.getIgnoreGenerated() && isAutoGenerated(structName)) {
+          continue;
+        }
+        for (String nodeName : nodes) {
+          row.put(COL_NODE, new Node(nodeName));
 
-        String[] columnSplits = columnName.split(":", 2);
-        String actualNameStructureType = columnSplits[0];
+          Object namedStructuresMap = structMapGetter.apply(configurations.get(nodeName));
 
-        Object namedStructureValues =
-            NamedStructureSpecifier.JAVA_MAP
-                .get(actualNameStructureType)
-                .getGetter()
-                .apply(configurations.get(nodeName));
-        if (namedStructureValues != null) {
-
-          if ((namedStructureValues instanceof Map<?, ?>)
-              && !((Map<?, ?>) namedStructureValues).isEmpty()) {
-            for (Map.Entry<?, ?> namedStructureEntry :
-                ((Map<?, ?>) namedStructureValues).entrySet()) {
-              Object namedStructutureEntryValue = namedStructureEntry.getValue();
-              row.put(columnName, namedStructutureEntryValue);
+          if (namedStructuresMap instanceof Map<?, ?>) {
+            if (question.getIndicatePresence()) {
+              row.put(COL_STRUCTURE_NAME, structName);
+              row.put(COL_PRESENT_ON_NODE, ((Map) namedStructuresMap).containsKey(structName));
+              rows.add(row.build());
+            } else {
+              if (((Map) namedStructuresMap).containsKey(structName)) {
+                row.put(COL_STRUCTURE_NAME, structName);
+                row.put(COL_STRUCTURE_DEFINITION, ((Map) namedStructuresMap).get(structName));
+                rows.add(row.build());
+              }
             }
-          } else {
-            /* To fill the missing cells in the answer Table. */
-            row.put(columnName, null);
           }
         }
       }
-      rows.add(row.build());
     }
     return rows;
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
 
-    TableMetadata tableMetadata = createNamedStructuresMetadata(question, configurations, nodes);
+    TableMetadata tableMetadata = createMetadata(question);
 
     Multiset<Row> propertyRows =
-        rawNamedStructuresAnswer(question, configurations, nodes, tableMetadata);
+        rawAnswer(question, nodes, configurations, tableMetadata.toColumnMap());
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     answer.postProcessAnswer(question, propertyRows);
     return answer;
+  }
+
+  /** Returns all structures of type {@code structureType} across {@code nodes} */
+  public static Set<String> getAllStructureNamesOfType(
+      String structureType, Set<String> nodes, Map<String, Configuration> configurations) {
+
+    Set<String> structNames = new HashSet<>();
+
+    Function<Configuration, Object> structMapGetter =
+        NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+
+    for (String node : nodes) {
+      Object namedStructuresMap = structMapGetter.apply(configurations.get(node));
+
+      if (namedStructuresMap instanceof Map<?, ?>) {
+        for (Map.Entry<?, ?> entry : ((Map<?, ?>) namedStructuresMap).entrySet()) {
+          structNames.add((String) entry.getKey());
+        }
+      }
+    }
+    return structNames;
+  }
+
+  /** Whether a structure is a auto-generated. Dumb check based on name starting with '~' */
+  public static boolean isAutoGenerated(String structName) {
+    return structName.startsWith("~");
   }
 }

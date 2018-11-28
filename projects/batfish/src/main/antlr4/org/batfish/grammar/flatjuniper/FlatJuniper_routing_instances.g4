@@ -52,6 +52,7 @@ ri_named_routing_instance
       | ri_vrf_import
       | ri_vrf_table_label
       | ri_vrf_target
+      | ri_vtep_source_interface
    )
 ;
 
@@ -109,6 +110,11 @@ ri_vrf_target
       | riv_export
       | riv_import
    )
+;
+
+ri_vtep_source_interface
+:
+   VTEP_SOURCE_INTERFACE iface = interface_id
 ;
 
 riv_community
@@ -241,6 +247,11 @@ ro_rib_groups
       | ror_import_policy
       | ror_import_rib
    )
+;
+
+ro_route_distinguisher_id
+:
+   ROUTE_DISTINGUISHER_ID addr = IP_ADDRESS
 ;
 
 ro_router_id
@@ -614,6 +625,7 @@ s_routing_options
       | ro_null
       | ro_rib
       | ro_rib_groups
+      | ro_route_distinguisher_id
       | ro_router_id
       | ro_srlg
       | ro_static

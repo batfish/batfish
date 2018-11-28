@@ -13,12 +13,14 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DifferenceLocationSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifiers;
 
 public final class ReachabilitySettings {
@@ -362,12 +364,16 @@ public final class ReachabilitySettings {
         .setActions(_actions)
         .setDestinationIpSpaceSpecifier(destinationIpSpaceSpecifier)
         .setFinalNodesSpecifier(
-            NodeSpecifiers.difference(
-                NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
-        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(_nonTransitNodes))
+            firstNonNull(
+                NodeSpecifiers.difference(
+                    NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)),
+                AllNodesNodeSpecifier.INSTANCE))
+        .setForbiddenTransitNodesSpecifier(
+            firstNonNull(NodeSpecifiers.from(_nonTransitNodes), NoNodesNodeSpecifier.INSTANCE))
         .setHeaderSpace(headerSpace)
         .setMaxChunkSize(_maxChunkSize)
-        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
+        .setRequiredTransitNodesSpecifier(
+            firstNonNull(NodeSpecifiers.from(_transitNodes), NoNodesNodeSpecifier.INSTANCE))
         .setSourceIpSpaceSpecifier(sourceIpSpaceSpecifier)
         .setSourceLocationSpecifier(sourceLocations)
         .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))

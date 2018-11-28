@@ -18,7 +18,11 @@ import org.batfish.grammar.BatfishCombinedParser;
 public class Warnings implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final String MISCELLANEOUS = "MISCELLANEOUS";
+  public static final String TAG_PEDANTIC = "MISCELLANEOUS";
+
+  public static final String TAG_RED_FLAG = "MISCELLANEOUS";
+
+  public static final String TAG_UNIMPLEMENTED = "UNIMPLEMENTED";
 
   private static final String PROP_PARSE_WARNINGS = "Parse warnings";
 
@@ -98,7 +102,7 @@ public class Warnings implements Serializable {
     if (!_pedanticRecord) {
       return;
     }
-    pedantic(msg, MISCELLANEOUS);
+    pedantic(msg, TAG_PEDANTIC);
   }
 
   public void pedantic(String msg, String tag) {
@@ -106,7 +110,7 @@ public class Warnings implements Serializable {
   }
 
   public void redFlag(String msg) {
-    redFlag(msg, MISCELLANEOUS);
+    redFlag(msg, TAG_RED_FLAG);
   }
 
   public void redFlag(String msg, String tag) {
@@ -144,7 +148,7 @@ public class Warnings implements Serializable {
     if (!_unimplementedRecord) {
       return;
     }
-    _unimplementedWarnings.add(new Warning(msg, "UNIMPLEMENTED"));
+    _unimplementedWarnings.add(new Warning(msg, TAG_UNIMPLEMENTED));
   }
 
   /** A class to represent a parse warning in a file. */

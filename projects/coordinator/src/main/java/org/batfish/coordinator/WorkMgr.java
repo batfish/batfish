@@ -149,6 +149,14 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
 
+  private static final Set<String> IGNORED_PATHS =
+      ImmutableSet.<String>builder()
+          .add(".DS_STORE")
+          .add("__MACOSX")
+          .add(".git")
+          .add(".svn")
+          .build();
+
   private static final Comparator<AclTrace> COMPARATOR_ACL_TRACE =
       Comparator.comparing(
           AclTrace::getEvents,
@@ -1619,8 +1627,13 @@ public class WorkMgr extends AbstractCoordinator {
    * Helper function to assert there is only one subdir in the specified snapshot dir and return
    * that subdir
    */
-  private static Path getSnapshotSubdir(Path srcDir) {
-    SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
+  @VisibleForTesting
+  static Path getSnapshotSubdir(Path srcDir) {
+    SortedSet<Path> srcDirEntries =
+        CommonUtil.getEntries(srcDir)
+            .stream()
+            .filter(path -> !IGNORED_PATHS.contains(path.getFileName().toString()))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
