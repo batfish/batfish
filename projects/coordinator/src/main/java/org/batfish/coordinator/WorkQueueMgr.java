@@ -243,12 +243,13 @@ public class WorkQueueMgr {
    * @param snapshot {@link SnapshotId} to get completed work for.
    * @return {@link Map} or work id to status.
    */
-  public synchronized Map<String, String> getCompletedWork(NetworkId network, SnapshotId snapshot) {
-    ImmutableMap.Builder<String, String> b = ImmutableMap.builder();
+  public synchronized Map<String, QueuedWork> getCompletedWork(
+      NetworkId network, SnapshotId snapshot) {
+    ImmutableMap.Builder<String, QueuedWork> b = ImmutableMap.builder();
     for (QueuedWork work : _queueCompletedWork) {
       if (work.getWorkItem().getContainerName().equals(network.getId())
           && work.getWorkItem().getTestrigName().equals(snapshot.getId())) {
-        b.put(work.getId().toString(), work.getStatus().toString());
+        b.put(work.getId().toString(), work);
       }
     }
     return b.build();

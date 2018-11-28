@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
+import org.batfish.coordinator.QueuedWork;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 
@@ -70,14 +71,15 @@ public final class SnapshotResource {
   /**
    * Get completed work for the specified network's snapshot.
    *
-   * @return Map of work item ids to work item status
+   * @return Map of work item ids to {@link QueuedWork}
    */
   @Path(RSC_COMPLETED_WORK)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
   public Response getCompletedWork() {
     try {
-      Map<String, String> completedWork = Main.getWorkMgr().getCompletedWork(_network, _snapshot);
+      Map<String, QueuedWork> completedWork =
+          Main.getWorkMgr().getCompletedWork(_network, _snapshot);
       return Response.ok().entity(completedWork).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.NOT_FOUND).build();

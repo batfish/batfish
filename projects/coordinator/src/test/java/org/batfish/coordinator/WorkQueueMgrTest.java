@@ -236,15 +236,15 @@ public final class WorkQueueMgrTest {
     _workQueueMgr.queueUnassignedWork(work2);
 
     // No items in complete queue yet
-    Map<String, String> works0 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    Map<String, QueuedWork> works0 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
 
     // Move one item from incomplete to complete queue
     _workQueueMgr.markAssignmentError(work1);
-    Map<String, String> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    Map<String, QueuedWork> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
 
     // Move a second item from incomplete to complete queue
     _workQueueMgr.markAssignmentError(work2);
-    Map<String, String> works2 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    Map<String, QueuedWork> works2 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
 
     // Confirm we don't see any work items when the complete queue is empty
     assertThat(works0.entrySet(), iterableWithSize(0));
@@ -262,7 +262,7 @@ public final class WorkQueueMgrTest {
   @Test
   public void getCompletedWorkBadFilter() throws Exception {
     // Make sure we get no results or error filtering on a bogus snapshot
-    Map<String, String> works0 =
+    Map<String, QueuedWork> works0 =
         _workQueueMgr.getCompletedWork(new NetworkId("bogus"), new SnapshotId("bogus"));
     assertThat(works0.entrySet(), iterableWithSize(0));
   }
@@ -300,7 +300,7 @@ public final class WorkQueueMgrTest {
     _workQueueMgr.markAssignmentError(network1snapshot1work1);
     _workQueueMgr.markAssignmentError(network1snapshot2work);
     _workQueueMgr.markAssignmentError(network2snapshot1work);
-    Map<String, String> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    Map<String, QueuedWork> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
 
     // Confirm we only see the network 1, snapshot 1 work item in the complete queue
     // i.e. make sure we don't see items from the other network or snapshot
