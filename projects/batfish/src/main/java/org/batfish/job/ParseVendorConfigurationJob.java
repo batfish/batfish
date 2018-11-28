@@ -177,7 +177,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
               _logger.getHistory(),
               _filename,
               new BatfishException(
-                  String.format("Failed to create host config from file: '%s'", _filename), e));
+                  String.format(
+                      "Failed to create host config from file: '%s', with error: %s",
+                      _filename, e.getMessage()),
+                  e));
         }
 
         vc.setFilename(_filename);
