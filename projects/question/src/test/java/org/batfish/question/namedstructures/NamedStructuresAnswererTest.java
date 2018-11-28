@@ -1,6 +1,7 @@
 package org.batfish.question.namedstructures;
 
 import static org.batfish.question.namedstructures.NamedStructuresAnswerer.getAllStructureNamesOfType;
+import static org.batfish.question.namedstructures.NamedStructuresAnswerer.insertedObject;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -83,7 +84,9 @@ public class NamedStructuresAnswererTest {
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
                         NamedStructureSpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
                     .build(),
                 Row.builder()
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
@@ -91,7 +94,9 @@ public class NamedStructuresAnswererTest {
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
                         NamedStructureSpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp2")
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp2)
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                        insertedObject(rp2, NamedStructureSpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));
@@ -128,7 +133,9 @@ public class NamedStructuresAnswererTest {
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
                         NamedStructureSpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));
@@ -212,7 +219,9 @@ public class NamedStructuresAnswererTest {
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
                         NamedStructureSpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "selected-rp1")
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION, rp1)
+                    .put(
+                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));
