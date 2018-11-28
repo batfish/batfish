@@ -17,7 +17,6 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
-import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
@@ -46,7 +45,6 @@ public class Schema {
           .put("Boolean", getClassString(Boolean.class))
           .put("Double", getClassString(Double.class))
           .put("Environment", getClassString(Environment.class))
-          .put("FileLine", getClassString(FileLinePair.class))
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
