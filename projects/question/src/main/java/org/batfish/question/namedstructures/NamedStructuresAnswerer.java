@@ -13,9 +13,12 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.PropertySpecifier;
+import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -57,7 +60,11 @@ public class NamedStructuresAnswerer extends Answerer {
                     false,
                     true)
                 : new ColumnMetadata(
-                    COL_STRUCTURE_DEFINITION, Schema.OBJECT, "Structure definition", false, true));
+                    COL_STRUCTURE_DEFINITION,
+                    Schema.SELF_DESCRIBING,
+                    "Structure definition",
+                    false,
+                    true));
 
     String textDesc = String.format("Structure ${%s} on node ${%s}.", COL_STRUCTURE_NAME, COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
@@ -79,8 +86,9 @@ public class NamedStructuresAnswerer extends Answerer {
     for (String structureType : question.getStructureTypes().getMatchingProperties()) {
       RowBuilder row = Row.builder(columns).put(COL_STRUCTURE_TYPE, structureType);
 
-      Function<Configuration, Object> structMapGetter =
-          NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+      PropertyDescriptor<Configuration> structTypeDescriptor =
+          NamedStructureSpecifier.JAVA_MAP.get(structureType);
+      Schema structTypeSchema = structTypeDescriptor.getSchema();
 
       Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
 
@@ -94,17 +102,23 @@ public class NamedStructuresAnswerer extends Answerer {
         for (String nodeName : nodes) {
           row.put(COL_NODE, new Node(nodeName));
 
-          Object namedStructuresMap = structMapGetter.apply(configurations.get(nodeName));
+          Object namedStructuresMap =
+              structTypeDescriptor.getGetter().apply(configurations.get(nodeName));
 
           if (namedStructuresMap instanceof Map<?, ?>) {
             if (question.getIndicatePresence()) {
-              row.put(COL_STRUCTURE_NAME, structName);
-              row.put(COL_PRESENT_ON_NODE, ((Map) namedStructuresMap).containsKey(structName));
+              row.put(COL_STRUCTURE_NAME, structName)
+                  .put(COL_PRESENT_ON_NODE, ((Map) namedStructuresMap).containsKey(structName));
               rows.add(row.build());
             } else {
               if (((Map) namedStructuresMap).containsKey(structName)) {
-                row.put(COL_STRUCTURE_NAME, structName);
-                row.put(COL_STRUCTURE_DEFINITION, ((Map) namedStructuresMap).get(structName));
+                row.put(COL_STRUCTURE_NAME, structName)
+                    .put(
+                        COL_STRUCTURE_DEFINITION,
+                        new SelfDescribingObject(
+                            structTypeSchema,
+                            PropertySpecifier.convertTypeIfNeeded(
+                                ((Map) namedStructuresMap).get(structName), structTypeSchema)));
                 rows.add(row.build());
               }
             }
