@@ -37,11 +37,11 @@ public abstract class BgpSessionQuestion extends Question {
   /**
    * Create a new BGP session question.
    *
-   * @param nodes Regular expression to match the nodes names for one end of the sessions. Default
-   *     is '.*' (all nodes).
-   * @param remoteNodes Regular expression to match the nodes names for the other end of the
-   *     sessions. Default is '.*' (all nodes).
-   * @param status Regular expression to match status type (see {@link ConfiguredSessionStatus})
+   * @param nodes {@link NodesSpecifier} to specify matching local nodes. Default is all nodes.
+   * @param remoteNodes {@link NodesSpecifier} to specify matching remote nodes. Default is all
+   *     nodes.
+   * @param status Regular expression to match status type (see {@link ConfiguredSessionStatus} and
+   *     {@link SessionStatus})
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   public BgpSessionQuestion(
