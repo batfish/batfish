@@ -57,8 +57,7 @@ public class PropertySpecifierTest {
   public void convertTypeIfNeededMapToStringSet() {
     Object propertyValueMap =
         PropertySpecifier.convertTypeIfNeeded(
-            ImmutableSortedMap.of("k1", "v1", "k2", "v2"),
-            new PropertyDescriptor<Configuration>(null, Schema.list(Schema.STRING)));
+            ImmutableSortedMap.of("k1", "v1", "k2", "v2"), Schema.list(Schema.STRING));
     assertThat(propertyValueMap, equalTo(ImmutableSet.of("k1", "k2")));
   }
 
@@ -67,8 +66,7 @@ public class PropertySpecifierTest {
   public void convertTypeIfNeededNonStringToString() {
     Object propertyValueObject =
         PropertySpecifier.convertTypeIfNeeded(
-            new Configuration("cname", ConfigurationFormat.CISCO_IOS),
-            new PropertyDescriptor<Configuration>(null, Schema.STRING));
+            new Configuration("cname", ConfigurationFormat.CISCO_IOS), Schema.STRING);
     assertThat(propertyValueObject, equalTo("cname"));
   }
 
@@ -78,16 +76,14 @@ public class PropertySpecifierTest {
     Object propertyValueCollection =
         PropertySpecifier.convertTypeIfNeeded(
             ImmutableList.of(new Configuration("cname", ConfigurationFormat.CISCO_IOS)),
-            new PropertyDescriptor<Configuration>(null, Schema.list(Schema.STRING)));
+            Schema.list(Schema.STRING));
     assertThat(propertyValueCollection, equalTo(ImmutableList.of("cname")));
   }
 
   /** Null should remain null and not crash */
   @Test
   public void convertTypeIfNeededNullInput() {
-    Object propertyValueNull =
-        PropertySpecifier.convertTypeIfNeeded(
-            null, new PropertyDescriptor<Configuration>(null, Schema.STRING));
+    Object propertyValueNull = PropertySpecifier.convertTypeIfNeeded(null, Schema.STRING);
     assertThat(propertyValueNull, equalTo(null));
   }
 
@@ -95,8 +91,7 @@ public class PropertySpecifierTest {
   @Test
   public void convertTypeIfNeededNoConversion() {
     Object propertyValueOther =
-        PropertySpecifier.convertTypeIfNeeded(
-            new Node("node"), new PropertyDescriptor<Configuration>(null, Schema.NODE));
+        PropertySpecifier.convertTypeIfNeeded(new Node("node"), Schema.NODE);
     assertThat(propertyValueOther, equalTo(new Node("node")));
   }
 
