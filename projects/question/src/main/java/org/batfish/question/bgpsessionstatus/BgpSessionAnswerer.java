@@ -11,6 +11,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -18,7 +19,10 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 
@@ -39,18 +43,35 @@ public abstract class BgpSessionAnswerer extends Answerer {
     super(question, batfish);
   }
 
+  /** Compatibility statuses for {@link BgpSessionCompatibilityAnswerer} */
   public enum ConfiguredSessionStatus {
     // ordered by how we evaluate status
-    DYNAMIC_LISTEN,
+    /** Local peer is passive with at least one compatible remote peer */
+    DYNAMIC_MATCH,
+    /** Local peer is passive with no compatible remote peers */
+    NO_MATCH_FOUND,
+    /** No local IP is configured on active peer; session type is IBGP or EBGP multihop */
     LOCAL_IP_UNKNOWN_STATICALLY,
+    /** No local IP is configured on active peer; session type is not IBGP or EBGP multihop */
     NO_LOCAL_IP,
+    /** No local AS is configured */
+    NO_LOCAL_AS,
+    /** Local peer is active with no remote IP configured */
     NO_REMOTE_IP,
+    /** Local peer is passive with no remote prefix configured */
+    NO_REMOTE_PREFIX,
+    /** Local peer has no remote AS configured */
     NO_REMOTE_AS,
+    /** Local IP is not associated with a known interface */
     INVALID_LOCAL_IP,
+    /** Remote IP is not associated with a known interface */
     UNKNOWN_REMOTE,
+    /** Local peer is active with no compatible remote peers */
     HALF_OPEN,
+    /** Local peer is active with multiple remote peers configured compatibly */
     MULTIPLE_REMOTES,
-    UNIQUE_MATCH,
+    /** Local peer is active with exactly one compatible remote peer */
+    UNIQUE_MATCH
   }
 
   static @Nonnull BgpPeerConfig getBgpPeerConfig(
@@ -65,7 +86,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
         .orElse(null);
   }
 
-  static ConfiguredSessionStatus getConfiguredStatus(
+  static @Nonnull ConfiguredSessionStatus getConfiguredStatus(
       BgpPeerConfigId bgpPeerConfigId,
       BgpActivePeerConfig activePeerConfig,
       SessionType sessionType,
@@ -91,6 +112,17 @@ public abstract class BgpSessionAnswerer extends Answerer {
     return ConfiguredSessionStatus.UNIQUE_MATCH;
   }
 
+  static ConfiguredSessionStatus getLocallyBrokenStatus(BgpPassivePeerConfig passivePeerConfig) {
+    if (passivePeerConfig.getLocalAs() == null) {
+      return ConfiguredSessionStatus.NO_LOCAL_AS;
+    } else if (passivePeerConfig.getPeerPrefix() == null) {
+      return ConfiguredSessionStatus.NO_REMOTE_PREFIX;
+    } else if (passivePeerConfig.getRemoteAs().isEmpty()) {
+      return ConfiguredSessionStatus.NO_REMOTE_AS;
+    }
+    return null;
+  }
+
   @Nullable
   @VisibleForTesting
   static ConfiguredSessionStatus getLocallyBrokenStatus(
@@ -102,12 +134,39 @@ public abstract class BgpSessionAnswerer extends Answerer {
       } else {
         return ConfiguredSessionStatus.NO_LOCAL_IP;
       }
+    } else if (neighbor.getLocalAs() == null) {
+      return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (neighbor.getPeerAddress() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_IP;
     } else if (neighbor.getRemoteAs() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
     return null;
+  }
+
+  /**
+   * Returns true if local node, remote node, and session type in row match the question's filters
+   */
+  protected static boolean matchesNodesAndType(
+      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
+    if (!question.getNodes().equals(NodesSpecifier.ALL)) {
+      Node node = (Node) row.get(COL_NODE, Schema.NODE);
+      if (node == null || !nodes.contains(node.getName())) {
+        return false;
+      }
+    }
+    if (!question.getRemoteNodes().equals(NodesSpecifier.ALL)) {
+      Node remoteNode = (Node) row.get(COL_REMOTE_NODE, Schema.NODE);
+      if (remoteNode == null || !remoteNodes.contains(remoteNode.getName())) {
+        return false;
+      }
+    }
+    String typeName = (String) row.get(COL_SESSION_TYPE, Schema.STRING);
+    SessionType type = typeName == null ? null : SessionType.valueOf(typeName);
+    if (!question.matchesType(type)) {
+      return false;
+    }
+    return true;
   }
 
   public abstract List<Row> getRows(BgpSessionQuestion question);

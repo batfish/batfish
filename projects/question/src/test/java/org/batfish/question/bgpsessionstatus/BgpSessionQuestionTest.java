@@ -20,8 +20,16 @@ public class BgpSessionQuestionTest {
   }
 
   @Test
-  public void testDoesNotMatchNullStatus() {
+  public void testDefaultMatchesNullStatus() {
     BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
+    assertThat(question.matchesStatus((ConfiguredSessionStatus) null), equalTo(true));
+    assertThat(question.matchesStatus((SessionStatus) null), equalTo(true));
+  }
+
+  @Test
+  public void testStatusFilterDoesNotMatchNullStatus() {
+    BgpSessionStatusQuestion question =
+        new BgpSessionStatusQuestion(null, null, "UNIQUE_MATCH", null);
     assertThat(question.matchesStatus((ConfiguredSessionStatus) null), equalTo(false));
     assertThat(question.matchesStatus((SessionStatus) null), equalTo(false));
   }
