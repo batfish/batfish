@@ -172,9 +172,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         try {
           vc = HostConfiguration.fromJson(_fileText, _warnings);
         } catch (Exception e) {
-          elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
-              elapsedTime,
+              System.currentTimeMillis() - startTime,
               _logger.getHistory(),
               _filename,
               new BatfishException(
