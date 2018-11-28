@@ -201,13 +201,17 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             new ColumnMetadata(
                 COL_REMOTE_AS,
                 Schema.SELF_DESCRIBING,
-                "The remote AS of the session",
+                "The remote AS or list of ASes of the session",
                 false,
                 false),
             new ColumnMetadata(
                 COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
             new ColumnMetadata(
-                COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP for this session", true, false),
+                COL_REMOTE_IP,
+                Schema.SELF_DESCRIBING,
+                "Remote IP or prefix for this session",
+                true,
+                false),
             new ColumnMetadata(
                 COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
             new ColumnMetadata(
