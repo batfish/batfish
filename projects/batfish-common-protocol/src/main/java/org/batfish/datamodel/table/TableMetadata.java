@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.DisplayHints;
 
+/** Represents metadata for a {@link TableAnswerElement} */
 @ParametersAreNonnullByDefault
 public class TableMetadata {
 
@@ -74,12 +75,9 @@ public class TableMetadata {
       @Nullable @JsonProperty(PROP_COLUMN_METADATA) List<ColumnMetadata> columnMetadata,
       @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints,
       @Nullable @JsonProperty(PROP_TEXT_DESC) String textDesc) {
-    String usedTextDesc = textDesc;
-    if (usedTextDesc == null && displayHints != null) {
-      usedTextDesc = displayHints.getTextDesc();
-    }
-
-    return new TableMetadata(columnMetadata, usedTextDesc);
+    return new TableMetadata(
+        columnMetadata,
+        textDesc == null && displayHints != null ? displayHints.getTextDesc() : textDesc);
   }
 
   /**
@@ -102,11 +100,13 @@ public class TableMetadata {
         && Objects.equals(_textDesc, ((TableMetadata) o)._textDesc);
   }
 
+  @Nonnull
   @JsonProperty(PROP_COLUMN_METADATA)
   public List<ColumnMetadata> getColumnMetadata() {
     return _columnMetadata;
   }
 
+  @Nonnull
   @JsonProperty(PROP_TEXT_DESC)
   public String getTextDesc() {
     return _textDesc;
@@ -126,6 +126,7 @@ public class TableMetadata {
   }
 
   /** Returns a map from column name to {@link ColumnMetadata} */
+  @Nonnull
   public Map<String, ColumnMetadata> toColumnMap() {
     return _columnMetadata
         .stream()
