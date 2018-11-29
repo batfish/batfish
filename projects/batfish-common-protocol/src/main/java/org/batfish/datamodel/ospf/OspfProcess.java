@@ -206,7 +206,7 @@ public final class OspfProcess implements Serializable {
 
   @Nullable private Long _maxMetricTransitLinks;
 
-  @Nonnull private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
+  private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
 
   @Nullable private String _processId;
 
@@ -334,7 +334,6 @@ public final class OspfProcess implements Serializable {
     return _maxMetricTransitLinks;
   }
 
-  @Nonnull
   @JsonIgnore
   public Map<IpLink, OspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
