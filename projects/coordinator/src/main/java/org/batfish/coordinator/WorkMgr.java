@@ -853,9 +853,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param networkName name of the network to get completed work for.
    * @param snapshotName name of the snapshot to get completed work for.
-   * @return {@link Map} of work id to {@link QueuedWork}.
+   * @return {@link List} of completed {@link QueuedWork}.
    */
-  public Map<String, QueuedWork> getCompletedWork(String networkName, String snapshotName) {
+  public List<QueuedWork> getCompletedWork(String networkName, String snapshotName) {
     NetworkId networkId = _idManager.getNetworkId(networkName);
     return _workQueueMgr.getCompletedWork(
         networkId, _idManager.getSnapshotId(snapshotName, networkId));

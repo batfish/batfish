@@ -2,13 +2,12 @@ package org.batfish.coordinator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -241,15 +240,14 @@ public class WorkQueueMgr {
    *
    * @param network {@link NetworkId} to get completed work for.
    * @param snapshot {@link SnapshotId} to get completed work for.
-   * @return {@link Map} or work id to status.
+   * @return {@link List} of completed {@link QueuedWork}.
    */
-  public synchronized Map<String, QueuedWork> getCompletedWork(
-      NetworkId network, SnapshotId snapshot) {
-    ImmutableMap.Builder<String, QueuedWork> b = ImmutableMap.builder();
+  public synchronized List<QueuedWork> getCompletedWork(NetworkId network, SnapshotId snapshot) {
+    ImmutableList.Builder<QueuedWork> b = ImmutableList.builder();
     for (QueuedWork work : _queueCompletedWork) {
       if (work.getWorkItem().getContainerName().equals(network.getId())
           && work.getWorkItem().getTestrigName().equals(snapshot.getId())) {
-        b.put(work.getId().toString(), work);
+        b.add(work);
       }
     }
     return b.build();
