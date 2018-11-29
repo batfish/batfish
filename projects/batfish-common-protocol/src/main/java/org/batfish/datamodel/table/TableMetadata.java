@@ -1,20 +1,23 @@
 package org.batfish.datamodel.table;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.DisplayHints;
 
+@ParametersAreNonnullByDefault
 public class TableMetadata {
 
   private static final String PROP_COLUMN_METADATA = "columnMetadata";
@@ -23,31 +26,46 @@ public class TableMetadata {
 
   private static final String PROP_TEXT_DESC = "textDesc";
 
-  @Nonnull private List<ColumnMetadata> _columnMetadata;
+  @Nonnull private final List<ColumnMetadata> _columnMetadata;
 
-  @Nullable private String _textDesc;
+  @Nonnull private final String _textDesc;
 
-  public TableMetadata(@Nullable List<ColumnMetadata> columnMetadata) {
+  public TableMetadata(List<ColumnMetadata> columnMetadata) {
     this(columnMetadata, (String) null);
   }
 
-  public TableMetadata(@Nullable List<ColumnMetadata> columnMetadata, @Nullable String textDesc) {
-    _columnMetadata = ImmutableList.copyOf(firstNonNull(columnMetadata, ImmutableList.of()));
-    _textDesc = textDesc;
+  public TableMetadata(List<ColumnMetadata> columnMetadata, @Nullable String textDesc) {
+    checkArgument(columnMetadata != null, "Column metadata cannot be null");
+    checkArgument(columnMetadata.size() > 0, "The number of columns should be greater than zero");
 
     // check if there is a duplicate column name
     Set<String> duplicateCheckSet = new HashSet<>();
-    for (ColumnMetadata cm : _columnMetadata) {
+    for (ColumnMetadata cm : columnMetadata) {
       if (!duplicateCheckSet.add(cm.getName())) {
         throw new IllegalArgumentException(
             "Cannot have two columns with the same name '" + cm.getName() + "'");
       }
     }
+
+    // if textDesc is null, make one up using key columns if there are any or all columns if not
+    if (textDesc == null) {
+      boolean haveKeyColumns = columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey);
+      textDesc =
+          String.join(
+              " | ",
+              columnMetadata
+                  .stream()
+                  .filter(cm -> !haveKeyColumns || cm.getIsKey())
+                  .map(cm -> String.format("${%s}", cm.getName()))
+                  .collect(Collectors.toSet()));
+    }
+
+    _columnMetadata = columnMetadata;
+    _textDesc = textDesc;
   }
 
   @Deprecated
-  public TableMetadata(
-      @Nullable List<ColumnMetadata> columnMetadata, @Nullable DisplayHints displayHints) {
+  public TableMetadata(List<ColumnMetadata> columnMetadata, @Nullable DisplayHints displayHints) {
     this(columnMetadata, displayHints != null ? displayHints.getTextDesc() : null);
   }
 
@@ -71,9 +89,7 @@ public class TableMetadata {
    * @return Whether a column by this name exists
    */
   public boolean containsColumn(String columnName) {
-    if (columnName == null) {
-      return false;
-    }
+    checkArgument(columnName != null, "Columnname cannot be null");
     return _columnMetadata.stream().anyMatch(cm -> columnName.equals(cm.getName()));
   }
 
@@ -103,7 +119,10 @@ public class TableMetadata {
 
   @Override
   public String toString() {
-    return _columnMetadata.toString() + (_textDesc != null ? " " + _textDesc : "");
+    return MoreObjects.toStringHelper(this.getClass())
+        .add(PROP_COLUMN_METADATA, _columnMetadata)
+        .add(PROP_TEXT_DESC, _textDesc)
+        .toString();
   }
 
   /** Returns a map from column name to {@link ColumnMetadata} */
