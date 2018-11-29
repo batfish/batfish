@@ -106,6 +106,8 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableView;
+import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -1516,6 +1518,36 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerRows2() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar"))));
+    table.addRow(Row.of(columnName, new Issue("blah", 5, new Issue.Type("m", "n"))));
+    Answer answer = new Answer();
+    answer.addAnswerElement(table);
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writePrettyString(answer);
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
+
+    List<Row> processedRows =
+        ((TableView) _manager.processAnswerRows2(answerStr, options).getAnswerElements().get(0))
+            .getInnerRows();
+
+    assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
   public void testProcessAnswerRowsFailure() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
@@ -1682,6 +1714,40 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerTable2Filtered() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar"))));
+    String whitelistedValue = "hello";
+    Row row1 = Row.of(columnName, whitelistedValue);
+    Row row2 = Row.of(columnName, "goodbye");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNotFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableView notFiltered = _manager.processAnswerTable2(table, optionsNotFiltered);
+    TableView filtered = _manager.processAnswerTable2(table, optionsFiltered);
+
+    assertThat(notFiltered.getInnerRows(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getInnerRows(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
+  }
+
+  @Test
   public void testProcessAnswerTableMaxRows() {
     String columnName = "val";
     TableAnswerElement table =
@@ -1739,9 +1805,51 @@ public final class WorkMgrTest {
     assertThat(
         _manager.processAnswerTable(table, optionsNoProject).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
+
+    List<Row> projectedRows = _manager.processAnswerTable(table, optionsProject).getRowsList();
+
+    assertThat(projectedRows, equalTo(ImmutableList.of(row1Projected, row2Projected)));
+  }
+
+  @Test
+  public void testProcessAnswerTable2Project() {
+    String columnName = "val";
+    String otherColumnName = "val2";
+    TableMetadata originalMetadata =
+        new TableMetadata(
+            ImmutableList.of(
+                new ColumnMetadata(columnName, Schema.INTEGER, "foobar"),
+                new ColumnMetadata(otherColumnName, Schema.INTEGER, "foobaz")));
+    TableAnswerElement table = new TableAnswerElement(originalMetadata);
+    Row row1 = Row.of(columnName, 1, otherColumnName, 3);
+    Row row2 = Row.of(columnName, 2, otherColumnName, 4);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNoProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableViewRow row1Projected = new TableViewRow(0, Row.of(columnName, 1));
+    TableViewRow row2Projected = new TableViewRow(1, Row.of(columnName, 2));
+
     assertThat(
-        _manager.processAnswerTable(table, optionsProject).getRowsList(),
-        equalTo(ImmutableList.of(row1Projected, row2Projected)));
+        _manager.processAnswerTable(table, optionsNoProject).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+
+    List<TableViewRow> projectedRows =
+        _manager.processAnswerTable2(table, optionsProject).getRows();
+
+    assertThat(projectedRows, equalTo(ImmutableList.of(row1Projected, row2Projected)));
+    assertThat(projectedRows.get(0).getId(), equalTo(0));
+    assertThat(projectedRows.get(1).getId(), equalTo(1));
   }
 
   @Test
