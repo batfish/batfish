@@ -130,6 +130,9 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link WorkMgr}. */
 public final class WorkMgrTest {
 
+  private static TableMetadata MOCK_TABLE_METADATA =
+      new TableMetadata(ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")));
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -1091,7 +1094,7 @@ public final class WorkMgrTest {
             null,
             analysisId);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String answerStr = BatfishObjectMapper.writeString(answer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
@@ -1156,7 +1159,7 @@ public final class WorkMgrTest {
             null,
             analysisId);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1215,7 +1218,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1250,7 +1253,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1290,7 +1293,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -2637,7 +2640,7 @@ public final class WorkMgrTest {
             null);
     Answer answer = new Answer();
     answer.setStatus(AnswerStatus.SUCCESS);
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);

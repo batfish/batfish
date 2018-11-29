@@ -70,6 +70,9 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link WorkMgrService}. */
 public class WorkMgrServiceTest {
 
+  private static TableMetadata MOCK_TABLE_METADATA =
+      new TableMetadata(ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")));
+
   @Rule public TemporaryFolder _networksFolder = new TemporaryFolder();
   @Rule public TemporaryFolder _questionsTemplatesFolder = new TemporaryFolder();
 
@@ -237,7 +240,7 @@ public class WorkMgrServiceTest {
                 analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    TableAnswerElement table = new TableAnswerElement(new TableMetadata(ImmutableList.of()));
+    TableAnswerElement table = new TableAnswerElement(MOCK_TABLE_METADATA);
     table.postProcessAnswer(questionObj, table.getRows().getData());
     testAnswer.addAnswerElement(table);
     testAnswer.setQuestion(questionObj);
@@ -583,7 +586,7 @@ public class WorkMgrServiceTest {
                 analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
@@ -744,7 +747,7 @@ public class WorkMgrServiceTest {
                 analysisId);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
@@ -795,7 +798,7 @@ public class WorkMgrServiceTest {
                 null);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
