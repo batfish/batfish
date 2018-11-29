@@ -94,7 +94,6 @@ import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
-import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
@@ -1903,20 +1902,6 @@ public final class WorkMgrTest {
     Row r2 = Row.of(col, true);
 
     assertThat(comparator.compare(r1, r2), lessThan(0));
-  }
-
-  @Test
-  public void testColumnComparatorFileLine() {
-    String col = "col1";
-    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FILE_LINE, "colDesc");
-    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, new FileLinePair("a", 1));
-    Row r2 = Row.of(col, new FileLinePair("a", 2));
-    Row r3 = Row.of(col, new FileLinePair("b", 1));
-
-    assertThat(comparator.compare(r1, r2), lessThan(0));
-    assertThat(comparator.compare(r1, r3), lessThan(0));
-    assertThat(comparator.compare(r2, r3), lessThan(0));
   }
 
   @Test
