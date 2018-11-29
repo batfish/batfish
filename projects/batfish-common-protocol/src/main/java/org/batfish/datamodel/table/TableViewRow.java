@@ -1,7 +1,7 @@
 package org.batfish.datamodel.table;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,7 +20,9 @@ public final class TableViewRow {
   @JsonCreator
   private static @Nonnull TableViewRow create(
       @JsonProperty(PROP_ID) @Nullable Integer id, @JsonProperty(PROP_ROW) @Nullable Row row) {
-    return new TableViewRow(checkNotNull(id), checkNotNull(row));
+    checkArgument(id != null, "Missing %s", PROP_ID);
+    checkArgument(row != null, "Missing %s", PROP_ROW);
+    return new TableViewRow(id, row);
   }
 
   private final int _id;

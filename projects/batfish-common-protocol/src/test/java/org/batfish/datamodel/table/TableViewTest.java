@@ -32,9 +32,7 @@ public final class TableViewTest {
             ImmutableList.of(new TableViewRow(0, row1), new TableViewRow(1, row2)),
             METADATA);
 
-    TableView cycledTableView =
-        BatfishObjectMapper.mapper()
-            .readValue(BatfishObjectMapper.writeString(tableView), TableView.class);
+    TableView cycledTableView = BatfishObjectMapper.clone(tableView, TableView.class);
 
     assertThat(tableView.getOptions(), equalTo(cycledTableView.getOptions()));
     assertThat(tableView.getRows(), equalTo(cycledTableView.getRows()));

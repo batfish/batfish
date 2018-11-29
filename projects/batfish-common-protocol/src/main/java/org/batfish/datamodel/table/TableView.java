@@ -1,7 +1,7 @@
 package org.batfish.datamodel.table;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,10 +28,10 @@ public final class TableView extends AnswerElement {
       @JsonProperty(PROP_OPTIONS) @Nullable AnswerRowsOptions options,
       @JsonProperty(PROP_ROWS) @Nullable List<TableViewRow> rows,
       @JsonProperty(PROP_TABLE_METADATA) @Nullable TableMetadata tableMetadata) {
+    checkArgument(options != null, "Missing %s", PROP_OPTIONS);
+    checkArgument(tableMetadata != null, "Missing %s", PROP_TABLE_METADATA);
     return new TableView(
-        checkNotNull(options),
-        ImmutableList.copyOf(firstNonNull(rows, ImmutableList.of())),
-        checkNotNull(tableMetadata));
+        options, ImmutableList.copyOf(firstNonNull(rows, ImmutableList.of())), tableMetadata);
   }
 
   private final AnswerRowsOptions _options;

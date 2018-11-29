@@ -34,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1200,7 +1201,7 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnswerRows2 exception for apikey:%s in network:%s, snapshot:%s, "
-              + "referencesnapshot:%s, question:%s, analysis:%s; exception:%s",
+              + "referencesnapshot:%s, question:%s, analysis:%s; exception:%s\n",
           apiKey,
           networkName,
           snapshotName,
@@ -1208,7 +1209,7 @@ public class WorkMgrService {
           questionName,
           analysisName,
           stackTrace);
-      return failureResponse(e.getMessage());
+      return failureResponse(ExceptionUtils.getStackTrace(e));
     }
   }
 

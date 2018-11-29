@@ -69,6 +69,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -2379,7 +2380,8 @@ public class WorkMgr extends AbstractCoordinator {
       answer.addAnswerElement(processAnswerTable2(rawTable, options));
       return answer;
     } catch (Exception e) {
-      _logger.errorf("Failed to convert answer string to Answer: %s", e.getMessage());
+      _logger.errorf(
+          "Failed to convert answer string to Answer: %s\n", ExceptionUtils.getStackTrace(e));
       return Answer.failureAnswer(e.getMessage(), null);
     }
   }
