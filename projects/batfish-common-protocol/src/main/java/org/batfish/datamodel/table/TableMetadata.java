@@ -37,7 +37,7 @@ public class TableMetadata {
 
   public TableMetadata(List<ColumnMetadata> columnMetadata, @Nullable String textDesc) {
     checkArgument(columnMetadata != null, "Column metadata cannot be null");
-    checkArgument(columnMetadata.size() > 0, "The number of columns should be greater than zero");
+    checkArgument(!columnMetadata.isEmpty(), "The number of columns should be greater than zero");
 
     // check if there is a duplicate column name
     Set<String> duplicateCheckSet = new HashSet<>();
@@ -49,9 +49,10 @@ public class TableMetadata {
     }
 
     // if textDesc is null, make one up using key columns if there are any or all columns if not
-    if (textDesc == null) {
+    String desc = textDesc;
+    if (desc == null) {
       boolean haveKeyColumns = columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey);
-      textDesc =
+      desc =
           String.join(
               " | ",
               columnMetadata
@@ -62,7 +63,7 @@ public class TableMetadata {
     }
 
     _columnMetadata = columnMetadata;
-    _textDesc = textDesc;
+    _textDesc = desc;
   }
 
   @Deprecated
