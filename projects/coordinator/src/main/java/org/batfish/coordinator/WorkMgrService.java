@@ -34,7 +34,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1209,7 +1208,7 @@ public class WorkMgrService {
           questionName,
           analysisName,
           stackTrace);
-      return failureResponse(ExceptionUtils.getStackTrace(e));
+      return failureResponse(Throwables.getStackTraceAsString(e));
     }
   }
 
