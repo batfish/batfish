@@ -35,47 +35,38 @@ public class NamedStructureSpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LIST,
-              new PropertyDescriptor<>(
-                  Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getAsPathAccessLists, Schema.OBJECT))
           .put(
               AUTHENTICATION_KEY_CHAIN,
-              new PropertyDescriptor<>(
-                  Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getAuthenticationKeyChains, Schema.OBJECT))
           .put(
               COMMUNITY_LIST,
-              new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
-          .put(
-              IKE_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.OBJECT))
+          .put(IKE_POLICIES, new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.OBJECT))
           .put(
               IP_ACCESS_LIST,
-              new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.OBJECT))
           .put(
               IP_6_ACCESS_LIST,
-              new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.OBJECT))
           .put(
               IPSEC_POLICY,
-              new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.OBJECT))
           .put(
               IPSEC_PROPOSAL,
-              new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.set(Schema.STRING)))
-          .put(
-              IPSEC_VPN,
-              new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.OBJECT))
+          .put(IPSEC_VPN, new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.OBJECT))
           .put(
               ROUTE_FILTER_LIST,
-              new PropertyDescriptor<>(
-                  Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getRouteFilterLists, Schema.OBJECT))
           .put(
               ROUTE_6_FILTER_LIST,
-              new PropertyDescriptor<>(
-                  Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getRoute6FilterLists, Schema.OBJECT))
           .put(
               ROUTING_POLICY,
-              new PropertyDescriptor<>(
-                  Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
-          .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
-          .put(ZONE, new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
+              new PropertyDescriptor<>(Configuration::getRoutingPolicies, Schema.OBJECT))
+          .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.OBJECT))
+          .put(ZONE, new PropertyDescriptor<>(Configuration::getZones, Schema.OBJECT))
           .build();
 
   public static final NamedStructureSpecifier ALL = new NamedStructureSpecifier(".*");

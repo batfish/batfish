@@ -68,7 +68,7 @@ public final class BgpSessionProperties {
    * @param initiator the configuration of connection initiator.
    * @return a {@link SessionType} the initiator is configured to establish.
    */
-  public static SessionType getSessionType(BgpActivePeerConfig initiator) {
+  public static @Nonnull SessionType getSessionType(BgpActivePeerConfig initiator) {
     SessionType sessionType = SessionType.UNSET;
     if (initiator.getLocalAs() != null && initiator.getRemoteAs() != null) {
       if (initiator.getLocalAs().equals(initiator.getRemoteAs())) {

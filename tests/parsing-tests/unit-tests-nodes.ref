@@ -10821,6 +10821,10 @@
                 "name" : "network",
                 "password" : "d6e1f4ab0f5447db4a5a3345fbdd584aad1ac24a75dc476ba7bdaad7e6cf07f5",
                 "role" : "network-admin"
+              },
+              "sha" : {
+                "name" : "sha",
+                "password" : "a4529fb0f43b244a1b6b728f6df9f2c046ae279b1e484476fbde109b190284a7"
               }
             }
           }

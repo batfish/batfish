@@ -35,7 +35,6 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SchemaUtils;
-import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
@@ -280,10 +279,6 @@ public class Row implements Comparable<Row>, Serializable {
 
   public Double getDouble(String column) {
     return (Double) get(column, Schema.DOUBLE);
-  }
-
-  public @Nullable FileLinePair getFileLine(String column) {
-    return (FileLinePair) get(column, Schema.FILE_LINE);
   }
 
   public FileLines getFileLines(String column) {
