@@ -53,13 +53,11 @@ public class TableMetadata {
     if (desc == null) {
       boolean haveKeyColumns = columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey);
       desc =
-          String.join(
-              " | ",
-              columnMetadata
-                  .stream()
-                  .filter(cm -> !haveKeyColumns || cm.getIsKey())
-                  .map(cm -> String.format("${%s}", cm.getName()))
-                  .collect(Collectors.toSet()));
+          columnMetadata
+              .stream()
+              .filter(cm -> !haveKeyColumns || cm.getIsKey())
+              .map(cm -> String.format("${%s}", cm.getName()))
+              .collect(Collectors.joining(" | "));
     }
 
     _columnMetadata = columnMetadata;
@@ -88,7 +86,7 @@ public class TableMetadata {
    * @return Whether a column by this name exists
    */
   public boolean containsColumn(String columnName) {
-    checkArgument(columnName != null, "Columnname cannot be null");
+    checkArgument(columnName != null, "Column name cannot be null");
     return _columnMetadata.stream().anyMatch(cm -> columnName.equals(cm.getName()));
   }
 
