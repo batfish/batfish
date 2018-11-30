@@ -88,6 +88,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -1248,10 +1249,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static long toCommunityLong(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
-      return 0xFFFFFF02L;
+      return WellKnownCommunity.NO_ADVERTISE;
     }
     if (ctx.NO_EXPORT() != null) {
-      return 0xFFFFFF01L;
+      return WellKnownCommunity.NO_EXPORT;
     } else {
       throw new BatfishException(
           "missing named-community-to-long mapping for: \"" + ctx.getText() + "\"");
