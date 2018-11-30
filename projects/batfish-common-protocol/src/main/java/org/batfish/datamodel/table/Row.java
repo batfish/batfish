@@ -35,6 +35,7 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SchemaUtils;
+import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
@@ -345,6 +346,10 @@ public class Row implements Comparable<Row>, Serializable {
 
   public Prefix getPrefix(String column) {
     return (Prefix) get(column, Schema.PREFIX);
+  }
+
+  public SelfDescribingObject getSelfDescribing(String column) {
+    return (SelfDescribingObject) get(column, Schema.SELF_DESCRIBING);
   }
 
   public String getString(String column) {
