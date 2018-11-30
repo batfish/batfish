@@ -17615,26 +17615,8 @@
           }
         },
         "ipAccessLists" : {
-          "~EXISTING_CONNECTION~" : {
-            "name" : "~EXISTING_CONNECTION~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "states" : [
-                      "ESTABLISHED"
-                    ]
-                  }
-                },
-                "name" : "~EXISTING_CONNECTION~"
-              }
-            ]
-          },
-          "~FROM_ZONE~A~TO_ZONE~B" : {
-            "name" : "~FROM_ZONE~A~TO_ZONE~B",
+          "zone~A~to~zone~B" : {
+            "name" : "zone~A~to~zone~B",
             "lines" : [
               {
                 "action" : "DENY",
@@ -17655,8 +17637,26 @@
                 "name" : "123-4"
               }
             ],
-            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceName" : "zone~A~to~zone~B",
             "sourceType" : "firewall filter"
+          },
+          "~EXISTING_CONNECTION~" : {
+            "name" : "~EXISTING_CONNECTION~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -17729,7 +17729,7 @@
           "A" : {
             "name" : "A",
             "toZonePolicies" : {
-              "B" : "~FROM_ZONE~A~TO_ZONE~B"
+              "B" : "zone~A~to~zone~B"
             }
           },
           "B" : {

@@ -69817,7 +69817,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "missing action in firewall filter: '~FROM_ZONE~A~TO_ZONE~B', term: '123-4'"
+              "text" : "missing action in firewall filter: 'zone~A~to~zone~B', term: '123-4'"
             },
             {
               "tag" : "MISCELLANEOUS",
