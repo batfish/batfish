@@ -50,6 +50,8 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1128,6 +1130,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ikePhase1Proposal;
   }
 
+  /**
+   * Convert a non-unit interface to the VI {@link org.batfish.datamodel.Interface}.
+   *
+   * <p>Note that bulk of the configuration is stored at the logical interface level, see {@link
+   * #toInterface(Interface)} for those conversions. Here we convert aggregation and bandwidth
+   * settings; track VRF membership.
+   */
+  private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
+    String name = iface.getName();
+    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    newIface.setDeclaredNames(ImmutableSortedSet.of(name));
+    newIface.setDescription(iface.getDescription());
+
+    // 802.3ad link aggregation
+    if (iface.get8023adInterface() != null) {
+      newIface.setChannelGroup(iface.get8023adInterface());
+      newIface.addDependency(new Dependency(iface.get8023adInterface(), DependencyType.AGGREGATE));
+    }
+
+    newIface.setBandwidth(iface.getBandwidth());
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    return newIface;
+  }
+
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
@@ -1198,12 +1224,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // }
     // }
     // newIface.getAllAddresses().addAll(allPrefixes);
-
-    // 802.3ad link aggregation
-    if (iface.get8023adInterface() != null) {
-      // TODO: support interface-interface bindings at the physical, rather than logical, level
-      newIface.setChannelGroup(iface.get8023adInterface() + ".0");
-    }
 
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
@@ -2082,35 +2102,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert interfaces
-    Map<String, Interface> interfacesToConvert = new LinkedHashMap<>();
-
-    for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
-      if (iface.get8023adInterface() != null) {
-        interfacesToConvert.put(iface.getName(), iface);
-      } else {
-        interfacesToConvert.putAll(iface.getUnits());
-      }
-    }
-    for (NodeDevice nd : _nodeDevices.values()) {
-      for (Interface iface : nd.getInterfaces().values()) {
-        interfacesToConvert.putAll(iface.getUnits());
-      }
-    }
-    for (Entry<String, Interface> eUnit : interfacesToConvert.entrySet()) {
-      String unitName = eUnit.getKey();
-      Interface unitIface = eUnit.getValue();
-      unitIface.inheritUnsetFields();
-      org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
-      _c.getAllInterfaces().put(unitName, newUnitIface);
-      Vrf vrf = newUnitIface.getVrf();
-      String vrfName = vrf.getName();
-      vrf.getInterfaces().put(unitName, newUnitIface);
-      _masterLogicalSystem
-          .getRoutingInstances()
-          .get(vrfName)
-          .getInterfaces()
-          .put(unitName, unitIface);
-    }
+    convertInterfaces();
 
     // set router-id
     if (_masterLogicalSystem.getDefaultRoutingInstance().getRouterId() == null) {
@@ -2463,6 +2455,45 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void convertInterfaces() {
+    // Get a stream of all interfaces (including Node interfaces)
+    Stream.concat(
+            _masterLogicalSystem.getInterfaces().values().stream(),
+            _nodeDevices
+                .values()
+                .stream()
+                .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .forEach(
+            iface -> {
+              // Process parent interface
+              iface.inheritUnsetFields();
+              org.batfish.datamodel.Interface newParentIface = toInterfaceNonUnit(iface);
+              resolveInterfacePointers(iface.getName(), iface, newParentIface);
+
+              // Process the units, which hold the bulk of the configuration
+              iface
+                  .getUnits()
+                  .values()
+                  .forEach(
+                      unit -> {
+                        unit.inheritUnsetFields();
+                        org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
+                        newUnitInterface.addDependency(
+                            new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
+                      });
+            });
+  }
+
+  private void resolveInterfacePointers(
+      String ifaceName, Interface iface, org.batfish.datamodel.Interface viIface) {
+    _c.getAllInterfaces().put(ifaceName, viIface);
+    Vrf vrf = viIface.getVrf();
+    String vrfName = vrf.getName();
+    vrf.getInterfaces().put(ifaceName, viIface);
+    _masterLogicalSystem.getRoutingInstances().get(vrfName).getInterfaces().put(ifaceName, iface);
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {
