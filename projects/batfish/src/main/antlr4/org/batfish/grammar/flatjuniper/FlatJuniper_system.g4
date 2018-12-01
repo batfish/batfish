@@ -20,6 +20,7 @@ s_system
       | sy_null
       | sy_ports
       | sy_root_authentication
+      | sy_security_profile
       | sy_services
       | sy_syslog
       | sy_tacplus_server
@@ -138,6 +139,16 @@ sy_syslog
       sys_host
       | sys_null
    )
+;
+
+sy_security_profile
+:
+  SECURITY_PROFILE name = variable
+  (
+    apply
+    | sysp_logical_system
+    | sysp_null
+  )
 ;
 
 sy_services
@@ -322,6 +333,22 @@ sysl_null
       | ROOT_LOGIN
       | TCP_FORWARDING
    ) null_filler
+;
+
+sysp_logical_system
+:
+  LOGICAL_SYSTEM name = variable
+;
+
+sysp_null
+:
+  (
+    FLOW_GATE
+    | FLOW_SESSION
+    | POLICY
+    | SCHEDULER
+    | ZONE
+  ) null_filler
 ;
 
 syt_secret

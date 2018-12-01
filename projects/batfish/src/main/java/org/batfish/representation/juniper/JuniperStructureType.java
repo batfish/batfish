@@ -17,12 +17,14 @@ public enum JuniperStructureType implements StructureType {
   INTERFACE("interface"),
   IPSEC_POLICY("ipsec policy"),
   IPSEC_PROPOSAL("ipsec proposal"),
+  LOGICAL_SYSTEM("logical-system"),
   NAT_POOL("nat pool"),
   NAT_RULE("nat rule"),
   NAT_RULE_SET("nat rule set"),
   POLICY_STATEMENT("policy-statement"),
   PREFIX_LIST("prefix-list"),
   SECURE_TUNNEL_INTERFACE("secure tunnel interface"),
+  SECURITY_PROFILE("security-profile"),
   VLAN("vlan");
 
   private final String _description;
