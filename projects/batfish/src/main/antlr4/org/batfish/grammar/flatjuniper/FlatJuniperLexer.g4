@@ -1324,14 +1324,14 @@ FLOW
    'flow'
 ;
 
-FLOW_GATE
-:
-   'flow-gate'
-;
-
 FLOW_CONTROL
 :
    'flow-control'
+;
+
+FLOW_GATE
+:
+   'flow-gate'
 ;
 
 FLOW_SESSION
