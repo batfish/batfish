@@ -3668,7 +3668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    int procNum = (ctx.procnum == null) ? 0 : toInteger(ctx.procnum);
+    long procNum = (ctx.procnum == null) ? 0 : toLong(ctx.procnum);
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
 
     if (_parser.getParser().isNxos()) {
@@ -4249,7 +4249,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = ctx.name.getText();
-    int procNum =
+    long procNum =
         _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
     BgpProcess proc = new BgpProcess(_format, procNum);
     currentVrf().setBgpProcess(proc);
