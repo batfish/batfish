@@ -30,8 +30,6 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -318,8 +316,6 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static final int DEFAULT_MTU = 1500;
-
-  public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
 
@@ -1471,15 +1467,5 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ZONE)
   public void setZoneName(String zoneName) {
     _zoneName = zoneName;
-  }
-
-  public JSONObject toJSONObject() throws JSONException {
-    JSONObject iface = new JSONObject();
-    iface.put("node", _owner.getHostname());
-    iface.put("name", _key);
-    iface.put(PROP_PREFIX, _address.toString());
-    iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());
-    iface.put(PROP_ZONE, _zoneName);
-    return iface;
   }
 }
