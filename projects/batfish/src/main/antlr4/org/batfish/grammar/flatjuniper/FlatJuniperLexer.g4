@@ -1329,6 +1329,16 @@ FLOW_CONTROL
    'flow-control'
 ;
 
+FLOW_GATE
+:
+   'flow-gate'
+;
+
+FLOW_SESSION
+:
+   'flow-session'
+;
+
 FORCE_UP
 :
    'force-up'
@@ -3256,6 +3266,11 @@ LOG_UPDOWN
    'log-updown'
 ;
 
+LOGICAL_SYSTEM
+:
+   'logical-system'
+;
+
 LOGICAL_SYSTEMS
 :
    'logical-systems'
@@ -4756,6 +4771,11 @@ SCCP
    'sccp'
 ;
 
+SCHEDULER
+:
+   'scheduler'
+;
+
 SCREEN
 :
    'screen'
@@ -4784,6 +4804,11 @@ SECRET
 SECURITY
 :
    'security'
+;
+
+SECURITY_PROFILE
+:
+   'security-profile'
 ;
 
 SECURITY_ZONE
