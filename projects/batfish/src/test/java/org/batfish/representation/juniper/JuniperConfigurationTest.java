@@ -52,7 +52,7 @@ public class JuniperConfigurationTest {
     zone.getInterfaces().add(new Interface(interface1Name));
     String interface2Name = "interface2";
     zone.getInterfaces().add(new Interface(interface2Name));
-    config.getZones().put("zone", zone);
+    config.getMasterLogicalSystem().getZones().put("zone", zone);
     filter.setFromZone("zone");
     IpAccessList headerSpaceAndSrcInterfaceAcl = config.toIpAccessList(filter);
 

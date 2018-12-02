@@ -23,9 +23,11 @@ public final class FwFromApplicationOrApplicationSet extends FwFromApplicationSe
       LineAction action,
       List<IpAccessListLine> lines,
       Warnings w) {
-    ApplicationSetMember application = jc.getApplications().get(_applicationOrApplicationSetName);
+    ApplicationSetMember application =
+        jc.getMasterLogicalSystem().getApplications().get(_applicationOrApplicationSetName);
     if (application == null) {
-      application = jc.getApplicationSets().get(_applicationOrApplicationSetName);
+      application =
+          jc.getMasterLogicalSystem().getApplicationSets().get(_applicationOrApplicationSetName);
     }
     if (application != null) {
       application.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
