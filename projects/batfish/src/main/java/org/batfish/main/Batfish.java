@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -116,11 +117,14 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
@@ -148,7 +152,6 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
-import org.batfish.datamodel.answers.ValidateSnapshotAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -238,6 +241,9 @@ import org.batfish.z3.expr.OrExpr;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
@@ -1680,7 +1686,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
-      applyEnvironment(configurations);
+      postProcessSnapshot(configurations);
     } else {
       // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
       configurations = parseConfigurationsAndApplyEnvironment();
@@ -1699,7 +1705,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
-    applyEnvironment(configurations);
+    postProcessSnapshot(configurations);
     return configurations;
   }
 
@@ -2465,9 +2471,70 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void postProcessForEnvironment(Map<String, Configuration> configurations) {
-    postProcessAggregatedInterfaces(configurations);
-    postProcessOspfCosts(configurations);
+  @VisibleForTesting
+  static void postProcessInterfaceDependencies(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            config -> {
+              NavigableMap<String, Interface> allInterfaces = config.getAllInterfaces();
+              Graph<String, Dependency> graph = new SimpleDirectedGraph<>(Dependency.class);
+              allInterfaces.keySet().forEach(graph::addVertex);
+              allInterfaces
+                  .values()
+                  .forEach(
+                      iface ->
+                          iface
+                              .getDependencies()
+                              .forEach(
+                                  dependency ->
+                                      graph.addEdge(
+                                          // Reverse edge direction to aid topological sort
+                                          dependency.getInterfaceName(),
+                                          iface.getName(),
+                                          dependency)));
+
+              // Traverse interfaces in topological order and deactivate if necessary
+              TopologicalOrderIterator<String, Dependency> iterator =
+                  new TopologicalOrderIterator<>(graph);
+              while (iterator.hasNext()) {
+                String ifaceName = iterator.next();
+                deactivateInterfaceIfNeeded(allInterfaces.get(ifaceName));
+              }
+            });
+  }
+
+  /** Deactivate an interface if it is blacklisted or its dependencies are not active */
+  private static void deactivateInterfaceIfNeeded(Interface iface) {
+    Configuration config = iface.getOwner();
+    Set<Dependency> dependencies = iface.getDependencies();
+    if (dependencies
+        .stream()
+        // Look at bind dependencies
+        .filter(d -> d.getType() == DependencyType.BIND)
+        .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
+        // Find any missing or inactive interfaces
+        .anyMatch(parent -> parent == null || !parent.getActive())) {
+      iface.setActive(false);
+    }
+
+    // Look at aggregate dependencies only now
+    Set<Dependency> aggregateDependencies =
+        dependencies
+            .stream()
+            .filter(d -> d.getType() == DependencyType.AGGREGATE)
+            .collect(ImmutableSet.toImmutableSet());
+    if (!aggregateDependencies.isEmpty()
+        && aggregateDependencies
+                .stream()
+                // Extract existing and active interfaces
+                .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
+                .filter(Objects::nonNull)
+                .filter(Interface::getActive)
+                .count()
+            < 1) {
+      iface.setActive(false);
+    }
   }
 
   private void postProcessOspfCosts(Map<String, Configuration> configurations) {
@@ -2564,59 +2631,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return getDataPlanePlugin().buildFlows(flows, dp, ignoreFilters);
   }
 
-  /**
-   * Helper function to disable a blacklisted interface and update the given {@link
-   * ValidateSnapshotAnswerElement} if the interface does not actually exist.
-   */
-  private static void blacklistInterface(
-      Map<String, Configuration> configurations,
-      ValidateSnapshotAnswerElement veae,
-      NodeInterfacePair iface) {
-    String hostname = iface.getHostname();
-    String ifaceName = iface.getInterface();
-    @Nullable Configuration node = configurations.get(hostname);
-    if (node == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
-      return;
-    }
-
-    @Nullable Interface nodeIface = node.getAllInterfaces().get(ifaceName);
-    if (nodeIface == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistInterfaces()
-          .computeIfAbsent(hostname, k -> new TreeSet<>())
-          .add(ifaceName);
-      return;
-    }
-
-    nodeIface.setActive(false);
-    nodeIface.setBlacklisted(true);
+  /** Function that processes an interface blacklist across all configurations */
+  private static void processInterfaceBlacklist(
+      Set<NodeInterfacePair> interfaceBlacklist, NetworkConfigurations configurations) {
+    interfaceBlacklist
+        .stream()
+        .map(iface -> configurations.getInterface(iface.getHostname(), iface.getInterface()))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(Interface::blacklist);
   }
 
-  private void processInterfaceBlacklist(
-      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair p : blacklistInterfaces) {
-      blacklistInterface(configurations, veae, p);
-    }
-  }
-
-  private void processNodeBlacklist(
-      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    for (String hostname : blacklistNodes) {
-      Configuration node = configurations.get(hostname);
-      if (node != null) {
-        for (Interface iface : node.getAllInterfaces().values()) {
-          iface.setActive(false);
-          iface.setBlacklisted(true);
-        }
-      } else {
-        veae.setValid(false);
-        veae.getUndefinedNodeBlacklistNodes().add(hostname);
-      }
-    }
+  @VisibleForTesting
+  static Set<NodeInterfacePair> nodeToInterfaceBlacklist(
+      SortedSet<String> blacklistNodes, NetworkConfigurations configurations) {
+    return blacklistNodes
+        .stream()
+        // Get all valid/present node configs
+        .map(configurations::get)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        // All interfaces in each config
+        .flatMap(c -> c.getAllInterfaces().values().stream())
+        .map(NodeInterfacePair::new)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @VisibleForTesting
@@ -2956,47 +2994,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Applies the current environment to the specified configurations and updates the given {@link
-   * ValidateSnapshotAnswerElement}. Applying the environment includes:
+   * Post-process the configuration in the current snapshot. Post-processing includes:
    *
    * <ul>
    *   <li>Applying node and interface blacklists.
-   *   <li>Applying node and interface blacklists.
+   *   <li>Process interface dependencies and deactivate interfaces that cannot be up
    * </ul>
    */
-  private void updateBlacklistedAndInactiveConfigs(
-      Map<String, Configuration> configurations, ValidateSnapshotAnswerElement veae) {
-    processNodeBlacklist(configurations, veae);
-    processInterfaceBlacklist(configurations, veae);
+  private void updateBlacklistedAndInactiveConfigs(Map<String, Configuration> configurations) {
+    NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+    processInterfaceBlacklist(nodeToInterfaceBlacklist(getNodeBlacklist(), nc), nc);
+    processInterfaceBlacklist(getInterfaceBlacklist(), nc);
     if (_settings.ignoreManagementInterfaces()) {
       processManagementInterfaces(configurations);
     }
+    postProcessInterfaceDependencies(configurations);
 
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
     // deleted from the Topology (aka list of edges) that is used along with configurations in
     // answering questions.
+
+    // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
     disableUnusableVpnInterfaces(configurations);
   }
 
   /**
-   * Ensures that the current configurations for the current testrig+environment are up to date.
-   * Among other things, this includes:
+   * Ensures that the current configurations for the current snapshot are correct by performing some
+   * post-processing on the vendor-independent datamodel. Among other things, this includes:
    *
    * <ul>
    *   <li>Invalidating cached configs if the in-memory copy has been changed by question
    *       processing.
    *   <li>Re-loading configurations from disk, including re-parsing if the configs were parsed on a
    *       previous version of Batfish.
-   *   <li>Re-applying the environment to the configs, to ensure that blacklists are honored.
+   *   <li>Ensuring that blacklists are honored.
    * </ul>
    */
-  private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
-    ValidateSnapshotAnswerElement veae = new ValidateSnapshotAnswerElement();
-    updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
-    postProcessForEnvironment(configurationsWithoutEnvironment);
-
-    serializeObject(veae, _testrigSettings.getValidateSnapshotAnswerPath());
+  private void postProcessSnapshot(Map<String, Configuration> configurations) {
+    updateBlacklistedAndInactiveConfigs(configurations);
+    postProcessAggregatedInterfaces(configurations);
+    postProcessOspfCosts(configurations);
   }
 
   private void repairEnvironmentBgpTables() {
@@ -3260,7 +3298,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
 
-    applyEnvironment(configurations);
+    postProcessSnapshot(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
         _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
