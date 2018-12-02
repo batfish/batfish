@@ -2873,7 +2873,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() {
+  public List<Configuration> toVendorIndependentConfigurations() {
     final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
@@ -3591,7 +3591,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     c.computeRoutingPolicySources(_w);
 
-    return c;
+    return ImmutableList.of(c);
   }
 
   private void createInspectClassMapAcls(Configuration c) {

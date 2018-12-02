@@ -176,7 +176,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     _w = warnings;
   }
 
-  public abstract Configuration toVendorIndependentConfiguration() throws VendorConversionException;
+  public abstract List<Configuration> toVendorIndependentConfigurations()
+      throws VendorConversionException;
 
   private void addStructureReference(
       SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>

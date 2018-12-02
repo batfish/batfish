@@ -404,6 +404,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
@@ -575,11 +576,13 @@ import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperAuthenticationKey;
 import org.batfish.representation.juniper.JuniperAuthenticationKeyChain;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
+import org.batfish.representation.juniper.LogicalSystem;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
@@ -1901,17 +1904,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private AsPathGroup _currentAsPathGroup;
 
+  private LogicalSystem _currentLogicalSystem;
+
   public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
-    _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
+    setLogicalSystem(_configuration.getMasterLogicalSystem());
     _termRouteFilters = new HashMap<>();
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+  }
+
+  private void setLogicalSystem(LogicalSystem logicalSystem) {
+    _currentLogicalSystem = logicalSystem;
+    _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
     _globalAddressBook =
-        _configuration
+        _currentLogicalSystem
             .getGlobalAddressBooks()
             .computeIfAbsent(GLOBAL_ADDRESS_BOOK_NAME, n -> new AddressBook(n, new TreeMap<>()));
   }
@@ -1926,7 +1936,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication());
+        _currentLogicalSystem.getApplications().computeIfAbsent(name, n -> new BaseApplication());
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }
@@ -1935,7 +1945,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
     _currentApplicationSet =
-        _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
+        _currentLogicalSystem.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
     defineStructure(APPLICATION_SET, name, ctx);
   }
 
@@ -2085,7 +2095,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterF_filter(F_filterContext ctx) {
     String name = ctx.name.getText();
-    Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
+    Map<String, FirewallFilter> filters = _currentLogicalSystem.getFirewallFilters();
     _currentFilter = filters.get(name);
     if (_currentFirewallFamily == null) {
       _currentFirewallFamily = Family.INET;
@@ -2192,13 +2202,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterInt_named(Int_namedContext ctx) {
     Interface currentInterface;
     if (ctx.interface_id() == null) {
-      currentInterface = _configuration.getGlobalMasterInterface();
+      currentInterface = _currentLogicalSystem.getGlobalMasterInterface();
     } else {
       String ifaceName = getInterfaceName(ctx.interface_id());
       Map<String, Interface> interfaces;
       String nodeDevicePrefix = "";
       if (ctx.interface_id().node == null) {
-        interfaces = _configuration.getInterfaces();
+        interfaces = _currentLogicalSystem.getInterfaces();
       } else {
         String nodeDeviceName = ctx.interface_id().node.getText();
         nodeDevicePrefix = nodeDeviceName + ":";
@@ -2211,7 +2221,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String fullIfaceName = nodeDevicePrefix + ifaceName;
         currentInterface = new Interface(fullIfaceName);
         currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
-        currentInterface.setParent(_configuration.getGlobalMasterInterface());
+        currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
       }
       defineStructure(INTERFACE, currentInterface.getName(), ctx);
@@ -2224,7 +2234,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
-    Map<String, Interface> interfaces = _configuration.getInterfaces();
+    Map<String, Interface> interfaces = _currentLogicalSystem.getInterfaces();
     String name = getInterfaceName(ctx.id);
     String unit = null;
     if (ctx.id.unit != null) {
@@ -2334,7 +2344,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterOa_interface(Oa_interfaceContext ctx) {
-    Map<String, Interface> interfaces = _configuration.getInterfaces();
+    Map<String, Interface> interfaces = _currentLogicalSystem.getInterfaces();
     String unitFullName = null;
     if (ctx.ALL() != null) {
       _currentOspfInterface = _currentRoutingInstance.getGlobalMasterInterface();
@@ -2450,7 +2460,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterPo_as_path_group(Po_as_path_groupContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(AS_PATH_GROUP, name, ctx);
-    _currentAsPathGroup = _configuration.getAsPathGroups().computeIfAbsent(name, AsPathGroup::new);
+    _currentAsPathGroup =
+        _currentLogicalSystem.getAsPathGroups().computeIfAbsent(name, AsPathGroup::new);
   }
 
   @Override
@@ -2475,14 +2486,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_community(Po_communityContext ctx) {
     String name = ctx.name.getText();
-    Map<String, CommunityList> communityLists = _configuration.getCommunityLists();
+    Map<String, CommunityList> communityLists = _currentLogicalSystem.getCommunityLists();
     _currentCommunityList = communityLists.computeIfAbsent(name, CommunityList::new);
   }
 
   @Override
   public void enterPo_policy_statement(Po_policy_statementContext ctx) {
     String name = ctx.name.getText();
-    Map<String, PolicyStatement> policyStatements = _configuration.getPolicyStatements();
+    Map<String, PolicyStatement> policyStatements = _currentLogicalSystem.getPolicyStatements();
     _currentPolicyStatement = policyStatements.computeIfAbsent(name, PolicyStatement::new);
     _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
     _currentPsThens = _currentPsTerm.getThens();
@@ -2492,7 +2503,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_prefix_list(Po_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    Map<String, PrefixList> prefixLists = _configuration.getPrefixLists();
+    Map<String, PrefixList> prefixLists = _currentLogicalSystem.getPrefixLists();
     _currentPrefixList = prefixLists.computeIfAbsent(name, PrefixList::new);
     defineStructure(PREFIX_LIST, name, ctx);
   }
@@ -2512,7 +2523,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String rfName = _currentPolicyStatement.getName() + ":" + _currentPsTerm.getName();
       _currentRouteFilter = new RouteFilter();
       _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
-      _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
+      _currentLogicalSystem.getRouteFilters().put(rfName, _currentRouteFilter);
       PsFromRouteFilter from = new PsFromRouteFilter(rfName);
       _currentPsTerm.getFroms().add(from);
     }
@@ -2646,7 +2657,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name;
     name = ctx.name.getText();
     _currentRoutingInstance =
-        _configuration.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
+        _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
   }
 
   @Override
@@ -2709,6 +2720,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterS_logical_systems(S_logical_systemsContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(JuniperStructureType.LOGICAL_SYSTEM, name, ctx);
+    setLogicalSystem(_configuration.getLogicalSystems().computeIfAbsent(name, LogicalSystem::new));
+  }
+
+  @Override
+  public void exitS_logical_systems(S_logical_systemsContext ctx) {
+    setLogicalSystem(_configuration.getMasterLogicalSystem());
+  }
+
+  @Override
   public void enterS_routing_options(S_routing_optionsContext ctx) {
     _currentRib = _currentRoutingInstance.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST);
   }
@@ -2728,7 +2751,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSe_address_book(Se_address_bookContext ctx) {
     String name = ctx.GLOBAL().getText();
     _currentAddressBook =
-        _configuration
+        _currentLogicalSystem
             .getGlobalAddressBooks()
             .computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
   }
@@ -2803,7 +2826,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int line = getLine(ctx.getStart());
     JuniperAuthenticationKeyChain authenticationkeyChain =
-        _configuration
+        _currentLogicalSystem
             .getAuthenticationKeyChains()
             .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
     _currentAuthenticationKeyChain = authenticationkeyChain;
@@ -2823,28 +2846,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSeik_gateway(Seik_gatewayContext ctx) {
     String name = ctx.name.getText();
-    _currentIkeGateway = _configuration.getIkeGateways().computeIfAbsent(name, IkeGateway::new);
+    _currentIkeGateway =
+        _currentLogicalSystem.getIkeGateways().computeIfAbsent(name, IkeGateway::new);
     defineStructure(IKE_GATEWAY, name, ctx);
   }
 
   @Override
   public void enterSeik_policy(Seik_policyContext ctx) {
     String name = ctx.name.getText();
-    _currentIkePolicy = _configuration.getIkePolicies().computeIfAbsent(name, IkePolicy::new);
+    _currentIkePolicy =
+        _currentLogicalSystem.getIkePolicies().computeIfAbsent(name, IkePolicy::new);
     defineStructure(IKE_POLICY, name, ctx);
   }
 
   @Override
   public void enterSeik_proposal(Seik_proposalContext ctx) {
     String name = ctx.name.getText();
-    _currentIkeProposal = _configuration.getIkeProposals().computeIfAbsent(name, IkeProposal::new);
+    _currentIkeProposal =
+        _currentLogicalSystem.getIkeProposals().computeIfAbsent(name, IkeProposal::new);
     defineStructure(IKE_PROPOSAL, name, ctx);
   }
 
   @Override
   public void enterSeip_policy(Seip_policyContext ctx) {
     String name = ctx.name.getText();
-    _currentIpsecPolicy = _configuration.getIpsecPolicies().computeIfAbsent(name, IpsecPolicy::new);
+    _currentIpsecPolicy =
+        _currentLogicalSystem.getIpsecPolicies().computeIfAbsent(name, IpsecPolicy::new);
     defineStructure(IPSEC_POLICY, name, ctx);
   }
 
@@ -2852,19 +2879,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSeip_proposal(Seip_proposalContext ctx) {
     String name = ctx.name.getText();
     _currentIpsecProposal =
-        _configuration.getIpsecProposals().computeIfAbsent(name, IpsecProposal::new);
+        _currentLogicalSystem.getIpsecProposals().computeIfAbsent(name, IpsecProposal::new);
     defineStructure(IPSEC_PROPOSAL, name, ctx);
   }
 
   @Override
   public void enterSeip_vpn(Seip_vpnContext ctx) {
     String name = ctx.name.getText();
-    _currentIpsecVpn = _configuration.getIpsecVpns().computeIfAbsent(name, IpsecVpn::new);
+    _currentIpsecVpn = _currentLogicalSystem.getIpsecVpns().computeIfAbsent(name, IpsecVpn::new);
   }
 
   @Override
   public void enterSen_destination(Sen_destinationContext ctx) {
-    _currentNat = _configuration.getOrCreateNat(Nat.Type.DESTINATION);
+    _currentNat = _currentLogicalSystem.getOrCreateNat(Nat.Type.DESTINATION);
   }
 
   @Override
@@ -2874,7 +2901,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSen_source(Sen_sourceContext ctx) {
-    _currentNat = _configuration.getOrCreateNat(Nat.Type.SOURCE);
+    _currentNat = _currentLogicalSystem.getOrCreateNat(Nat.Type.SOURCE);
   }
 
   @Override
@@ -2884,7 +2911,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSen_static(Sen_staticContext ctx) {
-    _currentNat = _configuration.getOrCreateNat(Nat.Type.STATIC);
+    _currentNat = _currentLogicalSystem.getOrCreateNat(Nat.Type.STATIC);
   }
 
   @Override
@@ -2901,11 +2928,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String toName = ctx.to.getText();
       String policyName = "~FROM_ZONE~" + fromName + "~TO_ZONE~" + toName;
       if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _configuration.getZones().get(fromName);
+        _currentFromZone = _currentLogicalSystem.getZones().get(fromName);
         if (_currentFromZone == null) {
-          _currentFromZone = new Zone(fromName, _configuration.getGlobalAddressBooks());
-          _configuration.getZones().put(fromName, _currentFromZone);
-          _configuration
+          _currentFromZone = new Zone(fromName, _currentLogicalSystem.getGlobalAddressBooks());
+          _currentLogicalSystem.getZones().put(fromName, _currentFromZone);
+          _currentLogicalSystem
               .getFirewallFilters()
               .put(
                   _currentFromZone.getInboundFilter().getName(),
@@ -2914,13 +2941,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
 
       if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _configuration.getZones().get(toName);
+        _currentToZone = _currentLogicalSystem.getZones().get(toName);
         if (_currentToZone == null) {
-          _currentToZone = new Zone(toName, _configuration.getGlobalAddressBooks());
-          _configuration
+          _currentToZone = new Zone(toName, _currentLogicalSystem.getGlobalAddressBooks());
+          _currentLogicalSystem
               .getFirewallFilters()
               .put(_currentToZone.getInboundFilter().getName(), _currentToZone.getInboundFilter());
-          _configuration.getZones().put(toName, _currentToZone);
+          _currentLogicalSystem.getZones().put(toName, _currentToZone);
         }
       }
 
@@ -2929,7 +2956,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentFilter = _currentToZone.getFromHostFilter();
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET);
-          _configuration.getFirewallFilters().put(policyName, _currentFilter);
+          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentToZone.setFromHostFilter(_currentFilter);
         }
       } else if (ctx.to.JUNOS_HOST() != null) {
@@ -2937,7 +2964,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentFilter = _currentFromZone.getToHostFilter();
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET);
-          _configuration.getFirewallFilters().put(policyName, _currentFilter);
+          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.setToHostFilter(_currentFilter);
         }
       } else {
@@ -2945,7 +2972,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET);
-          _configuration.getFirewallFilters().put(policyName, _currentFilter);
+          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
         }
         // Add this filter to the to-zone for easy combination with egress ACL
@@ -2965,7 +2992,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSep_global(Sep_globalContext ctx) {
     _currentFilter =
-        _configuration
+        _currentLogicalSystem
             .getFirewallFilters()
             .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET));
   }
@@ -2984,13 +3011,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSez_security_zone(Sez_security_zoneContext ctx) {
     String zoneName = ctx.zone().getText();
-    _currentZone = _configuration.getZones().get(zoneName);
+    _currentZone = _currentLogicalSystem.getZones().get(zoneName);
     if (_currentZone == null) {
-      _currentZone = new Zone(zoneName, _configuration.getGlobalAddressBooks());
-      _configuration
+      _currentZone = new Zone(zoneName, _currentLogicalSystem.getGlobalAddressBooks());
+      _currentLogicalSystem
           .getFirewallFilters()
           .put(_currentZone.getInboundFilter().getName(), _currentZone.getInboundFilter());
-      _configuration.getZones().put(zoneName, _currentZone);
+      _currentLogicalSystem.getZones().put(zoneName, _currentZone);
     }
     _currentZoneInboundFilter = _currentZone.getInboundFilter();
   }
@@ -3012,7 +3039,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 + "~INTERFACE~"
                 + _currentZoneInterface.getName();
         _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
-        _configuration.getFirewallFilters().put(name, _currentZoneInboundFilter);
+        _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
             .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
@@ -3024,7 +3051,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _configuration.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
+    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
     _configuration.referenceStructure(
         INTERFACE,
         _currentZoneInterface.getName(),
@@ -3069,11 +3096,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else {
       // in system hierarchy
-      _currentAuthenticationOrder = _configuration.getJf().getSystemAuthenticationOrder();
+      _currentAuthenticationOrder = _currentLogicalSystem.getJf().getSystemAuthenticationOrder();
       if (_currentAuthenticationOrder == null || _currentAuthenticationOrder.isDefault()) {
         // if system already has a default authentication order, give it a new non-default one
         _currentAuthenticationOrder = new AaaAuthenticationLoginList(new ArrayList<>(), false);
-        _configuration.getJf().setSystemAuthenticationOrder(_currentAuthenticationOrder);
+        _currentLogicalSystem.getJf().setSystemAuthenticationOrder(_currentAuthenticationOrder);
       }
     }
 
@@ -3085,7 +3112,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.porttype.getText();
     // aux and console ports should already exist unless they've been disabled, if disabled don't
     // add it to juniperFamily's lines
-    _currentLine = firstNonNull(_configuration.getJf().getLines().get(name), new Line(name));
+    _currentLine = firstNonNull(_currentLogicalSystem.getJf().getLines().get(name), new Line(name));
   }
 
   @Override
@@ -3096,43 +3123,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSy_services_linetype(Sy_services_linetypeContext ctx) {
     String name = ctx.linetype.getText();
-    _configuration.getJf().getLines().computeIfAbsent(name, Line::new);
-    _currentLine = _configuration.getJf().getLines().get(name);
+    _currentLogicalSystem.getJf().getLines().computeIfAbsent(name, Line::new);
+    _currentLine = _currentLogicalSystem.getJf().getLines().get(name);
 
     // if system authentication order defined, set the current line's authentication login list to
     // the system authentication order
-    if (_configuration.getJf().getSystemAuthenticationOrder() != null
+    if (_currentLogicalSystem.getJf().getSystemAuthenticationOrder() != null
         && _currentLine.getAaaAuthenticationLoginList() == null) {
       _currentLine.setAaaAuthenticationLoginList(
           new AaaAuthenticationLoginList(
-              _configuration.getJf().getSystemAuthenticationOrder().getMethods(), true));
+              _currentLogicalSystem.getJf().getSystemAuthenticationOrder().getMethods(), true));
     }
   }
 
   @Override
   public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
     String hostname = ctx.hostname.getText();
-    _configuration.getTacplusServers().add(hostname);
+    _currentLogicalSystem.getTacplusServers().add(hostname);
     _currentTacplusServer =
-        _configuration.getJf().getTacplusServers().computeIfAbsent(hostname, TacplusServer::new);
+        _currentLogicalSystem
+            .getJf()
+            .getTacplusServers()
+            .computeIfAbsent(hostname, TacplusServer::new);
   }
 
   @Override
   public void enterSyn_server(Syn_serverContext ctx) {
     String hostname = ctx.hostname.getText();
-    _configuration.getNtpServers().add(hostname);
+    _currentLogicalSystem.getNtpServers().add(hostname);
   }
 
   @Override
   public void enterSyp_disable(Syp_disableContext ctx) {
     // line is disabled so remove it from list of lines
-    _configuration.getJf().getLines().remove(_currentLine.getName());
+    _currentLogicalSystem.getJf().getLines().remove(_currentLine.getName());
   }
 
   @Override
   public void enterSys_host(Sys_hostContext ctx) {
     String hostname = ctx.hostname.getText();
-    _configuration.getSyslogHosts().add(hostname);
+    _currentLogicalSystem.getSyslogHosts().add(hostname);
   }
 
   @Override
@@ -3372,10 +3402,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitFftf_destination_prefix_list(Fftf_destination_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    // temporary
-    if (_currentFilter.getFamily() != Family.INET) {
-      _configuration.getIgnoredPrefixLists().add(name);
-    }
     FwFrom from;
     if (ctx.EXCEPT() != null) {
       from = new FwFromDestinationPrefixListExcept(name);
@@ -3498,10 +3524,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitFftf_prefix_list(Fftf_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    // temporary
-    if (_currentFilter.getFamily() != Family.INET) {
-      _configuration.getIgnoredPrefixLists().add(name);
-    }
     FwFromPrefixList from = new FwFromPrefixList(name);
     _currentFwTerm.getFroms().add(from);
     _configuration.referenceStructure(
@@ -3547,10 +3569,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitFftf_source_prefix_list(Fftf_source_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    // temporary
-    if (_currentFilter.getFamily() != Family.INET) {
-      _configuration.getIgnoredPrefixLists().add(name);
-    }
     FwFrom from;
     if (ctx.EXCEPT() != null) {
       from = new FwFromSourcePrefixListExcept(name);
@@ -3651,10 +3669,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_defaultCrossZoneAction == null) {
         _defaultCrossZoneAction = LineAction.DENY;
       }
-      _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-      _configuration.setDefaultInboundAction(LineAction.DENY);
+      _currentLogicalSystem.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+      _currentLogicalSystem.setDefaultInboundAction(LineAction.DENY);
     } else {
-      _configuration.setDefaultInboundAction(LineAction.PERMIT);
+      _currentLogicalSystem.setDefaultInboundAction(LineAction.PERMIT);
     }
   }
 
@@ -4207,7 +4225,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       unit = ctx.id.unit.getText();
     }
     String unitFullName = name + "." + unit;
-    Map<String, Interface> interfaces = _configuration.getInterfaces();
+    Map<String, Interface> interfaces = _currentLogicalSystem.getInterfaces();
     Interface iface = interfaces.get(name);
     if (iface == null) {
       iface = new Interface(name);
@@ -4459,7 +4477,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRi_named_routing_instance(Ri_named_routing_instanceContext ctx) {
-    _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
+    _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
   }
 
   @Override
@@ -4570,7 +4588,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRof_export(Rof_exportContext ctx) {
     String name = ctx.name.getText();
-    _configuration.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
+    _currentLogicalSystem.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, FORWARDING_TABLE_EXPORT_POLICY, getLine(ctx.name.getStart()));
   }
@@ -5229,7 +5247,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSy_authentication_order(Sy_authentication_orderContext ctx) {
     if (_currentLine == null) {
       // in system hierarchy
-      for (Line line : _configuration.getJf().getLines().values()) {
+      for (Line line : _currentLogicalSystem.getJf().getLines().values()) {
         if (line.getAaaAuthenticationLoginList() == null
             || line.getAaaAuthenticationLoginList().isDefault()) {
           // line has no login list or has default login list, give it the system's login list
@@ -5244,7 +5262,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSy_default_address_selection(Sy_default_address_selectionContext ctx) {
-    _configuration.setDefaultAddressSelection(true);
+    _currentLogicalSystem.setDefaultAddressSelection(true);
   }
 
   @Override
@@ -5261,7 +5279,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSy_name_server(Sy_name_serverContext ctx) {
-    Set<String> dnsServers = _configuration.getDnsServers();
+    Set<String> dnsServers = _currentLogicalSystem.getDnsServers();
     String hostname = ctx.hostname.getText();
     dnsServers.add(hostname);
   }
@@ -5285,7 +5303,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSyr_encrypted_password(Syr_encrypted_passwordContext ctx) {
     String hash = ctx.password.getText();
     String rehashedPassword = CommonUtil.sha256Digest(hash + CommonUtil.salt());
-    _configuration.getJf().setRootAuthenticationEncryptedPassword(rehashedPassword);
+    _currentLogicalSystem.getJf().setRootAuthenticationEncryptedPassword(rehashedPassword);
   }
 
   @Override
@@ -5332,7 +5350,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
     Vlan vlan = new Vlan(toInt(ctx.id));
-    _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
+    _currentLogicalSystem.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 
   @Nullable
@@ -5374,7 +5392,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private String initIkeProposal(IkeProposal proposal) {
     String name = proposal.getName();
-    _configuration.getIkeProposals().put(name, proposal);
+    _currentLogicalSystem.getIkeProposals().put(name, proposal);
     return name;
   }
 
@@ -5459,7 +5477,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, n -> new NodeDevice());
       interfaces = nodeDevice.getInterfaces();
     } else {
-      interfaces = _configuration.getInterfaces();
+      interfaces = _currentLogicalSystem.getInterfaces();
     }
     String name = getInterfaceName(id);
     String unit = null;
@@ -5487,7 +5505,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private String initIpsecProposal(IpsecProposal proposal) {
     String name = proposal.getName();
-    _configuration.getIpsecProposals().put(name, proposal);
+    _currentLogicalSystem.getIpsecProposals().put(name, proposal);
     return name;
   }
 
@@ -5622,7 +5640,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(conjuncts);
       conjunctionPolicyTerm.getFroms().add(from);
       conjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
-      _configuration.getPolicyStatements().put(conjunctionPolicyName, conjunctionPolicy);
+      _currentLogicalSystem.getPolicyStatements().put(conjunctionPolicyName, conjunctionPolicy);
       return conjunctionPolicyName;
     } else if (expr.pe_disjunction() != null) {
       Set<String> disjuncts = new LinkedHashSet<>();
@@ -5639,7 +5657,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         disjunctionPolicyTerm.getFroms().add(from);
       }
       disjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
-      _configuration.getPolicyStatements().put(disjunctionPolicyName, disjunctionPolicy);
+      _currentLogicalSystem.getPolicyStatements().put(disjunctionPolicyName, disjunctionPolicy);
       return disjunctionPolicyName;
     } else {
       throw new BatfishException("Invalid policy expression");

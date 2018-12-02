@@ -242,7 +242,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     throw new BatfishException("Not meant to be converted to vendor-independent format");
   }
 }
