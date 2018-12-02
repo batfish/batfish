@@ -223,6 +223,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.JuniperConfiguration;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -2147,6 +2148,133 @@ public class FlatJuniperGrammarTest {
             "iface_undefined",
             OSPF_AREA_INTERFACE,
             containsInAnyOrder(6, 14)));
+  }
+
+  @Test
+  public void testLogicalSystems() throws IOException {
+    String snapshotName = "logical-systems";
+    String configName = "master1";
+
+    List<String> configurationNames = ImmutableList.of(configName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    // There should be 3 configs: the master, and one for each logical system
+    // ls1's name should be derived from master hostname and logical-system name
+    // ls2's name was manually configured
+    assertThat(
+        configurations.keySet(),
+        containsInAnyOrder(
+            configName,
+            JuniperConfiguration.computeLogicalSystemDefaultHostname(configName, "ls1"),
+            "ls2.example.com"));
+  }
+
+  @Test
+  public void testLogicalSystemsInterfaces() throws IOException {
+    String snapshotName = "logical-systems";
+    String configName = "master1";
+    String lsConfigName =
+        JuniperConfiguration.computeLogicalSystemDefaultHostname(configName, "ls1");
+
+    List<String> configurationNames = ImmutableList.of(configName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration masterConfig = configurations.get(configName);
+    Configuration lsConfig = configurations.get(lsConfigName);
+
+    // ensure interfaces have been divided appropriately
+    assertThat(
+        masterConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/0.0", "xe-0/0/1.1"));
+    assertThat(lsConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/1.0"));
+
+    // shared physical interface should have same settings on both configs
+    assertThat(masterConfig.getAllInterfaces().get("xe-0/0/1.1"), hasMtu(2345));
+    assertThat(lsConfig.getAllInterfaces().get("xe-0/0/1.0"), hasMtu(2345));
+  }
+
+  @Test
+  public void testLogicalSystemsFirewallFilters() throws IOException {
+    String snapshotName = "logical-systems";
+    String configName = "master1";
+    String lsConfigName =
+        JuniperConfiguration.computeLogicalSystemDefaultHostname(configName, "ls1");
+
+    List<String> configurationNames = ImmutableList.of(configName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration masterConfig = configurations.get(configName);
+    Configuration lsConfig = configurations.get(lsConfigName);
+
+    // ff1 is defined only on master, but should be accessible to both
+    assertThat(masterConfig.getIpAccessLists(), hasKey("ff1"));
+    assertThat(lsConfig.getIpAccessLists(), hasKey("ff1"));
+    assertThat(
+        masterConfig.getIpAccessLists().get("ff1"),
+        equalTo(lsConfig.getIpAccessLists().get("ff1")));
+
+    // ff2 is defined only on both, but should have different definitions on each
+    assertThat(masterConfig.getIpAccessLists(), hasKey("ff2"));
+    assertThat(lsConfig.getIpAccessLists(), hasKey("ff2"));
+    assertThat(
+        masterConfig.getIpAccessLists().get("ff2"),
+        not(equalTo(lsConfig.getIpAccessLists().get("ff2"))));
+
+    // ff3 is defined only on logical system, so should be out of scope for master
+    assertThat(masterConfig.getIpAccessLists(), not(hasKey("ff3")));
+    assertThat(lsConfig.getIpAccessLists(), hasKey("ff3"));
+  }
+
+  @Test
+  public void testLogicalSystemsPolicyStatements() throws IOException {
+    String snapshotName = "logical-systems";
+    String configName = "master1";
+    String lsConfigName =
+        JuniperConfiguration.computeLogicalSystemDefaultHostname(configName, "ls1");
+
+    List<String> configurationNames = ImmutableList.of(configName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration masterConfig = configurations.get(configName);
+    Configuration lsConfig = configurations.get(lsConfigName);
+
+    // ps1 is defined only on master, but should be accessible to both
+    assertThat(masterConfig.getRoutingPolicies(), hasKey("ps1"));
+    assertThat(lsConfig.getRoutingPolicies(), hasKey("ps1"));
+    assertThat(
+        masterConfig.getRoutingPolicies().get("ps1"),
+        equalTo(lsConfig.getRoutingPolicies().get("ps1")));
+
+    // ps2 is defined only on both, but should have dipserent definitions on each
+    assertThat(masterConfig.getRoutingPolicies(), hasKey("ps2"));
+    assertThat(lsConfig.getRoutingPolicies(), hasKey("ps2"));
+    assertThat(
+        masterConfig.getRoutingPolicies().get("ps2"),
+        not(equalTo(lsConfig.getRoutingPolicies().get("ps2"))));
+
+    // ps3 is defined only on logical system, so should be out of scope for master
+    assertThat(masterConfig.getRoutingPolicies(), not(hasKey("ps3")));
+    assertThat(lsConfig.getRoutingPolicies(), hasKey("ps3"));
   }
 
   @Test

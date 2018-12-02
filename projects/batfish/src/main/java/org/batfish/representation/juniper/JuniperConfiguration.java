@@ -1841,13 +1841,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       @Nonnull String logicalSystemName, @Nonnull JuniperConfiguration masterConfiguration) {
     // Note that 'this' is the cloned configuration
 
-    // Ensure unique hostname in case one has not been configured
-    _masterLogicalSystem
-        .getDefaultRoutingInstance()
-        .setHostname(
-            String.format(
-                "%s~LOGICAL_SYSTEM~%s", masterConfiguration.getHostname(), logicalSystemName));
-
     LogicalSystem ls = _logicalSystems.get(logicalSystemName);
 
     // Delete logical systems since they are no longer in scope
@@ -1882,19 +1875,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ls.getInterfaces()
         .forEach(
             (ifaceName, lsMasterIface) -> {
+              Interface masterPhysicalInterface =
+                  _masterLogicalSystem.getInterfaces().get(ifaceName);
               // copy units from logical system
-              _masterLogicalSystem
-                  .getInterfaces()
-                  .get(ifaceName)
-                  .getUnits()
-                  .putAll(lsMasterIface.getUnits());
+              masterPhysicalInterface.getUnits().putAll(lsMasterIface.getUnits());
               // delete unassigned units
-              _masterLogicalSystem
-                  .getInterfaces()
-                  .get(ifaceName)
+              masterPhysicalInterface
                   .getUnits()
                   .keySet()
                   .retainAll(lsMasterIface.getUnits().keySet());
+              // reset parent on copied units to master physical interface
+              masterPhysicalInterface
+                  .getUnits()
+                  .values()
+                  .forEach(unit -> unit.setParent(masterPhysicalInterface));
             });
     // delete unassigned interfaces
     _masterLogicalSystem.getInterfaces().keySet().retainAll(ls.getInterfaces().keySet());
@@ -1920,6 +1914,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getVlanNameToVlan().putAll(ls.getVlanNameToVlan());
     _masterLogicalSystem.getZones().clear();
     _masterLogicalSystem.getZones().putAll(ls.getZones());
+
+    // Ensure unique hostname in case one has not been configured
+    if (getHostname() == null) {
+      setHostname(
+          computeLogicalSystemDefaultHostname(
+              masterConfiguration.getHostname(), logicalSystemName));
+    }
+  }
+
+  public static String computeLogicalSystemDefaultHostname(
+      String masterHostname, String logicalSystemName) {
+    return String.format("%s~logical_system~%s", masterHostname, logicalSystemName).toLowerCase();
   }
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {
