@@ -1877,6 +1877,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
             (ifaceName, lsMasterIface) -> {
               Interface masterPhysicalInterface =
                   _masterLogicalSystem.getInterfaces().get(ifaceName);
+              if (masterPhysicalInterface == null) {
+                // the physical interface is not mentioned globally, so just copy the whole thing
+                // from the logical system
+                _masterLogicalSystem.getInterfaces().put(ifaceName, lsMasterIface);
+                return;
+              }
               // copy units from logical system
               masterPhysicalInterface.getUnits().putAll(lsMasterIface.getUnits());
               // delete unassigned units
@@ -1936,7 +1942,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ByteArrayInputStream bais = closer.register(new ByteArrayInputStream(baos.toByteArray()));
       ObjectInputStream ois = closer.register(new ObjectInputStream(bais));
       Object clonedObject = ois.readObject();
-      return (JuniperConfiguration) clonedObject;
+      JuniperConfiguration clonedConfiguration = (JuniperConfiguration) clonedObject;
+      clonedConfiguration.setAnswerElement(getAnswerElement());
+      clonedConfiguration.setUnrecognized(getUnrecognized());
+      clonedConfiguration.setWarnings(_w);
+      return clonedConfiguration;
     } catch (IOException | ClassNotFoundException e) {
       throw new VendorConversionException("Failed to clone master vendor configuration", e);
     }

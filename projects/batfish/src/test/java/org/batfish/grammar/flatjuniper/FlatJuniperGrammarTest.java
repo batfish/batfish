@@ -2196,7 +2196,8 @@ public class FlatJuniperGrammarTest {
     // ensure interfaces have been divided appropriately
     assertThat(
         masterConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/0.0", "xe-0/0/1.1"));
-    assertThat(lsConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/1.0"));
+    assertThat(
+        lsConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/1.0", "xe-0/0/2.0"));
 
     // shared physical interface should have same settings on both configs
     assertThat(masterConfig.getAllInterfaces().get("xe-0/0/1.1"), hasMtu(2345));

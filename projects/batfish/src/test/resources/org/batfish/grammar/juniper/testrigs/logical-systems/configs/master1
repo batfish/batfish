@@ -14,6 +14,9 @@ set interfaces xe-0/0/1 unit 1 family inet address 10.0.2.1/24
 set logical-systems ls1 interfaces xe-0/0/1 unit 0
 set logical-systems ls1 interfaces xe-0/0/1 unit 0 family inet address 10.0.1.1/24
 #
+### xe-0/0/2 exists only on the logical system
+set logical-systems ls1 interfaces xe-0/0/2 unit 0 family inet address 10.0.3.1/24
+#
 ### some structures defined on master are visible on ls, but can be overridden
 # defined only on master
 set firewall family inet filter ff1 term t1 then accept
