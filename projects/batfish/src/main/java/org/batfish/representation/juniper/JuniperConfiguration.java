@@ -6,12 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.io.Closer;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +27,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
@@ -1935,21 +1930,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {
-    try (Closer closer = Closer.create()) {
-      ByteArrayOutputStream baos = closer.register(new ByteArrayOutputStream());
-      ObjectOutputStream oos = closer.register(new ObjectOutputStream(baos));
-      oos.writeObject(this);
-      ByteArrayInputStream bais = closer.register(new ByteArrayInputStream(baos.toByteArray()));
-      ObjectInputStream ois = closer.register(new ObjectInputStream(bais));
-      Object clonedObject = ois.readObject();
-      JuniperConfiguration clonedConfiguration = (JuniperConfiguration) clonedObject;
-      clonedConfiguration.setAnswerElement(getAnswerElement());
-      clonedConfiguration.setUnrecognized(getUnrecognized());
-      clonedConfiguration.setWarnings(_w);
-      return clonedConfiguration;
-    } catch (IOException | ClassNotFoundException e) {
-      throw new VendorConversionException("Failed to clone master vendor configuration", e);
-    }
+    JuniperConfiguration clonedConfiguration = SerializationUtils.clone(this);
+    clonedConfiguration.setAnswerElement(getAnswerElement());
+    clonedConfiguration.setUnrecognized(getUnrecognized());
+    clonedConfiguration.setWarnings(_w);
+    return clonedConfiguration;
   }
 
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
