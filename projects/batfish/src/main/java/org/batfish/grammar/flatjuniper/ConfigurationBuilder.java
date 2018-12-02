@@ -5,6 +5,8 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_G
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
@@ -23,8 +25,10 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_AS_PATH_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
@@ -52,6 +56,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
@@ -236,6 +241,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_primaryContext;
@@ -296,9 +302,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poapg_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
@@ -360,11 +368,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_aggregateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_generateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
@@ -505,6 +515,7 @@ import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
 import org.batfish.representation.juniper.ApplicationSetReference;
+import org.batfish.representation.juniper.AsPathGroup;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
@@ -569,6 +580,7 @@ import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
+import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -1887,6 +1899,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private StubSettings _currentStubSettings;
 
+  private AsPathGroup _currentAsPathGroup;
+
   public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
     _parser = parser;
     _text = text;
@@ -2430,6 +2444,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterP_bgp(P_bgpContext ctx) {
     _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
+  }
+
+  @Override
+  public void enterPo_as_path_group(Po_as_path_groupContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(AS_PATH_GROUP, name, ctx);
+    _currentAsPathGroup = _configuration.getAsPathGroups().computeIfAbsent(name, AsPathGroup::new);
+  }
+
+  @Override
+  public void exitPo_as_path_group(Po_as_path_groupContext ctx) {
+    _currentAsPathGroup = null;
+  }
+
+  @Override
+  public void exitPoapg_as_path(Poapg_as_pathContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(AS_PATH_GROUP_AS_PATH, name, ctx);
+    _configuration.referenceStructure(
+        AS_PATH_GROUP_AS_PATH,
+        name,
+        AS_PATH_GROUP_AS_PATH_SELF_REFERENCE,
+        ctx.name.getStart().getLine());
+    String asPathStr = unquote(ctx.regex.getText());
+    // intentional overwrite
+    _currentAsPathGroup.getAsPaths().put(name, new NamedAsPath(name, asPathStr));
   }
 
   @Override
@@ -3752,6 +3792,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitIfi_tcp_mss(Ifi_tcp_mssContext ctx) {
+    int tcpMss = toInt(ctx.size);
+    _currentInterface.setTcpMss(tcpMss);
+    todo(ctx);
+  }
+
+  @Override
   public void exitIfia_arp(Ifia_arpContext ctx) {
     Ip ip = new Ip(ctx.ip.getText());
     _currentInterface.setAdditionalArpIps(
@@ -4111,10 +4158,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' from clause: %s",
-            getFullText(ctx)));
+    String name = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, ctx.getStart().getLine());
+    todo(ctx);
   }
 
   @Override
@@ -4450,6 +4497,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitRo_confederation(Ro_confederationContext ctx) {
+    if (ctx.num != null) {
+      _currentRoutingInstance.setConfederation(toLong(ctx.num));
+    }
+    // Note that Juniper will not allow commit with declared members unless confederation number
+    // above is evenutally set, even though members can be declared separately from confederation
+    // number. So confederation members should not make it into data model when confederation number
+    // is not set.
+    ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
+    todo(ctx);
+  }
+
+  @Override
   public void exitRo_generate(Ro_generateContext ctx) {
     _currentGeneratedRoute = null;
   }
@@ -4470,6 +4530,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     long community = CommonUtil.communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
     _configuration.getAllStandardCommunities().add(community);
     _currentAggregateRoute.getCommunities().add(community);
+  }
+
+  @Override
+  public void exitRoa_policy(Roa_policyContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, AGGREGATE_ROUTE_POLICY, ctx.name.getStart().getLine());
+    _currentAggregateRoute.setPolicy(name);
+    todo(ctx);
   }
 
   @Override
