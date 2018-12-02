@@ -553,6 +553,9 @@
         "juniper_apply_macro" : [
           "configs/juniper_apply_macro"
         ],
+        "juniper_as_path_group" : [
+          "configs/juniper_as_path_group"
+        ],
         "juniper_bgp" : [
           "configs/juniper_bgp"
         ],
@@ -974,6 +977,7 @@
         "configs/juniper-tcpflags" : "PASSED",
         "configs/juniper_application" : "PASSED",
         "configs/juniper_apply_macro" : "PASSED",
+        "configs/juniper_as_path_group" : "PASSED",
         "configs/juniper_bgp" : "PASSED",
         "configs/juniper_bgp_allow" : "PASSED",
         "configs/juniper_bgp_authentication" : "PASSED",
@@ -43312,6 +43316,58 @@
             "  EOF:<EOF>)"
           ]
         },
+        "juniper_as_path_group" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'juniper_as_path_group'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path_group",
+            "              AS_PATH_GROUP:'as-path-group'",
+            "              name = (variable",
+            "                text = M_AsPathGroup_NAME:'AS_PATH_GROUP1'  <== mode:M_AsPathGroup)",
+            "              (poapg_as_path",
+            "                AS_PATH:'as-path'  <== mode:M_AsPathGroup2",
+            "                name = (variable",
+            "                  text = M_AsPathGroup3_NAME:'AS_PATH_REGEX_NAME1'  <== mode:M_AsPathGroup3)",
+            "                regex = AS_PATH_REGEX:'123456'  <== mode:M_AsPathRegex))))))",
+            "    NEWLINE:'\\n'  <== mode:M_AsPathRegex)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path_group",
+            "              AS_PATH_GROUP:'as-path-group'",
+            "              name = (variable",
+            "                text = M_AsPathGroup_NAME:'AS_PATH_GROUP1'  <== mode:M_AsPathGroup)",
+            "              (poapg_as_path",
+            "                AS_PATH:'as-path'  <== mode:M_AsPathGroup2",
+            "                name = (variable",
+            "                  text = M_AsPathGroup3_NAME:'AS_PATH_REGEX_NAME2'  <== mode:M_AsPathGroup3)",
+            "                regex = AS_PATH_REGEX:'.* 654321 .*'  <== mode:M_AsPathRegex))))))",
+            "    NEWLINE:'\\n'  <== mode:M_AsPathRegex)",
+            "  EOF:<EOF>)"
+          ]
+        },
         "juniper_bgp" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -47170,6 +47226,28 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'5'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_tcp_mss",
+            "                        TCP_MSS:'tcp-mss'",
+            "                        size = DEC:'1400'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = VARIABLE:'xe-0/0/5'  <== mode:M_Interface",
             "                COLON:':'",
             "                suffix = DEC:'0')",
@@ -47274,7 +47352,7 @@
             "                                        PREEMPT:'preempt'",
             "                                        HOLD_TIME:'hold-time'",
             "                                        DEC:'60'))))))))))))))))))",
-            "    NEWLINE:'\\n')",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -48231,8 +48309,8 @@
             "                    (popsf_as_path_group",
             "                      AS_PATH_GROUP:'as-path-group'",
             "                      name = (variable",
-            "                        text = VARIABLE:'AS_PATH_GROUP'))))))))))",
-            "    NEWLINE:'\\n')",
+            "                        text = M_AsPathGroup_NAME:'AS_PATH_GROUP'  <== mode:M_AsPathGroup))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_AsPathGroup2)",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
@@ -49181,6 +49259,35 @@
             "                          asn4lo = DEC:'7'  <== mode:M_AsPathExpr)",
             "                        CLOSE_BRACKET:']'  <== mode:M_AsPathExpr))))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_aggregate",
+            "              AGGREGATE:'aggregate'",
+            "              ROUTE:'route'",
+            "              prefix = IP_PREFIX:'40.0.0.0/8'",
+            "              (roa_policy",
+            "                POLICY:'policy'",
+            "                name = (variable",
+            "                  text = VARIABLE:'AGGREGATE_ROUTE_POLICY')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_confederation",
+            "              CONFEDERATION:'confederation'",
+            "              num = DEC:'11111'",
+            "              MEMBERS:'members'",
+            "              DEC:'22222'  <== mode:M_Members)))))",
+            "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
@@ -60624,6 +60731,14 @@
             }
           ]
         },
+        "juniper_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'interfaces family inet tcp-mss': tcp-mss 1400"
+            }
+          ]
+        },
         "juniper_isis" : {
           "Parse warnings" : [
             {
@@ -60647,6 +60762,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
+            }
+          ]
+        },
+        "juniper_routing_options" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'routing-options aggregate route policy': policy AGGREGATE_ROUTE_POLICY"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'routing-options confederation': confederation 11111 members 22222"
             }
           ]
         },
@@ -64017,6 +64144,31 @@
           }
         },
         "configs/juniper_apply_macro" : { },
+        "configs/juniper_as_path_group" : {
+          "as-path-group" : {
+            "AS_PATH_GROUP1" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "as-path-group as-path" : {
+            "AS_PATH_REGEX_NAME1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "AS_PATH_REGEX_NAME2" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_bgp" : {
           "bgp group" : {
             "someinternalipv4group" : {
@@ -64253,17 +64405,19 @@
               "definitionLines" : [
                 10,
                 11,
-                12
+                12,
+                13
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "irb.5" : {
               "definitionLines" : [
                 10,
                 11,
-                12
+                12,
+                13
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
@@ -64280,13 +64434,13 @@
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                13
+                14
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                13
+                14
               ],
               "numReferrers" : 1
             }
@@ -64294,8 +64448,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 0
             }
@@ -67349,6 +67503,20 @@
             }
           }
         },
+        "configs/juniper_as_path_group" : {
+          "as-path-group as-path" : {
+            "AS_PATH_REGEX_NAME1" : {
+              "as-path-group as-path" : [
+                5
+              ]
+            },
+            "AS_PATH_REGEX_NAME2" : {
+              "as-path-group as-path" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/juniper_bgp" : {
           "bgp group" : {
             "someinternalipv4group" : {
@@ -67481,7 +67649,7 @@
                 5
               ],
               "routing-instance interface" : [
-                15
+                16
               ]
             },
             "ge-0/0/0" : {
@@ -67498,14 +67666,16 @@
               "interface" : [
                 10,
                 11,
-                12
+                12,
+                13
               ]
             },
             "irb.5" : {
               "interface" : [
                 10,
                 11,
-                12
+                12,
+                13
               ]
             },
             "xe-0/0/0:0" : {
@@ -67521,19 +67691,19 @@
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                13
+                14
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                13
+                14
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                13
+                14
               ]
             }
           }
@@ -67570,6 +67740,15 @@
             }
           }
         },
+        "configs/juniper_policy_statement" : {
+          "as-path-group" : {
+            "AS_PATH_GROUP" : {
+              "policy-statement from as-path-group" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/juniper_relay" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {
@@ -67587,6 +67766,15 @@
             },
             "irb.20" : {
               "fowarding-options dhcp-relay group interface" : [
+                8
+              ]
+            }
+          }
+        },
+        "configs/juniper_routing_options" : {
+          "policy-statement" : {
+            "AGGREGATE_ROUTE_POLICY" : {
+              "aggregate route policy" : [
                 8
               ]
             }
@@ -69390,7 +69578,7 @@
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                13
+                14
               ]
             }
           }
@@ -70243,6 +70431,7 @@
         "configs/juniper-tcpflags" : "PASSED",
         "configs/juniper_application" : "PASSED",
         "configs/juniper_apply_macro" : "PASSED",
+        "configs/juniper_as_path_group" : "PASSED",
         "configs/juniper_bgp" : "PASSED",
         "configs/juniper_bgp_allow" : "PASSED",
         "configs/juniper_bgp_authentication" : "PASSED",

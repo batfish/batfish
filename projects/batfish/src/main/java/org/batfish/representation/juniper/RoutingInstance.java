@@ -6,8 +6,11 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -70,7 +73,12 @@ public class RoutingInstance implements Serializable {
 
   private final JuniperSystem _system;
 
+  private Long _confederation;
+
+  private Set<Long> _confederationMembers;
+
   public RoutingInstance(String name) {
+    _confederationMembers = new TreeSet<>();
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();
     _isisSettings = new IsisSettings();
@@ -246,5 +254,17 @@ public class RoutingInstance implements Serializable {
 
   public void setSnmpServer(SnmpServer snmpServer) {
     _snmpServer = snmpServer;
+  }
+
+  public void setConfederation(@Nullable Long confederation) {
+    _confederation = confederation;
+  }
+
+  public @Nullable Long getConfederation() {
+    return _confederation;
+  }
+
+  public @Nonnull Set<Long> getConfederationMembers() {
+    return _confederationMembers;
   }
 }

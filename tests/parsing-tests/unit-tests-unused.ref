@@ -1955,6 +1955,37 @@
         }
       },
       {
+        "Structure_Type" : "as-path-group",
+        "Structure_Name" : "AS_PATH_GROUP1",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            5,
+            6
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "as-path-group as-path",
+        "Structure_Name" : "AS_PATH_REGEX_NAME1",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "as-path-group as-path",
+        "Structure_Name" : "AS_PATH_REGEX_NAME2",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
         "Structure_Type" : "bgp group",
         "Structure_Name" : "someipv4bgpgroup",
         "Source_Lines" : {
@@ -2053,8 +2084,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            17,
-            18
+            18,
+            19
           ]
         }
       },
@@ -2687,10 +2718,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 189 results",
+      "notes" : "Found 192 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 189
+      "numResults" : 192
     }
   }
 ]
