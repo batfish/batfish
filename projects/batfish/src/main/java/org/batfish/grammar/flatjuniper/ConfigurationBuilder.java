@@ -2477,7 +2477,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         AS_PATH_GROUP_AS_PATH,
         name,
         AS_PATH_GROUP_AS_PATH_SELF_REFERENCE,
-        ctx.name.getStart().getLine());
+        getLine(ctx.name.getStart()));
     String asPathStr = unquote(ctx.regex.getText());
     // intentional overwrite
     _currentAsPathGroup.getAsPaths().put(name, new NamedAsPath(name, asPathStr));
@@ -4178,7 +4178,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
     String name = unquote(ctx.name.getText());
     _configuration.referenceStructure(
-        AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, ctx.getStart().getLine());
+        AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, getLine(ctx.getStart()));
     todo(ctx);
   }
 
@@ -4554,7 +4554,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRoa_policy(Roa_policyContext ctx) {
     String name = unquote(ctx.name.getText());
     _configuration.referenceStructure(
-        POLICY_STATEMENT, name, AGGREGATE_ROUTE_POLICY, ctx.name.getStart().getLine());
+        POLICY_STATEMENT, name, AGGREGATE_ROUTE_POLICY, getLine(ctx.name.getStart()));
     _currentAggregateRoute.setPolicy(name);
     todo(ctx);
   }
@@ -5338,7 +5338,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         LOGICAL_SYSTEM,
         ctx.name.getText(),
         SECURITY_PROFILE_LOGICAL_SYSTEM,
-        ctx.name.getStart().getLine());
+        getLine(ctx.name.getStart()));
   }
 
   @Override
