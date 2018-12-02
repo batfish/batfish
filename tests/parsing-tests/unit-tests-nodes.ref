@@ -14886,6 +14886,51 @@
           }
         }
       },
+      "juniper_as_path_group" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_as_path_group",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper_bgp" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_bgp",
@@ -17388,6 +17433,16 @@
               }
             ],
             "name" : "~AGGREGATE_30_0_0_0_8_RF~"
+          },
+          "~AGGREGATE_40_0_0_0_8_RF~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "40.0.0.0/8",
+                "lengthRange" : "9-32"
+              }
+            ],
+            "name" : "~AGGREGATE_40_0_0_0_8_RF~"
           }
         },
         "routingPolicies" : {
@@ -17480,6 +17535,36 @@
                 ]
               }
             ]
+          },
+          "~AGGREGATE_40_0_0_0_8~" : {
+            "name" : "~AGGREGATE_40_0_0_0_8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~AGGREGATE_40_0_0_0_8_RF~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -17556,6 +17641,16 @@
                 "generationPolicy" : "~AGGREGATE_30_0_0_0_8~",
                 "metric" : 0,
                 "network" : "30.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              },
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 0,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~AGGREGATE_40_0_0_0_8~",
+                "metric" : 0,
+                "network" : "40.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
               }
             ]

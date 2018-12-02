@@ -1,0 +1,8 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper_as_path_group
+#
+set policy-options as-path-group AS_PATH_GROUP1 as-path AS_PATH_REGEX_NAME1 123456
+set policy-options as-path-group AS_PATH_GROUP1 as-path AS_PATH_REGEX_NAME2 ".* 654321 .*"
+#
+

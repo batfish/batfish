@@ -21,6 +21,8 @@ public final class AggregateRoute implements Serializable {
 
   private Integer _tag;
 
+  private String _policy;
+
   public AggregateRoute(Prefix prefix) {
     _communities = new HashSet<>();
     _prefix = prefix;
@@ -38,6 +40,10 @@ public final class AggregateRoute implements Serializable {
     return _preference;
   }
 
+  public String getPolicy() {
+    return _policy;
+  }
+
   public Prefix getPrefix() {
     return _prefix;
   }
@@ -48,6 +54,10 @@ public final class AggregateRoute implements Serializable {
 
   public void setAsPath(AsPath asPath) {
     _asPath = asPath;
+  }
+
+  public void setPolicy(String policy) {
+    _policy = policy;
   }
 
   public void setPreference(int preference) {

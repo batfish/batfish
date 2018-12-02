@@ -301,6 +301,7 @@ if_inet
       | ifi_no_redirects
       | ifi_null
       | ifi_rpf_check
+      | ifi_tcp_mss
    )
 ;
 
@@ -434,6 +435,11 @@ ifi_null
 ifi_rpf_check
 :
    RPF_CHECK FAIL_FILTER name = variable
+;
+
+ifi_tcp_mss
+:
+  TCP_MSS size = DEC
 ;
 
 ifia_arp

@@ -242,10 +242,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, Zone> _zones;
 
+  private final Map<String, AsPathGroup> _asPathGroups;
+
   public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
+    _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
@@ -2694,5 +2697,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public Map<String, ApplicationSet> getApplicationSets() {
     return _applicationSets;
+  }
+
+  public Map<String, AsPathGroup> getAsPathGroups() {
+    return _asPathGroups;
   }
 }

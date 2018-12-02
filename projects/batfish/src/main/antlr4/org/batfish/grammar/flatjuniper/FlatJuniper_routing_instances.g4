@@ -143,6 +143,7 @@ ro_aggregate
       apply
       | roa_as_path
       | roa_community
+      | roa_policy
       | roa_preference
       | roa_tag
    )
@@ -173,6 +174,14 @@ ro_bmp
       rob_station_address
       | rob_station_port
    )
+;
+
+ro_confederation
+:
+  CONFEDERATION num = DEC?
+  (
+    MEMBERS member += DEC
+  )*
 ;
 
 ro_forwarding_table
@@ -290,6 +299,11 @@ roa_as_path
 roa_community
 :
    COMMUNITY community = COMMUNITY_LITERAL
+;
+
+roa_policy
+:
+  POLICY name = variable
 ;
 
 roa_preference
@@ -618,6 +632,7 @@ s_routing_options
       | ro_auto_export
       | ro_autonomous_system
       | ro_bmp
+      | ro_confederation
       | ro_forwarding_table
       | ro_generate
       | ro_interface_routes
