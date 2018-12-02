@@ -17,18 +17,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
@@ -112,9 +111,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -166,117 +163,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Set<Long> _allStandardCommunities;
 
-  private final Map<String, BaseApplication> _applications;
-
-  private final Map<String, ApplicationSet> _applicationSets;
-
-  private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
-
   Configuration _c;
-
-  private final Map<String, CommunityList> _communityLists;
-
-  private boolean _defaultAddressSelection;
-
-  private LineAction _defaultCrossZoneAction;
-
-  private LineAction _defaultInboundAction;
-
-  private final RoutingInstance _defaultRoutingInstance;
-
-  private NavigableSet<String> _dnsServers;
-
-  private final Map<String, FirewallFilter> _filters;
-
-  private final Map<String, AddressBook> _globalAddressBooks;
-
-  private final Set<String> _ignoredPrefixLists;
-
-  private final Map<String, IkeGateway> _ikeGateways;
-
-  private final Map<String, IkePolicy> _ikePolicies;
-
-  private final Map<String, IkeProposal> _ikeProposals;
-
-  private final Map<String, Interface> _interfaces;
-
-  private final Map<String, Zone> _interfaceZones;
-
-  private final Map<String, IpsecPolicy> _ipsecPolicies;
-
-  private final Map<String, IpsecProposal> _ipsecProposals;
-
-  private final Map<String, IpsecVpn> _ipsecVpns;
-
-  private final JuniperFamily _jf;
 
   private transient Interface _lo0;
 
   private transient boolean _lo0Initialized;
 
-  @Nullable private Nat _natDestination = null;
-
-  @Nullable private Nat _natSource = null;
-
-  @Nullable private Nat _natStatic = null;
-
   private final Map<String, NodeDevice> _nodeDevices;
-
-  private NavigableSet<String> _ntpServers;
-
-  private final Map<String, PolicyStatement> _policyStatements;
-
-  private final Map<String, PrefixList> _prefixLists;
-
-  private final Map<String, RouteFilter> _routeFilters;
-
-  private final Map<String, RoutingInstance> _routingInstances;
-
-  private NavigableSet<String> _syslogHosts;
-
-  private NavigableSet<String> _tacplusServers;
 
   private ConfigurationFormat _vendor;
 
-  private final Map<String, Vlan> _vlanNameToVlan;
+  private Map<String, LogicalSystem> _logicalSystems;
 
-  private final Map<String, Zone> _zones;
-
-  private final Map<String, AsPathGroup> _asPathGroups;
+  private LogicalSystem _masterLogicalSystem;
 
   public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
-    _applications = new TreeMap<>();
-    _applicationSets = new TreeMap<>();
-    _asPathGroups = new TreeMap<>();
-    _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
-    _defaultCrossZoneAction = LineAction.PERMIT;
-    _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
-    _dnsServers = new TreeSet<>();
-    _filters = new TreeMap<>();
-    _globalAddressBooks = new TreeMap<>();
-    _ignoredPrefixLists = new HashSet<>();
-    _ikeGateways = new TreeMap<>();
-    _ikePolicies = new TreeMap<>();
-    _ikeProposals = new TreeMap<>();
-    _interfaces = new TreeMap<>();
-    _interfaceZones = new TreeMap<>();
-    _ipsecPolicies = new TreeMap<>();
-    _ipsecProposals = new TreeMap<>();
-    _ipsecVpns = new TreeMap<>();
-    _jf = new JuniperFamily();
+    _logicalSystems = new TreeMap<>();
+    _masterLogicalSystem = new LogicalSystem("");
     _nodeDevices = new TreeMap<>();
-    _ntpServers = new TreeSet<>();
-    _prefixLists = new TreeMap<>();
-    _policyStatements = new TreeMap<>();
-    _routeFilters = new TreeMap<>();
-    _routingInstances = new TreeMap<>();
-    _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
-    _syslogHosts = new TreeSet<>();
-    _tacplusServers = new TreeSet<>();
-    _vlanNameToVlan = new TreeMap<>();
-    _zones = new TreeMap<>();
   }
 
   private NavigableMap<String, AuthenticationKeyChain> convertAuthenticationKeyChains(
@@ -314,7 +219,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     BgpProcess proc = new BgpProcess();
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
-      routerId = _defaultRoutingInstance.getRouterId();
+      routerId = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
       if (routerId == null) {
         routerId = Ip.ZERO;
       }
@@ -331,7 +236,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (mg.getLocalAs() == null) {
       Long routingInstanceAs = routingInstance.getAs();
       if (routingInstanceAs == null) {
-        routingInstanceAs = _defaultRoutingInstance.getAs();
+        routingInstanceAs = _masterLogicalSystem.getDefaultRoutingInstance().getAs();
       }
       if (routingInstanceAs == null) {
         _w.redFlag("BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system");
@@ -407,7 +312,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Check for loops in the following order:
       Integer loops =
           Stream.of(
-                  ig.getLoops(), routingInstance.getLoops(), _defaultRoutingInstance.getLoops(), 0)
+                  ig.getLoops(),
+                  routingInstance.getLoops(),
+                  _masterLogicalSystem.getDefaultRoutingInstance().getLoops(),
+                  0)
               .filter(Objects::nonNull)
               .findFirst()
               .get();
@@ -443,7 +351,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ig.getImportPolicies()
           .forEach(
               importPolicyName -> {
-                PolicyStatement importPolicy = _policyStatements.get(importPolicyName);
+                PolicyStatement importPolicy =
+                    _masterLogicalSystem.getPolicyStatements().get(importPolicyName);
                 if (importPolicy != null) {
                   setPolicyStatementReferent(importPolicyName);
                   CallExpr callPolicy = new CallExpr(importPolicyName);
@@ -487,7 +396,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ig.getExportPolicies()
           .forEach(
               exportPolicyName -> {
-                PolicyStatement exportPolicy = _policyStatements.get(exportPolicyName);
+                PolicyStatement exportPolicy =
+                    _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
                 if (exportPolicy != null) {
                   setPolicyStatementReferent(exportPolicyName);
                   CallExpr callPolicy = new CallExpr(exportPolicyName);
@@ -560,7 +470,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           }
         }
       }
-      if (localIp == null && _defaultAddressSelection) {
+      if (localIp == null && _masterLogicalSystem.getDefaultAddressSelection()) {
         initFirstLoopbackInterface();
         if (_lo0 != null) {
           InterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
@@ -629,7 +539,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
     IsisProcess.Builder newProc = IsisProcess.builder();
     newProc.setNetAddress(netAddress);
-    IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
+    IsisSettings settings = _masterLogicalSystem.getDefaultRoutingInstance().getIsisSettings();
     for (String policyName : settings.getExportPolicies()) {
       RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
       if (policy == null) {
@@ -741,7 +651,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getOspfExportPolicies()
         .forEach(
             exportPolicyName -> {
-              PolicyStatement exportPolicy = _policyStatements.get(exportPolicyName);
+              PolicyStatement exportPolicy =
+                  _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
               if (exportPolicy != null) {
                 setPolicyStatementReferent(exportPolicyName);
                 CallExpr callPolicy = new CallExpr(exportPolicyName);
@@ -858,159 +769,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _allStandardCommunities;
   }
 
-  public Map<String, BaseApplication> getApplications() {
-    return _applications;
-  }
-
-  public Map<String, JuniperAuthenticationKeyChain> getAuthenticationKeyChains() {
-    return _authenticationKeyChains;
-  }
-
-  public Map<String, CommunityList> getCommunityLists() {
-    return _communityLists;
-  }
-
-  public LineAction getDefaultCrossZoneAction() {
-    return _defaultCrossZoneAction;
-  }
-
-  public RoutingInstance getDefaultRoutingInstance() {
-    return _defaultRoutingInstance;
-  }
-
-  public NavigableSet<String> getDnsServers() {
-    return _dnsServers;
-  }
-
-  public Map<String, FirewallFilter> getFirewallFilters() {
-    return _filters;
-  }
-
-  public Map<String, AddressBook> getGlobalAddressBooks() {
-    return _globalAddressBooks;
-  }
-
-  public Interface getGlobalMasterInterface() {
-    return _defaultRoutingInstance.getGlobalMasterInterface();
-  }
-
-  @Override
-  public String getHostname() {
-    return _defaultRoutingInstance.getHostname();
-  }
-
-  public Set<String> getIgnoredPrefixLists() {
-    return _ignoredPrefixLists;
-  }
-
-  public Map<String, IkeGateway> getIkeGateways() {
-    return _ikeGateways;
-  }
-
-  public Map<String, IkePolicy> getIkePolicies() {
-    return _ikePolicies;
-  }
-
-  public Map<String, IkeProposal> getIkeProposals() {
-    return _ikeProposals;
-  }
-
-  public Map<String, Interface> getInterfaces() {
-    return _interfaces;
-  }
-
-  public Map<String, Zone> getInterfaceZones() {
-    return _interfaceZones;
-  }
-
-  public Map<String, IpsecPolicy> getIpsecPolicies() {
-    return _ipsecPolicies;
-  }
-
-  public Map<String, IpsecProposal> getIpsecProposals() {
-    return _ipsecProposals;
-  }
-
-  public Map<String, IpsecVpn> getIpsecVpns() {
-    return _ipsecVpns;
-  }
-
-  public JuniperFamily getJf() {
-    return _jf;
-  }
-
-  public Nat getNatDestination() {
-    return _natDestination;
-  }
-
-  public Nat getNatSource() {
-    return _natSource;
-  }
-
-  public Nat getNatStatic() {
-    return _natStatic;
-  }
-
-  public Nat getOrCreateNat(Nat.Type natType) {
-    switch (natType) {
-      case DESTINATION:
-        if (_natDestination == null) {
-          _natDestination = new Nat(Type.DESTINATION);
-        }
-        return _natDestination;
-      case SOURCE:
-        if (_natSource == null) {
-          _natSource = new Nat(Type.SOURCE);
-        }
-        return _natSource;
-      case STATIC:
-        if (_natStatic == null) {
-          _natStatic = new Nat(Type.STATIC);
-        }
-        return _natStatic;
-      default:
-        throw new IllegalArgumentException("Unknnown nat type " + natType);
-    }
-  }
-
   public Map<String, NodeDevice> getNodeDevices() {
     return _nodeDevices;
-  }
-
-  public NavigableSet<String> getNtpServers() {
-    return _ntpServers;
-  }
-
-  public Map<String, PolicyStatement> getPolicyStatements() {
-    return _policyStatements;
-  }
-
-  public Map<String, PrefixList> getPrefixLists() {
-    return _prefixLists;
-  }
-
-  public Map<String, RouteFilter> getRouteFilters() {
-    return _routeFilters;
-  }
-
-  public Map<String, RoutingInstance> getRoutingInstances() {
-    return _routingInstances;
-  }
-
-  public NavigableSet<String> getSyslogHosts() {
-    return _syslogHosts;
-  }
-
-  public NavigableSet<String> getTacplusServers() {
-    return _tacplusServers;
-  }
-
-  public Map<String, Vlan> getVlanNameToVlan() {
-    return _vlanNameToVlan;
-  }
-
-  public Map<String, Zone> getZones() {
-    return _zones;
   }
 
   private void initDefaultBgpExportPolicy() {
@@ -1051,7 +811,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return;
     }
     _lo0Initialized = true;
-    _lo0 = _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME);
+    _lo0 =
+        _masterLogicalSystem
+            .getDefaultRoutingInstance()
+            .getInterfaces()
+            .get(FIRST_LOOPBACK_INTERFACE_NAME);
     Pattern p = Pattern.compile("[A-Za-z0-9][A-Za-z0-9]*:lo[0-9][0-9]*\\.[0-9][0-9]*");
     if (_lo0 == null) {
       for (NodeDevice nd : _nodeDevices.values()) {
@@ -1066,7 +830,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     } else if (_lo0.getPrimaryAddress() == null) {
       Pattern q = Pattern.compile("lo[0-9][0-9]*\\.[0-9][0-9]*");
-      for (Interface iface : _defaultRoutingInstance.getInterfaces().values()) {
+      for (Interface iface :
+          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values()) {
         for (Interface unit : iface.getUnits().values()) {
           if (q.matcher(unit.getName()).matches()) {
             _lo0 = unit;
@@ -1107,25 +872,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setOspfCost(ospfCost);
   }
 
-  public void setDefaultAddressSelection(boolean defaultAddressSelection) {
-    _defaultAddressSelection = defaultAddressSelection;
-  }
-
-  public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
-    _defaultCrossZoneAction = defaultCrossZoneAction;
-  }
-
-  public void setDefaultInboundAction(LineAction defaultInboundAction) {
-    _defaultInboundAction = defaultInboundAction;
-  }
-
-  @Override
-  public void setHostname(String hostname) {
-    _defaultRoutingInstance.setHostname(hostname);
-  }
-
   private void setPolicyStatementReferent(String policyName) {
-    PolicyStatement policy = _policyStatements.get(policyName);
+    PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
     if (policy == null) {
       return;
     }
@@ -1147,10 +895,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-  }
-
-  public void setSyslogHosts(NavigableSet<String> syslogHosts) {
-    _syslogHosts = syslogHosts;
   }
 
   @Override
@@ -1269,7 +1013,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .getPolicies()
           .forEach(
               policyName -> {
-                PolicyStatement policy = _policyStatements.get(policyName);
+                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
                 if (policy != null) {
                   setPolicyStatementReferent(policyName);
                   CallExpr callPolicy = new CallExpr(policyName);
@@ -1396,7 +1140,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
-    Zone zone = _interfaceZones.get(iface.getName());
+    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
     if (zone != null) {
       // filter for interface in zone
       FirewallFilter zoneInboundInterfaceFilter =
@@ -1418,7 +1162,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (inAclName != null) {
       IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
       if (inAcl != null) {
-        FirewallFilter inFilter = _filters.get(inAclName);
+        FirewallFilter inFilter = _masterLogicalSystem.getFirewallFilters().get(inAclName);
         newIface.setIncomingFilter(inAcl);
         if (inFilter.getRoutingPolicy()) {
           RoutingPolicy routingPolicy = _c.getRoutingPolicies().get(inAclName);
@@ -1433,7 +1177,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Assume the config will need security policies only if it has zones
     IpAccessList securityPolicyAcl = null;
-    if (!_zones.isEmpty()) {
+    if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
@@ -1467,7 +1211,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
-      Vlan vlan = getVlanNameToVlan().get(iface.getAccessVlan());
+      Vlan vlan = _masterLogicalSystem.getVlanNameToVlan().get(iface.getAccessVlan());
       if (vlan != null) {
         newIface.setAccessVlan(vlan.getVlanId());
       }
@@ -1477,7 +1221,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 iface
                     .getAllowedVlanNames()
                     .stream()
-                    .map(n -> getVlanNameToVlan().get(n))
+                    .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
                     .filter(Objects::nonNull)
                     .map(Vlan::getVlanId)
                     .map(SubRange::new),
@@ -1528,7 +1272,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     /* Global policy if applicable */
-    if (_filters.get(ACL_NAME_GLOBAL_POLICY) != null) {
+    if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept lines for global policy */
       zoneAclLines.add(
           new IpAccessListLine(
@@ -1545,7 +1289,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Add catch-all line with default action */
     zoneAclLines.add(
-        new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY"));
+        new IpAccessListLine(
+            _masterLogicalSystem.getDefaultCrossZoneAction(), TrueExpr.INSTANCE, "DEFAULT_POLICY"));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
@@ -1679,7 +1424,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (zoneName != null) {
       matchSrcInterface =
           new MatchSrcInterface(
-              _zones
+              _masterLogicalSystem
+                  .getZones()
                   .get(zoneName)
                   .getInterfaces()
                   .stream()
@@ -1717,7 +1463,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
     ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getName());
-    IkeGateway ikeGateway = _ikeGateways.get(ipsecVpn.getGateway());
+    IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
 
     if (ikeGateway == null) {
       _w.redFlag(
@@ -1973,7 +1719,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             int actionLineCounter = 0;
             PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
             String routeFilterName = fromRouteFilter.getRouteFilterName();
-            RouteFilter rf = _routeFilters.get(routeFilterName);
+            RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
             for (RouteFilterLine line : rf.getLines()) {
               if (line.getThens().size() > 0) {
                 String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
@@ -2068,22 +1814,146 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    _logicalSystems
+        .keySet()
+        .stream()
+        .map(this::toVendorIndependentConfiguration)
+        .forEach(outputConfigurations::add);
+    outputConfigurations.add(toVendorIndependentConfiguration());
+    return outputConfigurations.build();
+  }
+
+  /** Creates and returns a vendor-independent configuration for the named logical-system. */
+  private Configuration toVendorIndependentConfiguration(@Nullable String logicalSystemName) {
+    JuniperConfiguration lsConfig = cloneConfiguration();
+    lsConfig.processLogicalSystemConfiguration(logicalSystemName, this);
+    return lsConfig.toVendorIndependentConfiguration();
+  }
+
+  private void processLogicalSystemConfiguration(
+      @Nonnull String logicalSystemName, @Nonnull JuniperConfiguration masterConfiguration) {
+    // Note that 'this' is the cloned configuration
+
+    LogicalSystem ls = _logicalSystems.get(logicalSystemName);
+
+    // Delete logical systems since they are no longer in scope
+    _logicalSystems.clear();
+
+    // Apply logical system settings onto cloned master
+    // TODO: review which structures are shadowed, and which replaced entirely.
+    _masterLogicalSystem.getApplications().putAll(ls.getApplications());
+    _masterLogicalSystem.getApplicationSets().putAll(ls.getApplicationSets());
+    _masterLogicalSystem.getAsPathGroups().putAll(ls.getAsPathGroups());
+    // inherited?
+    _masterLogicalSystem.getAuthenticationKeyChains().putAll(ls.getAuthenticationKeyChains());
+    _masterLogicalSystem.getCommunityLists().putAll(ls.getCommunityLists());
+    _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
+    if (ls.getDefaultCrossZoneAction() != null) {
+      _masterLogicalSystem.setDefaultCrossZoneAction(ls.getDefaultCrossZoneAction());
+    }
+    if (ls.getDefaultInboundAction() != null) {
+      _masterLogicalSystem.setDefaultInboundAction(ls.getDefaultInboundAction());
+    }
+    _masterLogicalSystem.setDefaultRoutingInstance(ls.getDefaultRoutingInstance());
+    _masterLogicalSystem.getDnsServers().clear();
+    _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
+    _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
+    _masterLogicalSystem.getGlobalAddressBooks().putAll(ls.getGlobalAddressBooks());
+    _masterLogicalSystem.getIkeGateways().clear();
+    _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
+    _masterLogicalSystem.getIkePolicies().clear();
+    _masterLogicalSystem.getIkePolicies().putAll(ls.getIkePolicies());
+    _masterLogicalSystem.getIkeProposals().clear();
+    _masterLogicalSystem.getIkeProposals().putAll(ls.getIkeProposals());
+    ls.getInterfaces()
+        .forEach(
+            (ifaceName, lsMasterIface) -> {
+              Interface masterPhysicalInterface =
+                  _masterLogicalSystem.getInterfaces().get(ifaceName);
+              if (masterPhysicalInterface == null) {
+                // the physical interface is not mentioned globally, so just copy the whole thing
+                // from the logical system
+                _masterLogicalSystem.getInterfaces().put(ifaceName, lsMasterIface);
+                return;
+              }
+              // copy units from logical system
+              masterPhysicalInterface.getUnits().putAll(lsMasterIface.getUnits());
+              // delete unassigned units
+              masterPhysicalInterface
+                  .getUnits()
+                  .keySet()
+                  .retainAll(lsMasterIface.getUnits().keySet());
+              // reset parent on copied units to master physical interface
+              masterPhysicalInterface
+                  .getUnits()
+                  .values()
+                  .forEach(unit -> unit.setParent(masterPhysicalInterface));
+            });
+    // delete unassigned interfaces
+    _masterLogicalSystem.getInterfaces().keySet().retainAll(ls.getInterfaces().keySet());
+    // TODO: review SRX logical-systems zone semantics
+    _masterLogicalSystem.getInterfaceZones().clear();
+    _masterLogicalSystem.getInterfaceZones().putAll(ls.getInterfaceZones());
+    _masterLogicalSystem.getIpsecPolicies().clear();
+    _masterLogicalSystem.getIpsecPolicies().putAll(ls.getIpsecPolicies());
+    _masterLogicalSystem.getIpsecProposals().clear();
+    _masterLogicalSystem.getIpsecProposals().putAll(ls.getIpsecProposals());
+    _masterLogicalSystem.setNatDestination(ls.getNatDestination());
+    _masterLogicalSystem.setNatSource(ls.getNatSource());
+    _masterLogicalSystem.setNatStatic(ls.getNatStatic());
+    // TODO: something with NTP servers?
+    _masterLogicalSystem.getPolicyStatements().putAll(ls.getPolicyStatements());
+    _masterLogicalSystem.getPrefixLists().putAll(ls.getPrefixLists());
+    _masterLogicalSystem.getRouteFilters().putAll(ls.getRouteFilters());
+    _masterLogicalSystem.getRoutingInstances().clear();
+    _masterLogicalSystem.getRoutingInstances().putAll(ls.getRoutingInstances());
+    // TODO: something with syslog hosts?
+    // TODO: something with tacplus servers?
+    _masterLogicalSystem.getVlanNameToVlan().clear();
+    _masterLogicalSystem.getVlanNameToVlan().putAll(ls.getVlanNameToVlan());
+    _masterLogicalSystem.getZones().clear();
+    _masterLogicalSystem.getZones().putAll(ls.getZones());
+
+    // Ensure unique hostname in case one has not been configured
+    if (getHostname() == null) {
+      setHostname(
+          computeLogicalSystemDefaultHostname(
+              masterConfiguration.getHostname(), logicalSystemName));
+    }
+  }
+
+  public static String computeLogicalSystemDefaultHostname(
+      String masterHostname, String logicalSystemName) {
+    return String.format("%s~logical_system~%s", masterHostname, logicalSystemName).toLowerCase();
+  }
+
+  private @Nonnull JuniperConfiguration cloneConfiguration() {
+    JuniperConfiguration clonedConfiguration = SerializationUtils.clone(this);
+    clonedConfiguration.setAnswerElement(getAnswerElement());
+    clonedConfiguration.setUnrecognized(getUnrecognized());
+    clonedConfiguration.setWarnings(_w);
+    return clonedConfiguration;
+  }
+
+  private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
-    _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
-    _c.setDnsServers(_dnsServers);
-    _c.setDomainName(_defaultRoutingInstance.getDomainName());
-    _c.setLoggingServers(_syslogHosts);
-    _c.setNtpServers(_ntpServers);
-    _c.setTacacsServers(_tacplusServers);
-    _c.getVendorFamily().setJuniper(_jf);
-    for (String riName : _routingInstances.keySet()) {
+    _c.setAuthenticationKeyChains(
+        convertAuthenticationKeyChains(_masterLogicalSystem.getAuthenticationKeyChains()));
+    _c.setDnsServers(_masterLogicalSystem.getDnsServers());
+    _c.setDomainName(_masterLogicalSystem.getDefaultRoutingInstance().getDomainName());
+    _c.setLoggingServers(_masterLogicalSystem.getSyslogHosts());
+    _c.setNtpServers(_masterLogicalSystem.getNtpServers());
+    _c.setTacacsServers(_masterLogicalSystem.getTacplusServers());
+    _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());
+    for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
 
     // convert prefix lists to route filter lists
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+    for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();
       PrefixList pl = e.getValue();
       RouteFilterList rfl = new RouteFilterList(name);
@@ -2098,26 +1968,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Convert AddressBooks to IpSpaces
-    _globalAddressBooks.forEach(
-        (name, addressBook) -> {
-          Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
-          _c.getIpSpaces().putAll(ipspaces);
-          ipspaces
-              .keySet()
-              .forEach(
-                  ipSpaceName ->
-                      _c.getIpSpaceMetadata()
-                          .put(
-                              ipSpaceName,
-                              new IpSpaceMetadata(
+    _masterLogicalSystem
+        .getGlobalAddressBooks()
+        .forEach(
+            (name, addressBook) -> {
+              Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
+              _c.getIpSpaces().putAll(ipspaces);
+              ipspaces
+                  .keySet()
+                  .forEach(
+                      ipSpaceName ->
+                          _c.getIpSpaceMetadata()
+                              .put(
                                   ipSpaceName,
-                                  JuniperStructureType.ADDRESS_BOOK.getDescription())));
-        });
+                                  new IpSpaceMetadata(
+                                      ipSpaceName,
+                                      JuniperStructureType.ADDRESS_BOOK.getDescription())));
+            });
 
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
     // such firewall filters
     // remove ipv6 lines from firewall filters
-    for (FirewallFilter filter : _filters.values()) {
+    for (FirewallFilter filter : _masterLogicalSystem.getFirewallFilters().values()) {
       Set<String> toRemove = new HashSet<>();
       for (Entry<String, FwTerm> e2 : filter.getTerms().entrySet()) {
         String termName = e2.getKey();
@@ -2132,17 +2004,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // remove empty firewall filters (ipv6-only filters)
-    Map<String, FirewallFilter> allFilters = new LinkedHashMap<>(_filters);
+    Map<String, FirewallFilter> allFilters =
+        new LinkedHashMap<>(_masterLogicalSystem.getFirewallFilters());
     for (Entry<String, FirewallFilter> e : allFilters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
       if (filter.getTerms().size() == 0) {
-        _filters.remove(name);
+        _masterLogicalSystem.getFirewallFilters().remove(name);
       }
     }
 
     // convert firewall filters to ipaccesslists
-    for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
+    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
       // TODO: support other filter families
@@ -2155,7 +2028,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert firewall filters implementing routing policy to RoutingPolicy
     // objects
-    for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
+    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
       if (filter.getRoutingPolicy()) {
@@ -2169,7 +2042,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert route filters to route filter lists
-    for (Entry<String, RouteFilter> e : _routeFilters.entrySet()) {
+    for (Entry<String, RouteFilter> e : _masterLogicalSystem.getRouteFilters().entrySet()) {
       String name = e.getKey();
       RouteFilter rf = e.getValue();
       if (rf.getIpv4()) {
@@ -2193,7 +2066,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert community lists
-    for (Entry<String, CommunityList> e : _communityLists.entrySet()) {
+    for (Entry<String, CommunityList> e : _masterLogicalSystem.getCommunityLists().entrySet()) {
       String name = e.getKey();
       CommunityList cl = e.getValue();
       org.batfish.datamodel.CommunityList newCl = toCommunityList(cl);
@@ -2201,7 +2074,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert policy-statements to RoutingPolicy objects
-    for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
+    for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
       String name = e.getKey();
       PolicyStatement ps = e.getValue();
       RoutingPolicy routingPolicy = toRoutingPolicy(ps);
@@ -2211,7 +2084,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert interfaces
     Map<String, Interface> interfacesToConvert = new LinkedHashMap<>();
 
-    for (Interface iface : _interfaces.values()) {
+    for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
       if (iface.get8023adInterface() != null) {
         interfacesToConvert.put(iface.getName(), iface);
       } else {
@@ -2232,13 +2105,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Vrf vrf = newUnitIface.getVrf();
       String vrfName = vrf.getName();
       vrf.getInterfaces().put(unitName, newUnitIface);
-      _routingInstances.get(vrfName).getInterfaces().put(unitName, unitIface);
+      _masterLogicalSystem
+          .getRoutingInstances()
+          .get(vrfName)
+          .getInterfaces()
+          .put(unitName, unitIface);
     }
 
     // set router-id
-    if (_defaultRoutingInstance.getRouterId() == null) {
+    if (_masterLogicalSystem.getDefaultRoutingInstance().getRouterId() == null) {
       Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME);
+          _masterLogicalSystem
+              .getDefaultRoutingInstance()
+              .getInterfaces()
+              .get(FIRST_LOOPBACK_INTERFACE_NAME);
       if (loopback0 != null) {
         Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
         if (loopback0unit0 != null) {
@@ -2246,20 +2126,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
           if (address != null) {
             // now we should set router-id
             Ip routerId = address.getIp();
-            _defaultRoutingInstance.setRouterId(routerId);
+            _masterLogicalSystem.getDefaultRoutingInstance().setRouterId(routerId);
           }
         }
       }
     }
 
     // convert IKE proposals
-    _ikeProposals
+    _masterLogicalSystem
+        .getIkeProposals()
         .values()
         .forEach(
             ikeProposal ->
                 _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
 
-    _ikeProposals
+    _masterLogicalSystem
+        .getIkeProposals()
         .values()
         .forEach(
             ikeProposal ->
@@ -2270,7 +2152,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ImmutableSortedMap.naturalOrder();
 
     // convert ike policies
-    for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
+    for (Entry<String, IkePolicy> e : _masterLogicalSystem.getIkePolicies().entrySet()) {
       String name = e.getKey();
       IkePolicy oldIkePolicy = e.getValue();
       org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
@@ -2282,7 +2164,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // convert ike gateways
-    for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
+    for (Entry<String, IkeGateway> e : _masterLogicalSystem.getIkeGateways().entrySet()) {
       String name = e.getKey();
       IkeGateway oldIkeGateway = e.getValue();
       org.batfish.datamodel.IkeGateway newIkeGateway = toIkeGateway(oldIkeGateway);
@@ -2292,17 +2174,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert ipsec proposals
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
         ImmutableSortedMap.naturalOrder();
-    _ipsecProposals.forEach(
-        (ipsecProposalName, ipsecProposal) -> {
-          _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
-          ipsecPhase2ProposalsBuilder.put(ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
-        });
+    _masterLogicalSystem
+        .getIpsecProposals()
+        .forEach(
+            (ipsecProposalName, ipsecProposal) -> {
+              _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
+              ipsecPhase2ProposalsBuilder.put(
+                  ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
+            });
     _c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // convert ipsec policies
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
-    for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
+    for (Entry<String, IpsecPolicy> e : _masterLogicalSystem.getIpsecPolicies().entrySet()) {
       String name = e.getKey();
       IpsecPolicy oldIpsecPolicy = e.getValue();
       org.batfish.datamodel.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
@@ -2314,7 +2199,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert ipsec vpns
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
-    for (Entry<String, IpsecVpn> e : _ipsecVpns.entrySet()) {
+    for (Entry<String, IpsecVpn> e : _masterLogicalSystem.getIpsecVpns().entrySet()) {
       String name = e.getKey();
       IpsecVpn oldIpsecVpn = e.getValue();
       org.batfish.datamodel.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
@@ -2328,7 +2213,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // zones
-    for (Zone zone : _zones.values()) {
+    for (Zone zone : _masterLogicalSystem.getZones().values()) {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
       if (!zone.getAddressBook().getEntries().isEmpty()) {
@@ -2346,15 +2231,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     // If there are zones, then assume we will need to support existing connection ACL
-    if (!_zones.isEmpty()) {
+    if (!_masterLogicalSystem.getZones().isEmpty()) {
       _c.getIpAccessLists().put(ACL_NAME_EXISTING_CONNECTION, ACL_EXISTING_CONNECTION);
     }
 
     // default zone behavior
-    _c.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-    _c.setDefaultInboundAction(_defaultInboundAction);
+    _c.setDefaultCrossZoneAction(_masterLogicalSystem.getDefaultCrossZoneAction());
+    _c.setDefaultInboundAction(_masterLogicalSystem.getDefaultInboundAction());
 
-    for (Entry<String, RoutingInstance> e : _routingInstances.entrySet()) {
+    for (Entry<String, RoutingInstance> e : _masterLogicalSystem.getRoutingInstances().entrySet()) {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
       Vrf vrf = _c.getVrfs().get(riName);
@@ -2435,7 +2320,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if at least one interface has an ISO address, check loopback first
       Optional<IsoAddress> isoAddress =
-          _defaultRoutingInstance
+          _masterLogicalSystem
+              .getDefaultRoutingInstance()
               .getInterfaces()
               .values()
               .stream()
@@ -2446,7 +2332,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Try all the other interfaces if no ISO address on Loopback
       if (!isoAddress.isPresent()) {
         isoAddress =
-            _defaultRoutingInstance
+            _masterLogicalSystem
+                .getDefaultRoutingInstance()
                 .getInterfaces()
                 .values()
                 .stream()
@@ -2468,26 +2355,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // destination nats
-    if (_natDestination != null) {
+    if (_masterLogicalSystem.getNatDestination() != null) {
       _w.unimplemented("Destination NAT is not currently implemented");
     }
 
     // source nats
-    if (_natSource != null) {
+    if (_masterLogicalSystem.getNatSource() != null) {
       _w.unimplemented("Source NAT is not currently implemented");
     }
 
     // static nats
-    if (_natStatic != null) {
+    if (_masterLogicalSystem.getNatStatic() != null) {
       _w.unimplemented("Static NAT is not currently implemented");
     }
 
     // mark forwarding table export policy if it exists
     String forwardingTableExportPolicyName =
-        _defaultRoutingInstance.getForwardingTableExportPolicy();
+        _masterLogicalSystem.getDefaultRoutingInstance().getForwardingTableExportPolicy();
     if (forwardingTableExportPolicyName != null) {
       PolicyStatement forwardingTableExportPolicy =
-          _policyStatements.get(forwardingTableExportPolicyName);
+          _masterLogicalSystem.getPolicyStatements().get(forwardingTableExportPolicyName);
       if (forwardingTableExportPolicy != null) {
         setPolicyStatementReferent(forwardingTableExportPolicyName);
       }
@@ -2648,7 +2535,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void warnEmptyPrefixLists() {
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+    for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();
       if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
@@ -2695,11 +2582,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return routerId;
   }
 
-  public Map<String, ApplicationSet> getApplicationSets() {
-    return _applicationSets;
+  public @Nonnull Map<String, LogicalSystem> getLogicalSystems() {
+    return _logicalSystems;
   }
 
-  public Map<String, AsPathGroup> getAsPathGroups() {
-    return _asPathGroups;
+  public LogicalSystem getMasterLogicalSystem() {
+    return _masterLogicalSystem;
+  }
+
+  @Override
+  public String getHostname() {
+    return _masterLogicalSystem.getHostname();
+  }
+
+  @Override
+  public void setHostname(String hostname) {
+    _masterLogicalSystem.setHostname(hostname);
   }
 }

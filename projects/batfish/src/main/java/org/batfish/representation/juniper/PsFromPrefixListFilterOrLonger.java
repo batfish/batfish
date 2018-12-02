@@ -26,7 +26,7 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    PrefixList pl = jc.getPrefixLists().get(_prefixList);
+    PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_prefixList);
     if (pl != null) {
       if (pl.getIpv6()) {
         return BooleanExprs.FALSE;

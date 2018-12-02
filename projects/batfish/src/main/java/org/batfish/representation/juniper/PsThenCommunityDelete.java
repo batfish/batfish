@@ -28,7 +28,8 @@ public final class PsThenCommunityDelete extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings warnings) {
-    CommunityList namedList = _configuration.getCommunityLists().get(_name);
+    CommunityList namedList =
+        _configuration.getMasterLogicalSystem().getCommunityLists().get(_name);
     if (namedList == null) {
       warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
     } else {
