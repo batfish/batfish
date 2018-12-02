@@ -3795,8 +3795,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIfi_tcp_mss(Ifi_tcp_mssContext ctx) {
     int tcpMss = toInt(ctx.size);
     _currentInterface.setTcpMss(tcpMss);
-    _w.redFlag(
-        String.format("unimplemented 'interfaces family inet tcp-mss': %s", getFullText(ctx)));
+    todo(ctx);
   }
 
   @Override
@@ -4162,10 +4161,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = unquote(ctx.name.getText());
     _configuration.referenceStructure(
         AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, ctx.getStart().getLine());
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' from clause: %s",
-            getFullText(ctx)));
+    todo(ctx);
   }
 
   @Override
@@ -4510,8 +4506,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // number. So confederation members should not make it into data model when confederation number
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
-    _w.redFlag(
-        String.format("unimplemented 'routing-options confederation': %s", getFullText(ctx)));
+    todo(ctx);
   }
 
   @Override
@@ -4538,14 +4533,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterRoa_policy(Roa_policyContext ctx) {
+  public void exitRoa_policy(Roa_policyContext ctx) {
     String name = unquote(ctx.name.getText());
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, AGGREGATE_ROUTE_POLICY, ctx.name.getStart().getLine());
     _currentAggregateRoute.setPolicy(name);
-    _w.redFlag(
-        String.format(
-            "unimplemented 'routing-options aggregate route policy': %s", getFullText(ctx)));
+    todo(ctx);
   }
 
   @Override

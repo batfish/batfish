@@ -60732,10 +60732,12 @@
           ]
         },
         "juniper_interfaces" : {
-          "Red flags" : [
+          "Parse warnings" : [
             {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'interfaces family inet tcp-mss': tcp-mss 1400"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp-mss 1400"
             }
           ]
         },
@@ -60750,11 +60752,15 @@
           ]
         },
         "juniper_policy_statement" : {
-          "Red flags" : [
+          "Parse warnings" : [
             {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: as-path-group AS_PATH_GROUP"
-            },
+              "Comment" : "This feature is not currently supported",
+              "Line" : 4,
+              "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-group AS_PATH_GROUP"
+            }
+          ],
+          "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
               "text" : "unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING"
@@ -60766,14 +60772,18 @@
           ]
         },
         "juniper_routing_options" : {
-          "Red flags" : [
+          "Parse warnings" : [
             {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'routing-options aggregate route policy': policy AGGREGATE_ROUTE_POLICY"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 8,
+              "Parser_Context" : "[roa_policy ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "policy AGGREGATE_ROUTE_POLICY"
             },
             {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'routing-options confederation': confederation 11111 members 22222"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "confederation 11111 members 22222"
             }
           ]
         },
