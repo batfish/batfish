@@ -1832,22 +1832,94 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Creates and returns a vendor-independent configuration for the named logical-system. */
   private Configuration toVendorIndependentConfiguration(@Nullable String logicalSystemName) {
-    /*
-     * 1. Clone this JuniperConfiguration
-     * 2. Inherit/remove relevant pieces from master logical system
-     * 3. Convert it as if it were any other JuniperConfiguration.
-     */
     JuniperConfiguration lsConfig = cloneConfiguration();
     lsConfig.processLogicalSystemConfiguration(logicalSystemName, this);
     return lsConfig.toVendorIndependentConfiguration();
   }
 
   private void processLogicalSystemConfiguration(
-      @Nonnull String logicalSystemName, @Nonnull JuniperConfiguration master) {
+      @Nonnull String logicalSystemName, @Nonnull JuniperConfiguration masterConfiguration) {
+    // Note that 'this' is the cloned configuration
+
+    // Ensure unique hostname in case one has not been configured
     _masterLogicalSystem
         .getDefaultRoutingInstance()
         .setHostname(
-            String.format("%s~LOGICAL_SYSTEM~%s", master.getHostname(), logicalSystemName));
+            String.format(
+                "%s~LOGICAL_SYSTEM~%s", masterConfiguration.getHostname(), logicalSystemName));
+
+    LogicalSystem ls = _logicalSystems.get(logicalSystemName);
+
+    // Delete logical systems since they are no longer in scope
+    _logicalSystems.clear();
+
+    // Apply logical system settings onto cloned master
+    // TODO: review which structures are shadowed, and which replaced entirely.
+    _masterLogicalSystem.getApplications().putAll(ls.getApplications());
+    _masterLogicalSystem.getApplicationSets().putAll(ls.getApplicationSets());
+    _masterLogicalSystem.getAsPathGroups().putAll(ls.getAsPathGroups());
+    // inherited?
+    _masterLogicalSystem.getAuthenticationKeyChains().putAll(ls.getAuthenticationKeyChains());
+    _masterLogicalSystem.getCommunityLists().putAll(ls.getCommunityLists());
+    _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
+    if (ls.getDefaultCrossZoneAction() != null) {
+      _masterLogicalSystem.setDefaultCrossZoneAction(ls.getDefaultCrossZoneAction());
+    }
+    if (ls.getDefaultInboundAction() != null) {
+      _masterLogicalSystem.setDefaultInboundAction(ls.getDefaultInboundAction());
+    }
+    _masterLogicalSystem.setDefaultRoutingInstance(ls.getDefaultRoutingInstance());
+    _masterLogicalSystem.getDnsServers().clear();
+    _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
+    _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
+    _masterLogicalSystem.getGlobalAddressBooks().putAll(ls.getGlobalAddressBooks());
+    _masterLogicalSystem.getIkeGateways().clear();
+    _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
+    _masterLogicalSystem.getIkePolicies().clear();
+    _masterLogicalSystem.getIkePolicies().putAll(ls.getIkePolicies());
+    _masterLogicalSystem.getIkeProposals().clear();
+    _masterLogicalSystem.getIkeProposals().putAll(ls.getIkeProposals());
+    ls.getInterfaces()
+        .forEach(
+            (ifaceName, lsMasterIface) -> {
+              // copy units from logical system
+              _masterLogicalSystem
+                  .getInterfaces()
+                  .get(ifaceName)
+                  .getUnits()
+                  .putAll(lsMasterIface.getUnits());
+              // delete unassigned units
+              _masterLogicalSystem
+                  .getInterfaces()
+                  .get(ifaceName)
+                  .getUnits()
+                  .keySet()
+                  .retainAll(lsMasterIface.getUnits().keySet());
+            });
+    // delete unassigned interfaces
+    _masterLogicalSystem.getInterfaces().keySet().retainAll(ls.getInterfaces().keySet());
+    // TODO: review SRX logical-systems zone semantics
+    _masterLogicalSystem.getInterfaceZones().clear();
+    _masterLogicalSystem.getInterfaceZones().putAll(ls.getInterfaceZones());
+    _masterLogicalSystem.getIpsecPolicies().clear();
+    _masterLogicalSystem.getIpsecPolicies().putAll(ls.getIpsecPolicies());
+    _masterLogicalSystem.getIpsecProposals().clear();
+    _masterLogicalSystem.getIpsecProposals().putAll(ls.getIpsecProposals());
+    _masterLogicalSystem.setNatDestination(ls.getNatDestination());
+    _masterLogicalSystem.setNatSource(ls.getNatSource());
+    _masterLogicalSystem.setNatStatic(ls.getNatStatic());
+    // TODO: something with NTP servers?
+    _masterLogicalSystem.getPolicyStatements().putAll(ls.getPolicyStatements());
+    _masterLogicalSystem.getPrefixLists().putAll(ls.getPrefixLists());
+    _masterLogicalSystem.getRouteFilters().putAll(ls.getRouteFilters());
+    _masterLogicalSystem.getRoutingInstances().clear();
+    _masterLogicalSystem.getRoutingInstances().putAll(ls.getRoutingInstances());
+    // TODO: something with syslog hosts?
+    // TODO: something with tacplus servers?
+    _masterLogicalSystem.getVlanNameToVlan().clear();
+    _masterLogicalSystem.getVlanNameToVlan().putAll(ls.getVlanNameToVlan());
+    _masterLogicalSystem.getZones().clear();
+    _masterLogicalSystem.getZones().putAll(ls.getZones());
   }
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {

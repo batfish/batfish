@@ -35,7 +35,7 @@ public class LogicalSystem implements Serializable {
 
   private LineAction _defaultInboundAction;
 
-  private final RoutingInstance _defaultRoutingInstance;
+  private RoutingInstance _defaultRoutingInstance;
 
   private NavigableSet<String> _dnsServers;
 
@@ -298,8 +298,24 @@ public class LogicalSystem implements Serializable {
     _defaultInboundAction = defaultInboundAction;
   }
 
+  public void setDefaultRoutingInstance(RoutingInstance defaultRoutingInstance) {
+    _defaultRoutingInstance = defaultRoutingInstance;
+  }
+
   public void setHostname(String hostname) {
     _defaultRoutingInstance.setHostname(hostname);
+  }
+
+  public void setNatDestination(Nat natDestination) {
+    _natDestination = natDestination;
+  }
+
+  public void setNatSource(Nat natSource) {
+    _natSource = natSource;
+  }
+
+  public void setNatStatic(Nat natStatic) {
+    _natStatic = natStatic;
   }
 
   public void setSyslogHosts(NavigableSet<String> syslogHosts) {
