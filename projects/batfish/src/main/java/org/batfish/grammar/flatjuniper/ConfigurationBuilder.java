@@ -2448,7 +2448,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterPo_as_path_group(Po_as_path_groupContext ctx) {
-    String name = ctx.name.getText();
+    String name = unquote(ctx.name.getText());
     defineStructure(AS_PATH_GROUP, name, ctx);
     _currentAsPathGroup = _configuration.getAsPathGroups().computeIfAbsent(name, AsPathGroup::new);
   }
@@ -2460,7 +2460,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPoapg_as_path(Poapg_as_pathContext ctx) {
-    String name = ctx.name.getText();
+    String name = unquote(ctx.name.getText());
     defineStructure(AS_PATH_GROUP_AS_PATH, name, ctx);
     _configuration.referenceStructure(
         AS_PATH_GROUP_AS_PATH,
