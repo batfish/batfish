@@ -152,7 +152,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
 
-  @VisibleForTesting public static final Long DEFAULT_ISIS_COST = 10L;
+  @VisibleForTesting protected static final long DEFAULT_ISIS_COST = 10L;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
@@ -573,69 +573,55 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   protected void processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
-    IsisSettings isisSettings = routingInstance.getIsisSettings();
-    Double referenceBandwidth = isisSettings == null ? null : isisSettings.getReferenceBandwidth();
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
         .forEach(
-            (ifaceName, newIface) -> {
-              Interface iface = routingInstance.getInterfaces().get(ifaceName);
-              // For Juniper, interface bandwidth can't be null because we calculate it internally
-              // based on node name (see juniper/Interface.getDefaultBandwidthByName()).
-              Long referenceBandwidthBasedMetric = null;
-              if (referenceBandwidth != null) {
-                double ifaceBandwidth = iface.getBandwidth();
-                if (ifaceBandwidth == 0) {
-                  _w.pedantic(
-                      String.format(
-                          "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is set to 0.",
-                          ifaceName));
-                } else {
-                  referenceBandwidthBasedMetric =
-                      Math.max((long) (referenceBandwidth / iface.getBandwidth()), 1);
-                }
-              }
-              newIface.setIsis(
-                  toIsisInterfaceSettings(
-                      iface.getIsisSettings(),
-                      iface.getIsoAddress(),
-                      level1,
-                      level2,
-                      referenceBandwidthBasedMetric));
-            });
+            (ifaceName, newIface) ->
+                newIface.setIsis(
+                    toIsisInterfaceSettings(
+                        routingInstance.getIsisSettings(),
+                        routingInstance.getInterfaces().get(ifaceName),
+                        level1,
+                        level2)));
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      @Nonnull IsisInterfaceSettings interfaceSettings,
-      IsoAddress isoAddress,
-      boolean level1,
-      boolean level2,
-      @Nullable Long referenceBandwidthBasedMetric) {
+      @Nullable IsisSettings settings, Interface iface, boolean level1, boolean level2) {
+    IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
     if (!interfaceSettings.getEnabled()) {
       return null;
+    }
+    // If a reference bandwidth is set, calculate default cost as (reference bandwidth) / (interface
+    // bandwidth). This will get overridden later if interface has IS-IS cost set explicitly.
+    Long defaultCost = DEFAULT_ISIS_COST;
+    if (settings != null && settings.getReferenceBandwidth() != null) {
+      if (iface.getBandwidth() == 0) {
+        _w.pedantic(
+            String.format(
+                "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is 0.",
+                iface.getName()));
+      } else {
+        defaultCost = Math.max((long) (settings.getReferenceBandwidth() / iface.getBandwidth()), 1);
+      }
     }
     org.batfish.datamodel.isis.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
         org.batfish.datamodel.isis.IsisInterfaceSettings.builder();
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(
-              interfaceSettings,
-              interfaceSettings.getLevel1Settings(),
-              referenceBandwidthBasedMetric));
+              interfaceSettings, interfaceSettings.getLevel1Settings(), defaultCost));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
           toIsisInterfaceLevelSettings(
-              interfaceSettings,
-              interfaceSettings.getLevel2Settings(),
-              referenceBandwidthBasedMetric));
+              interfaceSettings, interfaceSettings.getLevel2Settings(), defaultCost));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
             interfaceSettings.getBfdLivenessDetectionMinimumInterval())
         .setBfdLivenessDetectionMultiplier(interfaceSettings.getBfdLivenessDetectionMultiplier())
-        .setIsoAddress(isoAddress)
+        .setIsoAddress(iface.getIsoAddress())
         .setPointToPoint(interfaceSettings.getPointToPoint())
         .build();
   }
@@ -643,13 +629,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisInterfaceSettings interfaceSettings,
       IsisInterfaceLevelSettings settings,
-      @Nullable Long referenceBandwidthBasedMetric) {
-    Long metric = settings.getMetric();
-    if (metric == null) {
-      metric = firstNonNull(referenceBandwidthBasedMetric, DEFAULT_ISIS_COST);
-    }
+      long defaultCost) {
     return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
-        .setCost(metric)
+        .setCost(firstNonNull(settings.getMetric(), defaultCost))
         .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
         .setHelloAuthenticationType(settings.getHelloAuthenticationType())
         .setHelloInterval(settings.getHelloInterval())

@@ -206,7 +206,7 @@ public class JuniperConfigurationTest {
         config.getWarnings().getPedanticWarnings(),
         contains(
             new Warning(
-                "Cannot use IS-IS reference bandwidth for interface 'iface' because interface bandwidth is set to 0.",
+                "Cannot use IS-IS reference bandwidth for interface 'iface' because interface bandwidth is 0.",
                 TAG_PEDANTIC)));
   }
 }
