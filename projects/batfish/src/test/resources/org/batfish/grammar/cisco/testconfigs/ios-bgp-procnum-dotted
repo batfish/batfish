@@ -1,0 +1,6 @@
+!
+hostname ios-bgp-procnum-dotted
+!
+router bgp 62918.62741
+  neighbor 2.2.2.3 remote-as 2
+!

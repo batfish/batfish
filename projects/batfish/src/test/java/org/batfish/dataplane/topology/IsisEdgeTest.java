@@ -1,12 +1,15 @@
 package org.batfish.dataplane.topology;
 
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
+import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
 import static org.batfish.dataplane.topology.matchers.IsisEdgeMatchers.hasCircuitType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -112,5 +115,15 @@ public final class IsisEdgeTest {
     assertThat(
         isisEdgesDifferentSystemId,
         contains(ImmutableList.of(hasCircuitType(LEVEL_1_2), hasCircuitType(LEVEL_1_2))));
+  }
+
+  @Test
+  public void testLevelIntersection() {
+    assertThat(IsisEdge.intersection(), nullValue());
+    assertThat(IsisEdge.intersection(LEVEL_1), equalTo(LEVEL_1));
+    assertThat(IsisEdge.intersection(LEVEL_1, LEVEL_2), nullValue());
+    assertThat(IsisEdge.intersection(LEVEL_1, LEVEL_1_2), equalTo(LEVEL_1));
+    assertThat(IsisEdge.intersection(LEVEL_1, LEVEL_1_2, LEVEL_2), nullValue());
+    assertThat(IsisEdge.intersection(LEVEL_1, null), nullValue());
   }
 }

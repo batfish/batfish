@@ -26,7 +26,7 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    PrefixList pl = jc.getPrefixLists().get(_name);
+    PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
     if (pl != null) {
       if (pl.getIpv6()) {
         return;

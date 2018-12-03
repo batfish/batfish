@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
@@ -100,6 +101,8 @@ public class Interface implements Serializable {
   private final SortedMap<String, Interface> _units;
 
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
+
+  private Integer _tcpMss;
 
   public Interface(String name) {
     _active = true;
@@ -358,5 +361,13 @@ public class Interface implements Serializable {
 
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  public void setTcpMss(@Nullable Integer tcpMss) {
+    _tcpMss = tcpMss;
+  }
+
+  public @Nullable Integer getTcpMss() {
+    return _tcpMss;
   }
 }

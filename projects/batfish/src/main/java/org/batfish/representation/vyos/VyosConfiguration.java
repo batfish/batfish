@@ -364,7 +364,7 @@ public class VyosConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     _ipToInterfaceMap = new HashMap<>();
     _c = new Configuration(_hostname, _format);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
@@ -377,6 +377,6 @@ public class VyosConfiguration extends VendorConfiguration {
 
     // TODO: convert routing processes
 
-    return _c;
+    return ImmutableList.of(_c);
   }
 }

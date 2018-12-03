@@ -65,7 +65,7 @@ public class BgpProcess implements Serializable {
 
   private Map<String, NamedBgpPeerGroup> _peerSessions;
 
-  private final int _procnum;
+  private final long _procnum;
 
   private final Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
@@ -73,7 +73,7 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
-  public BgpProcess(ConfigurationFormat format, int procnum) {
+  public BgpProcess(ConfigurationFormat format, long procnum) {
     _afGroups = new HashMap<>();
     _aggregateNetworks = new HashMap<>();
     _aggregateIpv6Networks = new HashMap<>();
@@ -240,7 +240,7 @@ public class BgpProcess implements Serializable {
     return _peerSessions;
   }
 
-  public int getProcnum() {
+  public long getProcnum() {
     return _procnum;
   }
 
