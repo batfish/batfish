@@ -112,6 +112,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -1236,7 +1237,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
+    // treat all non-broadcast interfaces as point to point
+    newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
     return newIface;
   }
 

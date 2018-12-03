@@ -566,6 +566,7 @@ import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
+import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
@@ -4073,8 +4074,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_interface_type(Oai_interface_typeContext ctx) {
-    if (ctx.P2P() != null) {
-      _currentOspfInterface.setOspfPointToPoint(true);
+    if (ctx.NBMA() != null) {
+      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.NBMA);
+    } else if (ctx.P2MP() != null) {
+      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2MP);
+    } else if (ctx.P2MP_OVER_LAN() != null) {
+      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2MP_OVER_LAN);
+    } else if (ctx.P2P() != null) {
+      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2P);
     }
   }
 

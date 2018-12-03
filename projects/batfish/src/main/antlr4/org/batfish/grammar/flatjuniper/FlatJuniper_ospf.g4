@@ -124,6 +124,7 @@ oa_interface
       | oai_ldp_synchronization
       | oai_link_protection
       | oai_metric
+      | oai_neighbor
       | oai_null
       | oai_passive
       | oai_priority
@@ -194,7 +195,14 @@ oai_hello_interval
 
 oai_interface_type
 :
-   INTERFACE_TYPE P2P
+   INTERFACE_TYPE
+   (
+      NBMA
+      | P2MP
+      | P2MP_OVER_LAN
+      | P2P
+   )
+
 ;
 
 oai_ldp_synchronization
@@ -210,6 +218,11 @@ oai_link_protection
 oai_metric
 :
    METRIC DEC
+;
+
+oai_neighbor
+:
+   NEIGHBOR IP_ADDRESS ELIGIBLE?
 ;
 
 oai_null
