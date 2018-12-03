@@ -5,11 +5,19 @@ set system host-name nat-source
 set security nat source pool POOL1 address 10.10.10.10/24
 set security nat source pool POOL2 address 10.10.10.10 to 10.10.10.20
 #
+set security nat source rule-set RULE-SET from interface FROM-INTERFACE
+set security nat source rule-set RULE-SET from routing-instance FROM-ROUTING-INSTANCE
+set security nat source rule-set RULE-SET from zone FROM-ZONE
+#
+set security nat source rule-set RULE-SET to interface TO-INTERFACE
+set security nat source rule-set RULE-SET to routing-instance TO-ROUTING-INSTANCE
+set security nat source rule-set RULE-SET to zone TO-ZONE
+#
 set security nat source rule-set RULE-SET rule RULE1 match destination-address 1.1.1.1/24
 set security nat source rule-set RULE-SET rule RULE1 match destination-address-name NAME
 set security nat source rule-set RULE-SET rule RULE1 then source-nat off
 #
-set security nat source rule-set RULE-SET rule RULE2 match source-address 1.1.1.1/24
+set security nat source rule-set RULE-SET rule RULE2 match source-address 2.2.2.2/24
 set security nat source rule-set RULE-SET rule RULE2 match source-address-name SA-NAME
 set security nat source rule-set RULE-SET rule RULE2 then source-nat pool POOL
 #
