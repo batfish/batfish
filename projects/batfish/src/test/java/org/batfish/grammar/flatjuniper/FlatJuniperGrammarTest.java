@@ -2498,7 +2498,7 @@ public class FlatJuniperGrammarTest {
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
-    assertThat(ruleSets.keySet(), equalTo(ImmutableSet.of("RULE-SET")));
+    assertThat(ruleSets.keySet(), contains("RULE-SET"));
 
     NatRuleSet ruleSet = ruleSets.get("RULE-SET");
 
@@ -2512,7 +2512,7 @@ public class FlatJuniperGrammarTest {
 
     // test rules
     Map<String, NatRule> rules = ruleSet.getRules();
-    assertThat(rules.keySet(), equalTo(ImmutableSet.of("RULE1", "RULE2")));
+    assertThat(rules.keySet(), containsInAnyOrder("RULE1", "RULE2"));
 
     // test rule1
     NatRule rule1 = rules.get("RULE1");
@@ -2550,7 +2550,7 @@ public class FlatJuniperGrammarTest {
 
     // test pools
     Map<String, NatPool> pools = nat.getPools();
-    assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
+    assertThat(pools.keySet(), containsInAnyOrder("POOL1", "POOL2"));
 
     NatPool pool1 = pools.get("POOL1");
     Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
@@ -2563,7 +2563,7 @@ public class FlatJuniperGrammarTest {
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
-    assertThat(ruleSets.keySet(), equalTo(ImmutableSet.of("RULE-SET")));
+    assertThat(ruleSets.keySet(), contains("RULE-SET"));
 
     NatRuleSet ruleSet = ruleSets.get("RULE-SET");
 
@@ -2582,7 +2582,7 @@ public class FlatJuniperGrammarTest {
 
     // test rules
     Map<String, NatRule> rules = ruleSet.getRules();
-    assertThat(rules.keySet(), equalTo(ImmutableSet.of("RULE1", "RULE2")));
+    assertThat(rules.keySet(), containsInAnyOrder("RULE1", "RULE2"));
 
     // test rule1
     NatRule rule1 = rules.get("RULE1");
