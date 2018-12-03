@@ -202,7 +202,9 @@ ro_generate
       | IPV6_PREFIX
    )
    (
-      rog_discard
+      rog_active
+      | rog_community
+      | rog_discard
       | rog_metric
       | rog_policy
    )
@@ -367,6 +369,16 @@ rof_null
       INDIRECT_NEXT_HOP
       | INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
    ) null_filler
+;
+
+rog_active
+:
+   ACTIVE
+;
+
+rog_community
+:
+   COMMUNITY standard_community
 ;
 
 rog_discard

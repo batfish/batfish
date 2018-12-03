@@ -1,14 +1,20 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.batfish.datamodel.Prefix;
 
 public class GeneratedRoute implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private boolean _active;
+
+  private Set<Long> _communities;
 
   private Integer _metric;
 
@@ -21,6 +27,16 @@ public class GeneratedRoute implements Serializable {
   public GeneratedRoute(Prefix prefix) {
     _prefix = prefix;
     _policies = new LinkedList<>();
+    _communities = new HashSet<>();
+    _active = false;
+  }
+
+  public boolean getActive() {
+    return _active;
+  }
+
+  public Set<Long> getCommunities() {
+    return _communities;
   }
 
   public Integer getMetric() {
@@ -37,6 +53,10 @@ public class GeneratedRoute implements Serializable {
 
   public Prefix getPrefix() {
     return _prefix;
+  }
+
+  public void setActive(boolean active) {
+    _active = active;
   }
 
   public void setMetric(int metric) {

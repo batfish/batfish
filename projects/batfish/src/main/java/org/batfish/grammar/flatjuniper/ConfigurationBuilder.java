@@ -380,6 +380,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_lanContext;
@@ -4591,6 +4593,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentLogicalSystem.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, FORWARDING_TABLE_EXPORT_POLICY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitRog_active(Rog_activeContext ctx) {
+    _currentGeneratedRoute.setActive(true);
+  }
+
+  @Override
+  public void exitRog_community(Rog_communityContext ctx) {
+    _currentGeneratedRoute.getCommunities().add(toCommunityLong(ctx.standard_community()));
   }
 
   @Override
