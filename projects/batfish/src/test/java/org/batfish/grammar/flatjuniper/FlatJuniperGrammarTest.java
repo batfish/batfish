@@ -2349,6 +2349,65 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNatDestJuniperConfig() {
+    JuniperConfiguration config = parseJuniperConfig("nat-dest");
+
+    Nat nat = config.getNatDestination();
+    assertThat(nat.getType(), equalTo(Type.DESTINATION));
+
+    // test pools
+    Map<String, NatPool> pools = nat.getPools();
+    assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
+
+    NatPool pool1 = pools.get("POOL1");
+    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
+    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
+    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+
+    NatPool pool2 = pools.get("POOL2");
+    assertThat(pool2.getFromAddress(), equalTo(new Ip("10.10.10.10")));
+    assertThat(pool2.getToAddress(), equalTo(new Ip("10.10.10.20")));
+
+    // test rule sets
+    Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
+    assertThat(ruleSets.keySet(), equalTo(ImmutableSet.of("RULE-SET")));
+
+    NatRuleSet ruleSet = ruleSets.get("RULE-SET");
+
+    /*
+     * test from location lines -- it doesn't make sense to have more than one of these, but the
+     * extraction supports it.
+     */
+    assertThat(ruleSet.getFromLocation().getInterface(), equalTo("FROM-INTERFACE"));
+    assertThat(ruleSet.getFromLocation().getRoutingInstance(), equalTo("FROM-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getFromLocation().getZone(), equalTo("FROM-ZONE"));
+
+    // test rules
+    Map<String, NatRule> rules = ruleSet.getRules();
+    assertThat(rules.keySet(), equalTo(ImmutableSet.of("RULE1", "RULE2")));
+
+    // test rule1
+    NatRule rule1 = rules.get("RULE1");
+    assertThat(
+        rule1.getMatches(),
+        equalTo(
+            ImmutableList.of(
+                new NatRuleMatchDstAddr(Prefix.parse("1.1.1.1/24")),
+                new NatRuleMatchDstAddrName("NAME"))));
+    assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
+
+    // test rule2
+    NatRule rule2 = rules.get("RULE2");
+    assertThat(
+        rule2.getMatches(),
+        equalTo(
+            ImmutableList.of(
+                new NatRuleMatchDstAddr(Prefix.parse("2.2.2.2/24")),
+                new NatRuleMatchDstAddrName("DA-NAME"))));
+    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL")));
+  }
+
+  @Test
   public void testNatSource() throws IOException {
     parseConfig("nat-source");
     // TODO: finish this test after conversion of source nat to vi model
