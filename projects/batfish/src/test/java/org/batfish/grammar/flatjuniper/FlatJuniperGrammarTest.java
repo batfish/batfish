@@ -128,6 +128,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
@@ -1139,10 +1140,8 @@ public class FlatJuniperGrammarTest {
     // Should have two zones
     assertThat(c.getZones().keySet(), containsInAnyOrder(zoneTrust, zoneUntrust));
 
-    // Should have two interfaces
-    assertThat(
-        c.getAllInterfaces().keySet(),
-        containsInAnyOrder(interfaceNameTrust, interfaceNameUntrust));
+    // Should have two logical interfaces
+    assertThat(c.getAllInterfaces().keySet(), hasItems(interfaceNameTrust, interfaceNameUntrust));
 
     // Confirm the interfaces are associated with their zones
     assertThat(c.getAllInterfaces().get(interfaceNameTrust), hasZoneName(equalTo(zoneTrust)));
@@ -1442,7 +1441,7 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("interfaceMtu");
 
     /* Properly configured interfaces should be present in respective areas. */
-    assertThat(c.getAllInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
+    assertThat(c.getAllInterfaces().keySet(), hasItem("xe-0/0/0:0.0"));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
   }
 
@@ -2195,9 +2194,11 @@ public class FlatJuniperGrammarTest {
 
     // ensure interfaces have been divided appropriately
     assertThat(
-        masterConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/0.0", "xe-0/0/1.1"));
+        masterConfig.getAllInterfaces().keySet(),
+        containsInAnyOrder("xe-0/0/0", "xe-0/0/0.0", "xe-0/0/1", "xe-0/0/1.1"));
     assertThat(
-        lsConfig.getAllInterfaces().keySet(), containsInAnyOrder("xe-0/0/1.0", "xe-0/0/2.0"));
+        lsConfig.getAllInterfaces().keySet(),
+        containsInAnyOrder("xe-0/0/1", "xe-0/0/1.0", "xe-0/0/2", "xe-0/0/2.0"));
 
     // shared physical interface should have same settings on both configs
     assertThat(masterConfig.getAllInterfaces().get("xe-0/0/1.1"), hasMtu(2345));
