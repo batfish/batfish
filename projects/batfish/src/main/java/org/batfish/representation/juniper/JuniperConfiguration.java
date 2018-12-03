@@ -2466,6 +2466,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 .stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
+            /*
+             * For each interface, add it to the VI model. Since Juniper splits attributes
+             * between physical and logical (unit) interfaces, do the conversion in two steps.
+             * - Physical interface first, with physical attributes: speed, aggregation tracking, etc.
+             * - Then all units of the interface. Units have the attributes batfish
+             *   cares most about: IPs, MTUs, ACLs, etc.)
+             */
             iface -> {
               // Process parent interface
               iface.inheritUnsetFields();
@@ -2487,6 +2494,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
   }
 
+  /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
   private void resolveInterfacePointers(
       String ifaceName, Interface iface, org.batfish.datamodel.Interface viIface) {
     _c.getAllInterfaces().put(ifaceName, viIface);
