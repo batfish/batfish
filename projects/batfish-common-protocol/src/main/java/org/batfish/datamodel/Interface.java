@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -315,6 +318,57 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  /** Type of interface dependency. Informs failure analysis and bandwidth computation */
+  public enum DependencyType {
+    /** Aggregate dependency, part of one-to-many dependencies */
+    AGGREGATE,
+    /** A bind dependency, one-to-one, required for fate sharing */
+    BIND
+  }
+
+  /**
+   * Represents a directional dependency between two interfaces. Owner of this object <b>depends
+   * on</b> the interface name described by this object.
+   */
+  @ParametersAreNonnullByDefault
+  public static final class Dependency implements Serializable {
+    @Nonnull private final String _interfaceName;
+    @Nonnull private final DependencyType _type;
+    private static final long serialVersionUID = 1L;
+
+    public Dependency(String interfaceName, DependencyType type) {
+      _interfaceName = interfaceName;
+      _type = type;
+    }
+
+    @Nonnull
+    public String getInterfaceName() {
+      return _interfaceName;
+    }
+
+    @Nonnull
+    public DependencyType getType() {
+      return _type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Dependency)) {
+        return false;
+      }
+      Dependency that = (Dependency) o;
+      return Objects.equals(_interfaceName, that._interfaceName) && _type == that._type;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_interfaceName, _type.ordinal());
+    }
+  }
+
   private static final int DEFAULT_MTU = 1500;
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
@@ -607,6 +661,9 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<String> _declaredNames;
 
+  /** Set of interface dependencies required for this interface to active */
+  @Nonnull private Set<Dependency> _dependencies;
+
   private String _description;
 
   private List<Ip> _dhcpRelayAddresses;
@@ -713,6 +770,7 @@ public final class Interface extends ComparableStructure<String> {
     _allAddresses = ImmutableSortedSet.of();
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
+    _dependencies = ImmutableSet.of();
     _dhcpRelayAddresses = ImmutableList.of();
     _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
@@ -878,6 +936,13 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DECLARED_NAMES)
   public SortedSet<String> getDeclaredNames() {
     return _declaredNames;
+  }
+
+  /** Return the set of interfaces this interface depends on (see {@link Dependency}). */
+  @JsonIgnore
+  @Nonnull
+  public Set<Dependency> getDependencies() {
+    return _dependencies;
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -1242,6 +1307,18 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+  }
+
+  /** Set (overwrite) all dependencies for this interface */
+  @JsonIgnore
+  public void setDependencies(@Nonnull Collection<Dependency> dependencies) {
+    _dependencies = ImmutableSet.copyOf(dependencies);
+  }
+
+  /** Add an interface dependency to this interface */
+  public void addDependency(@Nonnull Dependency dependency) {
+    _dependencies =
+        ImmutableSet.<Dependency>builder().addAll(_dependencies).add(dependency).build();
   }
 
   @JsonProperty(PROP_DESCRIPTION)
