@@ -49320,7 +49320,38 @@
             "              FORWARDING_TABLE:'forwarding-table'",
             "              (rof_no_ecmp_fast_reroute",
             "                NO_ECMP_FAST_REROUTE:'no-ecmp-fast-reroute'))))))",
-            "    NEWLINE:'\\n\\n')",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_generate",
+            "              GENERATE:'generate'",
+            "              ROUTE:'route'",
+            "              IP_PREFIX:'10.0.1.0/24'",
+            "              (rog_community",
+            "                COMMUNITY:'community'",
+            "                (standard_community",
+            "                  (sc_literal",
+            "                    COMMUNITY_LITERAL:'2:6'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_generate",
+            "              GENERATE:'generate'",
+            "              ROUTE:'route'",
+            "              IP_PREFIX:'10.0.1.0/24'",
+            "              (rog_active",
+            "                ACTIVE:'active'))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -70163,6 +70194,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No candidates for OSPF router-id"
+            }
+          ]
+        },
+        "juniper_routing_options" : {
+          "Unimplemented features" : [
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "Active generated routes are not currently supported"
+            },
+            {
+              "tag" : "UNIMPLEMENTED",
+              "text" : "Communities for generated routes are not currently supported"
             }
           ]
         },

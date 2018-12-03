@@ -17616,6 +17616,15 @@
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 130,
+                "asPath" : [ ],
+                "discard" : false,
+                "metric" : 0,
+                "network" : "10.0.1.0/24",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              },
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 0,
                 "asPath" : [
                   [
