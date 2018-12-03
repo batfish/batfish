@@ -147,8 +147,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -223,6 +225,18 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.Nat;
+import org.batfish.representation.juniper.Nat.Type;
+import org.batfish.representation.juniper.NatPool;
+import org.batfish.representation.juniper.NatRule;
+import org.batfish.representation.juniper.NatRuleMatchDstAddr;
+import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
+import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
+import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
+import org.batfish.representation.juniper.NatRuleSet;
+import org.batfish.representation.juniper.NatRuleThenOff;
+import org.batfish.representation.juniper.NatRuleThenPool;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -273,6 +287,20 @@ public class FlatJuniperGrammarTest {
 
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname.toLowerCase());
+  }
+
+  private JuniperConfiguration parseJuniperConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    FlatJuniperCombinedParser flatJuniperParser =
+        new FlatJuniperCombinedParser(src, settings, null);
+    FlatJuniperControlPlaneExtractor extractor =
+        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(
+            flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    return (JuniperConfiguration) extractor.getVendorConfiguration();
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -2324,6 +2352,70 @@ public class FlatJuniperGrammarTest {
   public void testNatSource() throws IOException {
     parseConfig("nat-source");
     // TODO: finish this test after conversion of source nat to vi model
+  }
+
+  @Test
+  public void testNatSourceJuniperConfig() {
+    JuniperConfiguration config = parseJuniperConfig("nat-source");
+
+    Nat nat = config.getNatSource();
+    assertThat(nat.getType(), equalTo(Type.SOURCE));
+
+    // test pools
+    Map<String, NatPool> pools = nat.getPools();
+    assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
+
+    NatPool pool1 = pools.get("POOL1");
+    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
+    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
+    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+
+    NatPool pool2 = pools.get("POOL2");
+    assertThat(pool2.getFromAddress(), equalTo(new Ip("10.10.10.10")));
+    assertThat(pool2.getToAddress(), equalTo(new Ip("10.10.10.20")));
+
+    // test rule sets
+    Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
+    assertThat(ruleSets.keySet(), equalTo(ImmutableSet.of("RULE-SET")));
+
+    NatRuleSet ruleSet = ruleSets.get("RULE-SET");
+
+    /*
+     * test from location lines -- it doesn't make sense to have more than one of these, but the
+     * extraction supports it.
+     */
+    assertThat(ruleSet.getFromLocation().getInterface(), equalTo("FROM-INTERFACE"));
+    assertThat(ruleSet.getFromLocation().getRoutingInstance(), equalTo("FROM-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getFromLocation().getZone(), equalTo("FROM-ZONE"));
+
+    // test to location lines
+    assertThat(ruleSet.getToLocation().getInterface(), equalTo("TO-INTERFACE"));
+    assertThat(ruleSet.getToLocation().getRoutingInstance(), equalTo("TO-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getToLocation().getZone(), equalTo("TO-ZONE"));
+
+    // test rules
+    Map<String, NatRule> rules = ruleSet.getRules();
+    assertThat(rules.keySet(), equalTo(ImmutableSet.of("RULE1", "RULE2")));
+
+    // test rule1
+    NatRule rule1 = rules.get("RULE1");
+    assertThat(
+        rule1.getMatches(),
+        equalTo(
+            ImmutableList.of(
+                new NatRuleMatchDstAddr(Prefix.parse("1.1.1.1/24")),
+                new NatRuleMatchDstAddrName("NAME"))));
+    assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
+
+    // test rule2
+    NatRule rule2 = rules.get("RULE2");
+    assertThat(
+        rule2.getMatches(),
+        equalTo(
+            ImmutableList.of(
+                new NatRuleMatchSrcAddr(Prefix.parse("2.2.2.2/24")),
+                new NatRuleMatchSrcAddrName("SA-NAME"))));
+    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL")));
   }
 
   @Test
