@@ -1310,7 +1310,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return toLong(ctx.asn);
     }
     String[] parts = ctx.asn4b.getText().split("\\.");
-    return Long.parseLong(parts[0]) << 16 + Long.parseLong(parts[1]);
+    return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
   }
 
   private static Ip toIp(TerminalNode t) {
@@ -2480,8 +2480,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
-    if (ctx.asnum != null) {
-      long remoteAs = toLong(ctx.asnum);
+    if (ctx.bgp_asn() != null) {
+      long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);
     }
     if (ctx.mapname != null) {
@@ -3668,7 +3668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    int procNum = (ctx.procnum == null) ? 0 : toInteger(ctx.procnum);
+    long procNum = (ctx.bgp_asn() == null) ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
 
     if (_parser.getParser().isNxos()) {
@@ -4249,7 +4249,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = ctx.name.getText();
-    int procNum =
+    long procNum =
         _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
     BgpProcess proc = new BgpProcess(_format, procNum);
     currentVrf().setBgpProcess(proc);

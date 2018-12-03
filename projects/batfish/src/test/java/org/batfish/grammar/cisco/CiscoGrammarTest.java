@@ -2366,6 +2366,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpProcnum() throws IOException {
+    for (String hostname : ImmutableList.of("ios-bgp-procnum-dotted", "ios-bgp-procnum-long")) {
+      Configuration c = parseConfig(hostname);
+      assertThat(
+          hostname,
+          c.getVrfs()
+              .get(DEFAULT_VRF_NAME)
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.parse("2.2.2.3/32"))
+              .getLocalAs(),
+          equalTo(4123456789L));
+    }
+  }
+
+  @Test
   public void testBgpOriginationSpace() throws IOException {
     Configuration c = parseConfig("ios-bgp-origination-space");
 

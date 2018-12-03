@@ -26,7 +26,7 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
     Conjunction conj = new Conjunction();
     for (String conjunct : _conjuncts) {
-      PolicyStatement conjunctPs = jc.getPolicyStatements().get(conjunct);
+      PolicyStatement conjunctPs = jc.getMasterLogicalSystem().getPolicyStatements().get(conjunct);
       if (conjunctPs != null) {
         conj.getConjuncts().add(new CallExpr(conjunct));
       } else {

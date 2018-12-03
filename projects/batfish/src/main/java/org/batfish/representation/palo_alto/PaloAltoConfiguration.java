@@ -404,7 +404,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
@@ -462,7 +462,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
         PaloAltoStructureUsage.RULEBASE_SERVICE);
-    return _c;
+    return ImmutableList.of(_c);
   }
 
   /**

@@ -58,6 +58,7 @@ private void setWildcard() {
 tokens {
    ACK,
    BANG,
+   DYNAMIC_DB,
    FIN,
    ISO_ADDRESS,
    PIPE,
@@ -397,7 +398,7 @@ AS_PATH_EXPAND
 
 AS_PATH_GROUP
 :
-   'as-path-group'
+   'as-path-group' -> pushMode ( M_AsPathGroup )
 ;
 
 AS_PATH_PREPEND
@@ -717,6 +718,11 @@ COMPRESS_CONFIGURATION_FILES
 CONDITION
 :
    'condition'
+;
+
+CONFEDERATION
+:
+   'confederation'
 ;
 
 CONNECTIONS
@@ -1327,6 +1333,16 @@ FLOW
 FLOW_CONTROL
 :
    'flow-control'
+;
+
+FLOW_GATE
+:
+   'flow-gate'
+;
+
+FLOW_SESSION
+:
+   'flow-session'
 ;
 
 FORCE_UP
@@ -3256,6 +3272,11 @@ LOG_UPDOWN
    'log-updown'
 ;
 
+LOGICAL_SYSTEM
+:
+   'logical-system'
+;
+
 LOGICAL_SYSTEMS
 :
    'logical-systems'
@@ -4756,6 +4777,11 @@ SCCP
    'sccp'
 ;
 
+SCHEDULER
+:
+   'scheduler'
+;
+
 SCREEN
 :
    'screen'
@@ -4784,6 +4810,11 @@ SECRET
 SECURITY
 :
    'security'
+;
+
+SECURITY_PROFILE
+:
+   'security-profile'
 ;
 
 SECURITY_ZONE
@@ -5428,6 +5459,11 @@ UNTRUST
 UNTRUST_SCREEN
 :
    'untrust-screen'
+;
+
+UPLINK_FAILURE_DETECTION
+:
+   'uplink-failure-detection'
 ;
 
 UPTO
@@ -6152,6 +6188,62 @@ M_AsPathExpr_DOUBLE_QUOTE
 M_AsPathExpr_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_AsPathGroup;
+
+M_AsPathGroup_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+M_AsPathGroup_NAME_QUOTED
+:
+  '"' ~'"'+ '"' -> mode ( M_AsPathGroup2 )
+;
+
+M_AsPathGroup_NAME
+:
+  F_NonWhitespaceChar+ -> mode(M_AsPathGroup2)
+;
+
+mode M_AsPathGroup2;
+
+M_AsPathGroup2_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+M_AsPathGroup2_NEWLINE
+:
+  F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_AsPathGroup2_AS_PATH
+:
+   'as-path' -> type(AS_PATH), mode(M_AsPathGroup3)
+;
+
+M_AsPathGroup2_DYNAMIC_DB
+:
+  'dynamic-db' -> type(DYNAMIC_DB), popMode
+;
+
+mode M_AsPathGroup3;
+
+M_AsPathGroup3_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+M_AsPathGroup3_NAME_QUOTED
+:
+  '"' ~'"'+ '"' -> mode (M_AsPathRegex)
+;
+
+M_AsPathGroup3_NAME
+:
+  F_NonWhitespaceChar+ -> mode(M_AsPathRegex)
 ;
 
 mode M_AsPathPrepend;
