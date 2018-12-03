@@ -80,8 +80,9 @@ public class FilterChangeAnswerer extends Answerer {
         return PERMIT;
       case PERMIT:
         return DENY;
+      default:
+        throw new BatfishException("Unexpected line aaction " + action);
     }
-    throw new BatfishException("Unexpected line aaction " + action);
   }
 
   private static String lineActionToSearchFiltersTypeString(LineAction action) {
@@ -90,7 +91,8 @@ public class FilterChangeAnswerer extends Answerer {
         return "deny";
       case PERMIT:
         return "permit";
+      default:
+        throw new BatfishException("Unexpected line action " + action);
     }
-    throw new BatfishException("Unexpected line action " + action);
   }
 }

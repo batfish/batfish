@@ -10,8 +10,8 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
 
 /**
- * A question that checks whether an ACL change achieved the intended goal and did not cause any
- * collateral damage.
+ * A question that checks whether an ACL change was necessary, achieved the intended goal, and did
+ * not cause any collateral damage.
  */
 public class FilterChangeQuestion extends Question {
 
