@@ -2480,7 +2480,7 @@ public class FlatJuniperGrammarTest {
   public void testNatDestJuniperConfig() {
     JuniperConfiguration config = parseJuniperConfig("nat-dest");
 
-    Nat nat = config.getNatDestination();
+    Nat nat = config.getMasterLogicalSystem().getNatDestination();
     assertThat(nat.getType(), equalTo(Type.DESTINATION));
 
     // test pools
@@ -2545,7 +2545,7 @@ public class FlatJuniperGrammarTest {
   public void testNatSourceJuniperConfig() {
     JuniperConfiguration config = parseJuniperConfig("nat-source");
 
-    Nat nat = config.getNatSource();
+    Nat nat = config.getMasterLogicalSystem().getNatSource();
     assertThat(nat.getType(), equalTo(Type.SOURCE));
 
     // test pools
