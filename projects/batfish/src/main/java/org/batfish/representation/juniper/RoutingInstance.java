@@ -27,6 +27,8 @@ public class RoutingInstance implements Serializable {
 
   @Nullable private Long _as;
 
+  private AggregateRoute _aggregateRouteDefaults;
+
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
 
   private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
@@ -38,6 +40,8 @@ public class RoutingInstance implements Serializable {
   private boolean _exportLocalRoutesPointToPoint;
 
   private String _forwardingTableExportPolicy;
+
+  private GeneratedRoute _generatedRouteDefaults;
 
   private final Interface _globalMasterInterface;
 
@@ -78,9 +82,11 @@ public class RoutingInstance implements Serializable {
   private Set<Long> _confederationMembers;
 
   public RoutingInstance(String name) {
+    _aggregateRouteDefaults = initAggregateRouteDefaults();
     _confederationMembers = new TreeSet<>();
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();
+    _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
@@ -266,5 +272,32 @@ public class RoutingInstance implements Serializable {
 
   public @Nonnull Set<Long> getConfederationMembers() {
     return _confederationMembers;
+  }
+
+  public AggregateRoute getAggregateRouteDefaults() {
+    return _aggregateRouteDefaults;
+  }
+
+  public GeneratedRoute getGeneratedRouteDefaults() {
+    return _generatedRouteDefaults;
+  }
+
+  private void initAbstractAggregateRouteDefaults(AbstractAggregateRoute route) {
+    route.setActive(true);
+    route.setAsPath(null);
+    route.setMetric(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_COST);
+    route.setPreference(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_PREFERENCE);
+  }
+
+  private AggregateRoute initAggregateRouteDefaults() {
+    AggregateRoute route = new AggregateRoute(Prefix.ZERO);
+    initAbstractAggregateRouteDefaults(route);
+    return route;
+  }
+
+  private GeneratedRoute initGeneratedRouteDefaults() {
+    GeneratedRoute route = new GeneratedRoute(Prefix.ZERO);
+    initAbstractAggregateRouteDefaults(route);
+    return route;
   }
 }
