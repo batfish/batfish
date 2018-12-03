@@ -70202,10 +70202,6 @@
             {
               "tag" : "UNIMPLEMENTED",
               "text" : "Active generated routes are not currently supported"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "Communities for generated routes are not currently supported"
             }
           ]
         },

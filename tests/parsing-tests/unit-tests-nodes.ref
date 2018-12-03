@@ -17618,6 +17618,9 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [ ],
+                "communities" : [
+                  131078
+                ],
                 "discard" : false,
                 "metric" : 0,
                 "network" : "10.0.1.0/24",
