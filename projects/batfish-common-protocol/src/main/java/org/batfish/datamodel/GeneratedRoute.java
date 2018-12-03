@@ -6,11 +6,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.CommonUtil;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {
@@ -20,6 +24,8 @@ public final class GeneratedRoute extends AbstractRoute {
     @Nullable private AsPath _asPath;
 
     private String _attributePolicy;
+
+    private SortedSet<Long> _communities;
 
     private boolean _discard;
 
@@ -39,6 +45,7 @@ public final class GeneratedRoute extends AbstractRoute {
           getNextHopIp(),
           _asPath,
           _attributePolicy,
+          _communities,
           _discard,
           _generationPolicy,
           getMetric(),
@@ -59,6 +66,7 @@ public final class GeneratedRoute extends AbstractRoute {
           // GeneratedRoute properties
           .setAsPath(route.getAsPath())
           .setAttributePolicy(route.getAttributePolicy())
+          .setCommunities(route.getCommunities())
           .setDiscard(route.getDiscard())
           .setGenerationPolicy(route.getGenerationPolicy())
           .setNextHopInterface(route.getNextHopInterface());
@@ -71,6 +79,11 @@ public final class GeneratedRoute extends AbstractRoute {
 
     public Builder setAttributePolicy(String attributePolicy) {
       _attributePolicy = attributePolicy;
+      return this;
+    }
+
+    public Builder setCommunities(Set<Long> communities) {
+      _communities = new TreeSet<>(communities);
       return this;
     }
 
@@ -96,6 +109,8 @@ public final class GeneratedRoute extends AbstractRoute {
 
   private static final String PROP_ATTRIBUTE_POLICY_SOURCES = "attributePolicySources";
 
+  private static final String PROP_COMMUNITIES = "communities";
+
   private static final String PROP_DISCARD = "discard";
 
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
@@ -113,6 +128,8 @@ public final class GeneratedRoute extends AbstractRoute {
   private final String _attributePolicy;
 
   private SortedSet<String> _attributePolicySources;
+
+  @Nonnull private final SortedSet<Long> _communities;
 
   private final boolean _discard;
 
@@ -133,6 +150,7 @@ public final class GeneratedRoute extends AbstractRoute {
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
+      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
       @JsonProperty(PROP_METRIC) Long metric,
@@ -142,6 +160,7 @@ public final class GeneratedRoute extends AbstractRoute {
     _asPath = asPath;
     _attributePolicy = attributePolicy;
     _attributePolicySources = Collections.emptySortedSet();
+    _communities = firstNonNull(communities, ImmutableSortedSet.of());
     _discard = discard;
     _generationPolicy = generationPolicy;
     _generationPolicySources = Collections.emptySortedSet();
@@ -183,6 +202,13 @@ public final class GeneratedRoute extends AbstractRoute {
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
   public SortedSet<String> getAttributePolicySources() {
     return _attributePolicySources;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_COMMUNITIES)
+  @JsonPropertyDescription("The communities attached to this route")
+  public SortedSet<Long> getCommunities() {
+    return _communities;
   }
 
   @JsonProperty(PROP_DISCARD)
@@ -245,6 +271,8 @@ public final class GeneratedRoute extends AbstractRoute {
         + _asPath
         + " attributePolicy:"
         + _attributePolicy
+        + " communities:"
+        + _communities
         + " discard:"
         + _discard
         + " generationPolicy:"
@@ -283,6 +311,10 @@ public final class GeneratedRoute extends AbstractRoute {
     } else {
       ret = _attributePolicy.compareTo(castRhs._attributePolicy);
     }
+    if (ret != 0) {
+      return ret;
+    }
+    ret = CommonUtil.compareCollection(_communities, castRhs._communities);
     if (ret != 0) {
       return ret;
     }

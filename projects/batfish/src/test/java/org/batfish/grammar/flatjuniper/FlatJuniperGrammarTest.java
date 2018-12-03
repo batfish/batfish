@@ -147,6 +147,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
@@ -162,6 +163,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -1155,6 +1157,22 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testGeneratedRouteCommunities() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/generated-route-communities")
+            .get("generated-route-communities");
+    assertThat(
+        config
+            .getDefaultVrf()
+            .getGeneratedRoutes()
+            .stream()
+            .map(GeneratedRoute::getCommunities)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(ImmutableSortedSet.of(65537L))));
   }
 
   @Test

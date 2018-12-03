@@ -1025,6 +1025,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.GeneratedRoute.Builder();
     newRoute.setNetwork(prefix);
     newRoute.setAdmin(administrativeCost);
+    newRoute.setCommunities(route.getCommunities());
     newRoute.setMetric(metric);
     newRoute.setGenerationPolicy(generationPolicyName);
     return newRoute.build();
@@ -2301,16 +2302,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .anyMatch(r -> r.getActive());
       if (generatedRouteActive) {
         _w.unimplemented("Active generated routes are not currently supported");
-      }
-      boolean generatedRouteWithCommunities =
-          ri.getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getGeneratedRoutes()
-              .values()
-              .stream()
-              .anyMatch(r -> !r.getCommunities().isEmpty());
-      if (generatedRouteWithCommunities) {
-        _w.unimplemented("Communities for generated routes are not currently supported");
       }
       // generated routes
       for (GeneratedRoute route :
