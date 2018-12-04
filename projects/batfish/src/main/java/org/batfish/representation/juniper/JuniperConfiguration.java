@@ -1185,7 +1185,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     //newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
-    newIface.setPreSourceNatOutgoingFilter(buildPreSourceNatOutgoingFilter(iface, securityPolicyAcl));
+
+    String securityAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
+    _c.getIpAccessLists().put(securityAclName, securityPolicyAcl);
+    newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
     // Set<Prefix> allPrefixes = iface.getAllAddresses();
@@ -1310,20 +1313,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     String securityAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
 
-    IpAccessList securityAcl =
-        IpAccessList.builder()
-            .setName(securityAclName)
-            .setLines(
-                ImmutableList.of(
-                    new IpAccessListLine(
-                        LineAction.PERMIT,
-                        new AndMatchExpr(
-                            ImmutableSet.of(
-                                new PermittedByAcl(securityPolicyAcl.getName(), false))),
-                        "PERMIT")))
-            .build();
-    _c.getIpAccessLists().put(securityAclName, securityAcl);
-    return securityAcl;
+    _c.getIpAccessLists().put(securityAclName, securityPolicyAcl);
+    return securityPolicyAcl;
   }
 
   /** Generate outgoing filter for the interface (from existing outgoing filter and zone policy) */
