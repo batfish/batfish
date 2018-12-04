@@ -1082,6 +1082,26 @@ load("@opentracing_util//:rules.bzl", "opentracing_util_compile")
 
 opentracing_util_compile()
 
+# parboiled
+maven_repository(
+    name = "parboiled",
+    transitive_deps = [
+        "c01b6798f81b0fc2c5faa70cbe468c275d4b50c7:org.ow2.asm:asm:6.2.1",
+        "e8b876c5ccf226cae2f44ed2c436ad3407d0ec1d:org.ow2.asm:asm-analysis:6.2.1",
+        "332b022092ecec53cdb6272dc436884b2d940615:org.ow2.asm:asm-tree:6.2.1",
+        "400d664d7c92a659d988c00cb65150d1b30cf339:org.ow2.asm:asm-util:6.2.1",
+        "edc6c90a0d10c3f42abb23e18d8f726f841b5a5e:org.parboiled:parboiled-core:1.2.0",
+        "127d030ff94e3bd3244a1ddf31c1dfe9c3edcbad:org.parboiled:parboiled-java:1.2.0",
+    ],
+    deps = [
+        "org.parboiled:parboiled-java:1.2.0",
+    ],
+)
+
+load("@parboiled//:rules.bzl", "parboiled_compile")
+
+parboiled_compile()
+
 # scala_library
 maven_repository(
     name = "scala_library",
