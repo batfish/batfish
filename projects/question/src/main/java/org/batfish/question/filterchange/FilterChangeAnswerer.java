@@ -22,6 +22,11 @@ public class FilterChangeAnswerer extends Answerer {
 
   @Override
   public FilterChangeAnswerElement answer() {
+    return answerDiff();
+  }
+
+  @Override
+  public FilterChangeAnswerElement answerDiff() {
     FilterChangeQuestion question = (FilterChangeQuestion) _question;
 
     String filters = question.getFilterSpecifierInput();

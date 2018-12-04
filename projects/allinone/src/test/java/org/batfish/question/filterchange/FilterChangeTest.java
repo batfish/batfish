@@ -228,6 +228,6 @@ public class FilterChangeTest {
 
   private FilterChangeAnswerElement answer(FilterChangeQuestion q) {
     FilterChangeAnswerer answerer = new FilterChangeAnswerer(q, _batfish);
-    return answerer.answer();
+    return answerer.answerDiff();
   }
 }
