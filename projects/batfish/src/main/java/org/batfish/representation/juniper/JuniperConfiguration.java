@@ -942,7 +942,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private @Nullable String computeGenerationPolicy(AbstractAggregateRoute route) {
-    // early exit for passive routes
+    // passive means it is installed whether or not there is a more specific route; active means the
+    // more specific route must be present, and policy should also be checked if present.
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/active-edit-routing-options.html
+
     if (!route.getActive()) {
       return null;
     }

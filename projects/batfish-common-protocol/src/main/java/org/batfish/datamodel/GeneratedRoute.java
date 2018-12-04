@@ -11,7 +11,6 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
@@ -83,7 +82,7 @@ public final class GeneratedRoute extends AbstractRoute {
     }
 
     public Builder setCommunities(Set<Long> communities) {
-      _communities = new TreeSet<>(communities);
+      _communities = ImmutableSortedSet.copyOf(communities);
       return this;
     }
 
