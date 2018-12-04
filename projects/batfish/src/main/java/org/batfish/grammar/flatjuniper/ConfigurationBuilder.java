@@ -4100,7 +4100,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_interface_type(Oai_interface_typeContext ctx) {
-    _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
+    OspfInterfaceType type = toOspfInterfaceType(ctx.type);
+    if (type != null) {
+      _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
+    }
   }
 
   @Override
