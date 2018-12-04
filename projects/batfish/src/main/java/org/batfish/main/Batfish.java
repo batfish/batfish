@@ -2390,6 +2390,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Populate aggregated interfaces with members referring to them. */
     interfaces.forEach(
         (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
+    /*
+     * For aggregated logical interfaces, copy port channel group members
+     * from the parent aggregated interfaces
+     */
+    interfaces
+        .values()
+        .stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
+        .filter(iface -> !iface.getDependencies().isEmpty())
+        .forEach(
+            iface ->
+                iface.setChannelGroupMembers(
+                    iface
+                        .getDependencies()
+                        .stream()
+                        .flatMap(
+                            dependency ->
+                                interfaces
+                                    .get(dependency.getInterfaceName())
+                                    .getChannelGroupMembers()
+                                    .stream())
+                        .collect(ImmutableSet.toImmutableSet())));
 
     /* Disable aggregated interfaces with no members. */
     interfaces
