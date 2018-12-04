@@ -1100,6 +1100,11 @@ EKSHELL
    'ekshell'
 ;
 
+ELIGIBLE
+:
+   'eligible'
+;
+
 ENABLE
 :
    'enable'
@@ -3612,6 +3617,11 @@ NATIVE_VLAN_ID
    'native-vlan-id'
 ;
 
+NBMA
+:
+   'nbma'
+;
+
 NEAREST
 :
    'nearest'
@@ -3990,6 +4000,16 @@ OVERRIDE_METRIC
 OVERRIDES
 :
    'overrides'
+;
+
+P2MP
+:
+   'p2mp'
+;
+
+P2MP_OVER_LAN
+:
+   'p2mp-over-lan'
 ;
 
 P2P

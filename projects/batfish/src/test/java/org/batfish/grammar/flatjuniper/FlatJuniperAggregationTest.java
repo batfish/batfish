@@ -1,6 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -33,7 +33,10 @@ public class FlatJuniperAggregationTest {
     Topology t = batfish.getEnvironmentTopology();
     assertThat(
         t.getEdges(),
-        contains(Edge.of("ae1", "ae1.0", "ae2", "ae2.0"), Edge.of("ae2", "ae2.0", "ae1", "ae1.0")));
-    // TODO: this should contain ae1.1<-->ae2.1 links also, but those are not supported yet.
+        containsInAnyOrder(
+            Edge.of("ae1", "ae1.0", "ae2", "ae2.0"),
+            Edge.of("ae2", "ae2.0", "ae1", "ae1.0"),
+            Edge.of("ae1", "ae1.1", "ae2", "ae2.1"),
+            Edge.of("ae2", "ae2.1", "ae1", "ae1.1")));
   }
 }

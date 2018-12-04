@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -50,6 +51,8 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -112,6 +115,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -138,16 +142,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       ACL_NAME_EXISTING_CONNECTION)))
           .build();
 
-  private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
-
-  private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
-
   private static final BgpAuthenticationAlgorithm DEFAULT_BGP_AUTHENTICATION_ALGORITHM =
       BgpAuthenticationAlgorithm.HMAC_SHA_1_96;
 
   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_EXPORT_POLICY~";
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
+
+  @VisibleForTesting static final long DEFAULT_ISIS_COST = 10L;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
@@ -565,51 +567,68 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newProc.build();
   }
 
-  private void processIsisInterfaceSettings(
+  @VisibleForTesting
+  void processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
         .forEach(
-            (ifaceName, newIface) -> {
-              Interface iface = routingInstance.getInterfaces().get(ifaceName);
-              newIface.setIsis(
-                  toIsisInterfaceSettings(
-                      iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
-            });
+            (ifaceName, newIface) ->
+                newIface.setIsis(
+                    toIsisInterfaceSettings(
+                        routingInstance.getIsisSettings(),
+                        routingInstance.getInterfaces().get(ifaceName),
+                        level1,
+                        level2)));
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      @Nonnull IsisInterfaceSettings interfaceSettings,
-      IsoAddress isoAddress,
-      boolean level1,
-      boolean level2) {
+      @Nonnull IsisSettings settings, Interface iface, boolean level1, boolean level2) {
+    IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
     if (!interfaceSettings.getEnabled()) {
       return null;
+    }
+    // If a reference bandwidth is set, calculate default cost as (reference bandwidth) / (interface
+    // bandwidth). This will get overridden later if IS-IS level settings have cost set explicitly.
+    long defaultCost = DEFAULT_ISIS_COST;
+    if (settings.getReferenceBandwidth() != null) {
+      if (iface.getBandwidth() == 0) {
+        _w.pedantic(
+            String.format(
+                "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is 0.",
+                iface.getName()));
+      } else {
+        defaultCost = Math.max((long) (settings.getReferenceBandwidth() / iface.getBandwidth()), 1);
+      }
     }
     org.batfish.datamodel.isis.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
         org.batfish.datamodel.isis.IsisInterfaceSettings.builder();
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
-          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel1Settings()));
+          toIsisInterfaceLevelSettings(
+              interfaceSettings, interfaceSettings.getLevel1Settings(), defaultCost));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
-          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel2Settings()));
+          toIsisInterfaceLevelSettings(
+              interfaceSettings, interfaceSettings.getLevel2Settings(), defaultCost));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
             interfaceSettings.getBfdLivenessDetectionMinimumInterval())
         .setBfdLivenessDetectionMultiplier(interfaceSettings.getBfdLivenessDetectionMultiplier())
-        .setIsoAddress(isoAddress)
+        .setIsoAddress(iface.getIsoAddress())
         .setPointToPoint(interfaceSettings.getPointToPoint())
         .build();
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
-      IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
+      IsisInterfaceSettings interfaceSettings,
+      IsisInterfaceLevelSettings settings,
+      long defaultCost) {
     return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
-        .setCost(settings.getMetric())
+        .setCost(firstNonNull(settings.getMetric(), defaultCost))
         .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
         .setHelloAuthenticationType(settings.getHelloAuthenticationType())
         .setHelloInterval(settings.getHelloInterval())
@@ -902,37 +921,127 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
-  private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
-    Prefix prefix = route.getPrefix();
-    int prefixLength = prefix.getPrefixLength();
-    int administrativeCost = route.getMetric();
-    String policyNameSuffix = route.getPrefix().toString().replace('/', '_').replace('.', '_');
-    String policyName = "~AGGREGATE_" + policyNameSuffix + "~";
-    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
-    If routingPolicyConditional = new If();
-    routingPolicy.getStatements().add(routingPolicyConditional);
-    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-    String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
-    MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
-    routingPolicyConditional.setGuard(isContributingRoute);
-    RouteFilterList rfList = new RouteFilterList(rflName);
-    rfList.addLine(
-        new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
+  private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
         new org.batfish.datamodel.GeneratedRoute.Builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(administrativeCost);
-    newRoute.setDiscard(true);
-    newRoute.setGenerationPolicy(policyName);
+
+    newRoute.setGenerationPolicy(computeGenerationPolicy(route));
+    newRoute.setAdmin(route.getPreference());
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    _c.getRoutingPolicies().put(policyName, routingPolicy);
-    _c.getRouteFilterLists().put(rflName, rfList);
+    newRoute.setCommunities(route.getCommunities());
+    newRoute.setMetric(route.getMetric());
+    newRoute.setNetwork(route.getPrefix());
+    if (route.getTag() != null) {
+      newRoute.setTag(route.getTag());
+    }
+
     return newRoute.build();
+  }
+
+  private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
+    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+        new org.batfish.datamodel.GeneratedRoute.Builder();
+
+    newRoute.setGenerationPolicy(computeGenerationPolicy(route));
+    newRoute.setAdmin(route.getPreference());
+    if (route.getAsPath() != null) {
+      newRoute.setAsPath(route.getAsPath());
+    }
+    newRoute.setCommunities(route.getCommunities());
+    newRoute.setMetric(route.getMetric());
+    newRoute.setNetwork(route.getPrefix());
+    if (route.getTag() != null) {
+      newRoute.setTag(route.getTag());
+    }
+
+    // sole semantic difference from generated route
+    newRoute.setDiscard(true);
+
+    return newRoute.build();
+  }
+
+  private @Nullable String computeGenerationPolicy(AbstractAggregateRoute route) {
+    // passive means it is installed whether or not there is a more specific route; active means the
+    // more specific route must be present, and policy should also be checked if present.
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/active-edit-routing-options.html
+
+    if (!route.getActive()) {
+      return null;
+    }
+    Prefix prefix = route.getPrefix();
+    String generationPolicyName = computeRouteGenerationPolicyName(route);
+    RoutingPolicy generationPolicy = new RoutingPolicy(generationPolicyName, _c);
+    _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
+
+    // route filter list to match more specific contributing route
+    String rflName = computeContributorRouteFilterListName(prefix);
+    MatchPrefixSet isContributingRoute =
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
+    RouteFilterList rfList = new RouteFilterList(rflName);
+    rfList.addLine(
+        new org.batfish.datamodel.RouteFilterLine(
+            LineAction.PERMIT,
+            prefix,
+            new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)));
+    _c.getRouteFilterLists().put(rflName, rfList);
+
+    // contributor check that exits for non-contributing routes
+    If contributorCheck = new If();
+    contributorCheck.setGuard(isContributingRoute);
+    contributorCheck.setFalseStatements(
+        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    generationPolicy.getStatements().add(contributorCheck);
+
+    // add named policies if present
+    if (!route.getPolicies().isEmpty()) {
+      If namedPoliciesCheck = new If();
+      Disjunction matchSomeNamedPolicy = new Disjunction();
+      namedPoliciesCheck.setGuard(matchSomeNamedPolicy);
+      namedPoliciesCheck.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
+      namedPoliciesCheck.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
+      generationPolicy.getStatements().add(namedPoliciesCheck);
+      route
+          .getPolicies()
+          .forEach(
+              policyName -> {
+                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
+                boolean defined = policy != null;
+                if (defined) {
+                  setPolicyStatementReferent(policyName);
+                  CallExpr callPolicy = new CallExpr(policyName);
+                  matchSomeNamedPolicy.getDisjuncts().add(callPolicy);
+                } else {
+                  matchSomeNamedPolicy.setComment(
+                      String.format(
+                          "%s%sUndefined reference to: %s",
+                          defined ? matchSomeNamedPolicy.getComment() : "",
+                          defined ? "\n" : "",
+                          policyName));
+                }
+              });
+    }
+    return generationPolicyName;
+  }
+
+  public static String computeContributorRouteFilterListName(Prefix prefix) {
+    return String.format("~CONTRIBUTOR_TO_%s~", prefix);
+  }
+
+  private static String computeRouteGenerationPolicyName(AbstractAggregateRoute route) {
+    Prefix prefix = route.getPrefix();
+    return route instanceof AggregateRoute
+        ? computeAggregatedRouteGenerationPolicyName(prefix)
+        : computeGeneratedRouteGenerationPolicyName(prefix);
+  }
+
+  public static String computeAggregatedRouteGenerationPolicyName(Prefix prefix) {
+    return String.format("~AGGREGATE_ROUTE_POLICY:%s~", prefix);
+  }
+
+  public static String computeGeneratedRouteGenerationPolicyName(Prefix prefix) {
+    return String.format("~GENERATED_ROUTE_POLICY:%s~", prefix);
   }
 
   private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
@@ -982,52 +1091,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     org.batfish.datamodel.CommunityList newCl =
         new org.batfish.datamodel.CommunityList(name, newLines, cl.getInvertMatch());
     return newCl;
-  }
-
-  private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
-    Prefix prefix = route.getPrefix();
-    Integer administrativeCost = route.getPreference();
-    if (administrativeCost == null) {
-      administrativeCost = DEFAULT_AGGREGATE_ROUTE_PREFERENCE;
-    }
-    Integer metric = route.getMetric();
-    if (metric == null) {
-      metric = DEFAULT_AGGREGATE_ROUTE_COST;
-    }
-    String generationPolicyName = null;
-    if (!route.getPolicies().isEmpty()) {
-      generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix + "~";
-      RoutingPolicy generationPolicy = new RoutingPolicy(generationPolicyName, _c);
-      _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
-      If generationPolicyConditional = new If();
-      Disjunction matchSomeGenerationPolicy = new Disjunction();
-      generationPolicyConditional.setGuard(matchSomeGenerationPolicy);
-      generationPolicyConditional
-          .getTrueStatements()
-          .add(Statements.ExitAccept.toStaticStatement());
-      generationPolicyConditional
-          .getFalseStatements()
-          .add(Statements.ExitReject.toStaticStatement());
-      generationPolicy.getStatements().add(generationPolicyConditional);
-      route
-          .getPolicies()
-          .forEach(
-              policyName -> {
-                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
-                if (policy != null) {
-                  setPolicyStatementReferent(policyName);
-                  CallExpr callPolicy = new CallExpr(policyName);
-                  matchSomeGenerationPolicy.getDisjuncts().add(callPolicy);
-                }
-              });
-    }
-    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(administrativeCost);
-    newRoute.setMetric(metric);
-    newRoute.setGenerationPolicy(generationPolicyName);
-    return newRoute.build();
   }
 
   private org.batfish.datamodel.IkeGateway toIkeGateway(IkeGateway oldIkeGateway) {
@@ -1128,6 +1191,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ikePhase1Proposal;
   }
 
+  /**
+   * Convert a non-unit interface to the VI {@link org.batfish.datamodel.Interface}.
+   *
+   * <p>Note that bulk of the configuration is stored at the logical interface level, see {@link
+   * #toInterface(Interface)} for those conversions. Here we convert aggregation and bandwidth
+   * settings; track VRF membership.
+   */
+  private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
+    String name = iface.getName();
+    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    newIface.setDeclaredNames(ImmutableSortedSet.of(name));
+    newIface.setDescription(iface.getDescription());
+
+    // 802.3ad link aggregation
+    if (iface.get8023adInterface() != null) {
+      newIface.setChannelGroup(iface.get8023adInterface());
+      newIface.addDependency(new Dependency(iface.get8023adInterface(), DependencyType.AGGREGATE));
+    }
+
+    newIface.setBandwidth(iface.getBandwidth());
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    return newIface;
+  }
+
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
@@ -1203,12 +1290,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // }
     // newIface.getAllAddresses().addAll(allPrefixes);
 
-    // 802.3ad link aggregation
-    if (iface.get8023adInterface() != null) {
-      // TODO: support interface-interface bindings at the physical, rather than logical, level
-      newIface.setChannelGroup(iface.get8023adInterface() + ".0");
-    }
-
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
     }
@@ -1240,7 +1321,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
+    // treat all non-broadcast interfaces as point to point
+    newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
     return newIface;
   }
 
@@ -2102,35 +2184,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // convert interfaces
-    Map<String, Interface> interfacesToConvert = new LinkedHashMap<>();
-
-    for (Interface iface : _masterLogicalSystem.getInterfaces().values()) {
-      if (iface.get8023adInterface() != null) {
-        interfacesToConvert.put(iface.getName(), iface);
-      } else {
-        interfacesToConvert.putAll(iface.getUnits());
-      }
-    }
-    for (NodeDevice nd : _nodeDevices.values()) {
-      for (Interface iface : nd.getInterfaces().values()) {
-        interfacesToConvert.putAll(iface.getUnits());
-      }
-    }
-    for (Entry<String, Interface> eUnit : interfacesToConvert.entrySet()) {
-      String unitName = eUnit.getKey();
-      Interface unitIface = eUnit.getValue();
-      unitIface.inheritUnsetFields();
-      org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
-      _c.getAllInterfaces().put(unitName, newUnitIface);
-      Vrf vrf = newUnitIface.getVrf();
-      String vrfName = vrf.getName();
-      vrf.getInterfaces().put(unitName, newUnitIface);
-      _masterLogicalSystem
-          .getRoutingInstances()
-          .get(vrfName)
-          .getInterfaces()
-          .put(unitName, unitIface);
-    }
+    convertInterfaces();
 
     // set router-id
     if (_masterLogicalSystem.getDefaultRoutingInstance().getRouterId() == null) {
@@ -2308,6 +2362,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // aggregate routes
       for (AggregateRoute route :
           ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
+        route.inheritUnsetFields(ri.getAggregateRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
       }
@@ -2315,6 +2370,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // generated routes
       for (GeneratedRoute route :
           ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
+        route.inheritUnsetFields(ri.getGeneratedRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
@@ -2483,6 +2539,53 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void convertInterfaces() {
+    // Get a stream of all interfaces (including Node interfaces)
+    Stream.concat(
+            _masterLogicalSystem.getInterfaces().values().stream(),
+            _nodeDevices
+                .values()
+                .stream()
+                .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .forEach(
+            /*
+             * For each interface, add it to the VI model. Since Juniper splits attributes
+             * between physical and logical (unit) interfaces, do the conversion in two steps.
+             * - Physical interface first, with physical attributes: speed, aggregation tracking, etc.
+             * - Then all units of the interface. Units have the attributes batfish
+             *   cares most about: IPs, MTUs, ACLs, etc.)
+             */
+            iface -> {
+              // Process parent interface
+              iface.inheritUnsetFields();
+              org.batfish.datamodel.Interface newParentIface = toInterfaceNonUnit(iface);
+              resolveInterfacePointers(iface.getName(), iface, newParentIface);
+
+              // Process the units, which hold the bulk of the configuration
+              iface
+                  .getUnits()
+                  .values()
+                  .forEach(
+                      unit -> {
+                        unit.inheritUnsetFields();
+                        org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
+                        newUnitInterface.addDependency(
+                            new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
+                      });
+            });
+  }
+
+  /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
+  private void resolveInterfacePointers(
+      String ifaceName, Interface iface, org.batfish.datamodel.Interface viIface) {
+    _c.getAllInterfaces().put(ifaceName, viIface);
+    Vrf vrf = viIface.getVrf();
+    String vrfName = vrf.getName();
+    vrf.getInterfaces().put(ifaceName, viIface);
+    _masterLogicalSystem.getRoutingInstances().get(vrfName).getInterfaces().put(ifaceName, iface);
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {
