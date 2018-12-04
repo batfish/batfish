@@ -15,10 +15,13 @@ public final class NatRule implements Serializable {
 
   private List<NatRuleMatch> _matches;
 
+  private String _name;
+
   @Nullable private NatRuleThen _then;
 
   public NatRule() {
     _matches = new LinkedList<>();
+    _name = null;
     _then = null;
   }
 
@@ -28,8 +31,17 @@ public final class NatRule implements Serializable {
   }
 
   @Nullable
+  public String getName() {
+    return _name;
+  }
+
+  @Nullable
   public NatRuleThen getThen() {
     return _then;
+  }
+
+  public void setName(@Nullable String name) {
+    _name = name;
   }
 
   public void setThen(@Nullable NatRuleThen then) {
