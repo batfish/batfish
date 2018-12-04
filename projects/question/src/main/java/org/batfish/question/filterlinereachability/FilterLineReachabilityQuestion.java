@@ -57,13 +57,13 @@ public class FilterLineReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) String filtersSpecifierInput,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) String nodeSpecifierFactory,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_INPUT) String nodeSpecifierInput,
-      @Nullable @JsonProperty(PROP_IGNORE_COMPOSITES) Boolean ignoreGeneratedFilters) {
+      @Nullable @JsonProperty(PROP_IGNORE_COMPOSITES) Boolean ignoreComposites) {
     return new FilterLineReachabilityQuestion(
         filterSpecifierFactory,
         filtersSpecifierInput,
         nodeSpecifierFactory,
         nodeSpecifierInput,
-        ignoreGeneratedFilters);
+        ignoreComposites);
   }
 
   public FilterLineReachabilityQuestion() {
