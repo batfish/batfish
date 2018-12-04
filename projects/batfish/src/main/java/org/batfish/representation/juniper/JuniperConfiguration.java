@@ -1207,7 +1207,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // 802.3ad link aggregation
     if (iface.get8023adInterface() != null) {
       newIface.setChannelGroup(iface.get8023adInterface());
-      newIface.addDependency(new Dependency(iface.get8023adInterface(), DependencyType.AGGREGATE));
     }
 
     newIface.setBandwidth(iface.getBandwidth());
@@ -2555,6 +2554,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
                             new Dependency(newParentIface.getName(), DependencyType.BIND));
                         resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
                       });
+            });
+
+    /*
+     * Do a second pass where we look over all interfaces
+     * and set dependency pointers for aggregated interfaces in the VI configuration
+     */
+    Stream.concat(
+            _masterLogicalSystem.getInterfaces().values().stream(),
+            _nodeDevices
+                .values()
+                .stream()
+                .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .forEach(
+            iface -> {
+              if (iface.get8023adInterface() != null) {
+                org.batfish.datamodel.Interface viIface =
+                    _c.getAllInterfaces().get(iface.get8023adInterface());
+                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+              }
             });
   }
 
