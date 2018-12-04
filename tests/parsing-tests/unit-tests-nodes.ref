@@ -16190,7 +16190,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10"
             ],
@@ -16216,7 +16216,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10.0"
             ],
