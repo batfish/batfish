@@ -4,20 +4,56 @@ import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
+import org.parboiled.annotations.SuppressSubnodes;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
 /** A class that converts a Juniper community regex to a Java regex. */
 @BuildParseTree
-public final class BgpCommunityRegex extends BaseParser<String> {
+public class BgpCommunityRegex extends BaseParser<String> {
 
   Rule TopLevel() {
-    return Sequence(Digits(), ':', Digits());
+    return Sequence('^', AS(), ':', Community(), '$');
   }
 
+  Rule AS() {
+    return FirstOf();
+  }
+
+  Rule Community() {
+    return null;
+  }
+
+  @SuppressSubnodes
+  Rule Digit() {
+    return CharRange('0', '9');
+  }
+
+  @SuppressSubnodes
   Rule Digits() {
-    return OneOrMore(CharRange('0', '9'));
+    return OneOrMore(Digit());
+  }
+
+  @SuppressSubnodes
+  Rule DigitRange() {
+    return Sequence(Digit(), '-', Digit());
+  }
+
+  Rule Asterisk() {
+    return Ch('*');
+  }
+
+  Rule Dot() {
+    return Ch('.');
+  }
+
+  Rule SetOfDigits() {
+    return Sequence('[', FirstOf(Digits(), DigitRange()), ']');
+  }
+
+  Rule NonSetOfDigits() {
+    return Sequence('[', '^', FirstOf(Digits(), DigitRange()), ']');
   }
 
   public static String convertToJavaRegex(String regex) {
@@ -29,6 +65,6 @@ public final class BgpCommunityRegex extends BaseParser<String> {
   }
 
   public static void main(String[] args) {
-    convertToJavaRegex("123:456");
+    convertToJavaRegex("^123:456$");
   }
 }
