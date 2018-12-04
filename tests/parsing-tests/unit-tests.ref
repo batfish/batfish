@@ -47468,9 +47468,7 @@
             "              (ri_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ae0'  <== mode:M_Interface",
-            "                  PERIOD:'.'",
-            "                  unit = DEC:'0')))))))",
+            "                  name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -64661,7 +64659,7 @@
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "ge-0/0/0" : {
               "definitionLines" : [
@@ -67921,14 +67919,16 @@
             "ae0.0" : {
               "interface" : [
                 5
-              ],
-              "routing-instance interface" : [
-                16
               ]
             },
             "ge-0/0/0" : {
               "interface" : [
                 6
+              ]
+            },
+            "ge-0/0/1" : {
+              "routing-instance interface" : [
+                16
               ]
             },
             "ge-1/0/0" : {
@@ -69859,6 +69859,13 @@
           }
         },
         "configs/juniper_interfaces" : {
+          "interface" : {
+            "ge-0/0/1" : {
+              "routing-instance interface" : [
+                16
+              ]
+            }
+          },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
