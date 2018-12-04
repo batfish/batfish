@@ -40,6 +40,10 @@ public final class NatRule implements Serializable {
     return _then;
   }
 
+  public void setName(@Nullable String name) {
+    _name = name;
+  }
+
   public void setThen(@Nullable NatRuleThen then) {
     _then = then;
   }

@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
@@ -126,6 +127,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -147,6 +149,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -163,6 +166,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
@@ -172,12 +176,14 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
@@ -194,6 +200,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -236,8 +243,10 @@ import org.batfish.representation.juniper.NatPool;
 import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
+import org.batfish.representation.juniper.NatRuleMatchDstPort;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
+import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
@@ -2743,6 +2752,66 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNatDest() throws IOException {
+    Configuration config = parseConfig("nat-dest");
+
+    NavigableMap<String, Interface> interfaces = config.getAllInterfaces();
+    assertThat(interfaces.keySet(), containsInAnyOrder("ge-0/0/0", "ge-0/0/0.0"));
+
+    assertThat(interfaces.get("ge-0/0/0").getDestinationNats(), empty());
+
+    Interface iface = interfaces.get("ge-0/0/0.0");
+    List<DestinationNat> dnats = iface.getDestinationNats();
+    assertThat(dnats, hasSize(3));
+
+    assertThat(
+        dnats,
+        contains(
+            DestinationNat.builder()
+                .setAcl(
+                    IpAccessList.builder()
+                        .setName("~ DESTINATION NAT ~ ge-0/0/0.0 ~ zone ~ RULE1 ~")
+                        .setLines(
+                            ImmutableList.of(
+                                accepting(
+                                    AclLineMatchExprs.match(
+                                        HeaderSpace.builder()
+                                            .setDstIps(new IpSpaceReference("NAME"))
+                                            .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
+                                            .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
+                                            .build()))))
+                        .build())
+                .build(),
+            DestinationNat.builder()
+                .setAcl(
+                    IpAccessList.builder()
+                        .setName("~ DESTINATION NAT ~ ge-0/0/0.0 ~ zone ~ RULE2 ~")
+                        .setLines(
+                            ImmutableList.of(
+                                accepting(
+                                    AclLineMatchExprs.match(
+                                        HeaderSpace.builder()
+                                            .setDstIps(new IpSpaceReference("DA-NAME"))
+                                            .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
+                                            .build()))))
+                        .build())
+                .setPoolIpFirst(new Ip("10.10.10.10"))
+                .setPoolIpLast(new Ip("10.10.10.20"))
+                .build(),
+            DestinationNat.builder()
+                .setAcl(
+                    IpAccessList.builder()
+                        .setName("~ DESTINATION NAT ~ get-0/0/0.0 ~ zone ~ RULE3")
+                        .setLines(
+                            ImmutableList.of(
+                                accepting(AclLineMatchExprs.matchSrc(Prefix.parse("3.3.3.3/24")))))
+                        .build())
+                .setPoolIpFirst(Prefix.parse("10.10.10.10/24").getStartIp())
+                .setPoolIpLast(Prefix.parse("10.10.10.10/24").getEndIp())
+                .build()));
+  }
+
+  @Test
   public void testNatDestJuniperConfig() {
     JuniperConfiguration config = parseJuniperConfig("nat-dest");
 
@@ -2778,17 +2847,17 @@ public class FlatJuniperGrammarTest {
 
     // test rules
     List<NatRule> rules = ruleSet.getRules();
-    assertThat(rules, hasSize(2));
+    assertThat(rules, hasSize(3));
 
     // test rule1
     NatRule rule1 = rules.get(0);
     assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
-        equalTo(
-            ImmutableList.of(
-                new NatRuleMatchDstAddr(Prefix.parse("1.1.1.1/24")),
-                new NatRuleMatchDstAddrName("NAME"))));
+        contains(
+            new NatRuleMatchSrcPort(80, 80),
+            new NatRuleMatchDstPort(100, 200),
+            new NatRuleMatchDstAddrName("NAME")));
     assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     // test rule2
@@ -2796,11 +2865,16 @@ public class FlatJuniperGrammarTest {
     assertThat(rule2.getName(), equalTo("RULE2"));
     assertThat(
         rule2.getMatches(),
-        equalTo(
-            ImmutableList.of(
-                new NatRuleMatchDstAddr(Prefix.parse("2.2.2.2/24")),
-                new NatRuleMatchDstAddrName("DA-NAME"))));
-    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL")));
+        contains(
+            new NatRuleMatchSrcAddr(Prefix.parse("2.2.2.2/24")),
+            new NatRuleMatchDstAddrName("DA-NAME")));
+    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL2")));
+
+    // test rule3
+    NatRule rule3 = rules.get(2);
+    assertThat(rule3.getName(), equalTo("RULE3"));
+    assertThat(rule3.getMatches(), contains(new NatRuleMatchSrcAddr(Prefix.parse("3.3.3.3/24"))));
+    assertThat(rule3.getThen(), equalTo(new NatRuleThenPool("POOL1")));
   }
 
   @Test

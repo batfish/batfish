@@ -1872,6 +1872,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private NatRuleSet _currentNatRuleSet;
 
+  private Map<String, NatRule> _currentNatRuleSetRules;
+
   private PolicyStatement _currentPolicyStatement;
 
   private PrefixList _currentPrefixList;

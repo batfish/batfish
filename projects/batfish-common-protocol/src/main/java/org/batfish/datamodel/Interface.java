@@ -48,6 +48,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    private List<DestinationNat> _destinationNats;
+
     @Nullable private EigrpInterfaceSettings _eigrp;
 
     private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -112,6 +114,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setDestinationNats(_destinationNats);
       iface.setEigrp(_eigrp);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
@@ -214,6 +217,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDeclaredNames(Iterable<String> declaredNames) {
       _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+      return this;
+    }
+
+    public Builder setDestinationNats(Iterable<DestinationNat> destinationNats) {
+      _destinationNats = ImmutableList.copyOf(destinationNats);
       return this;
     }
 
@@ -400,6 +408,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
+
+  private static final String PROP_DESTINATION_NATS = "destinationNats";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
@@ -672,6 +682,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<Ip> _dhcpRelayAddresses;
 
+  private List<DestinationNat> _destinationNats;
+
   @Nullable private EigrpInterfaceSettings _eigrp;
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -775,6 +787,7 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dependencies = ImmutableSet.of();
+    _destinationNats = ImmutableList.of();
     _dhcpRelayAddresses = ImmutableList.of();
     _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
@@ -953,6 +966,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("Description of this interface")
   public String getDescription() {
     return _description;
+  }
+
+  @JsonProperty(PROP_DESTINATION_NATS)
+  public List<DestinationNat> getDestinationNats() {
+    return _destinationNats;
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
@@ -1328,6 +1346,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
     _description = description;
+  }
+
+  @JsonProperty(PROP_DESTINATION_NATS)
+  public void setDestinationNats(List<DestinationNat> destinationNats) {
+    _destinationNats = ImmutableList.copyOf(destinationNats);
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
