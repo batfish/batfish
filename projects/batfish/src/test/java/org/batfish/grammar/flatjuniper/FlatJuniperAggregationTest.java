@@ -35,7 +35,7 @@ public class FlatJuniperAggregationTest {
             _folder);
     SortedMap<String, Configuration> configs = batfish.loadConfigurations();
     Topology t = batfish.getEnvironmentTopology();
-    // Ensure port channel memebers and bandwidth is setup correctly for the logical ae1.0/ae1.1
+    // Ensure port channel members and bandwidth is setup correctly for the logical ae1.0/ae1.1
     // interfaces
     assertThat(configs.get("ae1"), hasInterface("ae1.0", hasBandwidth(1e9)));
     assertThat(configs.get("ae1"), hasInterface("ae1.1", hasBandwidth(1e9)));

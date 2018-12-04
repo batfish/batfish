@@ -16433,7 +16433,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 0.0,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "ae0.0"
             ],
@@ -16451,7 +16451,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
-            "vrf" : "SOME_INSTANCE"
+            "vrf" : "default"
           },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
@@ -16478,6 +16478,32 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "ge-0/0/1" : {
+            "name" : "ge-0/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "SOME_INSTANCE"
           },
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
@@ -16712,13 +16738,14 @@
           "SOME_INSTANCE" : {
             "name" : "SOME_INSTANCE",
             "interfaces" : [
-              "ae0.0"
+              "ge-0/0/1"
             ]
           },
           "default" : {
             "name" : "default",
             "interfaces" : [
               "ae0",
+              "ae0.0",
               "ge-0/0/0",
               "ge-1/0/0",
               "irb",
