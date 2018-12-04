@@ -1838,8 +1838,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private NatRuleSet _currentNatRuleSet;
 
-  private Map<String, NatRule> _currentNatRuleSetRules;
-
   private PolicyStatement _currentPolicyStatement;
 
   private PrefixList _currentPrefixList;
@@ -2318,7 +2316,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (_currentNatRuleSet == null) {
       _currentNatRuleSet = new NatRuleSet();
       currentNatRuleSets.put(rulesetName, _currentNatRuleSet);
-      _currentNatRuleSetRules = new TreeMap<>();
+      _currentNatRule = null;
     }
     defineStructure(NAT_RULE_SET, rulesetName, ctx);
   }
@@ -2712,12 +2710,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterRs_rule(Rs_ruleContext ctx) {
     String name = ctx.name.getText();
-    _currentNatRule = _currentNatRuleSetRules.get(name);
-    if (_currentNatRule == null) {
+    List<NatRule> currentNatRules = _currentNatRuleSet.getRules();
+    _currentNatRule =
+        currentNatRules.isEmpty() ? null : currentNatRules.get(currentNatRules.size() - 1);
+    if (_currentNatRule == null || !name.equals(_currentNatRule.getName())) {
       _currentNatRule = new NatRule();
       _currentNatRule.setName(name);
-      _currentNatRuleSet.getRules().add(_currentNatRule);
-      _currentNatRuleSetRules.put(name, _currentNatRule);
+      currentNatRules.add(_currentNatRule);
     }
     defineStructure(NAT_RULE, name, ctx);
   }
