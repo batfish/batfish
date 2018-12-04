@@ -5481,6 +5481,11 @@ UNTRUST_SCREEN
    'untrust-screen'
 ;
 
+UPLINK_FAILURE_DETECTION
+:
+   'uplink-failure-detection'
+;
+
 UPTO
 :
    'upto'

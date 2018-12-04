@@ -2398,7 +2398,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(
             i ->
                 i.getInterfaceType() == InterfaceType.AGGREGATED
-                    && i.getChannelGroupMembers().isEmpty())
+                    && i.getChannelGroupMembers().isEmpty()
+                    // TODO: Temporary hack to avoid disabling juniper AE unit interfaces
+                    && !i.getName().startsWith("ae")
+                    && !i.getName().contains("."))
         .forEach(i -> i.setActive(false));
 
     /* Compute bandwidth for aggregated interfaces. */
