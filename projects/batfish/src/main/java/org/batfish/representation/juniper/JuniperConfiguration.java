@@ -1263,6 +1263,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Assume the config will need security policies only if it has zones
+    // TODO: add support for interface and routing-instance based security policies
     IpAccessList securityPolicyAcl = null;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
@@ -1271,10 +1272,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
       }
     }
-    //newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
-
-    String securityAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
-    _c.getIpAccessLists().put(securityAclName, securityPolicyAcl);
     newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();

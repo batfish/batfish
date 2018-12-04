@@ -165,6 +165,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -229,7 +230,6 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.representation.juniper.Nat;
@@ -3242,9 +3242,52 @@ public class FlatJuniperGrammarTest {
     assertThat(trust.getFromZonePolicies().keySet(), hasSize(0));
     assertThat(trust.getToZonePolicies().keySet(), hasSize(1));
 
-    FirewallFilter policy = trust.getToZonePolicies().get(0);
-
     Zone untrust = zones.get("untrust");
-    trust.getFromZonePolicies();
+    assertThat(untrust.getFromZonePolicies().keySet(), hasSize(1));
+    assertThat(untrust.getToZonePolicies().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testPreSourceNatOutgoingFilter() throws IOException {
+    Configuration config = parseConfig("security-policy");
+    String ifaceIn = "ge-0/0/0.0";
+    String ifaceOut = "ge-0/0/1.0";
+
+    IpAccessList securityPolicy1 =
+        config.getAllInterfaces().get(ifaceOut).getPreSourceNatOutgoingFilter();
+
+    // Any arbitrary flow from trust to untrust should be permitted
+    Flow flow1 = createFlow(IpProtocol.UDP, 90);
+    Flow flow2 = createFlow(IpProtocol.TCP, 9000);
+
+    FilterResult filterResult =
+        securityPolicy1.filter(flow1, ifaceIn, config.getIpAccessLists(), config.getIpSpaces());
+
+    LineAction action = filterResult.getAction();
+    assertThat(action, equalTo(LineAction.PERMIT));
+
+    filterResult =
+        securityPolicy1.filter(flow2, ifaceIn, config.getIpAccessLists(), config.getIpSpaces());
+
+    action = filterResult.getAction();
+
+    assertThat(action, equalTo(LineAction.PERMIT));
+
+    // Packet to ifaceIn should be denied by default
+    IpAccessList securityPolicy2 =
+        config.getAllInterfaces().get(ifaceIn).getPreSourceNatOutgoingFilter();
+
+    filterResult =
+        securityPolicy2.filter(flow1, ifaceOut, config.getIpAccessLists(), config.getIpSpaces());
+
+    action = filterResult.getAction();
+    assertThat(action, equalTo(LineAction.DENY));
+
+    filterResult =
+        securityPolicy2.filter(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces());
+
+    action = filterResult.getAction();
+
+    assertThat(action, equalTo(LineAction.DENY));
   }
 }
