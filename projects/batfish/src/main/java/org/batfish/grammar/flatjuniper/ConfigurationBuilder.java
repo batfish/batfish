@@ -2316,7 +2316,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (_currentNatRuleSet == null) {
       _currentNatRuleSet = new NatRuleSet();
       currentNatRuleSets.put(rulesetName, _currentNatRuleSet);
-      _currentNatRule = null;
     }
     defineStructure(NAT_RULE_SET, rulesetName, ctx);
   }
