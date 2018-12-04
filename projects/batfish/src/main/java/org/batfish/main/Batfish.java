@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -2390,28 +2391,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Populate aggregated interfaces with members referring to them. */
     interfaces.forEach(
         (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
-    /*
-     * For aggregated logical interfaces, copy port channel group members
-     * from the parent aggregated interfaces
-     */
-    interfaces
-        .values()
-        .stream()
-        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
-        .filter(iface -> !iface.getDependencies().isEmpty())
-        .forEach(
-            iface ->
-                iface.setChannelGroupMembers(
-                    iface
-                        .getDependencies()
-                        .stream()
-                        .flatMap(
-                            dependency ->
-                                interfaces
-                                    .get(dependency.getInterfaceName())
-                                    .getChannelGroupMembers()
-                                    .stream())
-                        .collect(ImmutableSet.toImmutableSet())));
 
     /* Disable aggregated interfaces with no members. */
     interfaces
@@ -2428,6 +2407,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     /* Compute bandwidth for aggregated interfaces. */
     interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
+
+    /*
+     * For aggregated logical interfaces, inherit a subset of properties
+     * from the parent aggregated interfaces
+     */
+    interfaces
+        .values()
+        .stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
+        .filter(iface -> !iface.getDependencies().isEmpty())
+        .forEach(
+            iface ->
+                iface.setBandwidth(
+                    iface
+                        .getDependencies()
+                        .stream()
+                        .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                        .filter(Objects::nonNull)
+                        .map(Interface::getBandwidth)
+                        .filter(Objects::nonNull)
+                        .mapToDouble(Double::doubleValue)
+                        .sum()));
   }
 
   private void identifyDeviceTypes(Collection<Configuration> configurations) {

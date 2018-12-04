@@ -2,7 +2,6 @@ package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
@@ -40,12 +39,6 @@ public class FlatJuniperAggregationTest {
     // interfaces
     assertThat(configs.get("ae1"), hasInterface("ae1.0", hasBandwidth(1e9)));
     assertThat(configs.get("ae1"), hasInterface("ae1.1", hasBandwidth(1e9)));
-    assertThat(
-        configs.get("ae1").getAllInterfaces().get("ae1.0").getChannelGroupMembers(),
-        contains("ge-0/0/0"));
-    assertThat(
-        configs.get("ae1").getAllInterfaces().get("ae1.1").getChannelGroupMembers(),
-        contains("ge-0/0/0"));
     assertThat(
         t.getEdges(),
         containsInAnyOrder(
