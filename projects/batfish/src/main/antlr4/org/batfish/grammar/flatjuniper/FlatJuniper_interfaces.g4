@@ -99,17 +99,23 @@ i_arp_resp
    ARP_RESP
 ;
 
+i_bandwidth
+:
+    BANDWIDTH bandwidth
+;
+
 i_common
 :
    apply
    | i_arp_resp
+   | i_bandwidth
    | i_description
    | i_disable
    | i_enable
    | i_ether_options
+   | i_family
    | i_fastether_options
    | i_gigether_options
-   | i_family
    | i_mac
    | i_mtu
    | i_null
@@ -193,7 +199,6 @@ i_null
 :
    (
       AGGREGATED_ETHER_OPTIONS
-      | BANDWIDTH
       | ENCAPSULATION
       | FABRIC_OPTIONS
       | FORWARDING_CLASS_ACCOUNTING
