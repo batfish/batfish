@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -14,13 +14,13 @@ public final class NatRuleSet implements Serializable {
 
   private final NatPacketLocation _fromLocation;
 
-  private final Map<String, NatRule> _rules;
+  private final List<NatRule> _rules;
 
   private final NatPacketLocation _toLocation;
 
   public NatRuleSet() {
     _fromLocation = new NatPacketLocation();
-    _rules = new TreeMap<>();
+    _rules = new ArrayList<>();
     _toLocation = new NatPacketLocation();
   }
 
@@ -30,7 +30,7 @@ public final class NatRuleSet implements Serializable {
   }
 
   @Nonnull
-  public Map<String, NatRule> getRules() {
+  public List<NatRule> getRules() {
     return _rules;
   }
 
