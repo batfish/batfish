@@ -981,10 +981,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .forEach(
               policyName -> {
                 PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
-                if (policy != null) {
+                boolean defined = policy != null;
+                if (defined) {
                   setPolicyStatementReferent(policyName);
                   CallExpr callPolicy = new CallExpr(policyName);
                   matchSomeNamedPolicy.getDisjuncts().add(callPolicy);
+                } else {
+                  matchSomeNamedPolicy.setComment(
+                      String.format(
+                          "%s%sUndefined reference to: %s",
+                          defined ? matchSomeNamedPolicy.getComment() : "",
+                          defined ? "\n" : "",
+                          policyName));
                 }
               });
     }
