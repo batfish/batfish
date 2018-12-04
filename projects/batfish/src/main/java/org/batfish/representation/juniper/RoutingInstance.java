@@ -282,20 +282,29 @@ public class RoutingInstance implements Serializable {
     return _generatedRouteDefaults;
   }
 
-  private void initAbstractAggregateRouteDefaults(AbstractAggregateRoute route) {
+  /** Helper to initialize aggregated/generated route defaults, which happen to be the same */
+  private static void initAbstractAggregateRouteDefaults(@Nonnull AbstractAggregateRoute route) {
     route.setActive(true);
     route.setAsPath(null);
     route.setMetric(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_COST);
     route.setPreference(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_PREFERENCE);
   }
 
-  private AggregateRoute initAggregateRouteDefaults() {
+  /**
+   * Initialize defaults for aggregate routes and return in an {@link AggregateRoute} whose fields
+   * can be inherited.
+   */
+  private static @Nonnull AggregateRoute initAggregateRouteDefaults() {
     AggregateRoute route = new AggregateRoute(Prefix.ZERO);
     initAbstractAggregateRouteDefaults(route);
     return route;
   }
 
-  private GeneratedRoute initGeneratedRouteDefaults() {
+  /**
+   * Initialize defaults for generated routes and return in a {@link GeneratedRoute} whose fields
+   * can be inherited.
+   */
+  private static @Nonnull GeneratedRoute initGeneratedRouteDefaults() {
     GeneratedRoute route = new GeneratedRoute(Prefix.ZERO);
     initAbstractAggregateRouteDefaults(route);
     return route;
