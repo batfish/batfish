@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
@@ -34,6 +35,20 @@ public class Interface implements Serializable {
     } else {
       return 1E12;
     }
+  }
+
+  /** Represents the type of interface for OSPF */
+  public enum OspfInterfaceType {
+    /** This is not an explicit type -- assumed by default */
+    BROADCAST,
+    /** non-broadcast multi-access */
+    NBMA,
+    /** Point to multipoint */
+    P2MP,
+    /** Point to multipoint over lan */
+    P2MP_OVER_LAN,
+    /** Point to point */
+    P2P
   }
 
   private String _accessVlan;
@@ -81,7 +96,7 @@ public class Interface implements Serializable {
 
   private boolean _ospfPassive;
 
-  private boolean _ospfPointToPoint;
+  private OspfInterfaceType _ospfInterfaceType;
 
   private String _outgoingFilter;
 
@@ -101,6 +116,8 @@ public class Interface implements Serializable {
 
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
+  private Integer _tcpMss;
+
   public Interface(String name) {
     _active = true;
     _additionalArpIps = ImmutableSet.of();
@@ -110,6 +127,7 @@ public class Interface implements Serializable {
     _isisSettings = new IsisInterfaceSettings();
     _name = name;
     _nativeVlan = 1;
+    _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new LinkedList<>();
@@ -204,12 +222,12 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
-  public boolean getOspfPassive() {
-    return _ospfPassive;
+  public OspfInterfaceType getOspfInterfaceType() {
+    return _ospfInterfaceType;
   }
 
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
+  public boolean getOspfPassive() {
+    return _ospfPassive;
   }
 
   public String getOutgoingFilter() {
@@ -328,8 +346,8 @@ public class Interface implements Serializable {
     _ospfPassive = true;
   }
 
-  public void setOspfPointToPoint(boolean opsfPointToPoint) {
-    _ospfPointToPoint = opsfPointToPoint;
+  public void setOspfInterfaceType(OspfInterfaceType ospfInterfaceType) {
+    _ospfInterfaceType = ospfInterfaceType;
   }
 
   public void setOutgoingFilter(String accessListName) {
@@ -358,5 +376,13 @@ public class Interface implements Serializable {
 
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  public void setTcpMss(@Nullable Integer tcpMss) {
+    _tcpMss = tcpMss;
+  }
+
+  public @Nullable Integer getTcpMss() {
+    return _tcpMss;
   }
 }

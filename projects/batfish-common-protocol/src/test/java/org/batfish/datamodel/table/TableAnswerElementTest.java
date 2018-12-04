@@ -34,9 +34,12 @@ public class TableAnswerElementTest {
   @Test
   public void testComputeSummary() {
     // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElement(new TableMetadata(null, "no desc"));
-    answer.addRow(Row.builder().build());
-    answer.addRow(Row.builder().build());
+    TableAnswerElement answer =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")), "no desc"));
+    answer.addRow(Row.builder().put("col", "val").build());
+    answer.addRow(Row.builder().put("col", "val").build());
 
     Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
     AnswerSummary summary = answer.computeSummary(assertion);
@@ -51,12 +54,18 @@ public class TableAnswerElementTest {
   public void testEvaluateAssertionCount() {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
-    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata(null, "no desc"));
-    oneRow.addRow(Row.builder().build());
+    TableAnswerElement oneRow =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")), "no desc"));
+    oneRow.addRow(Row.builder().put("col", "val").build());
 
-    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata(null, "no desc"));
-    twoRows.addRow(Row.builder().build());
-    twoRows.addRow(Row.builder().build());
+    TableAnswerElement twoRows =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")), "no desc"));
+    twoRows.addRow(Row.builder().put("col", "val").build());
+    twoRows.addRow(Row.builder().put("col", "val").build());
 
     assertThat(oneRow.evaluateAssertion(twoCount), equalTo(false));
     assertThat(twoRows.evaluateAssertion(twoCount), equalTo(true));

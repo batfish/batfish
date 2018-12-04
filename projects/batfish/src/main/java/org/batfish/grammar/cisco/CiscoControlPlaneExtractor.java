@@ -1310,7 +1310,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return toLong(ctx.asn);
     }
     String[] parts = ctx.asn4b.getText().split("\\.");
-    return Long.parseLong(parts[0]) << 16 + Long.parseLong(parts[1]);
+    return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
   }
 
   private static Ip toIp(TerminalNode t) {
@@ -2480,8 +2480,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
-    if (ctx.asnum != null) {
-      long remoteAs = toLong(ctx.asnum);
+    if (ctx.bgp_asn() != null) {
+      long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);
     }
     if (ctx.mapname != null) {
@@ -2490,7 +2490,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
     }
-    // TODO: verify if this is correct for nexus
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
   }
@@ -3669,7 +3668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    int procNum = (ctx.procnum == null) ? 0 : toInteger(ctx.procnum);
+    long procNum = (ctx.bgp_asn() == null) ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
 
     if (_parser.getParser().isNxos()) {
@@ -4250,7 +4249,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = ctx.name.getText();
-    int procNum =
+    long procNum =
         _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
     BgpProcess proc = new BgpProcess(_format, procNum);
     currentVrf().setBgpProcess(proc);
@@ -5314,8 +5313,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setTcpFlags(TcpFlags.builder().setFin(true).build())
                 .setUseFin(true)
                 .build());
-      } else if (feature.FRAGMENTS() != null) {
-        todo(ctx);
       } else if (feature.HOST_UNKNOWN() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
         icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
@@ -5360,8 +5357,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .build());
       } else if (feature.TIME_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
-      } else if (feature.TTL() != null) {
-        todo(ctx);
       } else if (feature.TTL_EXCEEDED() != null) {
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {

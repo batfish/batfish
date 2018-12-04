@@ -4,6 +4,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
 public final class PsFromProtocol extends PsFrom {
@@ -23,6 +24,11 @@ public final class PsFromProtocol extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    return new MatchProtocol(_protocol);
+    if (_protocol == RoutingProtocol.BGP) {
+      return new Disjunction(
+          new MatchProtocol(RoutingProtocol.BGP), new MatchProtocol(RoutingProtocol.IBGP));
+    } else {
+      return new MatchProtocol(_protocol);
+    }
   }
 }

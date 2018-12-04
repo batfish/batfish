@@ -401,7 +401,7 @@ locals
       | ipv6_prefix = IPV6_PREFIX
    )
    (
-      REMOTE_AS asnum = DEC
+      REMOTE_AS asnum = bgp_asn
    )?
    (
       REMOTE_AS ROUTE_MAP mapname = variable
@@ -876,7 +876,7 @@ router_bgp_stanza
 :
    ROUTER BGP
    (
-      procnum = DEC
+      procnum = bgp_asn
    )? NEWLINE (
       {!_nxos}? router_bgp_stanza_tail
       | {_nxos}? router_bgp_nxos_toplevel

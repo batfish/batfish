@@ -85,9 +85,8 @@ public abstract class PropertySpecifier {
     return suggestions;
   }
 
-  /** Converts the extracted propertyValue to what is specified in the properyDescriptor */
-  public static Object convertTypeIfNeeded(
-      Object propertyValue, PropertyDescriptor<?> propertyDescriptor) {
+  /** Converts {@code propertyValue} to {@code targetSchema} if needed */
+  public static Object convertTypeIfNeeded(Object propertyValue, Schema targetSchema) {
 
     Object outputPropertyValue = propertyValue;
 
@@ -102,7 +101,6 @@ public abstract class PropertySpecifier {
     }
 
     // check if a conversion to String or List/Set<String> is needed for complex objects (e.g., VRF)
-    Schema targetSchema = propertyDescriptor.getSchema();
     if (targetSchema.equals(Schema.STRING)
         && outputPropertyValue != null
         && !(outputPropertyValue instanceof String)) {
@@ -150,7 +148,8 @@ public abstract class PropertySpecifier {
     checkArgument(row != null, "'row' cannot be null");
 
     Object propertyValue = propertyDescriptor.getGetter().apply(object);
-    propertyValue = PropertySpecifier.convertTypeIfNeeded(propertyValue, propertyDescriptor);
+    propertyValue =
+        PropertySpecifier.convertTypeIfNeeded(propertyValue, propertyDescriptor.getSchema());
     fillProperty(columnName, propertyValue, row, propertyDescriptor); // separate for testing
   }
 

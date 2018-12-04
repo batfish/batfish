@@ -13,6 +13,6 @@ public class ApplicationSetReference extends ApplicationSetMemberReference {
 
   @Override
   public ApplicationSetMember resolve(JuniperConfiguration jc) {
-    return jc.getApplicationSets().get(_name);
+    return jc.getMasterLogicalSystem().getApplicationSets().get(_name);
   }
 }

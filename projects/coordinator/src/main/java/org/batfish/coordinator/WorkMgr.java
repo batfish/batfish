@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
@@ -99,6 +100,7 @@ import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -130,6 +132,8 @@ import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableView;
+import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -2351,6 +2355,38 @@ public class WorkMgr extends AbstractCoordinator {
 
   @VisibleForTesting
   @Nonnull
+  Answer processAnswerRows2(String rawAnswerStr, AnswerRowsOptions options) {
+    if (rawAnswerStr == null) {
+      Answer answer = Answer.failureAnswer("Not found", null);
+      answer.setStatus(AnswerStatus.NOTFOUND);
+      return answer;
+    }
+    try {
+      Answer rawAnswer =
+          BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      // If the AnswerStatus is not SUCCESS, the answer cannot have any AnswerElements related to
+      // actual answers (but, e.g., it might have a BatfishStackTrace). Return that as-is.
+      if (rawAnswer.getStatus() != AnswerStatus.SUCCESS) {
+        return rawAnswer;
+      }
+      AnswerElement answerElement = rawAnswer.getAnswerElements().get(0);
+      if (!(answerElement instanceof TableAnswerElement)) {
+        return rawAnswer;
+      }
+      TableAnswerElement rawTable = (TableAnswerElement) answerElement;
+      Answer answer = new Answer();
+      answer.setStatus(rawAnswer.getStatus());
+      answer.addAnswerElement(processAnswerTable2(rawTable, options));
+      return answer;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to Answer: %s\n", Throwables.getStackTraceAsString(e));
+      return Answer.failureAnswer(e.getMessage(), null);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
   TableAnswerElement processAnswerTable(TableAnswerElement rawTable, AnswerRowsOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     List<Row> filteredRows =
@@ -2393,6 +2429,62 @@ public class WorkMgr extends AbstractCoordinator {
 
   @VisibleForTesting
   @Nonnull
+  TableView processAnswerTable2(TableAnswerElement rawTable, AnswerRowsOptions options) {
+    Map<Row, Integer> rowIds = Maps.newIdentityHashMap();
+    CommonUtil.forEachWithIndex(rawTable.getRowsList(), (i, row) -> rowIds.put(row, i));
+    Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+    List<Row> filteredRows =
+        rawTable
+            .getRowsList()
+            .stream()
+            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
+            .collect(ImmutableList.toImmutableList());
+
+    Stream<Row> rowStream = filteredRows.stream();
+    if (!options.getSortOrder().isEmpty()) {
+      // sort using specified sort order
+      rowStream = rowStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+    }
+    TableMetadata tableMetadata;
+    if (options.getColumns().isEmpty()) {
+      tableMetadata = rawTable.getMetadata();
+    } else {
+      // project to desired columns
+      rowStream =
+          rowStream.map(
+              rawRow -> {
+                Row row = Row.builder().putAll(rawRow, options.getColumns()).build();
+                rowIds.put(row, rowIds.get(rawRow));
+                return row;
+              });
+      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
+      columnMap.keySet().retainAll(options.getColumns());
+      List<ColumnMetadata> columnMetadata =
+          columnMap.values().stream().collect(ImmutableList.toImmutableList());
+      tableMetadata = new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc());
+    }
+    if (options.getUniqueRows()) {
+      // uniquify if desired
+      rowStream = rowStream.distinct();
+    }
+    // offset, truncate, and add to table
+    TableView tableView =
+        new TableView(
+            options,
+            rowStream
+                .skip(options.getRowOffset())
+                .limit(options.getMaxRows())
+                .map(row -> new TableViewRow(rowIds.get(row), row))
+                .collect(ImmutableList.toImmutableList()),
+            tableMetadata);
+    tableView.setSummary(
+        rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
+    tableView.getSummary().setNumResults(filteredRows.size());
+    return tableView;
+  }
+
+  @VisibleForTesting
+  @Nonnull
   Comparator<Row> buildComparator(
       Map<String, ColumnMetadata> rawColumnMap, List<ColumnSortOption> sortOrder) {
     ColumnSortOption firstColumnSortOption = sortOrder.get(0);
@@ -2431,8 +2523,6 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.BOOLEAN)) {
       return naturalOrder();
     } else if (schema.equals(Schema.DOUBLE)) {
-      return naturalOrder();
-    } else if (schema.equals(Schema.FILE_LINE)) {
       return naturalOrder();
     } else if (schema.equals(Schema.FLOW)) {
       return naturalOrder();

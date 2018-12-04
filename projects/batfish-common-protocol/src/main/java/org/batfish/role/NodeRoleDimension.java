@@ -48,7 +48,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
           _type != Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
           "Name for a AUTO role dimension must begin with: %s",
           AUTO_DIMENSION_PREFIX);
-      return new NodeRoleDimension(_name, _roles, _type, _roleRegexes);
+      return new NodeRoleDimension(_name, _roles, firstNonNull(_type, Type.CUSTOM), _roleRegexes);
     }
 
     public @Nonnull Builder setName(String name) {

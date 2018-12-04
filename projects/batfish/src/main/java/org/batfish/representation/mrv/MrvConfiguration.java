@@ -2,6 +2,8 @@ package org.batfish.representation.mrv;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -40,10 +42,10 @@ public class MrvConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     _c = new Configuration(_hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
-    return _c;
+    return ImmutableList.of(_c);
   }
 }
