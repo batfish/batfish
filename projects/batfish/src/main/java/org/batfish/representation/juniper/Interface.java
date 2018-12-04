@@ -32,9 +32,25 @@ public class Interface implements Serializable {
       return 1E8;
     } else if (name.startsWith("irb")) {
       return 1E9;
+    } else if (name.startsWith("et")) {
+      return 1E11;
     } else {
       return 1E12;
     }
+  }
+
+  /** Represents the type of interface for OSPF */
+  public enum OspfInterfaceType {
+    /** This is not an explicit type -- assumed by default */
+    BROADCAST,
+    /** non-broadcast multi-access */
+    NBMA,
+    /** Point to multipoint */
+    P2MP,
+    /** Point to multipoint over lan */
+    P2MP_OVER_LAN,
+    /** Point to point */
+    P2P
   }
 
   private String _accessVlan;
@@ -82,7 +98,7 @@ public class Interface implements Serializable {
 
   private boolean _ospfPassive;
 
-  private boolean _ospfPointToPoint;
+  private OspfInterfaceType _ospfInterfaceType;
 
   private String _outgoingFilter;
 
@@ -113,6 +129,7 @@ public class Interface implements Serializable {
     _isisSettings = new IsisInterfaceSettings();
     _name = name;
     _nativeVlan = 1;
+    _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new LinkedList<>();
@@ -207,12 +224,12 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
-  public boolean getOspfPassive() {
-    return _ospfPassive;
+  public OspfInterfaceType getOspfInterfaceType() {
+    return _ospfInterfaceType;
   }
 
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
+  public boolean getOspfPassive() {
+    return _ospfPassive;
   }
 
   public String getOutgoingFilter() {
@@ -331,8 +348,8 @@ public class Interface implements Serializable {
     _ospfPassive = true;
   }
 
-  public void setOspfPointToPoint(boolean opsfPointToPoint) {
-    _ospfPointToPoint = opsfPointToPoint;
+  public void setOspfInterfaceType(OspfInterfaceType ospfInterfaceType) {
+    _ospfInterfaceType = ospfInterfaceType;
   }
 
   public void setOutgoingFilter(String accessListName) {

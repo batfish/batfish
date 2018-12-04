@@ -14453,6 +14453,58 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
+          "ae16" : {
+            "name" : "ae16",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "ae16"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "ae16.0" : {
+            "name" : "ae16.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "ae16.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : true,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
           "xe-0/0/1" : {
             "name" : "xe-0/0/1",
             "accessVlan" : 0,
@@ -14758,6 +14810,8 @@
               }
             ],
             "interfaces" : [
+              "ae16",
+              "ae16.0",
               "xe-0/0/1",
               "xe-0/0/1.0",
               "xe-0/0/20:0",
@@ -16136,7 +16190,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10"
             ],
@@ -16162,7 +16216,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10.0"
             ],
@@ -16379,7 +16433,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 0.0,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "ae0.0"
             ],
@@ -16397,7 +16451,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
-            "vrf" : "SOME_INSTANCE"
+            "vrf" : "default"
           },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
@@ -16424,6 +16478,32 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "ge-0/0/1" : {
+            "name" : "ge-0/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "SOME_INSTANCE"
           },
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
@@ -16658,13 +16738,14 @@
           "SOME_INSTANCE" : {
             "name" : "SOME_INSTANCE",
             "interfaces" : [
-              "ae0.0"
+              "ge-0/0/1"
             ]
           },
           "default" : {
             "name" : "default",
             "interfaces" : [
               "ae0",
+              "ae0.0",
               "ge-0/0/0",
               "ge-1/0/0",
               "irb",
@@ -17758,7 +17839,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
-          "~AGGREGATE_10_0_0_0_8_RF~" : {
+          "~CONTRIBUTOR_TO_10.0.0.0/8~" : {
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -17766,9 +17847,19 @@
                 "lengthRange" : "9-32"
               }
             ],
-            "name" : "~AGGREGATE_10_0_0_0_8_RF~"
+            "name" : "~CONTRIBUTOR_TO_10.0.0.0/8~"
           },
-          "~AGGREGATE_20_0_0_0_8_RF~" : {
+          "~CONTRIBUTOR_TO_10.0.1.0/24~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.1.0/24",
+                "lengthRange" : "25-32"
+              }
+            ],
+            "name" : "~CONTRIBUTOR_TO_10.0.1.0/24~"
+          },
+          "~CONTRIBUTOR_TO_20.0.0.0/8~" : {
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -17776,9 +17867,9 @@
                 "lengthRange" : "9-32"
               }
             ],
-            "name" : "~AGGREGATE_20_0_0_0_8_RF~"
+            "name" : "~CONTRIBUTOR_TO_20.0.0.0/8~"
           },
-          "~AGGREGATE_30_0_0_0_8_RF~" : {
+          "~CONTRIBUTOR_TO_30.0.0.0/8~" : {
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -17786,9 +17877,9 @@
                 "lengthRange" : "9-32"
               }
             ],
-            "name" : "~AGGREGATE_30_0_0_0_8_RF~"
+            "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
           },
-          "~AGGREGATE_40_0_0_0_8_RF~" : {
+          "~CONTRIBUTOR_TO_40.0.0.0/8~" : {
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -17796,12 +17887,12 @@
                 "lengthRange" : "9-32"
               }
             ],
-            "name" : "~AGGREGATE_40_0_0_0_8_RF~"
+            "name" : "~CONTRIBUTOR_TO_40.0.0.0/8~"
           }
         },
         "routingPolicies" : {
-          "~AGGREGATE_10_0_0_0_8~" : {
-            "name" : "~AGGREGATE_10_0_0_0_8~",
+          "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -17818,8 +17909,93 @@
                   },
                   "prefixSet" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~AGGREGATE_10_0_0_0_8_RF~"
+                    "name" : "~CONTRIBUTOR_TO_10.0.0.0/8~"
                   }
+                }
+              }
+            ]
+          },
+          "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~CONTRIBUTOR_TO_20.0.0.0/8~"
+                  }
+                }
+              }
+            ]
+          },
+          "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
+                  }
+                }
+              }
+            ]
+          },
+          "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~CONTRIBUTOR_TO_40.0.0.0/8~"
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
                 },
                 "trueStatements" : [
                   {
@@ -17830,8 +18006,8 @@
               }
             ]
           },
-          "~AGGREGATE_20_0_0_0_8~" : {
-            "name" : "~AGGREGATE_20_0_0_0_8~",
+          "~GENERATED_ROUTE_POLICY:10.0.1.0/24~" : {
+            "name" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -17848,75 +18024,9 @@
                   },
                   "prefixSet" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~AGGREGATE_20_0_0_0_8_RF~"
+                    "name" : "~CONTRIBUTOR_TO_10.0.1.0/24~"
                   }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          },
-          "~AGGREGATE_30_0_0_0_8~" : {
-            "name" : "~AGGREGATE_30_0_0_0_8~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~AGGREGATE_30_0_0_0_8_RF~"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          },
-          "~AGGREGATE_40_0_0_0_8~" : {
-            "name" : "~AGGREGATE_40_0_0_0_8~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~AGGREGATE_40_0_0_0_8_RF~"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
+                }
               }
             ]
           }
@@ -17960,31 +18070,44 @@
             "aggregateRoutes" : [
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 0,
+                "administrativeCost" : 130,
                 "asPath" : [ ],
                 "discard" : true,
-                "generationPolicy" : "~AGGREGATE_10_0_0_0_8~",
+                "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~",
                 "metric" : 0,
                 "network" : "10.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 0,
+                "administrativeCost" : 130,
+                "asPath" : [ ],
+                "communities" : [
+                  131078
+                ],
+                "discard" : false,
+                "generationPolicy" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
+                "metric" : 0,
+                "network" : "10.0.1.0/24",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              },
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 130,
                 "asPath" : [
                   [
                     8060932
                   ]
                 ],
                 "discard" : true,
-                "generationPolicy" : "~AGGREGATE_20_0_0_0_8~",
+                "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~",
                 "metric" : 0,
                 "network" : "20.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 0,
+                "administrativeCost" : 130,
                 "asPath" : [
                   [
                     8060932,
@@ -17992,17 +18115,17 @@
                   ]
                 ],
                 "discard" : true,
-                "generationPolicy" : "~AGGREGATE_30_0_0_0_8~",
+                "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~",
                 "metric" : 0,
                 "network" : "30.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 0,
+                "administrativeCost" : 130,
                 "asPath" : [ ],
                 "discard" : true,
-                "generationPolicy" : "~AGGREGATE_40_0_0_0_8~",
+                "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~",
                 "metric" : 0,
                 "network" : "40.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
@@ -18064,26 +18187,8 @@
           }
         },
         "ipAccessLists" : {
-          "~EXISTING_CONNECTION~" : {
-            "name" : "~EXISTING_CONNECTION~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "states" : [
-                      "ESTABLISHED"
-                    ]
-                  }
-                },
-                "name" : "~EXISTING_CONNECTION~"
-              }
-            ]
-          },
-          "~FROM_ZONE~A~TO_ZONE~B" : {
-            "name" : "~FROM_ZONE~A~TO_ZONE~B",
+          "zone~A~to~zone~B" : {
+            "name" : "zone~A~to~zone~B",
             "lines" : [
               {
                 "action" : "DENY",
@@ -18104,8 +18209,26 @@
                 "name" : "123-4"
               }
             ],
-            "sourceName" : "~FROM_ZONE~A~TO_ZONE~B",
+            "sourceName" : "zone~A~to~zone~B",
             "sourceType" : "firewall filter"
+          },
+          "~EXISTING_CONNECTION~" : {
+            "name" : "~EXISTING_CONNECTION~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -18178,7 +18301,7 @@
           "A" : {
             "name" : "A",
             "toZonePolicies" : {
-              "B" : "~FROM_ZONE~A~TO_ZONE~B"
+              "B" : "zone~A~to~zone~B"
             }
           },
           "B" : {
@@ -26658,8 +26781,17 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                   "conjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "bgp"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "ibgp"
+                        }
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
