@@ -152,7 +152,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
 
-  @VisibleForTesting protected static final long DEFAULT_ISIS_COST = 10L;
+  @VisibleForTesting static final long DEFAULT_ISIS_COST = 10L;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
@@ -571,7 +571,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  protected void processIsisInterfaceSettings(
+  void processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
@@ -587,15 +587,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      @Nullable IsisSettings settings, Interface iface, boolean level1, boolean level2) {
+      @Nonnull IsisSettings settings, Interface iface, boolean level1, boolean level2) {
     IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
     if (!interfaceSettings.getEnabled()) {
       return null;
     }
     // If a reference bandwidth is set, calculate default cost as (reference bandwidth) / (interface
-    // bandwidth). This will get overridden later if interface has IS-IS cost set explicitly.
-    Long defaultCost = DEFAULT_ISIS_COST;
-    if (settings != null && settings.getReferenceBandwidth() != null) {
+    // bandwidth). This will get overridden later if IS-IS level settings have cost set explicitly.
+    long defaultCost = DEFAULT_ISIS_COST;
+    if (settings.getReferenceBandwidth() != null) {
       if (iface.getBandwidth() == 0) {
         _w.pedantic(
             String.format(
