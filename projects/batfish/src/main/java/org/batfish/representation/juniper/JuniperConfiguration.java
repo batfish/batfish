@@ -141,10 +141,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       ACL_NAME_EXISTING_CONNECTION)))
           .build();
 
-  private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
-
-  private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
-
   private static final BgpAuthenticationAlgorithm DEFAULT_BGP_AUTHENTICATION_ALGORITHM =
       BgpAuthenticationAlgorithm.HMAC_SHA_1_96;
 
@@ -924,37 +920,127 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
-  private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
-    Prefix prefix = route.getPrefix();
-    int prefixLength = prefix.getPrefixLength();
-    int administrativeCost = route.getMetric();
-    String policyNameSuffix = route.getPrefix().toString().replace('/', '_').replace('.', '_');
-    String policyName = "~AGGREGATE_" + policyNameSuffix + "~";
-    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
-    If routingPolicyConditional = new If();
-    routingPolicy.getStatements().add(routingPolicyConditional);
-    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-    String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
-    MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
-    routingPolicyConditional.setGuard(isContributingRoute);
-    RouteFilterList rfList = new RouteFilterList(rflName);
-    rfList.addLine(
-        new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
+  private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
         new org.batfish.datamodel.GeneratedRoute.Builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(administrativeCost);
-    newRoute.setDiscard(true);
-    newRoute.setGenerationPolicy(policyName);
+
+    newRoute.setGenerationPolicy(computeGenerationPolicy(route));
+    newRoute.setAdmin(route.getPreference());
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    _c.getRoutingPolicies().put(policyName, routingPolicy);
-    _c.getRouteFilterLists().put(rflName, rfList);
+    newRoute.setCommunities(route.getCommunities());
+    newRoute.setMetric(route.getMetric());
+    newRoute.setNetwork(route.getPrefix());
+    if (route.getTag() != null) {
+      newRoute.setTag(route.getTag());
+    }
+
     return newRoute.build();
+  }
+
+  private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
+    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+        new org.batfish.datamodel.GeneratedRoute.Builder();
+
+    newRoute.setGenerationPolicy(computeGenerationPolicy(route));
+    newRoute.setAdmin(route.getPreference());
+    if (route.getAsPath() != null) {
+      newRoute.setAsPath(route.getAsPath());
+    }
+    newRoute.setCommunities(route.getCommunities());
+    newRoute.setMetric(route.getMetric());
+    newRoute.setNetwork(route.getPrefix());
+    if (route.getTag() != null) {
+      newRoute.setTag(route.getTag());
+    }
+
+    // sole semantic difference from generated route
+    newRoute.setDiscard(true);
+
+    return newRoute.build();
+  }
+
+  private @Nullable String computeGenerationPolicy(AbstractAggregateRoute route) {
+    // passive means it is installed whether or not there is a more specific route; active means the
+    // more specific route must be present, and policy should also be checked if present.
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/active-edit-routing-options.html
+
+    if (!route.getActive()) {
+      return null;
+    }
+    Prefix prefix = route.getPrefix();
+    String generationPolicyName = computeRouteGenerationPolicyName(route);
+    RoutingPolicy generationPolicy = new RoutingPolicy(generationPolicyName, _c);
+    _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
+
+    // route filter list to match more specific contributing route
+    String rflName = computeContributorRouteFilterListName(prefix);
+    MatchPrefixSet isContributingRoute =
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
+    RouteFilterList rfList = new RouteFilterList(rflName);
+    rfList.addLine(
+        new org.batfish.datamodel.RouteFilterLine(
+            LineAction.PERMIT,
+            prefix,
+            new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)));
+    _c.getRouteFilterLists().put(rflName, rfList);
+
+    // contributor check that exits for non-contributing routes
+    If contributorCheck = new If();
+    contributorCheck.setGuard(isContributingRoute);
+    contributorCheck.setFalseStatements(
+        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    generationPolicy.getStatements().add(contributorCheck);
+
+    // add named policies if present
+    if (!route.getPolicies().isEmpty()) {
+      If namedPoliciesCheck = new If();
+      Disjunction matchSomeNamedPolicy = new Disjunction();
+      namedPoliciesCheck.setGuard(matchSomeNamedPolicy);
+      namedPoliciesCheck.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
+      namedPoliciesCheck.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
+      generationPolicy.getStatements().add(namedPoliciesCheck);
+      route
+          .getPolicies()
+          .forEach(
+              policyName -> {
+                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
+                boolean defined = policy != null;
+                if (defined) {
+                  setPolicyStatementReferent(policyName);
+                  CallExpr callPolicy = new CallExpr(policyName);
+                  matchSomeNamedPolicy.getDisjuncts().add(callPolicy);
+                } else {
+                  matchSomeNamedPolicy.setComment(
+                      String.format(
+                          "%s%sUndefined reference to: %s",
+                          defined ? matchSomeNamedPolicy.getComment() : "",
+                          defined ? "\n" : "",
+                          policyName));
+                }
+              });
+    }
+    return generationPolicyName;
+  }
+
+  public static String computeContributorRouteFilterListName(Prefix prefix) {
+    return String.format("~CONTRIBUTOR_TO_%s~", prefix);
+  }
+
+  private static String computeRouteGenerationPolicyName(AbstractAggregateRoute route) {
+    Prefix prefix = route.getPrefix();
+    return route instanceof AggregateRoute
+        ? computeAggregatedRouteGenerationPolicyName(prefix)
+        : computeGeneratedRouteGenerationPolicyName(prefix);
+  }
+
+  public static String computeAggregatedRouteGenerationPolicyName(Prefix prefix) {
+    return String.format("~AGGREGATE_ROUTE_POLICY:%s~", prefix);
+  }
+
+  public static String computeGeneratedRouteGenerationPolicyName(Prefix prefix) {
+    return String.format("~GENERATED_ROUTE_POLICY:%s~", prefix);
   }
 
   private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
@@ -1004,52 +1090,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     org.batfish.datamodel.CommunityList newCl =
         new org.batfish.datamodel.CommunityList(name, newLines, cl.getInvertMatch());
     return newCl;
-  }
-
-  private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
-    Prefix prefix = route.getPrefix();
-    Integer administrativeCost = route.getPreference();
-    if (administrativeCost == null) {
-      administrativeCost = DEFAULT_AGGREGATE_ROUTE_PREFERENCE;
-    }
-    Integer metric = route.getMetric();
-    if (metric == null) {
-      metric = DEFAULT_AGGREGATE_ROUTE_COST;
-    }
-    String generationPolicyName = null;
-    if (!route.getPolicies().isEmpty()) {
-      generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix + "~";
-      RoutingPolicy generationPolicy = new RoutingPolicy(generationPolicyName, _c);
-      _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
-      If generationPolicyConditional = new If();
-      Disjunction matchSomeGenerationPolicy = new Disjunction();
-      generationPolicyConditional.setGuard(matchSomeGenerationPolicy);
-      generationPolicyConditional
-          .getTrueStatements()
-          .add(Statements.ExitAccept.toStaticStatement());
-      generationPolicyConditional
-          .getFalseStatements()
-          .add(Statements.ExitReject.toStaticStatement());
-      generationPolicy.getStatements().add(generationPolicyConditional);
-      route
-          .getPolicies()
-          .forEach(
-              policyName -> {
-                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
-                if (policy != null) {
-                  setPolicyStatementReferent(policyName);
-                  CallExpr callPolicy = new CallExpr(policyName);
-                  matchSomeGenerationPolicy.getDisjuncts().add(callPolicy);
-                }
-              });
-    }
-    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(administrativeCost);
-    newRoute.setMetric(metric);
-    newRoute.setGenerationPolicy(generationPolicyName);
-    return newRoute.build();
   }
 
   private org.batfish.datamodel.IkeGateway toIkeGateway(IkeGateway oldIkeGateway) {
@@ -2300,6 +2340,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // aggregate routes
       for (AggregateRoute route :
           ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
+        route.inheritUnsetFields(ri.getAggregateRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
       }
@@ -2307,6 +2348,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // generated routes
       for (GeneratedRoute route :
           ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
+        route.inheritUnsetFields(ri.getGeneratedRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }

@@ -147,6 +147,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -166,6 +167,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -1182,6 +1184,268 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testAggregateDefaults() throws IOException {
+    Configuration config = parseConfig("aggregate-defaults");
+
+    Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
+    GeneratedRoute ar1 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar2 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar3 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // passive default
+    // policies should be generated only for the active ones
+    assertThat(ar1.getGenerationPolicy(), nullValue());
+    assertThat(
+        ar2.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeAggregatedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(ar3.getGenerationPolicy(), nullValue());
+
+    Set<GeneratedRoute> aggregateRoutesRi1 = config.getVrfs().get("ri1").getGeneratedRoutes();
+    GeneratedRoute ar1Ri1 =
+        aggregateRoutesRi1
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar2Ri1 =
+        aggregateRoutesRi1
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar3Ri1 =
+        aggregateRoutesRi1
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // active default
+    // policies should be generated only for the active ones
+    assertThat(
+        ar1Ri1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeAggregatedRouteGenerationPolicyName(
+                Prefix.parse("1.0.0.0/8"))));
+    assertThat(
+        ar2Ri1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeAggregatedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(ar3Ri1.getGenerationPolicy(), nullValue());
+  }
+
+  @Test
+  public void testAggregateRoutesGenerationPolicies() throws IOException {
+    Configuration config = parseConfig("aggregate-routes");
+
+    Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
+    GeneratedRoute ar1 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar2 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar3 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // policies should be generated only for the active ones
+    assertThat(
+        ar1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeAggregatedRouteGenerationPolicyName(
+                Prefix.parse("1.0.0.0/8"))));
+    assertThat(
+        ar2.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeAggregatedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(ar3.getGenerationPolicy(), nullValue());
+
+    // the second one should only accept 2.0.0.0/32 as a contributor
+    RoutingPolicy rp2 = config.getRoutingPolicies().get(ar2.getGenerationPolicy());
+    ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
+    ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
+    assertThat(
+        rp2.process(cr31, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(false));
+    assertThat(
+        rp2.process(cr32, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
+
+    // all should be discard routes
+    assertThat(ar1.getDiscard(), equalTo(true));
+    assertThat(ar2.getDiscard(), equalTo(true));
+    assertThat(ar3.getDiscard(), equalTo(true));
+  }
+
+  @Test
+  public void testGeneratedDefaults() throws IOException {
+    Configuration config = parseConfig("generated-defaults");
+
+    Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
+    GeneratedRoute gr1 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr2 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr3 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // passive default
+    // policies should be generated only for the active ones
+    assertThat(gr1.getGenerationPolicy(), nullValue());
+    assertThat(
+        gr2.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeGeneratedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(gr3.getGenerationPolicy(), nullValue());
+
+    Set<GeneratedRoute> generatedRi1 = config.getVrfs().get("ri1").getGeneratedRoutes();
+    GeneratedRoute gr1Ri1 =
+        generatedRi1
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr2Ri1 =
+        generatedRi1
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr3Ri1 =
+        generatedRi1
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // active default
+    // policies should be generated only for the active ones
+    assertThat(
+        gr1Ri1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeGeneratedRouteGenerationPolicyName(
+                Prefix.parse("1.0.0.0/8"))));
+    assertThat(
+        gr2Ri1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeGeneratedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(gr3Ri1.getGenerationPolicy(), nullValue());
+  }
+
+  @Test
+  public void testGeneratedRoutesGenerationPolicies() throws IOException {
+    Configuration config = parseConfig("generated-routes");
+
+    Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
+    GeneratedRoute gr1 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr2 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute gr3 =
+        generatedRoutes
+            .stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
+            .findAny()
+            .get();
+
+    // policies should be generated only for the active ones
+    assertThat(
+        gr1.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeGeneratedRouteGenerationPolicyName(
+                Prefix.parse("1.0.0.0/8"))));
+    assertThat(
+        gr2.getGenerationPolicy(),
+        equalTo(
+            JuniperConfiguration.computeGeneratedRouteGenerationPolicyName(
+                Prefix.parse("2.0.0.0/8"))));
+    assertThat(gr3.getGenerationPolicy(), nullValue());
+
+    // the second one should only accept 2.0.0.0/32 as a contributor
+    RoutingPolicy rp2 = config.getRoutingPolicies().get(gr2.getGenerationPolicy());
+    ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
+    ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
+    assertThat(
+        rp2.process(cr31, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(false));
+    assertThat(
+        rp2.process(cr32, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
+
+    // none should be discard routes
+    assertThat(gr1.getDiscard(), equalTo(false));
+    assertThat(gr2.getDiscard(), equalTo(false));
+    assertThat(gr3.getDiscard(), equalTo(false));
+  }
+
+  @Test
+  public void testGeneratedRouteCommunities() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/generated-route-communities")
+            .get("generated-route-communities");
+    assertThat(
+        config
+            .getDefaultVrf()
+            .getGeneratedRoutes()
+            .stream()
+            .map(GeneratedRoute::getCommunities)
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of(ImmutableSortedSet.of(65537L))));
   }
 
   @Test

@@ -8,6 +8,7 @@ set routing-options aggregate route 30.0.0.0/8 as-path path "[ 123.4 456.7 ]"
 set routing-options aggregate route 40.0.0.0/8 policy AGGREGATE_ROUTE_POLICY
 set routing-options confederation 11111 members 22222
 set routing-options forwarding-table no-ecmp-fast-reroute
-
 #
-
+set routing-options generate route 10.0.1.0/24 community 2:6
+set routing-options generate route 10.0.1.0/24 active
+#
