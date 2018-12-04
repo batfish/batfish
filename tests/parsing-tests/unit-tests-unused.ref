@@ -2015,6 +2015,16 @@
       },
       {
         "Structure_Type" : "firewall filter",
+        "Structure_Name" : "ISP-INBOUND-L2",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_firewall",
+          "lines" : [
+            34
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "firewall filter",
         "Structure_Name" : "blah",
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
@@ -2718,10 +2728,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 192 results",
+      "notes" : "Found 193 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 192
+      "numResults" : 193
     }
   }
 ]

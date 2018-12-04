@@ -1150,6 +1150,11 @@ ETHER_OPTIONS
    'ether-options'
 ;
 
+ETHER_TYPE
+:
+   'ether-type'
+;
+
 ETHERNET_SWITCHING
 :
    'ethernet-switching'

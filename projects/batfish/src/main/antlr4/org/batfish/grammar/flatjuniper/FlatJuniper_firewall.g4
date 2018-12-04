@@ -244,7 +244,8 @@ fftf_next_header
 fftf_null
 :
    (
-      PAYLOAD_PROTOCOL
+      ETHER_TYPE
+      | PAYLOAD_PROTOCOL
    ) null_filler
 ;
 
