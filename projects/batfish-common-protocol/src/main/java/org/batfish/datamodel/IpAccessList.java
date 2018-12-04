@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
@@ -171,6 +172,11 @@ public class IpAccessList extends ComparableStructure<String> {
   @JsonProperty(PROP_SOURCE_TYPE)
   public @Nullable String getSourceType() {
     return _sourceType;
+  }
+
+  @JsonIgnore
+  public boolean isComposite() {
+    return getName().startsWith("~");
   }
 
   private boolean noDenyOrLastDeny(IpAccessList acl) {
