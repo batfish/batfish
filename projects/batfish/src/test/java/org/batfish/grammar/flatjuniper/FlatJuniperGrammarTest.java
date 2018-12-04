@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.isNonForwarding;
@@ -413,9 +414,9 @@ public class FlatJuniperGrammarTest {
     String hostname = "application-set-nested";
     Configuration c = parseConfig(hostname);
 
-    String aclNameNonNested = "~FROM_ZONE~z1~TO_ZONE~z2";
-    String aclNameNested = "~FROM_ZONE~z1~TO_ZONE~z3";
-    String aclNameMultiNested = "~FROM_ZONE~z1~TO_ZONE~z4";
+    String aclNameNonNested = zoneToZoneFilter("z1", "z2");
+    String aclNameNested = zoneToZoneFilter("z1", "z3");
+    String aclNameMultiNested = zoneToZoneFilter("z1", "z4");
     String z1Interface = "ge-0/0/0.0";
     IpAccessList aclNonNested = c.getIpAccessLists().get(aclNameNonNested);
     IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
@@ -689,10 +690,10 @@ public class FlatJuniperGrammarTest {
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
 
-    String aclApplicationsName = "~FROM_ZONE~z1~TO_ZONE~z2";
-    String aclApplicationSetName = "~FROM_ZONE~z1~TO_ZONE~z3";
-    String aclApplicationSetAnyName = "~FROM_ZONE~z1~TO_ZONE~z4";
-    String aclApplicationAnyName = "~FROM_ZONE~z1~TO_ZONE~z5";
+    String aclApplicationsName = zoneToZoneFilter("z1", "z2");
+    String aclApplicationSetName = zoneToZoneFilter("z1", "z3");
+    String aclApplicationSetAnyName = zoneToZoneFilter("z1", "z4");
+    String aclApplicationAnyName = zoneToZoneFilter("z1", "z5");
     String z1Interface = "ge-0/0/0.0";
     IpAccessList aclApplication = c.getIpAccessLists().get(aclApplicationsName);
     IpAccessList aclApplicationSet = c.getIpAccessLists().get(aclApplicationSetName);
@@ -1048,7 +1049,7 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("firewall-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
-    String securityPolicyName = "~FROM_ZONE~trust~TO_ZONE~untrust";
+    String securityPolicyName = zoneToZoneFilter("trust", "untrust");
     String trustedIpAddr = "1.2.3.5";
     String untrustedIpAddr = "1.2.4.5";
 

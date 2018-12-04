@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -2926,7 +2927,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       String fromName = ctx.from.getText();
       String toName = ctx.to.getText();
-      String policyName = "~FROM_ZONE~" + fromName + "~TO_ZONE~" + toName;
+      String policyName = zoneToZoneFilter(fromName, toName);
       if (ctx.from.JUNOS_HOST() == null) {
         _currentFromZone = _currentLogicalSystem.getZones().get(fromName);
         if (_currentFromZone == null) {
