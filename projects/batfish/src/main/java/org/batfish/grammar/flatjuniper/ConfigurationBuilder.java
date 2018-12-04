@@ -367,22 +367,29 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instan
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_aggregateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_generateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_defaultsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_defaultsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_lanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
@@ -2662,7 +2669,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterRo_aggregate(Ro_aggregateContext ctx) {
+  public void enterRoa_defaults(Roa_defaultsContext ctx) {
+    _currentAggregateRoute = _currentRoutingInstance.getAggregateRouteDefaults();
+  }
+
+  @Override
+  public void exitRoa_defaults(Roa_defaultsContext ctx) {
+    _currentAggregateRoute = null;
+  }
+
+  @Override
+  public void exitRoa_passive(Roa_passiveContext ctx) {
+    _currentAggregateRoute.setActive(false);
+  }
+
+  @Override
+  public void enterRoa_route(Roa_routeContext ctx) {
     if (ctx.prefix != null) {
       Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
@@ -2673,7 +2695,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterRo_generate(Ro_generateContext ctx) {
+  public void exitRoa_route(Roa_routeContext ctx) {
+    _currentAggregateRoute = null;
+  }
+
+  @Override
+  public void enterRog_defaults(Rog_defaultsContext ctx) {
+    _currentGeneratedRoute = _currentRoutingInstance.getGeneratedRouteDefaults();
+  }
+
+  @Override
+  public void exitRog_defaults(Rog_defaultsContext ctx) {
+    _currentGeneratedRoute = null;
+  }
+
+  @Override
+  public void exitRog_passive(Rog_passiveContext ctx) {
+    _currentGeneratedRoute.setActive(false);
+  }
+
+  @Override
+  public void enterRog_route(Rog_routeContext ctx) {
     if (ctx.IP_PREFIX() != null) {
       Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
@@ -2683,6 +2725,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentGeneratedRoute = new GeneratedRoute(null);
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitRog_route(Rog_routeContext ctx) {
+    _currentGeneratedRoute = null;
   }
 
   @Override
@@ -4503,11 +4550,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitRo_aggregate(Ro_aggregateContext ctx) {
-    _currentAggregateRoute = null;
-  }
-
-  @Override
   public void exitRo_autonomous_system(Ro_autonomous_systemContext ctx) {
     if (ctx.asn != null) {
       long as = toAsNum(ctx.asn);
@@ -4529,11 +4571,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitRo_generate(Ro_generateContext ctx) {
-    _currentGeneratedRoute = null;
-  }
-
-  @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     Ip id = new Ip(ctx.id.getText());
     _currentRoutingInstance.setRouterId(id);
@@ -4542,6 +4579,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRo_static(Ro_staticContext ctx) {
     _currentStaticRoute = null;
+  }
+
+  @Override
+  public void exitRoa_active(Roa_activeContext ctx) {
+    _currentAggregateRoute.setActive(true);
   }
 
   @Override
@@ -4556,7 +4598,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = unquote(ctx.name.getText());
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, AGGREGATE_ROUTE_POLICY, getLine(ctx.name.getStart()));
-    _currentAggregateRoute.setPolicy(name);
+    _currentAggregateRoute.getPolicies().add(name);
     todo(ctx);
   }
 
@@ -4592,6 +4634,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentLogicalSystem.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, FORWARDING_TABLE_EXPORT_POLICY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitRog_active(Rog_activeContext ctx) {
+    _currentGeneratedRoute.setActive(true);
+  }
+
+  @Override
+  public void exitRog_community(Rog_communityContext ctx) {
+    _currentGeneratedRoute.getCommunities().add(toCommunityLong(ctx.standard_community()));
   }
 
   @Override

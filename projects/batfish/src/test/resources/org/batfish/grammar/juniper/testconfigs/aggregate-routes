@@ -1,0 +1,10 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name aggregate-routes
+#
+set policy-options policy-statement MOST_SPECIFIC term t1 from route-filter 2.0.0.0/32 exact
+set policy-options policy-statement MOST_SPECIFIC term t1 then accept
+set routing-options aggregate route 1.0.0.0/8 active
+set routing-options aggregate route 2.0.0.0/8 active
+set routing-options aggregate route 2.0.0.0/8 policy MOST_SPECIFIC
+set routing-options aggregate route 3.0.0.0/8 passive
+#
