@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +25,10 @@ public final class Disjunction extends BooleanExpr {
 
   public Disjunction() {
     this(new ArrayList<>());
+  }
+
+  public Disjunction(BooleanExpr... disjuncts) {
+    this(Arrays.asList(disjuncts));
   }
 
   public Disjunction(List<BooleanExpr> disjuncts) {
