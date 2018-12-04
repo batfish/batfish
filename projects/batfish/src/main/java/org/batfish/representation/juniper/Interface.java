@@ -37,15 +37,17 @@ public class Interface implements Serializable {
     }
   }
 
+  /** Represents the type of interface for OSPF */
   public enum OspfInterfaceType {
-    // default
+    /** This is not an explicit type -- assumed by default */
     BROADCAST,
-    // non-broadcast multi-access
+    /** non-broadcast multi-access */
     NBMA,
-    // Point to multipoint
+    /** Point to multipoint */
     P2MP,
+    /** Point to multipoint over lan */
     P2MP_OVER_LAN,
-    // Point to point
+    /** Point to point */
     P2P
   }
 

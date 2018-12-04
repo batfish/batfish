@@ -301,6 +301,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -678,6 +679,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
+  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
+    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
+  }
+
+  private <T, U extends T> T convProblem(
+      Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
+    _w.redFlag(convErrorMessage(returnType, ctx));
+    return defaultReturnValue;
+  }
 
   /** Mark the specified structure as defined on each line in the supplied context */
   private void defineStructure(StructureType type, String name, RuleContext ctx) {
@@ -1541,6 +1552,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return IkeAuthenticationMethod.RSA_SIGNATURES;
     } else {
       throw new BatfishException("Invalid ike authentication method: " + ctx.getText());
+    }
+  }
+
+  private OspfInterfaceType toOspfInterfaceType(Ospf_interface_typeContext ctx) {
+    if (ctx.NBMA() != null) {
+      return OspfInterfaceType.NBMA;
+    } else if (ctx.P2MP() != null) {
+      return OspfInterfaceType.P2MP;
+    } else if (ctx.P2MP_OVER_LAN() != null) {
+      return OspfInterfaceType.P2MP_OVER_LAN;
+    } else if (ctx.P2P() != null) {
+      return OspfInterfaceType.P2P;
+    } else {
+      return convProblem(OspfInterfaceType.class, ctx, null);
     }
   }
 
@@ -4074,15 +4099,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_interface_type(Oai_interface_typeContext ctx) {
-    if (ctx.NBMA() != null) {
-      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.NBMA);
-    } else if (ctx.P2MP() != null) {
-      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2MP);
-    } else if (ctx.P2MP_OVER_LAN() != null) {
-      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2MP_OVER_LAN);
-    } else if (ctx.P2P() != null) {
-      _currentOspfInterface.setOspfInterfaceType(OspfInterfaceType.P2P);
-    }
+    _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
   }
 
   @Override

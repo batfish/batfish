@@ -195,14 +195,7 @@ oai_hello_interval
 
 oai_interface_type
 :
-   INTERFACE_TYPE
-   (
-      NBMA
-      | P2MP
-      | P2MP_OVER_LAN
-      | P2P
-   )
-
+   INTERFACE_TYPE type = ospf_interface_type
 ;
 
 oai_ldp_synchronization
@@ -303,6 +296,16 @@ oas_no_summaries
 oas_default_metric
 :
    DEFAULT_METRIC DEC
+;
+
+ospf_interface_type
+:
+   (
+      NBMA
+      | P2MP
+      | P2MP_OVER_LAN
+      | P2P
+   )
 ;
 
 ot_credibility_protocol_preference
