@@ -93,6 +93,7 @@ public final class Interface extends ComparableStructure<String> {
       _active = true;
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _destinationNats = ImmutableList.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
