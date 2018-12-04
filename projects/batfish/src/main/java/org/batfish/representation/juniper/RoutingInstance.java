@@ -47,7 +47,7 @@ public class RoutingInstance implements Serializable {
 
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
 
-  private final IsisSettings _isisSettings;
+  @Nonnull private final IsisSettings _isisSettings;
 
   @Nullable private Integer _loops;
 
@@ -162,6 +162,7 @@ public class RoutingInstance implements Serializable {
     return _ipBgpGroups;
   }
 
+  @Nonnull
   public IsisSettings getIsisSettings() {
     return _isisSettings;
   }
