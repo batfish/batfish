@@ -651,7 +651,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void computeAggregatedInterfaceBandwidth(
       Interface iface, Map<String, Interface> interfaces) {
-    if (iface.getInterfaceType() != InterfaceType.AGGREGATED) {
+    if (iface.getInterfaceType() != InterfaceType.AGGREGATED
+        && iface.getInterfaceType() != InterfaceType.REDUNDANT) {
       return;
     }
     /* Bandwidth should be sum of bandwidth of channel-group members. */
@@ -2397,10 +2398,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .stream()
         .filter(
             i ->
-                i.getInterfaceType() == InterfaceType.AGGREGATED
+                (i.getInterfaceType() == InterfaceType.AGGREGATED
+                        || i.getInterfaceType() == InterfaceType.REDUNDANT)
                     && i.getChannelGroupMembers().isEmpty()
-                    // TODO: Temporary hack to avoid disabling juniper AE unit interfaces
+                    // TODO: Temporary hack to avoid disabling juniper AE/RETH unit interfaces
                     && !i.getName().startsWith("ae")
+                    && !i.getName().startsWith("reth")
                     && !i.getName().contains("."))
         .forEach(i -> i.setActive(false));
 
