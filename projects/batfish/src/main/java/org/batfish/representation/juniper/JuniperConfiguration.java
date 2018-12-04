@@ -2571,6 +2571,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
               if (iface.get8023adInterface() != null) {
                 org.batfish.datamodel.Interface viIface =
                     _c.getAllInterfaces().get(iface.get8023adInterface());
+                if (viIface == null) {
+                  return;
+                }
                 viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
               }
             });
