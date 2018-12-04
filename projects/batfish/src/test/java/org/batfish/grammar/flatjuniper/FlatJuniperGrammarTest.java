@@ -2777,11 +2777,12 @@ public class FlatJuniperGrammarTest {
     assertThat(ruleSet.getFromLocation().getZone(), equalTo("FROM-ZONE"));
 
     // test rules
-    Map<String, NatRule> rules = ruleSet.getRules();
-    assertThat(rules.keySet(), containsInAnyOrder("RULE1", "RULE2"));
+    List<NatRule> rules = ruleSet.getRules();
+    assertThat(rules, hasSize(2));
 
     // test rule1
-    NatRule rule1 = rules.get("RULE1");
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
         equalTo(
@@ -2791,7 +2792,8 @@ public class FlatJuniperGrammarTest {
     assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     // test rule2
-    NatRule rule2 = rules.get("RULE2");
+    NatRule rule2 = rules.get(1);
+    assertThat(rule2.getName(), equalTo("RULE2"));
     assertThat(
         rule2.getMatches(),
         equalTo(
@@ -2847,11 +2849,12 @@ public class FlatJuniperGrammarTest {
     assertThat(ruleSet.getToLocation().getZone(), equalTo("TO-ZONE"));
 
     // test rules
-    Map<String, NatRule> rules = ruleSet.getRules();
-    assertThat(rules.keySet(), containsInAnyOrder("RULE1", "RULE2"));
+    List<NatRule> rules = ruleSet.getRules();
+    assertThat(rules, hasSize(2));
 
     // test rule1
-    NatRule rule1 = rules.get("RULE1");
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
         equalTo(
@@ -2861,7 +2864,8 @@ public class FlatJuniperGrammarTest {
     assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     // test rule2
-    NatRule rule2 = rules.get("RULE2");
+    NatRule rule2 = rules.get(1);
+    assertThat(rule2.getName(), equalTo("RULE2"));
     assertThat(
         rule2.getMatches(),
         equalTo(
