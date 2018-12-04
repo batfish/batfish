@@ -45776,6 +45776,32 @@
             "                        (icmp6_only_type",
             "                          NEIGHBOR_SOLICIT:'neighbor-solicit')))))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
+            "              ETHERNET_SWITCHING:'ethernet-switching'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'ISP-INBOUND-L2')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'ALLOW-ARP')",
+            "                    (fft_from",
+            "                      FROM:'from'",
+            "                      (fftf_null",
+            "                        ETHER_TYPE:'ether-type'",
+            "                        (null_filler",
+            "                          ARP:'arp')))))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -64556,6 +64582,12 @@
         "configs/juniper_extended_community" : { },
         "configs/juniper_firewall" : {
           "firewall filter" : {
+            "ISP-INBOUND-L2" : {
+              "definitionLines" : [
+                34
+              ],
+              "numReferrers" : 0
+            },
             "blah" : {
               "definitionLines" : [
                 5,
