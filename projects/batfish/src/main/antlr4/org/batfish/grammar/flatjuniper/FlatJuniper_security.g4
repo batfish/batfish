@@ -195,7 +195,7 @@ proposal_set_type
 
 rs_interface
 :
-    INTERFACE name = variable
+    INTERFACE name = interface_id
 ;
 
 rs_packet_location
