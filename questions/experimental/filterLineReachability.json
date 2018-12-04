@@ -2,7 +2,7 @@
     "class": "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
     "differential": false,
     "filters": "${filters}",
-    "ignoreGenerated": "${ignoreGenerated}",
+    "ignoreComposites": "${ignoreComposites}",
     "nodes": "${nodes}",
     "instance": {
         "description": "Identify ACLs/filters with unreachable lines",
@@ -19,12 +19,12 @@
                 "optional": true,
                 "displayName": "Filters"
             },
-            "ignoreGenerated": {
-                "description": "Whether to ignore filters that combine filters defined in the configs",
+            "ignoreComposites": {
+                "description": "Whether to ignore filters that are composed of multiple filters defined in the configs",
                 "type": "boolean",
                 "optional": true,
-                "value": true,
-                "displayName": "Ignore generated filters"
+                "value": false,
+                "displayName": "Ignore composite filters"
             },
             "nodes": {
                 "description": "Examine filters on nodes matching this name or regex",

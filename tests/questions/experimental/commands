@@ -1,7 +1,7 @@
 load-questions questions/experimental
 
 # validate filterLineReachability
-test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", ignoreGenerated=false, nodes=".*"
+test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", ignoreComposites=false, nodes=".*"
 
 # validate bgpPeerConfiguration
 test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*", properties="local_.*"

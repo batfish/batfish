@@ -27,7 +27,7 @@ public class FilterLineReachabilityQuestion extends Question {
   private static final String DEFAULT_FILTER_SPECIFIER_FACTORY =
       FlexibleFilterSpecifierFactory.NAME;
 
-  private static final boolean DEFAULT_IGNORE_GENERATED = true;
+  private static final boolean DEFAULT_IGNORE_COMPOSITES = true;
 
   private static final String DEFAULT_NODE_SPECIFIER_FACTORY = FlexibleNodeSpecifierFactory.NAME;
 
@@ -35,7 +35,7 @@ public class FilterLineReachabilityQuestion extends Question {
 
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filters";
 
-  private static final String PROP_IGNORE_GENERATED = "ignoreGenerated";
+  private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
 
   private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
 
@@ -45,7 +45,7 @@ public class FilterLineReachabilityQuestion extends Question {
 
   @Nullable private String _filterSpecifierInput;
 
-  private final boolean _ignoreGenerated;
+  private final boolean _ignoreComposites;
 
   @Nonnull private String _nodeSpecifierFactory;
 
@@ -57,7 +57,7 @@ public class FilterLineReachabilityQuestion extends Question {
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) String filtersSpecifierInput,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) String nodeSpecifierFactory,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_INPUT) String nodeSpecifierInput,
-      @Nullable @JsonProperty(PROP_IGNORE_GENERATED) Boolean ignoreGeneratedFilters) {
+      @Nullable @JsonProperty(PROP_IGNORE_COMPOSITES) Boolean ignoreGeneratedFilters) {
     return new FilterLineReachabilityQuestion(
         filterSpecifierFactory,
         filtersSpecifierInput,
@@ -79,8 +79,8 @@ public class FilterLineReachabilityQuestion extends Question {
   }
 
   public FilterLineReachabilityQuestion(
-      String filterSpecifierInput, String nodeSpecifierInput, boolean ignoreGenerated) {
-    this(null, filterSpecifierInput, null, nodeSpecifierInput, ignoreGenerated);
+      String filterSpecifierInput, String nodeSpecifierInput, boolean ignoreComposites) {
+    this(null, filterSpecifierInput, null, nodeSpecifierInput, ignoreComposites);
   }
 
   public FilterLineReachabilityQuestion(
@@ -88,13 +88,13 @@ public class FilterLineReachabilityQuestion extends Question {
       @Nullable String filtersSpecifierInput,
       @Nullable String nodeSpecifierFactory,
       @Nullable String nodeSpecifierInput,
-      @Nullable Boolean ignoreGenerated) {
+      @Nullable Boolean ignoreComposites) {
     _filterSpecifierFactory =
         firstNonNull(filterSpecifierFactory, DEFAULT_FILTER_SPECIFIER_FACTORY);
     _filterSpecifierInput = filtersSpecifierInput;
     _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, DEFAULT_NODE_SPECIFIER_FACTORY);
     _nodeSpecifierInput = nodeSpecifierInput;
-    _ignoreGenerated = firstNonNull(ignoreGenerated, DEFAULT_IGNORE_GENERATED);
+    _ignoreComposites = firstNonNull(ignoreComposites, DEFAULT_IGNORE_COMPOSITES);
   }
 
   @Override
@@ -114,9 +114,9 @@ public class FilterLineReachabilityQuestion extends Question {
     return _filterSpecifierInput;
   }
 
-  @JsonProperty(PROP_IGNORE_GENERATED)
-  public boolean getIgnoreGenerated() {
-    return _ignoreGenerated;
+  @JsonProperty(PROP_IGNORE_COMPOSITES)
+  public boolean getIgnoreComposites() {
+    return _ignoreComposites;
   }
 
   @Override
