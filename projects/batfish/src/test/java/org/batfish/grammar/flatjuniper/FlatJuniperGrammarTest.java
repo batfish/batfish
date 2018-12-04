@@ -223,7 +223,9 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -2811,5 +2813,23 @@ public class FlatJuniperGrammarTest {
   public void testStormControl() throws IOException {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
+  }
+
+
+  @Test
+  public void testSecurityPolicy() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
+    Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();
+
+    assertThat(zones.keySet(), equalTo(ImmutableSet.of("trust", "untrust")));
+
+    Zone trust = zones.get("trust");
+    assertThat(trust.getFromZonePolicies().keySet(), hasSize(0));
+    assertThat(trust.getToZonePolicies().keySet(), hasSize(1));
+
+    FirewallFilter policy = trust.getToZonePolicies().get(0);
+
+    Zone untrust = zones.get("untrust");
+    trust.getFromZonePolicies();
   }
 }
