@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.transform.Source;
 import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
