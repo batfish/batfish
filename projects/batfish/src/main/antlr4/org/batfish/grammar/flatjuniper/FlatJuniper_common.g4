@@ -531,7 +531,8 @@ bandwidth
 :
   base = DEC
   (
-    K
+    C
+    | K
     | M
     | G
   )?
