@@ -158,7 +158,7 @@ public class Driver {
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
   private static Cache<NetworkSnapshot, DataPlane> buildDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_DATA_PLANES).build();
   }
 
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -172,7 +172,7 @@ public class Driver {
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
-    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
   private static synchronized boolean claimIdle() {

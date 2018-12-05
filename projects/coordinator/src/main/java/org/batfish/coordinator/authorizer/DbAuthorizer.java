@@ -55,9 +55,15 @@ public class DbAuthorizer implements Authorizer {
   DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout) {
     _logger = Main.getLogger();
     _cacheApiKeys =
-        CacheBuilder.newBuilder().expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS).build();
+        CacheBuilder.newBuilder()
+            .softValues()
+            .expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS)
+            .build();
     _cachePermissions =
-        CacheBuilder.newBuilder().expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS).build();
+        CacheBuilder.newBuilder()
+            .softValues()
+            .expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS)
+            .build();
     _connString = connectionString;
     _driverClassName = driverClass;
     openDbConnection();
