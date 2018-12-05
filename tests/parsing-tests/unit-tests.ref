@@ -47284,6 +47284,81 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = VARIABLE:'ge-2/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_Bandwidth)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-3/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth",
+            "                    K:'k'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-4/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth",
+            "                    M:'m'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-5/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth",
+            "                    G:'g'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface",
             "                COLON:':'",
             "                suffix = DEC:'0')",
@@ -60991,7 +61066,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 13,
+              "Line" : 17,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "tcp-mss 1400"
             }
@@ -64673,46 +64748,94 @@
               ],
               "numReferrers" : 1
             },
+            "ge-2/0/0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "ge-2/0/0.0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "ge-3/0/0" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 1
+            },
+            "ge-3/0/0.0" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 1
+            },
+            "ge-4/0/0" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 1
+            },
+            "ge-4/0/0.0" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 1
+            },
+            "ge-5/0/0" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 1
+            },
+            "ge-5/0/0.0" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 1
+            },
             "irb" : {
               "definitionLines" : [
-                10,
-                11,
-                12,
-                13
+                14,
+                15,
+                16,
+                17
               ],
               "numReferrers" : 4
             },
             "irb.5" : {
               "definitionLines" : [
-                10,
-                11,
-                12,
-                13
+                14,
+                15,
+                16,
+                17
               ],
               "numReferrers" : 4
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
-                8,
-                9
+                12,
+                13
               ],
               "numReferrers" : 2
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : [
-                9
+                13
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                14
+                18
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                14
+                18
               ],
               "numReferrers" : 1
             }
@@ -64720,8 +64843,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                18,
-                19
+                22,
+                23
               ],
               "numReferrers" : 0
             }
@@ -67928,7 +68051,7 @@
             },
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                16
+                20
               ]
             },
             "ge-1/0/0" : {
@@ -67936,48 +68059,88 @@
                 7
               ]
             },
+            "ge-2/0/0" : {
+              "interface" : [
+                8
+              ]
+            },
+            "ge-2/0/0.0" : {
+              "interface" : [
+                8
+              ]
+            },
+            "ge-3/0/0" : {
+              "interface" : [
+                9
+              ]
+            },
+            "ge-3/0/0.0" : {
+              "interface" : [
+                9
+              ]
+            },
+            "ge-4/0/0" : {
+              "interface" : [
+                10
+              ]
+            },
+            "ge-4/0/0.0" : {
+              "interface" : [
+                10
+              ]
+            },
+            "ge-5/0/0" : {
+              "interface" : [
+                11
+              ]
+            },
+            "ge-5/0/0.0" : {
+              "interface" : [
+                11
+              ]
+            },
             "irb" : {
               "interface" : [
-                10,
-                11,
-                12,
-                13
+                14,
+                15,
+                16,
+                17
               ]
             },
             "irb.5" : {
               "interface" : [
-                10,
-                11,
-                12,
-                13
+                14,
+                15,
+                16,
+                17
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
-                8,
-                9
+                12,
+                13
               ]
             },
             "xe-0/0/0:0.0" : {
               "interface" : [
-                9
+                13
               ]
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                14
+                18
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                14
+                18
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                14
+                18
               ]
             }
           }
@@ -69862,14 +70025,14 @@
           "interface" : {
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                16
+                20
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                14
+                18
               ]
             }
           }
@@ -70412,10 +70575,6 @@
         },
         "juniper_nat" : {
           "Unimplemented features" : [
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "Destination NAT is not currently implemented"
-            },
             {
               "tag" : "UNIMPLEMENTED",
               "text" : "Source NAT is not currently implemented"

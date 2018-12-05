@@ -112,6 +112,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLeng
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -998,14 +1000,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     generationPolicy.getStatements().add(contributorCheck);
 
-    // add named policies if present
+    /*
+     *  Evaluate policies in order:
+     *  - If a policy accepts, stop evaluation and accept.
+     *  - If a policy rejects, stop evaulation and reject.
+     *  - If no policy takes an action, take default action.
+     *  -- Initially, default action is accept.
+     *  -- Policy can change default action and fall through.
+     */
+    generationPolicy.getStatements().add(Statements.SetDefaultActionAccept.toStaticStatement());
     if (!route.getPolicies().isEmpty()) {
-      If namedPoliciesCheck = new If();
-      Disjunction matchSomeNamedPolicy = new Disjunction();
-      namedPoliciesCheck.setGuard(matchSomeNamedPolicy);
-      namedPoliciesCheck.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-      namedPoliciesCheck.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-      generationPolicy.getStatements().add(namedPoliciesCheck);
       route
           .getPolicies()
           .forEach(
@@ -1014,15 +1018,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 boolean defined = policy != null;
                 if (defined) {
                   setPolicyStatementReferent(policyName);
-                  CallExpr callPolicy = new CallExpr(policyName);
-                  matchSomeNamedPolicy.getDisjuncts().add(callPolicy);
+                  generationPolicy.getStatements().add(new CallStatement(policyName));
                 } else {
-                  matchSomeNamedPolicy.setComment(
-                      String.format(
-                          "%s%sUndefined reference to: %s",
-                          defined ? matchSomeNamedPolicy.getComment() : "",
-                          defined ? "\n" : "",
-                          policyName));
+                  generationPolicy
+                      .getStatements()
+                      .add(new Comment(String.format("Undefined reference to: %s", policyName)));
                 }
               });
     }
@@ -1334,8 +1334,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Map<String, NatPool> pools = dnat.getPools();
 
-    String name = iface.getName();
-    String zone = _masterLogicalSystem.getInterfaceZones().get(name).getName();
+    String ifaceName = iface.getName();
+    String zone = _masterLogicalSystem.getInterfaceZones().get(ifaceName).getName();
     String routingInstance = iface.getRoutingInstance();
 
     /*
@@ -1344,14 +1344,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<DestinationNat> ifaceLocationNats = null;
     List<DestinationNat> zoneLocationNats = null;
     List<DestinationNat> routingInstanceLocationNats = null;
-    for (NatRuleSet ruleSet : dnat.getRuleSets().values()) {
+    for (Entry<String, NatRuleSet> entry : dnat.getRuleSets().entrySet()) {
+      String ruleSetName = entry.getKey();
+      NatRuleSet ruleSet = entry.getValue();
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
-      if (name.equals(fromLocation.getInterface())) {
-        ifaceLocationNats = toDestinationNats(name, "name", pools, ruleSet);
+      if (ifaceName.equals(fromLocation.getInterface())) {
+        ifaceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
       } else if (zone.equals(fromLocation.getZone())) {
-        zoneLocationNats = toDestinationNats(name, "zone", pools, ruleSet);
+        zoneLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
       } else if (routingInstance.equals(fromLocation.getRoutingInstance())) {
-        routingInstanceLocationNats = toDestinationNats(name, "routingInstance", pools, ruleSet);
+        routingInstanceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
       }
     }
 
@@ -1362,23 +1364,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private static List<DestinationNat> toDestinationNats(
-      String ifaceName, String fromLocationType, Map<String, NatPool> pools, NatRuleSet ruleSet) {
-    NatPacketLocation toLocation = ruleSet.getToLocation();
+      String ifaceName, String ruleSetName, NatRuleSet ruleSet, Map<String, NatPool> pools) {
+    NatPacketLocation to = ruleSet.getToLocation();
     Preconditions.checkArgument(
-        toLocation.getInterface() == null
-            && toLocation.getZone() == null
-            && toLocation.getRoutingInstance() == null,
+        to.getInterface() == null && to.getZone() == null && to.getRoutingInstance() == null,
         "Destination NAT rule sets cannot have to location");
 
     return ruleSet
         .getRules()
         .stream()
-        .map(natRule -> toDestinationNat(ifaceName, fromLocationType, pools, natRule))
+        .map(natRule -> toDestinationNat(ifaceName, ruleSetName, pools, natRule))
         .collect(ImmutableList.toImmutableList());
   }
 
   private static DestinationNat toDestinationNat(
-      String ifaceName, String fromLocationType, Map<String, NatPool> pools, NatRule natRule) {
+      String ifaceName, String ruleSetName, Map<String, NatPool> pools, NatRule natRule) {
     DestinationNat.Builder builder = DestinationNat.builder();
 
     builder.setAcl(
@@ -1386,7 +1386,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setName(
                 String.format(
                     "~ DESTINATION NAT ~ %s ~ %s ~ %s ~",
-                    ifaceName, fromLocationType, natRule.getName()))
+                    ifaceName, ruleSetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
                     accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
@@ -2490,11 +2490,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
-    }
-
-    // destination nats
-    if (_masterLogicalSystem.getNatDestination() != null) {
-      _w.unimplemented("Destination NAT is not currently implemented");
     }
 
     // source nats
