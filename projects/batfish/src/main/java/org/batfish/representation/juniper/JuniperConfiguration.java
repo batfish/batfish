@@ -1392,9 +1392,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     });
   }
 
-  List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> ruleSetList) {
+  List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> orderedRulesetList) {
     Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
-    return ruleSetList
+    return orderedRulesetList
         .stream()
         .flatMap(
             ruleSet ->
