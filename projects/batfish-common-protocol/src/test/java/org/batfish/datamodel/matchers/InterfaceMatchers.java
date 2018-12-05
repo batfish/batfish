@@ -23,6 +23,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
@@ -92,6 +93,14 @@ public final class InterfaceMatchers {
   public static HasAdditionalArpIps hasAdditionalArpIps(
       @Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
     return new HasAdditionalArpIps(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * bandwidth.
+   */
+  public static HasBandwidth hasBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
+    return new HasBandwidth(subMatcher);
   }
 
   /**

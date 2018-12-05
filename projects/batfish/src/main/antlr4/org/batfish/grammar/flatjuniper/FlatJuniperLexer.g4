@@ -591,6 +591,11 @@ BUNDLE
    'bundle'
 ;
 
+C
+:
+    'c'
+;
+
 CATEGORIES
 :
    'categories'
@@ -6690,6 +6695,11 @@ mode M_Bandwidth;
 M_Bandwidth_DEC
 :
   F_Digit+ -> type ( DEC )
+;
+
+M_Bandwidth_C
+:
+  'c' -> type ( C ) , popMode
 ;
 
 M_Bandwidth_G
