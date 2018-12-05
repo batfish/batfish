@@ -33,6 +33,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -1783,17 +1784,22 @@ public class FlatJuniperGrammarTest {
   public void testInterfaceBandwidth() throws IOException {
     Configuration c = parseConfig("interface-bandwidth");
 
-    // Configuration has four interfaces with configured bandwidths 5000000000, 5000000k, 5000m, 5g.
-    // Physical interfaces should have default bandwidth (1E9), unit interfaces should have 5E9.
+    // Configuration has ge-0/0/0 with four units configured bandwidths 5000000000, 5000000k, 5000m,
+    // 5g. Physical interface should have default bandwidth (1E9), unit interfaces should have 5E9.
     double unitBandwidth = 5E9;
     double physicalBandwidth =
         org.batfish.representation.juniper.Interface.getDefaultBandwidthByName("ge-0/0/0");
 
-    Map<String, Interface> interfaces = c.getAllInterfaces();
-    for (int i = 0; i < 4; i++) {
-      assertThat(interfaces.get("ge-" + i + "/0/0").getBandwidth(), equalTo(physicalBandwidth));
-      assertThat(interfaces.get("ge-" + i + "/0/0.0").getBandwidth(), equalTo(unitBandwidth));
-    }
+    assertThat(c, hasInterface("ge-0/0/0", hasBandwidth(physicalBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.1", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.2", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.3", hasBandwidth(unitBandwidth)));
+
+    // Configuration has ge-1/0/0 with one unit with configured bandwidth 10c (1c = 384 bps).
+    // Physical interface should have default bandwidth (1E9), unit 3840.
+    assertThat(c, hasInterface("ge-1/0/0", hasBandwidth(physicalBandwidth)));
+    assertThat(c, hasInterface("ge-1/0/0.0", hasBandwidth(3840)));
   }
 
   @Test
