@@ -35,6 +35,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_VERSION = "version";
   private static final String PROP_WARNINGS = "warnings";
 
+  // @Nonnull private SortedMap<String, String> _convertStatus;
+
   // filename -> structType -> structName -> info
   @Nonnull
   private SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
