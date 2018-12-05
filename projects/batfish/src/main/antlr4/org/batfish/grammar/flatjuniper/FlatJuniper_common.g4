@@ -527,7 +527,7 @@ range
   )*
 ;
 
-reference_bandwidth
+bandwidth
 :
   base = DEC
   (

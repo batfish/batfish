@@ -81,7 +81,7 @@ is_overload
 
 is_reference_bandwidth
 :
-  REFERENCE_BANDWIDTH reference_bandwidth
+  REFERENCE_BANDWIDTH bandwidth
 ;
 
 is_rib_group

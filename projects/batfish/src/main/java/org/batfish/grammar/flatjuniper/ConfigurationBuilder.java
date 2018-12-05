@@ -174,6 +174,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
@@ -362,7 +363,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
@@ -854,7 +854,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static long toReferenceBandwidth(Reference_bandwidthContext ctx) {
+  private static long toBandwidth(BandwidthContext ctx) {
     long base = toLong(ctx.base);
     if (ctx.K() != null) {
       return base * 1000L;
@@ -3794,6 +3794,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitI_bandwidth(FlatJuniperParser.I_bandwidthContext ctx) {
+    long bandwidth = toBandwidth(ctx.bandwidth());
+    _currentInterface.setBandwidth((double) bandwidth);
+  }
+
+  @Override
   public void exitI_description(I_descriptionContext ctx) {
     String text = unquote(ctx.description().text.getText());
     _currentInterface.setDescription(text);
@@ -3981,7 +3987,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIs_reference_bandwidth(Is_reference_bandwidthContext ctx) {
-    long referenceBandwidth = toReferenceBandwidth(ctx.reference_bandwidth());
+    long referenceBandwidth = toBandwidth(ctx.bandwidth());
     _currentRoutingInstance.getIsisSettings().setReferenceBandwidth((double) referenceBandwidth);
   }
 
@@ -4121,7 +4127,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitO_reference_bandwidth(O_reference_bandwidthContext ctx) {
-    long referenceBandwidth = toReferenceBandwidth(ctx.reference_bandwidth());
+    long referenceBandwidth = toBandwidth(ctx.bandwidth());
     _currentRoutingInstance.setOspfReferenceBandwidth((double) referenceBandwidth);
   }
 

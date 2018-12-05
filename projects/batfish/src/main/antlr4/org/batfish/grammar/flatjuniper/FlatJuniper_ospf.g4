@@ -71,7 +71,7 @@ o_null
 
 o_reference_bandwidth
 :
-   REFERENCE_BANDWIDTH reference_bandwidth
+   REFERENCE_BANDWIDTH bandwidth
 ;
 
 o_rib_group

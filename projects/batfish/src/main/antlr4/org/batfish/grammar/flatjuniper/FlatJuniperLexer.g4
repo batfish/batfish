@@ -508,7 +508,7 @@ BACKUP_ROUTER
 
 BANDWIDTH
 :
-   'bandwidth'
+   'bandwidth' -> pushMode ( M_Bandwidth )
 ;
 
 BASIC
@@ -4529,7 +4529,7 @@ REDUNDANT_PARENT
 
 REFERENCE_BANDWIDTH
 :
-   'reference-bandwidth' -> pushMode ( M_ReferenceBandwidth )
+   'reference-bandwidth' -> pushMode ( M_Bandwidth )
 ;
 
 REJECT
@@ -6685,34 +6685,34 @@ M_PrefixListName_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_ReferenceBandwidth;
+mode M_Bandwidth;
 
-M_ReferenceBandwidth_DEC
+M_Bandwidth_DEC
 :
   F_Digit+ -> type ( DEC )
 ;
 
-M_ReferenceBandwidth_G
+M_Bandwidth_G
 :
-  'g' -> type ( G )
+  'g' -> type ( G ) , popMode
 ;
 
-M_ReferenceBandwidth_K
+M_Bandwidth_K
 :
-  'k' -> type ( K )
+  'k' -> type ( K ) , popMode
 ;
 
-M_ReferenceBandwidth_M
+M_Bandwidth_M
 :
-  'm' -> type ( M )
+  'm' -> type ( M ) , popMode
 ;
 
-M_ReferenceBandwidth_NEWLINE
+M_Bandwidth_NEWLINE
 :
   F_NewlineChar+ -> type ( NEWLINE ) , popMode
 ;
 
-M_ReferenceBandwidth_WS
+M_Bandwidth_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
