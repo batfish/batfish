@@ -70577,10 +70577,6 @@
           "Unimplemented features" : [
             {
               "tag" : "UNIMPLEMENTED",
-              "text" : "Destination NAT is not currently implemented"
-            },
-            {
-              "tag" : "UNIMPLEMENTED",
               "text" : "Source NAT is not currently implemented"
             }
           ]
