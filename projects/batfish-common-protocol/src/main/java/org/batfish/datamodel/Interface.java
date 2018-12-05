@@ -286,7 +286,7 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     public Builder setPreSourceNatOutgoingFilter(IpAccessList preSourceNatOutgoingFilter) {
-      _preSourceNatOutgoingFilter= preSourceNatOutgoingFilter;
+      _preSourceNatOutgoingFilter = preSourceNatOutgoingFilter;
       return this;
     }
 
