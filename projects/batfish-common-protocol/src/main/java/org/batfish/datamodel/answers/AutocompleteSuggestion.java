@@ -9,7 +9,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class AutocompleteSuggestion {
 
   public enum CompletionType {
-    BGP_PROPERTY,
+    BGP_PEER_PROPERTY,
+    BGP_PROCESS_PROPERTY,
     INTERFACE_PROPERTY,
     NAMED_STRUCTURE,
     NODE,
@@ -17,17 +18,19 @@ public class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
+  public static final int DEFAULT_RANK = Integer.MAX_VALUE;
+
   @Nullable private final String _description;
   private final boolean _isPartial;
   private int _rank;
   @Nonnull private final String _text;
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
-    this(text, isPartial, null, -1);
+    this(text, isPartial, null, DEFAULT_RANK);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description) {
-    this(text, isPartial, description, -1);
+    this(text, isPartial, description, DEFAULT_RANK);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description, int rank) {
