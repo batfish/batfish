@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -1364,7 +1365,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     List<SourceNat> ifaceLocationNats = toSourceNats(iface.getName(), ifaceLocationRuleSetList);
     List<SourceNat> zoneLocationNats = toSourceNats(iface.getName(), zoneLocationRuleSetList);
-    List<SourceNat> routingInstanceLocationNats = toSourceNats(iface.getName(), routingInstanceLocationRuleSetList);
+    List<SourceNat> routingInstanceLocationNats =
+        toSourceNats(iface.getName(), routingInstanceLocationRuleSetList);
     return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
         .filter(Objects::nonNull)
         .flatMap(List::stream)
@@ -1409,27 +1411,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   // sort rule set by from location in the following order: iface, zone, routing instance
   private static void sortRuleSetsByFromLocation(List<NatRuleSet> ruleSetList) {
-    Map<NatRuleSet, Integer> priorityMap = ruleSetList.stream().collect(
-        Collectors.toMap(
-            Function.identity(),
-            rs -> {
-                  if (rs.getFromLocation().getInterface() != null) {
-                    return 0;
-                  } else if (rs.getFromLocation().getZone() != null) {
-                    return 1;
-                  } else if (rs.getFromLocation().getRoutingInstance() != null) {
-                    return 2;
-                  }
-                  throw new BatfishException("from location must be specified in source NATs");
-            }
-        )
-    );
+    Map<NatRuleSet, Integer> priorityMap =
+        ruleSetList
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    Function.identity(),
+                    rs -> {
+                      if (rs.getFromLocation().getInterface() != null) {
+                        return 0;
+                      } else if (rs.getFromLocation().getZone() != null) {
+                        return 1;
+                      } else if (rs.getFromLocation().getRoutingInstance() != null) {
+                        return 2;
+                      }
+                      throw new BatfishException("from location must be specified in source NATs");
+                    }));
 
-    ruleSetList.sort((rs1, rs2) -> {
-      Integer p1 = priorityMap.get(rs1);
-      Integer p2 = priorityMap.get(rs2);
-      return p1  < p2 ? -1 : p1  == p2 ? 0 :1;
-    });
+    ruleSetList.sort(
+        (rs1, rs2) -> {
+          Integer p1 = priorityMap.get(rs1);
+          Integer p2 = priorityMap.get(rs2);
+          return p1 < p2 ? -1 : p1 == p2 ? 0 : 1;
+        });
   }
 
   List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> orderedRulesetList) {
@@ -1498,8 +1502,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessList.builder()
             .setName(
                 String.format(
-                    "~DESTINATIONNAT~%s~%s~%s~",
-                    ifaceName, ruleSetName, natRule.getName()))
+                    "~DESTINATIONNAT~%s~%s~%s~", ifaceName, ruleSetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
                     accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
@@ -1518,7 +1521,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private static SourceNat toSourceNat(
-      String ifaceName, String rulesetName, Map<String, NatPool> pools, List<String> fromInterfaces, NatRule natRule) {
+      String ifaceName,
+      String rulesetName,
+      Map<String, NatPool> pools,
+      List<String> fromInterfaces,
+      NatRule natRule) {
     SourceNat.Builder builder = SourceNat.builder();
 
     String[] fromInterfaceArray = new String[fromInterfaces.size()];
@@ -1532,9 +1539,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 ImmutableList.of(
                     accepting(
                         AclLineMatchExprs.and(
-                            AclLineMatchExprs.matchSrcInterface(
-                                fromInterfaceArray
-                            ),
+                            AclLineMatchExprs.matchSrcInterface(fromInterfaceArray),
                             new MatchHeaderSpace(toHeaderSpace(natRule.getMatches()))))))
             .build());
 
