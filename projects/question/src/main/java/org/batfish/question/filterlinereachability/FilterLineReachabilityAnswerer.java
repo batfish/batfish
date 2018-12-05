@@ -6,6 +6,7 @@ import static org.batfish.datamodel.answers.FilterLineReachabilityRows.createMet
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,16 +59,18 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     FilterLineReachabilityRows answerRows = new FilterLineReachabilityRows();
 
     SpecifierContext ctxt = _batfish.specifierContext();
-    Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
-    FilterSpecifier filterSpecifier = question.filterSpecifier();
 
-    Map<String, Set<IpAccessList>> specifiedAcls =
-        CommonUtil.toImmutableMap(
-            specifiedNodes, Function.identity(), node -> filterSpecifier.resolve(node, ctxt));
+    Map<String, Set<IpAccessList>> specifiedAcls = getSpecifiedFilters(question, ctxt);
+
+    // did we get any filters at all?
+    if (specifiedAcls.values().stream().allMatch(fset -> fset.size() == 0)) {
+      throw new IllegalArgumentException(
+          "Did not find any filters that meets the specified criteria. (Tips: Set 'ignoreGenerated' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)");
+    }
 
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
-    answerAclReachability(aclSpecs, answerRows);
+    answerAclReachability(aclSpecs, answerRows, question.getIgnoreComposites());
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, answerRows.getRows());
     return answer;
@@ -335,6 +338,26 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   }
 
   /**
+   * Collects the list of specified filters that we need to process, based on the nodes desired, the
+   * filters desired, and whether generated filters are ignored
+   */
+  static Map<String, Set<IpAccessList>> getSpecifiedFilters(
+      FilterLineReachabilityQuestion question, SpecifierContext ctxt) {
+    Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
+    FilterSpecifier filterSpecifier = question.filterSpecifier();
+
+    return CommonUtil.toImmutableMap(
+        specifiedNodes,
+        Function.identity(),
+        node ->
+            filterSpecifier
+                .resolve(node, ctxt)
+                .stream()
+                .filter(f -> !(question.getIgnoreComposites() && f.isComposite()))
+                .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /**
    * Generates the list of {@link AclSpecs} objects to analyze in preparation for some ACL
    * reachability question. Besides returning the {@link AclSpecs}, this method adds cycle results
    * to the answer and provides sanitized {@link IpAccessList}s without cycles, undefined
@@ -441,8 +464,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
-  private static void answerAclReachability(
-      List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
+  @VisibleForTesting
+  static void answerAclReachability(
+      List<AclSpecs> aclSpecs,
+      FilterLineReachabilityRows answerRows,
+      boolean ignoreGeneratedFilters) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
 
@@ -454,6 +480,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
               bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
       IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
+
       List<IpAccessListLine> lines = ipAcl.getLines();
 
       List<BDD> ipLineToBDDMap = new ArrayList<>();

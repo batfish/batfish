@@ -304,7 +304,7 @@ public class Interface implements Serializable {
     _additionalArpIps = ImmutableSet.copyOf(additionalArpIps);
   }
 
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(double bandwidth) {
     _bandwidth = bandwidth;
   }
 
