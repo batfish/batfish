@@ -251,6 +251,7 @@ public class BgpProtocolHelper {
     BgpRoute.Builder b = new BgpRoute.Builder();
     b.setAdmin(generatedRoute.getAdministrativeCost());
     b.setAsPath(generatedRoute.getAsPath());
+    b.setCommunities(generatedRoute.getCommunities());
     b.setMetric(generatedRoute.getMetric());
     b.setSrcProtocol(RoutingProtocol.AGGREGATE);
     b.setProtocol(RoutingProtocol.AGGREGATE);

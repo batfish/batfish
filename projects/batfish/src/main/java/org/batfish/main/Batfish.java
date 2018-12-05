@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -2398,11 +2399,36 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(
             i ->
                 i.getInterfaceType() == InterfaceType.AGGREGATED
-                    && i.getChannelGroupMembers().isEmpty())
+                    && i.getChannelGroupMembers().isEmpty()
+                    // TODO: Temporary hack to avoid disabling juniper AE unit interfaces
+                    && !i.getName().startsWith("ae")
+                    && !i.getName().contains("."))
         .forEach(i -> i.setActive(false));
 
     /* Compute bandwidth for aggregated interfaces. */
     interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
+
+    /*
+     * For aggregated logical interfaces, inherit a subset of properties
+     * from the parent aggregated interfaces
+     */
+    interfaces
+        .values()
+        .stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
+        .filter(iface -> !iface.getDependencies().isEmpty())
+        .forEach(
+            iface ->
+                iface.setBandwidth(
+                    iface
+                        .getDependencies()
+                        .stream()
+                        .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                        .filter(Objects::nonNull)
+                        .map(Interface::getBandwidth)
+                        .filter(Objects::nonNull)
+                        .mapToDouble(Double::doubleValue)
+                        .sum()));
   }
 
   private void identifyDeviceTypes(Collection<Configuration> configurations) {

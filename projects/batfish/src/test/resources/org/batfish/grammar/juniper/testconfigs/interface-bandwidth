@@ -1,0 +1,8 @@
+#
+set system host-name interface-bandwidth
+#
+set interfaces ge-0/0/0 unit 0 bandwidth 5000000000
+set interfaces ge-0/0/0 unit 1 bandwidth 5000000k
+set interfaces ge-0/0/0 unit 2 bandwidth 5000m
+set interfaces ge-0/0/0 unit 3 bandwidth 5g
+set interfaces ge-1/0/0 unit 0 bandwidth 10c

@@ -527,11 +527,12 @@ range
   )*
 ;
 
-reference_bandwidth
+bandwidth
 :
   base = DEC
   (
-    K
+    C
+    | K
     | M
     | G
   )?

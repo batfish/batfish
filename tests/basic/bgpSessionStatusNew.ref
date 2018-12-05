@@ -39,7 +39,7 @@
           "schema" : "Ip"
         },
         {
-          "description" : "The remote AS of the session",
+          "description" : "The remote AS or list of ASes of the session",
           "isKey" : false,
           "isValue" : false,
           "name" : "Remote_AS",
@@ -53,7 +53,7 @@
           "schema" : "Node"
         },
         {
-          "description" : "Remote IP for this session",
+          "description" : "Remote IP or prefix for this session",
           "isKey" : true,
           "isValue" : false,
           "name" : "Remote_IP",

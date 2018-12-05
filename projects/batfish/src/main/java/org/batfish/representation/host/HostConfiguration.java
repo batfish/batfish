@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -194,7 +196,7 @@ public class HostConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     if (_underlayConfiguration != null) {
       _hostInterfaces.forEach(
           (name, iface) ->
@@ -265,11 +267,12 @@ public class HostConfiguration extends VendorConfiguration {
                   .setTag(AbstractRoute.NO_TAG)
                   .build());
     }
-    return _c;
+    return ImmutableList.of(_c);
   }
 
-  public Configuration toVendorIndependentConfiguration(VendorConfiguration underlayConfiguration) {
+  public List<Configuration> toVendorIndependentConfigurations(
+      VendorConfiguration underlayConfiguration) {
     _underlayConfiguration = underlayConfiguration;
-    return toVendorIndependentConfiguration();
+    return toVendorIndependentConfigurations();
   }
 }

@@ -9,6 +9,7 @@ import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -30,9 +31,17 @@ public final class IsisEdge implements Comparable<IsisEdge> {
         settings.getLevel2() != null ? LEVEL_2 : null);
   }
 
+  @VisibleForTesting
   @Nullable
-  private static IsisLevel intersection(IsisLevel... levels) {
-    return levels.length == 0 ? null : Arrays.stream(levels).reduce(IsisEdge::intersection).get();
+  public static IsisLevel intersection(IsisLevel... levels) {
+    if (levels.length == 0) {
+      return null;
+    }
+    IsisLevel overlap = LEVEL_1_2;
+    for (IsisLevel level : levels) {
+      overlap = intersection(overlap, level);
+    }
+    return overlap;
   }
 
   @Nullable

@@ -1,0 +1,34 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name aggregate-routes
+#
+set policy-options policy-statement MOST_SPECIFIC term t1 from route-filter 2.0.0.0/32 exact
+set policy-options policy-statement MOST_SPECIFIC term t1 then accept
+set policy-options policy-statement MOST_SPECIFIC term t2 then reject
+set routing-options aggregate route 1.0.0.0/8 active
+set routing-options aggregate route 2.0.0.0/8 active
+set routing-options aggregate route 2.0.0.0/8 policy MOST_SPECIFIC
+set routing-options aggregate route 3.0.0.0/8 passive
+#
+#
+set policy-options policy-statement ACCEPT term t1 then accept
+set policy-options policy-statement FALL_THROUGH1 term t1 from route-filter 10.0.0.0/32 exact
+set policy-options policy-statement FALL_THROUGH2 term t1 from route-filter 10.0.0.0/32 exact
+set policy-options policy-statement REJECT term t1 then reject
+#
+# if no policy takes an action, accept
+set routing-options aggregate route 4.0.0.0/8 active
+set routing-options aggregate route 4.0.0.0/8 policy FALL_THROUGH1
+set routing-options aggregate route 4.0.0.0/8 policy FALL_THROUGH2
+#
+# rejects first, so reject
+set routing-options aggregate route 5.0.0.0/8 active
+set routing-options aggregate route 5.0.0.0/8 policy FALL_THROUGH1
+set routing-options aggregate route 5.0.0.0/8 policy REJECT
+set routing-options aggregate route 5.0.0.0/8 policy ACCEPT
+#
+# accepts first, so accept
+set routing-options aggregate route 6.0.0.0/8 active
+set routing-options aggregate route 6.0.0.0/8 policy FALL_THROUGH1
+set routing-options aggregate route 6.0.0.0/8 policy ACCEPT
+set routing-options aggregate route 6.0.0.0/8 policy REJECT
+#
