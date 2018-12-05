@@ -9,7 +9,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class AutocompleteSuggestion {
 
   public enum CompletionType {
-    BGP_PROPERTY,
+    BGP_PEER_PROPERTY,
+    BGP_PROCESS_PROPERTY,
     INTERFACE_PROPERTY,
     NAMED_STRUCTURE,
     NODE,
