@@ -9,37 +9,17 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 /** A bean for information about completed work */
 public class CompletedWorkBean {
 
-  private Date _dateCreated;
-  private Date _dateTerminated;
-  private UUID _id;
-  private WorkStatusCode _status;
-  private WorkType _workType;
+  public Date dateCreated;
+  public Date dateTerminated;
+  public UUID id;
+  public WorkStatusCode status;
+  public WorkType workType;
 
   public CompletedWorkBean(QueuedWork work) {
-    _dateCreated = work.getDateCreated();
-    _dateTerminated = work.getDateTerminated();
-    _id = work.getId();
-    _status = work.getStatus();
-    _workType = work.getDetails().workType;
-  }
-
-  public Date getDateCreated() {
-    return _dateCreated;
-  }
-
-  public Date getDateTerminated() {
-    return _dateTerminated;
-  }
-
-  public UUID getId() {
-    return _id;
-  }
-
-  public WorkStatusCode getStatus() {
-    return _status;
-  }
-
-  public WorkType getWorkType() {
-    return _workType;
+    dateCreated = work.getDateCreated();
+    dateTerminated = work.getDateTerminated();
+    id = work.getId();
+    status = work.getStatus();
+    workType = work.getDetails().workType;
   }
 }
