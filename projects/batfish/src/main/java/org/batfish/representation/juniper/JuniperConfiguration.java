@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -1270,6 +1271,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
       }
     }
+    newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
     newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
@@ -1319,6 +1321,40 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
     return newIface;
+  }
+
+  /** Generate outgoing filter for the interface (from existing outgoing filter and zone policy) */
+  IpAccessList buildOutgoingFilter(Interface iface, @Nullable IpAccessList securityPolicyAcl) {
+    String outAclName = iface.getOutgoingFilter();
+    IpAccessList outAcl = null;
+    if (outAclName != null) {
+      outAcl = _c.getIpAccessLists().get(outAclName);
+    }
+
+    // Set outgoing filter based on the combination of zone policy and base outgoing filter
+    Set<AclLineMatchExpr> aclConjunctList;
+    if (securityPolicyAcl == null) {
+      return outAcl;
+    } else if (outAcl == null) {
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName(), false));
+    } else {
+      aclConjunctList =
+          ImmutableSet.of(
+              new PermittedByAcl(outAcl.getName(), false),
+              new PermittedByAcl(securityPolicyAcl.getName(), false));
+    }
+
+    String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
+    IpAccessList combinedAcl =
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(
+                    new IpAccessListLine(
+                        LineAction.PERMIT, new AndMatchExpr(aclConjunctList), "PERMIT")))
+            .build();
+    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
+    return combinedAcl;
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
