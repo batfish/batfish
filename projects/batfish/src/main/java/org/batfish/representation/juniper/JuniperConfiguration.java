@@ -1335,7 +1335,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Map<String, NatPool> pools = dnat.getPools();
 
     String ifaceName = iface.getName();
-    String zone = _masterLogicalSystem.getInterfaceZones().get(ifaceName).getName();
+    String zone =
+        Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(ifaceName))
+            .map(Zone::getName)
+            .orElse(null);
     String routingInstance = iface.getRoutingInstance();
 
     /*
@@ -1350,7 +1353,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
       if (ifaceName.equals(fromLocation.getInterface())) {
         ifaceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
-      } else if (zone.equals(fromLocation.getZone())) {
+      } else if (zone != null && zone.equals(fromLocation.getZone())) {
         zoneLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
       } else if (routingInstance.equals(fromLocation.getRoutingInstance())) {
         routingInstanceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
