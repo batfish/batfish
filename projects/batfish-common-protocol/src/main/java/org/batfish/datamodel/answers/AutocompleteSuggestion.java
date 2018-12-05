@@ -18,6 +18,8 @@ public class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
+  public static final int DEFAULT_RANK = Integer.MAX_VALUE;
+
   @Nullable private final String _description;
   private final boolean _isPartial;
   private int _rank;
@@ -28,7 +30,7 @@ public class AutocompleteSuggestion {
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description) {
-    this(text, isPartial, description, -1);
+    this(text, isPartial, description, DEFAULT_RANK);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description, int rank) {
