@@ -14,15 +14,15 @@ import org.parboiled.support.ParsingResult;
 public class BgpCommunityRegex extends BaseParser<String> {
 
   Rule TopLevel() {
-    return Sequence('^', AS(), ':', Community(), '$');
+    return Sequence('^', Digits(), ':', Digits(), '$');
   }
 
   Rule AS() {
-    return FirstOf();
+    return FirstOf('a', 'b');
   }
 
   Rule Community() {
-    return null;
+    return Ch('c');
   }
 
   @SuppressSubnodes
