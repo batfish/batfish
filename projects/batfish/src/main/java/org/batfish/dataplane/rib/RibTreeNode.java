@@ -100,10 +100,13 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return node != null && node._routes.contains(route);
   }
 
-  private Set<R> getLongestPrefixMatch(Ip address) {
+  private Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
     return _routes
         .stream()
-        .filter(r -> r.getNetwork().containsIp(address))
+        .filter(
+            r ->
+                r.getNetwork().containsIp(address)
+                    && r.getNetwork().getPrefixLength() <= maxPrefixLength)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -119,7 +122,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
    */
   Set<R> getLongestPrefixMatch(Ip address, long bits, int index, int maxPrefixLength) {
     // Get the list of routes stored in our node that contain the IP address
-    Set<R> longestPrefixMatches = getLongestPrefixMatch(address);
+    Set<R> longestPrefixMatches = getLongestPrefixMatch(address, maxPrefixLength);
     // If we reached the max prefix length (e.g., 32 for for IPv4) then return routes
     // from the current node
     if (index >= maxPrefixLength) {
