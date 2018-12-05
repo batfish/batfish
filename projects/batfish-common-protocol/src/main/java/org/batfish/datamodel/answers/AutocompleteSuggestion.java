@@ -26,7 +26,7 @@ public class AutocompleteSuggestion {
   @Nonnull private final String _text;
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
-    this(text, isPartial, null, -1);
+    this(text, isPartial, null, DEFAULT_RANK);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description) {
