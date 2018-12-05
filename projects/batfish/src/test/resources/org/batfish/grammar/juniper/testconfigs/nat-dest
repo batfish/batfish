@@ -12,6 +12,7 @@ set security nat destination rule-set RULE-SET from zone FROM-ZONE
 set security nat destination rule-set RULE-SET rule RULE1 match source-port 80
 set security nat destination rule-set RULE-SET rule RULE1 match destination-port 100 to 200
 set security nat destination rule-set RULE-SET rule RULE1 match destination-address-name NAME
+set security nat destination rule-set RULE-SET rule RULE1 match source-address-name SA-NAME
 set security nat destination rule-set RULE-SET rule RULE1 then destination-nat off
 #
 set security nat destination rule-set RULE-SET rule RULE2 match source-address 2.2.2.2/24
@@ -19,6 +20,7 @@ set security nat destination rule-set RULE-SET rule RULE2 match destination-addr
 set security nat destination rule-set RULE-SET rule RULE2 then destination-nat pool POOL2
 #
 set security nat destination rule-set RULE-SET rule RULE3 match source-address 3.3.3.3/24
+set security nat destination rule-set RULE-SET rule RULE3 match destination-address 1.1.1.1/32
 set security nat destination rule-set RULE-SET rule RULE3 then destination-nat pool POOL1
 #
 set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24

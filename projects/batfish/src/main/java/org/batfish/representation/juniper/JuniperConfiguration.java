@@ -1334,8 +1334,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Map<String, NatPool> pools = dnat.getPools();
 
-    String name = iface.getName();
-    String zone = _masterLogicalSystem.getInterfaceZones().get(name).getName();
+    String ifaceName = iface.getName();
+    String zone = _masterLogicalSystem.getInterfaceZones().get(ifaceName).getName();
     String routingInstance = iface.getRoutingInstance();
 
     /*
@@ -1346,12 +1346,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<DestinationNat> routingInstanceLocationNats = null;
     for (NatRuleSet ruleSet : dnat.getRuleSets().values()) {
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
-      if (name.equals(fromLocation.getInterface())) {
-        ifaceLocationNats = toDestinationNats(name, "name", pools, ruleSet);
+      if (ifaceName.equals(fromLocation.getInterface())) {
+        ifaceLocationNats = toDestinationNats(ifaceName, "name", pools, ruleSet);
       } else if (zone.equals(fromLocation.getZone())) {
-        zoneLocationNats = toDestinationNats(name, "zone", pools, ruleSet);
+        zoneLocationNats = toDestinationNats(ifaceName, "zone", pools, ruleSet);
       } else if (routingInstance.equals(fromLocation.getRoutingInstance())) {
-        routingInstanceLocationNats = toDestinationNats(name, "routingInstance", pools, ruleSet);
+        routingInstanceLocationNats =
+            toDestinationNats(ifaceName, "routingInstance", pools, ruleSet);
       }
     }
 
@@ -1363,11 +1364,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static List<DestinationNat> toDestinationNats(
       String ifaceName, String fromLocationType, Map<String, NatPool> pools, NatRuleSet ruleSet) {
-    NatPacketLocation toLocation = ruleSet.getToLocation();
+    NatPacketLocation to = ruleSet.getToLocation();
     Preconditions.checkArgument(
-        toLocation.getInterface() == null
-            && toLocation.getZone() == null
-            && toLocation.getRoutingInstance() == null,
+        to.getInterface() == null && to.getZone() == null && to.getRoutingInstance() == null,
         "Destination NAT rule sets cannot have to location");
 
     return ruleSet
@@ -2490,11 +2489,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
-    }
-
-    // destination nats
-    if (_masterLogicalSystem.getNatDestination() != null) {
-      _w.unimplemented("Destination NAT is not currently implemented");
     }
 
     // source nats

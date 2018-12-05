@@ -2779,6 +2779,7 @@ public class FlatJuniperGrammarTest {
                                             .setDstIps(new IpSpaceReference("NAME"))
                                             .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
                                             .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
+                                            .setSrcIps(new IpSpaceReference("SA-NAME"))
                                             .build()))))
                         .build())
                 .build(),
@@ -2804,7 +2805,12 @@ public class FlatJuniperGrammarTest {
                         .setName("~ DESTINATION NAT ~ get-0/0/0.0 ~ zone ~ RULE3")
                         .setLines(
                             ImmutableList.of(
-                                accepting(AclLineMatchExprs.matchSrc(Prefix.parse("3.3.3.3/24")))))
+                                accepting(
+                                    AclLineMatchExprs.match(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(Prefix.parse("3.3.3.3/24").toIpSpace())
+                                            .setDstIps(Prefix.parse("1.1.1.1/32").toIpSpace())
+                                            .build()))))
                         .build())
                 .setPoolIpFirst(Prefix.parse("10.10.10.10/24").getStartIp())
                 .setPoolIpLast(Prefix.parse("10.10.10.10/24").getEndIp())
@@ -2857,7 +2863,8 @@ public class FlatJuniperGrammarTest {
         contains(
             new NatRuleMatchSrcPort(80, 80),
             new NatRuleMatchDstPort(100, 200),
-            new NatRuleMatchDstAddrName("NAME")));
+            new NatRuleMatchDstAddrName("NAME"),
+            new NatRuleMatchSrcAddrName("SA-NAME")));
     assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     // test rule2
@@ -2873,7 +2880,11 @@ public class FlatJuniperGrammarTest {
     // test rule3
     NatRule rule3 = rules.get(2);
     assertThat(rule3.getName(), equalTo("RULE3"));
-    assertThat(rule3.getMatches(), contains(new NatRuleMatchSrcAddr(Prefix.parse("3.3.3.3/24"))));
+    assertThat(
+        rule3.getMatches(),
+        contains(
+            new NatRuleMatchSrcAddr(Prefix.parse("3.3.3.3/24")),
+            new NatRuleMatchDstAddr(Prefix.parse("1.1.1.1/32"))));
     assertThat(rule3.getThen(), equalTo(new NatRuleThenPool("POOL1")));
   }
 

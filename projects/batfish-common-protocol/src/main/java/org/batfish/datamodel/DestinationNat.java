@@ -48,7 +48,6 @@ public class DestinationNat implements Serializable {
 
   private static final String PROP_POOL_IP_LAST = "poolIpLast";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
