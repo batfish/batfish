@@ -22,13 +22,13 @@ set routing-options aggregate route 4.0.0.0/8 policy FALL_THROUGH2
 #
 # rejects first, so reject
 set routing-options aggregate route 5.0.0.0/8 active
-set routing-options aggregate route 4.0.0.0/8 policy FALL_THROUGH1
+set routing-options aggregate route 5.0.0.0/8 policy FALL_THROUGH1
 set routing-options aggregate route 5.0.0.0/8 policy REJECT
 set routing-options aggregate route 5.0.0.0/8 policy ACCEPT
 #
 # accepts first, so accept
 set routing-options aggregate route 6.0.0.0/8 active
-set routing-options aggregate route 4.0.0.0/8 policy FALL_THROUGH1
+set routing-options aggregate route 6.0.0.0/8 policy FALL_THROUGH1
 set routing-options aggregate route 6.0.0.0/8 policy ACCEPT
 set routing-options aggregate route 6.0.0.0/8 policy REJECT
 #
