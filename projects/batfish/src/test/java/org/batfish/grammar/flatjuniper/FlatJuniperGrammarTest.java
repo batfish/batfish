@@ -1786,8 +1786,8 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/0/0.2", hasBandwidth(unitBandwidth)));
     assertThat(c, hasInterface("ge-0/0/0.3", hasBandwidth(unitBandwidth)));
 
-    // Configuration has ge-1/0/0 with one units configured bandwidth 10c (1c = 384 bps).
-    // Physical interface should have default bandwidth (1E9), unit interfaces should have 5E9.
+    // Configuration has ge-1/0/0 with one unit with configured bandwidth 10c (1c = 384 bps).
+    // Physical interface should have default bandwidth (1E9), unit 3840.
     assertThat(c, hasInterface("ge-1/0/0", hasBandwidth(physicalBandwidth)));
     assertThat(c, hasInterface("ge-1/0/0.0", hasBandwidth(3840)));
   }
