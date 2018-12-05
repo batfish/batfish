@@ -108,6 +108,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLeng
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -994,14 +996,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     generationPolicy.getStatements().add(contributorCheck);
 
-    // add named policies if present
+    /*
+     *  - If no policy takes an action, accept.
+     *  - If a policy accepts, accept.
+     *  - If at least one policy rejects and no policy accepts, reject.
+     */
+    generationPolicy.getStatements().add(Statements.SetDefaultActionAccept.toStaticStatement());
     if (!route.getPolicies().isEmpty()) {
-      If namedPoliciesCheck = new If();
-      Disjunction matchSomeNamedPolicy = new Disjunction();
-      namedPoliciesCheck.setGuard(matchSomeNamedPolicy);
-      namedPoliciesCheck.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-      namedPoliciesCheck.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-      generationPolicy.getStatements().add(namedPoliciesCheck);
       route
           .getPolicies()
           .forEach(
@@ -1010,15 +1011,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 boolean defined = policy != null;
                 if (defined) {
                   setPolicyStatementReferent(policyName);
-                  CallExpr callPolicy = new CallExpr(policyName);
-                  matchSomeNamedPolicy.getDisjuncts().add(callPolicy);
+                  generationPolicy.getStatements().add(new CallStatement(policyName));
                 } else {
-                  matchSomeNamedPolicy.setComment(
-                      String.format(
-                          "%s%sUndefined reference to: %s",
-                          defined ? matchSomeNamedPolicy.getComment() : "",
-                          defined ? "\n" : "",
-                          policyName));
+                  generationPolicy
+                      .getStatements()
+                      .add(new Comment(String.format("Undefined reference to: %s", policyName)));
                 }
               });
     }
