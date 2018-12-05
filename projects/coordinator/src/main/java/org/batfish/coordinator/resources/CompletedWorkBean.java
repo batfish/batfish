@@ -16,10 +16,14 @@ public class CompletedWorkBean {
   public WorkType workType;
 
   public CompletedWorkBean(QueuedWork work) {
+    status = work.getStatus();
+    if (status.isTerminated()) {
+      throw new IllegalArgumentException(
+          String.format("Cannot create CompletedWorkBean from work with status %s", status));
+    }
     dateCreated = work.getDateCreated();
     dateTerminated = work.getDateTerminated();
     id = work.getId();
-    status = work.getStatus();
     workType = work.getDetails().workType;
   }
 }
