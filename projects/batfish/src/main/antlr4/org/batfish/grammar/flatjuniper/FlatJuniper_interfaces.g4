@@ -108,7 +108,6 @@ i_common
 :
    apply
    | i_arp_resp
-   | i_bandwidth
    | i_description
    | i_disable
    | i_enable
@@ -245,6 +244,7 @@ i_unit
    )
    (
       i_common
+      | i_bandwidth
       | i_peer_unit
    )
 ;
