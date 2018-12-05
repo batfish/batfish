@@ -17,6 +17,11 @@ public final class NatRuleMatchDstAddrName implements NatRuleMatch {
   }
 
   @Override
+  public <T> T accept(NatRuleMatchVisitor<T> visitor) {
+    return visitor.visitNatRuleMatchDstAddrName(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
