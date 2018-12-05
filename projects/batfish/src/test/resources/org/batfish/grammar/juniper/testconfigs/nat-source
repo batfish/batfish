@@ -2,9 +2,6 @@
 #
 set system host-name nat-source
 #
-set security nat source rule-set RULE-SET0 from interface ge-0/0/0.0
-set security nat source rule-set RULE-SET0 to zone TO-ZONE
-#
 set security nat source pool POOL1 address 10.10.10.10/24
 set security nat source pool POOL2 address 10.10.10.10 to 10.10.10.20
 #

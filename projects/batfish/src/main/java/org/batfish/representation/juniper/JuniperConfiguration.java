@@ -87,6 +87,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -1436,11 +1437,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return orderedRulesetList
         .stream()
         .flatMap(
-            ruleSet ->
-                ruleSet
-                    .getRules()
+            ruleSet -> {
+              String fromInterface = ruleSet.getFromLocation().getInterface();
+              String fromZone = ruleSet.getFromLocation().getZone();
+              String fromRoutingInstance = ruleSet.getFromLocation().getRoutingInstance();
+
+              List<String> fromInterfaces = new ArrayList<>();
+              if (fromInterface != null) {
+                fromInterfaces.add(fromInterface);
+              }
+              if (fromZone != null) {
+                _masterLogicalSystem
+                    .getZones()
+                    .get(ruleSet.getFromLocation().getZone())
+                    .getInterfaces()
                     .stream()
-                    .map(natRule -> toSourceNat(ifaceName, ruleSet.getName(), pools, natRule)))
+                    .map(Interface::getName)
+                    .forEach(fromInterfaces::add);
+              }
+              if (fromRoutingInstance != null) {
+                _masterLogicalSystem
+                    .getRoutingInstances()
+                    .get(ruleSet.getFromLocation().getRoutingInstance())
+                    .getInterfaces()
+                    .keySet()
+                    .stream()
+                    .forEach(fromInterfaces::add);
+              }
+
+              return ruleSet
+                  .getRules()
+                  .stream()
+                  .map(
+                      natRule ->
+                          toSourceNat(
+                              ifaceName, ruleSet.getName(), pools, fromInterfaces, natRule));
+            })
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1466,7 +1498,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessList.builder()
             .setName(
                 String.format(
-                    "~ DESTINATION NAT ~ %s ~ %s ~ %s ~",
+                    "~DESTINATIONNAT~%s~%s~%s~",
                     ifaceName, ruleSetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
@@ -1486,18 +1518,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private static SourceNat toSourceNat(
-      String ifaceName, String rulesetName, Map<String, NatPool> pools, NatRule natRule) {
+      String ifaceName, String rulesetName, Map<String, NatPool> pools, List<String> fromInterfaces, NatRule natRule) {
     SourceNat.Builder builder = SourceNat.builder();
+
+    String[] fromInterfaceArray = new String[fromInterfaces.size()];
+    fromInterfaceArray = fromInterfaces.toArray(fromInterfaceArray);
 
     builder.setAcl(
         IpAccessList.builder()
             .setName(
-                String.format(
-                    "~ SOURCE NAT ~ %s ~ %s ~ %s ~",
-                    ifaceName, rulesetName, natRule.getName()))
+                String.format("~SOURCENAT~%s~%s~%s~", ifaceName, rulesetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
-                    accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
+                    accepting(
+                        AclLineMatchExprs.and(
+                            AclLineMatchExprs.matchSrcInterface(
+                                fromInterfaceArray
+                            ),
+                            new MatchHeaderSpace(toHeaderSpace(natRule.getMatches()))))))
             .build());
 
     NatRuleThen then = natRule.getThen();
