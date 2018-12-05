@@ -464,8 +464,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
-  @VisibleForTesting
-  static void answerAclReachability(
+  private static void answerAclReachability(
       List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
