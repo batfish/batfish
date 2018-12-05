@@ -2,8 +2,9 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
-
+import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
@@ -1264,6 +1266,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    newIface.setDestinationNats(buildDestinationNats(iface));
+
     // Assume the config will need security policies only if it has zones
     IpAccessList securityPolicyAcl = null;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
@@ -1360,6 +1364,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<SourceNat> ifaceLocationNats = toSourceNats(iface.getName(), ifaceLocationRuleSetList);
     List<SourceNat> zoneLocationNats = toSourceNats(iface.getName(), zoneLocationRuleSetList);
     List<SourceNat> routingInstanceLocationNats = toSourceNats(iface.getName(), routingInstanceLocationRuleSetList);
+    return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
+        .filter(Objects::nonNull)
+        .flatMap(List::stream)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private List<DestinationNat> buildDestinationNats(Interface iface) {
+    Nat dnat = _masterLogicalSystem.getNatDestination();
+    if (dnat == null) {
+      return ImmutableList.of();
+    }
+    Map<String, NatPool> pools = dnat.getPools();
+
+    String ifaceName = iface.getName();
+    String zone = _masterLogicalSystem.getInterfaceZones().get(ifaceName).getName();
+    String routingInstance = iface.getRoutingInstance();
+
+    /*
+     * Precedence of rule set is by fromLocation: interface > zone > routing instance
+     */
+    List<DestinationNat> ifaceLocationNats = null;
+    List<DestinationNat> zoneLocationNats = null;
+    List<DestinationNat> routingInstanceLocationNats = null;
+    for (Entry<String, NatRuleSet> entry : dnat.getRuleSets().entrySet()) {
+      String ruleSetName = entry.getKey();
+      NatRuleSet ruleSet = entry.getValue();
+      NatPacketLocation fromLocation = ruleSet.getFromLocation();
+      if (ifaceName.equals(fromLocation.getInterface())) {
+        ifaceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
+      } else if (zone.equals(fromLocation.getZone())) {
+        zoneLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
+      } else if (routingInstance.equals(fromLocation.getRoutingInstance())) {
+        routingInstanceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
+      }
+    }
 
     return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
         .filter(Objects::nonNull)
@@ -1405,9 +1444,51 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
+  private static List<DestinationNat> toDestinationNats(
+      String ifaceName, String ruleSetName, NatRuleSet ruleSet, Map<String, NatPool> pools) {
+    NatPacketLocation to = ruleSet.getToLocation();
+    Preconditions.checkArgument(
+        to.getInterface() == null && to.getZone() == null && to.getRoutingInstance() == null,
+        "Destination NAT rule sets cannot have to location");
+
+    return ruleSet
+        .getRules()
+        .stream()
+        .map(natRule -> toDestinationNat(ifaceName, ruleSetName, pools, natRule))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static DestinationNat toDestinationNat(
+      String ifaceName, String ruleSetName, Map<String, NatPool> pools, NatRule natRule) {
+    DestinationNat.Builder builder = DestinationNat.builder();
+
+    builder.setAcl(
+        IpAccessList.builder()
+            .setName(
+                String.format(
+                    "~ DESTINATION NAT ~ %s ~ %s ~ %s ~",
+                    ifaceName, ruleSetName, natRule.getName()))
+            .setLines(
+                ImmutableList.of(
+                    accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
+            .build());
+
+    NatRuleThen then = natRule.getThen();
+    if (then instanceof NatRuleThenPool) {
+      NatPool pool = pools.get(((NatRuleThenPool) then).getPoolName());
+      builder.setPoolIpFirst(pool.getFromAddress());
+      builder.setPoolIpLast(pool.getToAddress());
+    } else if (!(then instanceof NatRuleThenOff)) {
+      throw new IllegalArgumentException("Unrecognized NatRuleThen type");
+    }
+
+    return builder.build();
+  }
+
   private static SourceNat toSourceNat(
       String ifaceName, String rulesetName, Map<String, NatPool> pools, NatRule natRule) {
     SourceNat.Builder builder = SourceNat.builder();
+
     builder.setAcl(
         IpAccessList.builder()
             .setName(
@@ -2517,11 +2598,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
-    }
-
-    // destination nats
-    if (_masterLogicalSystem.getNatDestination() != null) {
-      _w.unimplemented("Destination NAT is not currently implemented");
     }
 
     // source nats

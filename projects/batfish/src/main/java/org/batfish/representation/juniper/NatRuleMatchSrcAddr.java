@@ -18,6 +18,11 @@ public final class NatRuleMatchSrcAddr implements NatRuleMatch {
   }
 
   @Override
+  public <T> T accept(NatRuleMatchVisitor<T> visitor) {
+    return visitor.visitNatRuleMatchSrcAddr(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
