@@ -2343,11 +2343,15 @@ public class FlatJuniperGrammarTest {
 
     Configuration c = parseConfig(hostname);
 
+    double expectedReferenceBandwidth = 100E9;
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel1(nullValue()))));
     assertThat(
         c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel2(hasWideMetricsOnly()))));
     assertThat(c, hasDefaultVrf(hasIsisProcess(hasOverloadTimeout(360))));
-    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(100E9D))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(expectedReferenceBandwidth))));
 
     assertThat(
         c,
@@ -2355,6 +2359,20 @@ public class FlatJuniperGrammarTest {
             loopback, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.00")))));
     assertThat(c, hasInterface(loopback, hasIsis(hasLevel1(nullValue()))));
     assertThat(c, hasInterface(loopback, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.PASSIVE)))));
+
+    // Loopback did not set an IS-IS metric, so its cost should be based on the reference bandwidth.
+    // First confirm the expected cost isn't coincidentally equal to the Juniper default cost of 10.
+    // No need to worry about getBandwidth() returning null for Juniper interfaces.
+    long expectedCost =
+        Math.max(
+            (long) (expectedReferenceBandwidth / c.getAllInterfaces().get(loopback).getBandwidth()),
+            1L);
+    assertThat(expectedCost, not(equalTo(10L)));
+    assertThat(
+        c,
+        hasInterface(
+            loopback,
+            hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(expectedCost)))));
 
     assertThat(
         c,
@@ -2402,6 +2420,18 @@ public class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasIsisProcess(hasNetAddress(equalTo(new IsoAddress("12.1234.1234.1234.1234.01"))))));
+  }
+
+  @Test
+  public void testJuniperIsisNoReferenceBandwidth() throws IOException {
+    Configuration c = parseConfig("juniper-isis-no-reference-bandwidth");
+
+    // With no set metric or reference bandwidth, Juniper IS-IS cost should default to 10
+    assertThat(
+        c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth((Double) null))));
+    assertThat(
+        c,
+        hasInterface("lo0.0", hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(10L)))));
   }
 
   @Test
