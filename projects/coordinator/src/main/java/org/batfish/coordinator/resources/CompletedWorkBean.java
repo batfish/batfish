@@ -1,5 +1,7 @@
 package org.batfish.coordinator.resources;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Date;
 import java.util.UUID;
 import org.batfish.common.CoordConsts.WorkStatusCode;
@@ -16,14 +18,13 @@ public class CompletedWorkBean {
   public WorkType workType;
 
   public CompletedWorkBean(QueuedWork work) {
-    status = work.getStatus();
-    if (status.isTerminated()) {
-      throw new IllegalArgumentException(
-          String.format("Cannot create CompletedWorkBean from work with status %s", status));
-    }
+    checkArgument(
+        work.getStatus().isTerminated(),
+        "Cannot create CompletedWorkBean from work that is not terminated");
     dateCreated = work.getDateCreated();
     dateTerminated = work.getDateTerminated();
     id = work.getId();
+    status = work.getStatus();
     workType = work.getDetails().workType;
   }
 }
