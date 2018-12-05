@@ -17912,6 +17912,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17936,6 +17940,10 @@
                     "name" : "~CONTRIBUTOR_TO_20.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17960,6 +17968,10 @@
                     "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17986,23 +17998,12 @@
                 }
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
               }
             ]
           },
@@ -18027,6 +18028,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.1.0/24~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           }
