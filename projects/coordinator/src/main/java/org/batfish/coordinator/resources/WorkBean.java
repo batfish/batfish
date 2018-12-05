@@ -1,7 +1,5 @@
 package org.batfish.coordinator.resources;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Date;
 import java.util.UUID;
 import org.batfish.common.CoordConsts.WorkStatusCode;
@@ -9,18 +7,15 @@ import org.batfish.coordinator.QueuedWork;
 import org.batfish.coordinator.WorkDetails.WorkType;
 
 /** A bean for information about completed work */
-public class CompletedWorkBean {
+public class WorkBean {
 
-  public Date dateCreated;
-  public Date dateTerminated;
-  public UUID id;
-  public WorkStatusCode status;
-  public WorkType workType;
+  public final Date dateCreated;
+  public final Date dateTerminated;
+  public final UUID id;
+  public final WorkStatusCode status;
+  public final WorkType workType;
 
-  public CompletedWorkBean(QueuedWork work) {
-    checkArgument(
-        work.getStatus().isTerminated(),
-        "Cannot create CompletedWorkBean from work that is not terminated");
+  public WorkBean(QueuedWork work) {
     dateCreated = work.getDateCreated();
     dateTerminated = work.getDateTerminated();
     id = work.getId();

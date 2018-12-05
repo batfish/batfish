@@ -71,18 +71,18 @@ public final class SnapshotResource {
   /**
    * Get completed work for the specified network's snapshot.
    *
-   * @return List of {@link CompletedWorkBean}
+   * @return List of {@link WorkBean}
    */
   @Path(RSC_COMPLETED_WORK)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
   public Response getCompletedWork() {
     try {
-      List<CompletedWorkBean> completedWork =
+      List<WorkBean> completedWork =
           Main.getWorkMgr()
               .getCompletedWork(_network, _snapshot)
               .stream()
-              .map(CompletedWorkBean::new)
+              .map(WorkBean::new)
               .collect(Collectors.toList());
       return Response.ok().entity(completedWork).build();
     } catch (IllegalArgumentException e) {
