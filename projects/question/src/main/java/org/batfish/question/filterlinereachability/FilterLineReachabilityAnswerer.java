@@ -7,9 +7,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -480,19 +482,20 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       List<IpAccessListLine> lines = ipAcl.getLines();
 
-      List<BDD> ipLineToBDDMap = new ArrayList<>();
-      Set<Integer> unreachableButMatchableLineNums = new HashSet<>();
+      List<BDD> ipLineToBDDMap = new ArrayList<>(lines.size());
+      List<Integer> unreachableButMatchableLineNums = new LinkedList<>();
 
       // compute if each acl line is unmatchable and/or unreachable
       BDD rest = bddFactory.one();
-      for (int lineNum = 0; lineNum < lines.size(); lineNum++) {
-        IpAccessListLine line = lines.get(lineNum);
-        AclLineMatchExpr matchExpr = line.getMatchCondition();
+      ListIterator<IpAccessListLine> lineIt = lines.listIterator();
+      while (lineIt.hasNext()) {
+        int lineNum = lineIt.nextIndex();
+        AclLineMatchExpr matchExpr = lineIt.next().getMatchCondition();
         BDD lineBDD = matchExpr.accept(ipAccessListToBDD);
         ipLineToBDDMap.add(lineBDD);
         if (lineBDD.isZero()) {
           // this line is unmatchable
-          answerRows.addUnreachableLine(aclSpec, lineNum, true, new TreeSet<>());
+          answerRows.addUnreachableLine(aclSpec, lineNum, true, ImmutableSortedSet.of());
         } else if (rest.isZero() || lineBDD.and(rest).isZero()) {
           unreachableButMatchableLineNums.add(lineNum);
         }
@@ -501,21 +504,36 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       // compute blocking lines
       for (int lineNum : unreachableButMatchableLineNums) {
-        SortedSet<Integer> blockingLineNums = new TreeSet<Integer>();
-        BDD restOfLine = ipLineToBDDMap.get(lineNum);
+        ImmutableSortedSet.Builder<Integer> blockingLineNums = ImmutableSortedSet.naturalOrder();
+        ImmutableSortedSet.Builder<Integer> allBlockingLineNums = ImmutableSortedSet.naturalOrder();
+        BDD blockedLine = ipLineToBDDMap.get(lineNum);
+        BDD restOfLine = blockedLine;
 
-        for (int prevLineNum = 0; prevLineNum < lineNum; prevLineNum++) {
-          if (restOfLine.isZero()) {
-            break;
-          }
+        for (int prevLineNum = 0; prevLineNum < lineNum && !restOfLine.isZero(); prevLineNum++) {
           BDD prevBDD = ipLineToBDDMap.get(prevLineNum);
 
-          if (!(prevBDD.and(restOfLine).isZero())) {
-            blockingLineNums.add(prevLineNum);
-            restOfLine = restOfLine.and(prevBDD.not());
+          BDD intersection = prevBDD.and(restOfLine);
+          if (intersection.isZero()) {
+            continue;
           }
+
+          allBlockingLineNums.add(prevLineNum);
+          if (intersection.satCount() / blockedLine.satCount() > 0.1) {
+            blockingLineNums.add(prevLineNum);
+          }
+          restOfLine = restOfLine.and(prevBDD.not());
         }
-        answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLineNums);
+
+        SortedSet<Integer> finalBlockingLines = blockingLineNums.build();
+        if (finalBlockingLines.isEmpty()) {
+          finalBlockingLines = allBlockingLineNums.build();
+        }
+        System.err.printf(
+            "blockingLines: %d, allBlockingLines; %d, finalBlockingLines: %d\n",
+            blockingLineNums.build().size(),
+            allBlockingLineNums.build().size(),
+            finalBlockingLines.size());
+        answerRows.addUnreachableLine(aclSpec, lineNum, false, finalBlockingLines);
       }
     }
   }
