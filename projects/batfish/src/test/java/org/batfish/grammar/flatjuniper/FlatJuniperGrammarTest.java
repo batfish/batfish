@@ -172,6 +172,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1278,6 +1279,24 @@ public class FlatJuniperGrammarTest {
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
+    GeneratedRoute ar4 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("4.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar5 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("5.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar6 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("6.0.0.0/8")))
+            .findAny()
+            .get();
 
     // policies should be generated only for the active ones
     assertThat(
@@ -1307,6 +1326,29 @@ public class FlatJuniperGrammarTest {
     assertThat(ar1.getDiscard(), equalTo(true));
     assertThat(ar2.getDiscard(), equalTo(true));
     assertThat(ar3.getDiscard(), equalTo(true));
+
+    // policy semantics
+
+    // falls through without changing default, so accept
+    RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
+    ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
+    assertThat(
+        rp4.process(cr4, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
+
+    // rejects first, so reject
+    RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
+    ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
+    assertThat(
+        rp5.process(cr5, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(false));
+
+    // accepts first, so accept
+    RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
+    ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
+    assertThat(
+        rp6.process(cr6, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
   }
 
   @Test
@@ -1726,6 +1768,23 @@ public class FlatJuniperGrammarTest {
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
     assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(new Ip("1.0.0.2")))));
+  }
+
+  @Test
+  public void testInterfaceBandwidth() throws IOException {
+    Configuration c = parseConfig("interface-bandwidth");
+
+    // Configuration has four interfaces with configured bandwidths 5000000000, 5000000k, 5000m, 5g.
+    // Physical interfaces should have default bandwidth (1E9), unit interfaces should have 5E9.
+    double unitBandwidth = 5E9;
+    double physicalBandwidth =
+        org.batfish.representation.juniper.Interface.getDefaultBandwidthByName("ge-0/0/0");
+
+    Map<String, Interface> interfaces = c.getAllInterfaces();
+    for (int i = 0; i < 4; i++) {
+      assertThat(interfaces.get("ge-" + i + "/0/0").getBandwidth(), equalTo(physicalBandwidth));
+      assertThat(interfaces.get("ge-" + i + "/0/0.0").getBandwidth(), equalTo(unitBandwidth));
+    }
   }
 
   @Test

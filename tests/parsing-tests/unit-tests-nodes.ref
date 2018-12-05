@@ -16532,6 +16532,214 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "ge-2/0/0" : {
+            "name" : "ge-2/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-2/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-2/0/0.0" : {
+            "name" : "ge-2/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5.0,
+            "declaredNames" : [
+              "ge-2/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-3/0/0" : {
+            "name" : "ge-3/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-3/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-3/0/0.0" : {
+            "name" : "ge-3/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5000.0,
+            "declaredNames" : [
+              "ge-3/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-4/0/0" : {
+            "name" : "ge-4/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-4/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-4/0/0.0" : {
+            "name" : "ge-4/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5000000.0,
+            "declaredNames" : [
+              "ge-4/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-5/0/0" : {
+            "name" : "ge-5/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-5/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-5/0/0.0" : {
+            "name" : "ge-5/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5.0E9,
+            "declaredNames" : [
+              "ge-5/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
           "irb" : {
             "name" : "irb",
             "accessVlan" : 0,
@@ -16748,6 +16956,14 @@
               "ae0.0",
               "ge-0/0/0",
               "ge-1/0/0",
+              "ge-2/0/0",
+              "ge-2/0/0.0",
+              "ge-3/0/0",
+              "ge-3/0/0.0",
+              "ge-4/0/0",
+              "ge-4/0/0.0",
+              "ge-5/0/0",
+              "ge-5/0/0.0",
               "irb",
               "irb.5",
               "xe-0/0/0:0",
@@ -17912,6 +18128,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17936,6 +18156,10 @@
                     "name" : "~CONTRIBUTOR_TO_20.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17960,6 +18184,10 @@
                     "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17986,23 +18214,12 @@
                 }
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
               }
             ]
           },
@@ -18027,6 +18244,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.1.0/24~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           }
