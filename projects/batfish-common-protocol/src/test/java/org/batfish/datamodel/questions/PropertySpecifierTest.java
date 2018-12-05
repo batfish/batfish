@@ -34,20 +34,19 @@ public class PropertySpecifierTest {
         ImmutableSet.of(
             "abc", NodePropertySpecifier.NTP_SERVERS, NodePropertySpecifier.NTP_SOURCE_INTERFACE);
 
-    // null or empty string should yield all options, with .* as the first one
+    // null or empty string should yield all options
     assertThat(
         PropertySpecifier.baseAutoComplete(null, properties)
             .stream()
             .map(s -> s.getText())
             .collect(Collectors.toList()),
-        equalTo(ImmutableList.builder().add(".*").addAll(properties).build()));
+        equalTo(ImmutableList.builder().addAll(properties).build()));
 
     // the capital P shouldn't matter and this should autoComplete to three entries
     assertThat(
         new ArrayList<>(PropertySpecifier.baseAutoComplete("ntP", properties)),
         equalTo(
             ImmutableList.of(
-                new AutocompleteSuggestion(".*ntp.*", false),
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
   }
