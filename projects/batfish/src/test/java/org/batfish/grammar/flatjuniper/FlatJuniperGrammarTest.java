@@ -1278,6 +1278,24 @@ public class FlatJuniperGrammarTest {
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
+    GeneratedRoute ar4 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("4.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar5 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("5.0.0.0/8")))
+            .findAny()
+            .get();
+    GeneratedRoute ar6 =
+        aggregateRoutes
+            .stream()
+            .filter(ar -> ar.getNetwork().equals(Prefix.parse("6.0.0.0/8")))
+            .findAny()
+            .get();
 
     // policies should be generated only for the active ones
     assertThat(
@@ -1307,6 +1325,29 @@ public class FlatJuniperGrammarTest {
     assertThat(ar1.getDiscard(), equalTo(true));
     assertThat(ar2.getDiscard(), equalTo(true));
     assertThat(ar3.getDiscard(), equalTo(true));
+
+    // policy semantics
+
+    // falls through without changing default, so accept
+    RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
+    ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
+    assertThat(
+        rp4.process(cr4, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
+
+    // rejects first, so reject
+    RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
+    ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
+    assertThat(
+        rp5.process(cr5, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(false));
+
+    // accepts first, so accept
+    RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
+    ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
+    assertThat(
+        rp6.process(cr6, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
   }
 
   @Test

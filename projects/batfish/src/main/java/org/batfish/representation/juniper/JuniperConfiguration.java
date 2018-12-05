@@ -997,9 +997,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     generationPolicy.getStatements().add(contributorCheck);
 
     /*
-     *  - If no policy takes an action, accept.
-     *  - If a policy accepts, accept.
-     *  - If at least one policy rejects and no policy accepts, reject.
+     *  Evaluate policies in order:
+     *  - If a policy accepts, stop evaluation and accept.
+     *  - If a policy rejects, stop evaulation and reject.
+     *  - If no policy takes an action, take default action.
+     *  -- Initially, default action is accept.
+     *  -- Policy can change default action and fall through.
      */
     generationPolicy.getStatements().add(Statements.SetDefaultActionAccept.toStaticStatement());
     if (!route.getPolicies().isEmpty()) {
