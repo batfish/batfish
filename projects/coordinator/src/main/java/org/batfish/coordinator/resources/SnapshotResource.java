@@ -11,6 +11,7 @@ import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -21,7 +22,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.QueuedWork;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 
@@ -71,14 +71,19 @@ public final class SnapshotResource {
   /**
    * Get completed work for the specified network's snapshot.
    *
-   * @return List of completed {@link QueuedWork}
+   * @return List of {@link CompletedWorkBean}
    */
   @Path(RSC_COMPLETED_WORK)
   @Produces(MediaType.APPLICATION_JSON)
   @GET
   public Response getCompletedWork() {
     try {
-      List<QueuedWork> completedWork = Main.getWorkMgr().getCompletedWork(_network, _snapshot);
+      List<CompletedWorkBean> completedWork =
+          Main.getWorkMgr()
+              .getCompletedWork(_network, _snapshot)
+              .stream()
+              .map(CompletedWorkBean::new)
+              .collect(Collectors.toList());
       return Response.ok().entity(completedWork).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.NOT_FOUND).build();
