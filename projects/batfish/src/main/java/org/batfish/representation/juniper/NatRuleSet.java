@@ -18,7 +18,17 @@ public final class NatRuleSet implements Serializable {
 
   private final NatPacketLocation _toLocation;
 
+  private final String _name;
+
+  public NatRuleSet(String name) {
+    _name = name;
+    _fromLocation = new NatPacketLocation();
+    _rules = new ArrayList<>();
+    _toLocation = new NatPacketLocation();
+  }
+
   public NatRuleSet() {
+    _name = "RULE-SET";
     _fromLocation = new NatPacketLocation();
     _rules = new ArrayList<>();
     _toLocation = new NatPacketLocation();
@@ -37,5 +47,10 @@ public final class NatRuleSet implements Serializable {
   @Nonnull
   public NatPacketLocation getToLocation() {
     return _toLocation;
+  }
+
+  @Nonnull
+  public String getName() {
+    return _name;
   }
 }

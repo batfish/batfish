@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -22,11 +23,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.transform.Source;
 import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
@@ -77,6 +80,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -1318,7 +1322,114 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setBandwidth(iface.getBandwidth());
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
+
+    newIface.setSourceNats(buildSourceNats(iface));
+
     return newIface;
+  }
+
+  List<SourceNat> buildSourceNats(Interface iface) {
+    Nat snat = _masterLogicalSystem.getNatSource();
+
+    if (snat == null) {
+      return ImmutableList.of();
+    }
+
+    String name = iface.getName();
+    String zone = _masterLogicalSystem.getInterfaceZones().get(name).getName();
+    String routingInstance = iface.getRoutingInstance();
+
+    List<NatRuleSet> ifaceLocationRuleSetList = new ArrayList<>();
+    List<NatRuleSet> zoneLocationRuleSetList = new ArrayList<>();
+    List<NatRuleSet> routingInstanceLocationRuleSetList = new ArrayList<>();
+
+    for (NatRuleSet ruleSet : snat.getRuleSets().values()) {
+      NatPacketLocation toLocation = ruleSet.getToLocation();
+      if (name.equals(toLocation.getInterface())) {
+        ifaceLocationRuleSetList.add(ruleSet);
+      } else if (zone.equals(toLocation.getZone())) {
+        zoneLocationRuleSetList.add(ruleSet);
+      } else if (routingInstance.equals(toLocation.getRoutingInstance())) {
+        routingInstanceLocationRuleSetList.add(ruleSet);
+      }
+    }
+
+    sortRuleSetsByFromLocation(ifaceLocationRuleSetList);
+    sortRuleSetsByFromLocation(zoneLocationRuleSetList);
+    sortRuleSetsByFromLocation(routingInstanceLocationRuleSetList);
+
+    List<SourceNat> ifaceLocationNats = toSourceNats(iface.getName(), ifaceLocationRuleSetList);
+    List<SourceNat> zoneLocationNats = toSourceNats(iface.getName(), zoneLocationRuleSetList);
+    List<SourceNat> routingInstanceLocationNats = toSourceNats(iface.getName(), routingInstanceLocationRuleSetList);
+
+    return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
+        .filter(Objects::nonNull)
+        .flatMap(List::stream)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  // sort rule set by from location in the following order: iface, zone, routing instance
+  private static void sortRuleSetsByFromLocation(List<NatRuleSet> ruleSetList) {
+    Map<NatRuleSet, Integer> priorityMap = ruleSetList.stream().collect(
+        Collectors.toMap(
+            Function.identity(),
+            rs -> {
+                  if (rs.getFromLocation().getInterface() != null) {
+                    return 0;
+                  } else if (rs.getFromLocation().getZone() != null) {
+                    return 1;
+                  } else if (rs.getFromLocation().getRoutingInstance() != null) {
+                    return 2;
+                  }
+                  throw new BatfishException("from location must be specified in source NATs");
+            }
+        )
+    );
+
+    ruleSetList.sort((rs1, rs2) -> {
+      Integer p1 = priorityMap.get(rs1);
+      Integer p2 = priorityMap.get(rs2);
+      return p1  < p2 ? -1 : p1  == p2 ? 0 :1;
+    });
+  }
+
+  List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> ruleSetList) {
+    Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
+    return ruleSetList
+        .stream()
+        .flatMap(
+            ruleSet ->
+                ruleSet
+                    .getRules()
+                    .stream()
+                    .map(natRule -> toSourceNat(ifaceName, ruleSet.getName(), pools, natRule)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static SourceNat toSourceNat(
+      String ifaceName, String rulesetName, Map<String, NatPool> pools, NatRule natRule) {
+    SourceNat.Builder builder = SourceNat.builder();
+    builder.setAcl(
+        IpAccessList.builder()
+            .setName(
+                String.format(
+                    "~ SOURCE NAT ~ %s ~ %s ~ %s ~",
+                    ifaceName, rulesetName, natRule.getName()))
+            .setLines(
+                ImmutableList.of(
+                    accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
+            .build());
+
+    NatRuleThen then = natRule.getThen();
+    if (then instanceof NatRuleThenPool) {
+      NatPool pool = pools.get(((NatRuleThenPool) then).getPoolName());
+      builder.setPoolIpFirst(pool.getFromAddress());
+      builder.setPoolIpLast(pool.getToAddress());
+    } else if (!(then instanceof NatRuleThenOff)) {
+      throw new IllegalArgumentException("Unrecognized NatRuleThen type");
+    }
+
+    return builder.build();
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
