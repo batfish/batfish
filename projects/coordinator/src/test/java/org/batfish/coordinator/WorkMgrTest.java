@@ -1033,6 +1033,80 @@ public final class WorkMgrTest {
     assertThat(answers3.keySet(), containsInAnyOrder(question1Name, question2Name));
   }
 
+  /** Test that we return good answers when some questions are bad */
+  @Test
+  public void testGetAnalysisAnswersAndMetadataPartial()
+      throws JsonProcessingException, FileNotFoundException {
+    String containerName = "container1";
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+
+    String question1Name = "question1";
+    String question1Content = BatfishObjectMapper.writeString(new TestQuestion());
+
+    String question2Name = "question2";
+    String question2Content = "bogus"; // bad content
+
+    _manager.initNetwork(containerName, null);
+    Map<String, String> questionsToAdd =
+        ImmutableMap.of(question1Name, question1Content, question2Name, question2Content);
+
+    _manager.configureAnalysis(
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(testrigName, networkId, snapshotId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+
+    AnswerId baseAnswerId1 =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
+    AnswerId baseAnswerId2 =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
+    Answer answer1 = new Answer();
+    Answer answer2 = new Answer();
+    String answer1Text = "foo1";
+    String answer2Text = "foo2";
+    answer1.addAnswerElement(new StringAnswerElement(answer1Text));
+    answer2.addAnswerElement(new StringAnswerElement(answer2Text));
+    String answer1Str = BatfishObjectMapper.writeString(answer1);
+    String answer2Str = BatfishObjectMapper.writeString(answer2);
+    AnswerMetadata answerMetadata1 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    AnswerMetadata answerMetadata2 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    _storage.storeAnswer(answer1Str, baseAnswerId1);
+    _storage.storeAnswer(answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
+
+    Map<String, String> answers =
+        _manager.getAnalysisAnswers(
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
+
+    Map<String, AnswerMetadata> answersMetadata =
+        _manager.getAnalysisAnswersMetadata(
+            containerName, testrigName, null, analysisName, ImmutableSet.of());
+
+    assertThat(answers.keySet(), containsInAnyOrder(question1Name));
+    assertThat(answersMetadata.keySet(), containsInAnyOrder(question1Name));
+  }
+
   @Test
   public void testGetAutoWorkQueueUserAnalysis() {
     String containerName = "myContainer";
