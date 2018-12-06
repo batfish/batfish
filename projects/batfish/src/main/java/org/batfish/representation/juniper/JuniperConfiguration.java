@@ -1366,7 +1366,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static List<DestinationNat> toDestinationNats(
+  private List<DestinationNat> toDestinationNats(
       String ifaceName, String ruleSetName, NatRuleSet ruleSet, Map<String, NatPool> pools) {
     NatPacketLocation to = ruleSet.getToLocation();
     Preconditions.checkArgument(
@@ -1380,12 +1380,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static DestinationNat toDestinationNat(
+  private DestinationNat toDestinationNat(
       String ifaceName, String ruleSetName, Map<String, NatPool> pools, NatRule natRule) {
     DestinationNat.Builder builder = DestinationNat.builder();
 
     builder.setAcl(
         IpAccessList.builder()
+            .setOwner(_c)
             .setName(
                 String.format(
                     "~ DESTINATION NAT ~ %s ~ %s ~ %s ~",
