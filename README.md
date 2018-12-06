@@ -5,6 +5,8 @@
 
 ## What is Batfish?
 
+[![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/watch?v=Ca7kPAtfFqo)
+
 Batfish is a network validation tool that provides correctness guarantees for security, reliability, and compliance by analyzing the configuration of network devices. 
 
 The primary use case for Batfish is to evaluate planned configuration changes in order to understand the impact of the change. Pre-deployment validation is a critical gap in existing network automation workflows. 
@@ -40,6 +42,7 @@ Batfish can provide correctness guarantees for a wide range of network behaviors
 * Planned ACL or firewall changes are provably correct and causes no collateral damage for other traffic
 * Two configurations, potentially from different vendors, are functionally equivalent
 
+Batfish's [YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) has videos that illustrate many of these use cases.
   
 ## How do I get started?
 
