@@ -3,6 +3,7 @@ package org.batfish.dataplane.rib;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -469,5 +470,28 @@ public class AbstractRibTest {
     // Check that clearing all routes works:
     _rib.clearRoutes(Prefix.parse("1.1.1.1/32"));
     assertThat(_rib.getRoutes(), hasSize(0));
+  }
+
+  @Test
+  public void testLengthLimit() {
+    StaticRoute.Builder builder =
+        StaticRoute.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1);
+
+    Ip ip = new Ip("1.1.1.1");
+    StaticRoute r32 = builder.setNetwork(new Prefix(ip, 32)).build();
+    StaticRoute r18 = builder.setNetwork(new Prefix(ip, 18)).build();
+    _rib.mergeRoute(r32);
+    _rib.mergeRoute(r18);
+
+    assertThat(_rib.longestPrefixMatch(ip, 32), contains(r32));
+    assertThat(_rib.longestPrefixMatch(ip, 31), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 19), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 18), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 17), empty());
   }
 }

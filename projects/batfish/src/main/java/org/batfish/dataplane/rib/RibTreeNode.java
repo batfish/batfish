@@ -100,30 +100,29 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return node != null && node._routes.contains(route);
   }
 
-  private Set<R> getLongestPrefixMatch(Ip address) {
-    return _routes
-        .stream()
-        .filter(r -> r.getNetwork().containsIp(address))
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
   /**
    * Returns a set of routes with the longest prefix match for a given IP address
    *
    * @param address IP address
    * @param bits IP address represented as a set of bits
-   * @param index the position of the bit up to which the match has already been found
-   *     (tail-recursion way of keeping track how deep we are)
    * @param maxPrefixLength only return routes with prefix length less than or equal to given value
    * @return a set of routes
    */
-  Set<R> getLongestPrefixMatch(Ip address, long bits, int index, int maxPrefixLength) {
-    // Get the list of routes stored in our node that contain the IP address
-    Set<R> longestPrefixMatches = getLongestPrefixMatch(address);
-    // If we reached the max prefix length (e.g., 32 for for IPv4) then return routes
-    // from the current node
-    if (index >= maxPrefixLength) {
-      return longestPrefixMatches;
+  Set<R> getLongestPrefixMatch(Ip address, long bits, int maxPrefixLength) {
+    // If the current subtree only contains routes that are too long, no matches.
+    int index = _prefix.getPrefixLength();
+    if (index > maxPrefixLength) {
+      return ImmutableSet.of();
+    }
+
+    // If the current subtree does not contain the destination IP, no matches.
+    if (!_prefix.containsIp(address)) {
+      return ImmutableSet.of();
+    }
+
+    // If the network of the current node is exactly the desired maximum length, stop here.
+    if (index == maxPrefixLength) {
+      return ImmutableSet.copyOf(_routes);
     }
 
     // Examine the bit at the given index
@@ -137,17 +136,15 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
       child = _left;
     }
     if (child == null) {
-      return longestPrefixMatches;
+      return ImmutableSet.copyOf(_routes);
     }
 
     // Represents any potentially longer route matches (than ones stored at this node)
-    Set<R> longerMatches =
-        child.getLongestPrefixMatch(
-            address, bits, child._prefix.getPrefixLength(), maxPrefixLength);
+    Set<R> longerMatches = child.getLongestPrefixMatch(address, bits, maxPrefixLength);
 
     // If we found no better matches, return the ones from this node
     if (longerMatches == null || longerMatches.isEmpty()) {
-      return longestPrefixMatches;
+      return ImmutableSet.copyOf(_routes);
     } else { // otherwise return longer matches
       return longerMatches;
     }

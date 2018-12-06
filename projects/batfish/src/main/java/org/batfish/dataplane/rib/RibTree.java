@@ -59,7 +59,7 @@ class RibTree<R extends AbstractRoute> implements Serializable {
 
   Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
     long addressBits = address.asLong();
-    return _root.getLongestPrefixMatch(address, addressBits, 0, maxPrefixLength);
+    return _root.getLongestPrefixMatch(address, addressBits, maxPrefixLength);
   }
 
   /**
