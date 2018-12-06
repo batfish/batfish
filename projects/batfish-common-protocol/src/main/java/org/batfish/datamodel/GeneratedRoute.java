@@ -48,7 +48,9 @@ public final class GeneratedRoute extends AbstractRoute {
           _discard,
           _generationPolicy,
           getMetric(),
-          _nextHopInterface);
+          _nextHopInterface,
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Override
@@ -143,7 +145,7 @@ public final class GeneratedRoute extends AbstractRoute {
   private final Ip _nextHopIp;
 
   @JsonCreator
-  public GeneratedRoute(
+  private static GeneratedRoute jsonCreator(
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
@@ -154,7 +156,37 @@ public final class GeneratedRoute extends AbstractRoute {
       @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
       @JsonProperty(PROP_METRIC) Long metric,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
+    return new GeneratedRoute(
+        network,
+        administrativeCost,
+        nextHopIp,
+        asPath,
+        attributePolicy,
+        communities,
+        discard,
+        generationPolicy,
+        metric,
+        nextHopInterface,
+        false,
+        false);
+  }
+
+  private GeneratedRoute(
+      Prefix network,
+      int administrativeCost,
+      Ip nextHopIp,
+      AsPath asPath,
+      String attributePolicy,
+      SortedSet<Long> communities,
+      boolean discard,
+      String generationPolicy,
+      Long metric,
+      String nextHopInterface,
+      boolean nonForwarding,
+      boolean nonRouting) {
     super(network);
+    setNonForwarding(nonForwarding);
+    setNonRouting(nonRouting);
     _administrativeCost = administrativeCost;
     _asPath = asPath;
     _attributePolicy = attributePolicy;

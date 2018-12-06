@@ -68,7 +68,9 @@ public class BgpRoute extends AbstractRoute {
           _protocol,
           _receivedFromIp,
           _srcProtocol,
-          _weight);
+          _weight,
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Nonnull
@@ -269,7 +271,7 @@ public class BgpRoute extends AbstractRoute {
   private final int _weight;
 
   @JsonCreator
-  private BgpRoute(
+  private static BgpRoute jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
@@ -287,10 +289,53 @@ public class BgpRoute extends AbstractRoute {
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_WEIGHT) int weight) {
-    super(network);
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
+    return new BgpRoute(
+        network,
+        nextHopIp,
+        admin,
+        asPath,
+        communities,
+        discard,
+        localPreference,
+        med,
+        originatorIp,
+        clusterList,
+        receivedFromRouteReflectorClient,
+        originType,
+        protocol,
+        receivedFromIp,
+        srcProtocol,
+        weight,
+        false,
+        false);
+  }
+
+  private BgpRoute(
+      @Nullable Prefix network,
+      @Nullable Ip nextHopIp,
+      int admin,
+      @Nullable AsPath asPath,
+      @Nullable SortedSet<Long> communities,
+      boolean discard,
+      int localPreference,
+      long med,
+      Ip originatorIp,
+      @Nullable SortedSet<Long> clusterList,
+      @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
+          boolean receivedFromRouteReflectorClient,
+      OriginType originType,
+      RoutingProtocol protocol,
+      @Nullable Ip receivedFromIp,
+      @Nullable RoutingProtocol srcProtocol,
+      int weight,
+      boolean nonForwarding,
+      boolean nonRouting) {
+    super(network);
+    setNonForwarding(nonForwarding);
+    setNonRouting(nonRouting);
     _admin = admin;
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =

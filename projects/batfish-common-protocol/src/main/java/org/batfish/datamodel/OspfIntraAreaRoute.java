@@ -10,13 +10,24 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  public OspfIntraAreaRoute(
+  private static OspfIntraAreaRoute jsonCreator(
       @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_AREA) long area) {
-    super(network, nextHopIp, admin, metric, area);
+    return new OspfIntraAreaRoute(network, nextHopIp, admin, metric, area, false, false);
+  }
+
+  OspfIntraAreaRoute(
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      int admin,
+      long metric,
+      long area,
+      boolean nonForwarding,
+      boolean nonRouting) {
+    super(network, nextHopIp, admin, metric, area, nonForwarding, nonRouting);
   }
 
   @Override

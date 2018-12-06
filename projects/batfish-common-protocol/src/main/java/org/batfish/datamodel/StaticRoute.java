@@ -38,7 +38,14 @@ public class StaticRoute extends AbstractRoute {
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) int tag) {
     return new StaticRoute(
-        requireNonNull(network), nextHopIp, nextHopInterface, administrativeCost, metric, tag);
+        requireNonNull(network),
+        nextHopIp,
+        nextHopInterface,
+        administrativeCost,
+        metric,
+        tag,
+        false,
+        false);
   }
 
   private StaticRoute(
@@ -47,8 +54,12 @@ public class StaticRoute extends AbstractRoute {
       @Nullable String nextHopInterface,
       int administrativeCost,
       long metric,
-      int tag) {
+      int tag,
+      boolean nonForwarding,
+      boolean nonRouting) {
     super(network);
+    setNonForwarding(nonForwarding);
+    setNonRouting(nonRouting);
     checkArgument(
         administrativeCost >= 0, "Invalid admin distance for static route: %d", administrativeCost);
     _administrativeCost = administrativeCost;
@@ -66,11 +77,13 @@ public class StaticRoute extends AbstractRoute {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return Objects.equals(_network, rhs._network)
-        && _administrativeCost == rhs._administrativeCost
+    return _administrativeCost == rhs._administrativeCost
+        && _tag == rhs._tag
+        && getNonForwarding() == rhs.getNonForwarding()
+        && getNonRouting() == rhs.getNonRouting()
+        && Objects.equals(_network, rhs._network)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
-        && _tag == rhs._tag;
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
   }
 
   @Override
@@ -121,7 +134,15 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_administrativeCost, _metric, _nextHopInterface, _nextHopIp, _tag);
+    return Objects.hash(
+        _administrativeCost,
+        getNonForwarding(),
+        getNonRouting(),
+        _metric,
+        _network,
+        _nextHopInterface,
+        _nextHopIp,
+        _tag);
   }
 
   @Override
@@ -150,7 +171,9 @@ public class StaticRoute extends AbstractRoute {
           _nextHopInterface,
           _administrativeCost,
           getMetric(),
-          getTag());
+          getTag(),
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Override

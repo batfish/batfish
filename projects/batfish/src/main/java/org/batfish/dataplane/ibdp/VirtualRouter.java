@@ -560,7 +560,15 @@ public class VirtualRouter implements Serializable {
 
         // Non-null metric means we generate a new summary and put it in the RIB
         OspfInterAreaRoute summaryRoute =
-            new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+            (OspfInterAreaRoute)
+                OspfInternalRoute.builder()
+                    .setProtocol(RoutingProtocol.OSPF_IA)
+                    .setNetwork(prefix)
+                    .setNextHopIp(Ip.ZERO)
+                    .setAdmin(admin)
+                    .setMetric(metric)
+                    .setArea(areaNum)
+                    .build();
         summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
@@ -840,13 +848,17 @@ public class VirtualRouter implements Serializable {
                       cost = proc.getMaxMetricTransitLinks();
                     }
                     OspfIntraAreaRoute route =
-                        new OspfIntraAreaRoute(
-                            prefix,
-                            null,
-                            RoutingProtocol.OSPF.getDefaultAdministrativeCost(
-                                _c.getConfigurationFormat()),
-                            cost,
-                            areaNum);
+                        (OspfIntraAreaRoute)
+                            OspfInternalRoute.builder()
+                                .setProtocol(RoutingProtocol.OSPF)
+                                .setNetwork(prefix)
+                                .setNextHopIp(null)
+                                .setAdmin(
+                                    RoutingProtocol.OSPF.getDefaultAdministrativeCost(
+                                        _c.getConfigurationFormat()))
+                                .setMetric(cost)
+                                .setArea(areaNum)
+                                .build();
                     _ospfIntraAreaRib.mergeRouteGetDelta(route);
                   }
                 }
@@ -959,7 +971,7 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
       AbstractRoute potentialExportRoute, RoutingPolicy exportPolicy, OspfProcess proc) {
-    OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
+    OspfExternalRoute.Builder outputRouteBuilder = OspfExternalRoute.builder();
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
         exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
@@ -1540,15 +1552,18 @@ public class VirtualRouter implements Serializable {
             long newMetric = baseMetric + incrementalCost;
             long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
             OspfExternalType1Route newRoute =
-                new OspfExternalType1Route(
-                    neighborRoute.getNetwork(),
-                    neighborInterface.getAddress().getIp(),
-                    admin,
-                    newMetric,
-                    neighborRoute.getLsaMetric(),
-                    newArea,
-                    newCostToAdvertiser,
-                    neighborRoute.getAdvertiser());
+                (OspfExternalType1Route)
+                    OspfExternalRoute.builder()
+                        .setOspfMetricType(OspfMetricType.E1)
+                        .setNetwork(neighborRoute.getNetwork())
+                        .setNextHopIp(neighborInterface.getAddress().getIp())
+                        .setAdmin(admin)
+                        .setMetric(newMetric)
+                        .setLsaMetric(neighborRoute.getLsaMetric())
+                        .setArea(newArea)
+                        .setCostToAdvertiser(newCostToAdvertiser)
+                        .setAdvertiser(neighborRoute.getAdvertiser())
+                        .build();
             if (withdraw) {
               builderType1.remove(newRoute, Reason.WITHDRAW);
               _ospfExternalType1Rib.removeBackupRoute(newRoute);
@@ -1574,15 +1589,18 @@ public class VirtualRouter implements Serializable {
             }
             long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
             OspfExternalType2Route newRoute =
-                new OspfExternalType2Route(
-                    neighborRoute.getNetwork(),
-                    neighborInterface.getAddress().getIp(),
-                    admin,
-                    neighborRoute.getMetric(),
-                    neighborRoute.getLsaMetric(),
-                    newArea,
-                    newCostToAdvertiser,
-                    neighborRoute.getAdvertiser());
+                (OspfExternalType2Route)
+                    OspfExternalRoute.builder()
+                        .setOspfMetricType(OspfMetricType.E2)
+                        .setNetwork(neighborRoute.getNetwork())
+                        .setNextHopIp(neighborInterface.getAddress().getIp())
+                        .setAdmin(admin)
+                        .setMetric(neighborRoute.getMetric())
+                        .setLsaMetric(neighborRoute.getLsaMetric())
+                        .setArea(newArea)
+                        .setCostToAdvertiser(newCostToAdvertiser)
+                        .setAdvertiser(neighborRoute.getAdvertiser())
+                        .build();
             if (withdraw) {
               builderType2.remove(newRoute, Reason.WITHDRAW);
               _ospfExternalType2Rib.addBackupRoute(newRoute);
@@ -1625,11 +1643,19 @@ public class VirtualRouter implements Serializable {
       newCost = neighborRoute.getMetric() + incrementalCost;
     }
     OspfInterAreaRoute newRoute =
-        new OspfInterAreaRoute(neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, areaNum);
+        (OspfInterAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF_IA)
+                .setNetwork(neighborRoute.getNetwork())
+                .setNextHopIp(nextHopIp)
+                .setAdmin(adminCost)
+                .setMetric(newCost)
+                .setArea(areaNum)
+                .build();
     return _ospfInterAreaStagingRib.mergeRoute(newRoute);
   }
 
-  boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
+  private boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
       Configuration neighbor,
       OspfProcess neighborProc,
       OspfIntraAreaRoute neighborRoute,
@@ -1748,12 +1774,15 @@ public class VirtualRouter implements Serializable {
     }
     long metric = incrementalCost + area.getMetricOfDefaultRoute();
     return _ospfInterAreaStagingRib.mergeRoute(
-        new OspfInterAreaRoute(
-            Prefix.ZERO,
-            neighborInterface.getAddress().getIp(),
-            adminCost,
-            metric,
-            area.getAreaNumber()));
+        (OspfInterAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF_IA)
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(neighborInterface.getAddress().getIp())
+                .setAdmin(adminCost)
+                .setMetric(metric)
+                .setArea(area.getAreaNumber())
+                .build());
   }
 
   boolean propagateOspfInterAreaRouteFromInterAreaRoute(
@@ -1790,8 +1819,15 @@ public class VirtualRouter implements Serializable {
     long newCost = neighborRoute.getMetric() + incrementalCost;
     Ip nextHopIp = neighborInterface.getAddress().getIp();
     OspfIntraAreaRoute newRoute =
-        new OspfIntraAreaRoute(
-            neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, linkAreaNum);
+        (OspfIntraAreaRoute)
+            OspfIntraAreaRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(neighborRoute.getNetwork())
+                .setNextHopIp(nextHopIp)
+                .setAdmin(adminCost)
+                .setMetric(newCost)
+                .setArea(linkAreaNum)
+                .build();
     return neighborRoute.getArea() == linkAreaNum
         && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
   }
