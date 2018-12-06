@@ -38,7 +38,9 @@ public class IsisRoute extends AbstractRoute {
           requireNonNull(getNetwork()),
           requireNonNull(getNextHopIp()),
           requireNonNull(_protocol),
-          requireNonNull(_systemId));
+          requireNonNull(_systemId),
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Override
@@ -113,7 +115,9 @@ public class IsisRoute extends AbstractRoute {
         requireNonNull(network),
         requireNonNull(nextHopIp),
         requireNonNull(protocol),
-        requireNonNull(systemId));
+        requireNonNull(systemId),
+        false,
+        false);
   }
 
   private final int _administrativeCost;
@@ -144,8 +148,12 @@ public class IsisRoute extends AbstractRoute {
       @Nonnull Prefix network,
       @Nonnull Ip nextHopIp,
       @Nonnull RoutingProtocol protocol,
-      @Nonnull String systemId) {
+      @Nonnull String systemId,
+      boolean nonForwarding,
+      boolean nonRouting) {
     super(network);
+    setNonForwarding(nonForwarding);
+    setNonRouting(nonRouting);
     _administrativeCost = administrativeCost;
     _area = area;
     _attach = attach;
