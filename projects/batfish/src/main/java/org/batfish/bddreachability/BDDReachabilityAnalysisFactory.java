@@ -1277,15 +1277,15 @@ public final class BDDReachabilityAnalysisFactory {
     return orig -> {
       BDD remaining = orig;
       BDD result = orig.getFactory().zero();
-      for (BDDNat sourceNat : nats) {
+      for (BDDNat nat : nats) {
         /*
-         * Check the condition, then set source IP (by existentially quantifying away the old value,
-         * then ANDing on the new value.
+         * Check the condition, then set update the variable by existentially quantifying away the
+         * old value, then ANDing on the new value.
          */
-        BDD matches = remaining.and(sourceNat._condition);
-        BDD natted = sourceNat._pool == null ? matches : matches.exist(var).and(sourceNat._pool);
+        BDD matches = remaining.and(nat._condition);
+        BDD natted = nat._pool == null ? matches : matches.exist(var).and(nat._pool);
         result = result.or(natted);
-        remaining = remaining.and(sourceNat._condition.not());
+        remaining = remaining.and(nat._condition.not());
       }
       result = result.or(remaining);
       return result;
