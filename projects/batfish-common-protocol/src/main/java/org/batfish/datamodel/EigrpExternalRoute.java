@@ -30,8 +30,11 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
-      long processAsn) {
-    super(admin, network, nextHopInterface, nextHopIp, metric, processAsn);
+      long processAsn,
+      boolean nonForwarding,
+      boolean nonRouting) {
+    super(
+        admin, network, nextHopInterface, nextHopIp, metric, processAsn, nonForwarding, nonRouting);
     _destinationAsn = destinationAsn;
   }
 
@@ -45,7 +48,15 @@ public class EigrpExternalRoute extends EigrpRoute {
       @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
       @JsonProperty(PROP_PROCESS_ASN) long processAsn) {
     return new EigrpExternalRoute(
-        admin, destinationAsn, network, nextHopInterface, nextHopIp, metric, processAsn);
+        admin,
+        destinationAsn,
+        network,
+        nextHopInterface,
+        nextHopIp,
+        metric,
+        processAsn,
+        false,
+        false);
   }
 
   @Override
@@ -106,7 +117,9 @@ public class EigrpExternalRoute extends EigrpRoute {
           _nextHopInterface,
           getNextHopIp(),
           requireNonNull(_eigrpMetric),
-          _processAsn);
+          _processAsn,
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Override

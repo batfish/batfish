@@ -20,29 +20,38 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -55,6 +64,7 @@ import org.batfish.question.loop.LoopNetwork;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
@@ -74,6 +84,7 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
+import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
@@ -470,5 +481,132 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasEntry(
             equalTo(config.getHostname()),
             hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+  }
+
+  @Test
+  public void testNatBackwardEdge() {
+    BDD var = Arrays.stream(PKT.getSrcIp().getBitvec()).reduce(PKT.getFactory().one(), BDD::and);
+
+    IpSpaceToBDD dstToBDD = new IpSpaceToBDD(PKT.getDstIp());
+    IpSpaceToBDD srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
+    BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
+    BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
+    BDD src1111 = srcToBDD.toBDD(new Ip("1.1.1.1"));
+    BDD src2222 = srcToBDD.toBDD(new Ip("2.2.2.2"));
+    Function<BDD, BDD> edge =
+        BDDReachabilityAnalysisFactory.natBackwardEdge(
+            ImmutableList.of(new BDDNat(dst1234, src1111), new BDDNat(dst123, src2222)), var);
+
+    BDD noMatch = dst123.not().and(dst1234.not());
+    assertThat(edge.apply(src1111), equalTo(dst1234.or(noMatch.and(src1111))));
+    assertThat(edge.apply(src2222), equalTo(dst123.and(dst1234.not()).or(noMatch.and(src2222))));
+
+    BDD src3333 = srcToBDD.toBDD(new Ip("3.3.3.3"));
+    assertThat(edge.apply(src3333), equalTo(noMatch.and(src3333)));
+  }
+
+  @Test
+  public void testNatBackwardEdge_nullPool() {
+    BDD var = Arrays.stream(PKT.getSrcIp().getBitvec()).reduce(PKT.getFactory().one(), BDD::and);
+
+    IpSpaceToBDD dstToBDD = new IpSpaceToBDD(PKT.getDstIp());
+    IpSpaceToBDD srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
+    BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
+    BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
+    BDD dst1235 = dstToBDD.toBDD(Prefix.parse("1.2.3.5/32"));
+    BDD src1111 = srcToBDD.toBDD(new Ip("1.1.1.1"));
+    BDD src2222 = srcToBDD.toBDD(new Ip("2.2.2.2"));
+    Function<BDD, BDD> edge =
+        BDDReachabilityAnalysisFactory.natBackwardEdge(
+            ImmutableList.of(
+                new BDDNat(dst1234, src1111),
+                new BDDNat(dst1235, null),
+                new BDDNat(dst123, src2222)),
+            var);
+
+    // not(dst123) and not(dst1234) and not(dst1235) == not(dst123)
+    BDD noMatch = dst123.not();
+    // src IP is not rewritten if the dst1235 rule is matched or none matches
+    BDD noRewrite = noMatch.or(dst1235);
+    assertThat(edge.apply(src1111), equalTo(dst1234.or(src1111.and(noRewrite))));
+    assertThat(
+        edge.apply(src2222),
+        equalTo(dst123.and(dst1234.not()).and(dst1235.not()).or(src2222.and(noRewrite))));
+
+    BDD src3333 = srcToBDD.toBDD(new Ip("3.3.3.3"));
+    assertThat(edge.apply(src3333), equalTo(noRewrite.and(src3333)));
+  }
+
+  @Test
+  public void testDestNat() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Ip poolIp = new Ip("5.5.5.5");
+    HeaderSpace ingressAclHeaderSpace =
+        HeaderSpace.builder().setSrcIps(Prefix.parse("2.0.0.0/8").toIpSpace()).build();
+    HeaderSpace natMatchHeaderSpace =
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(100, 100))).build();
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setActive(true)
+            .setAddress(new InterfaceAddress("1.0.0.0/8"))
+            .setIncomingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(
+                        ImmutableList.of(
+                            IpAccessListLine.acceptingHeaderSpace(ingressAclHeaderSpace)))
+                    .build())
+            .setDestinationNats(
+                ImmutableList.of(
+                    // if 100
+                    DestinationNat.builder()
+                        .setAcl(
+                            nf.aclBuilder()
+                                .setOwner(config)
+                                .setLines(
+                                    ImmutableList.of(
+                                        IpAccessListLine.acceptingHeaderSpace(natMatchHeaderSpace)))
+                                .build())
+                        .setPoolIpFirst(poolIp)
+                        .setPoolIpLast(poolIp)
+                        .build()))
+            .build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(config.getHostname(), config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(
+                    new InterfaceLinkLocation(config.getHostname(), iface.getName()),
+                    UniverseIpSpace.INSTANCE)
+                .build());
+    Edge edge =
+        analysis
+            .getEdges()
+            .get(new PreInInterface(config.getHostname(), iface.getName()))
+            .get(new PostInVrf(config.getHostname(), vrf.getName()));
+
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
+    BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
+    BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(new Ip("6.6.6.6"));
+    BDD poolIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(poolIp);
+
+    assertThat(
+        edge.traverseForward(origDstIpBdd),
+        equalTo(ingressAclBdd.and(natMatchBdd.ite(poolIpBdd, origDstIpBdd))));
   }
 }

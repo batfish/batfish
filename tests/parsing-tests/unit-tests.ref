@@ -47302,6 +47302,25 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = VARIABLE:'ge-2/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'1'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth",
+            "                    C:'c'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = VARIABLE:'ge-3/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
@@ -61066,7 +61085,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 17,
+              "Line" : 18,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "tcp-mss 1400"
             }
@@ -64750,9 +64769,10 @@
             },
             "ge-2/0/0" : {
               "definitionLines" : [
-                8
+                8,
+                9
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "ge-2/0/0.0" : {
               "definitionLines" : [
@@ -64760,82 +64780,88 @@
               ],
               "numReferrers" : 1
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "definitionLines" : [
                 9
+              ],
+              "numReferrers" : 1
+            },
+            "ge-3/0/0" : {
+              "definitionLines" : [
+                10
               ],
               "numReferrers" : 1
             },
             "ge-3/0/0.0" : {
               "definitionLines" : [
-                9
+                10
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0" : {
               "definitionLines" : [
-                10
+                11
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0.0" : {
               "definitionLines" : [
-                10
+                11
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0.0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "irb" : {
               "definitionLines" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 4
             },
             "irb.5" : {
               "definitionLines" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 4
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
-                12,
-                13
+                13,
+                14
               ],
               "numReferrers" : 2
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : [
-                13
+                14
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                18
+                19
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                18
+                19
               ],
               "numReferrers" : 1
             }
@@ -64843,8 +64869,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                22,
-                23
+                23,
+                24
               ],
               "numReferrers" : 0
             }
@@ -68051,7 +68077,7 @@
             },
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                20
+                21
               ]
             },
             "ge-1/0/0" : {
@@ -68061,7 +68087,8 @@
             },
             "ge-2/0/0" : {
               "interface" : [
-                8
+                8,
+                9
               ]
             },
             "ge-2/0/0.0" : {
@@ -68069,78 +68096,83 @@
                 8
               ]
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "interface" : [
                 9
+              ]
+            },
+            "ge-3/0/0" : {
+              "interface" : [
+                10
               ]
             },
             "ge-3/0/0.0" : {
               "interface" : [
-                9
+                10
               ]
             },
             "ge-4/0/0" : {
               "interface" : [
-                10
+                11
               ]
             },
             "ge-4/0/0.0" : {
               "interface" : [
-                10
+                11
               ]
             },
             "ge-5/0/0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "ge-5/0/0.0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "irb" : {
               "interface" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ]
             },
             "irb.5" : {
               "interface" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
-                12,
-                13
+                13,
+                14
               ]
             },
             "xe-0/0/0:0.0" : {
               "interface" : [
-                13
+                14
               ]
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                18
+                19
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                18
+                19
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                18
+                19
               ]
             }
           }
@@ -70025,14 +70057,14 @@
           "interface" : {
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                20
+                21
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                18
+                19
               ]
             }
           }
@@ -70575,10 +70607,6 @@
         },
         "juniper_nat" : {
           "Unimplemented features" : [
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "Destination NAT is not currently implemented"
-            },
             {
               "tag" : "UNIMPLEMENTED",
               "text" : "Source NAT is not currently implemented"
