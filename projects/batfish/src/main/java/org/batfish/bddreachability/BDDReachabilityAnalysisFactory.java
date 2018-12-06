@@ -29,6 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -37,6 +38,7 @@ import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -153,8 +155,9 @@ public final class BDDReachabilityAnalysisFactory {
   // node --> vrf --> set of packets routable by the vrf
   private final Map<String, Map<String, BDD>> _routableBDDs;
 
-  // conjunction of the BDD vars encoding source IP. Used for existential quantification in source
-  // NAT.
+  // conjunction of the BDD vars encoding source and dest IPs. Used for existential quantification
+  // in source and destination NAT.
+  private final BDD _dstIpVars;
   private final BDD _sourceIpVars;
 
   // node --> vrf --> set of packets accepted by the vrf
@@ -197,6 +200,7 @@ public final class BDDReachabilityAnalysisFactory {
     _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
     _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
 
+    _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
     _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
   }
 
@@ -648,11 +652,40 @@ public final class BDDReachabilityAnalysisFactory {
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
 
+              PreInInterface preState = new PreInInterface(nodeName, ifaceName);
+              PostInVrf postState = new PostInVrf(nodeName, vrfName);
+
               BDD inAclBDD = aclName == null ? _one : ignorableAclPermitBDD(nodeName, aclName);
-              return new Edge(
-                  new PreInInterface(nodeName, ifaceName),
-                  new PostInVrf(nodeName, vrfName),
-                  inAclBDD);
+
+              List<DestinationNat> destNats = iface.getDestinationNats();
+              if (destNats.isEmpty()) {
+                return new Edge(preState, postState, inAclBDD);
+              }
+
+              List<BDDNat> bddNats =
+                  destNats
+                      .stream()
+                      .map(
+                          destNat -> {
+                            String natAclName = destNat.getAcl().getName();
+                            BDD match = aclPermitBDD(nodeName, natAclName);
+                            BDDInteger dstIp = _bddPacket.getDstIp();
+                            BDD setDstIp =
+                                dstIp
+                                    .geq(destNat.getPoolIpFirst().asLong())
+                                    .and(dstIp.leq(destNat.getPoolIpLast().asLong()));
+                            return new BDDNat(match, setDstIp);
+                          })
+                      .collect(ImmutableList.toImmutableList());
+
+              Edge destNatEdge =
+                  new Edge(
+                      preState,
+                      postState,
+                      natBackwardEdge(bddNats, _dstIpVars),
+                      natForwardEdge(bddNats, _dstIpVars));
+
+              return addConstraintBefore(inAclBDD, destNatEdge);
             });
   }
 
@@ -679,7 +712,7 @@ public final class BDDReachabilityAnalysisFactory {
                 return new Edge(preOutEdge, preOutEdgePostNat, _one);
               }
 
-              List<BDDSourceNat> bddSourceNats =
+              List<BDDNat> bddSourceNats =
                   sourceNats
                       .stream()
                       .map(
@@ -694,15 +727,15 @@ public final class BDDReachabilityAnalysisFactory {
                                         _bddPacket
                                             .getSrcIp()
                                             .leq(sourceNat.getPoolIpLast().asLong()));
-                            return new BDDSourceNat(match, setSrcIp);
+                            return new BDDNat(match, setSrcIp);
                           })
                       .collect(ImmutableList.toImmutableList());
 
               return new Edge(
                   preOutEdge,
                   preOutEdgePostNat,
-                  sourceNatBackwardEdge(bddSourceNats),
-                  sourceNatForwardEdge(bddSourceNats));
+                  natBackwardEdge(bddSourceNats, _sourceIpVars),
+                  natForwardEdge(bddSourceNats, _sourceIpVars));
             });
   }
 
@@ -1239,38 +1272,48 @@ public final class BDDReachabilityAnalysisFactory {
         : orig -> enterSrcMgr.existsSource(orig.and(ifaceBdd)).and(exitNodeBdd);
   }
 
-  private Function<BDD, BDD> sourceNatForwardEdge(List<BDDSourceNat> sourceNats) {
+  @VisibleForTesting
+  static Function<BDD, BDD> natForwardEdge(List<BDDNat> nats, BDD var) {
     return orig -> {
       BDD remaining = orig;
       BDD result = orig.getFactory().zero();
-      for (BDDSourceNat sourceNat : sourceNats) {
+      for (BDDNat nat : nats) {
         /*
-         * Check the condition, then set source IP (by existentially quantifying away the old value,
-         * then ANDing on the new value.
+         * Check the condition, then set update the variable by existentially quantifying away the
+         * old value, then ANDing on the new value.
          */
-        BDD natted =
-            remaining.and(sourceNat._condition).exist(_sourceIpVars).and(sourceNat._updateSrcIp);
+        BDD matches = remaining.and(nat._condition);
+        BDD natted = nat._pool == null ? matches : matches.exist(var).and(nat._pool);
         result = result.or(natted);
-        remaining = remaining.and(sourceNat._condition.not());
+        remaining = remaining.and(nat._condition.not());
       }
       result = result.or(remaining);
       return result;
     };
   }
 
-  private Function<BDD, BDD> sourceNatBackwardEdge(@Nonnull List<BDDSourceNat> sourceNats) {
+  @VisibleForTesting
+  static Function<BDD, BDD> natBackwardEdge(@Nonnull List<BDDNat> nats, BDD var) {
     return orig -> {
-      BDD origExistSrcIp = orig.exist(_sourceIpVars);
-      // non-natted case: srcIp unchanged, none of the lines match
-      BDD result =
-          sourceNats.stream().map(srcNat -> srcNat._condition.not()).reduce(orig, BDD::and);
-      // natted cases
-      for (BDDSourceNat sourceNat : sourceNats) {
-        if (!orig.and(sourceNat._updateSrcIp).isZero()) {
-          // this could be the NAT rule that was applied
-          result = result.or(origExistSrcIp.and(sourceNat._condition));
+      BDD result = orig.getFactory().zero();
+      BDD reach = orig.getFactory().one();
+      for (BDDNat nat : nats) {
+        if (nat._pool == null) {
+          // nat does not transform the header. So inputs just have to reach this line and match the
+          // condition
+          BDD natInputs = orig.and(reach).and(nat._condition);
+          result = result.or(natInputs);
+        } else {
+          // nat does transform the header. Inputs have to reach the line and match the condition.
+          // To recover the input from output, make sure it's in the range (i.e. the pool), then
+          // erase the transformed var since we don't know what the original value might have been,
+          // then apply the reaches and matches condition constraint
+          BDD natInputs = orig.and(nat._pool).exist(var).and(reach).and(nat._condition);
+          result = result.or(natInputs);
         }
+        reach = reach.and(nat._condition.not());
       }
+      result = result.or(orig.and(reach));
       return result;
     };
   }
@@ -1292,14 +1335,30 @@ public final class BDDReachabilityAnalysisFactory {
     return new Edge(edge.getPreState(), edge.getPostState(), traverseBackward, traverseForward);
   }
 
-  /** Adapt an edge, applying an additional constraint after traversing the edge. */
+  /**
+   * Adapt an edge, applying an additional constraint after traversing the edge (in the forward
+   * direction).
+   */
   @VisibleForTesting
-  static Edge adaptEdgeAddConstraint(BDD constraint, Edge edge) {
+  static Edge addConstraintAfter(Edge edge, BDD constraint) {
     return new Edge(
         edge.getPreState(),
         edge.getPostState(),
         bdd -> edge.traverseBackward(bdd.and(constraint)),
         bdd -> edge.traverseForward(bdd).and(constraint));
+  }
+
+  /**
+   * Adapt an edge, applying an additional constraint before traversing the edge (in the forward
+   * direction).
+   */
+  @VisibleForTesting
+  static Edge addConstraintBefore(BDD constraint, Edge edge) {
+    return new Edge(
+        edge.getPreState(),
+        edge.getPostState(),
+        bdd -> edge.traverseBackward(bdd).and(constraint),
+        bdd -> edge.traverseForward(bdd.and(constraint)));
   }
 
   /**
@@ -1345,9 +1404,9 @@ public final class BDDReachabilityAnalysisFactory {
             return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
           } else if (edge.getPreState() instanceof OriginateVrf
               || edge.getPreState() instanceof OriginateInterfaceLink) {
-            return adaptEdgeAddConstraint(notTransited, edge);
+            return addConstraintAfter(edge, notTransited);
           } else if (edge.getPostState() instanceof Query) {
-            return adaptEdgeAddConstraint(transited, edge);
+            return addConstraintAfter(edge, transited);
           } else {
             return edge;
           }
