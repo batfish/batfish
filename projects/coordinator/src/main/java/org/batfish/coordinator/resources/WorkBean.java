@@ -6,7 +6,7 @@ import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.coordinator.QueuedWork;
 import org.batfish.coordinator.WorkDetails.WorkType;
 
-/** A bean for information about completed work */
+/** A bean for information about work */
 public class WorkBean {
 
   public final Date dateCreated;
