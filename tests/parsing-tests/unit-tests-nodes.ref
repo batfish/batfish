@@ -17244,7 +17244,7 @@
             "destinationNats" : [
               {
                 "acl" : {
-                  "name" : "~ DESTINATION NAT ~ ge-0/0/0.0 ~ DST-NAT ~ DST-RULE ~",
+                  "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
                   "lines" : [
                     {
                       "action" : "PERMIT",

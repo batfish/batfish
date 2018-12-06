@@ -1388,8 +1388,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessList.builder()
             .setName(
                 String.format(
-                    "~ DESTINATION NAT ~ %s ~ %s ~ %s ~",
-                    ifaceName, ruleSetName, natRule.getName()))
+                    "~DESTINATION_NAT~%s~%s~%s~", ifaceName, ruleSetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
                     accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))
