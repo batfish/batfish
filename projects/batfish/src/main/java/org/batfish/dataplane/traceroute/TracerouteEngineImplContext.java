@@ -228,6 +228,22 @@ public class TracerouteEngineImplContext {
     return flow;
   }
 
+  @VisibleForTesting
+  static Flow applyPreSourceOutgoingNat(Flow flow, Interface outInterface) {
+    String preSourceNatOutgoingFilterName = outInterface.getPreSourceNatOutgoingFilter();
+
+    IpAccessList preSourceNatOutgoingFilter =
+        _configurations
+            .get(transmissionContext._currentNode.getName())
+            .getIpAccessLists()
+            .get(preSourceNatOutgoingFilterName);
+
+    if (_ignoreFilters && preSourceNatOutgoingFilter == null) {
+      return flow;
+    }
+
+  }
+
   private void processCurrentNextHopInterfaceEdges(
       String currentNodeName,
       @Nullable String srcInterface,
@@ -626,6 +642,11 @@ public class TracerouteEngineImplContext {
                           .get(nextHopInterface.getHostname())
                           .getAllInterfaces()
                           .get(nextHopInterface.getInterface());
+
+                  // Apply preSourceNatOutgoingFilter
+                  Flow =
+                  IpAccessList preSourceNatOutgoingFilter = outgoingInterface.getPreSourceNatOutgoingFilter();
+
 
                   // Apply any relevant source NAT rules.
                   Flow newTransformedFlow =
