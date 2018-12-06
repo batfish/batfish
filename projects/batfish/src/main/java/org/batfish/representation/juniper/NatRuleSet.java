@@ -27,13 +27,6 @@ public final class NatRuleSet implements Serializable {
     _toLocation = new NatPacketLocation();
   }
 
-  public NatRuleSet() {
-    _name = "RULE-SET";
-    _fromLocation = new NatPacketLocation();
-    _rules = new ArrayList<>();
-    _toLocation = new NatPacketLocation();
-  }
-
   @Nonnull
   public NatPacketLocation getFromLocation() {
     return _fromLocation;
