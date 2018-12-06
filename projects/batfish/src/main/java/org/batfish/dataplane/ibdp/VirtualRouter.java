@@ -1457,7 +1457,6 @@ public class VirtualRouter implements Serializable {
     if (proc == null) {
       return null;
     }
-    int admin = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     SortedSet<Edge> edges = topology.getNodeEdges().get(node);
     if (edges == null) {
       // there are no edges, so OSPF won't produce anything
@@ -1539,6 +1538,8 @@ public class VirtualRouter implements Serializable {
             }
             long newMetric = baseMetric + incrementalCost;
             long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
+            int admin =
+                RoutingProtocol.OSPF_E1.getDefaultAdministrativeCost(_c.getConfigurationFormat());
             OspfExternalType1Route newRoute =
                 new OspfExternalType1Route(
                     neighborRoute.getNetwork(),
@@ -1573,6 +1574,8 @@ public class VirtualRouter implements Serializable {
               }
             }
             long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
+            int admin =
+                RoutingProtocol.OSPF_E2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
             OspfExternalType2Route newRoute =
                 new OspfExternalType2Route(
                     neighborRoute.getNetwork(),
