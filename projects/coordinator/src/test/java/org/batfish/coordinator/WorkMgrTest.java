@@ -1095,16 +1095,28 @@ public final class WorkMgrTest {
     _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
     _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
 
-    Map<String, String> answers =
+    assertThat(
         _manager.getAnalysisAnswers(
-            containerName, testrigName, null, analysisName, ImmutableSet.of());
+            containerName, testrigName, null, analysisName, ImmutableSet.of()),
+        equalTo(
+            ImmutableMap.of(
+                question1Name,
+                BatfishObjectMapper.mapper().writeValueAsString(answer1),
+                question2Name,
+                BatfishObjectMapper.mapper()
+                    .writeValueAsString(
+                        Answer.failureAnswer(
+                            "Could not convert raw question text [bogus] to JSON", null)))));
 
-    Map<String, AnswerMetadata> answersMetadata =
+    assertThat(
         _manager.getAnalysisAnswersMetadata(
-            containerName, testrigName, null, analysisName, ImmutableSet.of());
-
-    assertThat(answers.keySet(), containsInAnyOrder(question1Name));
-    assertThat(answersMetadata.keySet(), containsInAnyOrder(question1Name));
+            containerName, testrigName, null, analysisName, ImmutableSet.of()),
+        equalTo(
+            ImmutableMap.of(
+                question1Name,
+                answerMetadata1,
+                question2Name,
+                AnswerMetadata.forStatus(AnswerStatus.FAILURE))));
   }
 
   @Test

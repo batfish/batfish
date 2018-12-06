@@ -996,6 +996,10 @@ public class WorkMgr extends AbstractCoordinator {
       } catch (Exception e) {
         _logger.errorf(
             "Got exception in getAnalysisAnswers: %s\n", Throwables.getStackTraceAsString(e));
+        result.put(
+            questionName,
+            BatfishObjectMapper.mapper()
+                .writeValueAsString(Answer.failureAnswer(e.getMessage(), null)));
       }
     }
     return result.build();
@@ -1019,6 +1023,7 @@ public class WorkMgr extends AbstractCoordinator {
         _logger.errorf(
             "Got exception in getAnalysisAnswersMetadata: %s\n",
             Throwables.getStackTraceAsString(e));
+        result.put(question, AnswerMetadata.forStatus(AnswerStatus.FAILURE));
       }
     }
     return result.build();
