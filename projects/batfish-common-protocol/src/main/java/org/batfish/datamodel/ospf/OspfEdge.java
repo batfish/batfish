@@ -74,4 +74,8 @@ public final class OspfEdge implements Comparable<OspfEdge> {
   public String toString() {
     return toStringHelper(getClass()).add(PROP_NODE1, _node1).add(PROP_NODE2, _node2).toString();
   }
+
+  public OspfEdge swap() {
+    return new OspfEdge(_node2, _node1);
+  }
 }
