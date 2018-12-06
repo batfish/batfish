@@ -20,7 +20,6 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.glassfish.jersey.internal.guava.Predicates;
 
 /**
  * RibTree is constructed from nodes of this type. A node has a prefix, a set of routes that match
@@ -343,7 +342,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
   }
 
   @Nullable
-  public RibDelta<R> removeRoute(
+  RibDelta<R> removeRoute(
       R route, long bits, int prefixLength, int firstUnmatchedBitIndex, Reason reason) {
     RibTreeNode<R> node = findRouteNode(bits, prefixLength, firstUnmatchedBitIndex);
     if (node == null) {
@@ -392,7 +391,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
                 : _right.equals(((RibTreeNode<?>) obj)._right)));
   }
 
-  public RibDelta<R> clearRoutes(Prefix prefix) {
+  RibDelta<R> clearRoutes(Prefix prefix) {
     long bits = prefix.getStartIp().asLong();
     RibTreeNode<R> node = findRouteNode(bits, prefix.getPrefixLength(), 0);
     if (node == null) {
@@ -403,14 +402,14 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return delta;
   }
 
-  public void addMatchingIps(ImmutableMap.Builder<Prefix, IpSpace> builder) {
+  void addMatchingIps(ImmutableMap.Builder<Prefix, IpSpace> builder) {
     if (_left != null) {
       _left.addMatchingIps(builder);
     }
     if (_right != null) {
       _right.addMatchingIps(builder);
     }
-    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
+    if (hasForwardingRoute()) {
       IpWildcardSetIpSpace.Builder matchingIps = IpWildcardSetIpSpace.builder();
       if (_left != null) {
         _left.excludeRoutableIps(matchingIps);
@@ -423,8 +422,8 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     }
   }
 
-  public void addRoutableIps(IpWildcardSetIpSpace.Builder builder) {
-    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
+  void addRoutableIps(IpWildcardSetIpSpace.Builder builder) {
+    if (hasForwardingRoute()) {
       builder.including(new IpWildcard(_prefix));
     } else {
       if (_left != null) {
@@ -436,8 +435,8 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     }
   }
 
-  public void excludeRoutableIps(IpWildcardSetIpSpace.Builder builder) {
-    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
+  private void excludeRoutableIps(IpWildcardSetIpSpace.Builder builder) {
+    if (hasForwardingRoute()) {
       builder.excluding(new IpWildcard(_prefix));
     } else {
       if (_left != null) {
@@ -447,5 +446,9 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
         _right.excludeRoutableIps(builder);
       }
     }
+  }
+
+  private boolean hasForwardingRoute() {
+    return !_routes.stream().allMatch(AbstractRoute::getNonForwarding);
   }
 }
