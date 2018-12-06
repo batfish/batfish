@@ -1,14 +1,19 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.Map;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.junit.Test;
@@ -61,5 +66,42 @@ public class RibTest {
     AbstractRoute route2 = sb.build();
 
     assertThat(rib.comparePreference(route1, route2), equalTo(0));
+  }
+
+  @Test
+  public void testNonForwardingIsNotRoutable() {
+    Rib rib = new Rib();
+    // Identical routes should be equally preferred
+    StaticRoute.Builder sb =
+        StaticRoute.builder()
+            .setNextHopInterface("foo")
+            .setNetwork(Prefix.ZERO)
+            .setNonForwarding(true)
+            .setAdministrativeCost(100);
+    rib.mergeRoute(sb.build());
+    assertThat(rib.getRoutableIps(), not(containsIp(Prefix.ZERO.getStartIp())));
+  }
+
+  @Test
+  public void testNonForwardingMatchesNothing() {
+    Rib rib = new Rib();
+    // Identical routes should be equally preferred
+    StaticRoute.Builder sb =
+        StaticRoute.builder().setNextHopInterface("foo").setAdministrativeCost(100);
+    Prefix prefix1 = Prefix.parse("1.0.0.0/8");
+    Prefix prefix11 = Prefix.parse("1.1.0.0/16");
+    rib.mergeRoute(sb.setNetwork(prefix1).build());
+
+    sb.setNonForwarding(true);
+    rib.mergeRoute(sb.setNetwork(prefix11).build());
+    rib.mergeRoute(sb.setNetwork(Prefix.ZERO).build());
+
+    // no entries for non-forwarding routes
+    Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
+    assertThat(matchingIps, not(hasKey(Prefix.ZERO)));
+    assertThat(matchingIps, not(hasKey(prefix11)));
+
+    // non-forwarding routes don't subtract from the match space of forwarding routes
+    assertThat(matchingIps.get(prefix1), containsIp(prefix11.getStartIp()));
   }
 }
