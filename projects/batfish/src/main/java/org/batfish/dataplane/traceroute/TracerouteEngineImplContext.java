@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
@@ -17,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -31,6 +31,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FilterResult;
@@ -164,6 +165,37 @@ public class TracerouteEngineImplContext {
   }
 
   /**
+   * Applies the given list of destination NAT rules to the given flow and returns the new
+   * transformed flow. If {@code destinationNats} is null, empty, or none of the rules match {@code
+   * flow}, it is returned unmodified.
+   */
+  @VisibleForTesting
+  static Flow applyDestinationNat(
+      Flow flow,
+      String srcIface,
+      Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
+      List<DestinationNat> destinationNats) {
+    if (CommonUtil.isNullOrEmpty(destinationNats)) {
+      return flow;
+    }
+    for (DestinationNat nat : destinationNats) {
+      IpAccessList acl = nat.getAcl();
+      if (acl == null) {
+        continue;
+      }
+      if (acl.filter(flow, srcIface, aclDefinitions, namedIpSpaces).getAction()
+          == LineAction.PERMIT) {
+        // null pool Ips mean don't nat matching flows
+        Ip poolIpFirst = nat.getPoolIpFirst();
+        return poolIpFirst == null ? flow : flow.toBuilder().setDstIp(poolIpFirst).build();
+      }
+    }
+    // no match
+    return flow;
+  }
+
+  /**
    * Applies the given list of source NAT rules to the given flow and returns the new transformed
    * flow. If {@code sourceNats} is null, empty, or does not contain any ACL rules matching the
    * {@link Flow}, the original flow is returned.
@@ -180,32 +212,20 @@ public class TracerouteEngineImplContext {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
-    Optional<SourceNat> matchingSourceNat =
-        sourceNats
-            .stream()
-            .filter(
-                sourceNat ->
-                    sourceNat.getAcl() != null
-                        && sourceNat
-                                .getAcl()
-                                .filter(flow, srcInterface, aclDefinitions, namedIpSpaces)
-                                .getAction()
-                            != LineAction.DENY)
-            .findFirst();
-    if (!matchingSourceNat.isPresent()) {
-      // No NAT rule matched.
-      return flow;
+    for (SourceNat nat : sourceNats) {
+      IpAccessList acl = nat.getAcl();
+      if (acl == null) {
+        continue;
+      }
+      if (acl.filter(flow, srcInterface, aclDefinitions, namedIpSpaces).getAction()
+          == LineAction.PERMIT) {
+        // null pool Ips mean don't nat matching flows
+        Ip poolIpFirst = nat.getPoolIpFirst();
+        return poolIpFirst == null ? flow : flow.toBuilder().setSrcIp(poolIpFirst).build();
+      }
     }
-    SourceNat sourceNat = matchingSourceNat.get();
-    Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-    if (natPoolStartIp == null) {
-      throw new BatfishException(
-          String.format(
-              "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
-    }
-    Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
-    transformedFlowBuilder.setSrcIp(natPoolStartIp);
-    return transformedFlowBuilder.build();
+    // no match
+    return flow;
   }
 
   private void processCurrentNextHopInterfaceEdges(
@@ -405,7 +425,7 @@ public class TracerouteEngineImplContext {
       String currentNodeName,
       @Nullable String inputIfaceName,
       TransmissionContext oldTransmissionContext,
-      Flow currentFlow,
+      Flow inputFlow,
       Stack<Breadcrumb> breadcrumbs) {
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
@@ -420,16 +440,15 @@ public class TracerouteEngineImplContext {
 
     TransmissionContext transmissionContext = oldTransmissionContext.branch();
 
-    Ip dstIp = currentFlow.getDstIp();
-
     // trace was received on a source interface of this hop
+    Flow dstNatFlow = null;
     if (inputIfaceName != null) {
       EnterInputIfaceStep enterIfaceStep =
           createEnterSrcIfaceStep(
               currentConfiguration,
               inputIfaceName,
               _ignoreFilters,
-              currentFlow,
+              inputFlow,
               aclDefinitions,
               namedIpSpaces);
       steps.add(enterIfaceStep);
@@ -441,17 +460,28 @@ public class TracerouteEngineImplContext {
         transmissionContext._flowTraces.add(trace);
         return;
       }
-    } else if (currentFlow.getIngressVrf() != null) {
+
+      dstNatFlow =
+          applyDestinationNat(
+              inputFlow,
+              inputIfaceName,
+              aclDefinitions,
+              namedIpSpaces,
+              currentConfiguration.getAllInterfaces().get(inputIfaceName).getDestinationNats());
+    } else if (inputFlow.getIngressVrf() != null) {
       // if inputIfaceName is not set for this hop, this is the originating step
       steps.add(
           OriginateStep.builder()
               .setDetail(
                   OriginateStepDetail.builder()
-                      .setOriginatingVrf(currentFlow.getIngressVrf())
+                      .setOriginatingVrf(inputFlow.getIngressVrf())
                       .build())
               .setAction(StepAction.ORIGINATED)
               .build());
     }
+
+    Flow currentFlow = firstNonNull(dstNatFlow, inputFlow);
+    Ip dstIp = currentFlow.getDstIp();
 
     // Figure out where the trace came from..
     String vrfName;

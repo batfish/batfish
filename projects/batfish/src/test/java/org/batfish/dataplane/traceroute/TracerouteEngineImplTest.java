@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -79,6 +79,82 @@ public class TracerouteEngineImplTest {
     IpAccessListLine aclLine =
         IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
     return IpAccessList.builder().setName(name).setLines(singletonList(aclLine)).build();
+  }
+
+  @Test
+  public void testApplyDestinationNatSingleAclMatch() {
+    Flow flow = makeFlow();
+
+    DestinationNat nat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("accept", LineAction.PERMIT))
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .build();
+
+    Flow transformed =
+        TracerouteEngineImplContext.applyDestinationNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
+    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
+  }
+
+  @Test
+  public void testApplyDestinationNatSingleAclNoMatch() {
+    Flow flow = makeFlow();
+
+    DestinationNat nat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("reject", LineAction.DENY))
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .build();
+
+    Flow transformed =
+        TracerouteEngineImplContext.applyDestinationNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
+    assertThat(transformed, is(flow));
+  }
+
+  @Test
+  public void testApplyDestinationNatFirstMatchWins() {
+    Flow flow = makeFlow();
+
+    DestinationNat nat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("firstAccept", LineAction.PERMIT))
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .build();
+
+    DestinationNat secondNat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("secondAccept", LineAction.PERMIT))
+            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .build();
+
+    Flow transformed =
+        TracerouteEngineImplContext.applyDestinationNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
+  }
+
+  @Test
+  public void testApplyDestinationNatLateMatchWins() {
+    Flow flow = makeFlow();
+
+    DestinationNat nat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("rejectAll", LineAction.DENY))
+            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .build();
+
+    DestinationNat secondNat =
+        DestinationNat.builder()
+            .setAcl(makeAcl("acceptAnyway", LineAction.PERMIT))
+            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .build();
+
+    Flow transformed =
+        TracerouteEngineImplContext.applyDestinationNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.8")));
   }
 
   @Test
@@ -143,19 +219,6 @@ public class TracerouteEngineImplTest {
         TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
-  }
-
-  @Test
-  public void testApplySourceNatInvalidAclThrows() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.PERMIT));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("missing NAT address or pool");
-    TracerouteEngineImplContext.applySourceNat(
-        flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
   }
 
   /*

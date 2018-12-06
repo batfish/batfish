@@ -91,6 +91,9 @@ public class QueuedWork {
               + ". Desired = "
               + status);
     }
+    if (!_status.isTerminated() && status.isTerminated()) {
+      _dateTerminated = new Date();
+    }
     _status = status;
   }
 

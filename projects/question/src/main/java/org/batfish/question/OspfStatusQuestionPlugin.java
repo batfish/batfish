@@ -171,7 +171,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                                 interfaceName);
                         if (exportPolicy.process(
                             route,
-                            new OspfExternalRoute.Builder(),
+                            OspfExternalRoute.builder(),
                             null,
                             vrf.getName(),
                             Direction.OUT)) {
