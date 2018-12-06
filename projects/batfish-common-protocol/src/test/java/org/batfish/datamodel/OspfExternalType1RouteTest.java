@@ -1,10 +1,7 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
+import com.google.common.testing.EqualsTester;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.junit.Test;
 
 /** Test for {@link OspfExternalType1Route} */
@@ -13,23 +10,27 @@ public class OspfExternalType1RouteTest {
   @Test
   public void testEquals() {
 
-    OspfExternalType1Route r1 =
-        new OspfExternalType1Route(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, 1, 1, 1, 1, 1, "");
-    OspfExternalType1Route r1DiffObj =
-        new OspfExternalType1Route(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, 1, 1, 1, 1, 1, "");
-    OspfExternalType1Route r2 =
-        new OspfExternalType1Route(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, 1, 1, 1, 1, 2, "");
-    OspfExternalType2Route type2Route =
-        new OspfExternalType2Route(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, 1, 1, 1, 1, 2, "");
+    OspfExternalType2Route.Builder b =
+        OspfExternalRoute.builder()
+            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNextHopIp(Ip.ZERO)
+            .setAdmin(1)
+            .setMetric(1)
+            .setLsaMetric(1)
+            .setArea(1)
+            .setCostToAdvertiser(1)
+            .setAdvertiser("")
+            .setOspfMetricType(OspfMetricType.E1);
 
-    // Simple equality checks
-    assertThat(r1, equalTo(r1));
-    assertThat(r1, equalTo(r1DiffObj));
-    assertThat(r1, not(equalTo(nullValue())));
+    OspfExternalRoute r1 = b.build();
+    OspfExternalRoute r1DiffObj = b.build();
+    OspfExternalRoute r2 = b.setCostToAdvertiser(2).build();
+    OspfExternalRoute r2t2 = b.setOspfMetricType(OspfMetricType.E2).build();
 
-    // Cost to advertiser differs
-    assertThat(r1, not(equalTo(r2)));
-    // Not the same type
-    assertThat(r1, not(equalTo(type2Route)));
+    new EqualsTester()
+        .addEqualityGroup(r1, r1DiffObj)
+        .addEqualityGroup(r2)
+        .addEqualityGroup(r2t2)
+        .testEquals();
   }
 }
