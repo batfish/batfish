@@ -20,6 +20,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
+import org.glassfish.jersey.internal.guava.Predicates;
 
 /**
  * RibTree is constructed from nodes of this type. A node has a prefix, a set of routes that match
@@ -409,7 +410,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     if (_right != null) {
       _right.addMatchingIps(builder);
     }
-    if (!_routes.isEmpty()) {
+    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
       IpWildcardSetIpSpace.Builder matchingIps = IpWildcardSetIpSpace.builder();
       if (_left != null) {
         _left.excludeRoutableIps(matchingIps);
@@ -423,7 +424,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
   }
 
   public void addRoutableIps(IpWildcardSetIpSpace.Builder builder) {
-    if (!_routes.isEmpty()) {
+    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
       builder.including(new IpWildcard(_prefix));
     } else {
       if (_left != null) {
@@ -436,7 +437,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
   }
 
   public void excludeRoutableIps(IpWildcardSetIpSpace.Builder builder) {
-    if (!_routes.isEmpty()) {
+    if (_routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding))) {
       builder.excluding(new IpWildcard(_prefix));
     } else {
       if (_left != null) {
