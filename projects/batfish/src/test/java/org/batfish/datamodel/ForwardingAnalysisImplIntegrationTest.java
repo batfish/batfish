@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Map;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -99,9 +98,6 @@ public class ForwardingAnalysisImplIntegrationTest {
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), temp);
     batfish.computeDataPlane(false);
 
-    GenericRib<AbstractRoute> rib = batfish.loadDataPlane().getRibs().get(hostname).get(vrfName);
-    Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
-
     ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
 
     // the non-forwarding route's prefix should not be null routed
@@ -115,7 +111,9 @@ public class ForwardingAnalysisImplIntegrationTest {
     // the forwarding route's prefix should be routed out the interface
     assertThat(exitsNetwork, containsIp(forwardingRoutePrefix.getStartIp()));
 
-    // the non-forwarding route's prefix should also be routed out the interface
+    /* the non-forwarding route's prefix should also be routed out the interface (using the
+     * forwarding route).
+     */
     assertThat(exitsNetwork, containsIp(nonForwardingRoutePrefix.getStartIp()));
   }
 }
