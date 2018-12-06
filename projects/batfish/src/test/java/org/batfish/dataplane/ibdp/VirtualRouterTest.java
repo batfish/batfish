@@ -52,6 +52,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
@@ -345,7 +346,16 @@ public class VirtualRouterTest {
             testRouter.getConfiguration().getConfigurationFormat());
 
     Prefix prefix = Prefix.parse("7.7.7.0/24");
-    OspfIntraAreaRoute route = new OspfIntraAreaRoute(prefix, new Ip("7.7.1.1"), adminCost, 20, 1);
+    OspfIntraAreaRoute route =
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(prefix)
+                .setNextHopIp(new Ip("7.7.1.1"))
+                .setAdmin(adminCost)
+                .setMetric(20)
+                .setArea(1L)
+                .build();
     exportingRouter._ospfIntraAreaRib.mergeRoute(route);
 
     // Set interaces on router 1 to be OSPF passive
@@ -444,7 +454,15 @@ public class VirtualRouterTest {
     long area = 1L;
     Prefix prefix = Prefix.parse("7.7.7.0/24");
     OspfInterAreaRoute iaroute =
-        new OspfInterAreaRoute(prefix, new Ip("7.7.1.1"), admin, metric, area);
+        (OspfInterAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF_IA)
+                .setNetwork(prefix)
+                .setNextHopIp(new Ip("7.7.1.1"))
+                .setAdmin(admin)
+                .setMetric(metric)
+                .setArea(area)
+                .build();
 
     // Test
     Ip newNextHop = new Ip("10.2.1.1");
@@ -452,9 +470,17 @@ public class VirtualRouterTest {
 
     // Check what's in the RIB is correct.
     // Note the new nextHopIP and the increased metric on the new route.
-    assertThat(
-        vr._ospfInterAreaStagingRib.getRoutes(),
-        contains(new OspfInterAreaRoute(prefix, newNextHop, admin, metric + 10, area)));
+    OspfInterAreaRoute expected =
+        (OspfInterAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF_IA)
+                .setNetwork(prefix)
+                .setNextHopIp(newNextHop)
+                .setAdmin(admin)
+                .setMetric(metric + 10)
+                .setArea(area)
+                .build();
+    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), contains(expected));
     assertThat(vr._ospfInterAreaStagingRib.getRoutes(), not(contains(iaroute)));
   }
 

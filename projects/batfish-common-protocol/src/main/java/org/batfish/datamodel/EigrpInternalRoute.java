@@ -20,8 +20,11 @@ public class EigrpInternalRoute extends EigrpRoute {
       @Nonnull Prefix network,
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
-      @Nonnull EigrpMetric metric) {
-    super(admin, network, nextHopInterface, nextHopIp, metric, processAsn);
+      @Nonnull EigrpMetric metric,
+      boolean nonForwarding,
+      boolean nonRouting) {
+    super(
+        admin, network, nextHopInterface, nextHopIp, metric, processAsn, nonForwarding, nonRouting);
   }
 
   @JsonCreator
@@ -32,7 +35,8 @@ public class EigrpInternalRoute extends EigrpRoute {
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric) {
-    return new EigrpInternalRoute(admin, processAsn, network, nextHopInterface, nextHopIp, metric);
+    return new EigrpInternalRoute(
+        admin, processAsn, network, nextHopInterface, nextHopIp, metric, false, false);
   }
 
   public static Builder builder() {
@@ -87,7 +91,9 @@ public class EigrpInternalRoute extends EigrpRoute {
           _nextHopInterface,
           getNextHopIp(),
           // Metric required to build route
-          requireNonNull(_eigrpMetric));
+          requireNonNull(_eigrpMetric),
+          getNonForwarding(),
+          getNonRouting());
     }
 
     @Override
