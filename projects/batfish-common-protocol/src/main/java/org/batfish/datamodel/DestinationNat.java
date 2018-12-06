@@ -2,9 +2,11 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /**
  * Representation of a dynamic destination NAT. If the {@link IpAccessList} matches the flow, then
@@ -54,16 +56,24 @@ public class DestinationNat implements Serializable {
     return new Builder();
   }
 
-  private IpAccessList _acl;
+  private final IpAccessList _acl;
 
-  private Ip _poolIpFirst;
+  private final Ip _poolIpFirst;
 
-  private Ip _poolIpLast;
+  private final Ip _poolIpLast;
 
   private DestinationNat(IpAccessList acl, Ip poolIpFirst, Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
+  }
+
+  @JsonCreator
+  private static DestinationNat jsonCreator(
+      @JsonProperty(PROP_ACL) @Nullable IpAccessList acl,
+      @JsonProperty(PROP_POOL_IP_FIRST) @Nullable Ip poolIpFirst,
+      @JsonProperty(PROP_POOL_IP_LAST) @Nullable Ip poolIpLast) {
+    return new DestinationNat(acl, poolIpFirst, poolIpLast);
   }
 
   @Override
@@ -98,21 +108,6 @@ public class DestinationNat implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_acl, _poolIpFirst, _poolIpLast);
-  }
-
-  @JsonProperty(PROP_ACL)
-  public void setAcl(IpAccessList acl) {
-    _acl = acl;
-  }
-
-  @JsonProperty(PROP_POOL_IP_FIRST)
-  public void setPoolIpFirst(Ip poolIpFirst) {
-    _poolIpFirst = poolIpFirst;
-  }
-
-  @JsonProperty(PROP_POOL_IP_LAST)
-  public void setPoolIpLast(Ip poolIpLast) {
-    _poolIpLast = poolIpLast;
   }
 
   @Override
