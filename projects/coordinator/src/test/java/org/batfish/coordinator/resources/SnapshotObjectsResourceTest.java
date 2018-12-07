@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.resources.SnapshotObjectsResource.QP_KEY;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -192,15 +194,15 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
     String content = "baz";
-    InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Response response =
         getTarget(network, snapshot, key)
-            .put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
+            .put(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key), UTF_8),
-        equalTo(content));
+    try (InputStream stream = Main.getWorkMgr().getSnapshotObject(network, snapshot, key)) {
+      assertThat(stream, not(nullValue()));
+      assertThat(IOUtils.toString(stream, UTF_8), equalTo(content));
+    }
   }
 
   @Test
@@ -213,15 +215,15 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
     String oldContent = "baz";
     String newContent = "bath";
     InputStream oldContentInputStream = new ByteArrayInputStream(oldContent.getBytes());
-    InputStream newContentInputStream = new ByteArrayInputStream(newContent.getBytes());
     Main.getWorkMgr().putSnapshotExtendedObject(oldContentInputStream, network, snapshot, key);
     Response response =
         getTarget(network, snapshot, key)
-            .put(Entity.entity(newContentInputStream, MediaType.APPLICATION_OCTET_STREAM));
+            .put(Entity.entity(newContent, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        IOUtils.toString(Main.getWorkMgr().getSnapshotObject(network, snapshot, key), UTF_8),
-        equalTo(newContent));
+    try (InputStream stream = Main.getWorkMgr().getSnapshotObject(network, snapshot, key)) {
+      assertThat(stream, not(nullValue()));
+      assertThat(IOUtils.toString(stream, UTF_8), equalTo(newContent));
+    }
   }
 }

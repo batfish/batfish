@@ -44,6 +44,7 @@ public final class NetworkObjectsResource {
 
   @GET
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @SuppressWarnings("MustBeClosedChecker") // Response eventually closes it.
   public @Nonnull Response get(@QueryParam(QP_KEY) String key) throws IOException {
     InputStream inputStream = Main.getWorkMgr().getNetworkObject(_network, key);
     if (inputStream == null) {
