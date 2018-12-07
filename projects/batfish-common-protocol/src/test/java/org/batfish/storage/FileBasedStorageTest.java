@@ -325,8 +325,5 @@ public final class FileBasedStorageTest {
             Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])),
             StandardCharsets.UTF_8),
         equalTo(testSting));
-
-    tmpzip.toFile().delete();
-    unzipDir.toFile().delete();
   }
 }
