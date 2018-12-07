@@ -1,0 +1,357 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "The flow",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Flow",
+          "schema" : "Flow"
+        },
+        {
+          "description" : "The traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Traces",
+          "schema" : "Set<Trace>"
+        },
+        {
+          "description" : "The total number traces for this flow",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "TraceCount",
+          "schema" : "Integer"
+        }
+      ],
+      "textDesc" : "Paths for flow ${Flow}"
+    },
+    "rows" : [
+      {
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "13.0.1.1",
+          "dstPort" : 33434,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressInterface" : "eth0",
+          "ingressNode" : "h1",
+          "ipProtocol" : "UDP",
+          "packetLength" : 512,
+          "srcIp" : "10.0.1.1",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Traces" : [
+          {
+            "disposition" : "ACCEPTED",
+            "hops" : [
+              {
+                "node" : {
+                  "id" : "node-h1",
+                  "name" : "h1"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "h1",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "0.0.0.0/0",
+                          "nextHopIp" : "10.0.1.10",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "h1",
+                        "interface" : "eth0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-r1-blue",
+                  "name" : "r1-blue"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "r1-blue",
+                        "interface" : "GigabitEthernet1"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "13.0.1.1/32",
+                          "nextHopIp" : "192.168.1.11",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "r1-blue",
+                        "interface" : "GigabitEthernet2"
+                      },
+                      "transformedFlow" : {
+                        "dscp" : 0,
+                        "dstIp" : "12.0.1.1",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "icmpCode" : 255,
+                        "icmpVar" : 255,
+                        "ingressInterface" : "eth0",
+                        "ingressNode" : "h1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "11.0.1.1",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "BASE",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-r3-red",
+                  "name" : "r3-red"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "r3-red",
+                        "interface" : "GigabitEthernet2"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "12.0.1.0/24",
+                          "nextHopIp" : "192.168.2.11",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "r3-red",
+                        "interface" : "GigabitEthernet1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-r4-red",
+                  "name" : "r4-red"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "r4-red",
+                        "interface" : "GigabitEthernet1"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "12.0.1.0/24",
+                          "nextHopIp" : "192.168.3.10",
+                          "protocol" : "static"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "r4-red",
+                        "interface" : "GigabitEthernet2"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-r2-blue",
+                  "name" : "r2-blue"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "r2-blue",
+                        "interface" : "GigabitEthernet2"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Routing",
+                    "action" : "FORWARDED",
+                    "detail" : {
+                      "routes" : [
+                        {
+                          "network" : "10.0.2.0/24",
+                          "nextHopIp" : "AUTO/NONE(-1l)",
+                          "protocol" : "connected"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "ExitOutputInterface",
+                    "action" : "TRANSMITTED",
+                    "detail" : {
+                      "outputInterface" : {
+                        "hostname" : "r2-blue",
+                        "interface" : "GigabitEthernet1"
+                      },
+                      "transformedFlow" : {
+                        "dscp" : 0,
+                        "dstIp" : "10.0.2.1",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "icmpCode" : 255,
+                        "icmpVar" : 255,
+                        "ingressInterface" : "eth0",
+                        "ingressNode" : "h1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "11.0.1.1",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "BASE",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "node" : {
+                  "id" : "node-h2",
+                  "name" : "h2"
+                },
+                "steps" : [
+                  {
+                    "type" : "EnterInputInterface",
+                    "action" : "RECEIVED",
+                    "detail" : {
+                      "inputInterface" : {
+                        "hostname" : "h2",
+                        "interface" : "eth0"
+                      },
+                      "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Inbound",
+                    "action" : "ACCEPTED"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "TraceCount" : 1
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 1 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]

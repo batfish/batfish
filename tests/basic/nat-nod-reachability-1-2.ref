@@ -1,0 +1,204 @@
+[
+  {
+    "class" : "org.batfish.datamodel.FlowHistory",
+    "traces" : {
+      "Flow<ingressNode:h1 ingressVrf:default srcIp:10.0.1.1 dstIp:13.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+        "environments" : {
+          "BASE" : {
+            "testrigName" : "ss_f5879371-f9d4-4e45-acac-2e542fa4e009"
+          }
+        },
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "13.0.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "h1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "10.0.1.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "paths" : {
+          "BASE" : [
+            {
+              "disposition" : "ACCEPTED",
+              "hops" : [
+                {
+                  "edge" : {
+                    "node1" : "h1",
+                    "node1interface" : "eth0",
+                    "node2" : "r1-blue",
+                    "node2interface" : "GigabitEthernet1"
+                  },
+                  "routes" : [
+                    "StaticRoute<0.0.0.0/0,nhip:10.0.1.10,nhint:eth0>_fnhip:10.0.1.10"
+                  ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "r1-blue",
+                    "node1interface" : "GigabitEthernet2",
+                    "node2" : "r3-red",
+                    "node2interface" : "GigabitEthernet2"
+                  },
+                  "routes" : [
+                    "StaticRoute<13.0.1.1/32,nhip:192.168.1.11,nhint:dynamic>_fnhip:192.168.1.11"
+                  ],
+                  "transformedFlow" : {
+                    "dscp" : 0,
+                    "dstIp" : "12.0.1.1",
+                    "dstPort" : 0,
+                    "ecn" : 0,
+                    "fragmentOffset" : 0,
+                    "icmpCode" : 255,
+                    "icmpVar" : 255,
+                    "ingressNode" : "h1",
+                    "ingressVrf" : "default",
+                    "ipProtocol" : "IP",
+                    "packetLength" : 0,
+                    "srcIp" : "11.0.1.1",
+                    "srcPort" : 0,
+                    "state" : "NEW",
+                    "tag" : "BASE",
+                    "tcpFlagsAck" : 0,
+                    "tcpFlagsCwr" : 0,
+                    "tcpFlagsEce" : 0,
+                    "tcpFlagsFin" : 0,
+                    "tcpFlagsPsh" : 0,
+                    "tcpFlagsRst" : 0,
+                    "tcpFlagsSyn" : 0,
+                    "tcpFlagsUrg" : 0
+                  }
+                },
+                {
+                  "edge" : {
+                    "node1" : "r3-red",
+                    "node1interface" : "GigabitEthernet1",
+                    "node2" : "r4-red",
+                    "node2interface" : "GigabitEthernet1"
+                  },
+                  "routes" : [
+                    "StaticRoute<12.0.1.0/24,nhip:192.168.2.11,nhint:dynamic>_fnhip:192.168.2.11"
+                  ],
+                  "transformedFlow" : {
+                    "dscp" : 0,
+                    "dstIp" : "12.0.1.1",
+                    "dstPort" : 0,
+                    "ecn" : 0,
+                    "fragmentOffset" : 0,
+                    "icmpCode" : 255,
+                    "icmpVar" : 255,
+                    "ingressNode" : "h1",
+                    "ingressVrf" : "default",
+                    "ipProtocol" : "IP",
+                    "packetLength" : 0,
+                    "srcIp" : "11.0.1.1",
+                    "srcPort" : 0,
+                    "state" : "NEW",
+                    "tag" : "BASE",
+                    "tcpFlagsAck" : 0,
+                    "tcpFlagsCwr" : 0,
+                    "tcpFlagsEce" : 0,
+                    "tcpFlagsFin" : 0,
+                    "tcpFlagsPsh" : 0,
+                    "tcpFlagsRst" : 0,
+                    "tcpFlagsSyn" : 0,
+                    "tcpFlagsUrg" : 0
+                  }
+                },
+                {
+                  "edge" : {
+                    "node1" : "r4-red",
+                    "node1interface" : "GigabitEthernet2",
+                    "node2" : "r2-blue",
+                    "node2interface" : "GigabitEthernet2"
+                  },
+                  "routes" : [
+                    "StaticRoute<12.0.1.0/24,nhip:192.168.3.10,nhint:dynamic>_fnhip:192.168.3.10"
+                  ],
+                  "transformedFlow" : {
+                    "dscp" : 0,
+                    "dstIp" : "12.0.1.1",
+                    "dstPort" : 0,
+                    "ecn" : 0,
+                    "fragmentOffset" : 0,
+                    "icmpCode" : 255,
+                    "icmpVar" : 255,
+                    "ingressNode" : "h1",
+                    "ingressVrf" : "default",
+                    "ipProtocol" : "IP",
+                    "packetLength" : 0,
+                    "srcIp" : "11.0.1.1",
+                    "srcPort" : 0,
+                    "state" : "NEW",
+                    "tag" : "BASE",
+                    "tcpFlagsAck" : 0,
+                    "tcpFlagsCwr" : 0,
+                    "tcpFlagsEce" : 0,
+                    "tcpFlagsFin" : 0,
+                    "tcpFlagsPsh" : 0,
+                    "tcpFlagsRst" : 0,
+                    "tcpFlagsSyn" : 0,
+                    "tcpFlagsUrg" : 0
+                  }
+                },
+                {
+                  "edge" : {
+                    "node1" : "r2-blue",
+                    "node1interface" : "GigabitEthernet1",
+                    "node2" : "h2",
+                    "node2interface" : "eth0"
+                  },
+                  "routes" : [
+                    "ConnectedRoute<10.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet1>_fnhip:null"
+                  ],
+                  "transformedFlow" : {
+                    "dscp" : 0,
+                    "dstIp" : "10.0.2.1",
+                    "dstPort" : 0,
+                    "ecn" : 0,
+                    "fragmentOffset" : 0,
+                    "icmpCode" : 255,
+                    "icmpVar" : 255,
+                    "ingressNode" : "h1",
+                    "ingressVrf" : "default",
+                    "ipProtocol" : "IP",
+                    "packetLength" : 0,
+                    "srcIp" : "11.0.1.1",
+                    "srcPort" : 0,
+                    "state" : "NEW",
+                    "tag" : "BASE",
+                    "tcpFlagsAck" : 0,
+                    "tcpFlagsCwr" : 0,
+                    "tcpFlagsEce" : 0,
+                    "tcpFlagsFin" : 0,
+                    "tcpFlagsPsh" : 0,
+                    "tcpFlagsRst" : 0,
+                    "tcpFlagsSyn" : 0,
+                    "tcpFlagsUrg" : 0
+                  }
+                }
+              ],
+              "notes" : "ACCEPTED"
+            }
+          ]
+        }
+      }
+    }
+  }
+]

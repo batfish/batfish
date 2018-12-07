@@ -1,0 +1,13 @@
+init-snapshot tests/basic/networks/nat
+# H1 -> H2, h1->13 transformed to 11->12 and then 11->h2
+test tests/basic/nat-traceroute-1-2.ref get traceroute startLocation="enter(h1)", headers={"dstIps": "13.0.1.1", "srcIps": 10.0.1.1}
+# H2 -> H1, h2->11 transformed to  12->11 and then  13->10
+test tests/basic/nat-traceroute-2-1.ref get traceroute startLocation="enter(h2)", headers={"dstIps": "11.0.1.1", "srcIps": 10.0.2.1}
+# NO_ROUTE because src interface is not "inside", but is otherwise identical
+# to the other NATs on h1 -> h2
+test tests/basic/nat-traceroute-3-2.ref get traceroute startLocation="enter(h3)", headers={"dstIps": "13.0.1.1", "srcIps": 20.0.1.1}
+
+add-batfish-option debugflags useNodReachability
+test tests/basic/nat-nod-reachability-1-2.ref get reachability ingressNodeRegex="h1", dstIps=["13.0.1.1"], srcIps=["10.0.1.1"], specialize=false
+test tests/basic/nat-nod-reachability-2-1.ref get reachability ingressNodeRegex="h2", dstIps=["11.0.1.1"], srcIps=["10.0.2.1"], specialize=false
+test tests/basic/nat-nod-reachability-3-2.ref get reachability ingressNodeRegex="h3", dstIps=["13.0.1.1"], srcIps=["20.0.1.1"], specialize=false
