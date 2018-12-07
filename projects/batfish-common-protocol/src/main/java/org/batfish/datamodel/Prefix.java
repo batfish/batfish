@@ -53,6 +53,12 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return new Prefix(ip, prefixLength);
   }
 
+  public static @Nonnull Prefix strict(String prefixStr) {
+    Prefix prefix = parse(prefixStr);
+    checkArgument(prefix.toString().equals(prefixStr), "Non-canonical prefix: %s", prefixStr);
+    return prefix;
+  }
+
   private final Ip _ip;
 
   private final int _prefixLength;
