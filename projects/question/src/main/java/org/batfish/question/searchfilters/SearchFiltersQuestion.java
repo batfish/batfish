@@ -198,12 +198,12 @@ public final class SearchFiltersQuestion extends Question {
         .build();
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new Builder();
   }
 
   @VisibleForTesting
-  static final class Builder {
+  public static final class Builder {
     private boolean _complementHeaderSpace;
     private @Nullable String _filters;
     private boolean _generateExplanations;
