@@ -140,6 +140,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -2826,6 +2827,17 @@ public class FlatJuniperGrammarTest {
     Interface iface = interfaces.get("ge-0/0/0.0");
     List<DestinationNat> dnats = iface.getDestinationNats();
     assertThat(dnats, hasSize(5));
+
+    assertTrue(
+        config
+            .getIpAccessLists()
+            .keySet()
+            .containsAll(
+                dnats
+                    .stream()
+                    .map(DestinationNat::getAcl)
+                    .map(IpAccessList::getName)
+                    .collect(ImmutableList.toImmutableList())));
 
     assertThat(
         dnats,
