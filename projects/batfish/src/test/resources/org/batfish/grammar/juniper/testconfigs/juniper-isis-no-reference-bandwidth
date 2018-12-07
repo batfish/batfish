@@ -1,0 +1,9 @@
+#
+set system host-name juniper-isis-no-reference-bandwidth
+#
+set interfaces lo0 unit 0 family iso address 12.1234.1234.1234.1234.00 
+#
+set protocols isis interface lo0.0 passive
+#
+set protocols isis level 2 wide-metrics-only
+#
