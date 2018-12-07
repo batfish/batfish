@@ -2168,19 +2168,19 @@ public class VirtualRouter implements Serializable {
             if (localArea.getStubType() == StubType.STUB) {
               return;
             }
-            // Get remote neighbor's queue by prefix
-            Configuration remoteConfig =
-                allNodes.get(ospfEdge.getNode2().getNode()).getConfiguration();
+
+            // Get remote neighbor's queue
+            Node remoteNode = allNodes.get(ospfEdge.getNode2().getNode());
             String remoteVrf =
-                remoteConfig
+                remoteNode
+                    .getConfiguration()
                     .getAllInterfaces()
                     .get(ospfEdge.getNode2().getInterfaceName())
                     .getVrfName();
-            VirtualRouter remoteRouter =
-                allNodes.get(ospfEdge.getNode2().getNode()).getVirtualRouters().get(remoteVrf);
-
+            VirtualRouter remoteRouter = remoteNode.getVirtualRouters().get(remoteVrf);
             Queue<RouteAdvertisement<OspfExternalRoute>> q =
                 remoteRouter._ospfExternalIncomingRoutes.get(ospfEdge);
+
             queueDelta(q, type1delta);
             queueDelta(q, type2delta);
           });
