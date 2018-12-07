@@ -98,7 +98,6 @@ public class ZipUtility {
     try (Closer closer = Closer.create()) {
       OutputStream fos = closer.register(Files.newOutputStream(destZipFile));
       zipFolder(srcFolder.toString(), fos, closer);
-
     } catch (Exception e) {
       throw new BatfishException(
           "Could not zip folder: '" + srcFolder + "' into: '" + destZipFile + "'", e);
@@ -108,14 +107,14 @@ public class ZipUtility {
   /** Zip {@code srcFolder} in memory and return input stream from which zip may be read. */
   @MustBeClosed
   public static @Nonnull InputStream zipFilesToInputStream(Path srcFolder) {
+    ByteArrayOutputStream baos;
     try (Closer closer = Closer.create()) {
-      ByteArrayOutputStream baos = closer.register(new ByteArrayOutputStream());
+      baos = closer.register(new ByteArrayOutputStream());
       zipFolder(srcFolder.toString(), baos, closer);
-      baos.close();
-      return new ByteArrayInputStream(baos.toByteArray());
     } catch (Exception e) {
       throw new BatfishException("Could not zip folder: '" + srcFolder + "'", e);
     }
+    return new ByteArrayInputStream(baos.toByteArray());
   }
 
   /*
@@ -132,9 +131,5 @@ public class ZipUtility {
      * add the folder to the zip
      */
     addFolderToZip("", srcFolder, zip);
-    /*
-     * close the zip objects
-     */
-    zip.flush();
   }
 }
