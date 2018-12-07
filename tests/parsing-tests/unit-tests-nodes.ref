@@ -17280,6 +17280,40 @@
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
+            "sourceNats" : [
+              {
+                "acl" : {
+                  "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
+                  "lines" : [
+                    {
+                      "action" : "PERMIT",
+                      "matchCondition" : {
+                        "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                        "conjuncts" : [
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpSpaceReference",
+                                "name" : "NAME"
+                              },
+                              "negate" : false,
+                              "srcIps" : {
+                                "class" : "org.batfish.datamodel.IpSpaceReference",
+                                "name" : "SA-NAME"
+                              }
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
             "spanningTreePortfast" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",

@@ -1433,22 +1433,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 fromInterfaces.add(fromInterface);
               }
               if (fromZone != null) {
-                _masterLogicalSystem
-                    .getZones()
-                    .get(ruleSet.getFromLocation().getZone())
-                    .getInterfaces()
-                    .stream()
-                    .map(Interface::getName)
-                    .forEach(fromInterfaces::add);
+                Zone zone = _masterLogicalSystem.getZones().get(fromZone);
+
+                if (zone != null) {
+                  zone.getInterfaces()
+                      .stream()
+                      .map(Interface::getName)
+                      .forEach(fromInterfaces::add);
+                }
               }
               if (fromRoutingInstance != null) {
-                _masterLogicalSystem
-                    .getRoutingInstances()
-                    .get(ruleSet.getFromLocation().getRoutingInstance())
-                    .getInterfaces()
-                    .keySet()
-                    .stream()
-                    .forEach(fromInterfaces::add);
+                RoutingInstance ri =
+                    _masterLogicalSystem
+                        .getRoutingInstances()
+                        .get(ruleSet.getFromLocation().getRoutingInstance());
+
+                if (ri != null) {
+                  ri.getInterfaces().keySet().stream().forEach(fromInterfaces::add);
+                }
               }
 
               return ruleSet
