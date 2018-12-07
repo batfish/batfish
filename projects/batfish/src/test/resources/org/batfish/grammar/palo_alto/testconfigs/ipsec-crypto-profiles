@@ -1,0 +1,12 @@
+set deviceconfig system hostname ipsec-crypto-profiles
+#
+set network ike crypto-profiles ipsec-crypto-profiles default esp encryption [ aes-128-cbc des ]
+set network ike crypto-profiles ipsec-crypto-profiles default esp authentication sha1
+set network ike crypto-profiles ipsec-crypto-profiles default dh-group group2
+set network ike crypto-profiles ipsec-crypto-profiles default lifetime minutes 1
+#
+set network ike crypto-profiles ipsec-crypto-profiles profile1 esp encryption aes-128-gcm
+set network ike crypto-profiles ipsec-crypto-profiles profile1 esp authentication none
+set network ike crypto-profiles ipsec-crypto-profiles profile1 dh-group group14
+set network ike crypto-profiles ipsec-crypto-profiles profile1 lifetime days 1
+#

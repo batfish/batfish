@@ -1,0 +1,23 @@
+set deviceconfig system hostname ignored-lines
+#
+set deviceconfig system type static
+set deviceconfig system update-server updates.paloaltonetworks.com
+set deviceconfig system update-schedule threats recurring weekly day-of-week wednesday
+set deviceconfig system update-schedule threats recurring weekly at 01:02
+set deviceconfig system update-schedule threats recurring weekly action download-only
+set deviceconfig system timezone US/Pacific
+set deviceconfig system service disable-telnet yes
+set deviceconfig system service disable-http yes
+set deviceconfig system panorama-server 10.252.32.9
+#
+set network profiles monitor-profile default interval 3
+set network profiles zone-protection-profile
+#
+set network qos profile default class class1 priority real-time
+set network qos profile default class class2 priority high
+set network qos profile default class class5 priority medium
+set network qos profile default class class6 priority low
+#
+# this should be dealt with soon
+set network ike gateway
+#
