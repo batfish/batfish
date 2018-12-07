@@ -296,7 +296,7 @@ class IncrementalBdpEngine {
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
                   Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
-                      vr.propagateIsisRoutes(allNodes, networkConfigurations);
+                      vr.propagateIsisRoutes(networkConfigurations);
                   if (p != null
                       && vr.unstageIsisRoutes(
                           allNodes, networkConfigurations, p.getKey(), p.getValue())) {

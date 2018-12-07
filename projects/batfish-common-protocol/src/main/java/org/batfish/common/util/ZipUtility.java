@@ -1,11 +1,18 @@
 package org.batfish.common.util;
 
+import com.google.common.io.Closer;
+import com.google.errorprone.annotations.MustBeClosed;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 // code from
@@ -86,37 +93,43 @@ public class ZipUtility {
     // }
   }
 
-  /*
-   * Zip function zip all files and folders
-   */
+  /** Zip {@code srcFolder} and write to {@code destZipFile} */
   public static void zipFiles(Path srcFolder, Path destZipFile) {
-    try {
-      zipFolder(srcFolder.toString(), destZipFile.toString());
+    try (Closer closer = Closer.create()) {
+      OutputStream fos = closer.register(Files.newOutputStream(destZipFile));
+      zipFolder(srcFolder.toString(), fos, closer);
     } catch (Exception e) {
       throw new BatfishException(
           "Could not zip folder: '" + srcFolder + "' into: '" + destZipFile + "'", e);
     }
   }
 
+  /** Zip {@code srcFolder} in memory and return input stream from which zip may be read. */
+  @MustBeClosed
+  public static @Nonnull InputStream zipFilesToInputStream(Path srcFolder) {
+    ByteArrayOutputStream baos;
+    try (Closer closer = Closer.create()) {
+      baos = closer.register(new ByteArrayOutputStream());
+      zipFolder(srcFolder.toString(), baos, closer);
+    } catch (Exception e) {
+      throw new BatfishException("Could not zip folder: '" + srcFolder + "'", e);
+    }
+    return new ByteArrayInputStream(baos.toByteArray());
+  }
+
   /*
    * zip the folders
    */
-  private static void zipFolder(String srcFolder, String destZipFile) throws Exception {
+  private static void zipFolder(String srcFolder, OutputStream outputStream, Closer closer)
+      throws Exception {
     ZipOutputStream zip = null;
-    FileOutputStream fileWriter = null;
     /*
      * create the output stream to zip file result
      */
-    fileWriter = new FileOutputStream(destZipFile);
-    zip = new ZipOutputStream(fileWriter);
+    zip = closer.register(new ZipOutputStream(outputStream));
     /*
      * add the folder to the zip
      */
     addFolderToZip("", srcFolder, zip);
-    /*
-     * close the zip objects
-     */
-    zip.flush();
-    zip.close();
   }
 }

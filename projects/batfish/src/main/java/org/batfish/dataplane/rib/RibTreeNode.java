@@ -100,6 +100,14 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return node != null && node._routes.contains(route);
   }
 
+  /** Returns the forwarding routes stored in this node. */
+  private Set<R> getForwardingRoutes() {
+    return _routes
+        .stream()
+        .filter(r -> !r.getNonForwarding())
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   /**
    * Returns a set of routes with the longest prefix match for a given IP address
    *
@@ -108,6 +116,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
    * @param maxPrefixLength only return routes with prefix length less than or equal to given value
    * @return a set of routes
    */
+  @Nonnull
   Set<R> getLongestPrefixMatch(Ip address, long bits, int maxPrefixLength) {
     // If the current subtree only contains routes that are too long, no matches.
     int index = _prefix.getPrefixLength();
@@ -122,35 +131,30 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
 
     // If the network of the current node is exactly the desired maximum length, stop here.
     if (index == maxPrefixLength) {
-      return ImmutableSet.copyOf(_routes);
+      return getForwardingRoutes();
     }
 
     // Examine the bit at the given index
     boolean currentBit = Ip.getBitAtPosition(bits, index);
-    RibTreeNode<R> child;
-
-    // the current bit is 1, go right recursively
-    if (currentBit) {
-      child = _right;
-    } else {
-      child = _left;
-    }
+    // If the current bit is 1, go right recursively
+    RibTreeNode<R> child = currentBit ? _right : _left;
     if (child == null) {
-      return ImmutableSet.copyOf(_routes);
+      return getForwardingRoutes();
     }
 
     // Represents any potentially longer route matches (than ones stored at this node)
     Set<R> longerMatches = child.getLongestPrefixMatch(address, bits, maxPrefixLength);
 
     // If we found no better matches, return the ones from this node
-    if (longerMatches == null || longerMatches.isEmpty()) {
-      return ImmutableSet.copyOf(_routes);
+    if (longerMatches.isEmpty()) {
+      return getForwardingRoutes();
     } else { // otherwise return longer matches
       return longerMatches;
     }
   }
 
   /** Retrieve an immutable copy of the routes currently available for the given prefix. */
+  @Nonnull
   Set<R> getRoutes(Prefix p) {
     RibTreeNode<R> node = findRouteNode(p.getStartIp().asLong(), p.getPrefixLength(), 0);
     if (node == null) {

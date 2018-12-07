@@ -49,6 +49,7 @@ import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -809,10 +810,13 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
-    return Files.newInputStream(objectPath);
+    return Files.isDirectory(objectPath)
+        ? ZipUtility.zipFilesToInputStream(objectPath)
+        : Files.newInputStream(objectPath);
   }
 
-  private Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key)
+  @VisibleForTesting
+  Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
     Path relativePath = objectKeyToRelativePath(key);
     return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
