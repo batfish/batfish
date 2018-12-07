@@ -14,6 +14,13 @@ final class Edge {
   private final @Nonnull Function<BDD, BDD> _traverseBackward;
   private final @Nonnull Function<BDD, BDD> _traverseForward;
 
+  Edge(StateExpr preState, StateExpr postState) {
+    _preState = preState;
+    _postState = postState;
+    _traverseBackward = Function.identity();
+    _traverseForward = Function.identity();
+  }
+
   Edge(StateExpr preState, StateExpr postState, BDD constraint) {
     _preState = preState;
     _postState = postState;
