@@ -7,7 +7,10 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHAL
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IKE_CRYPTO_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
@@ -501,6 +504,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterSnicp_global_protect(Snicp_global_protectContext ctx) {
     String name = ctx.name.getText();
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
+    defineStructure(GLOBAL_PROTECT_APP_CRYPTO_PROFILE, name, ctx);
   }
 
   @Override
@@ -512,6 +516,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterSnicp_ike_crypto_profiles(Snicp_ike_crypto_profilesContext ctx) {
     String name = ctx.name.getText();
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IKE);
+    defineStructure(IKE_CRYPTO_PROFILE, name, ctx);
   }
 
   @Override
@@ -523,6 +528,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
     String name = ctx.name.getText();
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IPSEC);
+    defineStructure(IPSEC_CRYPTO_PROFILE, name, ctx);
   }
 
   @Override
