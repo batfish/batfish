@@ -12,9 +12,12 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,10 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -268,5 +274,54 @@ public final class FileBasedStorageTest {
     // Confirm mkdirs throws when creating a dir within a read-only dir
     _thrown.expectMessage(containsString("Unable to create directory"));
     mkdirs(dir);
+  }
+
+  @Test
+  public void testLoadSnapshotInputObjectFile() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    String testSting = "what is life";
+
+    FileUtils.copyInputStreamToFile(
+        new ByteArrayInputStream(testSting.getBytes()),
+        _storage.getSnapshotInputObjectPath(network, snapshot, "test").toFile());
+
+    try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "test")) {
+      assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()), equalTo(testSting));
+    }
+  }
+
+  @Test
+  public void testLoadSnapshotInputObjectDirectory() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    String testSting = "this is life";
+
+    Path testdir = _storage.getSnapshotInputObjectPath(network, snapshot, "testkey");
+    testdir.toFile().mkdirs();
+    Files.write(testdir.resolve("testfile"), testSting.getBytes());
+
+    Path tmpzip = _folder.getRoot().toPath().resolve("tmp.zip");
+    try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "testkey")) {
+      FileUtils.copyInputStreamToFile(inputStream, tmpzip.toFile());
+    }
+
+    Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
+    UnzipUtility.unzip(tmpzip, unzipDir);
+
+    // the top level entry in the zip should be testkey
+    String[] toplevel = unzipDir.toFile().list();
+    assertThat(toplevel, equalTo(new String[] {"testkey"}));
+
+    // then, there should be testfile
+    String[] secondlevel = unzipDir.resolve(toplevel[0]).toFile().list();
+    assertThat(secondlevel, equalTo(new String[] {"testfile"}));
+
+    // the content of the testfile should match what we wrote
+    assertThat(
+        new String(
+            Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])),
+            StandardCharsets.UTF_8),
+        equalTo(testSting));
   }
 }

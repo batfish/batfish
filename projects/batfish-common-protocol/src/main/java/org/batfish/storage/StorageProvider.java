@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -352,6 +353,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
+  @MustBeClosed
   InputStream loadNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
@@ -379,6 +381,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
+  @MustBeClosed
   InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 

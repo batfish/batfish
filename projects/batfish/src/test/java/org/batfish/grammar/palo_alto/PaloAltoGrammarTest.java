@@ -49,19 +49,26 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
@@ -70,7 +77,10 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.CryptoProfile;
+import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
@@ -93,6 +103,18 @@ public class PaloAltoGrammarTest {
 
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname.toLowerCase());
+  }
+
+  private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    return (PaloAltoConfiguration) extractor.getVendorConfiguration();
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -159,12 +181,89 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testGlobalProtectAppCryptoProfiles() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("global-protect-app-crypto-profiles");
+
+    assertThat(
+        c.getCryptoProfiles(),
+        equalTo(
+            ImmutableList.of(
+                new CryptoProfile(
+                    "default",
+                    Type.GLOBAL_PROTECT_APP,
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
+                    null,
+                    ImmutableList.of(EncryptionAlgorithm.AES_128_CBC),
+                    null,
+                    null))));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "basic-parsing";
     String hostname = "my-hostname";
 
     // Confirm hostname extraction works
     assertThat(parseTextConfigs(filename).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testIgnoredLines() throws IOException {
+    // will fail if some lines don't parse
+    parseConfig("ignored-lines");
+  }
+
+  @Test
+  public void testIkeCryptoProfiles() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("ike-crypto-profiles");
+
+    assertThat(
+        c.getCryptoProfiles(),
+        equalTo(
+            ImmutableList.of(
+                new CryptoProfile(
+                    "default",
+                    Type.IKE,
+                    null,
+                    DiffieHellmanGroup.GROUP2,
+                    ImmutableList.of(
+                        EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.THREEDES_CBC),
+                    IkeHashingAlgorithm.SHA1,
+                    8 * 3600),
+                new CryptoProfile(
+                    "profile1",
+                    Type.IKE,
+                    null,
+                    DiffieHellmanGroup.GROUP19,
+                    ImmutableList.of(EncryptionAlgorithm.AES_256_CBC),
+                    IkeHashingAlgorithm.SHA_384,
+                    8))));
+  }
+
+  @Test
+  public void testIpsecCryptoProfiles() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("ipsec-crypto-profiles");
+
+    assertThat(
+        c.getCryptoProfiles(),
+        equalTo(
+            ImmutableList.of(
+                new CryptoProfile(
+                    "default",
+                    Type.IPSEC,
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
+                    DiffieHellmanGroup.GROUP2,
+                    ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.DES_CBC),
+                    null,
+                    60),
+                new CryptoProfile(
+                    "profile1",
+                    Type.IPSEC,
+                    null,
+                    DiffieHellmanGroup.GROUP14,
+                    ImmutableList.of(EncryptionAlgorithm.AES_128_GCM),
+                    null,
+                    24 * 3600))));
   }
 
   @Test
@@ -261,6 +360,15 @@ public class PaloAltoGrammarTest {
     // Confirm all the defined syslog servers show up in VI model
     assertThat(
         c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"));
+  }
+
+  @Test
+  public void testMgmtIface() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
+
+    assertThat(c.getMgmtIfaceAddress(), equalTo(new Ip("12.25.51.103")));
+    assertThat(c.getMgmtIfaceGateway(), equalTo(new Ip("12.25.51.1")));
+    assertThat(c.getMgmtIfaceNetmask(), equalTo(new Ip("255.255.255.128")));
   }
 
   @Test
