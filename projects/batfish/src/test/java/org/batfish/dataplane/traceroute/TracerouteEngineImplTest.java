@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -47,8 +48,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -556,24 +561,65 @@ public class TracerouteEngineImplTest {
 
   @Test
   public void testApplyPreSourceNatFilter() {
-    IpAccessList.builder().setName("preSourceFilter")
-        .setLines(
-            ImmutableList.of()
-        );
+    String node = "node";
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+    String prefix = "1.2.3.4/24";
+    String filterName = "preSourceFilter";
+
+    IpAccessList filter =
+        IpAccessList.builder()
+            .setName(filterName)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting(
+                        AclLineMatchExprs.and(
+                            new MatchSrcInterface(ImmutableList.of(iface1)),
+                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix)))),
+                    IpAccessListLine.rejecting(
+                        AclLineMatchExprs.and(
+                            new MatchSrcInterface(ImmutableList.of(iface2)),
+                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix))))))
+            .build();
 
     Flow flow = makeFlow();
 
-    Step step =
-        TracerouteEngineImplContext.
-        applyPreSourceNatFilter(
+    PreSourceNatOutgoingFilterStep step =
+        TracerouteEngineImplContext.applyPreSourceNatFilter(
             flow,
-            currentNodeName,
-            inputIfaceName,
-            outgoingInterface.getName(),
+            node,
+            iface1,
+            iface2,
             filter,
-            transmissionContext._aclDefinitions,
-            transmissionContext._namedIpSpaces);
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
 
-    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
+    assertThat(step.getAction(), equalTo(StepAction.RECEIVED));
+
+    PreSourceNatOutgoingFilterStepDetail detail = step.getDetail();
+    assertThat(detail.getFilter(), equalTo(filterName));
+    assertThat(detail.getInputInterface(), equalTo(iface1));
+    assertThat(detail.getOutputInterface(), equalTo(iface2));
+    assertThat(detail.getNode(), equalTo(node));
+
+    step =
+        TracerouteEngineImplContext.applyPreSourceNatFilter(
+            flow,
+            node,
+            iface2,
+            iface1,
+            filter,
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
+
+    assertThat(step.getAction(), equalTo(StepAction.DENIED));
+
+    detail = step.getDetail();
+    assertThat(detail.getFilter(), equalTo(filterName));
+    assertThat(detail.getInputInterface(), equalTo(iface2));
+    assertThat(detail.getOutputInterface(), equalTo(iface1));
+    assertThat(detail.getNode(), equalTo(node));
   }
 }

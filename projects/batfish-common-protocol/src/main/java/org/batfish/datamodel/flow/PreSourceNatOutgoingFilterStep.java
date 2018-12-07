@@ -28,25 +28,22 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_FILTER = "preSourceNatFilter";
-    private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
     private @Nonnull String _node;
     private @Nonnull String _inputInterface;
     private @Nonnull String _outputInterface;
     private @Nullable String _filter;
-    private @Nullable Flow _transformedFlow;
 
     private PreSourceNatOutgoingFilterStepDetail(
         String node,
         String inInterface,
         String outInterface,
-        @Nullable String filter,
-        @Nullable() Flow transformedFlow) {
+        @Nullable String filter
+        ) {
       _node = node;
       _inputInterface = inInterface;
       _outputInterface = outInterface;
       _filter = filter;
-      _transformedFlow = transformedFlow;
     }
 
     @JsonCreator
@@ -54,8 +51,8 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
         @JsonProperty(PROP_NODE) @Nonnull String node,
         @JsonProperty(PROP_INPUT_INTERFACE) @Nonnull String inInterface,
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nonnull String outInterface,
-        @JsonProperty(PROP_FILTER) @Nullable String filter,
-        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
+        @JsonProperty(PROP_FILTER) @Nullable String filter
+) {
       checkArgument(
           node != null && inInterface != null && outInterface != null,
           "Missing one of %s, %s, %s",
@@ -63,7 +60,7 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
           PROP_INPUT_INTERFACE,
           PROP_OUTPUT_INTERFACE);
       return new PreSourceNatOutgoingFilterStepDetail(
-          node, inInterface, outInterface, filter, transformedFlow);
+          node, inInterface, outInterface, filter);
     }
 
     @JsonProperty(PROP_NODE)
@@ -90,12 +87,6 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
       return _filter;
     }
 
-    @JsonProperty(PROP_TRANSFORMED_FLOW)
-    @Nullable
-    public Flow getTransformedFlow() {
-      return _transformedFlow;
-    }
-
     public static Builder builder() {
       return new Builder();
     }
@@ -106,14 +97,13 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
       private @Nullable String _inputInterface;
       private @Nullable String _outputInterface;
       private @Nullable String _filter;
-      private @Nullable Flow _transformedFlow;
 
       public PreSourceNatOutgoingFilterStepDetail build() {
         checkState(
             _node != null && _inputInterface != null && _outputInterface != null,
             "Must call setNode, setInputInterface and setOutputInterface before building");
         return new PreSourceNatOutgoingFilterStepDetail(
-            _node, _inputInterface, _outputInterface, _filter, _transformedFlow);
+            _node, _inputInterface, _outputInterface, _filter);
       }
 
       public Builder setNode(String node) {
@@ -133,11 +123,6 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
 
       public Builder setFilter(@Nullable String filter) {
         _filter = filter;
-        return this;
-      }
-
-      public Builder setTransformedFlow(@Nullable Flow transformedFlow) {
-        _transformedFlow = transformedFlow;
         return this;
       }
 

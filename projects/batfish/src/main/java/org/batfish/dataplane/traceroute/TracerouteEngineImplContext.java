@@ -234,7 +234,7 @@ public class TracerouteEngineImplContext {
   }
 
   @VisibleForTesting
-  static Step applyPreSourceNatFilter(
+  static PreSourceNatOutgoingFilterStep applyPreSourceNatFilter(
       Flow currentFlow,
       String node,
       String inInterfaceName,
@@ -677,7 +677,7 @@ public class TracerouteEngineImplContext {
 
                   // Apply preSourceNatOutgoingFilter
                   IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
-                  Step step =
+                  PreSourceNatOutgoingFilterStep step =
                       applyPreSourceNatFilter(
                           currentFlow,
                           currentNodeName,
