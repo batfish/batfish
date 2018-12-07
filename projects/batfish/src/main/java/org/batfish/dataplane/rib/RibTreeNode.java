@@ -136,7 +136,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
 
     // Examine the bit at the given index
     boolean currentBit = Ip.getBitAtPosition(bits, index);
-    // the current bit is 1, go right recursively
+    // If the current bit is 1, go right recursively
     RibTreeNode<R> child = currentBit ? _right : _left;
     if (child == null) {
       return getForwardingRoutes();
