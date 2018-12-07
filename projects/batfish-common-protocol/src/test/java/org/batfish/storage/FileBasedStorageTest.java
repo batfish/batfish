@@ -286,10 +286,9 @@ public final class FileBasedStorageTest {
         new ByteArrayInputStream(testSting.getBytes()),
         _storage.getSnapshotInputObjectPath(network, snapshot, "test").toFile());
 
-    InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "test");
-
-    assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()), equalTo(testSting));
-    inputStream.close();
+    try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "test")) {
+      assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()), equalTo(testSting));
+    }
   }
 
   @Test
@@ -302,10 +301,10 @@ public final class FileBasedStorageTest {
     testdir.toFile().mkdirs();
     Files.write(testdir.resolve("testfile"), testSting.getBytes());
 
-    InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "testkey");
-
     Path tmpzip = _folder.getRoot().toPath().resolve("tmp.zip");
-    FileUtils.copyInputStreamToFile(inputStream, tmpzip.toFile());
+    try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "testkey")) {
+      FileUtils.copyInputStreamToFile(inputStream, tmpzip.toFile());
+    }
 
     Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
     UnzipUtility.unzip(tmpzip, unzipDir);

@@ -824,12 +824,15 @@ public final class WorkMgrTest {
   private String readSnapshotConfig(String network, String snapshot, String fileName)
       throws IOException {
     StringWriter writer = new StringWriter();
-    InputStream inputStream =
+    try (InputStream inputStream =
         _manager.getSnapshotInputObject(
-            network, snapshot, Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString());
-    assertThat(inputStream, not(nullValue()));
-    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
-    return writer.toString();
+            network,
+            snapshot,
+            Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString())) {
+      assertThat(inputStream, not(nullValue()));
+      IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
+      return writer.toString();
+    }
   }
 
   @Test
