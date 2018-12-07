@@ -3,7 +3,10 @@ package org.batfish.question.routes;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.question.routes.RoutesAnswerer.computeNextHopNode;
 
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -99,5 +102,55 @@ public class RouteAnswererUtil {
           .add(routeRowAttribute);
     }
     return bgpRoutesGroupedByPrefix;
+  }
+
+  public List<List<RouteRowAttribute>> alignRouteRowAttributes(
+      List<RouteRowAttribute> routeRowAttributes1, List<RouteRowAttribute> routeRowAttributes2) {
+    List<List<RouteRowAttribute>> alignedRouteRowAttrs = new ArrayList<>();
+    int i = 0;
+    int j = 0;
+    while (i < routeRowAttributes1.size() && j < routeRowAttributes2.size()) {
+      RouteRowAttribute routeRowAttribute1 = routeRowAttributes1.get(i);
+      RouteRowAttribute routeRowAttribute2 = routeRowAttributes2.get(j);
+      if (routeRowAttribute1.getNextHop() == null || routeRowAttribute2.getNextHop() == null) {
+        break;
+      }
+      if (routeRowAttribute1.getNextHop().compareTo(routeRowAttribute2.getNextHop()) < 0) {
+        i++;
+        alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttribute1, null));
+      } else if (routeRowAttribute1.getNextHop().compareTo(routeRowAttribute2.getNextHop()) > 0) {
+        j++;
+        alignedRouteRowAttrs.add(Lists.newArrayList(null, routeRowAttribute2));
+      } else {
+        i++;
+        j++;
+        alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttribute1, routeRowAttribute2));
+      }
+    }
+
+    // if any of routeRowattributes1/2 still have non-null next hops, we will not be able to find
+    // the corresponding pair because the other will have null next hop
+    while (i < routeRowAttributes1.size() && routeRowAttributes1.get(i).getNextHop() != null) {
+      alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttributes1.get(i++), null));
+    }
+    while (j < routeRowAttributes2.size() && routeRowAttributes2.get(j).getNextHop() != null) {
+      alignedRouteRowAttrs.add(Lists.newArrayList(null, routeRowAttributes2.get(j++)));
+    }
+
+    // for the rest of the elements of routeRowAttributes1 and routeAttributes2 next Hop will be
+    // null
+    // so aligning in an arbitrary order
+    while (i < routeRowAttributes1.size() || j < routeRowAttributes2.size()) {
+      RouteRowAttribute routeRowAttribute1 = null;
+      RouteRowAttribute routeRowAttribute2 = null;
+      if (i < routeRowAttributes1.size()) {
+        routeRowAttribute1 = routeRowAttributes1.get(i++);
+      }
+      if (j < routeRowAttributes2.size()) {
+        routeRowAttribute2 = routeRowAttributes2.get(j++);
+      }
+      alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttribute1, routeRowAttribute2));
+    }
+    return alignedRouteRowAttrs;
   }
 }

@@ -1,9 +1,12 @@
 package org.batfish.question.routes;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsLast;
 import static org.batfish.datamodel.AbstractRoute.NO_TAG;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -101,7 +104,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return _protocol;
   }
 
-  public int getTag(){
+  public int getTag() {
     return _tag;
   }
 
@@ -109,12 +112,13 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return new Builder();
   }
 
+  private static final Comparator<RouteRowAttribute> COMPARATOR =
+      comparing(RouteRowAttribute::getNextHop, nullsLast(String::compareToIgnoreCase))
+          .thenComparing(RouteRowAttribute::getNextHopIp, nullsLast(Ip::compareTo));
+
   @Override
   public int compareTo(RouteRowAttribute o) {
-    if (o._nextHop != null && _nextHop != null) {
-      return _nextHop.compareTo(o._nextHop);
-    }
-    return _nextHopIp.compareTo(o._nextHopIp);
+    return COMPARATOR.compare(this, o);
   }
 
   @ParametersAreNullableByDefault
@@ -146,7 +150,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       if (_protocol == null) {
         throw new BatfishException("Route is missing the Protocol");
       }
-      if(_tag == null){
+      if (_tag == null) {
         _tag = NO_TAG;
       }
 
@@ -159,7 +163,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _localPreference,
           firstNonNull(_communities, new ArrayList<>()),
           _originProtocol,
-          _protocol, _tag);
+          _protocol,
+          _tag);
     }
 
     public Builder setNextHopIp(@Nonnull Ip nextHopIp) {
@@ -207,7 +212,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setTag(Integer tag){
+    public Builder setTag(Integer tag) {
       _tag = tag;
       return this;
     }

@@ -153,7 +153,7 @@ public class RoutesAnswerer extends Answerer {
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
                     rows.addAll(
-                        getRowsForAbstractRoutes(
+                        getRowsForAbstractRoutesTest(
                             node,
                             vrfName,
                             network,
@@ -221,28 +221,28 @@ public class RoutesAnswerer extends Answerer {
           .put(COL_VRF_NAME, vrfName)
           .put(COL_NETWORK, entry.getKey().getPrefix());
 
-      ImmutableList.Builder<String> nextHopsListBuilder = ImmutableList.builder();
-      ImmutableList.Builder<Ip> nextHopsIpsListBuilder = ImmutableList.builder();
-      ImmutableList.Builder<String> protocolsListBuilder = ImmutableList.builder();
-      ImmutableList.Builder<Integer> tagsListBuilder = ImmutableList.builder();
-      ImmutableList.Builder<Integer> adminDistanceListBuilder = ImmutableList.builder();
-      ImmutableList.Builder<Long> metricListBuilder = ImmutableList.builder();
+      List<String> nextHopsList = new ArrayList<>();
+      List<Ip> nextHopsIpsList = new ArrayList<>();
+      List<String> protocolsList = new ArrayList<>();
+      List<Integer> tagsList = new ArrayList<>();
+      List<Integer> adminDistancesList = new ArrayList<>();
+      List<Long> metricsList = new ArrayList<>();
 
       for (RouteRowAttribute routeRowAttribute : entry.getValue()) {
-        nextHopsListBuilder.add(routeRowAttribute.getNextHop());
-        nextHopsIpsListBuilder.add(routeRowAttribute.getNextHopIp());
-        protocolsListBuilder.add(routeRowAttribute.getProtocol());
-        tagsListBuilder.add(routeRowAttribute.getTag());
-        adminDistanceListBuilder.add(routeRowAttribute.getAdminDistance());
-        metricListBuilder.add(routeRowAttribute.getMetric());
+        nextHopsList.add(routeRowAttribute.getNextHop());
+        nextHopsIpsList.add(routeRowAttribute.getNextHopIp());
+        protocolsList.add(routeRowAttribute.getProtocol());
+        tagsList.add(routeRowAttribute.getTag());
+        adminDistancesList.add(routeRowAttribute.getAdminDistance());
+        metricsList.add(routeRowAttribute.getMetric());
       }
       rowBuilder
-          .put(COL_NEXT_HOP, nextHopsListBuilder.build())
-          .put(COL_NEXT_HOP_IP, nextHopsIpsListBuilder.build())
-          .put(COL_PROTOCOL, protocolsListBuilder.build())
-          .put(COL_TAG, tagsListBuilder.build())
-          .put(COL_ADMIN_DISTANCE, adminDistanceListBuilder.build())
-          .put(COL_METRIC, metricListBuilder.build());
+          .put(COL_NEXT_HOP, nextHopsList)
+          .put(COL_NEXT_HOP_IP, nextHopsIpsList)
+          .put(COL_PROTOCOL, protocolsList)
+          .put(COL_TAG, tagsList)
+          .put(COL_ADMIN_DISTANCE, adminDistancesList)
+          .put(COL_METRIC, metricsList);
       rows.add(rowBuilder.build());
     }
     return rows;
@@ -372,7 +372,7 @@ public class RoutesAnswerer extends Answerer {
   private static void addCommonTableColumnsAtEnd(
       ImmutableList.Builder<ColumnMetadata> columnBuilder) {
     columnBuilder.add(
-        new ColumnMetadata(COL_TAG, Schema.INTEGER, "Route tag", Boolean.FALSE, Boolean.TRUE));
+        new ColumnMetadata(COL_TAG, Schema.list(Schema.INTEGER), "Route tag", Boolean.FALSE, Boolean.TRUE));
   }
 
   /** Generate table columns that should be always present, at the start of table. */
@@ -388,7 +388,7 @@ public class RoutesAnswerer extends Answerer {
     columnBuilder.add(
         new ColumnMetadata(
             COL_NEXT_HOP,
-            Schema.STRING,
+            Schema.list(Schema.STRING),
             "Route's next hop (as node hostname)",
             Boolean.FALSE,
             Boolean.TRUE));
@@ -402,7 +402,7 @@ public class RoutesAnswerer extends Answerer {
     columnBuilder.add(
         new ColumnMetadata(
             COL_PROTOCOL,
-            Schema.STRING,
+            Schema.list(Schema.STRING),
             "Protocols of all routes for this prefix",
             Boolean.FALSE,
             Boolean.TRUE));
