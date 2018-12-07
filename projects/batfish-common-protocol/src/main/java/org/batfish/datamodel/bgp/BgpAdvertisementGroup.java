@@ -54,7 +54,7 @@ public final class BgpAdvertisementGroup implements Serializable {
 
     private Ip _txPeer;
 
-    public Builder() {
+    private Builder() {
       _description = "";
       _extendedCommunities = ImmutableSet.of();
       _localPreference = DEFAULT_LOCAL_PREFERENCE;
@@ -297,29 +297,6 @@ public final class BgpAdvertisementGroup implements Serializable {
     _txPeer = txPeer;
   }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof BgpAdvertisementGroup)) {
-      return false;
-    }
-    BgpAdvertisementGroup rhs = (BgpAdvertisementGroup) obj;
-    return _asPath.equals(rhs._asPath)
-        && _description.equals(rhs._description)
-        && _extendedCommunities.equals(rhs._extendedCommunities)
-        && _localPreference == rhs._localPreference
-        && _med == rhs._med
-        && _originator.equals(rhs._originator)
-        && _originType == rhs._originType
-        && _prefixes.equals(rhs._prefixes)
-        && _rxPeer.equals(rhs._rxPeer)
-        && _standardCommunities.equals(rhs._standardCommunities)
-        && Objects.equals(_txAs, rhs._txAs)
-        && _txPeer.equals(rhs._txPeer);
-  }
-
   /** The AS path attribute of the BGP advertisements in this group. */
   @JsonProperty(PROP_AS_PATH)
   public @Nonnull AsPath getAsPath() {
@@ -397,7 +374,7 @@ public final class BgpAdvertisementGroup implements Serializable {
   }
 
   /**
-   * The AS number of the traensmitting peer. Only needs to be supplied if needed to uniquely
+   * The AS number of the transmitting peer. Only needs to be supplied if needed to uniquely
    * determine remote AS used by transmitting peer for a dynamic session configured on the receiving
    * peer that allows a range of AS numbers on the remote end.
    */
@@ -411,6 +388,29 @@ public final class BgpAdvertisementGroup implements Serializable {
    */
   public @Nonnull Ip getTxPeer() {
     return _txPeer;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof BgpAdvertisementGroup)) {
+      return false;
+    }
+    BgpAdvertisementGroup rhs = (BgpAdvertisementGroup) obj;
+    return _asPath.equals(rhs._asPath)
+        && _description.equals(rhs._description)
+        && _extendedCommunities.equals(rhs._extendedCommunities)
+        && _localPreference == rhs._localPreference
+        && _med == rhs._med
+        && _originator.equals(rhs._originator)
+        && _originType == rhs._originType
+        && _prefixes.equals(rhs._prefixes)
+        && _rxPeer.equals(rhs._rxPeer)
+        && _standardCommunities.equals(rhs._standardCommunities)
+        && Objects.equals(_txAs, rhs._txAs)
+        && _txPeer.equals(rhs._txPeer);
   }
 
   @Override
