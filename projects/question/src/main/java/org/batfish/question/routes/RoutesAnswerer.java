@@ -2,6 +2,7 @@ package org.batfish.question.routes;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.question.routes.RouteAnswererUtil.groupRoutesByPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -9,11 +10,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -195,9 +199,57 @@ public class RoutesAnswerer extends Answerer {
         .collect(toImmutableList());
   }
 
+  /** Convert a {@link Set} of {@link AbstractRoute} into a list of rows. */
+  @Nonnull
+  private static List<Row> getRowsForAbstractRoutesTest(
+      String node,
+      String vrfName,
+      @Nullable Prefix network,
+      Pattern compiledProtocolRegex,
+      Set<AbstractRoute> routes,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
+    Node nodeObj = new Node(node);
+    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByPrefix =
+        groupRoutesByPrefix(node, vrfName, routes, ipOwners, network, compiledProtocolRegex);
+    List<Row> rows = new ArrayList<>();
+
+    for (Entry<RouteRowKey, SortedSet<RouteRowAttribute>> entry :
+        routesGroupedByPrefix.entrySet()) {
+      Row.RowBuilder rowBuilder = Row.builder();
+      rowBuilder
+          .put(COL_NODE, nodeObj)
+          .put(COL_VRF_NAME, vrfName)
+          .put(COL_NETWORK, entry.getKey().getPrefix());
+
+      ImmutableList.Builder<String> nextHopsListBuilder = ImmutableList.builder();
+      ImmutableList.Builder<Ip> nextHopsIpsListBuilder = ImmutableList.builder();
+      ImmutableList.Builder<String> protocolsListBuilder = ImmutableList.builder();
+      ImmutableList.Builder<Integer> tagsListBuilder = ImmutableList.builder();
+      ImmutableList.Builder<Integer> adminDistanceListBuilder = ImmutableList.builder();
+      ImmutableList.Builder<Long> metricListBuilder = ImmutableList.builder();
+
+      for (RouteRowAttribute routeRowAttribute : entry.getValue()) {
+        nextHopsListBuilder.add(routeRowAttribute.getNextHop());
+        nextHopsIpsListBuilder.add(routeRowAttribute.getNextHopIp());
+        protocolsListBuilder.add(routeRowAttribute.getProtocol());
+        tagsListBuilder.add(routeRowAttribute.getTag());
+        adminDistanceListBuilder.add(routeRowAttribute.getAdminDistance());
+        metricListBuilder.add(routeRowAttribute.getMetric());
+      }
+      rowBuilder
+          .put(COL_NEXT_HOP, nextHopsListBuilder.build())
+          .put(COL_NEXT_HOP_IP, nextHopsIpsListBuilder.build())
+          .put(COL_PROTOCOL, protocolsListBuilder.build())
+          .put(COL_TAG, tagsListBuilder.build())
+          .put(COL_ADMIN_DISTANCE, adminDistanceListBuilder.build())
+          .put(COL_METRIC, metricListBuilder.build());
+      rows.add(rowBuilder.build());
+    }
+    return rows;
+  }
+
   /** Compute the next hop node for a given next hop IP. */
   @Nullable
-  @VisibleForTesting
   static String computeNextHopNode(
       @Nullable Ip nextHopIp, @Nullable Map<Ip, Set<String>> ipOwners) {
     if (nextHopIp == null || ipOwners == null) {
@@ -261,26 +313,37 @@ public class RoutesAnswerer extends Answerer {
       case BGPMP:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(COL_AS_PATH, Schema.STRING, "AS path", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(COL_METRIC, Schema.INTEGER, "Metric", Boolean.FALSE, Boolean.TRUE));
+                COL_AS_PATH,
+                Schema.list(Schema.STRING),
+                "AS paths of routes for this prefix",
+                Boolean.FALSE,
+                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_LOCAL_PREF, Schema.INTEGER, "Local Preference", Boolean.FALSE, Boolean.TRUE));
+                COL_METRIC,
+                Schema.list(Schema.INTEGER),
+                "Metrics of routes for this prefix",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_LOCAL_PREF,
+                Schema.list(Schema.INTEGER),
+                "Local Preferences of routes for this prefix",
+                Boolean.FALSE,
+                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_COMMUNITIES,
-                Schema.list(Schema.STRING),
-                "BGP communities",
+                Schema.list(Schema.list(Schema.STRING)),
+                "List list of BGP communities of routes for this prefix",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_ORIGIN_PROTOCOL,
-                Schema.STRING,
-                "Origin protocol",
+                Schema.list(Schema.STRING),
+                "Origin protocols of routes for this prefix",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
@@ -288,24 +351,18 @@ public class RoutesAnswerer extends Answerer {
       default:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_NEXT_HOP,
-                Schema.STRING,
-                "Route's next hop (as node hostname)",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
                 COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's admin distance",
+                Schema.list(Schema.INTEGER),
+                "Admin distances of routes for this prefix",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's metric", Boolean.FALSE, Boolean.TRUE));
+                COL_METRIC,
+                Schema.list(Schema.INTEGER),
+                "Metrics of routes for this prefix",
+                Boolean.FALSE,
+                Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");
@@ -330,6 +387,24 @@ public class RoutesAnswerer extends Answerer {
             COL_NETWORK, Schema.PREFIX, "Route network (prefix)", Boolean.TRUE, Boolean.TRUE));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_PROTOCOL, Schema.STRING, "Route protocol", Boolean.FALSE, Boolean.TRUE));
+            COL_NEXT_HOP,
+            Schema.STRING,
+            "Route's next hop (as node hostname)",
+            Boolean.FALSE,
+            Boolean.TRUE));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_NEXT_HOP_IP,
+            Schema.list(Schema.IP),
+            "Next Hop IPs for the given prefix",
+            Boolean.FALSE,
+            Boolean.TRUE));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_PROTOCOL,
+            Schema.STRING,
+            "Protocols of all routes for this prefix",
+            Boolean.FALSE,
+            Boolean.TRUE));
   }
 }
