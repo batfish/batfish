@@ -49,6 +49,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
@@ -551,5 +552,28 @@ public class TracerouteEngineImplTest {
     assertThat(
         getFinalActionForDisposition(NEIGHBOR_UNREACHABLE),
         equalTo(StepAction.NEIGHBOR_UNREACHABLE));
+  }
+
+  @Test
+  public void testApplyPreSourceNatFilter() {
+    IpAccessList.builder().setName("preSourceFilter")
+        .setLines(
+            ImmutableList.of()
+        );
+
+    Flow flow = makeFlow();
+
+    Step step =
+        TracerouteEngineImplContext.
+        applyPreSourceNatFilter(
+            flow,
+            currentNodeName,
+            inputIfaceName,
+            outgoingInterface.getName(),
+            filter,
+            transmissionContext._aclDefinitions,
+            transmissionContext._namedIpSpaces);
+
+    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
   }
 }
