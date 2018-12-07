@@ -2506,7 +2506,7 @@ public class VirtualRouter implements Serializable {
    * @return A sorted map of neighbor prefixes to links to which they correspond
    */
   @Nullable
-  List<OspfEdge> getOspfNeighbors(final Map<String, Node> allNodes, Topology topology) {
+  private List<OspfEdge> getOspfNeighbors(final Map<String, Node> allNodes, Topology topology) {
     // Check we have ospf process
     OspfProcess proc = _vrf.getOspfProcess();
     if (proc == null) {
@@ -2522,7 +2522,7 @@ public class VirtualRouter implements Serializable {
 
     ImmutableList.Builder<OspfEdge> neighbors = ImmutableList.builder();
     for (Edge edge : edges) {
-      if (!edge.getNode1().equals(node)) {
+      if (!edge.getNode1().equals(node) || !edges.contains(edge.reverse())) {
         continue;
       }
       Interface localInterface = _vrf.getInterfaces().get(edge.getInt1());
