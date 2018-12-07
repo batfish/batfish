@@ -35,6 +35,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return wildcard;
   }
 
+  /** Parse a {@link Prefix} from a string. */
   @Nonnull
   @JsonCreator
   public static Prefix parse(@Nullable String text) {
@@ -53,6 +54,11 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return new Prefix(ip, prefixLength);
   }
 
+  /**
+   * Parse a {@link Prefix} from a string.
+   *
+   * @throws IllegalArgumentException if the string does not represent a prefix in canonical form.
+   */
   public static @Nonnull Prefix strict(String prefixStr) {
     Prefix prefix = parse(prefixStr);
     checkArgument(prefix.toString().equals(prefixStr), "Non-canonical prefix: %s", prefixStr);
