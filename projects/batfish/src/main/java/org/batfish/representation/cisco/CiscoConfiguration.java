@@ -2071,10 +2071,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return null;
     }
 
-    // only standard ACLs are allowed
+    // Cisco only supports standard ACLs for dynamic NAT
+    // Arista supports extended ACLs for dynamic NAT, but only SOURCE_INSIDE is supported for ARISTA
     StandardAccessList stdAcl = _standardAccessLists.get(natAclName);
-    if (stdAcl == null) {
-      // Configuration has an invalid reference
+    ExtendedAccessList extdAcl = _extendedAccessLists.get(natAclName);
+    if (stdAcl == null && (_vendor != ConfigurationFormat.ARISTA || extdAcl == null)) {
+      // Invalid reference
+      return null;
+    }
+    if (action == RuleAction.DESTINATION_INSIDE && _vendor == ConfigurationFormat.ARISTA) {
+      // Not supported
       return null;
     }
     String natPoolName = dynamicNat.getNatPool();
@@ -2375,7 +2381,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         new TransformationList(
             egressNats
                 .stream()
-                .map(nat -> processNat(c, nat, ipAccessLists, null, Direction.EGRESS))
+                .map(nat -> processNat(c, nat, ipAccessLists, getNatInside(), Direction.EGRESS))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     if (!egressList.getTransformations().isEmpty()) {
@@ -2388,7 +2394,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             ingressNats
                 .stream()
                 .filter(nat -> nat instanceof CiscoStaticNat)
-                .map(nat -> processNat(c, nat, ipAccessLists, getNatInside(), Direction.INGRESS))
+                .map(nat -> processNat(c, nat, ipAccessLists, null, Direction.INGRESS))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     if (!ingressList.getTransformations().isEmpty()) {
