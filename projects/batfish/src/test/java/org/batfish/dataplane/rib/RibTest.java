@@ -71,7 +71,6 @@ public class RibTest {
   @Test
   public void testNonForwardingIsNotRoutable() {
     Rib rib = new Rib();
-    // Identical routes should be equally preferred
     StaticRoute.Builder sb =
         StaticRoute.builder()
             .setNextHopInterface("foo")
@@ -85,7 +84,6 @@ public class RibTest {
   @Test
   public void testNonForwardingMatchesNothing() {
     Rib rib = new Rib();
-    // Identical routes should be equally preferred
     StaticRoute.Builder sb =
         StaticRoute.builder().setNextHopInterface("foo").setAdministrativeCost(100);
     Prefix prefix1 = Prefix.parse("1.0.0.0/8");
