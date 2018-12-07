@@ -35,11 +35,7 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
     private @Nullable String _filter;
 
     private PreSourceNatOutgoingFilterStepDetail(
-        String node,
-        String inInterface,
-        String outInterface,
-        @Nullable String filter
-        ) {
+        String node, String inInterface, String outInterface, @Nullable String filter) {
       _node = node;
       _inputInterface = inInterface;
       _outputInterface = outInterface;
@@ -51,16 +47,14 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
         @JsonProperty(PROP_NODE) @Nonnull String node,
         @JsonProperty(PROP_INPUT_INTERFACE) @Nonnull String inInterface,
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nonnull String outInterface,
-        @JsonProperty(PROP_FILTER) @Nullable String filter
-) {
+        @JsonProperty(PROP_FILTER) @Nullable String filter) {
       checkArgument(
           node != null && inInterface != null && outInterface != null,
           "Missing one of %s, %s, %s",
           PROP_NODE,
           PROP_INPUT_INTERFACE,
           PROP_OUTPUT_INTERFACE);
-      return new PreSourceNatOutgoingFilterStepDetail(
-          node, inInterface, outInterface, filter);
+      return new PreSourceNatOutgoingFilterStepDetail(node, inInterface, outInterface, filter);
     }
 
     @JsonProperty(PROP_NODE)
@@ -126,10 +120,7 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
         return this;
       }
 
-      /**
-       * Only for use by {@link
-       * PreSourceNatOutgoingFilterStepDetail#builder()}.
-       */
+      /** Only for use by {@link PreSourceNatOutgoingFilterStepDetail#builder()}. */
       private Builder() {}
     }
   }
@@ -169,8 +160,7 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
 
   @JsonCreator
   private static PreSourceNatOutgoingFilterStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL)
-          PreSourceNatOutgoingFilterStepDetail detail,
+      @Nullable @JsonProperty(PROP_DETAIL) PreSourceNatOutgoingFilterStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
@@ -178,8 +168,7 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
   }
 
   private PreSourceNatOutgoingFilterStep(
-      PreSourceNatOutgoingFilterStepDetail detail,
-      StepAction action) {
+      PreSourceNatOutgoingFilterStepDetail detail, StepAction action) {
     super(detail, action);
   }
 }

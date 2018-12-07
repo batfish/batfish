@@ -336,7 +336,6 @@ public class TracerouteEngineImplContext {
     }
   }
 
-
   private boolean processFlowTransmission(
       String currentNodeName,
       @Nullable String srcInterface,
