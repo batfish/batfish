@@ -358,7 +358,7 @@ public class VirtualRouter implements Serializable {
         _ospfExternalIncomingRoutes =
             _ospfNeighbors
                 .stream()
-                .map(OspfEdge::swap)
+                .map(OspfEdge::reverse)
                 .collect(
                     ImmutableSortedMap
                         .<OspfEdge, OspfEdge, Queue<RouteAdvertisement<OspfExternalRoute>>>
