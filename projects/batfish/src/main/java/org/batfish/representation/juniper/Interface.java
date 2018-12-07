@@ -32,6 +32,8 @@ public class Interface implements Serializable {
       return 1E8;
     } else if (name.startsWith("irb")) {
       return 1E9;
+    } else if (name.startsWith("et")) {
+      return 1E11;
     } else {
       return 1E12;
     }
@@ -302,7 +304,7 @@ public class Interface implements Serializable {
     _additionalArpIps = ImmutableSet.copyOf(additionalArpIps);
   }
 
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(double bandwidth) {
     _bandwidth = bandwidth;
   }
 

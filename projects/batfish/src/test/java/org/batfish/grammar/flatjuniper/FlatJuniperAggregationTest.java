@@ -1,11 +1,18 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.SortedMap;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Topology;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -29,8 +36,15 @@ public class FlatJuniperAggregationTest {
                 .setConfigurationText(SNAPSHOT_PATH, Arrays.asList("ae1", "ae2"))
                 .build(),
             _folder);
-    batfish.loadConfigurations();
+    SortedMap<String, Configuration> configs = batfish.loadConfigurations();
     Topology t = batfish.getEnvironmentTopology();
+    // Ensure port channel members and bandwidth is setup correctly for the logical ae1.0/ae1.1
+    // interfaces
+    assertThat(configs.get("ae1"), hasInterface("ae1.0", hasBandwidth(1e9)));
+    assertThat(configs.get("ae1"), hasInterface("ae1.1", hasBandwidth(1e9)));
+    assertThat(
+        configs.get("ae1").getAllInterfaces().get("ae1").getDependencies(),
+        contains(new Dependency("ge-0/0/0", DependencyType.AGGREGATE)));
     assertThat(
         t.getEdges(),
         containsInAnyOrder(

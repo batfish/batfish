@@ -4,8 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +55,7 @@ public abstract class PropertySpecifier {
       @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
-    List<AutocompleteSuggestion> suggestions = new LinkedList<>();
+    ImmutableList.Builder<AutocompleteSuggestion> suggestions = new ImmutableList.Builder<>();
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
     Pattern queryPattern = safeGetPattern(queryWithStars);
 
@@ -64,25 +64,14 @@ public abstract class PropertySpecifier {
      * match anything as string.contains or regex.matches; so we skip formalities altogether
      */
     if (queryPattern != null) {
-      // 1. check if the pattern matches anything
-      List<AutocompleteSuggestion> propertySuggestions =
+      suggestions.addAll(
           allProperties
               .stream()
               .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
               .map(prop -> new AutocompleteSuggestion(prop, false))
-              .collect(Collectors.toList());
-
-      // 2. if it did, add the pattern itself as the first suggestion
-      if (!propertySuggestions.isEmpty()) {
-        suggestions.add(
-            new AutocompleteSuggestion(
-                queryWithStars, false, "All properties matching regex " + queryWithStars));
-      }
-
-      // 3. then add the concrete suggestions
-      suggestions.addAll(propertySuggestions);
+              .collect(Collectors.toList()));
     }
-    return suggestions;
+    return suggestions.build();
   }
 
   /** Converts {@code propertyValue} to {@code targetSchema} if needed */

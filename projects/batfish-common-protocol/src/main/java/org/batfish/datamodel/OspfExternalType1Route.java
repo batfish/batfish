@@ -11,7 +11,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  public OspfExternalType1Route(
+  private static OspfExternalType1Route jsonCreator(
       @JsonProperty(PROP_NETWORK) Prefix prefix,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
@@ -20,7 +20,41 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       @JsonProperty(PROP_AREA) long area,
       @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser,
       @JsonProperty(PROP_ADVERTISER) String advertiser) {
-    super(prefix, nextHopIp, admin, metric, lsaMetric, area, advertiser, costToAdvertiser);
+    return new OspfExternalType1Route(
+        prefix,
+        nextHopIp,
+        admin,
+        metric,
+        lsaMetric,
+        area,
+        costToAdvertiser,
+        advertiser,
+        false,
+        false);
+  }
+
+  OspfExternalType1Route(
+      Prefix prefix,
+      Ip nextHopIp,
+      int admin,
+      long metric,
+      long lsaMetric,
+      long area,
+      long costToAdvertiser,
+      String advertiser,
+      boolean nonForwarding,
+      boolean nonRouting) {
+    super(
+        prefix,
+        nextHopIp,
+        admin,
+        metric,
+        lsaMetric,
+        area,
+        advertiser,
+        costToAdvertiser,
+        nonForwarding,
+        nonRouting);
   }
 
   @Override

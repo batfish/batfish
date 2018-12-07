@@ -2,11 +2,13 @@ package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.getSpecifiedFilters;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
@@ -39,6 +41,8 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.FilterLineReachabilityRows;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -159,6 +163,31 @@ public class FilterLineReachabilityAnswererTest {
         equalTo(
             ImmutableList.of(
                 ImmutableSet.of("acl0"), ImmutableSet.of("acl0"), ImmutableSet.of("acl0"))));
+  }
+
+  @Test
+  public void testIgnoreGeneratedFilters() {
+    // generate unreachable
+    IpAccessList aclGenerated =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
+            .setName("~aclGenerated")
+            .build();
+
+    SpecifierContext ctxt =
+        MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c1", _c1)).build();
+
+    // we should get an empty set when we are ignoring generated filters
+    assertThat(
+        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, true), ctxt),
+        equalTo(ImmutableMap.of("c1", ImmutableSet.of())));
+
+    // we should get the one acl we put in otherwise
+    assertThat(
+        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, false), ctxt),
+        equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated))));
   }
 
   @Test

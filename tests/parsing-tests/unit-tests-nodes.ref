@@ -16190,7 +16190,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10"
             ],
@@ -16216,7 +16216,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E11,
             "declaredNames" : [
               "et-0/0/10.0"
             ],
@@ -16433,7 +16433,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 0.0,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "ae0.0"
             ],
@@ -16451,7 +16451,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
-            "vrf" : "SOME_INSTANCE"
+            "vrf" : "default"
           },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
@@ -16479,6 +16479,32 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "ge-0/0/1" : {
+            "name" : "ge-0/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "SOME_INSTANCE"
+          },
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
             "accessVlan" : 0,
@@ -16504,6 +16530,240 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-2/0/0" : {
+            "name" : "ge-2/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-2/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-2/0/0.0" : {
+            "name" : "ge-2/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5.0,
+            "declaredNames" : [
+              "ge-2/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-2/0/0.1" : {
+            "name" : "ge-2/0/0.1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1920.0,
+            "declaredNames" : [
+              "ge-2/0/0.1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-3/0/0" : {
+            "name" : "ge-3/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-3/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-3/0/0.0" : {
+            "name" : "ge-3/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5000.0,
+            "declaredNames" : [
+              "ge-3/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-4/0/0" : {
+            "name" : "ge-4/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-4/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-4/0/0.0" : {
+            "name" : "ge-4/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5000000.0,
+            "declaredNames" : [
+              "ge-4/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-5/0/0" : {
+            "name" : "ge-5/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-5/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-5/0/0.0" : {
+            "name" : "ge-5/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 5.0E9,
+            "declaredNames" : [
+              "ge-5/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
             "vrf" : "default"
           },
           "irb" : {
@@ -16712,15 +16972,25 @@
           "SOME_INSTANCE" : {
             "name" : "SOME_INSTANCE",
             "interfaces" : [
-              "ae0.0"
+              "ge-0/0/1"
             ]
           },
           "default" : {
             "name" : "default",
             "interfaces" : [
               "ae0",
+              "ae0.0",
               "ge-0/0/0",
               "ge-1/0/0",
+              "ge-2/0/0",
+              "ge-2/0/0.0",
+              "ge-2/0/0.1",
+              "ge-3/0/0",
+              "ge-3/0/0.0",
+              "ge-4/0/0",
+              "ge-4/0/0.0",
+              "ge-5/0/0",
+              "ge-5/0/0.0",
               "irb",
               "irb.5",
               "xe-0/0/0:0",
@@ -16931,6 +17201,92 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ge-0/0/0" : {
+            "name" : "ge-0/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/0.0" : {
+            "name" : "ge-0/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.0.0.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.0"
+            ],
+            "destinationNats" : [
+              {
+                "acl" : {
+                  "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
+                  "lines" : [
+                    {
+                      "action" : "PERMIT",
+                      "matchCondition" : {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "dstIps" : {
+                            "class" : "org.batfish.datamodel.IpSpaceReference",
+                            "name" : "NAME"
+                          },
+                          "negate" : false,
+                          "srcIps" : {
+                            "class" : "org.batfish.datamodel.IpSpaceReference",
+                            "name" : "SA-NAME"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "poolIpFirst" : "10.10.10.0",
+                "poolIpLast" : "10.10.10.255"
+              }
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.0.0.1/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -16966,7 +17322,11 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "interfaces" : [
+              "ge-0/0/0",
+              "ge-0/0/0.0"
+            ]
           }
         }
       },
@@ -17885,6 +18245,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17909,6 +18273,10 @@
                     "name" : "~CONTRIBUTOR_TO_20.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17933,6 +18301,10 @@
                     "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           },
@@ -17959,23 +18331,12 @@
                 }
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Comment",
+                "comment" : "Undefined reference to: AGGREGATE_ROUTE_POLICY"
               }
             ]
           },
@@ -18000,6 +18361,10 @@
                     "name" : "~CONTRIBUTOR_TO_10.0.1.0/24~"
                   }
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
               }
             ]
           }
