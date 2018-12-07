@@ -51,7 +51,7 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
-  private static final String COL_HEADER_SPACE = "Header_Space";
+  public static final String COL_HEADER_SPACE = "Header_Space";
   private TableAnswerElement _tableAnswerElement;
 
   public SearchFiltersAnswerer(Question question, IBatfish batfish) {
