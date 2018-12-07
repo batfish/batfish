@@ -20,6 +20,8 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -30,27 +32,43 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
@@ -85,6 +103,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
+import org.batfish.representation.palo_alto.CryptoProfile;
+import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -101,6 +121,8 @@ import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
+
+  private CryptoProfile _currentCrytoProfile;
 
   private String _currentDeviceName;
 
@@ -151,6 +173,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
+  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
+    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
+  }
+
+  private <T, U extends T> T convProblem(
+      Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
+    _w.redFlag(convErrorMessage(returnType, ctx));
+    return defaultReturnValue;
+  }
+
   /** Mark the specified structure as defined on each line in the supplied context */
   private void defineStructure(StructureType type, String name, RuleContext ctx) {
     /* Recursively process children to find all relevant definition lines for the specified context */
@@ -181,8 +213,80 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return unquote(ctx.getText());
   }
 
+  private DiffieHellmanGroup toDiffieHellmanGroup(Cp_dh_groupContext ctx) {
+    if (ctx.GROUP1() != null) {
+      return DiffieHellmanGroup.GROUP1;
+    } else if (ctx.GROUP2() != null) {
+      return DiffieHellmanGroup.GROUP2;
+    } else if (ctx.GROUP5() != null) {
+      return DiffieHellmanGroup.GROUP5;
+    } else if (ctx.GROUP14() != null) {
+      return DiffieHellmanGroup.GROUP14;
+    } else if (ctx.GROUP19() != null) {
+      return DiffieHellmanGroup.GROUP19;
+    } else if (ctx.GROUP20() != null) {
+      return DiffieHellmanGroup.GROUP20;
+    } else {
+      return convProblem(DiffieHellmanGroup.class, ctx, null);
+    }
+  }
+
+  private EncryptionAlgorithm toEncryptionAlgo(Cp_encryption_algoContext ctx) {
+    if (ctx.AES_128_CBC() != null) {
+      return EncryptionAlgorithm.AES_128_CBC;
+    } else if (ctx.AES_128_GCM() != null) {
+      return EncryptionAlgorithm.AES_128_GCM;
+    } else if (ctx.AES_192_CBC() != null) {
+      return EncryptionAlgorithm.AES_192_CBC;
+    } else if (ctx.AES_256_CBC() != null) {
+      return EncryptionAlgorithm.AES_256_CBC;
+    } else if (ctx.AES_256_GCM() != null) {
+      return EncryptionAlgorithm.AES_256_GCM;
+    } else if (ctx.DES() != null) {
+      return EncryptionAlgorithm.DES_CBC;
+    } else if (ctx.THREE_DES() != null) {
+      return EncryptionAlgorithm.THREEDES_CBC;
+    } else if (ctx.NULL() != null) {
+      return EncryptionAlgorithm.NULL;
+    }
+    return convProblem(EncryptionAlgorithm.class, ctx, null);
+  }
+
+  private IkeHashingAlgorithm toIkeHashingAlgorithm(Cp_hashContext ctx) {
+    if (ctx.MD5() != null) {
+      return IkeHashingAlgorithm.MD5;
+    } else if (ctx.SHA1() != null) {
+      return IkeHashingAlgorithm.SHA1;
+    } else if (ctx.SHA256() != null) {
+      return IkeHashingAlgorithm.SHA_256;
+    } else if (ctx.SHA384() != null) {
+      return IkeHashingAlgorithm.SHA_384;
+    } else if (ctx.SHA512() != null) {
+      return IkeHashingAlgorithm.SHA_512;
+    }
+    return convProblem(IkeHashingAlgorithm.class, ctx, null);
+  }
+
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
+  }
+
+  private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
+      Cp_authenticationContext ctx) {
+    if (ctx.MD5() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_MD5_96;
+    } else if (ctx.SHA1() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
+    } else if (ctx.SHA256() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_SHA_256_128;
+    } else if (ctx.SHA384() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_SHA_384;
+    } else if (ctx.SHA512() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_SHA_512;
+    } else if (ctx.NONE() != null) {
+      return null;
+    }
+    return convProblem(IpsecAuthenticationAlgorithm.class, ctx, null);
   }
 
   /** Convert source or destination list item into an appropriate IpSpace */
@@ -212,6 +316,66 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       }
     }
     return text;
+  }
+
+  @Override
+  public void exitCp_authentication(Cp_authenticationContext ctx) {
+    if (_currentCrytoProfile.getType() == Type.IKE) {
+      _w.redFlag("'authentication' is illegal for ike-crypto-profile");
+      return;
+    }
+    IpsecAuthenticationAlgorithm algo = toIpsecAuthenticationAlgorithm(ctx);
+    if (algo != null) {
+      _currentCrytoProfile.setAuthAlgorithm(algo);
+    }
+  }
+
+  @Override
+  public void exitCp_dh_group(Cp_dh_groupContext ctx) {
+    if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
+      _w.redFlag("'dh-group' is illegal for global-proptect-app-crypto-profile");
+      return;
+    }
+    DiffieHellmanGroup dhGroup = toDiffieHellmanGroup(ctx);
+    if (dhGroup != null) {
+      _currentCrytoProfile.setDhGroup(dhGroup);
+    }
+  }
+
+  @Override
+  public void exitCp_encryption(Cp_encryptionContext ctx) {
+    List<EncryptionAlgorithm> algos =
+        ctx.algo.stream().map(this::toEncryptionAlgo).collect(Collectors.toList());
+    _currentCrytoProfile.setEncryptionAlgorithms(algos);
+  }
+
+  @Override
+  public void exitCp_hash(Cp_hashContext ctx) {
+    if (_currentCrytoProfile.getType() != Type.IKE) {
+      _w.redFlag("'hash' is illegal for non-Ike crypto profiles");
+      return;
+    }
+    IkeHashingAlgorithm algo = toIkeHashingAlgorithm(ctx);
+    if (algo != null) {
+      _currentCrytoProfile.setHashAlgorithm(algo);
+    }
+  }
+
+  @Override
+  public void exitCp_lifetime(Cp_lifetimeContext ctx) {
+    if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
+      _w.redFlag("'lifetime' is illegal for global-protect-app-crypto profile");
+      return;
+    }
+    int val = toInteger(ctx.val);
+    if (ctx.DAYS() != null) {
+      val *= 24 * 60 * 60;
+    } else if (ctx.HOURS() != null) {
+      val *= 60 * 60;
+    } else if (ctx.MINUTES() != null) {
+      val *= 60;
+    }
+    _currentCrytoProfile.setLifetimeSeconds(val);
   }
 
   @Override
@@ -253,8 +417,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSds_default_gateway(Sds_default_gatewayContext ctx) {
+    _configuration.setMgmtIfaceGateway(new Ip(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
   public void exitSds_hostname(Sds_hostnameContext ctx) {
     _configuration.setHostname(getText(ctx.name));
+  }
+
+  @Override
+  public void enterSds_ip_address(Sds_ip_addressContext ctx) {
+    _configuration.setMgmtIfaceAddress(new Ip(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void enterSds_netmask(Sds_netmaskContext ctx) {
+    _configuration.setMgmtIfaceNetmask(new Ip(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
@@ -316,6 +495,39 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSni_ethernet(Sni_ethernetContext ctx) {
     _currentParentInterface = null;
     _currentInterface = null;
+  }
+
+  @Override
+  public void enterSnicp_global_protect(Snicp_global_protectContext ctx) {
+    String name = ctx.name.getText();
+    _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
+  }
+
+  @Override
+  public void exitSnicp_global_protect(Snicp_global_protectContext ctx) {
+    _currentCrytoProfile = null;
+  }
+
+  @Override
+  public void enterSnicp_ike_crypto_profiles(Snicp_ike_crypto_profilesContext ctx) {
+    String name = ctx.name.getText();
+    _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IKE);
+  }
+
+  @Override
+  public void exitSnicp_ike_crypto_profiles(Snicp_ike_crypto_profilesContext ctx) {
+    _currentCrytoProfile = null;
+  }
+
+  @Override
+  public void enterSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
+    String name = ctx.name.getText();
+    _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IPSEC);
+  }
+
+  @Override
+  public void exitSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
+    _currentCrytoProfile = null;
   }
 
   @Override
