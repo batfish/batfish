@@ -3119,13 +3119,13 @@ public class FlatJuniperGrammarTest {
      * test from location lines -- it doesn't make sense to have more than one of these, but the
      * extraction supports it.
      */
-    assertThat(ruleSet.getFromLocation().getInterface(), equalTo("ge-0/0/0.0"));
-    assertThat(ruleSet.getFromLocation().getRoutingInstance(), equalTo("FROM-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getFromLocation().getInterface(), nullValue());
+    assertThat(ruleSet.getFromLocation().getRoutingInstance(), nullValue());
     assertThat(ruleSet.getFromLocation().getZone(), equalTo("FROM-ZONE"));
 
     // test to location lines
-    assertThat(ruleSet.getToLocation().getInterface(), equalTo("TO-INTERFACE"));
-    assertThat(ruleSet.getToLocation().getRoutingInstance(), equalTo("TO-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getToLocation().getInterface(), nullValue());
+    assertThat(ruleSet.getToLocation().getRoutingInstance(), nullValue());
     assertThat(ruleSet.getToLocation().getZone(), equalTo("TO-ZONE"));
 
     // test rules
