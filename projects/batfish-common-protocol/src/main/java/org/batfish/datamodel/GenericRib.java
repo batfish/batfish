@@ -18,14 +18,22 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
   int comparePreference(R lhs, R rhs);
 
   /**
-   * For each prefix appearing in a route in the RIB, get the IPs for which the longest-prefix match
-   * is a route of that prefix.
+   * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that
+   * prefix is the longest match in the RIB (among prefixes of forwarding routes).
+   *
+   * <p><strong>NOTE</strong>: this method only considers forwarding routes in the Rib, i.e. those
+   * for which {@link AbstractRoute#getNonForwarding()} returns false.
    */
   Map<Prefix, IpSpace> getMatchingIps();
 
   SortedSet<Prefix> getPrefixes();
 
-  /** Get all the IPs for which there is a matching route */
+  /**
+   * Get all the IPs that match a forwarding route in the RIB.
+   *
+   * <p><strong>NOTE</strong>: this method only considers forwarding routes in the Rib, i.e. those
+   * for which {@link AbstractRoute#getNonForwarding()} returns false.
+   */
   IpSpace getRoutableIps();
 
   /** Return a set of routes this RIB contains. */
