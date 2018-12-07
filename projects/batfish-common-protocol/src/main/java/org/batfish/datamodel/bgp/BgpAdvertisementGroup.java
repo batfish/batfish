@@ -56,9 +56,12 @@ public final class BgpAdvertisementGroup implements Serializable {
 
     public Builder() {
       _description = "";
+      _extendedCommunities = ImmutableSet.of();
       _localPreference = DEFAULT_LOCAL_PREFERENCE;
       _med = DEFAULT_MED;
+      _originType = DEFAULT_ORIGIN_TYPE;
       _prefixes = ImmutableSet.of();
+      _standardCommunities = ImmutableSet.of();
     }
 
     public @Nonnull BgpAdvertisementGroup build() {
