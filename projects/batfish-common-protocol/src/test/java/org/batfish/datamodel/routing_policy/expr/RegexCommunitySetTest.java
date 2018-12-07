@@ -5,12 +5,15 @@ import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchAnyCo
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchCommunities;
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchCommunity;
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchedCommunities;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.util.Set;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +24,15 @@ public class RegexCommunitySetTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testAsLiteralCommunities() {
+  public void testAsLiteralCommunitiesWithLiteral() {
+    RegexCommunitySet r = new RegexCommunitySet("1:23");
+    assertThat(
+        r.asLiteralCommunities(null),
+        equalTo(ImmutableSortedSet.of(CommonUtil.communityStringToLong("1:23"))));
+  }
+
+  @Test
+  public void testAsLiteralCommunitiesWithRegex() {
     RegexCommunitySet r = new RegexCommunitySet("^1:1$");
 
     _thrown.expect(UnsupportedOperationException.class);

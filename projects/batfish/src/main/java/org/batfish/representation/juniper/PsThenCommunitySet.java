@@ -32,12 +32,18 @@ public final class PsThenCommunitySet extends PsThen {
     if (namedList == null) {
       warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
     } else {
-      org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
-      // assuming this is a valid community list for setting, the regex value
-      // just retrieved should just be an explicit community
-      long community =
-          list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
-      statements.add(new SetCommunity(new LiteralCommunity(community)));
+      try {
+        org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
+        // assuming this is a valid community list for setting, the regex value
+        // just retrieved should just be an explicit community
+        long community =
+            list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
+        statements.add(new SetCommunity(new LiteralCommunity(community)));
+      } catch (Exception e) {
+        warnings.redFlag(
+            String.format("Ignored community '%s': %s", _name, e.getMessage()),
+            Warnings.TAG_RED_FLAG);
+      }
     }
   }
 
