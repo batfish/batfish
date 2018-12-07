@@ -3,8 +3,6 @@ package org.batfish.representation.juniper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-import com.google.common.collect.ImmutableList;
-import java.security.Provider;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -23,7 +21,7 @@ public class NatRuleSetTest {
         location.setRoutingInstance(String.format("RoutingInstance-%s", direction));
         break;
       default:
-          return;
+        return;
     }
   }
 

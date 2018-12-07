@@ -1358,14 +1358,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
             })
         .flatMap(
             ruleSet ->
-              ruleSet
-                  .getRules()
-                  .stream()
-                  .map(
-                      natRule ->
-                          toSourceNat(
-                              iface.getName(), ruleSet.getName(), pools, getAllInterfacesFromNatPacketLocation(ruleSet.getFromLocation()), natRule))
-            )
+                ruleSet
+                    .getRules()
+                    .stream()
+                    .map(
+                        natRule ->
+                            toSourceNat(
+                                iface.getName(),
+                                ruleSet.getName(),
+                                pools,
+                                getAllInterfacesFromNatPacketLocation(ruleSet.getFromLocation()),
+                                natRule)))
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
