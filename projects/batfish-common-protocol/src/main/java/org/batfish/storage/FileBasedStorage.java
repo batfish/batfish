@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.io.Closer;
+import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -802,6 +803,7 @@ public final class FileBasedStorage implements StorageProvider {
     Files.delete(objectPath);
   }
 
+  @MustBeClosed
   @Override
   public @Nonnull InputStream loadSnapshotInputObject(
       NetworkId networkId, SnapshotId snapshotId, String key)
