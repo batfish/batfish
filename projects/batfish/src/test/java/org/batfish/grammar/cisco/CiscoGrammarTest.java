@@ -272,13 +272,14 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -1276,7 +1277,13 @@ public class CiscoGrammarTest {
     // Check if routingPolicy accepts OSPF route and sets correct default metric
     assertTrue(
         routingPolicy.process(
-            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(Prefix.parse("4.4.4.4/32"))
+                .setAdmin(1)
+                .setMetric(1)
+                .setArea(1L)
+                .build(),
             outputRouteBuilder,
             null,
             DEFAULT_VRF_NAME,

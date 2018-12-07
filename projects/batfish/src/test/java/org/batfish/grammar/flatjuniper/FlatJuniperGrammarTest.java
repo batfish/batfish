@@ -1639,9 +1639,7 @@ public class FlatJuniperGrammarTest {
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
     eb.setVrf("vrf1");
     policyPreference.call(
-        eb.setOriginalRoute(staticRoute)
-            .setOutputRoute(new OspfExternalType2Route.Builder())
-            .build());
+        eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
     // Checking admin cost set on the output route
     assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
@@ -2748,7 +2746,7 @@ public class FlatJuniperGrammarTest {
         vrf1RejectAllLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2756,7 +2754,7 @@ public class FlatJuniperGrammarTest {
         vrf1RejectAllLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2766,7 +2764,7 @@ public class FlatJuniperGrammarTest {
         vrf2RejectPtpLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2774,7 +2772,7 @@ public class FlatJuniperGrammarTest {
         vrf2RejectPtpLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2784,7 +2782,7 @@ public class FlatJuniperGrammarTest {
         vrf3RejectLanLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2792,7 +2790,7 @@ public class FlatJuniperGrammarTest {
         vrf3RejectLanLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2802,7 +2800,7 @@ public class FlatJuniperGrammarTest {
         vrf4AllowAllLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2810,7 +2808,7 @@ public class FlatJuniperGrammarTest {
         vrf4AllowAllLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));

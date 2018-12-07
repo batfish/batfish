@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
@@ -273,16 +274,43 @@ public class AbstractRibTest {
     // Use OSPF RIBs for this, as routes with better metric can replace other routes
     OspfIntraAreaRib rib = new OspfIntraAreaRib();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
-    rib.mergeRouteGetDelta(new OspfIntraAreaRoute(prefix, null, 100, 30, 1));
+    rib.mergeRouteGetDelta(
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(prefix)
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(30)
+                .setArea(1L)
+                .build());
 
     assertThat(rib.getRoutes(), hasSize(1));
     // This new route replaces old route
-    OspfIntraAreaRoute newRoute = new OspfIntraAreaRoute(prefix, null, 100, 10, 1);
+    OspfIntraAreaRoute newRoute =
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(prefix)
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(10)
+                .setArea(1L)
+                .build();
     rib.mergeRouteGetDelta(newRoute);
     assertThat(rib.getRoutes(), contains(newRoute));
 
     // Add completely new route and check that the size increases
-    rib.mergeRouteGetDelta(new OspfIntraAreaRoute(Prefix.parse("2.2.2.2/32"), null, 100, 30, 1));
+    rib.mergeRouteGetDelta(
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(Prefix.parse("2.2.2.2/32"))
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(30)
+                .setArea(1L)
+                .build());
     assertThat(rib.getRoutes(), hasSize(2));
   }
 

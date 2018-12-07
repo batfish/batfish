@@ -990,8 +990,17 @@ public class WorkMgr extends AbstractCoordinator {
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
     for (String questionName : questions) {
-      result.put(
-          questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
+      try {
+        result.put(
+            questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
+      } catch (Exception e) {
+        _logger.errorf(
+            "Got exception in getAnalysisAnswers: %s\n", Throwables.getStackTraceAsString(e));
+        result.put(
+            questionName,
+            BatfishObjectMapper.mapper()
+                .writeValueAsString(Answer.failureAnswer(e.getMessage(), null)));
+      }
     }
     return result.build();
   }
@@ -1007,8 +1016,15 @@ public class WorkMgr extends AbstractCoordinator {
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
     for (String question : questions) {
-      result.put(
-          question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
+      try {
+        result.put(
+            question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
+      } catch (Exception e) {
+        _logger.errorf(
+            "Got exception in getAnalysisAnswersMetadata: %s\n",
+            Throwables.getStackTraceAsString(e));
+        result.put(question, AnswerMetadata.forStatus(AnswerStatus.FAILURE));
+      }
     }
     return result.build();
   }
