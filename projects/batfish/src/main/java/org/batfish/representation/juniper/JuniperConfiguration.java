@@ -1274,7 +1274,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
-        newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl.getName());
+        newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
       }
     }
     // TODO: remove this line after handling security policies in traceroute and reachability
