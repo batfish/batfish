@@ -111,6 +111,7 @@ public class ZipUtility {
     try (Closer closer = Closer.create()) {
       ByteArrayOutputStream baos = closer.register(new ByteArrayOutputStream());
       zipFolder(srcFolder.toString(), baos, closer);
+      baos.close();
       return new ByteArrayInputStream(baos.toByteArray());
     } catch (Exception e) {
       throw new BatfishException("Could not zip folder: '" + srcFolder + "'", e);

@@ -810,15 +810,9 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
-    if (Files.isDirectory(objectPath)) {
-      Path tmpZip = Files.createTempFile("fbs-lsip", ".zip");
-      ZipUtility.zipFiles(objectPath, tmpZip);
-      InputStream stream = Files.newInputStream(tmpZip);
-      Files.delete(tmpZip);
-      return stream;
-    } else {
-      return Files.newInputStream(objectPath);
-    }
+    return Files.isDirectory(objectPath)
+        ? ZipUtility.zipFilesToInputStream(objectPath)
+        : Files.newInputStream(objectPath);
   }
 
   @VisibleForTesting
