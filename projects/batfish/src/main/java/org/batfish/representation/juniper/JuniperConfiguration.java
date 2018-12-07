@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1328,55 +1327,71 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
 
-    newIface.setSourceNats(buildSourceNats(iface));
+    // extracting source nat
+    Nat snat = _masterLogicalSystem.getNatSource();
+    if (snat != null) {
+      Stream<NatRuleSet> ruleSetStream =
+          _masterLogicalSystem.getNatSource().getRuleSets().values().stream().sorted();
+      newIface.setSourceNats(buildSourceNats(iface, ruleSetStream));
+    }
 
     return newIface;
   }
 
-  List<SourceNat> buildSourceNats(Interface iface) {
-    Nat snat = _masterLogicalSystem.getNatSource();
-
-    if (snat == null) {
-      return ImmutableList.of();
-    }
-
+  List<SourceNat> buildSourceNats(Interface iface, Stream<NatRuleSet> orderedRuleSetStream) {
     String name = iface.getName();
     String zone =
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
             .map(Zone::getName)
             .orElse(null);
     String routingInstance = iface.getRoutingInstance();
+    Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
 
-    List<NatRuleSet> ifaceLocationRuleSetList = new ArrayList<>();
-    List<NatRuleSet> zoneLocationRuleSetList = new ArrayList<>();
-    List<NatRuleSet> routingInstanceLocationRuleSetList = new ArrayList<>();
+    // Stream<NatRuleSet> natRuleSetStream =
+    return orderedRuleSetStream
+        .filter(
+            ruleSet -> {
+              NatPacketLocation toLocation = ruleSet.getToLocation();
+              return name.equals(toLocation.getInterface())
+                  || (zone != null && zone.equals(toLocation.getZone()))
+                  || (routingInstance.equals(toLocation.getRoutingInstance()));
+            })
+        .flatMap(
+            ruleSet ->
+              ruleSet
+                  .getRules()
+                  .stream()
+                  .map(
+                      natRule ->
+                          toSourceNat(
+                              iface.getName(), ruleSet.getName(), pools, getAllInterfacesFromNatPacketLocation(ruleSet.getFromLocation()), natRule))
+            )
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
 
-    for (NatRuleSet ruleSet : snat.getRuleSets().values()) {
-      NatPacketLocation toLocation = ruleSet.getToLocation();
-      if (name.equals(toLocation.getInterface())) {
-        ifaceLocationRuleSetList.add(ruleSet);
-      } else if (zone != null && zone.equals(toLocation.getZone())) {
-        zoneLocationRuleSetList.add(ruleSet);
-      } else if (routingInstance.equals(toLocation.getRoutingInstance())) {
-        routingInstanceLocationRuleSetList.add(ruleSet);
+  private Set<String> getAllInterfacesFromNatPacketLocation(NatPacketLocation location) {
+    ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
+
+    if (location.getInterface() != null) {
+      builder.add(location.getInterface());
+    }
+    if (location.getZone() != null) {
+      Zone zone = _masterLogicalSystem.getZones().get(location.getZone());
+
+      if (zone != null) {
+        zone.getInterfaces().stream().map(Interface::getName).forEach(builder::add);
+      }
+    }
+    if (location.getRoutingInstance() != null) {
+      RoutingInstance ri =
+          _masterLogicalSystem.getRoutingInstances().get(location.getRoutingInstance());
+      if (ri != null) {
+        ri.getInterfaces().keySet().stream().forEach(builder::add);
       }
     }
 
-    Function<NatRuleSet, NatPacketLocation> getFromLocation = NatRuleSet::getFromLocation;
-    Comparator<NatRuleSet> comparing = Comparator.comparing(getFromLocation);
-    ifaceLocationRuleSetList.sort(comparing);
-    zoneLocationRuleSetList.sort(comparing);
-    routingInstanceLocationRuleSetList.sort(comparing);
-
-    List<SourceNat> ifaceLocationNats = toSourceNats(iface.getName(), ifaceLocationRuleSetList);
-    List<SourceNat> zoneLocationNats = toSourceNats(iface.getName(), zoneLocationRuleSetList);
-    List<SourceNat> routingInstanceLocationNats =
-        toSourceNats(iface.getName(), routingInstanceLocationRuleSetList);
-
-    return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
-        .filter(Objects::nonNull)
-        .flatMap(List::stream)
-        .collect(ImmutableList.toImmutableList());
+    return builder.build();
   }
 
   private List<DestinationNat> buildDestinationNats(Interface iface) {
@@ -1415,52 +1430,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return Stream.of(ifaceLocationNats, zoneLocationNats, routingInstanceLocationNats)
         .filter(Objects::nonNull)
         .flatMap(List::stream)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> orderedRulesetList) {
-    Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
-    return orderedRulesetList
-        .stream()
-        .flatMap(
-            ruleSet -> {
-              String fromInterface = ruleSet.getFromLocation().getInterface();
-              String fromZone = ruleSet.getFromLocation().getZone();
-              String fromRoutingInstance = ruleSet.getFromLocation().getRoutingInstance();
-
-              List<String> fromInterfaces = new ArrayList<>();
-              if (fromInterface != null) {
-                fromInterfaces.add(fromInterface);
-              }
-              if (fromZone != null) {
-                Zone zone = _masterLogicalSystem.getZones().get(fromZone);
-
-                if (zone != null) {
-                  zone.getInterfaces()
-                      .stream()
-                      .map(Interface::getName)
-                      .forEach(fromInterfaces::add);
-                }
-              }
-              if (fromRoutingInstance != null) {
-                RoutingInstance ri =
-                    _masterLogicalSystem
-                        .getRoutingInstances()
-                        .get(ruleSet.getFromLocation().getRoutingInstance());
-
-                if (ri != null) {
-                  ri.getInterfaces().keySet().stream().forEach(fromInterfaces::add);
-                }
-              }
-
-              return ruleSet
-                  .getRules()
-                  .stream()
-                  .map(
-                      natRule ->
-                          toSourceNat(
-                              ifaceName, ruleSet.getName(), pools, fromInterfaces, natRule));
-            })
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1509,7 +1478,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String ifaceName,
       String rulesetName,
       Map<String, NatPool> pools,
-      List<String> fromInterfaces,
+      Set<String> fromInterfaces,
       NatRule natRule) {
     SourceNat.Builder builder = SourceNat.builder();
 
