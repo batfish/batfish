@@ -1488,21 +1488,20 @@ public class VirtualRouter implements Serializable {
             return;
           }
 
-          OspfNode localOspfNode = ospfEdge.getNode2();
-          OspfNode neighborOspfNode = ospfEdge.getNode1();
-          assert localOspfNode.getNode().equals(node); // queue invariant of how we built the queue.
+          OspfNode localNode = ospfEdge.getNode2();
+          OspfNode neighborNode = ospfEdge.getNode1();
+          assert localNode.getNode().equals(node); // queue invariant of how we built the queue.
 
-          Interface localInterface = _vrf.getInterfaces().get(localOspfNode.getInterfaceName());
+          Interface localInterface = _vrf.getInterfaces().get(localNode.getInterfaceName());
           assert localInterface != null; // invariant of how routes are pushed into the queue.
           assert localInterface.getOspfArea() != null; // ^^.
           long localArea = localInterface.getOspfArea().getAreaNumber();
 
-          Node neighbor = allNodes.get(neighborOspfNode.getNode());
-          Configuration nc = neighbor.getConfiguration();
+          Node neighbor = allNodes.get(neighborNode.getNode());
           Interface neighborInterface =
-              nc.getAllInterfaces().get(neighborOspfNode.getInterfaceName());
-          VirtualRouter neighborVirtualRouter =
-              neighbor.getVirtualRouters().get(neighborInterface.getVrfName());
+              neighbor.getConfiguration().getAllInterfaces().get(neighborNode.getInterfaceName());
+          OspfProcess neighborProc = neighborInterface.getVrf().getOspfProcess();
+          assert neighborProc != null; // invariant of edge existing.
 
           /*
            * We have an ospf neighbor relationship on this edge. So we
@@ -1521,11 +1520,11 @@ public class VirtualRouter implements Serializable {
             RouteAdvertisement<OspfExternalRoute> routeAdvert = queue.remove();
             boolean withdraw = routeAdvert.isWithdrawn();
             OspfExternalRoute neighborRoute = routeAdvert.getRoute();
-            long neighborArea = neighborRoute.getArea();
+            long areaInRoute = neighborRoute.getArea();
             OspfExternalRoute.Builder newRouteB =
                 OspfExternalRoute.builder()
                     .setNetwork(neighborRoute.getNetwork())
-                    .setNextHopIp(neighborOspfNode.getLocalIp())
+                    .setNextHopIp(neighborNode.getLocalIp())
                     .setLsaMetric(neighborRoute.getLsaMetric())
                     .setAdvertiser(neighborRoute.getAdvertiser())
                     .setOspfMetricType(neighborRoute.getOspfMetricType())
@@ -1538,12 +1537,11 @@ public class VirtualRouter implements Serializable {
             if (neighborRoute instanceof OspfExternalType1Route) {
               long baseMetric = neighborRoute.getMetric();
               long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
-              if (neighborArea != OspfRoute.NO_AREA && localArea != neighborArea) {
-                if (localArea != 0L && neighborArea != 0L) {
+              if (areaInRoute != OspfRoute.NO_AREA && localArea != areaInRoute) {
+                if (localArea != 0L && areaInRoute != 0L) {
                   continue;
                 }
-                Long maxMetricSummaryNetworks =
-                    neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
+                Long maxMetricSummaryNetworks = neighborProc.getMaxMetricSummaryNetworks();
                 if (maxMetricSummaryNetworks != null) {
                   baseMetric = maxMetricSummaryNetworks + neighborRoute.getLsaMetric();
                   baseCostToAdvertiser = maxMetricSummaryNetworks;
@@ -1569,13 +1567,12 @@ public class VirtualRouter implements Serializable {
             } else if (neighborRoute instanceof OspfExternalType2Route) {
               long newArea;
               long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
-              if (neighborArea == OspfRoute.NO_AREA) {
+              if (areaInRoute == OspfRoute.NO_AREA) {
                 newArea = localArea;
               } else {
-                newArea = neighborArea;
-                Long maxMetricSummaryNetworks =
-                    neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
-                if (localArea != neighborArea && maxMetricSummaryNetworks != null) {
+                newArea = areaInRoute;
+                Long maxMetricSummaryNetworks = neighborProc.getMaxMetricSummaryNetworks();
+                if (localArea != areaInRoute && maxMetricSummaryNetworks != null) {
                   baseCostToAdvertiser = maxMetricSummaryNetworks;
                 }
               }
@@ -2556,18 +2553,25 @@ public class VirtualRouter implements Serializable {
       }
 
       OspfArea neighborArea = neighborInterface.getOspfArea();
-      if (neighborInterface.getOspfEnabled()
-          && !neighborInterface.getOspfPassive()
-          && neighborArea != null
-          && localArea.getAreaNumber() == neighborArea.getAreaNumber()) {
-        OspfNode localNode = new OspfNode(node, localInterface.getName(), localPrimary.getIp());
-        OspfNode neighborNode =
-            new OspfNode(
-                neighbor.getConfiguration().getHostname(),
-                neighborInterface.getName(),
-                neighborPrimary.getIp());
-        neighbors.add(new OspfEdge(localNode, neighborNode));
+      if (!neighborInterface.getOspfEnabled()
+          || neighborInterface.getOspfPassive()
+          || neighborArea == null) {
+        // Neighbor is not ospf-enabled.
+        continue;
       }
+
+      if (localArea.getAreaNumber() != neighborArea.getAreaNumber()) {
+        // Not in the same area.
+        continue;
+      }
+
+      OspfNode localNode = new OspfNode(node, localInterface.getName(), localPrimary.getIp());
+      OspfNode neighborNode =
+          new OspfNode(
+              neighbor.getConfiguration().getHostname(),
+              neighborInterface.getName(),
+              neighborPrimary.getIp());
+      neighbors.add(new OspfEdge(localNode, neighborNode));
     }
 
     return neighbors.build();
