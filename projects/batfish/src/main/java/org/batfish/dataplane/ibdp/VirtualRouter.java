@@ -1387,8 +1387,8 @@ public class VirtualRouter implements Serializable {
     return builtDeltas;
   }
 
-  public @Nullable Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> propagateIsisRoutes(
-      final Map<String, Node> nodes, NetworkConfigurations nc) {
+  @Nullable
+  Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> propagateIsisRoutes(NetworkConfigurations nc) {
     if (_vrf.getIsisProcess() == null) {
       return null;
     }
