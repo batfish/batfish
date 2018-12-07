@@ -1,11 +1,14 @@
 package org.batfish.bgp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,12 +27,6 @@ import org.batfish.datamodel.Prefix;
  */
 @ParametersAreNonnullByDefault
 public final class BgpAdvertisementGroup implements Serializable {
-
-  private static final long MAX_AS_NUMBER = 0xFFFFFFFFL;
-
-  private static final long MAX_LOCAL_PREFERENCE = 0xFFFFFFFFL;
-
-  private static final long MAX_MED = 0xFFFFFFFFL;
 
   public static final class Builder {
 
@@ -57,6 +54,13 @@ public final class BgpAdvertisementGroup implements Serializable {
 
     private Ip _txPeer;
 
+    public Builder() {
+      _description = "";
+      _localPreference = DEFAULT_LOCAL_PREFERENCE;
+      _med = DEFAULT_MED;
+      _prefixes = ImmutableSet.of();
+    }
+
     public @Nonnull BgpAdvertisementGroup build() {
       checkArgument(_asPath != null, "Missing %s", PROP_AS_PATH);
       checkArgument(!_prefixes.isEmpty(), "%s must be nonempty", PROP_PREFIXES);
@@ -75,13 +79,6 @@ public final class BgpAdvertisementGroup implements Serializable {
           _standardCommunities,
           _txAs,
           _txPeer);
-    }
-
-    public Builder() {
-      _description = "";
-      _localPreference = DEFAULT_LOCAL_PREFERENCE;
-      _med = DEFAULT_MED;
-      _prefixes = ImmutableSet.of();
     }
 
     public @Nonnull Builder setAsPath(@Nullable AsPath asPath) {
@@ -161,6 +158,12 @@ public final class BgpAdvertisementGroup implements Serializable {
 
   private static final OriginType DEFAULT_ORIGIN_TYPE = OriginType.INCOMPLETE;
 
+  private static final long MAX_AS_NUMBER = 0xFFFFFFFFL;
+
+  private static final long MAX_LOCAL_PREFERENCE = 0xFFFFFFFFL;
+
+  private static final long MAX_MED = 0xFFFFFFFFL;
+
   private static final String PROP_AS_PATH = "asPath";
 
   private static final String PROP_DESCRIPTION = "description";
@@ -191,6 +194,7 @@ public final class BgpAdvertisementGroup implements Serializable {
     return new Builder();
   }
 
+  @JsonCreator
   private static @Nonnull BgpAdvertisementGroup create(
       @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
@@ -290,6 +294,29 @@ public final class BgpAdvertisementGroup implements Serializable {
     _txPeer = txPeer;
   }
 
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof BgpAdvertisementGroup)) {
+      return false;
+    }
+    BgpAdvertisementGroup rhs = (BgpAdvertisementGroup) obj;
+    return _asPath.equals(rhs._asPath)
+        && _description.equals(rhs._description)
+        && _extendedCommunities.equals(rhs._extendedCommunities)
+        && _localPreference == rhs._localPreference
+        && _med == rhs._med
+        && _originator.equals(rhs._originator)
+        && _originType == rhs._originType
+        && _prefixes.equals(rhs._prefixes)
+        && _rxPeer.equals(rhs._rxPeer)
+        && _standardCommunities.equals(rhs._standardCommunities)
+        && Objects.equals(_txAs, rhs._txAs)
+        && _txPeer.equals(rhs._txPeer);
+  }
+
   /** The AS path attribute of the BGP advertisements in this group. */
   @JsonProperty(PROP_AS_PATH)
   public @Nonnull AsPath getAsPath() {
@@ -367,7 +394,7 @@ public final class BgpAdvertisementGroup implements Serializable {
   }
 
   /**
-   * The AS number of the transmitting peer. Only needs to be supplied if needed to uniquely
+   * The AS number of the traensmitting peer. Only needs to be supplied if needed to uniquely
    * determine remote AS used by transmitting peer for a dynamic session configured on the receiving
    * peer that allows a range of AS numbers on the remote end.
    */
@@ -381,5 +408,41 @@ public final class BgpAdvertisementGroup implements Serializable {
    */
   public @Nonnull Ip getTxPeer() {
     return _txPeer;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _asPath,
+        _description,
+        _extendedCommunities,
+        _localPreference,
+        _med,
+        _originator,
+        _originType.ordinal(),
+        _prefixes,
+        _rxPeer,
+        _standardCommunities,
+        _txAs,
+        _txPeer);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_AS_PATH, _asPath)
+        .add(PROP_DESCRIPTION, _description)
+        .add(PROP_EXTENDED_COMMUNITIES, _extendedCommunities)
+        .add(PROP_LOCAL_PREFERENCE, _localPreference)
+        .add(PROP_MED, _med)
+        .add(PROP_ORIGINATOR, _originator)
+        .add(PROP_ORIGIN_TYPE, _originType)
+        .add(PROP_PREFIXES, _prefixes)
+        .add(PROP_RX_PEER, _rxPeer)
+        .add(PROP_STANDARD_COMMUNITIES, _standardCommunities)
+        .add(PROP_TX_AS, _txAs)
+        .add(PROP_TX_PEER, _txPeer)
+        .toString();
   }
 }
