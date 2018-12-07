@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -304,10 +305,10 @@ public final class FileBasedStorageTest {
 
     InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "testkey");
 
-    Path tmpzip = Files.createTempFile("tmp", ".zip");
+    Path tmpzip = _folder.getRoot().toPath().resolve("tmp.zip");
     FileUtils.copyInputStreamToFile(inputStream, tmpzip.toFile());
 
-    Path unzipDir = Files.createTempDirectory("tmp");
+    Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
     UnzipUtility.unzip(tmpzip, unzipDir);
 
     // the top level entry in the zip should be testkey
