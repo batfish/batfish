@@ -1,8 +1,10 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -12,11 +14,13 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
@@ -272,16 +276,43 @@ public class AbstractRibTest {
     // Use OSPF RIBs for this, as routes with better metric can replace other routes
     OspfIntraAreaRib rib = new OspfIntraAreaRib();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
-    rib.mergeRouteGetDelta(new OspfIntraAreaRoute(prefix, null, 100, 30, 1));
+    rib.mergeRouteGetDelta(
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(prefix)
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(30)
+                .setArea(1L)
+                .build());
 
     assertThat(rib.getRoutes(), hasSize(1));
     // This new route replaces old route
-    OspfIntraAreaRoute newRoute = new OspfIntraAreaRoute(prefix, null, 100, 10, 1);
+    OspfIntraAreaRoute newRoute =
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(prefix)
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(10)
+                .setArea(1L)
+                .build();
     rib.mergeRouteGetDelta(newRoute);
     assertThat(rib.getRoutes(), contains(newRoute));
 
     // Add completely new route and check that the size increases
-    rib.mergeRouteGetDelta(new OspfIntraAreaRoute(Prefix.parse("2.2.2.2/32"), null, 100, 30, 1));
+    rib.mergeRouteGetDelta(
+        (OspfIntraAreaRoute)
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(Prefix.parse("2.2.2.2/32"))
+                .setNextHopIp(null)
+                .setAdmin(100)
+                .setMetric(30)
+                .setArea(1L)
+                .build());
     assertThat(rib.getRoutes(), hasSize(2));
   }
 
@@ -469,5 +500,57 @@ public class AbstractRibTest {
     // Check that clearing all routes works:
     _rib.clearRoutes(Prefix.parse("1.1.1.1/32"));
     assertThat(_rib.getRoutes(), hasSize(0));
+  }
+
+  @Test
+  public void testLengthLimit() {
+    StaticRoute.Builder builder =
+        StaticRoute.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(1);
+
+    Ip ip = new Ip("1.1.1.1");
+    StaticRoute r32 = builder.setNetwork(new Prefix(ip, 32)).build();
+    StaticRoute r18 = builder.setNetwork(new Prefix(ip, 18)).build();
+    _rib.mergeRoute(r32);
+    _rib.mergeRoute(r18);
+
+    assertThat(_rib.longestPrefixMatch(ip, 32), contains(r32));
+    assertThat(_rib.longestPrefixMatch(ip, 31), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 19), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 18), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 17), empty());
+  }
+
+  @Test
+  public void testNonForwarding() {
+    StaticRoute.Builder b =
+        StaticRoute.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(0);
+    // Non forwarding 1.2.3.4/32
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
+    // Non forwarding 1.2.3.4/31
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/31")).setNonForwarding(true).build());
+    // Two routes, one forwarding one non-forwarding for 1.2.3.4/30.
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/30")).setNonForwarding(true).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/30")).setNonForwarding(false).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/8")).setNonForwarding(false).build());
+
+    // Looking for 1.2.3.4, should skip the /32 and /31, and then find the single forwarding /30
+    Set<StaticRoute> routes = _rib.longestPrefixMatch(new Ip("1.2.3.4"));
+    assertThat(routes, hasSize(1));
+    assertThat(Iterables.getOnlyElement(routes), hasPrefix(Prefix.parse("1.2.3.4/30")));
   }
 }

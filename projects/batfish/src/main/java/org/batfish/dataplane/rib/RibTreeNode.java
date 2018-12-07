@@ -100,10 +100,11 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return node != null && node._routes.contains(route);
   }
 
-  private Set<R> getLongestPrefixMatch(Ip address) {
+  /** Returns the forwarding routes stored in this node. */
+  private Set<R> getForwardingRoutes() {
     return _routes
         .stream()
-        .filter(r -> r.getNetwork().containsIp(address))
+        .filter(r -> !r.getNonForwarding())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -112,48 +113,48 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
    *
    * @param address IP address
    * @param bits IP address represented as a set of bits
-   * @param index the position of the bit up to which the match has already been found
-   *     (tail-recursion way of keeping track how deep we are)
    * @param maxPrefixLength only return routes with prefix length less than or equal to given value
    * @return a set of routes
    */
-  Set<R> getLongestPrefixMatch(Ip address, long bits, int index, int maxPrefixLength) {
-    // Get the list of routes stored in our node that contain the IP address
-    Set<R> longestPrefixMatches = getLongestPrefixMatch(address);
-    // If we reached the max prefix length (e.g., 32 for for IPv4) then return routes
-    // from the current node
-    if (index >= maxPrefixLength) {
-      return longestPrefixMatches;
+  @Nonnull
+  Set<R> getLongestPrefixMatch(Ip address, long bits, int maxPrefixLength) {
+    // If the current subtree only contains routes that are too long, no matches.
+    int index = _prefix.getPrefixLength();
+    if (index > maxPrefixLength) {
+      return ImmutableSet.of();
+    }
+
+    // If the current subtree does not contain the destination IP, no matches.
+    if (!_prefix.containsIp(address)) {
+      return ImmutableSet.of();
+    }
+
+    // If the network of the current node is exactly the desired maximum length, stop here.
+    if (index == maxPrefixLength) {
+      return getForwardingRoutes();
     }
 
     // Examine the bit at the given index
     boolean currentBit = Ip.getBitAtPosition(bits, index);
-    RibTreeNode<R> child;
-
-    // the current bit is 1, go right recursively
-    if (currentBit) {
-      child = _right;
-    } else {
-      child = _left;
-    }
+    // If the current bit is 1, go right recursively
+    RibTreeNode<R> child = currentBit ? _right : _left;
     if (child == null) {
-      return longestPrefixMatches;
+      return getForwardingRoutes();
     }
 
     // Represents any potentially longer route matches (than ones stored at this node)
-    Set<R> longerMatches =
-        child.getLongestPrefixMatch(
-            address, bits, child._prefix.getPrefixLength(), maxPrefixLength);
+    Set<R> longerMatches = child.getLongestPrefixMatch(address, bits, maxPrefixLength);
 
     // If we found no better matches, return the ones from this node
-    if (longerMatches == null || longerMatches.isEmpty()) {
-      return longestPrefixMatches;
+    if (longerMatches.isEmpty()) {
+      return getForwardingRoutes();
     } else { // otherwise return longer matches
       return longerMatches;
     }
   }
 
   /** Retrieve an immutable copy of the routes currently available for the given prefix. */
+  @Nonnull
   Set<R> getRoutes(Prefix p) {
     RibTreeNode<R> node = findRouteNode(p.getStartIp().asLong(), p.getPrefixLength(), 0);
     if (node == null) {

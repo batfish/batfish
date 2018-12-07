@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
@@ -57,9 +58,15 @@ class RibTree<R extends AbstractRoute> implements Serializable {
     return _root.containsRoute(route, bits, prefixLength);
   }
 
+  /**
+   * Returns a set of routes in this tree which 1) are forwarding routes, 2) match the given IP
+   * address, and 3) have the longest prefix length within the specified maximum.
+   *
+   * <p>Returns the empty set if there are no forwarding routes that match.
+   */
+  @Nonnull
   Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
-    long addressBits = address.asLong();
-    return _root.getLongestPrefixMatch(address, addressBits, 0, maxPrefixLength);
+    return _root.getLongestPrefixMatch(address, address.asLong(), maxPrefixLength);
   }
 
   /**

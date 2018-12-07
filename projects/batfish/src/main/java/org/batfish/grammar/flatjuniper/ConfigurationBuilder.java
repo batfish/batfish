@@ -856,7 +856,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static long toBandwidth(BandwidthContext ctx) {
     long base = toLong(ctx.base);
-    if (ctx.K() != null) {
+    if (ctx.C() != null) {
+      // https://www.juniper.net/documentation/en_US/junos/topics/task/configuration/interfaces-configuring-the-interface-bandwidth.html
+      return base * 384L;
+    } else if (ctx.K() != null) {
       return base * 1000L;
     } else if (ctx.M() != null) {
       return base * 1000000L;

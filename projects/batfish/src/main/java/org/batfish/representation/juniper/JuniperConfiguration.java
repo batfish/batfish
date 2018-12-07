@@ -1387,7 +1387,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Map<String, NatPool> pools = dnat.getPools();
 
     String ifaceName = iface.getName();
-    String zone = _masterLogicalSystem.getInterfaceZones().get(ifaceName).getName();
+    String zone =
+        Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(ifaceName))
+            .map(Zone::getName)
+            .orElse(null);
     String routingInstance = iface.getRoutingInstance();
 
     /*
@@ -1402,7 +1405,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
       if (ifaceName.equals(fromLocation.getInterface())) {
         ifaceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
-      } else if (zone.equals(fromLocation.getZone())) {
+      } else if (zone != null && zone.equals(fromLocation.getZone())) {
         zoneLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
       } else if (routingInstance.equals(fromLocation.getRoutingInstance())) {
         routingInstanceLocationNats = toDestinationNats(ifaceName, ruleSetName, ruleSet, pools);
@@ -1413,11 +1416,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .filter(Objects::nonNull)
         .flatMap(List::stream)
         .collect(ImmutableList.toImmutableList());
-  }
-
-  // sort rule set by from location in the following order: iface, zone, routing instance
-  private static void sortRuleSetsByFromLocation(List<NatRuleSet> ruleSetList) {
-    ruleSetList.sort(Comparator.comparing(NatRuleSet::getFromLocation));
   }
 
   List<SourceNat> toSourceNats(String ifaceName, List<NatRuleSet> orderedRulesetList) {
@@ -1464,7 +1462,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static List<DestinationNat> toDestinationNats(
+  private List<DestinationNat> toDestinationNats(
       String ifaceName, String ruleSetName, NatRuleSet ruleSet, Map<String, NatPool> pools) {
     NatPacketLocation to = ruleSet.getToLocation();
     Preconditions.checkArgument(
@@ -1478,15 +1476,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static DestinationNat toDestinationNat(
+  private DestinationNat toDestinationNat(
       String ifaceName, String ruleSetName, Map<String, NatPool> pools, NatRule natRule) {
     DestinationNat.Builder builder = DestinationNat.builder();
 
     builder.setAcl(
         IpAccessList.builder()
+            .setOwner(_c)
             .setName(
                 String.format(
-                    "~DESTINATIONNAT~%s~%s~%s~", ifaceName, ruleSetName, natRule.getName()))
+                    "~DESTINATION_NAT~%s~%s~%s~", ifaceName, ruleSetName, natRule.getName()))
             .setLines(
                 ImmutableList.of(
                     accepting(new MatchHeaderSpace(toHeaderSpace(natRule.getMatches())))))

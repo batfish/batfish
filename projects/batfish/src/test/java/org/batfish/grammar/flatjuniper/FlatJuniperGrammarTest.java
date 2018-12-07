@@ -33,6 +33,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -139,6 +140,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -1640,9 +1642,7 @@ public class FlatJuniperGrammarTest {
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
     eb.setVrf("vrf1");
     policyPreference.call(
-        eb.setOriginalRoute(staticRoute)
-            .setOutputRoute(new OspfExternalType2Route.Builder())
-            .build());
+        eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
     // Checking admin cost set on the output route
     assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
@@ -1785,17 +1785,22 @@ public class FlatJuniperGrammarTest {
   public void testInterfaceBandwidth() throws IOException {
     Configuration c = parseConfig("interface-bandwidth");
 
-    // Configuration has four interfaces with configured bandwidths 5000000000, 5000000k, 5000m, 5g.
-    // Physical interfaces should have default bandwidth (1E9), unit interfaces should have 5E9.
+    // Configuration has ge-0/0/0 with four units configured bandwidths 5000000000, 5000000k, 5000m,
+    // 5g. Physical interface should have default bandwidth (1E9), unit interfaces should have 5E9.
     double unitBandwidth = 5E9;
     double physicalBandwidth =
         org.batfish.representation.juniper.Interface.getDefaultBandwidthByName("ge-0/0/0");
 
-    Map<String, Interface> interfaces = c.getAllInterfaces();
-    for (int i = 0; i < 4; i++) {
-      assertThat(interfaces.get("ge-" + i + "/0/0").getBandwidth(), equalTo(physicalBandwidth));
-      assertThat(interfaces.get("ge-" + i + "/0/0.0").getBandwidth(), equalTo(unitBandwidth));
-    }
+    assertThat(c, hasInterface("ge-0/0/0", hasBandwidth(physicalBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.1", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.2", hasBandwidth(unitBandwidth)));
+    assertThat(c, hasInterface("ge-0/0/0.3", hasBandwidth(unitBandwidth)));
+
+    // Configuration has ge-1/0/0 with one unit with configured bandwidth 10c (1c = 384 bps).
+    // Physical interface should have default bandwidth (1E9), unit 3840.
+    assertThat(c, hasInterface("ge-1/0/0", hasBandwidth(physicalBandwidth)));
+    assertThat(c, hasInterface("ge-1/0/0.0", hasBandwidth(3840)));
   }
 
   @Test
@@ -2744,7 +2749,7 @@ public class FlatJuniperGrammarTest {
         vrf1RejectAllLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2752,7 +2757,7 @@ public class FlatJuniperGrammarTest {
         vrf1RejectAllLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2762,7 +2767,7 @@ public class FlatJuniperGrammarTest {
         vrf2RejectPtpLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2770,7 +2775,7 @@ public class FlatJuniperGrammarTest {
         vrf2RejectPtpLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2780,7 +2785,7 @@ public class FlatJuniperGrammarTest {
         vrf3RejectLanLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2788,7 +2793,7 @@ public class FlatJuniperGrammarTest {
         vrf3RejectLanLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(false));
@@ -2798,7 +2803,7 @@ public class FlatJuniperGrammarTest {
         vrf4AllowAllLocal
             .call(
                 eb.setOriginalRoute(localRoutePtp)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2806,7 +2811,7 @@ public class FlatJuniperGrammarTest {
         vrf4AllowAllLocal
             .call(
                 eb.setOriginalRoute(localRouteLan)
-                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .setOutputRoute(OspfExternalType2Route.builder())
                     .build())
             .getBooleanValue(),
         equalTo(true));
@@ -2824,6 +2829,17 @@ public class FlatJuniperGrammarTest {
     Interface iface = interfaces.get("ge-0/0/0.0");
     List<DestinationNat> dnats = iface.getDestinationNats();
     assertThat(dnats, hasSize(5));
+
+    assertTrue(
+        config
+            .getIpAccessLists()
+            .keySet()
+            .containsAll(
+                dnats
+                    .stream()
+                    .map(DestinationNat::getAcl)
+                    .map(IpAccessList::getName)
+                    .collect(ImmutableList.toImmutableList())));
 
     assertThat(
         dnats,

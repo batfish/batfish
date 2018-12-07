@@ -47302,6 +47302,25 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = VARIABLE:'ge-2/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'1'",
+            "                (i_bandwidth",
+            "                  BANDWIDTH:'bandwidth'",
+            "                  (bandwidth",
+            "                    base = DEC:'5'  <== mode:M_Bandwidth",
+            "                    C:'c'  <== mode:M_Bandwidth))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = VARIABLE:'ge-3/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
@@ -47899,6 +47918,71 @@
             "              NAT:'nat'",
             "              (sen_source",
             "                SOURCE:'source'",
+            "                (nat_pool",
+            "                  POOL:'pool'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'POOL')",
+            "                  (natp_address",
+            "                    ADDRESS:'address'",
+            "                    IP_PREFIX:'10.10.10.10/24'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_packet_location",
+            "                    FROM:'from'",
+            "                    (rs_zone",
+            "                      ZONE:'zone'",
+            "                      name = (variable",
+            "                        text = TRUST:'trust'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_packet_location",
+            "                    TO:'to'",
+            "                    (rs_interface",
+            "                      INTERFACE:'interface'",
+            "                      name = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
             "                (nat_rule_set",
             "                  RULE_SET:'rule-set'",
             "                  name = (variable",
@@ -47989,6 +48073,75 @@
             "                        SOURCE_ADDRESS_NAME:'source-address-name'",
             "                        name = (variable",
             "                          text = VARIABLE:'SA-NAME')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_rule",
+            "                    RULE:'rule'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'SRC-RULE')",
+            "                    (rsr_then",
+            "                      THEN:'then'",
+            "                      (rsrt_source_nat",
+            "                        SOURCE_NAT:'source-nat'",
+            "                        (rsrt_nat_off",
+            "                          OFF:'off')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_destination",
+            "                DESTINATION:'destination'",
+            "                (nat_pool",
+            "                  POOL:'pool'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'POOL')",
+            "                  (natp_address",
+            "                    ADDRESS:'address'",
+            "                    IP_PREFIX:'10.10.10.10/24'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_destination",
+            "                DESTINATION:'destination'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'DST-NAT')",
+            "                  (rs_packet_location",
+            "                    FROM:'from'",
+            "                    (rs_interface",
+            "                      INTERFACE:'interface'",
+            "                      name = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'0'))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -48101,82 +48254,16 @@
             "            SECURITY:'security'",
             "            (se_nat",
             "              NAT:'nat'",
-            "              (sen_source",
-            "                SOURCE:'source'",
-            "                (nat_pool",
-            "                  POOL:'pool'",
-            "                  name = (variable",
-            "                    text = VARIABLE:'POOL')",
-            "                  (natp_address",
-            "                    ADDRESS:'address'",
-            "                    IP_PREFIX:'10.10.10.10/24'))))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_security",
-            "            SECURITY:'security'",
-            "            (se_nat",
-            "              NAT:'nat'",
             "              (sen_destination",
             "                DESTINATION:'destination'",
-            "                (nat_pool",
-            "                  POOL:'pool'",
-            "                  name = (variable",
-            "                    text = VARIABLE:'POOL')",
-            "                  (natp_address",
-            "                    ADDRESS:'address'",
-            "                    IP_PREFIX:'10.10.10.10/24'))))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_security",
-            "            SECURITY:'security'",
-            "            (se_nat",
-            "              NAT:'nat'",
-            "              (sen_source",
-            "                SOURCE:'source'",
             "                (nat_rule_set",
             "                  RULE_SET:'rule-set'",
             "                  name = (variable",
-            "                    text = VARIABLE:'SRC-NAT')",
+            "                    text = VARIABLE:'DST-NAT')",
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'RULE')",
-            "                    (rsr_then",
-            "                      THEN:'then'",
-            "                      (rsrt_destination_nat",
-            "                        DESTINATION_NAT:'destination-nat'",
-            "                        (rsrt_nat_pool",
-            "                          POOL:'pool'",
-            "                          name = (variable",
-            "                            text = VARIABLE:'OFF'))))))))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_security",
-            "            SECURITY:'security'",
-            "            (se_nat",
-            "              NAT:'nat'",
-            "              (sen_source",
-            "                SOURCE:'source'",
-            "                (nat_rule_set",
-            "                  RULE_SET:'rule-set'",
-            "                  name = (variable",
-            "                    text = VARIABLE:'SRC-NAT')",
-            "                  (rs_rule",
-            "                    RULE:'rule'",
-            "                    name = (variable",
-            "                      text = VARIABLE:'RULE')",
+            "                      text = VARIABLE:'DST-RULE')",
             "                    (rsr_then",
             "                      THEN:'then'",
             "                      (rsrt_destination_nat",
@@ -48191,57 +48278,23 @@
             "    (set_line_tail",
             "      (statement",
             "        (s_common",
-            "          (s_security",
-            "            SECURITY:'security'",
-            "            (se_nat",
-            "              NAT:'nat'",
-            "              (sen_destination",
-            "                DESTINATION:'destination'",
-            "                (nat_rule_set",
-            "                  RULE_SET:'rule-set'",
-            "                  name = (variable",
-            "                    text = VARIABLE:'DST-NAT')",
-            "                  (rs_rule",
-            "                    RULE:'rule'",
-            "                    name = (variable",
-            "                      text = VARIABLE:'RULE')",
-            "                    (rsr_then",
-            "                      THEN:'then'",
-            "                      (rsrt_destination_nat",
-            "                        DESTINATION_NAT:'destination-nat'",
-            "                        (rsrt_nat_pool",
-            "                          POOL:'pool'",
-            "                          name = (variable",
-            "                            text = VARIABLE:'OFF'))))))))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_security",
-            "            SECURITY:'security'",
-            "            (se_nat",
-            "              NAT:'nat'",
-            "              (sen_destination",
-            "                DESTINATION:'destination'",
-            "                (nat_rule_set",
-            "                  RULE_SET:'rule-set'",
-            "                  name = (variable",
-            "                    text = VARIABLE:'DST-NAT')",
-            "                  (rs_rule",
-            "                    RULE:'rule'",
-            "                    name = (variable",
-            "                      text = VARIABLE:'RULE')",
-            "                    (rsr_then",
-            "                      THEN:'then'",
-            "                      (rsrt_destination_nat",
-            "                        DESTINATION_NAT:'destination-nat'",
-            "                        (rsrt_nat_pool",
-            "                          POOL:'pool'",
-            "                          name = (variable",
-            "                            text = VARIABLE:'POOL'))))))))))))",
-            "    NEWLINE:'\\n')",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.0.0.1/24'))))))))))",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -61066,7 +61119,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 17,
+              "Line" : 18,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "tcp-mss 1400"
             }
@@ -64750,9 +64803,10 @@
             },
             "ge-2/0/0" : {
               "definitionLines" : [
-                8
+                8,
+                9
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "ge-2/0/0.0" : {
               "definitionLines" : [
@@ -64760,82 +64814,88 @@
               ],
               "numReferrers" : 1
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "definitionLines" : [
                 9
+              ],
+              "numReferrers" : 1
+            },
+            "ge-3/0/0" : {
+              "definitionLines" : [
+                10
               ],
               "numReferrers" : 1
             },
             "ge-3/0/0.0" : {
               "definitionLines" : [
-                9
+                10
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0" : {
               "definitionLines" : [
-                10
+                11
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0.0" : {
               "definitionLines" : [
-                10
+                11
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0.0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "irb" : {
               "definitionLines" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 4
             },
             "irb.5" : {
               "definitionLines" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 4
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
-                12,
-                13
+                13,
+                14
               ],
               "numReferrers" : 2
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : [
-                13
+                14
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                18
+                19
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                18
+                19
               ],
               "numReferrers" : 1
             }
@@ -64843,8 +64903,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                22,
-                23
+                23,
+                24
               ],
               "numReferrers" : 0
             }
@@ -64854,10 +64914,24 @@
         "configs/juniper_l2_learning" : { },
         "configs/juniper_misc" : { },
         "configs/juniper_nat" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                27
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                27
+              ],
+              "numReferrers" : 1
+            }
+          },
           "nat pool" : {
             "POOL" : {
               "definitionLines" : [
-                16,
+                6,
                 17
               ],
               "numReferrers" : 0
@@ -64866,28 +64940,21 @@
           "nat rule" : {
             "DST-RULE" : {
               "definitionLines" : [
-                11,
-                12,
-                13,
-                14
-              ],
-              "numReferrers" : 0
-            },
-            "RULE" : {
-              "definitionLines" : [
-                19,
-                20,
+                21,
                 22,
-                23
+                23,
+                24,
+                25
               ],
               "numReferrers" : 0
             },
             "SRC-RULE" : {
               "definitionLines" : [
-                6,
-                7,
-                8,
-                9
+                11,
+                12,
+                13,
+                14,
+                15
               ],
               "numReferrers" : 0
             }
@@ -64895,23 +64962,24 @@
           "nat rule set" : {
             "DST-NAT" : {
               "definitionLines" : [
-                11,
-                12,
-                13,
-                14,
+                19,
+                21,
                 22,
-                23
+                23,
+                24,
+                25
               ],
               "numReferrers" : 0
             },
             "SRC-NAT" : {
               "definitionLines" : [
-                6,
-                7,
                 8,
                 9,
-                19,
-                20
+                11,
+                12,
+                13,
+                14,
+                15
               ],
               "numReferrers" : 0
             }
@@ -68051,7 +68119,7 @@
             },
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                20
+                21
               ]
             },
             "ge-1/0/0" : {
@@ -68061,7 +68129,8 @@
             },
             "ge-2/0/0" : {
               "interface" : [
-                8
+                8,
+                9
               ]
             },
             "ge-2/0/0.0" : {
@@ -68069,78 +68138,83 @@
                 8
               ]
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "interface" : [
                 9
+              ]
+            },
+            "ge-3/0/0" : {
+              "interface" : [
+                10
               ]
             },
             "ge-3/0/0.0" : {
               "interface" : [
-                9
+                10
               ]
             },
             "ge-4/0/0" : {
               "interface" : [
-                10
+                11
               ]
             },
             "ge-4/0/0.0" : {
               "interface" : [
-                10
+                11
               ]
             },
             "ge-5/0/0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "ge-5/0/0.0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "irb" : {
               "interface" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ]
             },
             "irb.5" : {
               "interface" : [
-                14,
                 15,
                 16,
-                17
+                17,
+                18
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
-                12,
-                13
+                13,
+                14
               ]
             },
             "xe-0/0/0:0.0" : {
               "interface" : [
-                13
+                14
               ]
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                18
+                19
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                18
+                19
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                18
+                19
               ]
             }
           }
@@ -68154,6 +68228,20 @@
                 8,
                 9,
                 10
+              ]
+            }
+          }
+        },
+        "configs/juniper_nat" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                27
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                27
               ]
             }
           }
@@ -70025,14 +70113,14 @@
           "interface" : {
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                20
+                21
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                18
+                19
               ]
             }
           }
