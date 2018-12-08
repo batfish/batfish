@@ -1,12 +1,17 @@
 package org.batfish.representation.juniper;
 
 import java.util.List;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
+@ParametersAreNonnullByDefault
 public final class PsThenCommunitySet extends PsThen {
 
   /** */
@@ -32,22 +37,27 @@ public final class PsThenCommunitySet extends PsThen {
     if (namedList == null) {
       warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
     } else {
-      try {
-        org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
-        // assuming this is a valid community list for setting, the regex value
-        // just retrieved should just be an explicit community
-        long community =
-            list.getLines().get(0).getMatchCondition().asLiteralCommunities(null).first();
-        statements.add(new SetCommunity(new LiteralCommunity(community)));
-      } catch (Exception e) {
-        warnings.redFlag(
-            String.format("Ignored community '%s': %s", _name, e.getMessage()),
-            Warnings.TAG_RED_FLAG);
+      /*
+       * Regex semantics do not apply in literal context. Instead, members with wildcards are
+       * filtered out. If a list is used in a 'then community set' but does not contain any literal
+       * community expressions, the entire configuration is invalid. As a best-effort, warn and
+       * treat line as a NOP.
+       */
+      Set<Long> literalCommunities = namedList.asLiteralCommunities();
+      if (literalCommunities.isEmpty()) {
+        String msg =
+            String.format(
+                "'then community set' illegally references community list containing only wildcard members: %s",
+                _name);
+        warnings.redFlag(msg);
+        statements.add(new Comment(msg));
+        return;
       }
+      statements.add(new SetCommunity(new LiteralCommunitySet(literalCommunities)));
     }
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 }
