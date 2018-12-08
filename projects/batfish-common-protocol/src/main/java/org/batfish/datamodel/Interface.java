@@ -741,7 +741,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private IpAccessList _preSourceNatOutgoingFilter;
 
-  private String _preSourceNatOutgoingFilterName;
+  private transient String _preSourceNatOutgoingFilterName;
 
   private boolean _ripEnabled;
 
