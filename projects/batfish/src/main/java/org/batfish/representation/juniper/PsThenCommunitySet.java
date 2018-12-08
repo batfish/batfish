@@ -33,7 +33,6 @@ public final class PsThenCommunitySet extends PsThen {
       warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
     } else {
       org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
-      juniperVendorConfiguration.getMasterLogicalSystem().getCommunityLists().get(_name).getLines()
       // assuming this is a valid community list for setting, the regex value
       // just retrieved should just be an explicit community
       long community =
