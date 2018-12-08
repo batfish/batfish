@@ -226,7 +226,7 @@ public class PaloAltoGrammarTest {
                 DiffieHellmanGroup.GROUP2,
                 ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.THREEDES_CBC),
                 IkeHashingAlgorithm.SHA1,
-                8 * 3600),
+                123 * 3600),
             new CryptoProfile(
                 "profile1",
                 Type.IKE,
