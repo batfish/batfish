@@ -255,6 +255,7 @@ import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -2350,11 +2351,15 @@ public class FlatJuniperGrammarTest {
 
     Configuration c = parseConfig(hostname);
 
+    double expectedReferenceBandwidth = 100E9;
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel1(nullValue()))));
     assertThat(
         c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel2(hasWideMetricsOnly()))));
     assertThat(c, hasDefaultVrf(hasIsisProcess(hasOverloadTimeout(360))));
-    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(100E9D))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(expectedReferenceBandwidth))));
 
     assertThat(
         c,
@@ -2362,6 +2367,20 @@ public class FlatJuniperGrammarTest {
             loopback, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.00")))));
     assertThat(c, hasInterface(loopback, hasIsis(hasLevel1(nullValue()))));
     assertThat(c, hasInterface(loopback, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.PASSIVE)))));
+
+    // Loopback did not set an IS-IS metric, so its cost should be based on the reference bandwidth.
+    // First confirm the expected cost isn't coincidentally equal to the Juniper default cost of 10.
+    // No need to worry about getBandwidth() returning null for Juniper interfaces.
+    long expectedCost =
+        Math.max(
+            (long) (expectedReferenceBandwidth / c.getAllInterfaces().get(loopback).getBandwidth()),
+            1L);
+    assertThat(expectedCost, not(equalTo(10L)));
+    assertThat(
+        c,
+        hasInterface(
+            loopback,
+            hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(expectedCost)))));
 
     assertThat(
         c,
@@ -2409,6 +2428,18 @@ public class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasIsisProcess(hasNetAddress(equalTo(new IsoAddress("12.1234.1234.1234.1234.01"))))));
+  }
+
+  @Test
+  public void testJuniperIsisNoReferenceBandwidth() throws IOException {
+    Configuration c = parseConfig("juniper-isis-no-reference-bandwidth");
+
+    // With no set metric or reference bandwidth, Juniper IS-IS cost should default to 10
+    assertThat(
+        c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth((Double) null))));
+    assertThat(
+        c,
+        hasInterface("lo0.0", hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(10L)))));
   }
 
   @Test
@@ -3560,5 +3591,51 @@ public class FlatJuniperGrammarTest {
   public void testStormControl() throws IOException {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
+  }
+
+  @Test
+  public void testSecurityPolicy() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
+    Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();
+
+    assertThat(zones.keySet(), containsInAnyOrder("trust", "untrust"));
+
+    Zone trust = zones.get("trust");
+    assertThat(trust.getFromZonePolicies().keySet(), hasSize(0));
+    assertThat(trust.getToZonePolicies().keySet(), hasSize(1));
+
+    Zone untrust = zones.get("untrust");
+    assertThat(untrust.getFromZonePolicies().keySet(), hasSize(1));
+    assertThat(untrust.getToZonePolicies().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testPreSourceNatOutgoingFilter() throws IOException {
+    Configuration config = parseConfig("security-policy");
+    String ifaceIn = "ge-0/0/0.0";
+    String ifaceOut = "ge-0/0/1.0";
+
+    IpAccessList securityPolicy1 =
+        config.getAllInterfaces().get(ifaceOut).getPreSourceNatOutgoingFilter();
+
+    // Any arbitrary flow from trust to untrust should be permitted
+    Flow flow1 = createFlow(IpProtocol.UDP, 90);
+    Flow flow2 = createFlow(IpProtocol.TCP, 9000);
+
+    assertThat(
+        securityPolicy1, accepts(flow1, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
+
+    assertThat(
+        securityPolicy1, accepts(flow2, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
+
+    // Packet to ifaceIn should be denied by default
+    IpAccessList securityPolicy2 =
+        config.getAllInterfaces().get(ifaceIn).getPreSourceNatOutgoingFilter();
+
+    assertThat(
+        securityPolicy2, rejects(flow1, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
+
+    assertThat(
+        securityPolicy2, rejects(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
   }
 }

@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.resources.NetworkObjectsResource.QP_KEY;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -137,14 +139,14 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
     String content = "baz";
-    InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Response response =
-        getTarget(network, key).put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
+        getTarget(network, key).put(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key), UTF_8),
-        equalTo(content));
+    try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
+      assertThat(stream, not(nullValue()));
+      assertThat(IOUtils.toString(stream, UTF_8), equalTo(content));
+    }
   }
 
   @Test
@@ -154,16 +156,15 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     String oldContent = "baz";
     String newContent = "bath";
-    InputStream oldContentInputStream = new ByteArrayInputStream(oldContent.getBytes());
-    InputStream newContentInputStream = new ByteArrayInputStream(newContent.getBytes());
-    Main.getWorkMgr().putNetworkObject(oldContentInputStream, network, key);
+    Main.getWorkMgr()
+        .putNetworkObject(new ByteArrayInputStream(oldContent.getBytes()), network, key);
     Response response =
-        getTarget(network, key)
-            .put(Entity.entity(newContentInputStream, MediaType.APPLICATION_OCTET_STREAM));
+        getTarget(network, key).put(Entity.entity(newContent, MediaType.APPLICATION_OCTET_STREAM));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        IOUtils.toString(Main.getWorkMgr().getNetworkObject(network, key), UTF_8),
-        equalTo(newContent));
+    try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
+      assertThat(stream, not(nullValue()));
+      assertThat(IOUtils.toString(stream, UTF_8), equalTo(newContent));
+    }
   }
 }

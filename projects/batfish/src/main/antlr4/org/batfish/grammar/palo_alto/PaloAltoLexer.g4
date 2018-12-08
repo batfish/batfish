@@ -10,6 +10,7 @@ options {
 
 // Keywords
 
+
 ACTION
 :
     'action'
@@ -18,6 +19,31 @@ ACTION
 ADMIN_DIST
 :
     'admin-dist'
+;
+
+AES_128_CBC
+:
+    'aes-128-cbc'
+;
+
+AES_128_GCM
+:
+    'aes-128-gcm'
+;
+
+AES_192_CBC
+:
+    'aes-192-cbc'
+;
+
+AES_256_CBC
+:
+    'aes-256-cbc'
+;
+
+AES_256_GCM
+:
+    'aes-256-gcm'
 ;
 
 ALLOW
@@ -33,6 +59,11 @@ ANY
 APPLICATION
 :
     'application'
+;
+
+AUTHENTICATION
+:
+    'authentication'
 ;
 
 AUTHENTICATION_TYPE
@@ -60,9 +91,29 @@ CONFIG
     'config'
 ;
 
+CRYPTO_PROFILES
+:
+    'crypto-profiles'
+;
+
+DAYS
+:
+    'days'
+;
+
+DEFAULT_GATEWAY
+:
+    'default-gateway'
+;
+
 DENY
 :
     'deny'
+;
+
+DES
+:
+    'des'
 ;
 
 DESCRIPTION
@@ -83,6 +134,11 @@ DEVICES
 DEVICECONFIG
 :
     'deviceconfig'
+;
+
+DH_GROUP
+:
+    'dh-group'
 ;
 
 DISABLED
@@ -110,6 +166,16 @@ DROP
     'drop'
 ;
 
+ENCRYPTION
+:
+    'encryption'
+;
+
+ESP
+:
+    'esp'
+;
+
 ETHERNET
 :
     'ethernet'
@@ -120,14 +186,74 @@ FROM
     'from'
 ;
 
+GATEWAY
+:
+    'gateway'
+;
+
+GLOBAL_PROTECT_APP_CRYPTO_PROFILES
+:
+    'global-protect-app-crypto-profiles'
+;
+
+GROUP1
+:
+    'group1'
+;
+
+GROUP2
+:
+    'group2'
+;
+
+GROUP5
+:
+    'group5'
+;
+
+GROUP14
+:
+    'group14'
+;
+
+GROUP19
+:
+    'group19'
+;
+
+GROUP20
+:
+    'group20'
+;
+
+HASH
+:
+    'hash'
+;
+
 HOSTNAME
 :
     'hostname'
 ;
 
+HOURS
+:
+    'hours'
+;
+
 ICMP
 :
     'icmp'
+;
+
+IKE
+:
+    'ike'
+;
+
+IKE_CRYPTO_PROFILES
+:
+    'ike-crypto-profiles'
 ;
 
 INTERFACE
@@ -145,9 +271,19 @@ IP_ADDRESS_LITERAL
     'ip-address'
 ;
 
+IPSEC_CRYPTO_PROFILES
+:
+    'ipsec-crypto-profiles'
+;
+
 LAYER3
 :
     'layer3'
+;
+
+LIFETIME
+:
+    'lifetime'
 ;
 
 LINK_STATUS
@@ -158,6 +294,16 @@ LINK_STATUS
 LOG_SETTINGS
 :
     'log-settings'
+;
+
+MD5
+:
+    'md5'
+;
+
+MINUTES
+:
+    'minutes'
 ;
 
 MEMBERS
@@ -175,6 +321,11 @@ MTU
     'mtu'
 ;
 
+NETMASK
+:
+    'netmask'
+;
+
 NETWORK
 :
     'network'
@@ -190,6 +341,11 @@ NO
     'no'
 ;
 
+NONE
+:
+    'none'
+;
+
 NTP_SERVER_ADDRESS
 :
     'ntp-server-address'
@@ -200,9 +356,19 @@ NTP_SERVERS
     'ntp-servers'
 ;
 
+NULL
+:
+    'null'
+;
+
 OPEN_BRACKET
 :
     '['
+;
+
+PANORAMA_SERVER
+:
+    'panorama-server'
 ;
 
 PORT
@@ -220,9 +386,19 @@ PRIMARY_NTP_SERVER
     'primary-ntp-server'
 ;
 
+PROFILES
+:
+    'profiles'
+;
+
 PROTOCOL
 :
     'protocol'
+;
+
+QOS
+:
+    'qos'
 ;
 
 RESET_BOTH
@@ -270,6 +446,11 @@ SECONDARY_NTP_SERVER
     'secondary-ntp-server'
 ;
 
+SECONDS
+:
+    'seconds'
+;
+
 SECURITY
 :
     'security'
@@ -298,6 +479,26 @@ SERVICE_GROUP
 SET
 :
     'set'
+;
+
+SHA1
+:
+    'sha1'
+;
+
+SHA256
+:
+    'sha256'
+;
+
+SHA384
+:
+    'sha384'
+;
+
+SHA512
+:
+    'sha512'
 ;
 
 SHARED
@@ -335,14 +536,29 @@ TAG
     'tag'
 ;
 
+TCP
+:
+    'tcp'
+;
+
+THREE_DES
+:
+    '3des'
+;
+
+TIMEZONE
+:
+    'timezone'
+;
+
 TO
 :
     'to'
 ;
 
-TCP
+TYPE
 :
-    'tcp'
+    'type'
 ;
 
 UDP
@@ -358,6 +574,16 @@ UNITS
 UP
 :
     'up'
+;
+
+UPDATE_SCHEDULE
+:
+    'update-schedule'
+;
+
+UPDATE_SERVER
+:
+    'update-server'
 ;
 
 VIRTUAL_ROUTER

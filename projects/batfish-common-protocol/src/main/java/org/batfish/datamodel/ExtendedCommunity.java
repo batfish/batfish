@@ -1,6 +1,10 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /** Represents extended BGP community, as described in RFC4360 */
@@ -10,8 +14,13 @@ public final class ExtendedCommunity implements Serializable {
 
   private final long _value;
 
-  public ExtendedCommunity(int part1, long part2, int part3) {
-    _value = (part1) | (part2 << 16) | (((long) part3) << 48);
+  @JsonCreator
+  public ExtendedCommunity(long value) {
+    _value = value;
+  }
+
+  public ExtendedCommunity(long part1, long part2, long part3) {
+    _value = (part1 & 0xFFFFL) | ((part2 & 0xFFFFFFFFL) << 16) | ((part3 & 0xFFFFL) << 48);
   }
 
   public ExtendedCommunity(String communityStr) {
@@ -80,7 +89,29 @@ public final class ExtendedCommunity implements Serializable {
     _value = value;
   }
 
+  @JsonValue
   public long asLong() {
     return _value;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return _value == ((ExtendedCommunity) obj)._value;
+  }
+
+  @Override
+  public int hashCode() {
+    return Long.hashCode(_value);
+  }
+
+  @Override
+  public @Nonnull String toString() {
+    return Long.toString(_value);
   }
 }
