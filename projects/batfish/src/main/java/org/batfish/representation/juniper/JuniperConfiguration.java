@@ -7,6 +7,7 @@ import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHea
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -1327,18 +1328,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
 
-    // extracting source nat
-    Nat snat = _masterLogicalSystem.getNatSource();
-    if (snat != null) {
-      Stream<NatRuleSet> ruleSetStream =
-          _masterLogicalSystem.getNatSource().getRuleSets().values().stream().sorted();
-      newIface.setSourceNats(buildSourceNats(iface, ruleSetStream));
-    }
-
     return newIface;
   }
 
-  List<SourceNat> buildSourceNats(Interface iface, Stream<NatRuleSet> orderedRuleSetStream) {
+  List<SourceNat> buildSourceNats(
+      Interface iface,
+      List<NatRuleSet> orderedRuleSetList,
+      Map<NatPacketLocation, Set<String>> locationToInterfacesMap) {
     String name = iface.getName();
     String zone =
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
@@ -1347,8 +1343,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String routingInstance = iface.getRoutingInstance();
     Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
 
-    // Stream<NatRuleSet> natRuleSetStream =
-    return orderedRuleSetStream
+    return orderedRuleSetList
+        .stream()
         .filter(
             ruleSet -> {
               NatPacketLocation toLocation = ruleSet.getToLocation();
@@ -1367,13 +1363,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                 iface.getName(),
                                 ruleSet.getName(),
                                 pools,
-                                getAllInterfacesFromNatPacketLocation(ruleSet.getFromLocation()),
+                                locationToInterfacesMap.get(ruleSet.getFromLocation()),
                                 natRule)))
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
 
-  private Set<String> getAllInterfacesFromNatPacketLocation(NatPacketLocation location) {
+  private Map<NatPacketLocation, Set<String>> computeAllInterfacesForAllNatPacketLocation(Nat nat) {
+    if (nat == null) {
+      return ImmutableMap.of();
+    }
+
+    ImmutableMap.Builder<NatPacketLocation, Set<String>> builder = new ImmutableMap.Builder<>();
+
+    for (NatRuleSet rs : nat.getRuleSets().values()) {
+      builder.put(
+          rs.getFromLocation(), computeAllInterfacesPerNatPacketLocation(rs.getFromLocation()));
+      //      builder.put(
+      //          rs.getToLocation(), computeAllInterfacesPerNatPacketLocation(rs.getToLocation()));
+    }
+
+    return builder.build();
+  }
+
+  private Set<String> computeAllInterfacesPerNatPacketLocation(NatPacketLocation location) {
     ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
 
     if (location.getInterface() != null) {
@@ -1381,7 +1394,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     if (location.getZone() != null) {
       Zone zone = _masterLogicalSystem.getZones().get(location.getZone());
-
       if (zone != null) {
         zone.getInterfaces().stream().map(Interface::getName).forEach(builder::add);
       }
@@ -1477,12 +1489,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
-  private static SourceNat toSourceNat(
+  private SourceNat toSourceNat(
       String ifaceName,
       String rulesetName,
       Map<String, NatPool> pools,
       Set<String> fromInterfaces,
       NatRule natRule) {
+    fromInterfaces =
+        this.computeAllInterfacesPerNatPacketLocation(
+            this._masterLogicalSystem
+                .getNatSource()
+                .getRuleSets()
+                .get(rulesetName)
+                .getFromLocation());
     SourceNat.Builder builder = SourceNat.builder();
 
     builder.setAcl(
@@ -2704,6 +2723,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void convertInterfaces() {
+    // sort ruleSets in source nat
+    Nat snat = _masterLogicalSystem.getNatSource();
+    List<NatRuleSet> sourceNatRuleSetList;
+    if (snat != null) {
+      sourceNatRuleSetList =
+          snat.getRuleSets().values().stream().sorted().collect(ImmutableList.toImmutableList());
+    } else {
+      sourceNatRuleSetList = null;
+    }
+
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
@@ -2760,6 +2789,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
               }
             });
+
+    if (_masterLogicalSystem.getNatSource() != null) {
+      // compute all interfaces included in zone and routing instances
+      Map<NatPacketLocation, Set<String>> locationToInterfacesMap =
+          computeAllInterfacesForAllNatPacketLocation(snat);
+
+      // extract source nat
+      Stream.concat(
+              _masterLogicalSystem.getInterfaces().values().stream(),
+              _nodeDevices
+                  .values()
+                  .stream()
+                  .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+          .forEach(
+              iface ->
+                  iface
+                      .getUnits()
+                      .values()
+                      .forEach(
+                          unit -> {
+                            org.batfish.datamodel.Interface newUnitInterface =
+                                _c.getAllInterfaces().get(unit.getName());
+                            newUnitInterface.setSourceNats(
+                                buildSourceNats(
+                                    unit, sourceNatRuleSetList, locationToInterfacesMap));
+                          }));
+    }
   }
 
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */

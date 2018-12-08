@@ -48,6 +48,17 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     return _name;
   }
 
+  /* Sort NatRuleSet according to the following order:
+   * 1. Source interface/destination interface
+   * 2. Source zone/destination interface
+   * 3. Source routing instance/destination interface
+   * 4. Source interface/destination zone
+   * 5. Source zone/destination zone
+   * 6. Source routing instance/destination zone
+   * 7. Source interface/destination routing instance
+   * 8. Source zone/destination routing instance
+   * 9. Source routing instance/destination routing instance
+   */
   private static final Comparator<NatRuleSet> COMPARATOR =
       Comparator.comparing(NatRuleSet::getToLocation).thenComparing(NatRuleSet::getFromLocation);
 
