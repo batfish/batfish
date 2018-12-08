@@ -243,6 +243,7 @@ public class TracerouteEngineImplContext {
       Map<String, IpAccessList> aclDefinitions,
       Map<String, IpSpace> namedIpSpaces,
       boolean ignoreFilters) {
+
     checkArgument(
         node != null && inInterfaceName != null && outInterfaceName != null,
         "Node, inputInterface and outgoingInterface cannot be null");
@@ -674,28 +675,31 @@ public class TracerouteEngineImplContext {
                           .getAllInterfaces()
                           .get(nextHopInterface.getInterface());
 
-                  // Apply preSourceNatOutgoingFilter
                   IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
-                  PreSourceNatOutgoingFilterStep step =
-                      applyPreSourceNatFilter(
-                          currentFlow,
-                          currentNodeName,
-                          inputIfaceName,
-                          outgoingInterface.getName(),
-                          filter,
-                          transmissionContext._aclDefinitions,
-                          transmissionContext._namedIpSpaces,
-                          _ignoreFilters);
+                  // Apply preSourceNatOutgoingFilter
+                  if (inputIfaceName != null && filter != null) {
+                    // check preSourceNat only for packets originating from other nodes
+                    PreSourceNatOutgoingFilterStep step =
+                        applyPreSourceNatFilter(
+                            currentFlow,
+                            currentNodeName,
+                            inputIfaceName,
+                            outgoingInterface.getName(),
+                            filter,
+                            transmissionContext._aclDefinitions,
+                            transmissionContext._namedIpSpaces,
+                            _ignoreFilters);
 
-                  clonedStepsBuilder.add(step);
+                    clonedStepsBuilder.add(step);
 
-                  if (step.getAction() == StepAction.DENIED) {
-                    Hop outHop = new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
-                    transmissionContext._hopsSoFar.add(outHop);
-                    Trace trace =
-                        new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
-                    transmissionContext._flowTraces.add(trace);
-                    return;
+                    if (step.getAction() == StepAction.DENIED) {
+                      Hop outHop = new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
+                      transmissionContext._hopsSoFar.add(outHop);
+                      Trace trace =
+                          new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
+                      transmissionContext._flowTraces.add(trace);
+                      return;
+                    }
                   }
 
                   // Apply any relevant source NAT rules.
