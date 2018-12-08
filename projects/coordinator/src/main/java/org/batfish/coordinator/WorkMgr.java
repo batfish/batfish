@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -2780,7 +2781,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
+  @MustBeClosed
+  @Nullable
+  public InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     try {
@@ -2851,7 +2854,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getSnapshotObject(
+  @MustBeClosed
+  @Nullable
+  public InputStream getSnapshotObject(
       @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2944,6 +2949,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
+  @MustBeClosed
   public InputStream getSnapshotInputObject(String network, String snapshot, String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
