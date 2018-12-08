@@ -253,6 +253,7 @@ import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -3454,5 +3455,51 @@ public class FlatJuniperGrammarTest {
   public void testStormControl() throws IOException {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
+  }
+
+  @Test
+  public void testSecurityPolicy() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
+    Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();
+
+    assertThat(zones.keySet(), containsInAnyOrder("trust", "untrust"));
+
+    Zone trust = zones.get("trust");
+    assertThat(trust.getFromZonePolicies().keySet(), hasSize(0));
+    assertThat(trust.getToZonePolicies().keySet(), hasSize(1));
+
+    Zone untrust = zones.get("untrust");
+    assertThat(untrust.getFromZonePolicies().keySet(), hasSize(1));
+    assertThat(untrust.getToZonePolicies().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testPreSourceNatOutgoingFilter() throws IOException {
+    Configuration config = parseConfig("security-policy");
+    String ifaceIn = "ge-0/0/0.0";
+    String ifaceOut = "ge-0/0/1.0";
+
+    IpAccessList securityPolicy1 =
+        config.getAllInterfaces().get(ifaceOut).getPreSourceNatOutgoingFilter();
+
+    // Any arbitrary flow from trust to untrust should be permitted
+    Flow flow1 = createFlow(IpProtocol.UDP, 90);
+    Flow flow2 = createFlow(IpProtocol.TCP, 9000);
+
+    assertThat(
+        securityPolicy1, accepts(flow1, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
+
+    assertThat(
+        securityPolicy1, accepts(flow2, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
+
+    // Packet to ifaceIn should be denied by default
+    IpAccessList securityPolicy2 =
+        config.getAllInterfaces().get(ifaceIn).getPreSourceNatOutgoingFilter();
+
+    assertThat(
+        securityPolicy2, rejects(flow1, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
+
+    assertThat(
+        securityPolicy2, rejects(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
   }
 }
