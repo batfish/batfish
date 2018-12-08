@@ -1379,8 +1379,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (NatRuleSet rs : nat.getRuleSets().values()) {
       builder.put(
           rs.getFromLocation(), computeAllInterfacesPerNatPacketLocation(rs.getFromLocation()));
-      //      builder.put(
-      //          rs.getToLocation(), computeAllInterfacesPerNatPacketLocation(rs.getToLocation()));
     }
 
     return builder.build();
@@ -2725,13 +2723,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private void convertInterfaces() {
     // sort ruleSets in source nat
     Nat snat = _masterLogicalSystem.getNatSource();
-    List<NatRuleSet> sourceNatRuleSetList;
-    if (snat != null) {
-      sourceNatRuleSetList =
-          snat.getRuleSets().values().stream().sorted().collect(ImmutableList.toImmutableList());
-    } else {
-      sourceNatRuleSetList = null;
-    }
+    List<NatRuleSet> sourceNatRuleSetList =
+        snat == null
+            ? null
+            : snat.getRuleSets()
+                .values()
+                .stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList());
 
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
