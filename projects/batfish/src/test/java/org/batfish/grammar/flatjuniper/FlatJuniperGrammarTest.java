@@ -171,7 +171,6 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -3463,7 +3462,7 @@ public class FlatJuniperGrammarTest {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
     Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();
 
-    assertThat(zones.keySet(), equalTo(ImmutableSet.of("trust", "untrust")));
+    assertThat(zones.keySet(), containsInAnyOrder("trust", "untrust"));
 
     Zone trust = zones.get("trust");
     assertThat(trust.getFromZonePolicies().keySet(), hasSize(0));
@@ -3487,34 +3486,20 @@ public class FlatJuniperGrammarTest {
     Flow flow1 = createFlow(IpProtocol.UDP, 90);
     Flow flow2 = createFlow(IpProtocol.TCP, 9000);
 
-    FilterResult filterResult =
-        securityPolicy1.filter(flow1, ifaceIn, config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(
+        securityPolicy1, accepts(flow1, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
 
-    LineAction action = filterResult.getAction();
-    assertThat(action, equalTo(LineAction.PERMIT));
-
-    filterResult =
-        securityPolicy1.filter(flow2, ifaceIn, config.getIpAccessLists(), config.getIpSpaces());
-
-    action = filterResult.getAction();
-
-    assertThat(action, equalTo(LineAction.PERMIT));
+    assertThat(
+        securityPolicy1, accepts(flow2, ifaceIn, config.getIpAccessLists(), config.getIpSpaces()));
 
     // Packet to ifaceIn should be denied by default
     IpAccessList securityPolicy2 =
         config.getAllInterfaces().get(ifaceIn).getPreSourceNatOutgoingFilter();
 
-    filterResult =
-        securityPolicy2.filter(flow1, ifaceOut, config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(
+        securityPolicy2, rejects(flow1, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
 
-    action = filterResult.getAction();
-    assertThat(action, equalTo(LineAction.DENY));
-
-    filterResult =
-        securityPolicy2.filter(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces());
-
-    action = filterResult.getAction();
-
-    assertThat(action, equalTo(LineAction.DENY));
+    assertThat(
+        securityPolicy2, rejects(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
   }
 }

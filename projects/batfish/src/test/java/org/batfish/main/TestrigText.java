@@ -3,6 +3,7 @@ package org.batfish.main;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,10 @@ public class TestrigText {
     public Builder setConfigurationText(Map<String, String> configurationText) {
       _configurationText = configurationText;
       return this;
+    }
+
+    public Builder setConfigurationText(String testrigResourcePrefix, String... filenames) {
+      return setConfigurationText(testrigResourcePrefix, Arrays.asList(filenames));
     }
 
     public Builder setConfigurationText(String testrigResourcePrefix, Iterable<String> filenames) {

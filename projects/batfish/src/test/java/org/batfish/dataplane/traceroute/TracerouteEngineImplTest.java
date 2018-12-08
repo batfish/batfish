@@ -663,7 +663,7 @@ public class TracerouteEngineImplTest {
             .build();
 
     c1.getIpAccessLists().put(filterName, filter);
-    i2.setPreSourceNatOutgoingFilter(filterName);
+    i2.setPreSourceNatOutgoingFilter(filter);
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
