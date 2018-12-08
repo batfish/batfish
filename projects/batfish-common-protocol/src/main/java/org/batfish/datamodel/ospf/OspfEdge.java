@@ -46,6 +46,12 @@ public final class OspfEdge implements Comparable<OspfEdge> {
     return _node2;
   }
 
+  /** Returns an {@link OspfEdge} pointing in the reverse direction. */
+  @Nonnull
+  public OspfEdge reverse() {
+    return new OspfEdge(_node2, _node1);
+  }
+
   @Override
   public int compareTo(OspfEdge o) {
     return Comparator.comparing(OspfEdge::getNode1)
