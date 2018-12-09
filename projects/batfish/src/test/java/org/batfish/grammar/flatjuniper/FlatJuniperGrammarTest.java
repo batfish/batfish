@@ -2878,7 +2878,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~DESTINATIONNAT~get-0/0/0.0~RULE-SET-IFACE~RULE3~")
+                        .setName("~DESTINATIONNAT~ge-0/0/0.0~RULE-SET-IFACE~RULE3~")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2897,10 +2897,10 @@ public class FlatJuniperGrammarTest {
                                 accepting(
                                     AclLineMatchExprs.match(
                                         HeaderSpace.builder()
-                                            .setDstIps(new IpSpaceReference("NAME"))
+                                            .setDstIps(new IpSpaceReference("global~NAME"))
                                             .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
                                             .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
-                                            .setSrcIps(new IpSpaceReference("SA-NAME"))
+                                            .setSrcIps(new IpSpaceReference("global~SA-NAME"))
                                             .build()))))
                         .build())
                 .build(),
@@ -2913,7 +2913,7 @@ public class FlatJuniperGrammarTest {
                                 accepting(
                                     AclLineMatchExprs.match(
                                         HeaderSpace.builder()
-                                            .setDstIps(new IpSpaceReference("DA-NAME"))
+                                            .setDstIps(new IpSpaceReference("global~DA-NAME"))
                                             .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                                             .build()))))
                         .build())
