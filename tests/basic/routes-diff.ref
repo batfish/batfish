@@ -126,7 +126,7 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "KeyPresence" : "ONLY_IN_SNAPSHOT",
+        "KeyPresence" : "Only in Snapshot",
         "Snapshot_Next_Hops" : [
           null
         ],
@@ -159,7 +159,7 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "KeyPresence" : "ONLY_IN_SNAPSHOT",
+        "KeyPresence" : "Only in Snapshot",
         "Snapshot_Next_Hops" : [
           null
         ],
@@ -192,7 +192,7 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "KeyPresence" : "ONLY_IN_SNAPSHOT",
+        "KeyPresence" : "Only in Snapshot",
         "Snapshot_Next_Hops" : [
           null
         ],
