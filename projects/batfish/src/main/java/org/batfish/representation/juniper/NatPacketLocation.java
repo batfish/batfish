@@ -1,43 +1,69 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import javax.annotation.Nullable;
 
 /** Represents how packets enter and exit a Nat */
-public final class NatPacketLocation implements Serializable {
+public final class NatPacketLocation implements Serializable, Comparable<NatPacketLocation> {
+
+  // The types are defined in a prioritized order
+  enum Type {
+    InterfaceType,
+    ZoneType,
+    RoutingInstanceType
+  }
 
   private static final long serialVersionUID = 1L;
 
-  @Nullable private String _interface;
+  private static final Comparator<NatPacketLocation> COMPARATOR =
+      Comparator.comparing(NatPacketLocation::getType).thenComparing(NatPacketLocation::getName);
 
-  @Nullable private String _routingInstance;
+  private String _name;
 
-  @Nullable private String _zone;
+  private Type _type;
+
+  @Nullable
+  public String getName() {
+    return _name;
+  }
 
   @Nullable
   public String getInterface() {
-    return _interface;
+    return _type == Type.InterfaceType ? _name : null;
   }
 
   @Nullable
   public String getRoutingInstance() {
-    return _routingInstance;
+    return _type == Type.RoutingInstanceType ? _name : null;
   }
 
   @Nullable
   public String getZone() {
-    return _zone;
+    return _type == Type.ZoneType ? _name : null;
   }
 
   public void setInterface(@Nullable String interfaceName) {
-    _interface = interfaceName;
+    _name = interfaceName;
+    _type = Type.InterfaceType;
   }
 
   public void setRoutingInstance(@Nullable String routingInstance) {
-    _routingInstance = routingInstance;
+    _name = routingInstance;
+    _type = Type.RoutingInstanceType;
   }
 
   public void setZone(@Nullable String zone) {
-    _zone = zone;
+    _name = zone;
+    _type = Type.ZoneType;
+  }
+
+  private Type getType() {
+    return _type;
+  }
+
+  @Override
+  public int compareTo(NatPacketLocation o) {
+    return COMPARATOR.compare(this, o);
   }
 }

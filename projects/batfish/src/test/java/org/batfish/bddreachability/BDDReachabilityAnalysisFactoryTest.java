@@ -51,6 +51,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -65,6 +67,7 @@ import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
@@ -81,12 +84,16 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 import org.junit.Rule;
 import org.junit.Test;
@@ -608,5 +615,123 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         edge.traverseForward(origDstIpBdd),
         equalTo(ingressAclBdd.and(natMatchBdd.ite(poolIpBdd, origDstIpBdd))));
+  }
+
+  @Test
+  public void testSourceNatExitsNetwork() throws IOException {
+    /*
+     * Source NAT will write source IP to 5.5.5.5 if source port is 100
+     * Egress ACL permits dest port 80
+     */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Ip poolIp = new Ip("5.5.5.5");
+    HeaderSpace egressAclHeaderSpace =
+        HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(80, 80))).build();
+    HeaderSpace natMatchHeaderSpace =
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(100, 100))).build();
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setActive(true)
+            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(
+                        ImmutableList.of(
+                            IpAccessListLine.acceptingHeaderSpace(egressAclHeaderSpace)))
+                    .build())
+            .setSourceNats(
+                ImmutableList.of(
+                    SourceNat.builder()
+                        .setAcl(
+                            nf.aclBuilder()
+                                .setOwner(config)
+                                .setLines(
+                                    ImmutableList.of(
+                                        IpAccessListLine.acceptingHeaderSpace(natMatchHeaderSpace)))
+                                .build())
+                        .setPoolIpFirst(poolIp)
+                        .setPoolIpLast(poolIp)
+                        .build()))
+            .build();
+    String ifaceName = iface.getName();
+    Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(ifaceName)
+                .setAdministrativeCost(1)
+                .setNetwork(staticRoutePrefix)
+                .build()));
+
+    String hostname = config.getHostname();
+
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLocation(hostname, ifaceName), UniverseIpSpace.INSTANCE)
+                .build());
+
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
+    IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
+
+    BDD egressAclBdd = toBDD.toBDD(egressAclHeaderSpace);
+    BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
+    BDD poolIpBdd = srcToBdd.toBDD(poolIp);
+
+    Map<StateExpr, Edge> preOutVrfOutEdges =
+        analysis.getEdges().get(new PreOutVrf(hostname, vrf.getName()));
+
+    // DeliveredToSubnet
+    Edge edge = preOutVrfOutEdges.get(new NodeInterfaceDeliveredToSubnet(hostname, ifaceName));
+
+    BDD origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
+    BDD subnetIp = dstToBdd.toBDD(new Ip("1.0.0.1"));
+
+    assertThat(
+        edge.traverseForward(origSrcIpBdd),
+        equalTo(subnetIp.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+
+    // ExitsNetwork
+    edge = preOutVrfOutEdges.get(new NodeInterfaceExitsNetwork(hostname, ifaceName));
+    BDD staticRoutePrefixBDD = dstToBdd.toBDD(staticRoutePrefix);
+    assertThat(
+        edge.traverseForward(origSrcIpBdd),
+        equalTo(
+            staticRoutePrefixBDD.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+
+    // NeighborUnreachable
+    edge = preOutVrfOutEdges.get(new NodeInterfaceNeighborUnreachable(hostname, ifaceName));
+
+    origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
+    BDD ifaceIp = dstToBdd.toBDD(new Ip("1.0.0.0"));
+
+    assertThat(
+        edge.traverseForward(origSrcIpBdd),
+        equalTo(ifaceIp.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+
+    // DropAclOut
+    edge = preOutVrfOutEdges.get(new NodeDropAclOut(hostname));
+    BDD deniedAfterNat = natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd.not());
+    BDD deniedViaDelivered = subnetIp.and(deniedAfterNat);
+    BDD deniedViaExits = staticRoutePrefixBDD.and(deniedAfterNat);
+    BDD deniedViaNU = ifaceIp.and(deniedAfterNat);
+    assertThat(
+        edge.traverseForward(origSrcIpBdd),
+        equalTo(deniedViaDelivered.or(deniedViaExits).or(deniedViaNU)));
   }
 }
