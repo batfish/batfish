@@ -171,6 +171,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -199,6 +200,7 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -2876,7 +2878,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~ DESTINATION NAT ~ get-0/0/0.0 ~ RULE-SET-IFACE ~ RULE3 ~")
+                        .setName("~DESTINATIONNAT~get-0/0/0.0~RULE-SET-IFACE~RULE3~")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2889,7 +2891,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~ DESTINATION NAT ~ ge-0/0/0.0 ~ RULE-SET-ZONE ~ RULE1 ~")
+                        .setName("~DESTINATIONNAT~ge-0/0/0.0~RULE-SET-ZONE~RULE1~")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2905,7 +2907,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~ DESTINATION NAT ~ ge-0/0/0.0 ~ RULE-SET-ZONE ~ RULE2 ~")
+                        .setName("~DESTINATIONNAT~ge-0/0/0.0~RULE-SET-ZONE~RULE2~")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2921,7 +2923,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~ DESTINATION NAT ~ get-0/0/0.0 ~ RULE-SET-ZONE ~ RULE3")
+                        .setName("~DESTINATIONNAT~get-0/0/0.0~RULE-SET-ZONE~RULE3")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2937,7 +2939,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~ DESTINATION NAT ~ get-0/0/0.0 ~ RULE-SET-RI ~ RULE3")
+                        .setName("~DESTINATIONNAT~get-0/0/0.0~RULE-SET-RI~RULE3")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -3029,8 +3031,93 @@ public class FlatJuniperGrammarTest {
 
   @Test
   public void testNatSource() throws IOException {
-    parseConfig("nat-source");
-    // TODO: finish this test after conversion of source nat to vi model
+    Configuration config = parseConfig("nat-source2");
+    Map<String, Interface> interfaceMap = config.getAllInterfaces();
+
+    assertThat(
+        interfaceMap.keySet(),
+        containsInAnyOrder("ge-0/0/0.0", "ge-0/0/1.0", "ge-0/0/0", "ge-0/0/1"));
+
+    Interface iface0 = interfaceMap.get("ge-0/0/0.0");
+    Interface iface1 = interfaceMap.get("ge-0/0/1.0");
+
+    assertThat(iface0.getSourceNats(), empty());
+    assertThat(iface1.getSourceNats(), hasSize(2));
+
+    List<SourceNat> sourceNatList = iface1.getSourceNats();
+    assertThat(sourceNatList, hasSize(2));
+
+    SourceNat nat1 = sourceNatList.get(0);
+    assertThat(
+        nat1.getAcl(),
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SOURCENAT~ge-0/0/1.0~RULE-SET2~RULE1~")
+                .setLines(
+                    ImmutableList.of(
+                        accepting(
+                            AclLineMatchExprs.and(
+                                AclLineMatchExprs.matchSrcInterface("ge-0/0/0.0"),
+                                AclLineMatchExprs.match(
+                                    HeaderSpace.builder()
+                                        .setDstIps(Prefix.parse("2.2.2.2/24").toIpSpace())
+                                        .build())))))
+                .build()));
+    assertThat(nat1.getPoolIpFirst(), equalTo(new Ip("10.10.10.0")));
+    assertThat(nat1.getPoolIpLast(), equalTo(new Ip("10.10.10.255")));
+
+    SourceNat nat2 = sourceNatList.get(1);
+    assertThat(
+        nat2.getAcl(),
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SOURCENAT~ge-0/0/1.0~RULE-SET1~RULE1~")
+                .setLines(
+                    ImmutableList.of(
+                        accepting(
+                            AclLineMatchExprs.and(
+                                AclLineMatchExprs.matchSrcInterface("ge-0/0/0.0"),
+                                AclLineMatchExprs.match(
+                                    HeaderSpace.builder()
+                                        .setDstIps(Prefix.parse("1.1.1.1/24").toIpSpace())
+                                        .build())))))
+                .build()));
+    assertThat(nat2.getPoolIpFirst(), equalTo(new Ip("10.10.10.0")));
+    assertThat(nat2.getPoolIpLast(), equalTo(new Ip("10.10.10.255")));
+
+    Flow flow1 = createFlow("3.3.3.3", "2.2.2.1");
+    Flow flow2 = createFlow("3.3.3.3", "1.1.1.1");
+    FilterResult fr =
+        nat1.getAcl().filter(flow1, "ge-0/0/0.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr.getAction(), equalTo(LineAction.PERMIT));
+
+    FilterResult fr2 =
+        nat1.getAcl().filter(flow1, "ge-0/0/1.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr2.getAction(), equalTo(LineAction.DENY));
+
+    FilterResult fr3 =
+        nat1.getAcl().filter(flow2, "ge-0/0/0.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr3.getAction(), equalTo(LineAction.DENY));
+
+    FilterResult fr4 =
+        nat1.getAcl().filter(flow2, "ge-0/0/1.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr4.getAction(), equalTo(LineAction.DENY));
+
+    // test rules in nat2
+    fr = nat2.getAcl().filter(flow1, "ge-0/0/0.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr.getAction(), equalTo(LineAction.DENY));
+
+    fr2 =
+        nat2.getAcl().filter(flow1, "ge-0/0/1.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr2.getAction(), equalTo(LineAction.DENY));
+
+    fr3 =
+        nat2.getAcl().filter(flow2, "ge-0/0/0.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr3.getAction(), equalTo(LineAction.PERMIT));
+
+    fr4 =
+        nat2.getAcl().filter(flow2, "ge-0/0/1.0", config.getIpAccessLists(), config.getIpSpaces());
+    assertThat(fr4.getAction(), equalTo(LineAction.DENY));
   }
 
   @Test
@@ -3063,13 +3150,13 @@ public class FlatJuniperGrammarTest {
      * test from location lines -- it doesn't make sense to have more than one of these, but the
      * extraction supports it.
      */
-    assertThat(ruleSet.getFromLocation().getInterface(), equalTo("ge-0/0/0.0"));
-    assertThat(ruleSet.getFromLocation().getRoutingInstance(), equalTo("FROM-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getFromLocation().getInterface(), nullValue());
+    assertThat(ruleSet.getFromLocation().getRoutingInstance(), nullValue());
     assertThat(ruleSet.getFromLocation().getZone(), equalTo("FROM-ZONE"));
 
     // test to location lines
-    assertThat(ruleSet.getToLocation().getInterface(), equalTo("TO-INTERFACE"));
-    assertThat(ruleSet.getToLocation().getRoutingInstance(), equalTo("TO-ROUTING-INSTANCE"));
+    assertThat(ruleSet.getToLocation().getInterface(), nullValue());
+    assertThat(ruleSet.getToLocation().getRoutingInstance(), nullValue());
     assertThat(ruleSet.getToLocation().getZone(), equalTo("TO-ZONE"));
 
     // test rules
@@ -3097,6 +3184,55 @@ public class FlatJuniperGrammarTest {
                 new NatRuleMatchSrcAddr(Prefix.parse("2.2.2.2/24")),
                 new NatRuleMatchSrcAddrName("SA-NAME"))));
     assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL")));
+  }
+
+  @Test
+  public void testNatSourceJuniperConfig2() {
+    JuniperConfiguration config = parseJuniperConfig("nat-source2");
+
+    Nat nat = config.getMasterLogicalSystem().getNatSource();
+    assertThat(nat.getType(), equalTo(Type.SOURCE));
+
+    Map<String, NatPool> pools = nat.getPools();
+    assertThat(pools.keySet(), contains("POOL1"));
+
+    NatPool pool1 = pools.get("POOL1");
+    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
+    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
+    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+
+    // test rule sets
+    Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
+    assertThat(ruleSets.keySet(), contains("RULE-SET1", "RULE-SET2"));
+
+    NatRuleSet ruleSet = ruleSets.get("RULE-SET1");
+    assertThat(ruleSet.getFromLocation().getRoutingInstance(), equalTo("RI"));
+    assertThat(ruleSet.getToLocation().getInterface(), equalTo("ge-0/0/1.0"));
+
+    NatRuleSet ruleSet2 = ruleSets.get("RULE-SET2");
+    assertThat(ruleSet2.getFromLocation().getInterface(), equalTo("ge-0/0/0.0"));
+    assertThat(ruleSet2.getToLocation().getInterface(), equalTo("ge-0/0/1.0"));
+
+    // test rules
+    List<NatRule> rules = ruleSet.getRules();
+    assertThat(rules, hasSize(1));
+
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
+    assertThat(
+        rule1.getMatches(),
+        equalTo(ImmutableList.of(new NatRuleMatchDstAddr(Prefix.parse("1.1.1.1/24")))));
+    assertThat(rule1.getThen(), equalTo(new NatRuleThenPool("POOL1")));
+
+    rules = ruleSet2.getRules();
+    assertThat(rules, hasSize(1));
+
+    NatRule rule2 = rules.get(0);
+    assertThat(rule2.getName(), equalTo("RULE1"));
+    assertThat(
+        rule2.getMatches(),
+        equalTo(ImmutableList.of(new NatRuleMatchDstAddr(Prefix.parse("2.2.2.2/24")))));
+    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL1")));
   }
 
   @Test
