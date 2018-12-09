@@ -9,6 +9,7 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
+import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -48,7 +49,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
@@ -92,6 +92,7 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
+import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
@@ -564,9 +565,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setIncomingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
-                    .setLines(
-                        ImmutableList.of(
-                            IpAccessListLine.acceptingHeaderSpace(ingressAclHeaderSpace)))
+                    .setLines(ImmutableList.of(acceptingHeaderSpace(ingressAclHeaderSpace)))
                     .build())
             .setDestinationNats(
                 ImmutableList.of(
@@ -576,8 +575,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                             nf.aclBuilder()
                                 .setOwner(config)
                                 .setLines(
-                                    ImmutableList.of(
-                                        IpAccessListLine.acceptingHeaderSpace(natMatchHeaderSpace)))
+                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
                                 .build())
                         .setPoolIpFirst(poolIp)
                         .setPoolIpLast(poolIp)
@@ -620,30 +618,36 @@ public final class BDDReachabilityAnalysisFactoryTest {
   @Test
   public void testSourceNatExitsNetwork() throws IOException {
     /*
+     * Pre-NAT out ACL permits dest source ports 50 - 150
      * Source NAT will write source IP to 5.5.5.5 if source port is 100
-     * Egress ACL permits dest port 80
+     * Post-NAT out ACL permits dest port 80
      */
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
     Ip poolIp = new Ip("5.5.5.5");
-    HeaderSpace egressAclHeaderSpace =
+    HeaderSpace postNatOutAclHeaderSpace =
         HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(80, 80))).build();
     HeaderSpace natMatchHeaderSpace =
         HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(100, 100))).build();
+    HeaderSpace preNatOutAclHeaderSpace =
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(50, 150))).build();
     Interface iface =
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setPreSourceNatOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
+                    .build())
             .setOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
-                    .setLines(
-                        ImmutableList.of(
-                            IpAccessListLine.acceptingHeaderSpace(egressAclHeaderSpace)))
+                    .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
                     .build())
             .setSourceNats(
                 ImmutableList.of(
@@ -652,8 +656,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                             nf.aclBuilder()
                                 .setOwner(config)
                                 .setLines(
-                                    ImmutableList.of(
-                                        IpAccessListLine.acceptingHeaderSpace(natMatchHeaderSpace)))
+                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
                                 .build())
                         .setPoolIpFirst(poolIp)
                         .setPoolIpLast(poolIp)
@@ -689,7 +692,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
     IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
 
-    BDD egressAclBdd = toBDD.toBDD(egressAclHeaderSpace);
+    BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);
+    BDD postNatOutAclBdd = toBDD.toBDD(postNatOutAclHeaderSpace);
     BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
     BDD poolIpBdd = srcToBdd.toBDD(poolIp);
 
@@ -704,7 +708,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     assertThat(
         edge.traverseForward(origSrcIpBdd),
-        equalTo(subnetIp.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+        equalTo(
+            subnetIp
+                .and(preNatOutAclBdd)
+                .and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(postNatOutAclBdd))));
 
     // ExitsNetwork
     edge = preOutVrfOutEdges.get(new NodeInterfaceExitsNetwork(hostname, ifaceName));
@@ -712,7 +719,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         edge.traverseForward(origSrcIpBdd),
         equalTo(
-            staticRoutePrefixBDD.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+            staticRoutePrefixBDD
+                .and(preNatOutAclBdd)
+                .and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(postNatOutAclBdd))));
 
     // NeighborUnreachable
     edge = preOutVrfOutEdges.get(new NodeInterfaceNeighborUnreachable(hostname, ifaceName));
@@ -722,16 +731,127 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     assertThat(
         edge.traverseForward(origSrcIpBdd),
-        equalTo(ifaceIp.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd))));
+        equalTo(
+            ifaceIp
+                .and(preNatOutAclBdd)
+                .and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(postNatOutAclBdd))));
 
     // DropAclOut
     edge = preOutVrfOutEdges.get(new NodeDropAclOut(hostname));
-    BDD deniedAfterNat = natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(egressAclBdd.not());
-    BDD deniedViaDelivered = subnetIp.and(deniedAfterNat);
-    BDD deniedViaExits = staticRoutePrefixBDD.and(deniedAfterNat);
-    BDD deniedViaNU = ifaceIp.and(deniedAfterNat);
+    BDD deniedAfterNat = natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(postNatOutAclBdd.not());
+    BDD deniedBeforeNat = origSrcIpBdd.and(preNatOutAclBdd.not());
+    BDD deniedViaDelivered = subnetIp.and(deniedBeforeNat.or(deniedAfterNat));
+    BDD deniedViaExits = staticRoutePrefixBDD.and(deniedBeforeNat.or(deniedAfterNat));
+    BDD deniedViaNU = ifaceIp.and(deniedBeforeNat.or(deniedAfterNat));
     assertThat(
         edge.traverseForward(origSrcIpBdd),
         equalTo(deniedViaDelivered.or(deniedViaExits).or(deniedViaNU)));
+  }
+
+  @Test
+  public void testEdgeWithPreNatAcl() throws IOException {
+    /*
+     * Pre-NAT out ACL permits dest source ports 50 - 150
+     * Source NAT will write source IP to 5.5.5.5 if source port is 100
+     * Post-NAT out ACL permits dest port 80
+     */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Ip poolIp = new Ip("5.5.5.5");
+    HeaderSpace postNatOutAclHeaderSpace =
+        HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(80, 80))).build();
+    HeaderSpace natMatchHeaderSpace =
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(100, 100))).build();
+    HeaderSpace preNatOutAclHeaderSpace =
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(50, 150))).build();
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setActive(true)
+            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setPreSourceNatOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
+                    .build())
+            .setOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
+                    .build())
+            .setSourceNats(
+                ImmutableList.of(
+                    SourceNat.builder()
+                        .setAcl(
+                            nf.aclBuilder()
+                                .setOwner(config)
+                                .setLines(
+                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
+                                .build())
+                        .setPoolIpFirst(poolIp)
+                        .setPoolIpLast(poolIp)
+                        .build()))
+            .build();
+    String ifaceName = iface.getName();
+    Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopInterface(ifaceName)
+                .setAdministrativeCost(1)
+                .setNetwork(staticRoutePrefix)
+                .build()));
+
+    Configuration peer = cb.build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(peer).build();
+    Interface peerIface =
+        nf.interfaceBuilder()
+            .setOwner(peer)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress("1.0.0.1/31"))
+            .build();
+
+    String hostname = config.getHostname();
+    String peername = peer.getHostname();
+    String peerIfaceName = peerIface.getName();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(hostname, config, peername, peer);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLocation(hostname, ifaceName), UniverseIpSpace.INSTANCE)
+                .build());
+
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
+
+    BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);
+    BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
+    BDD poolIpBdd = srcToBdd.toBDD(poolIp);
+    BDD origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
+
+    Map<StateExpr, Edge> preOutEdgeOutEdges =
+        analysis.getEdges().get(new PreOutEdge(hostname, ifaceName, peername, peerIfaceName));
+
+    Edge edge =
+        preOutEdgeOutEdges.get(new PreOutEdgePostNat(hostname, ifaceName, peername, peerIfaceName));
+    assertThat(
+        edge.traverseForward(origSrcIpBdd),
+        equalTo(preNatOutAclBdd.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd))));
+
+    edge = preOutEdgeOutEdges.get(new NodeDropAclOut(hostname));
+    assertThat(edge.traverseForward(ONE), equalTo(preNatOutAclBdd.not()));
   }
 }
