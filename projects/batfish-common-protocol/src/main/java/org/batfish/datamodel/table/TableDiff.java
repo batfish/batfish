@@ -66,7 +66,7 @@ public final class TableDiff {
    * keys nor values), two columns are included for base and delta values.
    */
   @VisibleForTesting
-  static TableMetadata diffMetadata(TableMetadata inputMetadata) {
+  public static TableMetadata diffMetadata(TableMetadata inputMetadata) {
     ImmutableList.Builder<ColumnMetadata> diffColumnMetatadata = ImmutableList.builder();
     // 1. Insert all key columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {

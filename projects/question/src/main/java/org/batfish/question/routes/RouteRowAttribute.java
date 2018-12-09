@@ -3,50 +3,51 @@ package org.batfish.question.routes;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
-import static org.batfish.datamodel.AbstractRoute.NO_TAG;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Ip;
 
 // split for bgp and abstract route...
+@ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
-  @Nullable private String _asPath;
+  @Nullable private AsPath _asPath;
 
   @Nullable private Integer _adminDistance;
 
-  @Nonnull private List<String> _communities;
+  /** list of communities converted to comma separated communities */
+  @Nullable private String _communities;
 
   @Nullable private Integer _localPreference;
 
   @Nullable private Long _metric;
 
-  @Nonnull private Ip _nextHopIp;
-
   @Nullable private String _nextHop;
+
+  @Nonnull private Ip _nextHopIp;
 
   @Nullable private String _originProtocol;
 
-  @Nonnull private String _protocol;
+  @Nullable private String _protocol;
 
-  private int _tag;
+  @Nullable private Integer _tag;
 
   public RouteRowAttribute(
       @Nonnull Ip nextHopIp,
-      @Nullable String nextHop,
-      @Nullable Integer adminDistance,
-      @Nullable Long metric,
-      @Nullable String asPath,
-      @Nullable Integer localPreference,
-      @Nonnull List<String> communities,
-      @Nullable String originalProtocol,
-      @Nonnull String protocol,
-      int tag) {
+      String nextHop,
+      Integer adminDistance,
+      Long metric,
+      AsPath asPath,
+      Integer localPreference,
+      String communities,
+      String originalProtocol,
+      String protocol,
+      Integer tag) {
     _nextHopIp = nextHopIp;
     _nextHop = nextHop;
     _adminDistance = adminDistance;
@@ -80,7 +81,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
-  public String getAsPath() {
+  public AsPath getAsPath() {
     return _asPath;
   }
 
@@ -90,7 +91,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nonnull
-  public List<String> getCommunities() {
+  public String getCommunities() {
     return _communities;
   }
 
@@ -99,12 +100,13 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return _originProtocol;
   }
 
-  @Nonnull
+  @Nullable
   public String getProtocol() {
     return _protocol;
   }
 
-  public int getTag() {
+  @Nullable
+  public Integer getTag() {
     return _tag;
   }
 
@@ -121,7 +123,42 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return COMPARATOR.compare(this, o);
   }
 
-  @ParametersAreNullableByDefault
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RouteRowAttribute that = (RouteRowAttribute) o;
+    return Objects.equals(_nextHopIp, that._nextHopIp)
+        && Objects.equals(_nextHop, that._nextHop)
+        && Objects.equals(_adminDistance, that._adminDistance)
+        && Objects.equals(_metric, that._metric)
+        && Objects.equals(_asPath, that._asPath)
+        && Objects.equals(_localPreference, that._localPreference)
+        && Objects.equals(_communities, that._communities)
+        && Objects.equals(_originProtocol, that._originProtocol)
+        && Objects.equals(_protocol, that._protocol)
+        && Objects.equals(_tag, that._tag);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _nextHopIp,
+        _nextHop,
+        _adminDistance,
+        _metric,
+        _asPath,
+        _localPreference,
+        _communities,
+        _originProtocol,
+        _protocol,
+        _tag);
+  }
+
   public static final class Builder {
     @Nullable private Ip _nextHopIp;
 
@@ -131,11 +168,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     @Nullable private Long _metric;
 
-    @Nullable private String _asPath;
+    @Nullable private AsPath _asPath;
 
     @Nullable private Integer _localPreference;
 
-    @Nullable private List<String> _communities;
+    @Nullable private String _communities;
 
     @Nullable private String _originProtocol;
 
@@ -144,16 +181,10 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private Integer _tag;
 
     public RouteRowAttribute build() {
-      if (_nextHopIp == null) {
-        throw new BatfishException("Route is missing the next hop IP");
+      _nextHopIp = firstNonNull(_nextHopIp, Ip.AUTO);
+      if (_tag != null && _tag == AbstractRoute.NO_TAG) {
+        _tag = null;
       }
-      if (_protocol == null) {
-        throw new BatfishException("Route is missing the Protocol");
-      }
-      if (_tag == null) {
-        _tag = NO_TAG;
-      }
-
       return new RouteRowAttribute(
           _nextHopIp,
           _nextHop,
@@ -161,7 +192,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _metric,
           _asPath,
           _localPreference,
-          firstNonNull(_communities, new ArrayList<>()),
+          _communities,
           _originProtocol,
           _protocol,
           _tag);
@@ -187,7 +218,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setAsPath(String asPath) {
+    public Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
       return this;
     }
@@ -197,7 +228,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setCommunities(List<String> communities) {
+    public Builder setCommunities(String communities) {
       _communities = communities;
       return this;
     }
