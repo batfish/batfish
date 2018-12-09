@@ -151,32 +151,51 @@ public class RouteAnswererUtil {
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
         if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
             || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_SNAPSHOT)) {
-          nextHopsListBase.add(routeRowAttributeBase.getNextHop());
-          nextHopsIpsListBase.add(routeRowAttributeBase.getNextHopIp());
-          protocolsListBase.add(routeRowAttributeBase.getProtocol());
+          nextHopsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
+          nextHopsIpsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHopIp());
+          protocolsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getProtocol());
           asPathsListBase.add(
-              routeRowAttributeBase.getAsPath() == null
+              routeRowAttributeBase == null
                   ? null
-                  : routeRowAttributeBase.getAsPath().getAsPathString());
-          metricsListBase.add(routeRowAttributeBase.getMetric());
-          localPrefsListBase.add(routeRowAttributeBase.getLocalPreference());
-          communitiesListBase.add(routeRowAttributeBase.getCommunities());
-          originProtocolsListBase.add(routeRowAttributeBase.getOriginProtocol());
-          tagsListBase.add(routeRowAttributeBase.getTag());
-        } else if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
+                  : routeRowAttributeBase.getAsPath() == null
+                      ? null
+                      : routeRowAttributeBase.getAsPath().getAsPathString());
+          metricsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getMetric());
+          localPrefsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getLocalPreference());
+          communitiesListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getCommunities());
+          originProtocolsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getOriginProtocol());
+          tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
+        }
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
             || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_REFERENCE)) {
-          nextHopsListRef.add(routeRowAttributeRef.getNextHop());
-          nextHopsIpsListRef.add(routeRowAttributeRef.getNextHopIp());
-          protocolsListRef.add(routeRowAttributeRef.getProtocol());
+          nextHopsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
+          nextHopsIpsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHopIp());
+          protocolsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getProtocol());
           asPathsListRef.add(
-              routeRowAttributeRef.getAsPath() == null
+              routeRowAttributeRef == null
                   ? null
-                  : routeRowAttributeRef.getAsPath().getAsPathString());
-          metricsListRef.add(routeRowAttributeRef.getMetric());
-          localPrefsListRef.add(routeRowAttributeRef.getLocalPreference());
-          communitiesListRef.add(routeRowAttributeRef.getCommunities());
-          originProtocolsListRef.add(routeRowAttributeRef.getOriginProtocol());
-          tagsListRef.add(routeRowAttributeRef.getTag());
+                  : routeRowAttributeRef.getAsPath() == null
+                      ? null
+                      : routeRowAttributeRef.getAsPath().getAsPathString());
+          metricsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getMetric());
+          localPrefsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getLocalPreference());
+          communitiesListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getCommunities());
+          originProtocolsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getOriginProtocol());
+          tagsListRef.add(routeRowAttributeRef == null ? null : routeRowAttributeRef.getTag());
         }
       }
       rowBuilder
@@ -306,20 +325,31 @@ public class RouteAnswererUtil {
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
         if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
             || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_SNAPSHOT)) {
-          nextHopsListBase.add(routeRowAttributeBase.getNextHop());
-          nextHopsIpsListBase.add(routeRowAttributeBase.getNextHopIp());
-          protocolsListBase.add(routeRowAttributeBase.getProtocol());
-          metricsListBase.add(routeRowAttributeBase.getMetric());
-          adminDistancesListBase.add(routeRowAttributeBase.getAdminDistance());
-          tagsListBase.add(routeRowAttributeBase.getTag());
-        } else if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
+          nextHopsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
+          nextHopsIpsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHopIp());
+          protocolsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getProtocol());
+          metricsListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getMetric());
+          adminDistancesListBase.add(
+              routeRowAttributeBase == null ? null : routeRowAttributeBase.getAdminDistance());
+          tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
+        }
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
             || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_REFERENCE)) {
-          nextHopsListRef.add(routeRowAttributeRef.getNextHop());
-          nextHopsIpsListRef.add(routeRowAttributeRef.getNextHopIp());
-          protocolsListRef.add(routeRowAttributeRef.getProtocol());
-          metricsListRef.add(routeRowAttributeRef.getMetric());
-          adminDistancesListRef.add(routeRowAttributeRef.getAdminDistance());
-          tagsListRef.add(routeRowAttributeRef.getTag());
+          nextHopsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
+          nextHopsIpsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHopIp());
+          protocolsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getProtocol());
+          metricsListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getMetric());
+          adminDistancesListRef.add(
+              routeRowAttributeRef == null ? null : routeRowAttributeRef.getAdminDistance());
+          tagsListRef.add(routeRowAttributeRef == null ? null : routeRowAttributeRef.getTag());
         }
       }
       rowBuilder
