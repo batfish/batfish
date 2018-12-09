@@ -3594,6 +3594,13 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSecurityAddressBookGlobalAddress() throws IOException {
+    Configuration config = parseConfig("security-address-book-global-address");
+    Map<String, IpSpace> ipSpaces = config.getIpSpaces();
+    assertThat(ipSpaces.keySet(), contains("global~NAME"));
+  }
+
+  @Test
   public void testSecurityPolicy() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
     Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();

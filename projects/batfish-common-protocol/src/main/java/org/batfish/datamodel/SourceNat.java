@@ -2,8 +2,11 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class SourceNat implements Serializable {
 
@@ -52,13 +55,15 @@ public class SourceNat implements Serializable {
 
   private IpAccessList _acl;
 
-  private Ip _poolIpFirst;
+  // null pool IPs are for non-natting rules
+  private @Nullable Ip _poolIpFirst;
 
-  private Ip _poolIpLast;
+  private @Nullable Ip _poolIpLast;
 
   public SourceNat() {}
 
-  private SourceNat(IpAccessList acl, Ip poolIpFirst, Ip poolIpLast) {
+  @JsonCreator
+  private SourceNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
@@ -70,12 +75,12 @@ public class SourceNat implements Serializable {
   }
 
   @JsonProperty(PROP_POOL_IP_FIRST)
-  public Ip getPoolIpFirst() {
+  public @Nullable Ip getPoolIpFirst() {
     return _poolIpFirst;
   }
 
   @JsonProperty(PROP_POOL_IP_LAST)
-  public Ip getPoolIpLast() {
+  public @Nullable Ip getPoolIpLast() {
     return _poolIpLast;
   }
 
@@ -85,12 +90,12 @@ public class SourceNat implements Serializable {
   }
 
   @JsonProperty(PROP_POOL_IP_FIRST)
-  public void setPoolIpFirst(Ip poolIpFirst) {
+  public void setPoolIpFirst(@Nonnull Ip poolIpFirst) {
     _poolIpFirst = poolIpFirst;
   }
 
   @JsonProperty(PROP_POOL_IP_LAST)
-  public void setPoolIpLast(Ip poolIpLast) {
+  public void setPoolIpLast(@Nonnull Ip poolIpLast) {
     _poolIpLast = poolIpLast;
   }
 

@@ -1533,6 +1533,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     builder.setAcl(
         IpAccessList.builder()
+            .setOwner(_c)
             .setName(
                 String.format("~SOURCENAT~%s~%s~%s~", ifaceName, rulesetName, natRule.getName()))
             .setLines(

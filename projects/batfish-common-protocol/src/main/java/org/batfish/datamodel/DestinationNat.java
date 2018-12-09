@@ -58,11 +58,12 @@ public class DestinationNat implements Serializable {
 
   private final IpAccessList _acl;
 
-  private final Ip _poolIpFirst;
+  // null pool IPs are for non-natting rules
+  private final @Nullable Ip _poolIpFirst;
 
-  private final Ip _poolIpLast;
+  private final @Nullable Ip _poolIpLast;
 
-  private DestinationNat(IpAccessList acl, Ip poolIpFirst, Ip poolIpLast) {
+  private DestinationNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
@@ -96,12 +97,12 @@ public class DestinationNat implements Serializable {
   }
 
   @JsonProperty(PROP_POOL_IP_FIRST)
-  public Ip getPoolIpFirst() {
+  public @Nullable Ip getPoolIpFirst() {
     return _poolIpFirst;
   }
 
   @JsonProperty(PROP_POOL_IP_LAST)
-  public Ip getPoolIpLast() {
+  public @Nullable Ip getPoolIpLast() {
     return _poolIpLast;
   }
 

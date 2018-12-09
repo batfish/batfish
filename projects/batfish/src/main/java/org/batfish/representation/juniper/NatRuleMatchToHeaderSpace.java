@@ -7,6 +7,11 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.SubRange;
 
 public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {
+  /* From the Juniper docs:
+   *   NAT rules can use address objects only from the global address book.
+   */
+  private static final String GLOBAL_ADDRESS_BOOK_PREFIX = "global~";
+
   private HeaderSpace.Builder _headerSpace;
 
   private NatRuleMatchToHeaderSpace() {
@@ -27,7 +32,8 @@ public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {
 
   @Override
   public Void visitNatRuleMatchDstAddrName(NatRuleMatchDstAddrName natRuleMatchDstAddrName) {
-    _headerSpace.setDstIps(new IpSpaceReference(natRuleMatchDstAddrName.getName()));
+    _headerSpace.setDstIps(
+        new IpSpaceReference(GLOBAL_ADDRESS_BOOK_PREFIX + natRuleMatchDstAddrName.getName()));
     return null;
   }
 
@@ -46,7 +52,8 @@ public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {
 
   @Override
   public Void visitNatRuleMatchSrcAddrName(NatRuleMatchSrcAddrName natRuleMatchSrcAddrName) {
-    _headerSpace.setSrcIps(new IpSpaceReference(natRuleMatchSrcAddrName.getName()));
+    _headerSpace.setSrcIps(
+        new IpSpaceReference(GLOBAL_ADDRESS_BOOK_PREFIX + natRuleMatchSrcAddrName.getName()));
     return null;
   }
 
