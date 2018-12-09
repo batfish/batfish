@@ -73,8 +73,7 @@ public class RoutesAnswererUtil {
    *     {@link SortedSet} of {@link RouteRowAttribute}s
    * @return {@link Multiset} of {@link Row}s formed for the BGP routes
    */
-  public static Multiset<Row> getBgpRouteRows(
-      Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRawRows) {
+  static Multiset<Row> getBgpRouteRows(Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRawRows) {
     Multiset<Row> rows = HashMultiset.create();
     for (Entry<RouteRowKey, SortedSet<RouteRowAttribute>> entry : bgpRawRows.entrySet()) {
       Row.RowBuilder rowBuilder = Row.builder();
@@ -132,7 +131,7 @@ public class RoutesAnswererUtil {
    * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
    *     in the input
    */
-  public static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
+  static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
       Row.RowBuilder rowBuilder = Row.builder();
@@ -254,7 +253,7 @@ public class RoutesAnswererUtil {
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getBgpRibRoutes(
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getBgpRibRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
       Set<String> matchingNodes,
       @Nullable Prefix network,
@@ -293,7 +292,7 @@ public class RoutesAnswererUtil {
    * @return {@link Multiset} of {@link Row}s formed for the Main RIB routes
    */
   @Nonnull
-  public static Multiset<Row> getAbstractRouteRows(
+  static Multiset<Row> getAbstractRouteRows(
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> abstractRouteRawRows) {
     Multiset<Row> rows = HashMultiset.create();
 
@@ -340,7 +339,7 @@ public class RoutesAnswererUtil {
    * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
    *     in the input
    */
-  public static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
+  static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
@@ -431,7 +430,7 @@ public class RoutesAnswererUtil {
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getMainRibRoutes(
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
@@ -473,7 +472,7 @@ public class RoutesAnswererUtil {
    * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */
-  public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupRoutesByPrefix(
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupRoutesByPrefix(
       String hostName,
       String vrfName,
       Set<AbstractRoute> routes,
@@ -515,7 +514,7 @@ public class RoutesAnswererUtil {
    * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */
-  public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupBgpRoutesByPrefix(
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupBgpRoutesByPrefix(
       String hostName,
       String vrfName,
       Set<BgpRoute> routes,
@@ -570,7 +569,7 @@ public class RoutesAnswererUtil {
    * @param routeRowAttributes2 Sorted {@link List} of second {@link RouteRowAttribute}s
    * @return A 2-dimensional (nested) {@link List} with the inner list of size 2
    */
-  public static List<List<RouteRowAttribute>> alignRouteRowAttributes(
+  static List<List<RouteRowAttribute>> alignRouteRowAttributes(
       List<RouteRowAttribute> routeRowAttributes1, List<RouteRowAttribute> routeRowAttributes2) {
     List<List<RouteRowAttribute>> alignedRouteRowAttrs = new ArrayList<>();
     int i = 0;
@@ -614,7 +613,7 @@ public class RoutesAnswererUtil {
    *     of {@link RouteRowAttribute}s in the reference snapshot
    * @return {@link List} of {@link DiffRoutesOutput}
    */
-  public static List<DiffRoutesOutput> getRoutesDiff(
+  static List<DiffRoutesOutput> getRoutesDiff(
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInBase,
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInRef) {
     Set<RouteRowKey> allRouteKeys = new HashSet<>(routesInBase.keySet());
