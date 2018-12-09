@@ -1,6 +1,6 @@
 package org.batfish.question.routes;
 
-import static org.batfish.question.routes.RouteAnswererUtil.alignRouteRowAttributes;
+import static org.batfish.question.routes.RoutesAnswererUtil.alignRouteRowAttributes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -10,8 +10,8 @@ import java.util.List;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
-/** Tests for {@link RouteAnswererUtil} */
-public class RouteAnswererUtilTest {
+/** Tests for {@link RoutesAnswererUtil} */
+public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsNHNonnulls() {

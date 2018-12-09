@@ -46,9 +46,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
-import org.batfish.question.routes.DiffRoutesOutput.KeyPresence;
+import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 
-public class RouteAnswererUtil {
+public class RoutesAnswererUtil {
 
   /** Compute the next hop node for a given next hop IP. */
   @Nullable
@@ -65,6 +65,14 @@ public class RouteAnswererUtil {
         .orElse(null);
   }
 
+  /**
+   * Takes in a {@link Map} of {@link RouteRowKey}s and a {@link SortedSet} of {@link
+   * RouteRowAttribute}s and forms one {@link Row} per {@link RouteRowKey}
+   *
+   * @param bgpRawRows {@link Map} containing BGP routes in the form of {@link RouteRowKey} and
+   *     {@link SortedSet} of {@link RouteRowAttribute}s
+   * @return {@link Multiset} of {@link Row}s formed for the BGP routes
+   */
   public static Multiset<Row> getBgpRouteRows(
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRawRows) {
     Multiset<Row> rows = HashMultiset.create();
@@ -116,6 +124,14 @@ public class RouteAnswererUtil {
     return rows;
   }
 
+  /**
+   * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
+   * each {@link DiffRoutesOutput}
+   *
+   * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link BgpRoute}s
+   * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
+   *     in the input
+   */
   public static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
@@ -149,8 +165,8 @@ public class RouteAnswererUtil {
           diffRoutesOutput.getDiffInAttributes()) {
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_SNAPSHOT)) {
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
+            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.ONLY_IN_SNAPSHOT)) {
           nextHopsListBase.add(
               routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
           nextHopsIpsListBase.add(
@@ -173,8 +189,10 @@ public class RouteAnswererUtil {
               routeRowAttributeBase == null ? null : routeRowAttributeBase.getOriginProtocol());
           tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
         }
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_REFERENCE)) {
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
+            || diffRoutesOutput
+                .getKeyPresenceStatus()
+                .equals(KeyPresenceStatus.ONLY_IN_REFERENCE)) {
           nextHopsListRef.add(
               routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
           nextHopsIpsListRef.add(
@@ -224,6 +242,18 @@ public class RouteAnswererUtil {
     return rows;
   }
 
+  /**
+   * Groups the matching BGP routes as per the input filters to a {@link Map} of {@link RouteRowKey}
+   * and {@link SortedSet} of {@link RouteRowAttribute}s
+   *
+   * @param bgpRoutes all {@link BgpRoute}s
+   * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
+   * @param network {@link Prefix} of the network used to filter the routees
+   * @param protocolRegex protocols used to filter the {@link BgpRoute}s
+   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
+   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
+   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   */
   public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getBgpRibRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
       Set<String> matchingNodes,
@@ -254,7 +284,14 @@ public class RouteAnswererUtil {
     return bgpRoutesGroupedByKey;
   }
 
-  /** Convert a {@link Set} of {@link AbstractRoute} into a list of rows. */
+  /**
+   * Takes in a {@link Map} of {@link RouteRowKey}s and a {@link SortedSet} of {@link
+   * RouteRowAttribute}s and forms one {@link Row} per {@link RouteRowKey}
+   *
+   * @param abstractRouteRawRows {@link Map} containing Main RIB routes in the form of {@link
+   *     RouteRowKey} and {@link SortedSet} of {@link RouteRowAttribute}s
+   * @return {@link Multiset} of {@link Row}s formed for the Main RIB routes
+   */
   @Nonnull
   public static Multiset<Row> getAbstractRouteRows(
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> abstractRouteRawRows) {
@@ -295,6 +332,14 @@ public class RouteAnswererUtil {
     return rows;
   }
 
+  /**
+   * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
+   * each {@link DiffRoutesOutput}
+   *
+   * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for routes in Main RIB
+   * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
+   *     in the input
+   */
   public static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
 
@@ -323,8 +368,8 @@ public class RouteAnswererUtil {
           diffRoutesOutput.getDiffInAttributes()) {
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_SNAPSHOT)) {
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
+            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.ONLY_IN_SNAPSHOT)) {
           nextHopsListBase.add(
               routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
           nextHopsIpsListBase.add(
@@ -337,8 +382,10 @@ public class RouteAnswererUtil {
               routeRowAttributeBase == null ? null : routeRowAttributeBase.getAdminDistance());
           tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
         }
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresence.ONLY_IN_REFERENCE)) {
+        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
+            || diffRoutesOutput
+                .getKeyPresenceStatus()
+                .equals(KeyPresenceStatus.ONLY_IN_REFERENCE)) {
           nextHopsListRef.add(
               routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
           nextHopsIpsListRef.add(
@@ -372,7 +419,18 @@ public class RouteAnswererUtil {
     return rows;
   }
 
-  /** Get the rows for MainRib routes. */
+  /**
+   * Groups the matching routes as per the input filters to a {@link Map} of {@link RouteRowKey} and
+   * {@link SortedSet} of {@link RouteRowAttribute}s
+   *
+   * @param ribs {@link SortedMap} of routes in all RIBs
+   * @param matchingNodes {@link Set} of nodes from which {@link AbstractRoute}s are to be selected
+   * @param network {@link Prefix} of the network used to filter the routes
+   * @param protocolRegex protocols used to filter the {@link AbstractRoute}s
+   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
+   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
+   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   */
   public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
@@ -405,13 +463,14 @@ public class RouteAnswererUtil {
   }
 
   /**
-   * Groups and sorts {@link RouteRowAttribute}s for {@link AbstractRoute}s in the main RIB by
-   * {@link RouteRowKey}
+   * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
+   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
+   * RouteRowAttribute}
    *
    * @param hostName Hostname for the node containing the routes
    * @param vrfName VRF name of the host containing the routes
-   * @param routes {@link AbstractRoute}s which need to be grouped by fields of {@link RouteRowKey}
-   * @return {@link Map} containing mapping from {@link RouteRowKey} to {@link SortedSet} of {@link
+   * @param routes {@link Set} of {@link AbstractRoute}s which need to be processed
+   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */
   public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupRoutesByPrefix(
@@ -446,14 +505,14 @@ public class RouteAnswererUtil {
   }
 
   /**
-   * Groups and sorts {@link RouteRowAttribute}s for {@link org.batfish.datamodel.BgpRoute}s in the
-   * BGP RIB by {@link RouteRowKey}
+   * Given a {@link Set} of {@link BgpRoute}s, groups the routes by the fields of {@link
+   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
+   * RouteRowAttribute}
    *
    * @param hostName Hostname for the node containing the routes
    * @param vrfName VRF name of the host containing the routes
-   * @param routes {@link Set} of {@link BgpRoute}s which need to be grouped by fields of {@link
-   *     RouteRowKey}
-   * @return {@link Map} containing mapping from {@link RouteRowKey} to {@link SortedSet} of {@link
+   * @param routes {@link Set} of {@link BgpRoute}s which need to be processed
+   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */
   public static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupBgpRoutesByPrefix(
@@ -499,6 +558,18 @@ public class RouteAnswererUtil {
     return bgpRoutesGroupedByPrefix;
   }
 
+  /**
+   * Given two {@link List}s of {@link RouteRowAttribute}s (which should be sorted), outputs a
+   * 2-dimensional list with two columns
+   *
+   * <p>In each row of the output 2-dimensional {@link List} the two columns contain matching {@link
+   * RouteRowAttribute}s and for {@link RouteRowAttribute}s with no matching value in the other
+   * routeRowAttributes {@link List} the other column contains a null.
+   *
+   * @param routeRowAttributes1 Sorted {@link List} of first {@link RouteRowAttribute}s
+   * @param routeRowAttributes2 Sorted {@link List} of second {@link RouteRowAttribute}s
+   * @return A 2-dimensional (nested) {@link List} with the inner list of size 2
+   */
   public static List<List<RouteRowAttribute>> alignRouteRowAttributes(
       List<RouteRowAttribute> routeRowAttributes1, List<RouteRowAttribute> routeRowAttributes2) {
     List<List<RouteRowAttribute>> alignedRouteRowAttrs = new ArrayList<>();
@@ -532,6 +603,17 @@ public class RouteAnswererUtil {
     return alignedRouteRowAttrs;
   }
 
+  /**
+   * Given two {@link Map}s containing mapping from {@link RouteRowKey} to {@link SortedSet} of
+   * {@link RouteRowAttribute}s produces diff in the form of a {@link List} of {@link
+   * DiffRoutesOutput}
+   *
+   * @param routesInBase {@link Map} containing mapping from {@link RouteRowKey} to {@link
+   *     SortedSet} of {@link RouteRowAttribute}s in the base snapshot
+   * @param routesInRef {@link Map} containing mapping from {@link RouteRowKey} to {@link SortedSet}
+   *     of {@link RouteRowAttribute}s in the reference snapshot
+   * @return {@link List} of {@link DiffRoutesOutput}
+   */
   public static List<DiffRoutesOutput> getRoutesDiff(
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInBase,
       Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInRef) {
@@ -550,7 +632,7 @@ public class RouteAnswererUtil {
                   alignRouteRowAttributes(
                       new ArrayList<>(routeRowAttributesInBase),
                       new ArrayList<>(routeRowAttributesInRef)),
-                  KeyPresence.IN_BOTH));
+                  KeyPresenceStatus.IN_BOTH));
         }
       } else if (routesInBase.containsKey(routeRowKey)) {
         SortedSet<RouteRowAttribute> routeRowAttributesInBase = routesInBase.get(routeRowKey);
@@ -561,7 +643,7 @@ public class RouteAnswererUtil {
                 .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
                 .collect(Collectors.toList());
         listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresence.ONLY_IN_SNAPSHOT));
+            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresenceStatus.ONLY_IN_SNAPSHOT));
       } else {
         SortedSet<RouteRowAttribute> routeRowAttributesInRef = routesInRef.get(routeRowKey);
         // base route attribute in the 2 column diff Matrix will be unset for elements
@@ -571,7 +653,7 @@ public class RouteAnswererUtil {
                 .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
                 .collect(Collectors.toList());
         listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresence.ONLY_IN_REFERENCE));
+            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresenceStatus.ONLY_IN_REFERENCE));
       }
     }
     return listOfDiffPerKeys;

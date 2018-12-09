@@ -5,6 +5,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 
+/**
+ * Class representing the key used for grouping {@link org.batfish.datamodel.AbstractRoute}s and
+ * {@link org.batfish.datamodel.BgpRoute}s
+ */
 @ParametersAreNonnullByDefault
 public class RouteRowKey {
   @Nonnull private String _hostName;

@@ -13,7 +13,10 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Ip;
 
-// split for bgp and abstract route...
+/**
+ * Contains the non-key attributes of {@link org.batfish.datamodel.BgpRoute}s and {@link
+ * AbstractRoute}s and defines a sorting order for these attributes
+ */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable private AsPath _asPath;
@@ -37,7 +40,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private Integer _tag;
 
-  public RouteRowAttribute(
+  private RouteRowAttribute(
       @Nonnull Ip nextHopIp,
       String nextHop,
       Integer adminDistance,

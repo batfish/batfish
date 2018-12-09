@@ -1,13 +1,13 @@
 package org.batfish.question.routes;
 
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
-import static org.batfish.question.routes.RouteAnswererUtil.getAbstractRouteRows;
-import static org.batfish.question.routes.RouteAnswererUtil.getAbstractRouteRowsDiff;
-import static org.batfish.question.routes.RouteAnswererUtil.getBgpRibRoutes;
-import static org.batfish.question.routes.RouteAnswererUtil.getBgpRouteRows;
-import static org.batfish.question.routes.RouteAnswererUtil.getBgpRouteRowsDiff;
-import static org.batfish.question.routes.RouteAnswererUtil.getMainRibRoutes;
-import static org.batfish.question.routes.RouteAnswererUtil.getRoutesDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRows;
+import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRows;
+import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
