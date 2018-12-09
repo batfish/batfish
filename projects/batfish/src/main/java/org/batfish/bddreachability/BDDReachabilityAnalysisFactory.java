@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -462,6 +463,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PostInVrf_NodeAccept(),
         generateRules_PostInVrf_NodeDropNoRoute(),
         generateRules_PostInVrf_PreOutVrf(),
+        generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
         generateRules_PreOutEdgePostNat_PreInInterface(),
@@ -714,22 +716,72 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreOutEdge_PreOutEdgePostNat() {
+  private Stream<Edge> generateRules_PreOutEdge_NodeDropAclOut() {
+    if (_ignoreFilters) {
+      return Stream.of();
+    }
     return _forwardingAnalysis
         .getArpTrueEdge()
         .keySet()
         .stream()
-        .map(
+        .flatMap(
             edge -> {
               String node1 = edge.getNode1();
               String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
-              return natEdge(
-                  new PreOutEdge(node1, iface1, node2, iface2),
-                  new PreOutEdgePostNat(node1, iface1, node2, iface2),
-                  _bddSourceNats.get(node1).get(iface1),
-                  _sourceIpVars);
+
+              String preNatAcl =
+                  _configs
+                      .get(node1)
+                      .getAllInterfaces()
+                      .get(iface1)
+                      .getPreSourceNatOutgoingFilterName();
+
+              BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
+              if (denyPreNat.equals(_zero)) {
+                return Stream.of();
+              }
+              return Stream.of(
+                  exitNode(
+                      node1,
+                      new Edge(
+                          new PreOutEdge(node1, iface1, node2, iface2),
+                          new NodeDropAclOut(node1),
+                          denyPreNat)));
+            });
+  }
+
+  private Stream<Edge> generateRules_PreOutEdge_PreOutEdgePostNat() {
+    return _forwardingAnalysis
+        .getArpTrueEdge()
+        .keySet()
+        .stream()
+        .flatMap(
+            edge -> {
+              String node1 = edge.getNode1();
+              String iface1 = edge.getInt1();
+              String node2 = edge.getNode2();
+              String iface2 = edge.getInt2();
+
+              String preNatAcl =
+                  _configs
+                      .get(node1)
+                      .getAllInterfaces()
+                      .get(iface1)
+                      .getPreSourceNatOutgoingFilterName();
+
+              BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
+              if (aclPermit.equals(_zero)) {
+                return Stream.of();
+              }
+              Edge natEdge =
+                  natEdge(
+                      new PreOutEdge(node1, iface1, node2, iface2),
+                      new PreOutEdgePostNat(node1, iface1, node2, iface2),
+                      _bddSourceNats.get(node1).get(iface1),
+                      _sourceIpVars);
+              return Stream.of(aclPermit.equals(_one) ? natEdge : andThen(aclPermit, natEdge));
             });
   }
 
@@ -835,8 +887,17 @@ public final class BDDReachabilityAnalysisFactory {
                                               neighborUnreachableBDDs.get(ifaceName),
                                               insufficientInfoBDDs.get(ifaceName))
                                           .reduce(_zero, BDD::or);
-                                  BDD outAclDenyBDD =
+                                  BDD denyPreAclBDD =
+                                      ignorableAclDenyBDD(
+                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                  BDD permitPreAclBDD =
+                                      ignorableAclPermitBDD(
+                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                  BDD denyPostAclBDD =
                                       ignorableAclDenyBDD(node, iface.getOutgoingFilterName());
+
+                                  Edge denyPreAclEdge =
+                                      new Edge(preState, postState, forwardBDD.and(denyPreAclBDD));
 
                                   Edge natEdge =
                                       natEdge(
@@ -846,7 +907,12 @@ public final class BDDReachabilityAnalysisFactory {
                                           _sourceIpVars);
 
                                   return exitNode(
-                                      node, andThen(forwardBDD, andThen(natEdge, outAclDenyBDD)));
+                                      node,
+                                      or(
+                                          denyPreAclEdge,
+                                          andThen(
+                                              forwardBDD.and(permitPreAclBDD),
+                                              andThen(natEdge, denyPostAclBDD))));
                                 });
                       });
             });
@@ -899,28 +965,37 @@ public final class BDDReachabilityAnalysisFactory {
                             .stream()
                             .flatMap(
                                 ifaceEntry -> {
-                                  String iface = ifaceEntry.getKey();
+                                  String ifaceName = ifaceEntry.getKey();
                                   BDD forwardBdd = ifaceEntry.getValue();
-                                  BDD outAclPermitBDD =
+                                  Interface iface = nodeInterfaces.get(ifaceName);
+                                  BDD permitBeforeNatBDD =
                                       ignorableAclPermitBDD(
-                                          node, nodeInterfaces.get(iface).getOutgoingFilterName());
-                                  List<BDDNat> sourceNats = _bddSourceNats.get(node).get(iface);
+                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                  BDD permitAfterNatBDD =
+                                      ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
+                                  List<BDDNat> sourceNats = _bddSourceNats.get(node).get(ifaceName);
 
-                                  if (forwardBdd.isZero() || outAclPermitBDD.isZero()) {
+                                  if (forwardBdd.isZero()
+                                      || permitBeforeNatBDD.isZero()
+                                      || permitAfterNatBDD.isZero()) {
                                     return Stream.of();
                                   }
 
-                                  // forward out edge, then do source nat, then apply egress acl
+                                  /* 1. forward out edge
+                                   * 2. pre-nat filter
+                                   * 3. source nat
+                                   * 4. post-nat filter
+                                   */
                                   Edge edge =
                                       andThen(
-                                          forwardBdd,
+                                          forwardBdd.and(permitBeforeNatBDD),
                                           andThen(
                                               natEdge(
                                                   new PreOutVrf(node, vrf),
-                                                  dispositionNodeConstructor.apply(node, iface),
+                                                  dispositionNodeConstructor.apply(node, ifaceName),
                                                   sourceNats,
                                                   _sourceIpVars),
-                                              outAclPermitBDD));
+                                              permitAfterNatBDD));
 
                                   return Stream.of(exitNode(node, edge));
                                 });
@@ -1284,8 +1359,7 @@ public final class BDDReachabilityAnalysisFactory {
         : new Edge(preState, postState, natBackwardEdge(nats, var), natForwardEdge(nats, var));
   }
 
-  @VisibleForTesting
-  static Function<BDD, BDD> natForwardEdge(List<BDDNat> nats, BDD var) {
+  private static Function<BDD, BDD> natForwardEdge(List<BDDNat> nats, BDD var) {
     return orig -> {
       BDD remaining = orig;
       BDD result = orig.getFactory().zero();
@@ -1351,8 +1425,7 @@ public final class BDDReachabilityAnalysisFactory {
    * Adapt an edge, applying an additional constraint after traversing the edge (in the forward
    * direction).
    */
-  @VisibleForTesting
-  static Edge andThen(Edge edge, BDD constraint) {
+  private static Edge andThen(Edge edge, BDD constraint) {
     return new Edge(
         edge.getPreState(),
         edge.getPostState(),
@@ -1364,13 +1437,23 @@ public final class BDDReachabilityAnalysisFactory {
    * Adapt an edge, applying an additional constraint before traversing the edge (in the forward
    * direction).
    */
-  @VisibleForTesting
-  static Edge andThen(BDD constraint, Edge edge) {
+  private static Edge andThen(BDD constraint, Edge edge) {
     return new Edge(
         edge.getPreState(),
         edge.getPostState(),
         bdd -> edge.traverseBackward(bdd).and(constraint),
         bdd -> edge.traverseForward(bdd.and(constraint)));
+  }
+
+  /** Merge two edges with or. */
+  static Edge or(Edge edge1, Edge edge2) {
+    Preconditions.checkArgument(edge1.getPreState().equals(edge2.getPreState()));
+    Preconditions.checkArgument(edge1.getPostState().equals(edge2.getPostState()));
+    return new Edge(
+        edge1.getPreState(),
+        edge2.getPostState(),
+        bdd -> edge1.traverseBackward(bdd).or(edge2.traverseBackward(bdd)),
+        bdd -> edge1.traverseForward(bdd).or(edge2.traverseForward(bdd)));
   }
 
   /**
