@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
@@ -14,7 +15,10 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionFor
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -44,11 +48,22 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
+import org.batfish.datamodel.flow.RouteInfo;
+import org.batfish.datamodel.flow.RoutingStep;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
@@ -551,5 +566,185 @@ public class TracerouteEngineImplTest {
     assertThat(
         getFinalActionForDisposition(NEIGHBOR_UNREACHABLE),
         equalTo(StepAction.NEIGHBOR_UNREACHABLE));
+  }
+
+  @Test
+  public void testApplyPreSourceNatFilter() {
+    String node = "node";
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+    String prefix = "1.2.3.4/24";
+    String filterName = "preSourceFilter";
+
+    IpAccessList filter =
+        IpAccessList.builder()
+            .setName(filterName)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting(
+                        AclLineMatchExprs.and(
+                            new MatchSrcInterface(ImmutableList.of(iface1)),
+                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix)))),
+                    IpAccessListLine.rejecting(
+                        AclLineMatchExprs.and(
+                            new MatchSrcInterface(ImmutableList.of(iface2)),
+                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix))))))
+            .build();
+
+    Flow flow = makeFlow();
+
+    PreSourceNatOutgoingFilterStep step =
+        TracerouteEngineImplContext.applyPreSourceNatFilter(
+            flow,
+            node,
+            iface1,
+            iface2,
+            filter,
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
+
+    assertThat(step.getAction(), equalTo(StepAction.RECEIVED));
+
+    PreSourceNatOutgoingFilterStepDetail detail = step.getDetail();
+    assertThat(detail.getFilter(), equalTo(filterName));
+    assertThat(detail.getInputInterface(), equalTo(iface1));
+    assertThat(detail.getOutputInterface(), equalTo(iface2));
+    assertThat(detail.getNode(), equalTo(node));
+
+    step =
+        TracerouteEngineImplContext.applyPreSourceNatFilter(
+            flow,
+            node,
+            iface2,
+            iface1,
+            filter,
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
+
+    assertThat(step.getAction(), equalTo(StepAction.DENIED));
+
+    detail = step.getDetail();
+    assertThat(detail.getFilter(), equalTo(filterName));
+    assertThat(detail.getInputInterface(), equalTo(iface2));
+    assertThat(detail.getOutputInterface(), equalTo(iface1));
+    assertThat(detail.getNode(), equalTo(node));
+  }
+
+  @Test
+  public void testPreSourceNatFilter() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress i1Addr = new InterfaceAddress("1.0.0.1/31");
+    InterfaceAddress i2Addr = new InterfaceAddress("2.0.0.1/31");
+    Interface i1 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+    Interface i2 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("0.0.0.0/0"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i2.getName())
+                .build()));
+
+    String filterName = "preSourceFilter";
+
+    IpAccessList filter =
+        IpAccessList.builder()
+            .setName(filterName)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting(
+                        AclLineMatchExprs.and(
+                            new MatchSrcInterface(ImmutableList.of(i1.getName())),
+                            AclLineMatchExprs.matchSrc(Prefix.parse("10.0.0.1/32"))))))
+            .build();
+
+    c1.getIpAccessLists().put(filterName, filter);
+    i2.setPreSourceNatOutgoingFilter(filter);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Flow flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("10.0.0.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    List<Trace> traceList = flowTraces.get(flow);
+    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, hasSize(1));
+    List<Hop> hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+    List<Step<?>> steps = hops.get(0).getSteps();
+    // should have ingress acl -> routing -> presourcenat acl -> egress acl
+    assertThat(steps, hasSize(4));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(RoutingStep.class));
+    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+    assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+
+    EnterInputIfaceStep step0 = (EnterInputIfaceStep) steps.get(0);
+    assertThat(step0.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step0.getDetail().getInputFilter(), nullValue());
+    assertThat(step0.getDetail().getInputVrf(), equalTo(v1.getName()));
+    assertThat(
+        step0.getDetail().getInputInterface(),
+        equalTo(new NodeInterfacePair(c1.getHostname(), i1.getName())));
+
+    RoutingStep step1 = (RoutingStep) steps.get(1);
+    assertThat(step1.getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(step1.getDetail().getRoutes(), hasSize(1));
+    assertThat(
+        step1.getDetail().getRoutes(),
+        contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO)));
+
+    PreSourceNatOutgoingFilterStep step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
+    assertThat(step2.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step2.getDetail().getNode(), equalTo(c1.getHostname()));
+    assertThat(step2.getDetail().getInputInterface(), equalTo(i1.getName()));
+    assertThat(step2.getDetail().getOutputInterface(), equalTo(i2.getName()));
+    assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
+
+    ExitOutputIfaceStep step3 = (ExitOutputIfaceStep) steps.get(3);
+    assertThat(step3.getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(step3.getDetail().getOutputFilter(), nullValue());
+    assertThat(
+        step3.getDetail().getOutputInterface(),
+        equalTo(new NodeInterfacePair(c1.getHostname(), i2.getName())));
+    assertThat(step3.getDetail().getTransformedFlow(), nullValue());
+
+    Flow flow2 =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("10.1.1.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow2), dp.getFibs(), false);
+    assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(DENIED_OUT)));
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow2), dp.getFibs(), true);
+    assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
   }
 }
