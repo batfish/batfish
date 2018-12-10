@@ -17,7 +17,7 @@ public final class StandardCommunityTest {
     String invalidRight2 = "1:65536";
     String invalidSegments = "1:2:3";
     String invalidNonDigit = "1:A";
-    
+
     assertThat(literalCommunityValue(invalidLeft1), nullValue());
     assertThat(literalCommunityValue(invalidLeft2), nullValue());
     assertThat(literalCommunityValue(invalidRight1), nullValue());
@@ -32,5 +32,4 @@ public final class StandardCommunityTest {
     assertThat(literalCommunityValue("1:0"), equalTo(0x10000L));
     assertThat(literalCommunityValue("65535:65535"), equalTo(0xFFFFFFFFL));
   }
-  
 }
