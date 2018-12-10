@@ -896,7 +896,6 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(this._zoneName, other._zoneName)) {
       return false;
     }
-
     if (!IpAccessList.bothNullOrSameName(
         this._preSourceNatOutgoingFilter, other._preSourceNatOutgoingFilter)) {
       return false;

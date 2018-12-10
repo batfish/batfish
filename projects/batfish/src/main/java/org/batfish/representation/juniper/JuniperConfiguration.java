@@ -1280,7 +1280,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
       }
     }
-    newIface.setOutgoingFilter(buildOutgoingFilter(iface));
+
+    // Set outgoing filter
+    String outAclName = iface.getOutgoingFilter();
+    IpAccessList outAcl = null;
+    if (outAclName != null) {
+      outAcl = _c.getIpAccessLists().get(outAclName);
+    }
+    newIface.setOutgoingFilter(outAcl);
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
     // Set<Prefix> allPrefixes = iface.getAllAddresses();

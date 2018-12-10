@@ -16,7 +16,9 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -46,15 +48,21 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
 import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
+import org.batfish.datamodel.flow.RouteInfo;
+import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -631,12 +639,12 @@ public class TracerouteEngineImplTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
-    InterfaceAddress c1Addr = new InterfaceAddress("1.0.0.1/31");
-    InterfaceAddress c2Addr = new InterfaceAddress("2.0.0.1/31");
+    InterfaceAddress i1Addr = new InterfaceAddress("1.0.0.1/31");
+    InterfaceAddress i2Addr = new InterfaceAddress("2.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr).build();
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c2Addr).build();
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -655,11 +663,7 @@ public class TracerouteEngineImplTest {
                     IpAccessListLine.accepting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(i1.getName())),
-                            AclLineMatchExprs.matchSrc(Prefix.parse("10.0.0.1/32")))),
-                    IpAccessListLine.rejecting(
-                        AclLineMatchExprs.and(
-                            new MatchSrcInterface(ImmutableList.of(i1.getName())),
-                            AclLineMatchExprs.matchSrc(Prefix.parse("10.1.1.1/32"))))))
+                            AclLineMatchExprs.matchSrc(Prefix.parse("10.0.0.1/32"))))))
             .build();
 
     c1.getIpAccessLists().put(filterName, filter);
@@ -689,6 +693,41 @@ public class TracerouteEngineImplTest {
     List<Step<?>> steps = hops.get(0).getSteps();
     // should have ingress acl -> routing -> presourcenat acl -> egress acl
     assertThat(steps, hasSize(4));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(RoutingStep.class));
+    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+    assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+
+    EnterInputIfaceStep step0 = (EnterInputIfaceStep) steps.get(0);
+    assertThat(step0.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step0.getDetail().getInputFilter(), nullValue());
+    assertThat(step0.getDetail().getInputVrf(), equalTo(v1.getName()));
+    assertThat(
+        step0.getDetail().getInputInterface(),
+        equalTo(new NodeInterfacePair(c1.getHostname(), i1.getName())));
+
+    RoutingStep step1 = (RoutingStep) steps.get(1);
+    assertThat(step1.getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(step1.getDetail().getRoutes(), hasSize(1));
+    assertThat(
+        step1.getDetail().getRoutes(),
+        contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO)));
+
+    PreSourceNatOutgoingFilterStep step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
+    assertThat(step2.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step2.getDetail().getNode(), equalTo(c1.getHostname()));
+    assertThat(step2.getDetail().getInputInterface(), equalTo(i1.getName()));
+    assertThat(step2.getDetail().getOutputInterface(), equalTo(i2.getName()));
+    assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
+
+    ExitOutputIfaceStep step3 = (ExitOutputIfaceStep) steps.get(3);
+    assertThat(step3.getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(step3.getDetail().getOutputFilter(), nullValue());
+    assertThat(
+        step3.getDetail().getOutputInterface(),
+        equalTo(new NodeInterfacePair(c1.getHostname(), i2.getName())));
+    assertThat(step3.getDetail().getTransformedFlow(), nullValue());
 
     Flow flow2 =
         Flow.builder()

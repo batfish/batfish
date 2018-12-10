@@ -259,15 +259,13 @@ public class TracerouteEngineImplContext {
 
     preSourceNatOutgoingFilterStepBuilder.setAction(RECEIVED);
 
-    if (filter != null) {
-      preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
-      // check filter
-      if (!ignoreFilters) {
-        FilterResult filterResult =
-            filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
-        if (filterResult.getAction() == LineAction.DENY) {
-          preSourceNatOutgoingFilterStepBuilder.setAction(DENIED);
-        }
+    preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
+    // check filter
+    if (!ignoreFilters) {
+      FilterResult filterResult =
+          filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
+      if (filterResult.getAction() == LineAction.DENY) {
+        preSourceNatOutgoingFilterStepBuilder.setAction(DENIED);
       }
     }
 
