@@ -147,7 +147,7 @@ public final class AclExplainer {
     // add the top-level acl to the list of named acls, because we are going to create
     // a new top-level acl to take into account the given invariant
     Map<String, IpAccessList> finalNamedAcls = new TreeMap<>(namedAcls);
-    finalNamedAcls.put(acl.getName(), acl);
+    finalNamedAcls.putIfAbsent(acl.getName(), acl);
     IpAccessList aclWithInvariant = scopedAcl(invariantExpr, acl);
 
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =

@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -28,7 +29,6 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * {@code denyAcl}'s context to avoid collisions.
  */
 public final class DifferentialIpAccessList {
-  @VisibleForTesting static final String DENY_ACL_NAME = " ~~ Deny ACL Name ~~ ";
   @VisibleForTesting static final String DIFFERENTIAL_ACL_NAME = " ~~ Differential ACL Name ~~ ";
 
   @VisibleForTesting
@@ -51,6 +51,13 @@ public final class DifferentialIpAccessList {
     _literalsToLines = literalsToLines;
     _namedAcls = ImmutableMap.copyOf(namedAcls);
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+  }
+
+  private static Map<String, IpAccessList> addAclToImmutableMap(
+      IpAccessList acl, Map<String, IpAccessList> namedAcls) {
+    Map<String, IpAccessList> mutableNamedAcls = new HashMap<>(namedAcls);
+    mutableNamedAcls.putIfAbsent(acl.getName(), acl);
+    return ImmutableMap.copyOf(mutableNamedAcls);
   }
 
   /**
@@ -83,18 +90,21 @@ public final class DifferentialIpAccessList {
             .setLines(
                 ImmutableList.<IpAccessListLine>builder()
                     // reject if permitted by denyAcl
-                    .add(rejecting(new PermittedByAcl(DENY_ACL_NAME)))
+                    .add(rejecting(new PermittedByAcl(RENAMER.apply(denyAcl.getName()))))
                     .add(accepting(new PermittedByAcl(permitAcl.getName())))
                     .build())
             .build();
     /*
      * Create namedAcls map for differentialAcl
      */
+    Map<String, IpAccessList> finalDenyNamedAcls = addAclToImmutableMap(denyAcl, denyNamedAcls);
+    Map<String, IpAccessList> finalPermitNamedAcls =
+        addAclToImmutableMap(permitAcl, permitNamedAcls);
     Map<String, IpAccessList> namedAcls =
         ImmutableMap.<String, IpAccessList>builder()
-            // include all the renamed denyNamedAcls
+            // include all the renamed finalDenyNamedAcls
             .putAll(
-                denyNamedAcls
+                finalDenyNamedAcls
                     .entrySet()
                     .stream()
                     .map(
@@ -102,11 +112,8 @@ public final class DifferentialIpAccessList {
                             Maps.immutableEntry(
                                 RENAMER.apply(entry.getKey()), aclRenamer.apply(entry.getValue())))
                     .collect(Collectors.toList()))
-            // include denyAcl (with a special name to avoid collisions).
-            .put(DENY_ACL_NAME, aclRenamer.apply(denyAcl))
-            // include the permitAcl and all the permitNamedAcls (no need to rename).
-            .put(permitAcl.getName(), permitAcl)
-            .putAll(permitNamedAcls)
+            // include all the finalPermitNamedAcls (no need to rename).
+            .putAll(finalPermitNamedAcls)
             .build();
 
     /*
@@ -114,13 +121,11 @@ public final class DifferentialIpAccessList {
      */
     // start with the map for the permit named ACLs and the permit ACL
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
-        AclLineMatchExprLiterals.literalsToLines(permitNamedAcls.values());
-    literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(permitAcl));
+        AclLineMatchExprLiterals.literalsToLines(finalPermitNamedAcls.values());
     // include the map for the deny ACLs, but change the keys to use the new literals
     // from the renamed versions of the deny ACLs
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> denyLiteralsToLines =
-        AclLineMatchExprLiterals.literalsToLines(denyNamedAcls.values());
-    denyLiteralsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(denyAcl));
+        AclLineMatchExprLiterals.literalsToLines(finalDenyNamedAcls.values());
     for (Map.Entry<AclLineMatchExpr, IpAccessListLineIndex> entry :
         denyLiteralsToLines.entrySet()) {
       AclLineMatchExpr newLit = entry.getKey();
