@@ -181,11 +181,10 @@ public class TracerouteEngineImplContext {
     }
     for (DestinationNat nat : destinationNats) {
       IpAccessList acl = nat.getAcl();
-      if (acl == null) {
-        continue;
-      }
-      if (acl.filter(flow, srcIface, aclDefinitions, namedIpSpaces).getAction()
-          == LineAction.PERMIT) {
+      // null ACL means permit all
+      if (acl == null
+          || acl.filter(flow, srcIface, aclDefinitions, namedIpSpaces).getAction()
+              == LineAction.PERMIT) {
         // null pool Ips mean don't nat matching flows
         Ip poolIpFirst = nat.getPoolIpFirst();
         return poolIpFirst == null ? flow : flow.toBuilder().setDstIp(poolIpFirst).build();
@@ -214,11 +213,10 @@ public class TracerouteEngineImplContext {
     }
     for (SourceNat nat : sourceNats) {
       IpAccessList acl = nat.getAcl();
-      if (acl == null) {
-        continue;
-      }
-      if (acl.filter(flow, srcInterface, aclDefinitions, namedIpSpaces).getAction()
-          == LineAction.PERMIT) {
+      // null acl means permit all
+      if (acl == null
+          || acl.filter(flow, srcInterface, aclDefinitions, namedIpSpaces).getAction()
+              == LineAction.PERMIT) {
         // null pool Ips mean don't nat matching flows
         Ip poolIpFirst = nat.getPoolIpFirst();
         return poolIpFirst == null ? flow : flow.toBuilder().setSrcIp(poolIpFirst).build();

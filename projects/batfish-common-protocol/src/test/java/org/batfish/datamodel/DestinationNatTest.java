@@ -12,14 +12,14 @@ import org.junit.Test;
 public class DestinationNatTest {
   @Test
   public void testSerialization() throws IOException {
+    DestinationNat dnat = new DestinationNat(null, null, null);
+    assertThat(BatfishObjectMapper.clone(dnat, DestinationNat.class), equalTo(dnat));
+
     IpAccessList acl =
         IpAccessList.builder()
             .setName("foo")
             .setLines(ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.TRUE)))
             .build();
-    DestinationNat dnat = new DestinationNat(acl, null, null);
-    assertThat(BatfishObjectMapper.clone(dnat, DestinationNat.class), equalTo(dnat));
-
     dnat = new DestinationNat(acl, new Ip("1.1.1.1"), new Ip("2.2.2.2"));
     assertThat(BatfishObjectMapper.clone(dnat, DestinationNat.class), equalTo(dnat));
   }

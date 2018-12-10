@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,7 +27,6 @@ public class DestinationNat implements Serializable {
     private Builder() {}
 
     public DestinationNat build() {
-      checkArgument(_acl != null, "Missing %s", PROP_ACL);
       return new DestinationNat(_acl, _poolIpFirst, _poolIpLast);
     }
 
@@ -60,14 +58,16 @@ public class DestinationNat implements Serializable {
     return new Builder();
   }
 
-  private final IpAccessList _acl;
+  // null ACL means permit everything
+  private final @Nullable IpAccessList _acl;
 
   // null pool IPs are for non-natting rules
   private final @Nullable Ip _poolIpFirst;
 
   private final @Nullable Ip _poolIpLast;
 
-  public DestinationNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
+  public DestinationNat(
+      @Nullable IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
@@ -78,7 +78,6 @@ public class DestinationNat implements Serializable {
       @JsonProperty(PROP_ACL) @Nullable IpAccessList acl,
       @JsonProperty(PROP_POOL_IP_FIRST) @Nullable Ip poolIpFirst,
       @JsonProperty(PROP_POOL_IP_LAST) @Nullable Ip poolIpLast) {
-    checkArgument(acl != null, "Missing %s", PROP_ACL);
     return new DestinationNat(acl, poolIpFirst, poolIpLast);
   }
 
@@ -97,7 +96,7 @@ public class DestinationNat implements Serializable {
   }
 
   @JsonProperty(PROP_ACL)
-  public IpAccessList getAcl() {
+  public @Nullable IpAccessList getAcl() {
     return _acl;
   }
 
@@ -118,8 +117,9 @@ public class DestinationNat implements Serializable {
 
   @Override
   public String toString() {
+    String name = _acl == null ? null : _acl.getName();
     return toStringHelper(DestinationNat.class)
-        .add(PROP_ACL, _acl.getName())
+        .add(PROP_ACL, name)
         .add(PROP_POOL_IP_FIRST, _poolIpFirst)
         .add(PROP_POOL_IP_LAST, _poolIpLast)
         .toString();

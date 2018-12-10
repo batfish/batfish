@@ -47,6 +47,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -273,8 +274,9 @@ public final class BDDReachabilityAnalysisFactory {
         .stream()
         .map(
             sourceNat -> {
-              String aclName = sourceNat.getAcl().getName();
-              BDD match = aclPermitBDD(hostname, aclName);
+              IpAccessList acl = sourceNat.getAcl();
+              // null acl means match everything
+              BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
               Ip poolIpFirst = sourceNat.getPoolIpFirst();
               // null pool IPs/BDDs indicate non-NAT rules
               BDD setSrcIp =
@@ -706,8 +708,8 @@ public final class BDDReachabilityAnalysisFactory {
                       .stream()
                       .map(
                           destNat -> {
-                            String natAclName = destNat.getAcl().getName();
-                            BDD match = aclPermitBDD(nodeName, natAclName);
+                            IpAccessList acl = destNat.getAcl();
+                            BDD match = acl == null ? _one : aclPermitBDD(nodeName, acl.getName());
                             BDDInteger dstIp = _bddPacket.getDstIp();
                             Ip poolIpFirst = destNat.getPoolIpFirst();
                             BDD setDstIp =
