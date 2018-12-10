@@ -34,7 +34,7 @@ public final class StandardCommunity {
       return null;
     }
     long val = Long.parseLong(str);
-    if (val > 65535L) {
+    if (val < 0 || 65535L < val) {
       return null;
     }
     return val;
