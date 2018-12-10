@@ -2349,7 +2349,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_rule_set(Nat_rule_setContext ctx) {
     String rulesetName = ctx.name.getText();
     _currentNatRuleSet =
-        _currentNat.getRuleSets().computeIfAbsent(rulesetName, k -> new NatRuleSet());
+        _currentNat.getRuleSets().computeIfAbsent(rulesetName, k -> new NatRuleSet(rulesetName));
     defineStructure(NAT_RULE_SET, rulesetName, ctx);
   }
 
@@ -5694,9 +5694,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private long toCommunityLong(Ec_literalContext ctx) {
     String[] parts = ctx.getText().split(":");
-    int part1 = Integer.parseInt(parts[0]);
+    long part1 = Long.parseLong(parts[0]);
     long part2 = Long.parseLong(parts[1]);
-    int part3 = Integer.parseInt(parts[2]);
+    long part3 = Long.parseLong(parts[2]);
     ExtendedCommunity c = new ExtendedCommunity(part1, part2, part3);
     return c.asLong();
   }

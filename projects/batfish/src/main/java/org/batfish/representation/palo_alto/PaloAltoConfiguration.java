@@ -503,6 +503,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Count and mark simple structure usages and identify undefined references
+    markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,

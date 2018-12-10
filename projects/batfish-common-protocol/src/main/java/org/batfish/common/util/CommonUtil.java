@@ -621,11 +621,13 @@ public class CommonUtil {
           .flatMap(i -> i.getSourceNats().stream())
           .forEach(
               sourceNat -> {
-                for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
-                    ipAsLong <= sourceNat.getPoolIpLast().asLong();
-                    ipAsLong++) {
-                  Ip currentPoolIp = new Ip(ipAsLong);
-                  builder.put(currentPoolIp, ipSpace);
+                if (sourceNat.getPoolIpFirst() != null && sourceNat.getPoolIpLast() != null) {
+                  for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
+                      ipAsLong <= sourceNat.getPoolIpLast().asLong();
+                      ipAsLong++) {
+                    Ip currentPoolIp = new Ip(ipAsLong);
+                    builder.put(currentPoolIp, ipSpace);
+                  }
                 }
               });
     }
