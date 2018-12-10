@@ -1,7 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.StandardCommunity.literalCommunityValue;
-
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -12,6 +10,40 @@ public final class CommunityListLine implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static boolean isNonDigit(int c) {
+    return c < '0' || '9' < c;
+  }
+
+  public static @Nullable Long literalCommunityValue(String str) {
+    String[] parts = str.trim().split(":", -1);
+    if (parts.length != 2) {
+      return null;
+    }
+    Long p0 = shortValue(parts[0]);
+    if (p0 == null) {
+      return null;
+    }
+    Long p1 = shortValue(parts[1]);
+    if (p1 == null) {
+      return null;
+    }
+    return (p0 << 16) | p1;
+  }
+
+  private static @Nullable Long shortValue(String str) {
+    if (str.chars().anyMatch(CommunityListLine::isNonDigit)) {
+      return null;
+    }
+    if (str.length() > 5) {
+      return null;
+    }
+    long val = Long.parseLong(str);
+    if (val < 0 || 65535L < val) {
+      return null;
+    }
+    return val;
+  }
 
   private String _regex;
 

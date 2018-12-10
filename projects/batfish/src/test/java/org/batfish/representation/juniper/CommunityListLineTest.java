@@ -1,13 +1,20 @@
-package org.batfish.datamodel;
+package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.StandardCommunity.literalCommunityValue;
+import static org.batfish.representation.juniper.CommunityListLine.literalCommunityValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public final class StandardCommunityTest {
+public final class CommunityListLineTest {
+
+  @Test
+  public void testLiteralCommunityValid() {
+    assertThat(literalCommunityValue("0:1"), equalTo(1L));
+    assertThat(literalCommunityValue("1:0"), equalTo(0x10000L));
+    assertThat(literalCommunityValue("65535:65535"), equalTo(0xFFFFFFFFL));
+  }
 
   @Test
   public void testLiteralCommunityValueInvalid() {
@@ -24,12 +31,5 @@ public final class StandardCommunityTest {
     assertThat(literalCommunityValue(invalidRight2), nullValue());
     assertThat(literalCommunityValue(invalidSegments), nullValue());
     assertThat(literalCommunityValue(invalidNonDigit), nullValue());
-  }
-
-  @Test
-  public void testLiteralCommunityValid() {
-    assertThat(literalCommunityValue("0:1"), equalTo(1L));
-    assertThat(literalCommunityValue("1:0"), equalTo(0x10000L));
-    assertThat(literalCommunityValue("65535:65535"), equalTo(0xFFFFFFFFL));
   }
 }
