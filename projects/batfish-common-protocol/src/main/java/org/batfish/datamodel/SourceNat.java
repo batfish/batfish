@@ -1,14 +1,22 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public class SourceNat implements Serializable {
+/**
+ * Representation of a dynamic source NAT. If the {@link IpAccessList} matches the flow, then the
+ * source IP is replaced with one in the pool.
+ */
+@ParametersAreNonnullByDefault
+public final class SourceNat implements Serializable {
 
   public static class Builder {
 
@@ -21,6 +29,7 @@ public class SourceNat implements Serializable {
     private Builder() {}
 
     public SourceNat build() {
+      checkArgument(_acl != null, "Missing %s", PROP_ACL);
       return new SourceNat(_acl, _poolIpFirst, _poolIpLast);
     }
 
@@ -62,11 +71,33 @@ public class SourceNat implements Serializable {
 
   public SourceNat() {}
 
-  @JsonCreator
-  private SourceNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
+  public SourceNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
+  }
+
+  @JsonCreator
+  private static SourceNat jsonCreator(
+      @JsonProperty(PROP_ACL) @Nullable IpAccessList acl,
+      @JsonProperty(PROP_POOL_IP_FIRST) @Nullable Ip poolIpFirst,
+      @JsonProperty(PROP_POOL_IP_LAST) @Nullable Ip poolIpLast) {
+    checkArgument(acl != null, "Missing %s", PROP_ACL);
+    return new SourceNat(acl, poolIpFirst, poolIpLast);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SourceNat)) {
+      return false;
+    }
+    SourceNat sourceNat = (SourceNat) o;
+    return Objects.equals(_acl, sourceNat._acl)
+        && Objects.equals(_poolIpFirst, sourceNat._poolIpFirst)
+        && Objects.equals(_poolIpLast, sourceNat._poolIpLast);
   }
 
   @JsonProperty(PROP_ACL)
@@ -82,6 +113,11 @@ public class SourceNat implements Serializable {
   @JsonProperty(PROP_POOL_IP_LAST)
   public @Nullable Ip getPoolIpLast() {
     return _poolIpLast;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_acl, _poolIpFirst, _poolIpLast);
   }
 
   @JsonProperty(PROP_ACL)

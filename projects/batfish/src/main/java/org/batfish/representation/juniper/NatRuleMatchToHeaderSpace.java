@@ -9,6 +9,8 @@ import org.batfish.datamodel.SubRange;
 public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {
   /* From the Juniper docs:
    *   NAT rules can use address objects only from the global address book.
+   *   https://www.juniper.net/documentation/en_US/junos/topics/topic-map/
+   *     security-address-books-sets.html#id-understanding-global-address-books
    */
   private static final String GLOBAL_ADDRESS_BOOK_PREFIX = "global~";
 

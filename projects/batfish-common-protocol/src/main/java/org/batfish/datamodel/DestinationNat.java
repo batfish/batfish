@@ -1,17 +1,20 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Representation of a dynamic destination NAT. If the {@link IpAccessList} matches the flow, then
  * the destination IP is replaced with one in the pool.
  */
+@ParametersAreNonnullByDefault
 public class DestinationNat implements Serializable {
 
   public static class Builder {
@@ -25,6 +28,7 @@ public class DestinationNat implements Serializable {
     private Builder() {}
 
     public DestinationNat build() {
+      checkArgument(_acl != null, "Missing %s", PROP_ACL);
       return new DestinationNat(_acl, _poolIpFirst, _poolIpLast);
     }
 
@@ -63,7 +67,7 @@ public class DestinationNat implements Serializable {
 
   private final @Nullable Ip _poolIpLast;
 
-  private DestinationNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
+  public DestinationNat(IpAccessList acl, @Nullable Ip poolIpFirst, @Nullable Ip poolIpLast) {
     _acl = acl;
     _poolIpFirst = poolIpFirst;
     _poolIpLast = poolIpLast;
@@ -74,6 +78,7 @@ public class DestinationNat implements Serializable {
       @JsonProperty(PROP_ACL) @Nullable IpAccessList acl,
       @JsonProperty(PROP_POOL_IP_FIRST) @Nullable Ip poolIpFirst,
       @JsonProperty(PROP_POOL_IP_LAST) @Nullable Ip poolIpLast) {
+    checkArgument(acl != null, "Missing %s", PROP_ACL);
     return new DestinationNat(acl, poolIpFirst, poolIpLast);
   }
 

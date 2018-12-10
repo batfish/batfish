@@ -615,6 +615,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
         equalTo(ingressAclBdd.and(natMatchBdd.ite(poolIpBdd, origDstIpBdd))));
   }
 
+  /**
+   * Test correctly handling of DestinationNat rules with null pools. If the packet matches the
+   * rule, then the packet is not natted and no further rules are applied.
+   */
   @Test
   public void testDestNatNullPool() throws IOException {
     NetworkFactory nf = new NetworkFactory();
