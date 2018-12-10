@@ -715,7 +715,7 @@ public class FlatJuniperGrammarTest {
   public void testSetCommunity() throws IOException {
     Configuration c = parseConfig("community");
 
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.0.0.0/24"), "blah");
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
 
     // p1
     RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
@@ -755,7 +755,7 @@ public class FlatJuniperGrammarTest {
   public void testAddCommunity() throws IOException {
     Configuration c = parseConfig("community");
 
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.0.0.0/24"), "blah");
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
 
     // p4
     RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
