@@ -7,7 +7,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -53,13 +52,6 @@ public final class DifferentialIpAccessList {
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
 
-  private static Map<String, IpAccessList> addAclToImmutableMap(
-      IpAccessList acl, Map<String, IpAccessList> namedAcls) {
-    Map<String, IpAccessList> mutableNamedAcls = new HashMap<>(namedAcls);
-    mutableNamedAcls.putIfAbsent(acl.getName(), acl);
-    return ImmutableMap.copyOf(mutableNamedAcls);
-  }
-
   /**
    * Create a new {@link IpAccessList} that permits the difference between two other {@link
    * IpAccessList IpAccessLists}.
@@ -97,9 +89,22 @@ public final class DifferentialIpAccessList {
     /*
      * Create namedAcls map for differentialAcl
      */
-    Map<String, IpAccessList> finalDenyNamedAcls = addAclToImmutableMap(denyAcl, denyNamedAcls);
+    // first add the top-level ACLs to the map of named ACLs if they are not already there
+    Map<String, IpAccessList> finalDenyNamedAcls =
+        denyNamedAcls.containsKey(denyAcl.getName())
+            ? denyNamedAcls
+            : ImmutableMap.<String, IpAccessList>builder()
+                .putAll(denyNamedAcls)
+                .put(denyAcl.getName(), denyAcl)
+                .build();
     Map<String, IpAccessList> finalPermitNamedAcls =
-        addAclToImmutableMap(permitAcl, permitNamedAcls);
+        permitNamedAcls.containsKey(permitAcl.getName())
+            ? permitNamedAcls
+            : ImmutableMap.<String, IpAccessList>builder()
+                .putAll(permitNamedAcls)
+                .put(permitAcl.getName(), permitAcl)
+                .build();
+
     Map<String, IpAccessList> namedAcls =
         ImmutableMap.<String, IpAccessList>builder()
             // include all the renamed finalDenyNamedAcls
