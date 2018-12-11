@@ -5,6 +5,7 @@ import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -141,6 +142,10 @@ public final class AclExplainer {
       IpAccessList acl,
       Map<String, IpAccessList> namedAcls,
       Map<String, IpSpace> namedIpSpaces) {
+    Preconditions.checkArgument(
+        namedAcls.getOrDefault(acl.getName(), acl).equals(acl),
+        "namedAcls contains a different ACL with the same name as acl");
+
     IpAccessListToBDD ipAccessListToBDD =
         MemoizedIpAccessListToBDD.create(bddPacket, mgr, namedAcls, namedIpSpaces);
 
