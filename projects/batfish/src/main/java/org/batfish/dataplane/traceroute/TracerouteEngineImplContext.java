@@ -3,7 +3,7 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
-import static org.batfish.datamodel.flow.StepAction.RECEIVED;
+import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
@@ -255,7 +255,7 @@ public class TracerouteEngineImplContext {
         .setInputInterface(inInterfaceName)
         .setOutputInterface(outInterfaceName);
 
-    preSourceNatOutgoingFilterStepBuilder.setAction(RECEIVED);
+    preSourceNatOutgoingFilterStepBuilder.setAction(PERMITTED);
 
     preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
     // check filter
