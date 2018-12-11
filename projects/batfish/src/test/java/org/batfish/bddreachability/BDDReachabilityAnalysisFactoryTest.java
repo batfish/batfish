@@ -1127,12 +1127,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration c2 = cb.build();
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
-    Interface i2 =
-        nf.interfaceBuilder()
-            .setAddresses(new InterfaceAddress("2.0.0.2/31"))
-            .setOwner(c2)
-            .setVrf(v2)
-            .build();
+    nf.interfaceBuilder()
+        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .build();
 
     SortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);

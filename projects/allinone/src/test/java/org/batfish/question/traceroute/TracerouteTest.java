@@ -944,12 +944,11 @@ public class TracerouteTest {
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
     // set up interface
-    Interface i1 =
-        nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/30"))
-            .setOwner(c1)
-            .setVrf(v1)
-            .build();
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.1/30"))
+        .setOwner(c1)
+        .setVrf(v1)
+        .build();
 
     // set up static route "8.8.8.0/24" -> 1.0.0.2
     v1.setStaticRoutes(
@@ -1014,12 +1013,11 @@ public class TracerouteTest {
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
-    Interface i2 =
-        nf.interfaceBuilder()
-            .setAddresses(new InterfaceAddress("2.0.0.2/31"))
-            .setOwner(c2)
-            .setVrf(v2)
-            .build();
+    nf.interfaceBuilder()
+        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .build();
 
     // set up static route "8.8.8.0/24" -> 2.0.0.2
     v1.setStaticRoutes(

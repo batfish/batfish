@@ -122,8 +122,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // ips not belonging to any subnet in the network
   private final IpSpace _externalIps;
 
-  private final BDD _internalIpsBDD;
-
   private final BDD _unownedIpsBDD;
 
   private static IpSpaceToBDD initIpSpaceToBDD() {
@@ -143,7 +141,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _ownedIps = computeOwnedIps();
     _unownedIpsBDD = computeUnownedIpsBDD();
     _internalIps = computeInternalIps();
-    _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
     _externalIps = _internalIps.complement();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
     _interfacesWithMissingDevices = computeInterfacesWithMissingDevices(configurations);
@@ -233,7 +230,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _internalIps = internalIps;
     _externalIps = _internalIps.complement();
     _interfaceHostSubnetIpBDDs = computeInterfaceHostSubnetIpBDDs();
-    _internalIpsBDD = _ipSpaceToBDD.visit(_internalIps);
     _ownedIps = computeOwnedIps();
     _unownedIpsBDD = computeUnownedIpsBDD();
   }
