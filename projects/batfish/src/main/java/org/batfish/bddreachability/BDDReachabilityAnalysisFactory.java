@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -52,7 +51,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -132,7 +130,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
 
-  // node --> iface --> source nats
+  // node --> iface --> bdd nats
+  private Map<String, Map<String, List<BDDNat>>> _bddDestNats;
   private final Map<String, Map<String, List<BDDNat>>> _bddSourceNats;
 
   private final Map<String, Configuration> _configs;
@@ -198,6 +197,8 @@ public final class BDDReachabilityAnalysisFactory {
 
     _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
     _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
+
+    _bddDestNats = computeBDDDestinationNats();
     _bddSourceNats = computeBDDSourceNats();
 
     _arpTrueEdgeBDDs = computeArpTrueEdgeBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
@@ -254,6 +255,42 @@ public final class BDDReachabilityAnalysisFactory {
                 nodeEntry.getValue(),
                 Entry::getKey,
                 aclEntry -> Suppliers.memoize(() -> aclEntry.getValue().get().not())));
+  }
+
+  private Map<String, Map<String, List<BDDNat>>> computeBDDDestinationNats() {
+    return toImmutableMap(
+        _configs,
+        Entry::getKey, /* node */
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getAllInterfaces(),
+                Entry::getKey, /* iface */
+                ifaceEntry -> computeBDDDestinationNats(ifaceEntry.getValue())));
+  }
+
+  private List<BDDNat> computeBDDDestinationNats(Interface iface) {
+    String hostname = iface.getOwner().getHostname();
+    List<DestinationNat> destinationNats =
+        firstNonNull(iface.getDestinationNats(), ImmutableList.of());
+    return destinationNats
+        .stream()
+        .map(
+            destNat -> {
+              IpAccessList acl = destNat.getAcl();
+              // null acl means match everything
+              BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
+              Ip poolIpFirst = destNat.getPoolIpFirst();
+              // null pool IPs/BDDs indicate non-NAT rules
+              BDD pool =
+                  poolIpFirst == null
+                      ? null
+                      : _bddPacket
+                          .getDstIp()
+                          .geq(poolIpFirst.asLong())
+                          .and(_bddPacket.getSrcIp().leq(destNat.getPoolIpLast().asLong()));
+              return new BDDNat(match, pool);
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 
   private Map<String, Map<String, List<BDDNat>>> computeBDDSourceNats() {
@@ -698,31 +735,12 @@ public final class BDDReachabilityAnalysisFactory {
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
 
-              List<DestinationNat> destNats = iface.getDestinationNats();
+              List<BDDNat> destNats = _bddDestNats.get(nodeName).get(ifaceName);
               if (destNats.isEmpty()) {
                 return new Edge(preState, postState, inAclBDD);
               }
 
-              List<BDDNat> bddNats =
-                  destNats
-                      .stream()
-                      .map(
-                          destNat -> {
-                            IpAccessList acl = destNat.getAcl();
-                            BDD match = acl == null ? _one : aclPermitBDD(nodeName, acl.getName());
-                            BDDInteger dstIp = _bddPacket.getDstIp();
-                            Ip poolIpFirst = destNat.getPoolIpFirst();
-                            BDD setDstIp =
-                                poolIpFirst == null
-                                    ? null
-                                    : dstIp
-                                        .geq(poolIpFirst.asLong())
-                                        .and(dstIp.leq(destNat.getPoolIpLast().asLong()));
-                            return new BDDNat(match, setDstIp);
-                          })
-                      .collect(ImmutableList.toImmutableList());
-
-              return andThen(inAclBDD, natEdge(preState, postState, bddNats, _dstIpVars));
+              return andThen(inAclBDD, natEdge(preState, postState, destNats, _dstIpVars));
             });
   }
 
@@ -1090,66 +1108,11 @@ public final class BDDReachabilityAnalysisFactory {
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
     return bddReachabilityAnalysis(
         srcIpSpaceAssignment,
-        UniverseIpSpace.INSTANCE,
+        matchDst(UniverseIpSpace.INSTANCE),
         ImmutableSet.of(),
         ImmutableSet.of(),
         _configs.keySet(),
         ImmutableSet.of(FlowDisposition.ACCEPTED));
-  }
-
-  /**
-   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
-   *
-   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
-   *     source {@link IpSpace}.
-   * @param dstIpSpace The destination {@link IpSpace}.
-   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
-   * @param requiredTransitNodes A set of hostnames of which one must be transited.
-   * @param finalNodes Find flows that stop at one of these nodes.
-   * @param actions Find flows for which at least one trace has one of these actions.
-   */
-  public BDDReachabilityAnalysis bddReachabilityAnalysis(
-      IpSpaceAssignment srcIpSpaceAssignment,
-      IpSpace dstIpSpace,
-      Set<String> forbiddenTransitNodes,
-      Set<String> requiredTransitNodes,
-      Set<String> finalNodes,
-      Set<FlowDisposition> actions) {
-    return bddReachabilityAnalysis(
-        srcIpSpaceAssignment,
-        matchDst(dstIpSpace),
-        forbiddenTransitNodes,
-        requiredTransitNodes,
-        finalNodes,
-        actions);
-  }
-
-  /**
-   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
-   *
-   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
-   *     source {@link IpSpace}.
-   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
-   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
-   * @param requiredTransitNodes A set of hostnames of which one must be transited.
-   * @param finalNodes Find flows that stop at one of these nodes.
-   * @param actions Find flows for which at least one trace has one of these actions.
-   */
-  public BDDReachabilityAnalysis bddReachabilityAnalysis(
-      IpSpaceAssignment srcIpSpaceAssignment,
-      AclLineMatchExpr initialHeaderSpace,
-      Set<String> forbiddenTransitNodes,
-      Set<String> requiredTransitNodes,
-      Set<String> finalNodes,
-      Set<FlowDisposition> actions) {
-    return bddReachabilityAnalysis(
-        srcIpSpaceAssignment,
-        initialHeaderSpace,
-        UniverseIpSpace.INSTANCE,
-        forbiddenTransitNodes,
-        requiredTransitNodes,
-        finalNodes,
-        actions);
   }
 
   /**
@@ -1207,17 +1170,15 @@ public final class BDDReachabilityAnalysisFactory {
    * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
    *     source {@link IpSpace}.
    * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
-   * @param finalSrcIpSpace The final source {@link IpSpace} (i.e. after all packet
-   *     transformations).
    * @param forbiddenTransitNodes A set of hostnames that must not be transited.
    * @param requiredTransitNodes A set of hostnames of which one must be transited.
    * @param finalNodes Find flows that stop at one of these nodes.
    * @param actions Find flows for which at least one trace has one of these actions.
    */
-  public BDDReachabilityAnalysis bddReachabilityAnalysis(
+  @VisibleForTesting
+  BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
-      IpSpace finalSrcIpSpace,
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
@@ -1225,14 +1186,7 @@ public final class BDDReachabilityAnalysisFactory {
     IpAccessListToBDD ipAccessListToBDD =
         IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of());
     BDD initialHeaderSpaceBdd = ipAccessListToBDD.visit(initialHeaderSpace);
-
-    /*
-     * erase constraints on header fields that may change
-     */
-    BDD finalHeaderSpaceBdd =
-        initialHeaderSpaceBdd
-            .exist(_sourceIpVars)
-            .and(ipAccessListToBDD.visit(AclLineMatchExprs.matchSrc(finalSrcIpSpace)));
+    BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
 
@@ -1246,6 +1200,43 @@ public final class BDDReachabilityAnalysisFactory {
     Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
 
     return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap, finalHeaderSpaceBdd);
+  }
+
+  /**
+   * Compute the space of possible final headers, under the assumption that any NAT rule may be
+   * applied.
+   */
+  private BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
+    BDD finalHeaderSpace = initialHeaderSpaceBdd;
+
+    BDD dstNatPoolIps = unionPoolIps(_bddDestNats);
+    if (!dstNatPoolIps.isZero()) {
+      // dst IP is either the initial one, or one of that NAT pool IPs.
+      finalHeaderSpace = finalHeaderSpace.or(finalHeaderSpace.exist(_dstIpVars).and(dstNatPoolIps));
+    }
+
+    BDD srcNatPoolIps = unionPoolIps(_bddSourceNats);
+    if (!srcNatPoolIps.isZero()) {
+      /*
+       * In this case, since source IPs usually don't play a huge role in routing, we could just
+       * existentially quantify away the constraint. There's a performance trade-off: tighter
+       * constraints prune more paths, but are more expensive to operate on.
+       */
+      finalHeaderSpace =
+          finalHeaderSpace.or(finalHeaderSpace.exist(_sourceIpVars).and(srcNatPoolIps));
+    }
+
+    return finalHeaderSpace;
+  }
+
+  private BDD unionPoolIps(Map<String, Map<String, List<BDDNat>>> nats) {
+    return nats.values()
+        .stream()
+        .flatMap(m -> m.values().stream())
+        .flatMap(List::stream)
+        .map(bddNat -> bddNat._pool)
+        .filter(Objects::nonNull)
+        .reduce(_zero, BDD::or);
   }
 
   private Map<StateExpr, BDD> rootConstraints(

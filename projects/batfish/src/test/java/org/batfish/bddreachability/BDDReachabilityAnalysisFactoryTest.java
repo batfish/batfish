@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -151,7 +152,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           new BDDReachabilityAnalysisFactory(PKT, configs, dataPlane.getForwardingAnalysis())
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
@@ -207,7 +208,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
                   ImmutableSet.of(),
@@ -258,7 +259,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
