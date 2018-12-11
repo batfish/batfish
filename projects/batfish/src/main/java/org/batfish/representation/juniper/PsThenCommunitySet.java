@@ -43,12 +43,13 @@ public final class PsThenCommunitySet extends PsThen {
        * community expressions, the entire configuration is invalid. As a best-effort, warn and
        * treat line as a NOP.
        */
-      Set<Long> literalCommunities = namedList.asLiteralCommunities();
+      Set<Long> literalCommunities = namedList.extractLiteralCommunities();
       if (literalCommunities.isEmpty()) {
         String msg =
             String.format(
-                "'then community set' illegally references community list containing only wildcard members: %s",
-                _name);
+                "Juniper will not commit this configuration: 'then community set %s' is not valid"
+                    + "because %s does not contain any literal communities",
+                _name, _name);
         warnings.redFlag(msg);
         statements.add(new Comment(msg));
         return;

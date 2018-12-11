@@ -12,6 +12,12 @@ public final class CommunityListLineTest {
   @Test
   public void testLiteralCommunityValid() {
     assertThat(literalCommunityValue("0:1"), equalTo(1L));
+    assertThat(literalCommunityValue("0:01"), equalTo(1L));
+    assertThat(literalCommunityValue("0:001"), equalTo(1L));
+    assertThat(literalCommunityValue("0:0001"), equalTo(1L));
+    assertThat(literalCommunityValue("0:00001"), equalTo(1L));
+    assertThat(literalCommunityValue("0:000001"), equalTo(1L));
+    assertThat(literalCommunityValue("01:0"), equalTo(0x10000L));
     assertThat(literalCommunityValue("1:0"), equalTo(0x10000L));
     assertThat(literalCommunityValue("65535:65535"), equalTo(0xFFFFFFFFL));
   }

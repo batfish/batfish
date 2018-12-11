@@ -1,74 +1,50 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.WellKnownCommunity;
 
 @ParametersAreNonnullByDefault
 public final class CommunityListLine implements Serializable {
 
-  /** */
+  private static final Pattern LITERAL_STANDARD_COMMUNITY_PATTERN =
+      Pattern.compile("(\\d+):(\\d+)");
+
   private static final long serialVersionUID = 1L;
 
-  private static boolean isNonDigit(int c) {
-    return c < '0' || '9' < c;
-  }
-
   public static @Nullable Long literalCommunityValue(String str) {
-    String[] parts = str.trim().split(":", -1);
-    if (parts.length != 2) {
+    Matcher m = LITERAL_STANDARD_COMMUNITY_PATTERN.matcher(str);
+    if (!m.matches()) {
       return null;
     }
-    Long p0 = shortValue(parts[0]);
-    if (p0 == null) {
+    Long high = shortValue(m.group(1));
+    if (high == null) {
       return null;
     }
-    Long p1 = shortValue(parts[1]);
-    if (p1 == null) {
+    Long low = shortValue(m.group(2));
+    if (low == null) {
       return null;
     }
-    return (p0 << 16) | p1;
+    return (high << 16) | low;
   }
 
   private static @Nullable Long shortValue(String str) {
-    if (str.chars().anyMatch(CommunityListLine::isNonDigit)) {
-      return null;
-    }
-    if (str.length() > 5) {
-      return null;
-    }
     long val = Long.parseLong(str);
-    if (val < 0 || 65535L < val) {
+    if (val > 0xFFFFL) {
       return null;
     }
     return val;
   }
 
-  private String _regex;
+  private String _text;
 
-  public CommunityListLine(String regex) {
-    _regex = regex;
+  public CommunityListLine(String text) {
+    _text = text;
   }
 
-  public String getRegex() {
-    return _regex;
-  }
-
-  /**
-   * If {@code _regex} represents a literal community, returns the long value of that community.
-   * Else, returns {@code null}.
-   */
-  public @Nullable Long juniperLiteralCommunityValue() {
-    switch (_regex) {
-      case "no-advertise":
-        return WellKnownCommunity.NO_ADVERTISE;
-      case "no-export":
-        return WellKnownCommunity.NO_EXPORT;
-      case "no-export-subconfed":
-        return WellKnownCommunity.NO_EXPORT_SUBCONFED;
-      default:
-        return literalCommunityValue(_regex);
-    }
+  public String getText() {
+    return _text;
   }
 }

@@ -24,13 +24,11 @@ public final class CommunityList implements Serializable {
     _lines = new ArrayList<>();
   }
 
-  public Set<Long> asLiteralCommunities() {
-    if (_invertMatch) {
-      return ImmutableSet.of();
-    }
+  public Set<Long> extractLiteralCommunities() {
     return _lines
         .stream()
-        .map(CommunityListLine::juniperLiteralCommunityValue)
+        .map(CommunityListLine::getText)
+        .map(CommunityListLine::literalCommunityValue)
         .filter(notNull())
         .collect(ImmutableSet.toImmutableSet());
   }
