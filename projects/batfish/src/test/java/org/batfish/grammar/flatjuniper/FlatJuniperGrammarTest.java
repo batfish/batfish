@@ -159,6 +159,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -264,7 +265,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link FlatJuniperParser} and {@link FlatJuniperControlPlaneExtractor}. */
-public class FlatJuniperGrammarTest {
+public final class FlatJuniperGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
@@ -695,6 +696,87 @@ public class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasBgpProcess(hasActiveNeighbor(Prefix.parse("1.1.1.1/32"), hasRemoteAs(1L)))));
+  }
+
+  @Test
+  public void testSetCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
+
+    // p1
+    RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
+    BgpRoute.Builder b1 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p1.process(cr, b1, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br1 = b1.build();
+
+    assertThat(
+        br1.getCommunities(),
+        equalTo(
+            ImmutableSet.of(
+                WellKnownCommunity.NO_ADVERTISE,
+                WellKnownCommunity.NO_EXPORT,
+                WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+
+    // p2
+    RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
+    BgpRoute.Builder b2 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p2.process(cr, b2, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br2 = b2.build();
+
+    assertThat(br2.getCommunities(), equalTo(ImmutableSet.of(2L, 3L)));
+
+    // p3
+    RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
+    BgpRoute.Builder b3 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p3.process(cr, b3, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br3 = b3.build();
+
+    assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(5L)));
+  }
+
+  @Test
+  public void testAddCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
+
+    // p4
+    RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
+    BgpRoute.Builder b4 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p4.process(cr, b4, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br4 = b4.build();
+
+    assertThat(
+        br4.getCommunities(),
+        equalTo(
+            ImmutableSet.of(
+                WellKnownCommunity.NO_ADVERTISE,
+                WellKnownCommunity.NO_EXPORT,
+                WellKnownCommunity.NO_EXPORT_SUBCONFED,
+                5L)));
+
+    // p5
+    RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
+    BgpRoute.Builder b5 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p5.process(cr, b5, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br5 = b5.build();
+
+    assertThat(br5.getCommunities(), equalTo(ImmutableSet.of(2L, 3L, 5L)));
+
+    // p6
+    RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
+    BgpRoute.Builder b6 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p6.process(cr, b6, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br6 = b6.build();
+
+    assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(5L)));
   }
 
   @Test

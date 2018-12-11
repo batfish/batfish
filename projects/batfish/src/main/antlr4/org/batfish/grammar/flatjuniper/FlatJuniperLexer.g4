@@ -3797,6 +3797,11 @@ NO_EXPORT
    'no-export'
 ;
 
+NO_EXPORT_SUBCONFED
+:
+   'no-export-subconfed'
+;
+
 NO_FLOW_CONTROL
 :
    'no-flow-control'
@@ -6616,6 +6621,11 @@ M_Members_NO_ADVERTISE
 M_Members_NO_EXPORT
 :
    'no-export' -> type ( NO_EXPORT )
+;
+
+M_Members_NO_EXPORT_SUBCONFED
+:
+   'no-export-subconfed' -> type ( NO_EXPORT_SUBCONFED )
 ;
 
 M_Members_OPEN_BRACE
