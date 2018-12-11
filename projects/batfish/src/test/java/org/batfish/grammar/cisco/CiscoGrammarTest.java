@@ -737,7 +737,8 @@ public class CiscoGrammarTest {
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
-    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
@@ -758,7 +759,8 @@ public class CiscoGrammarTest {
     /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
   }
 
   @Test

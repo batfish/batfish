@@ -309,6 +309,7 @@ port
    | BOOTPC
    | BOOTPS
    | CHARGEN
+   | CIFS
    | CITRIX_ICA
    | CMD
    | CTIQBE
@@ -323,6 +324,7 @@ port
    | FTP_DATA
    | GOPHER
    | H323
+   | HTTP
    | HTTPS
    | HOSTNAME
    | IDENT
@@ -347,6 +349,7 @@ port
    | NETBIOS_NS
    | NETBIOS_SS
    | NETBIOS_SSN
+   | NFS
    | NNTP
    | NON500_ISAKMP
    | NTP
@@ -359,7 +362,10 @@ port
    | RADIUS
    | RADIUS_ACCT
    | RIP
+   | RSH
+   | RTSP
    | SECUREID_UDP
+   | SIP
    | SMTP
    | SNMP
    | SNMP_TRAP
@@ -375,6 +381,7 @@ port
    | TFTP
    | TIME
    | UUCP
+   | VXLAN
    | WHO
    | WHOIS
    | WWW
