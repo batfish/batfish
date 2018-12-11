@@ -742,6 +742,22 @@ public class TracerouteEngineImplTest {
         TracerouteEngineImpl.getInstance()
             .buildFlows(dp, ImmutableSet.of(flow2), dp.getFibs(), false);
     assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(DENIED_OUT)));
+
+    traceList = flowTraces.get(flow2);
+    assertThat(traceList, hasSize(1));
+    hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+
+    steps = hops.get(0).getSteps();
+    assertThat(steps, hasSize(3));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(RoutingStep.class));
+    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+
+    step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
+    assertThat(step2.getAction(), equalTo(StepAction.DENIED));
+
     flowTraces =
         TracerouteEngineImpl.getInstance()
             .buildFlows(dp, ImmutableSet.of(flow2), dp.getFibs(), true);
