@@ -682,8 +682,8 @@ public class TracerouteEngineImplContext {
                             inputIfaceName,
                             outgoingInterface.getName(),
                             filter,
-                            transmissionContext._aclDefinitions,
-                            transmissionContext._namedIpSpaces,
+                            aclDefinitions,
+                            namedIpSpaces,
                             _ignoreFilters);
 
                     clonedStepsBuilder.add(step);
