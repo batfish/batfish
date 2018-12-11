@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedSet;
@@ -33,8 +32,6 @@ public final class RegexCommunitySet extends CommunitySetExpr {
       return Pattern.compile(_regex);
     }
   }
-
-  private static Pattern LITERAL_PATTERN = Pattern.compile("[0-9]+:[0-9]+");
 
   private static final String PROP_REGEX = "regex";
 
@@ -66,12 +63,8 @@ public final class RegexCommunitySet extends CommunitySetExpr {
 
   @Override
   public SortedSet<Long> asLiteralCommunities(Environment environment) {
-    // check if _regex is a real regex or just a literal
-    if (LITERAL_PATTERN.matcher(_regex).matches()) {
-      return ImmutableSortedSet.of(CommonUtil.communityStringToLong(_regex));
-    }
     throw new UnsupportedOperationException(
-        "Cannot convert regexes to a list of literal communities");
+        "Cannot be represented as a list of literal communities");
   }
 
   @Override
