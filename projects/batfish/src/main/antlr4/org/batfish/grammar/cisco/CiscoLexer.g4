@@ -1956,6 +1956,11 @@ CHECK
    'check'
 ;
 
+CIFS
+:
+   'cifs'
+;
+
 CIPC
 :
    'cipc'
@@ -7944,6 +7949,11 @@ NEXTHOP_LIST
    'nexthop-list'
 ;
 
+NFS
+:
+   'nfs'
+;
+
 NHOP_ONLY
 :
    'nhop-only'
@@ -10234,6 +10244,11 @@ RSA_SIG
 RSAKEYPAIR
 :
    'rsakeypair'
+;
+
+RSH
+:
+   'rsh'
 ;
 
 RST

@@ -9985,6 +9985,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.BOOTPS_OR_DHCP;
     } else if (ctx.CHARGEN() != null) {
       return NamedPort.CHARGEN;
+    } else if (ctx.CIFS() != null) {
+      return NamedPort.CIFS;
     } else if (ctx.CITRIX_ICA() != null) {
       return NamedPort.CITRIX_ICA;
     } else if (ctx.CMD() != null) {
@@ -10013,6 +10015,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.GOPHER;
     } else if (ctx.H323() != null) {
       return NamedPort.H323;
+    } else if (ctx.HTTP() != null) {
+      return NamedPort.HTTP;
     } else if (ctx.HTTPS() != null) {
       return NamedPort.HTTPS;
     } else if (ctx.HOSTNAME() != null) {
@@ -10061,6 +10065,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.NETBIOS_SSN;
     } else if (ctx.NETBIOS_SSN() != null) {
       return NamedPort.NETBIOS_SSN;
+    } else if (ctx.NFS() != null) {
+      return NamedPort.NFSD;
     } else if (ctx.NNTP() != null) {
       return NamedPort.NNTP;
     } else if (ctx.NON500_ISAKMP() != null) {
@@ -10085,8 +10091,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.RADIUS_ACCT_CISCO;
     } else if (ctx.RIP() != null) {
       return NamedPort.RIP;
+    } else if (ctx.RSH() != null) {
+      return NamedPort.CMDtcp_OR_SYSLOGudp;
+    } else if (ctx.RTSP() != null) {
+      return NamedPort.RTSP;
     } else if (ctx.SECUREID_UDP() != null) {
       return NamedPort.SECUREID_UDP;
+    } else if (ctx.SIP() != null) {
+      return NamedPort.SIP_5060;
     } else if (ctx.SMTP() != null) {
       return NamedPort.SMTP;
     } else if (ctx.SNMP() != null) {
@@ -10117,6 +10129,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.TIME;
     } else if (ctx.UUCP() != null) {
       return NamedPort.UUCP;
+    } else if (ctx.VXLAN() != null) {
+      return NamedPort.VXLAN;
     } else if (ctx.WHO() != null) {
       return NamedPort.LOGINtcp_OR_WHOudp;
     } else if (ctx.WHOIS() != null) {
