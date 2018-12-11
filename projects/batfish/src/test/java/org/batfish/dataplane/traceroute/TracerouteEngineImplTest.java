@@ -604,7 +604,7 @@ public class TracerouteEngineImplTest {
             ImmutableMap.of(),
             false);
 
-    assertThat(step.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step.getAction(), equalTo(StepAction.PERMITTED));
 
     PreSourceNatOutgoingFilterStepDetail detail = step.getDetail();
     assertThat(detail.getFilter(), equalTo(filterName));
@@ -715,7 +715,7 @@ public class TracerouteEngineImplTest {
         contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO)));
 
     PreSourceNatOutgoingFilterStep step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
-    assertThat(step2.getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));
     assertThat(step2.getDetail().getNode(), equalTo(c1.getHostname()));
     assertThat(step2.getDetail().getInputInterface(), equalTo(i1.getName()));
     assertThat(step2.getDetail().getOutputInterface(), equalTo(i2.getName()));
