@@ -46,6 +46,8 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -272,13 +274,18 @@ public final class BDDReachabilityAnalysisFactory {
         .stream()
         .map(
             sourceNat -> {
-              String aclName = sourceNat.getAcl().getName();
-              BDD match = aclPermitBDD(hostname, aclName);
+              IpAccessList acl = sourceNat.getAcl();
+              // null acl means match everything
+              BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
+              Ip poolIpFirst = sourceNat.getPoolIpFirst();
+              // null pool IPs/BDDs indicate non-NAT rules
               BDD setSrcIp =
-                  _bddPacket
-                      .getSrcIp()
-                      .geq(sourceNat.getPoolIpFirst().asLong())
-                      .and(_bddPacket.getSrcIp().leq(sourceNat.getPoolIpLast().asLong()));
+                  poolIpFirst == null
+                      ? null
+                      : _bddPacket
+                          .getSrcIp()
+                          .geq(poolIpFirst.asLong())
+                          .and(_bddPacket.getSrcIp().leq(sourceNat.getPoolIpLast().asLong()));
               return new BDDNat(match, setSrcIp);
             })
         .collect(ImmutableList.toImmutableList());
@@ -701,13 +708,16 @@ public final class BDDReachabilityAnalysisFactory {
                       .stream()
                       .map(
                           destNat -> {
-                            String natAclName = destNat.getAcl().getName();
-                            BDD match = aclPermitBDD(nodeName, natAclName);
+                            IpAccessList acl = destNat.getAcl();
+                            BDD match = acl == null ? _one : aclPermitBDD(nodeName, acl.getName());
                             BDDInteger dstIp = _bddPacket.getDstIp();
+                            Ip poolIpFirst = destNat.getPoolIpFirst();
                             BDD setDstIp =
-                                dstIp
-                                    .geq(destNat.getPoolIpFirst().asLong())
-                                    .and(dstIp.leq(destNat.getPoolIpLast().asLong()));
+                                poolIpFirst == null
+                                    ? null
+                                    : dstIp
+                                        .geq(poolIpFirst.asLong())
+                                        .and(dstIp.leq(destNat.getPoolIpLast().asLong()));
                             return new BDDNat(match, setDstIp);
                           })
                       .collect(ImmutableList.toImmutableList());
