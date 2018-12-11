@@ -699,19 +699,6 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testCommunity() throws IOException {
-    Configuration c = parseConfig("community");
-
-    assertThat(
-        c.getCommunityLists().get("well-known").asLiteralCommunities(null),
-        equalTo(
-            ImmutableSet.of(
-                WellKnownCommunity.NO_ADVERTISE,
-                WellKnownCommunity.NO_EXPORT,
-                WellKnownCommunity.NO_EXPORT_SUBCONFED)));
-  }
-
-  @Test
   public void testSetCommunity() throws IOException {
     Configuration c = parseConfig("community");
 
