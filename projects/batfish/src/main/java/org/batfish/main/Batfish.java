@@ -1107,7 +1107,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Files.exists(answerPath);
   }
 
-  private void flatten(Path inputPath, Path outputPath) {
+  public void flatten(Path inputPath, Path outputPath) {
     Map<Path, String> configurationData =
         readConfigurationFiles(inputPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<Path, String> outputConfigurationData = new TreeMap<>();

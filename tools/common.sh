@@ -9,6 +9,7 @@ export BATFISH_VERSION="$(grep -1 batfish-parent "${PROJECTS_PATH}/pom.xml" | gr
 export BATFISH_PATH="$PROJECTS_PATH/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/networks"
 export BATFISH="$BATFISH_PATH/batfish"
+export FLATTEN="$BATFISH_PATH/flatten"
 
 export BATFISH_CLIENT_PATH="$PROJECTS_PATH/batfish-client"
 export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
@@ -389,4 +390,24 @@ _common_build() {
    mvn install -pl batfish-common-protocol -am || return 1
 }
 export -f _common_build
+
+flatten() {
+   # if cygwin, shift and replace each parameter
+   if batfish_cygwin; then
+      local NUMARGS=$#
+      local IGNORE_CURRENT_ARG=no;
+      for i in $(seq 1 ${NUMARGS}); do
+         local CURRENT_ARG=$1
+         local NEW_ARG="$(cygpath -w -- ${CURRENT_ARG})"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
+   if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
+      echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
+   fi
+   "$FLATTEN" "$@"
+}
+export -f flatten
+
 
