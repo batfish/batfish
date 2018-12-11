@@ -53,6 +53,13 @@ public final class PsThenCommunitySet extends PsThen {
         warnings.redFlag(msg);
         statements.add(new Comment(msg));
         return;
+      } else if (literalCommunities.size() != namedList.getLines().size()) {
+        warnings.redFlag(
+            String.format(
+                "Use of 'then community set %s' where '%s' contains both literal communities and "
+                    + "community regex expressions is unusual and may be unintentional. Note that "
+                    + "regex community expressions in '%s' are ignored in this context.",
+                _name, _name));
       }
       statements.add(new SetCommunity(new LiteralCommunitySet(literalCommunities)));
     }
