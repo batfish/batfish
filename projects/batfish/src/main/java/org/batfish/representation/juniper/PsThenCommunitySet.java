@@ -59,7 +59,7 @@ public final class PsThenCommunitySet extends PsThen {
                 "Use of 'then community set %s' where '%s' contains both literal communities and "
                     + "community regex expressions is unusual and may be unintentional. Note that "
                     + "regex community expressions in '%s' are ignored in this context.",
-                _name, _name));
+                _name, _name, _name));
       }
       statements.add(new SetCommunity(new LiteralCommunitySet(literalCommunities)));
     }
