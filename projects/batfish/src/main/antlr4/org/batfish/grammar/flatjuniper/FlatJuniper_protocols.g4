@@ -50,6 +50,7 @@ s_protocols
       | RSVP
       | SFLOW
       | STP
+      | UPLINK_FAILURE_DETECTION
       | VRRP
       | VSTP
    ) null_filler

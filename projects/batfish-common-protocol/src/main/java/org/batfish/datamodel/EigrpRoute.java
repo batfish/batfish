@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -30,15 +29,18 @@ public abstract class EigrpRoute extends AbstractRoute {
   /** AS number of the EIGRP process that installed this route in the RIB */
   final long _processAsn;
 
-  @JsonCreator
-  protected EigrpRoute(
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_METRIC) EigrpMetric metric,
-      @JsonProperty long processAsn) {
+  EigrpRoute(
+      int admin,
+      Prefix network,
+      @Nullable String nextHopInterface,
+      @Nullable Ip nextHopIp,
+      EigrpMetric metric,
+      long processAsn,
+      boolean nonForwarding,
+      boolean nonRouting) {
     super(network);
+    setNonForwarding(nonForwarding);
+    setNonRouting(nonRouting);
     _admin = admin;
     _metric = requireNonNull(metric);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);

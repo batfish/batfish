@@ -16,6 +16,10 @@ public abstract class AbstractRouteBuilder<
 
   private Ip _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
 
+  private boolean _nonForwarding;
+
+  private boolean _nonRouting;
+
   private int _tag = Route.UNSET_ROUTE_TAG;
 
   public abstract T build();
@@ -59,6 +63,24 @@ public abstract class AbstractRouteBuilder<
 
   public final S setNextHopIp(@Nullable Ip nextHopIp) {
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    return getThis();
+  }
+
+  public final boolean getNonForwarding() {
+    return _nonForwarding;
+  }
+
+  public final S setNonForwarding(boolean nonForwarding) {
+    _nonForwarding = nonForwarding;
+    return getThis();
+  }
+
+  public final boolean getNonRouting() {
+    return _nonRouting;
+  }
+
+  public final S setNonRouting(boolean nonRouting) {
+    _nonRouting = nonRouting;
     return getThis();
   }
 

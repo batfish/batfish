@@ -40,39 +40,42 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
         vendorConfiguration.setWarnings(warnings);
         vendorConfiguration.setAnswerElement(answerElement);
-        Configuration configuration = vendorConfiguration.toVendorIndependentConfiguration();
-        if (configuration.getDefaultCrossZoneAction() == null) {
-          throw new BatfishException(
-              "Implementation error: missing default cross-zone action for host: '"
-                  + configuration.getHostname()
-                  + "'");
-        }
-        if (configuration.getDefaultInboundAction() == null) {
-          throw new BatfishException(
-              "Implementation error: missing default inbound action for host: '"
-                  + configuration.getHostname()
-                  + "'");
-        }
+        for (Configuration configuration :
+            vendorConfiguration.toVendorIndependentConfigurations()) {
+          if (configuration.getDefaultCrossZoneAction() == null) {
+            throw new BatfishException(
+                "Implementation error: missing default cross-zone action for host: '"
+                    + configuration.getHostname()
+                    + "'");
+          }
+          if (configuration.getDefaultInboundAction() == null) {
+            throw new BatfishException(
+                "Implementation error: missing default inbound action for host: '"
+                    + configuration.getHostname()
+                    + "'");
+          }
 
-        // get iptables if applicable
-        IptablesVendorConfiguration iptablesConfig = null;
-        VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
-        if (ov != null) {
-          // apply overlay
-          HostConfiguration oh = (HostConfiguration) ov;
-          iptablesConfig = oh.getIptablesVendorConfig();
-        } else if (vendorConfiguration instanceof HostConfiguration) {
-          // TODO: To enable below, we need to reconcile overlay and non-overlay iptables semantics.
-          // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
-          // iptablesConfig = oh.getIptablesVendorConfig();
-        }
-        if (iptablesConfig != null) {
-          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
-          iptablesConfig.applyAsOverlay(configuration, warnings);
-        }
+          // get iptables if applicable
+          IptablesVendorConfiguration iptablesConfig = null;
+          VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+          if (ov != null) {
+            // apply overlay
+            HostConfiguration oh = (HostConfiguration) ov;
+            iptablesConfig = oh.getIptablesVendorConfig();
+          } else if (vendorConfiguration instanceof HostConfiguration) {
+            // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
+            // semantics.
+            // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+            // iptablesConfig = oh.getIptablesVendorConfig();
+          }
+          if (iptablesConfig != null) {
+            iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
+            iptablesConfig.applyAsOverlay(configuration, warnings);
+          }
 
-        configurations.put(configuration.getHostname(), configuration);
-        warningsByHost.put(configuration.getHostname(), warnings);
+          configurations.put(configuration.getHostname(), configuration);
+          warningsByHost.put(configuration.getHostname(), warnings);
+        }
       } else {
         configurations =
             ((AwsConfiguration) _configObject).toConfigurations(_settings, warningsByHost);

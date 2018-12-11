@@ -6,8 +6,11 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -24,6 +27,8 @@ public class RoutingInstance implements Serializable {
 
   @Nullable private Long _as;
 
+  private AggregateRoute _aggregateRouteDefaults;
+
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
 
   private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
@@ -36,6 +41,8 @@ public class RoutingInstance implements Serializable {
 
   private String _forwardingTableExportPolicy;
 
+  private GeneratedRoute _generatedRouteDefaults;
+
   private final Interface _globalMasterInterface;
 
   private String _hostname;
@@ -44,7 +51,7 @@ public class RoutingInstance implements Serializable {
 
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
 
-  private final IsisSettings _isisSettings;
+  @Nonnull private final IsisSettings _isisSettings;
 
   @Nullable private Integer _loops;
 
@@ -70,9 +77,16 @@ public class RoutingInstance implements Serializable {
 
   private final JuniperSystem _system;
 
+  private Long _confederation;
+
+  private Set<Long> _confederationMembers;
+
   public RoutingInstance(String name) {
+    _aggregateRouteDefaults = initAggregateRouteDefaults();
+    _confederationMembers = new TreeSet<>();
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();
+    _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
@@ -154,6 +168,7 @@ public class RoutingInstance implements Serializable {
     return _ipBgpGroups;
   }
 
+  @Nonnull
   public IsisSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -246,5 +261,53 @@ public class RoutingInstance implements Serializable {
 
   public void setSnmpServer(SnmpServer snmpServer) {
     _snmpServer = snmpServer;
+  }
+
+  public void setConfederation(@Nullable Long confederation) {
+    _confederation = confederation;
+  }
+
+  public @Nullable Long getConfederation() {
+    return _confederation;
+  }
+
+  public @Nonnull Set<Long> getConfederationMembers() {
+    return _confederationMembers;
+  }
+
+  public AggregateRoute getAggregateRouteDefaults() {
+    return _aggregateRouteDefaults;
+  }
+
+  public GeneratedRoute getGeneratedRouteDefaults() {
+    return _generatedRouteDefaults;
+  }
+
+  /** Helper to initialize aggregated/generated route defaults, which happen to be the same */
+  private static void initAbstractAggregateRouteDefaults(@Nonnull AbstractAggregateRoute route) {
+    route.setActive(true);
+    route.setAsPath(null);
+    route.setMetric(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_COST);
+    route.setPreference(AggregateRoute.DEFAULT_AGGREGATE_ROUTE_PREFERENCE);
+  }
+
+  /**
+   * Initialize defaults for aggregate routes and return in an {@link AggregateRoute} whose fields
+   * can be inherited.
+   */
+  private static @Nonnull AggregateRoute initAggregateRouteDefaults() {
+    AggregateRoute route = new AggregateRoute(Prefix.ZERO);
+    initAbstractAggregateRouteDefaults(route);
+    return route;
+  }
+
+  /**
+   * Initialize defaults for generated routes and return in a {@link GeneratedRoute} whose fields
+   * can be inherited.
+   */
+  private static @Nonnull GeneratedRoute initGeneratedRouteDefaults() {
+    GeneratedRoute route = new GeneratedRoute(Prefix.ZERO);
+    initAbstractAggregateRouteDefaults(route);
+    return route;
   }
 }

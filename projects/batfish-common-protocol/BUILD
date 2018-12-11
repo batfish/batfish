@@ -132,6 +132,8 @@ junit_tests(
         ":recovery_grammar",
         "//projects/lib/bdd",
         "@antlr4_runtime//:compile",
+        "@commons_io//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@guava_testlib//:compile",
         "@hamcrest//:compile",

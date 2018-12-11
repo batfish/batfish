@@ -1,5 +1,9 @@
 package org.batfish.dataplane.traceroute;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
@@ -17,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -31,6 +34,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FilterResult;
@@ -53,6 +57,8 @@ import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
+import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
@@ -164,6 +170,36 @@ public class TracerouteEngineImplContext {
   }
 
   /**
+   * Applies the given list of destination NAT rules to the given flow and returns the new
+   * transformed flow. If {@code destinationNats} is null, empty, or none of the rules match {@code
+   * flow}, it is returned unmodified.
+   */
+  @VisibleForTesting
+  static Flow applyDestinationNat(
+      Flow flow,
+      String srcIface,
+      Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
+      List<DestinationNat> destinationNats) {
+    if (CommonUtil.isNullOrEmpty(destinationNats)) {
+      return flow;
+    }
+    for (DestinationNat nat : destinationNats) {
+      IpAccessList acl = nat.getAcl();
+      // null ACL means permit all
+      if (acl == null
+          || acl.filter(flow, srcIface, aclDefinitions, namedIpSpaces).getAction()
+              == LineAction.PERMIT) {
+        // null pool Ips mean don't nat matching flows
+        Ip poolIpFirst = nat.getPoolIpFirst();
+        return poolIpFirst == null ? flow : flow.toBuilder().setDstIp(poolIpFirst).build();
+      }
+    }
+    // no match
+    return flow;
+  }
+
+  /**
    * Applies the given list of source NAT rules to the given flow and returns the new transformed
    * flow. If {@code sourceNats} is null, empty, or does not contain any ACL rules matching the
    * {@link Flow}, the original flow is returned.
@@ -180,32 +216,60 @@ public class TracerouteEngineImplContext {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
-    Optional<SourceNat> matchingSourceNat =
-        sourceNats
-            .stream()
-            .filter(
-                sourceNat ->
-                    sourceNat.getAcl() != null
-                        && sourceNat
-                                .getAcl()
-                                .filter(flow, srcInterface, aclDefinitions, namedIpSpaces)
-                                .getAction()
-                            != LineAction.DENY)
-            .findFirst();
-    if (!matchingSourceNat.isPresent()) {
-      // No NAT rule matched.
-      return flow;
+    for (SourceNat nat : sourceNats) {
+      IpAccessList acl = nat.getAcl();
+      // null acl means permit all
+      if (acl == null
+          || acl.filter(flow, srcInterface, aclDefinitions, namedIpSpaces).getAction()
+              == LineAction.PERMIT) {
+        // null pool Ips mean don't nat matching flows
+        Ip poolIpFirst = nat.getPoolIpFirst();
+        return poolIpFirst == null ? flow : flow.toBuilder().setSrcIp(poolIpFirst).build();
+      }
     }
-    SourceNat sourceNat = matchingSourceNat.get();
-    Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-    if (natPoolStartIp == null) {
-      throw new BatfishException(
-          String.format(
-              "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
+    // no match
+    return flow;
+  }
+
+  @VisibleForTesting
+  static PreSourceNatOutgoingFilterStep applyPreSourceNatFilter(
+      Flow currentFlow,
+      String node,
+      String inInterfaceName,
+      String outInterfaceName,
+      IpAccessList filter,
+      Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
+      boolean ignoreFilters) {
+
+    checkArgument(
+        node != null && inInterfaceName != null && outInterfaceName != null,
+        "Node, inputInterface and outgoingInterface cannot be null");
+
+    PreSourceNatOutgoingFilterStep.Builder preSourceNatOutgoingFilterStepBuilder =
+        PreSourceNatOutgoingFilterStep.builder();
+    PreSourceNatOutgoingFilterStepDetail.Builder preSourceNatOutgoingFilterStepDetailBuilder =
+        PreSourceNatOutgoingFilterStepDetail.builder();
+    preSourceNatOutgoingFilterStepDetailBuilder
+        .setNode(node)
+        .setInputInterface(inInterfaceName)
+        .setOutputInterface(outInterfaceName);
+
+    preSourceNatOutgoingFilterStepBuilder.setAction(PERMITTED);
+
+    preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
+    // check filter
+    if (!ignoreFilters) {
+      FilterResult filterResult =
+          filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
+      if (filterResult.getAction() == LineAction.DENY) {
+        preSourceNatOutgoingFilterStepBuilder.setAction(DENIED);
+      }
     }
-    Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
-    transformedFlowBuilder.setSrcIp(natPoolStartIp);
-    return transformedFlowBuilder.build();
+
+    return preSourceNatOutgoingFilterStepBuilder
+        .setDetail(preSourceNatOutgoingFilterStepDetailBuilder.build())
+        .build();
   }
 
   private void processCurrentNextHopInterfaceEdges(
@@ -405,7 +469,7 @@ public class TracerouteEngineImplContext {
       String currentNodeName,
       @Nullable String inputIfaceName,
       TransmissionContext oldTransmissionContext,
-      Flow currentFlow,
+      Flow inputFlow,
       Stack<Breadcrumb> breadcrumbs) {
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
@@ -420,38 +484,48 @@ public class TracerouteEngineImplContext {
 
     TransmissionContext transmissionContext = oldTransmissionContext.branch();
 
-    Ip dstIp = currentFlow.getDstIp();
-
     // trace was received on a source interface of this hop
+    Flow dstNatFlow = null;
     if (inputIfaceName != null) {
       EnterInputIfaceStep enterIfaceStep =
           createEnterSrcIfaceStep(
               currentConfiguration,
               inputIfaceName,
               _ignoreFilters,
-              currentFlow,
+              inputFlow,
               aclDefinitions,
               namedIpSpaces);
       steps.add(enterIfaceStep);
 
-      if (enterIfaceStep.getAction() == StepAction.DENIED) {
+      if (enterIfaceStep.getAction() == DENIED) {
         Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(deniedHop);
         Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
         transmissionContext._flowTraces.add(trace);
         return;
       }
-    } else if (currentFlow.getIngressVrf() != null) {
+
+      dstNatFlow =
+          applyDestinationNat(
+              inputFlow,
+              inputIfaceName,
+              aclDefinitions,
+              namedIpSpaces,
+              currentConfiguration.getAllInterfaces().get(inputIfaceName).getDestinationNats());
+    } else if (inputFlow.getIngressVrf() != null) {
       // if inputIfaceName is not set for this hop, this is the originating step
       steps.add(
           OriginateStep.builder()
               .setDetail(
                   OriginateStepDetail.builder()
-                      .setOriginatingVrf(currentFlow.getIngressVrf())
+                      .setOriginatingVrf(inputFlow.getIngressVrf())
                       .build())
               .setAction(StepAction.ORIGINATED)
               .build());
     }
+
+    Flow currentFlow = firstNonNull(dstNatFlow, inputFlow);
+    Ip dstIp = currentFlow.getDstIp();
 
     // Figure out where the trace came from..
     String vrfName;
@@ -584,9 +658,13 @@ public class TracerouteEngineImplContext {
                             .build());
                     Hop nullRoutedHop =
                         new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
-                    transmissionContext._hopsSoFar.add(nullRoutedHop);
                     Trace trace =
-                        new Trace(FlowDisposition.NULL_ROUTED, transmissionContext._hopsSoFar);
+                        new Trace(
+                            FlowDisposition.NULL_ROUTED,
+                            ImmutableList.<Hop>builder()
+                                .addAll(transmissionContext._hopsSoFar)
+                                .add(nullRoutedHop)
+                                .build());
                     transmissionContext._flowTraces.add(trace);
                     return;
                   }
@@ -596,6 +674,38 @@ public class TracerouteEngineImplContext {
                           .get(nextHopInterface.getHostname())
                           .getAllInterfaces()
                           .get(nextHopInterface.getInterface());
+
+                  IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
+                  // Apply preSourceNatOutgoingFilter
+                  if (inputIfaceName != null && filter != null) {
+                    // check preSourceNat only for packets originating from other nodes
+                    PreSourceNatOutgoingFilterStep step =
+                        applyPreSourceNatFilter(
+                            currentFlow,
+                            currentNodeName,
+                            inputIfaceName,
+                            outgoingInterface.getName(),
+                            filter,
+                            aclDefinitions,
+                            namedIpSpaces,
+                            _ignoreFilters);
+
+                    clonedStepsBuilder.add(step);
+
+                    if (step.getAction() == StepAction.DENIED) {
+                      Hop deniedOutHop =
+                          new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
+                      Trace trace =
+                          new Trace(
+                              FlowDisposition.DENIED_OUT,
+                              ImmutableList.<Hop>builder()
+                                  .addAll(transmissionContext._hopsSoFar)
+                                  .add(deniedOutHop)
+                                  .build());
+                      transmissionContext._flowTraces.add(trace);
+                      return;
+                    }
+                  }
 
                   // Apply any relevant source NAT rules.
                   Flow newTransformedFlow =
@@ -681,7 +791,7 @@ public class TracerouteEngineImplContext {
     Trace trace;
     if (denied) {
       // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(StepAction.DENIED);
+      exitOutIfaceBuilder.setAction(DENIED);
       List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
       Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
       transmissionContext._hopsSoFar.add(deniedOutHop);

@@ -4,8 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +55,7 @@ public abstract class PropertySpecifier {
       @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
-    List<AutocompleteSuggestion> suggestions = new LinkedList<>();
+    ImmutableList.Builder<AutocompleteSuggestion> suggestions = new ImmutableList.Builder<>();
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
     Pattern queryPattern = safeGetPattern(queryWithStars);
 
@@ -64,30 +64,18 @@ public abstract class PropertySpecifier {
      * match anything as string.contains or regex.matches; so we skip formalities altogether
      */
     if (queryPattern != null) {
-      // 1. check if the pattern matches anything
-      List<AutocompleteSuggestion> propertySuggestions =
+      suggestions.addAll(
           allProperties
               .stream()
               .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
               .map(prop -> new AutocompleteSuggestion(prop, false))
-              .collect(Collectors.toList());
-
-      // 2. if it did, add the pattern itself as the first suggestion
-      if (!propertySuggestions.isEmpty()) {
-        suggestions.add(
-            new AutocompleteSuggestion(
-                queryWithStars, false, "All properties matching regex " + queryWithStars));
-      }
-
-      // 3. then add the concrete suggestions
-      suggestions.addAll(propertySuggestions);
+              .collect(Collectors.toList()));
     }
-    return suggestions;
+    return suggestions.build();
   }
 
-  /** Converts the extracted propertyValue to what is specified in the properyDescriptor */
-  public static Object convertTypeIfNeeded(
-      Object propertyValue, PropertyDescriptor<?> propertyDescriptor) {
+  /** Converts {@code propertyValue} to {@code targetSchema} if needed */
+  public static Object convertTypeIfNeeded(Object propertyValue, Schema targetSchema) {
 
     Object outputPropertyValue = propertyValue;
 
@@ -102,7 +90,6 @@ public abstract class PropertySpecifier {
     }
 
     // check if a conversion to String or List/Set<String> is needed for complex objects (e.g., VRF)
-    Schema targetSchema = propertyDescriptor.getSchema();
     if (targetSchema.equals(Schema.STRING)
         && outputPropertyValue != null
         && !(outputPropertyValue instanceof String)) {
@@ -150,7 +137,8 @@ public abstract class PropertySpecifier {
     checkArgument(row != null, "'row' cannot be null");
 
     Object propertyValue = propertyDescriptor.getGetter().apply(object);
-    propertyValue = PropertySpecifier.convertTypeIfNeeded(propertyValue, propertyDescriptor);
+    propertyValue =
+        PropertySpecifier.convertTypeIfNeeded(propertyValue, propertyDescriptor.getSchema());
     fillProperty(columnName, propertyValue, row, propertyDescriptor); // separate for testing
   }
 

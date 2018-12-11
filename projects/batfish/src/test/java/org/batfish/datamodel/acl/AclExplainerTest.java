@@ -10,6 +10,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPrefix;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -52,8 +54,13 @@ public class AclExplainerTest {
 
   private AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
       AclLineMatchExpr invariantExpr, IpAccessList acl) {
+    return explainWithProvenance(invariantExpr, acl, ImmutableMap.of());
+  }
+
+  private AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
+      AclLineMatchExpr invariantExpr, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
     return AclExplainer.explainWithProvenance(
-        _pkt, _mgr, invariantExpr, acl, ImmutableMap.of(), ImmutableMap.of());
+        _pkt, _mgr, invariantExpr, acl, namedAcls, ImmutableMap.of());
   }
 
   private AclLineMatchExpr explainDifferential(IpAccessList denyAcl, IpAccessList permitAcl) {
@@ -76,15 +83,25 @@ public class AclExplainerTest {
 
   private AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainDifferentialWithProvenance(
       AclLineMatchExpr invariantExpr, IpAccessList denyAcl, IpAccessList permitAcl) {
+    return explainDifferentialWithProvenance(
+        invariantExpr, denyAcl, ImmutableMap.of(), permitAcl, ImmutableMap.of());
+  }
+
+  private AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainDifferentialWithProvenance(
+      AclLineMatchExpr invariantExpr,
+      IpAccessList denyAcl,
+      Map<String, IpAccessList> denyNamedAcls,
+      IpAccessList permitAcl,
+      Map<String, IpAccessList> permitNamedAcls) {
     return AclExplainer.explainDifferentialWithProvenance(
         _pkt,
         _mgr,
         invariantExpr,
         denyAcl,
-        ImmutableMap.of(),
+        denyNamedAcls,
         ImmutableMap.of(),
         permitAcl,
-        ImmutableMap.of(),
+        permitNamedAcls,
         ImmutableMap.of());
   }
 
@@ -99,6 +116,45 @@ public class AclExplainerTest {
             .build();
     AclLineMatchExprWithProvenance<IpAccessListLineIndex> explanationWithProvenance =
         explainWithProvenance(TRUE, acl);
+
+    AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
+    assertThat(explanation, equalTo(or(matchDstIp1, matchDstIp2)));
+
+    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> provenance =
+        explanationWithProvenance.getProvenance();
+    assertThat(provenance.entrySet(), hasSize(2));
+
+    assertThat(
+        provenance, hasEntry(matchDstIp1, ImmutableSet.of(new IpAccessListLineIndex(acl, 0))));
+    assertThat(
+        provenance, hasEntry(matchDstIp2, ImmutableSet.of(new IpAccessListLineIndex(acl, 1))));
+  }
+
+  // make a map of namedAcls including the given ACL and a newly constructed one named newAclName
+  // that refers to the original one
+  private Map<String, IpAccessList> namedAclsWithReference(IpAccessList acl, String newAclName) {
+    String oldAclName = acl.getName();
+    return ImmutableMap.of(
+        oldAclName,
+        acl,
+        newAclName,
+        IpAccessList.builder()
+            .setName(newAclName)
+            .setLines(ImmutableList.of(accepting(permittedByAcl(oldAclName))))
+            .build());
+  }
+
+  @Test
+  public void testExplainSimpleWithProvenanceAndNamedAcls() {
+    MatchHeaderSpace matchDstIp1 = matchDstIp("1.1.1.1");
+    AclLineMatchExpr matchDstIp2 = matchDstIp("2.2.2.2");
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(ImmutableList.of(accepting(matchDstIp1), accepting(matchDstIp2)))
+            .build();
+    AclLineMatchExprWithProvenance<IpAccessListLineIndex> explanationWithProvenance =
+        explainWithProvenance(TRUE, acl, namedAclsWithReference(acl, "acl2"));
 
     AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
     assertThat(explanation, equalTo(or(matchDstIp1, matchDstIp2)));
@@ -243,6 +299,42 @@ public class AclExplainerTest {
             .build();
     AclLineMatchExprWithProvenance<IpAccessListLineIndex> explanationWithProvenance =
         explainDifferentialWithProvenance(TRUE, denyAcl, permitAcl);
+
+    AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
+    assertThat(explanation, equalTo(and(matchDstPrefix, not(matchDstIp))));
+
+    IdentityHashMap<AclLineMatchExpr, Set<IpAccessListLineIndex>> provenance =
+        explanationWithProvenance.getProvenance();
+    assertThat(provenance.entrySet(), hasSize(2));
+
+    assertThat(
+        provenance,
+        hasEntry(matchDstPrefix, ImmutableSet.of(new IpAccessListLineIndex(permitAcl, 0))));
+    assertThat(
+        provenance, hasEntry(matchDstIp, ImmutableSet.of(new IpAccessListLineIndex(denyAcl, 0))));
+  }
+
+  @Test
+  public void testExplainDifferentialSimpleWithProvenanceAndNamedAcls() {
+    MatchHeaderSpace matchDstIp = matchDstIp("1.2.3.4");
+    AclLineMatchExpr matchDstPrefix = matchDstPrefix("1.2.3.0/24");
+    IpAccessList denyAcl =
+        IpAccessList.builder()
+            .setName("deny")
+            .setLines(ImmutableList.of(accepting(matchDstIp)))
+            .build();
+    IpAccessList permitAcl =
+        IpAccessList.builder()
+            .setName("permit")
+            .setLines(ImmutableList.of(accepting(matchDstPrefix)))
+            .build();
+    AclLineMatchExprWithProvenance<IpAccessListLineIndex> explanationWithProvenance =
+        explainDifferentialWithProvenance(
+            TRUE,
+            denyAcl,
+            namedAclsWithReference(denyAcl, "deny2"),
+            permitAcl,
+            namedAclsWithReference(permitAcl, "permit2"));
 
     AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
     assertThat(explanation, equalTo(and(matchDstPrefix, not(matchDstIp))));

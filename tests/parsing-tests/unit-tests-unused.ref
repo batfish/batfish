@@ -1955,6 +1955,37 @@
         }
       },
       {
+        "Structure_Type" : "as-path-group",
+        "Structure_Name" : "AS_PATH_GROUP1",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            5,
+            6
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "as-path-group as-path",
+        "Structure_Name" : "AS_PATH_REGEX_NAME1",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "as-path-group as-path",
+        "Structure_Name" : "AS_PATH_REGEX_NAME2",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_as_path_group",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
         "Structure_Type" : "bgp group",
         "Structure_Name" : "someipv4bgpgroup",
         "Source_Lines" : {
@@ -1979,6 +2010,16 @@
             14,
             15,
             16
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "firewall filter",
+        "Structure_Name" : "ISP-INBOUND-L2",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_firewall",
+          "lines" : [
+            34
           ]
         }
       },
@@ -2053,8 +2094,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            17,
-            18
+            23,
+            24
           ]
         }
       },
@@ -2064,7 +2105,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_nat",
           "lines" : [
-            16,
+            6,
             17
           ]
         }
@@ -2075,23 +2116,11 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_nat",
           "lines" : [
-            11,
-            12,
-            13,
-            14
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "nat rule",
-        "Structure_Name" : "RULE",
-        "Source_Lines" : {
-          "filename" : "configs/juniper_nat",
-          "lines" : [
-            19,
-            20,
+            21,
             22,
-            23
+            23,
+            24,
+            25
           ]
         }
       },
@@ -2101,10 +2130,11 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_nat",
           "lines" : [
-            6,
-            7,
-            8,
-            9
+            11,
+            12,
+            13,
+            14,
+            15
           ]
         }
       },
@@ -2114,12 +2144,12 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_nat",
           "lines" : [
-            11,
-            12,
-            13,
-            14,
+            19,
+            21,
             22,
-            23
+            23,
+            24,
+            25
           ]
         }
       },
@@ -2129,12 +2159,13 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_nat",
           "lines" : [
-            6,
-            7,
             8,
             9,
-            19,
-            20
+            11,
+            12,
+            13,
+            14,
+            15
           ]
         }
       },
@@ -2202,6 +2233,21 @@
           "filename" : "configs/juniper_security",
           "lines" : [
             9
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "security-profile",
+        "Structure_Name" : "ls1",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_system",
+          "lines" : [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
           ]
         }
       },
@@ -2672,10 +2718,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 188 results",
+      "notes" : "Found 192 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 188
+      "numResults" : 192
     }
   }
 ]

@@ -115,7 +115,7 @@ public class NodeRolesData {
    *
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
-  @Nullable
+  @Nonnull
   private Optional<NodeRoleDimension> getNodeRoleDimension() throws IOException {
     // check default
     if (getDefaultDimension() != null) {

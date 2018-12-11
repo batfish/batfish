@@ -99,6 +99,11 @@ i_arp_resp
    ARP_RESP
 ;
 
+i_bandwidth
+:
+    BANDWIDTH bandwidth
+;
+
 i_common
 :
    apply
@@ -107,9 +112,9 @@ i_common
    | i_disable
    | i_enable
    | i_ether_options
+   | i_family
    | i_fastether_options
    | i_gigether_options
-   | i_family
    | i_mac
    | i_mtu
    | i_null
@@ -193,7 +198,6 @@ i_null
 :
    (
       AGGREGATED_ETHER_OPTIONS
-      | BANDWIDTH
       | ENCAPSULATION
       | FABRIC_OPTIONS
       | FORWARDING_CLASS_ACCOUNTING
@@ -240,6 +244,7 @@ i_unit
    )
    (
       i_common
+      | i_bandwidth
       | i_peer_unit
    )
 ;
@@ -301,6 +306,7 @@ if_inet
       | ifi_no_redirects
       | ifi_null
       | ifi_rpf_check
+      | ifi_tcp_mss
    )
 ;
 
@@ -434,6 +440,11 @@ ifi_null
 ifi_rpf_check
 :
    RPF_CHECK FAIL_FILTER name = variable
+;
+
+ifi_tcp_mss
+:
+  TCP_MSS size = DEC
 ;
 
 ifia_arp

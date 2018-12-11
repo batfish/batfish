@@ -35,18 +35,16 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   static final String PROP_NETWORK = "network";
   static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
   static final String PROP_NEXT_HOP_IP = "nextHopIp";
-  private static final String PROP_NEXT_HOP = "nextHop";
   static final String PROP_PROTOCOL = "protocol";
   static final String PROP_TAG = "tag";
 
   @Nonnull protected final Prefix _network;
-  @Nullable private String _nextHop;
   private boolean _nonRouting;
   private boolean _nonForwarding;
 
   @JsonCreator
   protected AbstractRoute(@Nullable @JsonProperty(PROP_NETWORK) Prefix network) {
-    _network = requireNonNull(network, "Cannot crate a route without a network");
+    _network = requireNonNull(network, "Cannot create a route without a network");
   }
 
   @Override
@@ -75,13 +73,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull
   public final Prefix getNetwork() {
     return _network;
-  }
-
-  /** Next hop node, if known */
-  @JsonProperty(PROP_NEXT_HOP)
-  @Nullable
-  public String getNextHop() {
-    return _nextHop;
   }
 
   /**
@@ -137,11 +128,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
    * GenericRib}.
    */
   public abstract int routeCompare(@Nonnull AbstractRoute rhs);
-
-  @JsonProperty(PROP_NEXT_HOP)
-  public void setNextHop(String nextHop) {
-    _nextHop = nextHop;
-  }
 
   @JsonIgnore
   public final void setNonForwarding(boolean nonForwarding) {

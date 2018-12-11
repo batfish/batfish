@@ -24,7 +24,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -99,6 +101,7 @@ import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -118,6 +121,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
@@ -130,6 +134,8 @@ import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableView;
+import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -396,7 +402,12 @@ public class WorkMgr extends AbstractCoordinator {
       int maxSuggestions)
       throws IOException {
     switch (completionType) {
-      case BGP_PROPERTY:
+      case BGP_PEER_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = BgpPeerPropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case BGP_PROCESS_PROPERTY:
         {
           List<AutocompleteSuggestion> suggestions =
               BgpProcessPropertySpecifier.autoComplete(query);
@@ -980,8 +991,17 @@ public class WorkMgr extends AbstractCoordinator {
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
     for (String questionName : questions) {
-      result.put(
-          questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
+      try {
+        result.put(
+            questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
+      } catch (Exception e) {
+        _logger.errorf(
+            "Got exception in getAnalysisAnswers: %s\n", Throwables.getStackTraceAsString(e));
+        result.put(
+            questionName,
+            BatfishObjectMapper.mapper()
+                .writeValueAsString(Answer.failureAnswer(e.getMessage(), null)));
+      }
     }
     return result.build();
   }
@@ -997,8 +1017,15 @@ public class WorkMgr extends AbstractCoordinator {
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
     for (String question : questions) {
-      result.put(
-          question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
+      try {
+        result.put(
+            question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
+      } catch (Exception e) {
+        _logger.errorf(
+            "Got exception in getAnalysisAnswersMetadata: %s\n",
+            Throwables.getStackTraceAsString(e));
+        result.put(question, AnswerMetadata.forStatus(AnswerStatus.FAILURE));
+      }
     }
     return result.build();
   }
@@ -2351,6 +2378,38 @@ public class WorkMgr extends AbstractCoordinator {
 
   @VisibleForTesting
   @Nonnull
+  Answer processAnswerRows2(String rawAnswerStr, AnswerRowsOptions options) {
+    if (rawAnswerStr == null) {
+      Answer answer = Answer.failureAnswer("Not found", null);
+      answer.setStatus(AnswerStatus.NOTFOUND);
+      return answer;
+    }
+    try {
+      Answer rawAnswer =
+          BatfishObjectMapper.mapper().readValue(rawAnswerStr, new TypeReference<Answer>() {});
+      // If the AnswerStatus is not SUCCESS, the answer cannot have any AnswerElements related to
+      // actual answers (but, e.g., it might have a BatfishStackTrace). Return that as-is.
+      if (rawAnswer.getStatus() != AnswerStatus.SUCCESS) {
+        return rawAnswer;
+      }
+      AnswerElement answerElement = rawAnswer.getAnswerElements().get(0);
+      if (!(answerElement instanceof TableAnswerElement)) {
+        return rawAnswer;
+      }
+      TableAnswerElement rawTable = (TableAnswerElement) answerElement;
+      Answer answer = new Answer();
+      answer.setStatus(rawAnswer.getStatus());
+      answer.addAnswerElement(processAnswerTable2(rawTable, options));
+      return answer;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Failed to convert answer string to Answer: %s\n", Throwables.getStackTraceAsString(e));
+      return Answer.failureAnswer(e.getMessage(), null);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
   TableAnswerElement processAnswerTable(TableAnswerElement rawTable, AnswerRowsOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     List<Row> filteredRows =
@@ -2393,6 +2452,62 @@ public class WorkMgr extends AbstractCoordinator {
 
   @VisibleForTesting
   @Nonnull
+  TableView processAnswerTable2(TableAnswerElement rawTable, AnswerRowsOptions options) {
+    Map<Row, Integer> rowIds = Maps.newIdentityHashMap();
+    CommonUtil.forEachWithIndex(rawTable.getRowsList(), (i, row) -> rowIds.put(row, i));
+    Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+    List<Row> filteredRows =
+        rawTable
+            .getRowsList()
+            .stream()
+            .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
+            .collect(ImmutableList.toImmutableList());
+
+    Stream<Row> rowStream = filteredRows.stream();
+    if (!options.getSortOrder().isEmpty()) {
+      // sort using specified sort order
+      rowStream = rowStream.sorted(buildComparator(rawColumnMap, options.getSortOrder()));
+    }
+    TableMetadata tableMetadata;
+    if (options.getColumns().isEmpty()) {
+      tableMetadata = rawTable.getMetadata();
+    } else {
+      // project to desired columns
+      rowStream =
+          rowStream.map(
+              rawRow -> {
+                Row row = Row.builder().putAll(rawRow, options.getColumns()).build();
+                rowIds.put(row, rowIds.get(rawRow));
+                return row;
+              });
+      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
+      columnMap.keySet().retainAll(options.getColumns());
+      List<ColumnMetadata> columnMetadata =
+          columnMap.values().stream().collect(ImmutableList.toImmutableList());
+      tableMetadata = new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc());
+    }
+    if (options.getUniqueRows()) {
+      // uniquify if desired
+      rowStream = rowStream.distinct();
+    }
+    // offset, truncate, and add to table
+    TableView tableView =
+        new TableView(
+            options,
+            rowStream
+                .skip(options.getRowOffset())
+                .limit(options.getMaxRows())
+                .map(row -> new TableViewRow(rowIds.get(row), row))
+                .collect(ImmutableList.toImmutableList()),
+            tableMetadata);
+    tableView.setSummary(
+        rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
+    tableView.getSummary().setNumResults(filteredRows.size());
+    return tableView;
+  }
+
+  @VisibleForTesting
+  @Nonnull
   Comparator<Row> buildComparator(
       Map<String, ColumnMetadata> rawColumnMap, List<ColumnSortOption> sortOrder) {
     ColumnSortOption firstColumnSortOption = sortOrder.get(0);
@@ -2431,8 +2546,6 @@ public class WorkMgr extends AbstractCoordinator {
     } else if (schema.equals(Schema.BOOLEAN)) {
       return naturalOrder();
     } else if (schema.equals(Schema.DOUBLE)) {
-      return naturalOrder();
-    } else if (schema.equals(Schema.FILE_LINE)) {
       return naturalOrder();
     } else if (schema.equals(Schema.FLOW)) {
       return naturalOrder();
@@ -2668,7 +2781,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
+  @MustBeClosed
+  @Nullable
+  public InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     try {
@@ -2739,7 +2854,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getSnapshotObject(
+  @MustBeClosed
+  @Nullable
+  public InputStream getSnapshotObject(
       @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2832,6 +2949,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
+  @MustBeClosed
   public InputStream getSnapshotInputObject(String network, String snapshot, String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {

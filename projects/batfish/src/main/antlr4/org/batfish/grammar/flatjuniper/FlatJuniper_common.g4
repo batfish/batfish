@@ -527,11 +527,12 @@ range
   )*
 ;
 
-reference_bandwidth
+bandwidth
 :
   base = DEC
   (
-    K
+    C
+    | K
     | M
     | G
   )?
@@ -560,6 +561,7 @@ sc_named
 :
   NO_ADVERTISE
   | NO_EXPORT
+  | NO_EXPORT_SUBCONFED
 ;
 
 secret

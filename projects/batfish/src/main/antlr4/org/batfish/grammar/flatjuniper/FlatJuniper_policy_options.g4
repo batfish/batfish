@@ -52,6 +52,11 @@ po_as_path
    AS_PATH name = variable regex = AS_PATH_REGEX
 ;
 
+po_as_path_group
+:
+  AS_PATH_GROUP name = variable poapg_as_path
+;
+
 po_community
 :
    COMMUNITY name = variable
@@ -84,6 +89,11 @@ po_prefix_list
       | poplt_network
       | poplt_network6
    )
+;
+
+poapg_as_path
+:
+  AS_PATH name = variable regex = AS_PATH_REGEX
 ;
 
 poc_invert_match
@@ -661,6 +671,7 @@ s_policy_options
    (
       apply
       | po_as_path
+      | po_as_path_group
       | po_community
       | po_condition
       | po_policy_statement

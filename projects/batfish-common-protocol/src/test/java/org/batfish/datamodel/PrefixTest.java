@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Prefix.parse;
+import static org.batfish.datamodel.Prefix.strict;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -9,12 +11,17 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDUtils;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class PrefixTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   @Test
   public void testCanonicalization() {
     Prefix p = Prefix.parse("255.255.255.255/15");
@@ -62,6 +69,23 @@ public class PrefixTest {
     assertThat(ipSpace, not(containsIp(new Ip("0.0.0.0"))));
     assertThat(ipSpace, not(containsIp(new Ip("128.128.128.128"))));
     assertThat(ipSpace, not(containsIp(new Ip("255.255.255.255"))));
+  }
+
+  @Test
+  public void testStrictCanonical() {
+    String canonicalStr = "1.0.0.0/8";
+    Prefix canonical = strict(canonicalStr);
+
+    assertThat(strict(canonicalStr).toString(), equalTo(canonicalStr));
+    assertThat(parse(canonicalStr), equalTo(canonical));
+  }
+
+  @Test
+  public void testStrictNonCanonical() {
+    String nonCanonical = "1.2.0.0/8";
+
+    _thrown.expect(IllegalArgumentException.class);
+    strict(nonCanonical);
   }
 
   @Test

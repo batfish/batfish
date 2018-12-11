@@ -272,13 +272,14 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -736,7 +737,8 @@ public class CiscoGrammarTest {
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
-    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
@@ -757,7 +759,8 @@ public class CiscoGrammarTest {
     /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
   }
 
   @Test
@@ -1276,7 +1279,13 @@ public class CiscoGrammarTest {
     // Check if routingPolicy accepts OSPF route and sets correct default metric
     assertTrue(
         routingPolicy.process(
-            new OspfIntraAreaRoute(Prefix.parse("4.4.4.4/32"), null, 1, 1, 1),
+            OspfInternalRoute.builder()
+                .setProtocol(RoutingProtocol.OSPF)
+                .setNetwork(Prefix.parse("4.4.4.4/32"))
+                .setAdmin(1)
+                .setMetric(1)
+                .setArea(1L)
+                .build(),
             outputRouteBuilder,
             null,
             DEFAULT_VRF_NAME,
@@ -2363,6 +2372,22 @@ public class CiscoGrammarTest {
     assertThat(aristaEnabled, hasMultipathEbgp(false));
     assertThat(nxosDisabled, hasMultipathEbgp(false));
     assertThat(nxosEnabled, hasMultipathEbgp(false));
+  }
+
+  @Test
+  public void testBgpProcnum() throws IOException {
+    for (String hostname : ImmutableList.of("ios-bgp-procnum-dotted", "ios-bgp-procnum-long")) {
+      Configuration c = parseConfig(hostname);
+      assertThat(
+          hostname,
+          c.getVrfs()
+              .get(DEFAULT_VRF_NAME)
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.parse("2.2.2.3/32"))
+              .getLocalAs(),
+          equalTo(4123456789L));
+    }
   }
 
   @Test

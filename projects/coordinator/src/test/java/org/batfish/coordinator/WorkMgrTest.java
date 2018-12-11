@@ -94,7 +94,6 @@ import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
-import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
@@ -107,6 +106,8 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableView;
+import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -129,6 +130,9 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkMgr}. */
 public final class WorkMgrTest {
+
+  private static TableMetadata MOCK_TABLE_METADATA =
+      new TableMetadata(ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")));
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -820,12 +824,15 @@ public final class WorkMgrTest {
   private String readSnapshotConfig(String network, String snapshot, String fileName)
       throws IOException {
     StringWriter writer = new StringWriter();
-    InputStream inputStream =
+    try (InputStream inputStream =
         _manager.getSnapshotInputObject(
-            network, snapshot, Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString());
-    assertThat(inputStream, not(nullValue()));
-    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
-    return writer.toString();
+            network,
+            snapshot,
+            Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString())) {
+      assertThat(inputStream, not(nullValue()));
+      IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
+      return writer.toString();
+    }
   }
 
   @Test
@@ -1029,6 +1036,92 @@ public final class WorkMgrTest {
     assertThat(answers3.keySet(), containsInAnyOrder(question1Name, question2Name));
   }
 
+  /** Test that we return good answers when some questions are bad */
+  @Test
+  public void testGetAnalysisAnswersAndMetadataPartial()
+      throws JsonProcessingException, FileNotFoundException {
+    String containerName = "container1";
+    String testrigName = "testrig1";
+    String analysisName = "analysis1";
+
+    String question1Name = "question1";
+    String question1Content = BatfishObjectMapper.writeString(new TestQuestion());
+
+    String question2Name = "question2";
+    String question2Content = "bogus"; // bad content
+
+    _manager.initNetwork(containerName, null);
+    Map<String, String> questionsToAdd =
+        ImmutableMap.of(question1Name, question1Content, question2Name, question2Content);
+
+    _manager.configureAnalysis(
+        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
+    NetworkId networkId = _idManager.getNetworkId(containerName);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(testrigName, networkId, snapshotId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+
+    AnswerId baseAnswerId1 =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId1,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
+    AnswerId baseAnswerId2 =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId2,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            analysisId);
+    Answer answer1 = new Answer();
+    Answer answer2 = new Answer();
+    String answer1Text = "foo1";
+    String answer2Text = "foo2";
+    answer1.addAnswerElement(new StringAnswerElement(answer1Text));
+    answer2.addAnswerElement(new StringAnswerElement(answer2Text));
+    String answer1Str = BatfishObjectMapper.writeString(answer1);
+    String answer2Str = BatfishObjectMapper.writeString(answer2);
+    AnswerMetadata answerMetadata1 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    AnswerMetadata answerMetadata2 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
+    _storage.storeAnswer(answer1Str, baseAnswerId1);
+    _storage.storeAnswer(answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
+
+    assertThat(
+        _manager.getAnalysisAnswers(
+            containerName, testrigName, null, analysisName, ImmutableSet.of()),
+        equalTo(
+            ImmutableMap.of(
+                question1Name,
+                BatfishObjectMapper.mapper().writeValueAsString(answer1),
+                question2Name,
+                BatfishObjectMapper.mapper()
+                    .writeValueAsString(
+                        Answer.failureAnswer(
+                            "Could not convert raw question text [bogus] to JSON", null)))));
+
+    assertThat(
+        _manager.getAnalysisAnswersMetadata(
+            containerName, testrigName, null, analysisName, ImmutableSet.of()),
+        equalTo(
+            ImmutableMap.of(
+                question1Name,
+                answerMetadata1,
+                question2Name,
+                AnswerMetadata.forStatus(AnswerStatus.FAILURE))));
+  }
+
   @Test
   public void testGetAutoWorkQueueUserAnalysis() {
     String containerName = "myContainer";
@@ -1091,7 +1184,7 @@ public final class WorkMgrTest {
             null,
             analysisId);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String answerStr = BatfishObjectMapper.writeString(answer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
@@ -1156,7 +1249,7 @@ public final class WorkMgrTest {
             null,
             analysisId);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1215,7 +1308,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1250,7 +1343,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1290,7 +1383,7 @@ public final class WorkMgrTest {
             null,
             null);
     Answer answer = new Answer();
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
@@ -1514,6 +1607,36 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerRows2() throws IOException {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar"))));
+    table.addRow(Row.of(columnName, new Issue("blah", 5, new Issue.Type("m", "n"))));
+    Answer answer = new Answer();
+    answer.addAnswerElement(table);
+    answer.setStatus(AnswerStatus.SUCCESS);
+    String answerStr = BatfishObjectMapper.writePrettyString(answer);
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
+
+    List<Row> processedRows =
+        ((TableView) _manager.processAnswerRows2(answerStr, options).getAnswerElements().get(0))
+            .getInnerRows();
+
+    assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
   public void testProcessAnswerRowsFailure() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
@@ -1680,6 +1803,40 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerTable2Filtered() {
+    String columnName = "val";
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar"))));
+    String whitelistedValue = "hello";
+    Row row1 = Row.of(columnName, whitelistedValue);
+    Row row2 = Row.of(columnName, "goodbye");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNotFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableView notFiltered = _manager.processAnswerTable2(table, optionsNotFiltered);
+    TableView filtered = _manager.processAnswerTable2(table, optionsFiltered);
+
+    assertThat(notFiltered.getInnerRows(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getInnerRows(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
+  }
+
+  @Test
   public void testProcessAnswerTableMaxRows() {
     String columnName = "val";
     TableAnswerElement table =
@@ -1737,9 +1894,51 @@ public final class WorkMgrTest {
     assertThat(
         _manager.processAnswerTable(table, optionsNoProject).getRowsList(),
         equalTo(ImmutableList.of(row1, row2)));
+
+    List<Row> projectedRows = _manager.processAnswerTable(table, optionsProject).getRowsList();
+
+    assertThat(projectedRows, equalTo(ImmutableList.of(row1Projected, row2Projected)));
+  }
+
+  @Test
+  public void testProcessAnswerTable2Project() {
+    String columnName = "val";
+    String otherColumnName = "val2";
+    TableMetadata originalMetadata =
+        new TableMetadata(
+            ImmutableList.of(
+                new ColumnMetadata(columnName, Schema.INTEGER, "foobar"),
+                new ColumnMetadata(otherColumnName, Schema.INTEGER, "foobaz")));
+    TableAnswerElement table = new TableAnswerElement(originalMetadata);
+    Row row1 = Row.of(columnName, 1, otherColumnName, 3);
+    Row row2 = Row.of(columnName, 2, otherColumnName, 4);
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNoProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableViewRow row1Projected = new TableViewRow(0, Row.of(columnName, 1));
+    TableViewRow row2Projected = new TableViewRow(1, Row.of(columnName, 2));
+
     assertThat(
-        _manager.processAnswerTable(table, optionsProject).getRowsList(),
-        equalTo(ImmutableList.of(row1Projected, row2Projected)));
+        _manager.processAnswerTable(table, optionsNoProject).getRowsList(),
+        equalTo(ImmutableList.of(row1, row2)));
+
+    List<TableViewRow> projectedRows =
+        _manager.processAnswerTable2(table, optionsProject).getRows();
+
+    assertThat(projectedRows, equalTo(ImmutableList.of(row1Projected, row2Projected)));
+    assertThat(projectedRows.get(0).getId(), equalTo(0));
+    assertThat(projectedRows.get(1).getId(), equalTo(1));
   }
 
   @Test
@@ -1903,20 +2102,6 @@ public final class WorkMgrTest {
     Row r2 = Row.of(col, true);
 
     assertThat(comparator.compare(r1, r2), lessThan(0));
-  }
-
-  @Test
-  public void testColumnComparatorFileLine() {
-    String col = "col1";
-    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FILE_LINE, "colDesc");
-    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, new FileLinePair("a", 1));
-    Row r2 = Row.of(col, new FileLinePair("a", 2));
-    Row r3 = Row.of(col, new FileLinePair("b", 1));
-
-    assertThat(comparator.compare(r1, r2), lessThan(0));
-    assertThat(comparator.compare(r1, r3), lessThan(0));
-    assertThat(comparator.compare(r2, r3), lessThan(0));
   }
 
   @Test
@@ -2637,7 +2822,7 @@ public final class WorkMgrTest {
             null);
     Answer answer = new Answer();
     answer.setStatus(AnswerStatus.SUCCESS);
-    answer.addAnswerElement(new TableAnswerElement(new TableMetadata(ImmutableList.of())));
+    answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
     _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
