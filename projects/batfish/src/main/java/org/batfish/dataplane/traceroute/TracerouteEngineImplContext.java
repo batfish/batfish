@@ -658,9 +658,13 @@ public class TracerouteEngineImplContext {
                             .build());
                     Hop nullRoutedHop =
                         new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
-                    transmissionContext._hopsSoFar.add(nullRoutedHop);
                     Trace trace =
-                        new Trace(FlowDisposition.NULL_ROUTED, transmissionContext._hopsSoFar);
+                        new Trace(
+                            FlowDisposition.NULL_ROUTED,
+                            ImmutableList.<Hop>builder()
+                                .addAll(transmissionContext._hopsSoFar)
+                                .add(nullRoutedHop)
+                                .build());
                     transmissionContext._flowTraces.add(trace);
                     return;
                   }
@@ -689,10 +693,15 @@ public class TracerouteEngineImplContext {
                     clonedStepsBuilder.add(step);
 
                     if (step.getAction() == StepAction.DENIED) {
-                      Hop outHop = new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
-                      transmissionContext._hopsSoFar.add(outHop);
+                      Hop deniedOutHop =
+                          new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
                       Trace trace =
-                          new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
+                          new Trace(
+                              FlowDisposition.DENIED_OUT,
+                              ImmutableList.<Hop>builder()
+                                  .addAll(transmissionContext._hopsSoFar)
+                                  .add(deniedOutHop)
+                                  .build());
                       transmissionContext._flowTraces.add(trace);
                       return;
                     }
