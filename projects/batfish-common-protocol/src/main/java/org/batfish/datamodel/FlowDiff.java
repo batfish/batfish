@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
@@ -97,7 +96,7 @@ public final class FlowDiff implements Comparable<FlowDiff> {
       return ImmutableSortedSet.of();
     }
 
-    Preconditions.checkArgument(
+    checkArgument(
         flow1
             .toBuilder()
             .setDstIp(flow2.getDstIp())
