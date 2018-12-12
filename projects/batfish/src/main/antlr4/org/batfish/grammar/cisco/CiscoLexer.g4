@@ -2331,6 +2331,11 @@ CONTEXT
    'context'
 ;
 
+CONTEXT_NAME
+:
+   'context-name'
+;
+
 CONTINUE
 :
    (
@@ -3140,6 +3145,11 @@ DEV
 DEVICE
 :
    'device'
+;
+
+DEVICE_ID
+:
+   'device-id'
 ;
 
 DEVICE_SENSOR
@@ -5814,6 +5824,11 @@ IP
    'ip'
 ;
 
+IPADDRESS
+:
+   'ipaddress'
+;
+
 IP_ADDRESS_LITERAL
 :
    'ip-address'
@@ -7182,6 +7197,11 @@ MESH_HT_SSID_PROFILE
 MESH_RADIO_PROFILE
 :
    'mesh-radio-profile'
+;
+
+MESSAGE
+:
+   'message'
 ;
 
 MESSAGE_COUNTER
