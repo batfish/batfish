@@ -186,6 +186,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
@@ -3448,6 +3449,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // TODO: handle node
     String interfaceName = ctx.name.getText();
     _currentInterface.set8023adInterface(interfaceName);
+  }
+
+  @Override
+  public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
+    _currentInterface.setRedundantParentInterface(ctx.name.getText());
   }
 
   @Override

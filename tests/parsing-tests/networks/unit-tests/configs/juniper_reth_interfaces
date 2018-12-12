@@ -1,0 +1,9 @@
+#
+set system host-name interface-reth
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.0/31
+set interfaces ge-0/0/0 gigether-options redundant-parent reth0
+set interfaces ge-0/0/1 unit 0 family inet address 1.0.0.1/31
+set interfaces ge-0/0/1 gigether-options redundant-parent reth0
+set interfaces reth0 unit 3 family inet address 3.3.3.3/31
+#
