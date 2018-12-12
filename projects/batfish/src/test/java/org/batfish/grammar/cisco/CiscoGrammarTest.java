@@ -3689,6 +3689,9 @@ public class CiscoGrammarTest {
         hasInterface(
             "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
 
+    // Confirm that interface MTU is set correctly
+    assertThat(c, hasInterface("ifname", hasMtu(1400)));
+
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }

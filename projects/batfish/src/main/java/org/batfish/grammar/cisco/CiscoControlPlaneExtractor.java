@@ -935,6 +935,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_loggingContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_list_extendedContext;
+import org.batfish.grammar.cisco.CiscoParser.S_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
@@ -8491,6 +8492,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_logging(S_loggingContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void exitS_mtu(S_mtuContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
+      _w.redFlag(String.format("mtu refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+    iface.setMtu(toInteger(ctx.bytes));
   }
 
   @Override
