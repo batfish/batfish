@@ -91,7 +91,8 @@ public class PacketHeaderConstraintsUtil {
             .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
             .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
             .setPacketLengths(extractSubranges(phc.getPacketLengths()))
-            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));
+            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()))
+            .setStates(firstNonNull(phc.getFlowStates(), ImmutableSortedSet.of()));
 
     if (phc.getDscps() != null) {
       builder.setDscps(phc.getDscps().enumerate());
