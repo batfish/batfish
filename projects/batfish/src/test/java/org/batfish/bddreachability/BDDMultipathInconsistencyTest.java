@@ -13,6 +13,7 @@ import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -98,7 +99,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                _dstIface2Ip.toIpSpace(),
+                matchDst(_dstIface2Ip.toIpSpace()),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -108,7 +109,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                _dstIface2Ip.toIpSpace(),
+                matchDst(_dstIface2Ip.toIpSpace()),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -144,7 +145,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                _dstIface2Ip.toIpSpace(),
+                matchDst(_dstIface2Ip.toIpSpace()),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -154,7 +155,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                _dstIface2Ip.toIpSpace(),
+                matchDst(_dstIface2Ip.toIpSpace()),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -188,7 +189,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                UniverseIpSpace.INSTANCE,
+                matchDst(UniverseIpSpace.INSTANCE),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -198,7 +199,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                UniverseIpSpace.INSTANCE,
+                matchDst(UniverseIpSpace.INSTANCE),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -208,7 +209,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                UniverseIpSpace.INSTANCE,
+                matchDst(UniverseIpSpace.INSTANCE),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -218,7 +219,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                UniverseIpSpace.INSTANCE,
+                matchDst(UniverseIpSpace.INSTANCE),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,
@@ -228,7 +229,7 @@ public class BDDMultipathInconsistencyTest {
         _graphFactory
             .bddReachabilityAnalysis(
                 assignment,
-                UniverseIpSpace.INSTANCE,
+                matchDst(UniverseIpSpace.INSTANCE),
                 ImmutableSet.of(),
                 ImmutableSet.of(),
                 finalNodes,

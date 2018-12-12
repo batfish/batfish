@@ -5,6 +5,7 @@ import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -92,7 +93,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     return initFactory()
         .bddReachabilityAnalysis(
             srcIpSpaceAssignment(),
-            UniverseIpSpace.INSTANCE,
+            matchDst(UniverseIpSpace.INSTANCE),
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(NODE1),
