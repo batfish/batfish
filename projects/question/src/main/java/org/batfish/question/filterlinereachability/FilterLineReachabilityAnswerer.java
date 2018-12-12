@@ -466,6 +466,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
+  private static final double SIGNIFICANCE_THRESHOLD = 0.3;
+
   private static void answerAclReachability(
       List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
@@ -504,36 +506,35 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       // compute blocking lines
       for (int lineNum : unreachableButMatchableLineNums) {
-        ImmutableSortedSet.Builder<Integer> blockingLineNums = ImmutableSortedSet.naturalOrder();
-        ImmutableSortedSet.Builder<Integer> allBlockingLineNums = ImmutableSortedSet.naturalOrder();
         BDD blockedLine = ipLineToBDDMap.get(lineNum);
+
+        // all lines in [0, lineNum) that match part of the blocked line's address space.
+        ImmutableSortedSet.Builder<Integer> allMatchers = ImmutableSortedSet.naturalOrder();
+        // signicant lines are those that match at least satThreshhold of the address space.
+        ImmutableSortedSet.Builder<Integer> significantMatchers = ImmutableSortedSet.naturalOrder();
+        double satThreshhold = blockedLine.satCount() * SIGNIFICANCE_THRESHOLD;
+
         BDD restOfLine = blockedLine;
-
+        BDD significantRest = blockedLine;
         for (int prevLineNum = 0; prevLineNum < lineNum && !restOfLine.isZero(); prevLineNum++) {
-          BDD prevBDD = ipLineToBDDMap.get(prevLineNum);
-
-          BDD intersection = prevBDD.and(restOfLine);
+          BDD prevLine = ipLineToBDDMap.get(prevLineNum);
+          BDD intersection = prevLine.and(restOfLine);
           if (intersection.isZero()) {
             continue;
           }
 
-          allBlockingLineNums.add(prevLineNum);
-          if (intersection.satCount() / blockedLine.satCount() > 0.1) {
-            blockingLineNums.add(prevLineNum);
+          allMatchers.add(prevLineNum);
+          if (intersection.satCount() > satThreshhold) {
+            significantMatchers.add(prevLineNum);
+            significantRest = significantRest.and(prevLine.not());
           }
-          restOfLine = restOfLine.and(prevBDD.not());
+          restOfLine = restOfLine.and(intersection.not());
         }
 
-        SortedSet<Integer> finalBlockingLines = blockingLineNums.build();
-        if (finalBlockingLines.isEmpty()) {
-          finalBlockingLines = allBlockingLineNums.build();
-        }
-        System.err.printf(
-            "blockingLines: %d, allBlockingLines; %d, finalBlockingLines: %d\n",
-            blockingLineNums.build().size(),
-            allBlockingLineNums.build().size(),
-            finalBlockingLines.size());
-        answerRows.addUnreachableLine(aclSpec, lineNum, false, finalBlockingLines);
+        // Use the blockingLines as the answer, unless there are no
+        SortedSet<Integer> answerLines =
+            significantRest.isZero() ? significantMatchers.build() : allMatchers.build();
+        answerRows.addUnreachableLine(aclSpec, lineNum, false, answerLines);
       }
     }
   }
