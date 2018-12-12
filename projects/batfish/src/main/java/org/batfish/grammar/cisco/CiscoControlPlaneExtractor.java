@@ -5519,18 +5519,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
     String ifaceName = ctx.iface.getText();
     // Interface iface = _configuration.getInterfaces().get(ifaceName);
-    Optional<Interface> optionalIface =
-        _configuration
-            .getInterfaces()
-            .values()
-            .stream()
-            .filter(i -> i.getAlias().equals(ifaceName))
-            .findFirst();
-    Interface iface;
-    if (optionalIface.isPresent()) {
-      iface = optionalIface.get();
-    } else {
-      // Should never get here with valid config, ASA prevents referencing a non-existant iface here
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
       _w.redFlag(
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
       return;
@@ -9214,6 +9205,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return null;
     }
+  }
+
+  @Nullable
+  private Interface getAsaInterfaceByAlias(String alias) {
+    return _configuration
+        .getInterfaces()
+        .values()
+        .stream()
+        .filter(i -> alias.equals(i.getAlias()))
+        .findFirst()
+        .orElse(null);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {
