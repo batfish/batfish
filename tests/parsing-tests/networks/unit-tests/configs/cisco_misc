@@ -235,7 +235,9 @@ sap cache-timeout 30
 no schedule tech-support
 sensor fanspeed-control off
 service-policy global_policy global
-service-policy some-interface-policy interface Loopback0
+interface GigabitEthernet0/1
+  nameif ifname
+service-policy some-interface-policy interface ifname
 slot-table-cos queuemap-red
  destination-slot all queuemap-red
 !

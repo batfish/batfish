@@ -8538,9 +8538,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         SERVICE_POLICY_INTERFACE_POLICY,
         ctx.name.getStart().getLine());
-    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    String ifaceName = ctx.iface.getText();
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
+      _w.redFlag(
+          String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+
     _configuration.referenceStructure(
-        INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
+        INTERFACE,
+        getCanonicalInterfaceName(iface.getName()),
+        SERVICE_POLICY_INTERFACE,
+        ctx.iface.getStart().getLine());
   }
 
   @Override
