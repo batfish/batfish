@@ -510,9 +510,9 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
         // all lines in [0, lineNum) that match part of the blocked line's address space.
         ImmutableSortedSet.Builder<Integer> allMatchers = ImmutableSortedSet.naturalOrder();
-        // signicant lines are those that match at least satThreshhold of the address space.
+        // signicant lines are those that match at least satThreshold of the address space.
         ImmutableSortedSet.Builder<Integer> significantMatchers = ImmutableSortedSet.naturalOrder();
-        double satThreshhold = blockedLine.satCount() * SIGNIFICANCE_THRESHOLD;
+        double satThreshold = blockedLine.satCount() * SIGNIFICANCE_THRESHOLD;
 
         BDD restOfLine = blockedLine;
         BDD significantRest = blockedLine;
@@ -524,14 +524,14 @@ public class FilterLineReachabilityAnswerer extends Answerer {
           }
 
           allMatchers.add(prevLineNum);
-          if (intersection.satCount() > satThreshhold) {
+          if (prevLine.and(blockedLine).satCount() > satThreshold) {
             significantMatchers.add(prevLineNum);
             significantRest = significantRest.and(prevLine.not());
           }
           restOfLine = restOfLine.and(intersection.not());
         }
 
-        // Use the blockingLines as the answer, unless there are no
+        // Use the blockingLines as the answer, unless it is not a complete cover.
         SortedSet<Integer> answerLines =
             significantRest.isZero() ? significantMatchers.build() : allMatchers.build();
         answerRows.addUnreachableLine(aclSpec, lineNum, false, answerLines);
