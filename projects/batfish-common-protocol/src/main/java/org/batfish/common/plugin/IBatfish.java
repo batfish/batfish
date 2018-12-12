@@ -235,7 +235,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
-  /** Use more explicit {{@link #specifierContext(NetworkSnapshot)}} if possible. */
+  /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
   SpecifierContext specifierContext();
 
   /** Return a {@link SpecifierContext} for a given {@link NetworkSnapshot} */

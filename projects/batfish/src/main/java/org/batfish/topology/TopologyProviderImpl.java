@@ -12,13 +12,15 @@ import org.batfish.common.topology.TopologyProvider;
 /** */
 @ParametersAreNonnullByDefault
 public final class TopologyProviderImpl implements TopologyProvider {
+  private static final int MAX_CACHED_SNAPSHOTS = 3;
+
   private final IBatfish _batfish;
   private final Cache<NetworkSnapshot, IpOwners> _ipOwners;
 
   /** Create a new topology provider for a given instance of {@link IBatfish} */
   public TopologyProviderImpl(IBatfish batfish) {
     _batfish = batfish;
-    _ipOwners = CacheBuilder.newBuilder().maximumSize(6).build();
+    _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
   }
 
   /** Return the {@link IpOwners} for a given snapshot. */
