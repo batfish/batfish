@@ -1670,6 +1670,63 @@
           }
         }
       },
+      "asa_interface" : {
+        "configurationFormat" : "CISCO_ASA",
+        "name" : "asa_interface",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ifname" : {
+            "name" : "ifname",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/1",
+              "ifname"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa_interface",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ifname"
+            ]
+          }
+        }
+      },
       "asa_object_groups" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "asa_object_groups",
@@ -5016,6 +5073,67 @@
               }
             ],
             "sourceName" : "BLAH-BLAH",
+            "sourceType" : "extended ipv4 access-list"
+          },
+          "TEST" : {
+            "name" : "TEST",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log 7 interval 600"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log default"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log disable"
+              }
+            ],
+            "sourceName" : "TEST",
             "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {

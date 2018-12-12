@@ -111,6 +111,9 @@
         "asa_banner" : [
           "configs/asa_banner"
         ],
+        "asa_interface" : [
+          "configs/asa_interface"
+        ],
         "asa_object_groups" : [
           "configs/asa_object_groups"
         ],
@@ -827,6 +830,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_interface" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
@@ -7278,6 +7282,50 @@
             "      (banner",
             "        ASA_BANNER_LINE:'**************************************************'  <== mode:M_BannerText",
             "        NEWLINE:'\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "asa_interface" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa_interface'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_nameif",
+            "          NAMEIF:'nameif'",
+            "          name = (variable",
+            "            VARIABLE:'ifname')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_service_policy_interface",
+            "      SERVICE_POLICY:'service-policy'",
+            "      name = (variable",
+            "        VARIABLE:'some-interface-policy')",
+            "      INTERFACE:'interface'",
+            "      iface = (interface_name",
+            "        VARIABLE:'ifname')",
+            "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -14262,7 +14310,66 @@
             "          EQ:'eq'",
             "          (port",
             "            BFD_ECHO:'bfd-echo'))",
-            "        NEWLINE:'\\n\\n')))",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          level = DEC:'7'",
+            "          INTERVAL:'interval'",
+            "          secs = DEC:'600')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          DEFAULT:'default')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          DISABLE:'disable')",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -29144,18 +29251,6 @@
             "        VARIABLE:'global_policy')",
             "      GLOBAL:'global'",
             "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_service_policy_interface",
-            "      SERVICE_POLICY:'service-policy'",
-            "      name = (variable",
-            "        VARIABLE:'some-interface-policy')",
-            "      INTERFACE:'interface'",
-            "      iface = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'0'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
             "    (s_null",
             "      (null_block",
@@ -61399,6 +61494,23 @@
           }
         },
         "configs/asa_banner" : { },
+        "configs/asa_interface" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "definitionLines" : [
+                6,
+                7
+              ],
+              "numReferrers" : 2
+            },
+            "ifname" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
@@ -61862,6 +61974,14 @@
                 26,
                 27,
                 28
+              ],
+              "numReferrers" : 0
+            },
+            "TEST" : {
+              "definitionLines" : [
+                66,
+                67,
+                68
               ],
               "numReferrers" : 0
             },
@@ -65884,6 +66004,30 @@
             }
           }
         },
+        "configs/asa_interface" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "interface" : [
+                6
+              ],
+              "service-policy interface" : [
+                8
+              ]
+            },
+            "ifname" : {
+              "interface" : [
+                7
+              ]
+            }
+          },
+          "policy-map" : {
+            "some-interface-policy" : {
+              "service-policy interface policy" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "object network" : {
             "server02" : {
@@ -66885,13 +67029,6 @@
               ]
             }
           },
-          "interface" : {
-            "Loopback0" : {
-              "service-policy interface" : [
-                238
-              ]
-            }
-          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
@@ -66903,11 +67040,6 @@
             "global_policy" : {
               "service-policy global" : [
                 237
-              ]
-            },
-            "some-interface-policy" : {
-              "service-policy interface policy" : [
-                238
               ]
             }
           }
@@ -68792,6 +68924,15 @@
             }
           }
         },
+        "configs/asa_interface" : {
+          "policy-map" : {
+            "some-interface-policy" : {
+              "service-policy interface policy" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/bgp_address_family" : {
           "interface" : {
             "Loopback0" : {
@@ -69328,24 +69469,10 @@
               ]
             }
           },
-          "interface" : {
-            "Loopback0" : {
-              "service-policy interface" : [
-                238
-              ]
-            }
-          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
                 42
-              ]
-            }
-          },
-          "policy-map" : {
-            "some-interface-policy" : {
-              "service-policy interface policy" : [
-                238
               ]
             }
           }
@@ -70833,6 +70960,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_interface" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
