@@ -28,8 +28,6 @@ public class SpecifierContextImpl implements SpecifierContext {
 
   private final @Nonnull IpSpace _snapshotDeviceOwnedIps;
 
-  private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
-
   public SpecifierContextImpl(
       @Nonnull IBatfish batfish, @Nonnull Map<String, Configuration> configs) {
     _batfish = batfish;
@@ -53,9 +51,6 @@ public class SpecifierContextImpl implements SpecifierContext {
     Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
         TopologyUtil.computeIpInterfaceOwners(nodeInterfaces, true);
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIpSpaces(ipInterfaceOwners);
-    _vrfOwnedIps =
-        TopologyUtil.computeVrfOwnedIpSpaces(
-            TopologyUtil.computeIpVrfOwners(ipInterfaceOwners, configs));
   }
 
   @Nonnull
@@ -78,11 +73,6 @@ public class SpecifierContextImpl implements SpecifierContext {
   @Override
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
     return _interfaceOwnedIps;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getVrfOwnedIps() {
-    return _vrfOwnedIps;
   }
 
   @Override
