@@ -68,7 +68,9 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
   public void exitSet_line(Set_lineContext ctx) {
     if (_currentPath.containsWildcard()) {
       List<ParseTree> lines =
-          _hierarchy.getMasterTree().applyWildcardPath(_currentPath, _configurationContext);
+          _hierarchy
+              .getMasterTree()
+              .applyWildcardPath(_currentPath, _configurationContext, _hierarchy.getTokenInputs());
       int insertionIndex = _newConfigurationLines.indexOf(ctx);
       _newConfigurationLines.addAll(insertionIndex, lines);
     }

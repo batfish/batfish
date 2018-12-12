@@ -10,14 +10,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
@@ -30,7 +29,7 @@ import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
-public class Hierarchy {
+public final class Hierarchy {
 
   private static class IsHostnameStatement extends FlatJuniperParserBaseListener {
 
@@ -46,6 +45,23 @@ public class Hierarchy {
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(listener, ctx);
       return listener._isHostname;
+    }
+  }
+
+  private static class TokenInputMarker extends FlatJuniperParserBaseListener {
+
+    private final String _input;
+
+    private final Map<Token, String> _tokenInputs;
+
+    public TokenInputMarker(String input, Map<Token, String> tokenInputs) {
+      _input = input;
+      _tokenInputs = tokenInputs;
+    }
+
+    @Override
+    public void visitTerminal(TerminalNode node) {
+      _tokenInputs.put(node.getSymbol(), _input);
     }
   }
 
@@ -274,14 +290,16 @@ public class Hierarchy {
         HierarchyPath path,
         List<ParseTree> lines,
         Flat_juniper_configurationContext configurationContext,
-        boolean clusterGroup) {
+        boolean clusterGroup,
+        Map<Token, String> tokenInputs) {
       if (groupLine != null) {
         int overrideLine = groupLine.getStart().getLine();
         Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
         if (masterTree.addPath(path, setLine, _groupName) == AddPathResult.BLACKLISTED) {
           return;
         }
-        StatementContext newStatement = setLineHelper(setLine, path, overrideLine, true);
+        StatementContext newStatement =
+            setLineHelper(setLine, path, overrideLine, true, tokenInputs);
         if (!(clusterGroup && IsHostnameStatement.isHostnameStatement(newStatement))) {
           lines.add(setLine);
         }
@@ -296,7 +314,8 @@ public class Hierarchy {
             path,
             lines,
             configurationContext,
-            clusterGroup);
+            clusterGroup,
+            tokenInputs);
         path._nodes.remove(path._nodes.size() - 1);
       }
     }
@@ -324,7 +343,9 @@ public class Hierarchy {
     }
 
     public List<ParseTree> applyWildcardPath(
-        HierarchyPath path, Flat_juniper_configurationContext configurationContext) {
+        HierarchyPath path,
+        Flat_juniper_configurationContext configurationContext,
+        Map<Token, String> tokenInputs) {
       HierarchyChildNode wildcardNode = findExactPathMatchNode(path);
       String sourceGroup = wildcardNode._sourceGroup;
       int remainingWildcards = 0;
@@ -348,7 +369,8 @@ public class Hierarchy {
           appliedWildcards,
           newPath,
           lines,
-          lineNumber);
+          lineNumber,
+          tokenInputs);
       return lines;
     }
 
@@ -362,7 +384,8 @@ public class Hierarchy {
         List<String> appliedWildcards,
         HierarchyPath newPath,
         List<ParseTree> lines,
-        int overrideLineNumber) {
+        int overrideLineNumber,
+        Map<Token, String> tokenInputs) {
       if (destinationTreeRoot._blacklistedGroups.contains(sourceGroup)) {
         return;
       }
@@ -386,7 +409,7 @@ public class Hierarchy {
           newDestinationTreeRoot._sourceWildcards = new ArrayList<>();
           newDestinationTreeRoot._sourceWildcards.addAll(appliedWildcards);
           newDestinationTreeRoot._line =
-              generateSetLine(newPath, configurationContext, overrideLineNumber);
+              generateSetLine(newPath, configurationContext, overrideLineNumber, tokenInputs);
           lines.add(newDestinationTreeRoot._line);
         } else {
           applyWildcardPath(
@@ -399,7 +422,8 @@ public class Hierarchy {
               appliedWildcards,
               newPath,
               lines,
-              overrideLineNumber);
+              overrideLineNumber,
+              tokenInputs);
         }
         newPath._nodes.remove(newPath._nodes.size() - 1);
       } else {
@@ -420,7 +444,8 @@ public class Hierarchy {
                   appliedWildcards,
                   newPath,
                   lines,
-                  overrideLineNumber);
+                  overrideLineNumber,
+                  tokenInputs);
               newPath._nodes.remove(newPath._nodes.size() - 1);
             }
           }
@@ -462,7 +487,11 @@ public class Hierarchy {
      * statement
      */
     private static StatementContext setLineHelper(
-        Set_lineContext setLine, HierarchyPath path, int overrideLine, boolean markWildcards) {
+        Set_lineContext setLine,
+        HierarchyPath path,
+        int overrideLine,
+        boolean markWildcards,
+        Map<Token, String> tokenInputs) {
       StringBuilder sb = new StringBuilder();
       for (HierarchyChildNode pathNode : path._nodes) {
         sb.append(pathNode._text);
@@ -488,6 +517,7 @@ public class Hierarchy {
       }
       Flat_juniper_configurationContext newConfiguration =
           parser.getParser().flat_juniper_configuration();
+      markTokenInputs(newConfiguration, newStatementText, tokenInputs);
       if (markWildcards) {
         parser.setMarkWildcards(false);
       }
@@ -502,9 +532,10 @@ public class Hierarchy {
     private Set_lineContext generateSetLine(
         HierarchyPath path,
         Flat_juniper_configurationContext configurationContext,
-        int overrideLine) {
+        int overrideLine,
+        Map<Token, String> tokenInputs) {
       Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
-      setLineHelper(setLine, path, overrideLine, false);
+      setLineHelper(setLine, path, overrideLine, false, tokenInputs);
       return setLine;
     }
 
@@ -512,7 +543,8 @@ public class Hierarchy {
         HierarchyPath path,
         Flat_juniper_configurationContext configurationContext,
         HierarchyTree masterTree,
-        boolean clusterGroup) {
+        boolean clusterGroup,
+        Map<Token, String> tokenInputs) {
       List<ParseTree> lines = new ArrayList<>();
       HierarchyNode currentGroupNode = _root;
       HierarchyChildNode matchNode = null;
@@ -525,7 +557,8 @@ public class Hierarchy {
             path,
             lines,
             configurationContext,
-            clusterGroup);
+            clusterGroup,
+            tokenInputs);
       } else {
         for (HierarchyChildNode currentPathNode : path._nodes) {
           matchNode = currentGroupNode.getFirstMatchingChildNode(currentPathNode);
@@ -554,48 +587,47 @@ public class Hierarchy {
             path,
             lines,
             configurationContext,
-            clusterGroup);
+            clusterGroup,
+            tokenInputs);
       }
       return lines;
+    }
+
+    private static void markTokenInputs(
+        Flat_juniper_configurationContext newConfiguration,
+        String newStatementText,
+        Map<Token, String> tokenInputs) {
+      TokenInputMarker listener = new TokenInputMarker(newStatementText, tokenInputs);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(listener, newConfiguration);
     }
 
     public List<ParseTree> getApplyPathLines(
         HierarchyPath basePath,
         HierarchyPath applyPathPath,
-        Flat_juniper_configurationContext configurationContext) {
+        Flat_juniper_configurationContext configurationContext,
+        Map<Token, String> tokenInputs) {
       List<ParseTree> lines = new ArrayList<>();
       List<HierarchyChildNode> candidateNodes = getApplyPathPrefixes(applyPathPath);
       for (HierarchyChildNode candidateNode : candidateNodes) {
-        String candidatePrefix = candidateNode._text;
+        String concreteText = candidateNode._text;
         int candidateLineNumber = candidateNode._lineNumber;
         String finalPrefixStr;
-        boolean ipv6 = candidatePrefix.contains(":");
-        boolean isPrefix = candidatePrefix.contains("/");
-        try {
-          if (isPrefix) {
-            if (ipv6) {
-              Prefix6 prefix6 = new Prefix6(candidatePrefix);
-              finalPrefixStr = prefix6.toString();
-            } else {
-              Prefix prefix = Prefix.parse(candidatePrefix);
-              finalPrefixStr = prefix.toString();
-            }
-          } else {
-            String candidateAddress;
-            if (ipv6) {
-              candidateAddress = new Ip6(candidatePrefix).toString();
-            } else {
-              candidateAddress = new Ip(candidatePrefix).toString();
-            }
-            finalPrefixStr = candidateAddress + (ipv6 ? "/64" : "/32");
-          }
-        } catch (BatfishException e) {
-          throw new BatfishException(
-              "Invalid ip(v6) address or prefix: \"" + candidatePrefix + "\"", e);
+        if (!concreteText.contains("/")) {
+          // not a prefix, so need to append slash and prefix-length
+          finalPrefixStr =
+              String.format(
+                  "%s/%d",
+                  concreteText,
+                  concreteText.contains(":")
+                      ? Prefix6.MAX_PREFIX_LENGTH
+                      : Prefix.MAX_PREFIX_LENGTH);
+        } else {
+          finalPrefixStr = concreteText;
         }
         basePath.addNode(finalPrefixStr, candidateLineNumber);
         Set_lineContext setLine =
-            generateSetLine(basePath, configurationContext, candidateLineNumber);
+            generateSetLine(basePath, configurationContext, candidateLineNumber, tokenInputs);
         lines.add(setLine);
         basePath._nodes.remove(basePath._nodes.size() - 1);
       }
@@ -650,10 +682,13 @@ public class Hierarchy {
 
   private Map<String, HierarchyTree> _trees;
 
+  private final Map<Token, String> _tokenInputs;
+
   public Hierarchy() {
     _trees = new HashMap<>();
     _masterTree = new HierarchyTree(null);
     _deactivateTree = new HierarchyTree(null);
+    _tokenInputs = new HashMap<>();
   }
 
   public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
@@ -677,14 +712,16 @@ public class Hierarchy {
     if (tree == null) {
       throw new UndefinedGroupBatfishException("No such group: \"" + groupName + "\"");
     }
-    return tree.getApplyGroupsLines(path, configurationContext, _masterTree, clusterGroup);
+    return tree.getApplyGroupsLines(
+        path, configurationContext, _masterTree, clusterGroup, _tokenInputs);
   }
 
   public List<ParseTree> getApplyPathLines(
       HierarchyPath basePath,
       HierarchyPath applyPathPath,
       Flat_juniper_configurationContext configurationContext) {
-    return _masterTree.getApplyPathLines(basePath, applyPathPath, configurationContext);
+    return _masterTree.getApplyPathLines(
+        basePath, applyPathPath, configurationContext, _tokenInputs);
   }
 
   public HierarchyTree getMasterTree() {
@@ -712,5 +749,9 @@ public class Hierarchy {
   static boolean matchWithJuniperRegex(String candidate, String juniperRegex) {
     String regex = juniperRegex.replaceAll("\\*", ".*");
     return candidate.matches(regex);
+  }
+
+  public Map<Token, String> getTokenInputs() {
+    return _tokenInputs;
   }
 }
