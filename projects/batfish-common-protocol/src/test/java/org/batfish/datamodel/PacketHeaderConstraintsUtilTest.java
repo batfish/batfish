@@ -40,6 +40,7 @@ public class PacketHeaderConstraintsUtilTest {
             .setDstPorts(IntegerSpace.of(new SubRange(11, 12)))
             .setEcns(IntegerSpace.of(new SubRange(1, 3)))
             .setIpProtocols(Collections.singleton(IpProtocol.TCP))
+            .setFlowStates(ImmutableSet.of(FlowState.RELATED))
             .build();
 
     HeaderSpace hs = PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(phc).build();
@@ -48,6 +49,7 @@ public class PacketHeaderConstraintsUtilTest {
     assertThat(hs.getDstPorts(), equalTo(Collections.singleton(new SubRange(11, 12))));
     assertThat(hs.getIpProtocols(), equalTo(Collections.singleton(IpProtocol.TCP)));
     assertThat(hs.getNotDstPorts(), empty());
+    assertThat(hs.getStates(), equalTo(ImmutableSet.of(FlowState.RELATED)));
   }
 
   @Test
