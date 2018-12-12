@@ -243,7 +243,7 @@ public class TracerouteEngineImplContext {
       boolean ignoreFilters) {
 
     checkArgument(
-        node != null && inInterfaceName != null && outInterfaceName != null,
+        node != null && outInterfaceName != null,
         "Node, inputInterface and outgoingInterface cannot be null");
 
     PreSourceNatOutgoingFilterStep.Builder stepBuilder = PreSourceNatOutgoingFilterStep.builder();
