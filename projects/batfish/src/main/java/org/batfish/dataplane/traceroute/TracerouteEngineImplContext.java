@@ -2,6 +2,7 @@ package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
@@ -300,6 +301,10 @@ public class TracerouteEngineImplContext {
                     .setOutputInterface(
                         new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
                     .setOutputFilter(outFilter != null ? outFilter.getName() : null)
+                    .setFlowDiffs(
+                        flowDiffs(
+                            transmissionContext._originalFlow,
+                            transmissionContext._transformedFlow))
                     .setTransformedFlow(
                         hopFlow(
                             transmissionContext._originalFlow,
