@@ -5846,15 +5846,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .build());
       iface.setAlias(alias);
 
-      switch (alias) {
-        case TRUST_SECURITY_LEVEL_ALIAS:
-          setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
-          break;
-        case NO_TRUST_SECURITY_LEVEL_ALIAS:
-          setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
-          break;
-        default:
-          // don't set a level
+      // Only set level to default if it is not already set
+      if (iface.getSecurityLevel() == null) {
+        switch (alias) {
+          case TRUST_SECURITY_LEVEL_ALIAS:
+            setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+            break;
+          case NO_TRUST_SECURITY_LEVEL_ALIAS:
+            setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+            break;
+          default:
+            // don't set a level
+        }
       }
     }
   }

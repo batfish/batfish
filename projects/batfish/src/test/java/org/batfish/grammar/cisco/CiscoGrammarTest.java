@@ -3714,7 +3714,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
     assertThat(
         c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(0, outsideInterface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(1, outsideInterface), hasMemberInterfaces(hasSize(1))));
 
     IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
     IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();
