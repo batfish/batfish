@@ -421,7 +421,7 @@ public final class TopologyUtil {
    * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
    * to (hostname -&gt; interface name -&gt; Ip).
    */
-  private static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+  static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
 
@@ -448,28 +448,6 @@ public final class TopologyUtil {
   }
 
   /**
-   * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
-   * and convert the set of owned Ips into an IpSpace.
-   */
-  public static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
-      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
-    return CommonUtil.toImmutableMap(
-        computeInterfaceOwnedIps(ipInterfaceOwners),
-        Entry::getKey, /* host */
-        hostEntry ->
-            CommonUtil.toImmutableMap(
-                hostEntry.getValue(),
-                Entry::getKey, /* interface */
-                ifaceEntry ->
-                    AclIpSpace.union(
-                        ifaceEntry
-                            .getValue()
-                            .stream()
-                            .map(Ip::toIpSpace)
-                            .collect(Collectors.toList()))));
-  }
-
-  /**
    * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
    * interface address)
    *
@@ -488,19 +466,20 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute a mapping from IP address to the interfaces that "own" that IP (e.g., as an network
-   * interface address)
+   * Compute a mapping from IP address to the interfaces that "own" that IP (e.g., as a network
+   * interface address).
    *
-   * @param enabledInterfaces A mapping of enabled interfaces hostname -&gt; interface name -&gt;
-   *     {@link Interface}
+   * <p>Takes into account VRRP configuration.
+   *
+   * @param allInterfaces A mapping of interfaces: hostname -&gt; set of {@link Interface}
    * @param excludeInactive whether to ignore inactive interfaces
-   * @return A map from {@link Ip}s to the {@link Interface}s that own them
+   * @return A map from {@link Ip}s to hostname to set of interface names that own that IP.
    */
   public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
-      Map<String, Set<Interface>> enabledInterfaces, boolean excludeInactive) {
+      Map<String, Set<Interface>> allInterfaces, boolean excludeInactive) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    enabledInterfaces.forEach(
+    allInterfaces.forEach(
         (hostname, interfaces) ->
             interfaces.forEach(
                 i -> {
