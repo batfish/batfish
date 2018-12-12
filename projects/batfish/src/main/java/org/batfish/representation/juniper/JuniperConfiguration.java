@@ -1215,6 +1215,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (iface.get8023adInterface() != null) {
       newIface.setChannelGroup(iface.get8023adInterface());
     }
+    // Redundant ethernet
+    if (iface.getRedundantParentInterface() != null) {
+      newIface.setChannelGroup(iface.getRedundantParentInterface());
+    }
 
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
@@ -2760,6 +2764,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
               if (iface.get8023adInterface() != null) {
                 org.batfish.datamodel.Interface viIface =
                     _c.getAllInterfaces().get(iface.get8023adInterface());
+                if (viIface == null) {
+                  return;
+                }
+                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+              }
+              /*
+               * TODO: reth interfaces are NOT aggregates in pure form, but for now approximate them
+               * as such. Full support requires chassis clusters and redundancy group support.
+               * https://www.juniper.net/documentation/en_US/junos/topics/topic-map/security-chassis-cluster-redundant-ethernet-interfaces.html
+               */
+              if (iface.getRedundantParentInterface() != null) {
+                org.batfish.datamodel.Interface viIface =
+                    _c.getAllInterfaces().get(iface.getRedundantParentInterface());
                 if (viIface == null) {
                   return;
                 }

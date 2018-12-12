@@ -463,6 +463,9 @@
         "if_tag_is" : [
           "configs/if_tag_is"
         ],
+        "interface-reth" : [
+          "configs/juniper_reth_interfaces"
+        ],
         "interface_exit" : [
           "configs/interface_exit"
         ],
@@ -1001,6 +1004,7 @@
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
         "configs/juniper_relay" : "PASSED",
+        "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
         "configs/juniper_security" : "PASSED",
@@ -39756,6 +39760,128 @@
             "  EOF:<EOF>)"
           ]
         },
+        "interface-reth" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'interface-reth'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.0.0.0/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_gigether_options",
+            "                  GIGETHER_OPTIONS:'gigether-options'",
+            "                  (ether_options",
+            "                    (eo_redundant_parent",
+            "                      REDUNDANT_PARENT:'redundant-parent'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'reth0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.0.0.1/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_gigether_options",
+            "                  GIGETHER_OPTIONS:'gigether-options'",
+            "                  (ether_options",
+            "                    (eo_redundant_parent",
+            "                      REDUNDANT_PARENT:'redundant-parent'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'reth0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'reth0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'3'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'3.3.3.3/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "interface_exit" : {
           "sentences" : [
             "(cisco_configuration",
@@ -65146,6 +65272,48 @@
             }
           }
         },
+        "configs/juniper_reth_interfaces" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : [
+                6,
+                7
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "reth0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "reth0.3" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_route_filter" : {
           "policy-statement" : {
             "route-filter-test-v4" : {
@@ -68438,6 +68606,42 @@
             }
           }
         },
+        "configs/juniper_reth_interfaces" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4,
+                5
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                6,
+                7
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "interface" : [
+                6
+              ]
+            },
+            "reth0" : {
+              "interface" : [
+                8
+              ]
+            },
+            "reth0.3" : {
+              "interface" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_options" : {
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
@@ -71131,6 +71335,7 @@
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
         "configs/juniper_relay" : "PASSED",
+        "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
         "configs/juniper_security" : "PASSED",
