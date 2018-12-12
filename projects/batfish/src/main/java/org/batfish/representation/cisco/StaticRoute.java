@@ -2,9 +2,11 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
+@ParametersAreNonnullByDefault
 public class StaticRoute implements Serializable {
 
   private static final long serialVersionUID = 1L;

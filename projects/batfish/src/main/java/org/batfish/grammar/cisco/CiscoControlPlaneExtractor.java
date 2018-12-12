@@ -8245,17 +8245,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRoute_tail(Route_tailContext ctx) {
-    String ifaceName = ctx.iface.getText();
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // No support for null0 or BVI yet
-      _w.redFlag(
-          String.format(
-              "route refers to interface '%s' which does not exist or is not supported",
-              ifaceName));
-      return;
-    }
-    String nextHopInterface = iface.getName();
+    String nextHopInterface = ctx.iface.getText();
     Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
     Ip nextHopIp = toIp(ctx.gateway);
 

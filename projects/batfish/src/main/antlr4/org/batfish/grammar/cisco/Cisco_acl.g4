@@ -221,7 +221,12 @@ extended_access_list_additional_feature
    | HOST_UNREACHABLE
    |
    (
-      LOG level = DEC? (INTERVAL secs = DEC)? DISABLE? DEFAULT?
+      LOG
+      (
+         DEFAULT
+         | DISABLE
+         | (level = DEC (INTERVAL secs = DEC)?)
+      )?
    )
    | LOG_INPUT
    | MLD_QUERY
