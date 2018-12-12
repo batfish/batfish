@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
@@ -275,21 +276,13 @@ public final class BDDReachabilityAnalysisFactory {
     return destinationNats
         .stream()
         .map(
-            destNat -> {
-              IpAccessList acl = destNat.getAcl();
-              // null acl means match everything
-              BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
-              Ip poolIpFirst = destNat.getPoolIpFirst();
-              // null pool IPs/BDDs indicate non-NAT rules
-              BDD pool =
-                  poolIpFirst == null
-                      ? null
-                      : _bddPacket
-                          .getDstIp()
-                          .geq(poolIpFirst.asLong())
-                          .and(_bddPacket.getSrcIp().leq(destNat.getPoolIpLast().asLong()));
-              return new BDDNat(match, pool);
-            })
+            destNat ->
+                bddNat(
+                    hostname,
+                    _bddPacket.getDstIp(),
+                    destNat.getAcl(),
+                    destNat.getPoolIpFirst(),
+                    destNat.getPoolIpLast()))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -310,22 +303,34 @@ public final class BDDReachabilityAnalysisFactory {
     return sourceNats
         .stream()
         .map(
-            sourceNat -> {
-              IpAccessList acl = sourceNat.getAcl();
-              // null acl means match everything
-              BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
-              Ip poolIpFirst = sourceNat.getPoolIpFirst();
-              // null pool IPs/BDDs indicate non-NAT rules
-              BDD setSrcIp =
-                  poolIpFirst == null
-                      ? null
-                      : _bddPacket
-                          .getSrcIp()
-                          .geq(poolIpFirst.asLong())
-                          .and(_bddPacket.getSrcIp().leq(sourceNat.getPoolIpLast().asLong()));
-              return new BDDNat(match, setSrcIp);
-            })
+            sourceNat ->
+                bddNat(
+                    hostname,
+                    _bddPacket.getSrcIp(),
+                    sourceNat.getAcl(),
+                    sourceNat.getPoolIpFirst(),
+                    sourceNat.getPoolIpLast()))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  private BDDNat bddNat(
+      String hostname,
+      BDDInteger var,
+      @Nullable IpAccessList acl,
+      @Nullable Ip poolIpFirst,
+      @Nullable Ip poolIpLast) {
+    // null acl means match everything
+    BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
+
+    // null pool IPs/BDDs indicate non-NAT rules
+    if (poolIpFirst == null) {
+      return new BDDNat(match, null);
+    }
+    BDD pool =
+        poolIpFirst.equals(poolIpLast)
+            ? var.value(poolIpFirst.asLong())
+            : var.geq(poolIpFirst.asLong()).and(var.leq(poolIpLast.asLong()));
+    return new BDDNat(match, pool);
   }
 
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(Stream<Edge> edgeStream) {
