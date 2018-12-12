@@ -1038,25 +1038,24 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
     Ip srcNatPoolIp = new Ip("5.5.5.5");
     Ip dstNatPoolIp = new Ip("6.6.6.6");
-    Interface iface =
-        nf.interfaceBuilder()
-            .setOwner(config)
-            .setVrf(vrf)
-            .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/31"))
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setPoolIpFirst(srcNatPoolIp)
-                        .setPoolIpLast(srcNatPoolIp)
-                        .build()))
-            .setDestinationNats(
-                ImmutableList.of(
-                    DestinationNat.builder()
-                        .setPoolIpFirst(dstNatPoolIp)
-                        .setPoolIpLast(dstNatPoolIp)
-                        .build()))
-            .build();
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setVrf(vrf)
+        .setActive(true)
+        .setAddress(new InterfaceAddress("1.0.0.0/31"))
+        .setSourceNats(
+            ImmutableList.of(
+                SourceNat.builder()
+                    .setPoolIpFirst(srcNatPoolIp)
+                    .setPoolIpLast(srcNatPoolIp)
+                    .build()))
+        .setDestinationNats(
+            ImmutableList.of(
+                DestinationNat.builder()
+                    .setPoolIpFirst(dstNatPoolIp)
+                    .setPoolIpLast(dstNatPoolIp)
+                    .build()))
+        .build();
 
     String hostname = config.getHostname();
 
