@@ -389,7 +389,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private static final String PROP_DSCP = "dscp";
 
-  private static final String PROP_DST_IP = "dstIp";
+  static final String PROP_DST_IP = "dstIp";
 
   private static final String PROP_DST_PORT = "dstPort";
 
@@ -411,7 +411,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private static final String PROP_PACKET_LENGTH = "packetLength";
 
-  private static final String PROP_SRC_IP = "srcIp";
+  static final String PROP_SRC_IP = "srcIp";
 
   private static final String PROP_SRC_PORT = "srcPort";
 
