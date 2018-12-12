@@ -1211,24 +1211,32 @@ public final class BDDReachabilityAnalysisFactory {
    * Compute the space of possible final headers, under the assumption that any NAT rule may be
    * applied.
    */
-  private BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
+  @VisibleForTesting
+  BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
     BDD finalHeaderSpace = initialHeaderSpaceBdd;
 
-    BDD dstNatPoolIps = unionPoolIps(_bddDestNats);
-    if (!dstNatPoolIps.isZero()) {
-      // dst IP is either the initial one, or one of that NAT pool IPs.
-      finalHeaderSpace = finalHeaderSpace.or(finalHeaderSpace.exist(_dstIpVars).and(dstNatPoolIps));
+    BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
+    if (!noDstIp.equals(finalHeaderSpace)) {
+      // there's a constraint on dst Ip, so include nat pool Ips
+      BDD dstNatPoolIps = unionPoolIps(_bddDestNats);
+      if (!dstNatPoolIps.isZero()) {
+        // dst IP is either the initial one, or one of that NAT pool IPs.
+        finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstNatPoolIps));
+      }
     }
 
-    BDD srcNatPoolIps = unionPoolIps(_bddSourceNats);
-    if (!srcNatPoolIps.isZero()) {
-      /*
-       * In this case, since source IPs usually don't play a huge role in routing, we could just
-       * existentially quantify away the constraint. There's a performance trade-off: tighter
-       * constraints prune more paths, but are more expensive to operate on.
-       */
-      finalHeaderSpace =
-          finalHeaderSpace.or(finalHeaderSpace.exist(_sourceIpVars).and(srcNatPoolIps));
+    BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
+    if (!noSrcIp.equals(finalHeaderSpace)) {
+      // there's a constraint on source Ip, so include nat pool Ips
+      BDD srcNatPoolIps = unionPoolIps(_bddSourceNats);
+      if (!srcNatPoolIps.isZero()) {
+        /*
+         * In this case, since source IPs usually don't play a huge role in routing, we could just
+         * existentially quantify away the constraint. There's a performance trade-off: tighter
+         * constraints prune more paths, but are more expensive to operate on.
+         */
+        finalHeaderSpace = finalHeaderSpace.or(noSrcIp.and(srcNatPoolIps));
+      }
     }
 
     return finalHeaderSpace;
