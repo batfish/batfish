@@ -677,8 +677,7 @@ public class TracerouteEngineImplContext {
 
                   IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
                   // Apply preSourceNatOutgoingFilter
-                  if (inputIfaceName != null && filter != null) {
-                    // check preSourceNat only for packets originating from other nodes
+                  if (filter != null) {
                     PreSourceNatOutgoingFilterStep step =
                         applyPreSourceNatFilter(
                             currentFlow,
