@@ -1909,7 +1909,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getConvertStatus()
             .entrySet()
             .stream()
-            .filter(s -> s.getValue() != ConvertStatus.PASSED)
+            .filter(s -> s.getValue() == ConvertStatus.FAILED)
             .map(Entry::getKey)
             .collect(Collectors.toList())) {
       answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
