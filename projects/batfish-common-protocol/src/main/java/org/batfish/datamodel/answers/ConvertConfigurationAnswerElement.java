@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -28,6 +27,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final long serialVersionUID = 2L;
 
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
+  private static final String PROP_CONVERT_STATUS = "convertStatus";
   private static final String PROP_ERRORS = "errors";
   private static final String PROP_FAILED = "failed";
   private static final String PROP_REFERENCED_STRUCTURES = "referencedStructures";
@@ -35,7 +35,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_VERSION = "version";
   private static final String PROP_WARNINGS = "warnings";
 
-  // @Nonnull private SortedMap<String, String> _convertStatus;
+  @Nonnull private SortedMap<String, ConvertStatus> _convertStatus;
 
   // filename -> structType -> structName -> info
   @Nonnull
@@ -50,8 +50,6 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  @Nonnull private Set<String> _failed;
-
   // filename -> structType -> structName -> usage -> lines
   @Nonnull
   private SortedMap<
@@ -63,7 +61,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
-    this(null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null);
   }
 
   @JsonCreator
@@ -76,6 +74,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
                   String,
                   SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
               referencedstructures,
+      @JsonProperty(PROP_CONVERT_STATUS) SortedMap<String, ConvertStatus> convertStatus,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
       @JsonProperty(PROP_FAILED) SortedSet<String> failed,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
@@ -87,7 +86,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
       @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
-    _failed = firstNonNull(failed, new TreeSet<>());
+
+    SortedMap<String, ConvertStatus> failedMap = new TreeMap<>();
+    firstNonNull(
+        failed, new TreeSet<String>().stream().map(n -> failedMap.put(n, ConvertStatus.FAILED)));
+    _convertStatus = firstNonNull(convertStatus, failedMap);
+
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
     _version = firstNonNull(version, Version.getVersion());
@@ -101,17 +105,17 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     return _definedStructures;
   }
 
+  @JsonProperty(PROP_CONVERT_STATUS)
+  @Nonnull
+  public SortedMap<String, ConvertStatus> getConvertStatus() {
+    return _convertStatus;
+  }
+
   @Override
   @JsonProperty(PROP_ERRORS)
   @Nonnull
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
-  }
-
-  @JsonProperty(PROP_FAILED)
-  @Nonnull
-  public Set<String> getFailed() {
-    return _failed;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)

@@ -135,6 +135,7 @@ import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -1903,7 +1904,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ConvertConfigurationAnswerElement convertAnswer =
         loadConvertConfigurationAnswerElementOrReparse();
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
-    for (String failed : convertAnswer.getFailed()) {
+    for (String failed :
+        convertAnswer
+            .getConvertStatus()
+            .entrySet()
+            .stream()
+            .filter(s -> s.getValue() != ConvertStatus.PASSED)
+            .map(Entry::getKey)
+            .collect(Collectors.toList())) {
       answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
     }
   }
