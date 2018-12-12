@@ -219,7 +219,10 @@ extended_access_list_additional_feature
    | HOPLIMIT
    | HOST_UNKNOWN
    | HOST_UNREACHABLE
-   | LOG
+   |
+   (
+      LOG level = DEC? (INTERVAL secs = DEC)? DISABLE? DEFAULT?
+   )
    | LOG_INPUT
    | MLD_QUERY
    | MLD_REDUCTION
