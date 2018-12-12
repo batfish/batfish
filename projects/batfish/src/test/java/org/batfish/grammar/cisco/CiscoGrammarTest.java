@@ -3776,13 +3776,13 @@ public class CiscoGrammarTest {
                         StaticRoute.builder()
                             .setNextHopIp(new Ip("3.0.0.1"))
                             .setNetwork(Prefix.parse("0.0.0.0/0"))
-                            .setNextHopInterface("ifname")
+                            .setNextHopInterface("GigabitEthernet0/1")
                             .setAdministrativeCost(2)
                             .build(),
                         StaticRoute.builder()
                             .setNextHopIp(new Ip("3.0.0.2"))
                             .setNetwork(Prefix.parse("1.0.0.0/8"))
-                            .setNextHopInterface("ifname")
+                            .setNextHopInterface("GigabitEthernet0/1")
                             .setAdministrativeCost(3)
                             .build())))));
   }
