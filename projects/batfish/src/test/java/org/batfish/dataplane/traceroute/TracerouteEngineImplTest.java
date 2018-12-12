@@ -608,7 +608,6 @@ public class TracerouteEngineImplTest {
 
     PreSourceNatOutgoingFilterStepDetail detail = step.getDetail();
     assertThat(detail.getFilter(), equalTo(filterName));
-    assertThat(detail.getInputInterface(), equalTo(iface1));
     assertThat(detail.getOutputInterface(), equalTo(iface2));
     assertThat(detail.getNode(), equalTo(node));
 
@@ -627,7 +626,6 @@ public class TracerouteEngineImplTest {
 
     detail = step.getDetail();
     assertThat(detail.getFilter(), equalTo(filterName));
-    assertThat(detail.getInputInterface(), equalTo(iface2));
     assertThat(detail.getOutputInterface(), equalTo(iface1));
     assertThat(detail.getNode(), equalTo(node));
   }
@@ -717,7 +715,6 @@ public class TracerouteEngineImplTest {
     PreSourceNatOutgoingFilterStep step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));
     assertThat(step2.getDetail().getNode(), equalTo(c1.getHostname()));
-    assertThat(step2.getDetail().getInputInterface(), equalTo(i1.getName()));
     assertThat(step2.getDetail().getOutputInterface(), equalTo(i2.getName()));
     assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
 

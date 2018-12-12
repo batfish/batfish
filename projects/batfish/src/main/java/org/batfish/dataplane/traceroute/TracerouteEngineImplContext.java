@@ -246,30 +246,25 @@ public class TracerouteEngineImplContext {
         node != null && inInterfaceName != null && outInterfaceName != null,
         "Node, inputInterface and outgoingInterface cannot be null");
 
-    PreSourceNatOutgoingFilterStep.Builder preSourceNatOutgoingFilterStepBuilder =
-        PreSourceNatOutgoingFilterStep.builder();
-    PreSourceNatOutgoingFilterStepDetail.Builder preSourceNatOutgoingFilterStepDetailBuilder =
-        PreSourceNatOutgoingFilterStepDetail.builder();
-    preSourceNatOutgoingFilterStepDetailBuilder
-        .setNode(node)
-        .setInputInterface(inInterfaceName)
-        .setOutputInterface(outInterfaceName);
+    PreSourceNatOutgoingFilterStep.Builder stepBuilder = PreSourceNatOutgoingFilterStep.builder();
+    stepBuilder.setAction(PERMITTED);
+    stepBuilder.setDetail(
+        PreSourceNatOutgoingFilterStepDetail.builder()
+            .setNode(node)
+            .setOutputInterface(outInterfaceName)
+            .setFilter(filter.getName())
+            .build());
 
-    preSourceNatOutgoingFilterStepBuilder.setAction(PERMITTED);
-
-    preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
     // check filter
     if (!ignoreFilters) {
       FilterResult filterResult =
           filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
       if (filterResult.getAction() == LineAction.DENY) {
-        preSourceNatOutgoingFilterStepBuilder.setAction(DENIED);
+        stepBuilder.setAction(DENIED);
       }
     }
 
-    return preSourceNatOutgoingFilterStepBuilder
-        .setDetail(preSourceNatOutgoingFilterStepDetailBuilder.build())
-        .build();
+    return stepBuilder.build();
   }
 
   private void processCurrentNextHopInterfaceEdges(
