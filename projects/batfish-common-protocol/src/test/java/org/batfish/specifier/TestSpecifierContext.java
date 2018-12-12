@@ -33,9 +33,4 @@ public class TestSpecifierContext implements SpecifierContext {
   public IpSpace getSnapshotDeviceOwnedIps() {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getVrfOwnedIps() {
-    throw new UnsupportedOperationException();
-  }
 }

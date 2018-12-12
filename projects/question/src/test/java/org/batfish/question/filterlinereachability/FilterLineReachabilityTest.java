@@ -26,6 +26,7 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
@@ -483,6 +484,11 @@ public class FilterLineReachabilityTest {
         new IBatfishTestAdapter() {
           @Override
           public SortedMap<String, Configuration> loadConfigurations() {
+            return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
+          }
+
+          @Override
+          public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
           }
         };

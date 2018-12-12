@@ -61,7 +61,7 @@ final class ReachabilityParametersResolver {
     _params = params;
     _snapshot = snapshot;
     initConfigsAndDataPlane();
-    _context = new SpecifierContextImpl(batfish, _configs);
+    _context = new SpecifierContextImpl(batfish, _snapshot);
     _ipSpaceRepresentative = new IpSpaceRepresentative();
   }
 

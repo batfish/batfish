@@ -1,8 +1,12 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.Predicates.notNull;
+
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public final class CommunityList implements Serializable {
 
@@ -18,6 +22,15 @@ public final class CommunityList implements Serializable {
   public CommunityList(String name) {
     _name = name;
     _lines = new ArrayList<>();
+  }
+
+  public Set<Long> extractLiteralCommunities() {
+    return _lines
+        .stream()
+        .map(CommunityListLine::getText)
+        .map(CommunityListLine::literalCommunityValue)
+        .filter(notNull())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public boolean getInvertMatch() {

@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -153,7 +154,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           new BDDReachabilityAnalysisFactory(PKT, configs, dataPlane.getForwardingAnalysis())
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
@@ -209,7 +210,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
                   ImmutableSet.of(),
@@ -260,7 +261,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
-                  UniverseIpSpace.INSTANCE,
+                  matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
@@ -1137,6 +1138,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+
     batfish.computeDataPlane(false);
 
     BDDReachabilityAnalysisFactory factory =
@@ -1170,5 +1172,61 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new NodeInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
     assertThat(edgeEN.traverseForward(resultBDD), equalTo(PKT.getFactory().zero()));
+  }
+
+  @Test
+  public void testFinalHeaderSpaceBdd() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Ip srcNatPoolIp = new Ip("5.5.5.5");
+    Ip dstNatPoolIp = new Ip("6.6.6.6");
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setVrf(vrf)
+        .setActive(true)
+        .setAddress(new InterfaceAddress("1.0.0.0/31"))
+        .setSourceNats(
+            ImmutableList.of(
+                SourceNat.builder()
+                    .setPoolIpFirst(srcNatPoolIp)
+                    .setPoolIpLast(srcNatPoolIp)
+                    .build()))
+        .setDestinationNats(
+            ImmutableList.of(
+                DestinationNat.builder()
+                    .setPoolIpFirst(dstNatPoolIp)
+                    .setPoolIpLast(dstNatPoolIp)
+                    .build()))
+        .build();
+
+    String hostname = config.getHostname();
+
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDD one = PKT.getFactory().one();
+    assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
+    BDD dstIp1 = PKT.getDstIp().value(1);
+    BDD dstNatPoolIpBdd = PKT.getDstIp().value(dstNatPoolIp.asLong());
+    BDD srcIp1 = PKT.getSrcIp().value(1);
+    BDD srcNatPoolIpBdd = PKT.getSrcIp().value(srcNatPoolIp.asLong());
+    assertThat(factory.computeFinalHeaderSpaceBdd(dstIp1), equalTo(dstIp1.or(dstNatPoolIpBdd)));
+    assertThat(factory.computeFinalHeaderSpaceBdd(srcIp1), equalTo(srcIp1.or(srcNatPoolIpBdd)));
+    assertThat(
+        factory.computeFinalHeaderSpaceBdd(dstIp1.and(srcIp1)),
+        equalTo(
+            dstIp1
+                .and(srcIp1)
+                .or(dstIp1.and(srcNatPoolIpBdd))
+                .or(dstNatPoolIpBdd.and(srcIp1))
+                .or(dstNatPoolIpBdd.and(srcNatPoolIpBdd))));
   }
 }

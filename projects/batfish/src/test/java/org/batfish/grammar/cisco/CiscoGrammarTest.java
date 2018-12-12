@@ -737,7 +737,8 @@ public class CiscoGrammarTest {
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
-    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
@@ -758,7 +759,8 @@ public class CiscoGrammarTest {
     /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
   }
 
   @Test
@@ -3687,6 +3689,9 @@ public class CiscoGrammarTest {
         hasInterface(
             "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
 
+    // Confirm that interface MTU is set correctly
+    assertThat(c, hasInterface("ifname", hasMtu(1400)));
+
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }
@@ -3712,7 +3717,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
     assertThat(
         c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(0, outsideInterface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(1, outsideInterface), hasMemberInterfaces(hasSize(1))));
 
     IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
     IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();

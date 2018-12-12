@@ -44,7 +44,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   @JsonCreator
   protected AbstractRoute(@Nullable @JsonProperty(PROP_NETWORK) Prefix network) {
-    _network = requireNonNull(network, "Cannot crate a route without a network");
+    _network = requireNonNull(network, "Cannot create a route without a network");
   }
 
   @Override
