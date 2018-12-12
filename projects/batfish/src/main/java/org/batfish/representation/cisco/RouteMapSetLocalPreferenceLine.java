@@ -3,7 +3,6 @@ package org.batfish.representation.cisco;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statement;
