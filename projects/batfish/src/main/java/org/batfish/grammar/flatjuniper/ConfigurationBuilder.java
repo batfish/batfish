@@ -1943,7 +1943,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private LogicalSystem _currentLogicalSystem;
 
-  public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
+  private final Map<Token, String> _tokenInputs;
+
+  public ConfigurationBuilder(
+      FlatJuniperCombinedParser parser,
+      String text,
+      Warnings warnings,
+      Map<Token, String> tokenInputs) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
@@ -1952,6 +1958,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+    _tokenInputs = tokenInputs;
   }
 
   private void setLogicalSystem(LogicalSystem logicalSystem) {
@@ -5476,7 +5483,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
+    String text = _tokenInputs.getOrDefault(ctx.getStart(), _text).substring(start, end + 1);
     return text;
   }
 
