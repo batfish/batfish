@@ -62,3 +62,7 @@ arp access-list numberedArpAcl
 ip access-list test-codes
     10 permit udp any any eq bfd
     20 permit udp any any eq bfd-echo
+!
+access-list TEST extended deny ip any any log 7 interval 600
+access-list TEST extended deny ip any any log default
+access-list TEST extended deny ip any any log disable

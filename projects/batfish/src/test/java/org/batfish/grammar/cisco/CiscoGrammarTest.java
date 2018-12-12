@@ -3689,6 +3689,9 @@ public class CiscoGrammarTest {
         hasInterface(
             "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
 
+    // Confirm that interface MTU is set correctly
+    assertThat(c, hasInterface("ifname", hasMtu(1400)));
+
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }
@@ -3714,7 +3717,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
     assertThat(
         c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(0, outsideInterface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(1, outsideInterface), hasMemberInterfaces(hasSize(1))));
 
     IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
     IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();

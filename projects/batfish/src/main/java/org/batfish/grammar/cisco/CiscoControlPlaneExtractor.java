@@ -935,6 +935,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_loggingContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_list_extendedContext;
+import org.batfish.grammar.cisco.CiscoParser.S_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
@@ -5519,18 +5520,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
     String ifaceName = ctx.iface.getText();
     // Interface iface = _configuration.getInterfaces().get(ifaceName);
-    Optional<Interface> optionalIface =
-        _configuration
-            .getInterfaces()
-            .values()
-            .stream()
-            .filter(i -> i.getAlias().equals(ifaceName))
-            .findFirst();
-    Interface iface;
-    if (optionalIface.isPresent()) {
-      iface = optionalIface.get();
-    } else {
-      // Should never get here with valid config, ASA prevents referencing a non-existant iface here
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
       _w.redFlag(
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
       return;
@@ -5846,15 +5838,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .build());
       iface.setAlias(alias);
 
-      switch (alias) {
-        case TRUST_SECURITY_LEVEL_ALIAS:
-          setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
-          break;
-        case NO_TRUST_SECURITY_LEVEL_ALIAS:
-          setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
-          break;
-        default:
-          // don't set a level
+      // Only set level to default if it is not already set
+      if (iface.getSecurityLevel() == null) {
+        switch (alias) {
+          case TRUST_SECURITY_LEVEL_ALIAS:
+            setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+            break;
+          case NO_TRUST_SECURITY_LEVEL_ALIAS:
+            setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+            break;
+          default:
+            // don't set a level
+        }
       }
     }
   }
@@ -8490,6 +8485,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_mtu(S_mtuContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
+      _w.redFlag(String.format("mtu refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+    iface.setMtu(toInteger(ctx.bytes));
+  }
+
+  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -8544,9 +8551,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         SERVICE_POLICY_INTERFACE_POLICY,
         ctx.name.getStart().getLine());
-    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    String ifaceName = ctx.iface.getText();
+    Interface iface = getAsaInterfaceByAlias(ifaceName);
+    if (iface == null) {
+      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
+      _w.redFlag(
+          String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
+      return;
+    }
+
     _configuration.referenceStructure(
-        INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
+        INTERFACE,
+        getCanonicalInterfaceName(iface.getName()),
+        SERVICE_POLICY_INTERFACE,
+        ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9211,6 +9229,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return null;
     }
+  }
+
+  @Nullable
+  private Interface getAsaInterfaceByAlias(String alias) {
+    return _configuration
+        .getInterfaces()
+        .values()
+        .stream()
+        .filter(i -> alias.equals(i.getAlias()))
+        .findFirst()
+        .orElse(null);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {
