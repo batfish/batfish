@@ -143,16 +143,6 @@ class TransferBDD {
       p.debug("LiteralInt: " + z.getValue());
       return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     }
-    if (e instanceof IncrementLocalPreference) {
-      IncrementLocalPreference z = (IncrementLocalPreference) e;
-      p.debug("IncrementLocalPreference: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
-    }
-    if (e instanceof DecrementLocalPreference) {
-      DecrementLocalPreference z = (DecrementLocalPreference) e;
-      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
     throw new BatfishException("TODO: int expr transfer function: " + e);
   }
 
@@ -175,6 +165,16 @@ class TransferBDD {
       IncrementMetric z = (IncrementMetric) e;
       p.debug("Increment: " + z.getAddend());
       return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    }
+    if (e instanceof IncrementLocalPreference) {
+      IncrementLocalPreference z = (IncrementLocalPreference) e;
+      p.debug("IncrementLocalPreference: " + z.getAddend());
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    }
+    if (e instanceof DecrementLocalPreference) {
+      DecrementLocalPreference z = (DecrementLocalPreference) e;
+      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     throw new BatfishException("int expr transfer function: " + e);
   }
@@ -579,9 +579,9 @@ class TransferBDD {
       } else if (stmt instanceof SetLocalPreference) {
         curP.debug("SetLocalPreference");
         SetLocalPreference slp = (SetLocalPreference) stmt;
-        IntExpr ie = slp.getLocalPreference();
+        LongExpr ie = slp.getLocalPreference();
         BDDInteger newValue =
-            applyIntExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
+            applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
         newValue = ite(result.getReturnAssignedValue(), curP.getData().getLocalPref(), newValue);
         curP.getData().setLocalPref(newValue);
 

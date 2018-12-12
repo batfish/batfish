@@ -70,7 +70,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
     private String _dstVrf;
 
-    private int _localPreference;
+    private long _localPreference;
 
     private long _med;
 
@@ -146,7 +146,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       return this;
     }
 
-    public Builder setLocalPreference(int localPreference) {
+    public Builder setLocalPreference(long localPreference) {
       _localPreference = localPreference;
       return this;
     }
@@ -264,7 +264,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final String _dstVrf;
 
-  private final int _localPreference;
+  private final long _localPreference;
 
   private final long _med;
 
@@ -301,7 +301,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       @JsonProperty(PROP_DST_IP) @Nonnull Ip dstIp,
       @JsonProperty(PROP_SRC_PROTOCOL) @Nonnull RoutingProtocol srcProtocol,
       @JsonProperty(PROP_ORIGIN_TYPE) @Nonnull OriginType originType,
-      @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
+      @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_MED) long med,
       @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @JsonProperty(PROP_AS_PATH) @Nonnull AsPath asPath,
@@ -375,7 +375,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = Integer.compare(_localPreference, rhs._localPreference);
+    ret = Long.compare(_localPreference, rhs._localPreference);
     if (ret != 0) {
       return ret;
     }
@@ -518,7 +518,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
-  public int getLocalPreference() {
+  public long getLocalPreference() {
     return _localPreference;
   }
 

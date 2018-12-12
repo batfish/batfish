@@ -584,6 +584,14 @@ class TransferSSA {
       IncrementMetric z = (IncrementMetric) e;
       return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
     }
+    if (e instanceof IncrementLocalPreference) {
+      IncrementLocalPreference z = (IncrementLocalPreference) e;
+      return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
+    }
+    if (e instanceof DecrementLocalPreference) {
+      DecrementLocalPreference z = (DecrementLocalPreference) e;
+      return _enc.mkSub(x, _enc.mkInt(z.getSubtrahend()));
+    }
     throw new BatfishException("int expr transfer function: " + e);
   }
 
@@ -594,14 +602,6 @@ class TransferSSA {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       return _enc.mkInt(z.getValue());
-    }
-    if (e instanceof IncrementLocalPreference) {
-      IncrementLocalPreference z = (IncrementLocalPreference) e;
-      return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
-    }
-    if (e instanceof DecrementLocalPreference) {
-      DecrementLocalPreference z = (DecrementLocalPreference) e;
-      return _enc.mkSub(x, _enc.mkInt(z.getSubtrahend()));
     }
     throw new BatfishException("TODO: int expr transfer function: " + e);
   }
@@ -1188,8 +1188,8 @@ class TransferSSA {
       } else if (stmt instanceof SetLocalPreference) {
         curP.debug("SetLocalPreference");
         SetLocalPreference slp = (SetLocalPreference) stmt;
-        IntExpr ie = slp.getLocalPreference();
-        ArithExpr newValue = applyIntExprModification(curP.getData().getLocalPref(), ie);
+        LongExpr ie = slp.getLocalPreference();
+        ArithExpr newValue = applyLongExprModification(curP.getData().getLocalPref(), ie);
         newValue =
             _enc.mkIf(curResult.getReturnAssignedValue(), curP.getData().getLocalPref(), newValue);
         ArithExpr x = createArithVariableWith(curP, "LOCAL-PREF", newValue);
