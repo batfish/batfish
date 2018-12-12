@@ -186,16 +186,15 @@ public class PaloAltoGrammarTest {
 
     assertThat(
         c.getCryptoProfiles(),
-        equalTo(
-            ImmutableList.of(
-                new CryptoProfile(
-                    "default",
-                    Type.GLOBAL_PROTECT_APP,
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
-                    null,
-                    ImmutableList.of(EncryptionAlgorithm.AES_128_CBC),
-                    null,
-                    null))));
+        containsInAnyOrder(
+            new CryptoProfile(
+                "default",
+                Type.GLOBAL_PROTECT_APP,
+                IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
+                null,
+                ImmutableList.of(EncryptionAlgorithm.AES_128_CBC),
+                null,
+                null)));
   }
 
   @Test
@@ -219,25 +218,23 @@ public class PaloAltoGrammarTest {
 
     assertThat(
         c.getCryptoProfiles(),
-        equalTo(
-            ImmutableList.of(
-                new CryptoProfile(
-                    "default",
-                    Type.IKE,
-                    null,
-                    DiffieHellmanGroup.GROUP2,
-                    ImmutableList.of(
-                        EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.THREEDES_CBC),
-                    IkeHashingAlgorithm.SHA1,
-                    8 * 3600),
-                new CryptoProfile(
-                    "profile1",
-                    Type.IKE,
-                    null,
-                    DiffieHellmanGroup.GROUP19,
-                    ImmutableList.of(EncryptionAlgorithm.AES_256_CBC),
-                    IkeHashingAlgorithm.SHA_384,
-                    8))));
+        containsInAnyOrder(
+            new CryptoProfile(
+                "default",
+                Type.IKE,
+                null,
+                DiffieHellmanGroup.GROUP2,
+                ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.THREEDES_CBC),
+                IkeHashingAlgorithm.SHA1,
+                123 * 3600),
+            new CryptoProfile(
+                "profile1",
+                Type.IKE,
+                null,
+                DiffieHellmanGroup.GROUP19,
+                ImmutableList.of(EncryptionAlgorithm.AES_256_CBC),
+                IkeHashingAlgorithm.SHA_384,
+                8)));
   }
 
   @Test
@@ -246,24 +243,23 @@ public class PaloAltoGrammarTest {
 
     assertThat(
         c.getCryptoProfiles(),
-        equalTo(
-            ImmutableList.of(
-                new CryptoProfile(
-                    "default",
-                    Type.IPSEC,
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
-                    DiffieHellmanGroup.GROUP2,
-                    ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.DES_CBC),
-                    null,
-                    60),
-                new CryptoProfile(
-                    "profile1",
-                    Type.IPSEC,
-                    null,
-                    DiffieHellmanGroup.GROUP14,
-                    ImmutableList.of(EncryptionAlgorithm.AES_128_GCM),
-                    null,
-                    24 * 3600))));
+        containsInAnyOrder(
+            new CryptoProfile(
+                "default",
+                Type.IPSEC,
+                IpsecAuthenticationAlgorithm.HMAC_SHA1_96,
+                DiffieHellmanGroup.GROUP2,
+                ImmutableList.of(EncryptionAlgorithm.AES_128_CBC, EncryptionAlgorithm.DES_CBC),
+                null,
+                60),
+            new CryptoProfile(
+                "profile1",
+                Type.IPSEC,
+                null,
+                DiffieHellmanGroup.GROUP14,
+                ImmutableList.of(EncryptionAlgorithm.AES_128_GCM),
+                null,
+                24 * 3600)));
   }
 
   @Test

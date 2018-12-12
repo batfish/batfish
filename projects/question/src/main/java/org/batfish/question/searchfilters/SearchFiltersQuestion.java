@@ -116,7 +116,7 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nullable
   @JsonProperty(PROP_FILTERS)
-  private String getFilters() {
+  public String getFilters() {
     return _filters;
   }
 

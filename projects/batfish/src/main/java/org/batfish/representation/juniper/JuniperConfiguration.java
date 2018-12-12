@@ -1088,7 +1088,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String name = cl.getName();
     List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<>();
     for (CommunityListLine line : cl.getLines()) {
-      String regex = line.getRegex();
+      String regex = line.getText();
       String javaRegex = communityRegexToJavaRegex(regex);
       org.batfish.datamodel.CommunityListLine newLine =
           new org.batfish.datamodel.CommunityListLine(
@@ -1280,8 +1280,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setPreSourceNatOutgoingFilter(securityPolicyAcl);
       }
     }
-    // TODO: remove this line after handling security policies in traceroute and reachability
-    newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
+
+    // Set outgoing filter
+    String outAclName = iface.getOutgoingFilter();
+    IpAccessList outAcl = null;
+    if (outAclName != null) {
+      outAcl = _c.getIpAccessLists().get(outAclName);
+    }
+    newIface.setOutgoingFilter(outAcl);
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
     // Set<Prefix> allPrefixes = iface.getAllAddresses();
@@ -1409,38 +1415,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
-  /** Generate outgoing filter for the interface (from existing outgoing filter and zone policy) */
-  IpAccessList buildOutgoingFilter(Interface iface, @Nullable IpAccessList securityPolicyAcl) {
+  /** Generate outgoing filter for the interface from existing outgoing filter */
+  IpAccessList buildOutgoingFilter(Interface iface) {
     String outAclName = iface.getOutgoingFilter();
     IpAccessList outAcl = null;
     if (outAclName != null) {
       outAcl = _c.getIpAccessLists().get(outAclName);
     }
-
-    // Set outgoing filter based on the combination of zone policy and base outgoing filter
-    Set<AclLineMatchExpr> aclConjunctList;
-    if (securityPolicyAcl == null) {
-      return outAcl;
-    } else if (outAcl == null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName(), false));
-    } else {
-      aclConjunctList =
-          ImmutableSet.of(
-              new PermittedByAcl(outAcl.getName(), false),
-              new PermittedByAcl(securityPolicyAcl.getName(), false));
-    }
-
-    String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
-    IpAccessList combinedAcl =
-        IpAccessList.builder()
-            .setName(combinedAclName)
-            .setLines(
-                ImmutableList.of(
-                    new IpAccessListLine(
-                        LineAction.PERMIT, new AndMatchExpr(aclConjunctList), "PERMIT")))
-            .build();
-    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
-    return combinedAcl;
+    return outAcl;
   }
 
   private List<DestinationNat> buildDestinationNats(Interface iface) {
@@ -1533,6 +1515,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     builder.setAcl(
         IpAccessList.builder()
+            .setOwner(_c)
             .setName(
                 String.format("~SOURCENAT~%s~%s~%s~", ifaceName, rulesetName, natRule.getName()))
             .setLines(

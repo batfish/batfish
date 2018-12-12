@@ -159,6 +159,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -264,7 +265,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link FlatJuniperParser} and {@link FlatJuniperControlPlaneExtractor}. */
-public class FlatJuniperGrammarTest {
+public final class FlatJuniperGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
@@ -698,6 +699,87 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSetCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
+
+    // p1
+    RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
+    BgpRoute.Builder b1 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p1.process(cr, b1, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br1 = b1.build();
+
+    assertThat(
+        br1.getCommunities(),
+        equalTo(
+            ImmutableSet.of(
+                WellKnownCommunity.NO_ADVERTISE,
+                WellKnownCommunity.NO_EXPORT,
+                WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+
+    // p2
+    RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
+    BgpRoute.Builder b2 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p2.process(cr, b2, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br2 = b2.build();
+
+    assertThat(br2.getCommunities(), equalTo(ImmutableSet.of(2L, 3L)));
+
+    // p3
+    RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
+    BgpRoute.Builder b3 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p3.process(cr, b3, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br3 = b3.build();
+
+    assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(5L)));
+  }
+
+  @Test
+  public void testAddCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
+
+    // p4
+    RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
+    BgpRoute.Builder b4 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p4.process(cr, b4, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br4 = b4.build();
+
+    assertThat(
+        br4.getCommunities(),
+        equalTo(
+            ImmutableSet.of(
+                WellKnownCommunity.NO_ADVERTISE,
+                WellKnownCommunity.NO_EXPORT,
+                WellKnownCommunity.NO_EXPORT_SUBCONFED,
+                5L)));
+
+    // p5
+    RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
+    BgpRoute.Builder b5 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p5.process(cr, b5, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br5 = b5.build();
+
+    assertThat(br5.getCommunities(), equalTo(ImmutableSet.of(2L, 3L, 5L)));
+
+    // p6
+    RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
+    BgpRoute.Builder b6 =
+        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+    p6.process(cr, b6, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    BgpRoute br6 = b6.build();
+
+    assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(5L)));
+  }
+
+  @Test
   public void testDefaultApplications() throws IOException {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -837,18 +919,20 @@ public class FlatJuniperGrammarTest {
     Flow flowDefaultPolicy = createFlow(addrDefaultPolicy, untrustIpAddr);
 
     IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclUntrustSecurity =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     /* Confirm flow from address explicitly allowed by zone policy is accepted */
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         accepts(flowPermitted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm flow from trust interface not matching any policy deny is accepted (accepted by default permit-all) */
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         accepts(flowDefaultPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm flow matching zone policy deny is rejected */
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         rejects(flowDeniedByZonePolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm flow blocked by the outgoing filter is rejected */
     assertThat(
@@ -856,16 +940,16 @@ public class FlatJuniperGrammarTest {
         rejects(flowDeniedByFilter, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm flow matching global policy deny is rejected */
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         rejects(
             flowDeniedByGlobalPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
 
     /* Confirm traffic originating from the device is not blocked by policies */
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         accepts(flowDeniedByZonePolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclUntrustOut,
+        aclUntrustSecurity,
         accepts(flowDeniedByGlobalPolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm traffic originating from the device is still blocked by an outgoing filter */
     assertThat(
@@ -893,8 +977,8 @@ public class FlatJuniperGrammarTest {
     Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
     Flow flowFromWildcardAddr = createFlow(wildcardAddr, untrustIpAddr);
     Flow flowFromNotWildcardAddr = createFlow(notWildcardAddr, untrustIpAddr);
-    IpAccessList untrustCombinedAcl =
-        c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList untrustAcl =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     // Should have three global IpSpaces in the config
     assertThat(
@@ -924,15 +1008,15 @@ public class FlatJuniperGrammarTest {
 
     // Specifically allowed source addr should be accepted
     assertThat(
-        untrustCombinedAcl,
+        untrustAcl,
         accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source addr covered by the wildcard entry should be accepted
     assertThat(
-        untrustCombinedAcl,
+        untrustAcl,
         accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source addr covered by neither addr-set entry should be rejected
     assertThat(
-        untrustCombinedAcl,
+        untrustAcl,
         rejects(
             flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
@@ -948,16 +1032,16 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreSourceNatOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     /*
-     * Should have six ACLs:
+     * Should have four ACLs:
      *  Explicitly defined in the config file:
      *    One from the global security policy
      *  Generated by logic in toVendorIndependent
-     *    Two combined outgoing filters for the two interfaces (combines security policies with
-     *        egress ACLs)
      *    One permitting existing connections (default firewall behavior)
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
@@ -966,8 +1050,6 @@ public class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
-            aclTrustOut.getName(),
-            aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
@@ -997,8 +1079,10 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreSourceNatOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     /* Make sure the global-address-book address is the only config ipSpace */
     assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(trustedSpaceName));
@@ -1032,13 +1116,13 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreSourceNatOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     /*
-     * Should have five ACLs generated by logic in toVendorIndependent:
-     *    Two combined outgoing filters for the two interfaces (combines security policies with
-     *        egress ACLs)
+     * Should have three ACLs generated by logic in toVendorIndependent:
      *    One permitting existing connections (default firewall behavior)
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
@@ -1046,8 +1130,6 @@ public class FlatJuniperGrammarTest {
     assertThat(
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
-            aclTrustOut.getName(),
-            aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
@@ -1077,16 +1159,16 @@ public class FlatJuniperGrammarTest {
     Flow untrustToTrustReturnFlow =
         createFlow(untrustedIpAddr, trustedIpAddr, FlowState.ESTABLISHED);
 
-    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreSourceNatOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     /*
-     * Should have six ACLs:
+     * Should have four ACLs:
      *  Explicitly defined in the config file:
      *    One from the security policy from trust to untrust
      *  Generated by logic in toVendorIndependent
-     *    Two combined outgoing filters for the two interfaces (combines security policies with
-     *        egress ACLs)
      *    One permitting existing connections (default firewall behavior)
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
@@ -1097,9 +1179,7 @@ public class FlatJuniperGrammarTest {
             securityPolicyName,
             aclTrustOut.getName(),
             aclUntrustOut.getName(),
-            ACL_NAME_EXISTING_CONNECTION,
-            ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
-            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+            ACL_NAME_EXISTING_CONNECTION));
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
@@ -1137,7 +1217,8 @@ public class FlatJuniperGrammarTest {
     Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
     Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
 
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
     final String ipSpaceName = "trust~ADDR1";
@@ -1179,8 +1260,10 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustOut = c.getAllInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrustOut = c.getAllInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustOut =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreSourceNatOutgoingFilter();
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
 
     // Should have two zones
     assertThat(c.getZones().keySet(), containsInAnyOrder(zoneTrust, zoneUntrust));
@@ -2878,7 +2961,7 @@ public class FlatJuniperGrammarTest {
             DestinationNat.builder()
                 .setAcl(
                     IpAccessList.builder()
-                        .setName("~DESTINATIONNAT~get-0/0/0.0~RULE-SET-IFACE~RULE3~")
+                        .setName("~DESTINATIONNAT~ge-0/0/0.0~RULE-SET-IFACE~RULE3~")
                         .setLines(
                             ImmutableList.of(
                                 accepting(
@@ -2897,10 +2980,10 @@ public class FlatJuniperGrammarTest {
                                 accepting(
                                     AclLineMatchExprs.match(
                                         HeaderSpace.builder()
-                                            .setDstIps(new IpSpaceReference("NAME"))
+                                            .setDstIps(new IpSpaceReference("global~NAME"))
                                             .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
                                             .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
-                                            .setSrcIps(new IpSpaceReference("SA-NAME"))
+                                            .setSrcIps(new IpSpaceReference("global~SA-NAME"))
                                             .build()))))
                         .build())
                 .build(),
@@ -2913,7 +2996,7 @@ public class FlatJuniperGrammarTest {
                                 accepting(
                                     AclLineMatchExprs.match(
                                         HeaderSpace.builder()
-                                            .setDstIps(new IpSpaceReference("DA-NAME"))
+                                            .setDstIps(new IpSpaceReference("global~DA-NAME"))
                                             .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                                             .build()))))
                         .build())
@@ -3591,6 +3674,13 @@ public class FlatJuniperGrammarTest {
   public void testStormControl() throws IOException {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
+  }
+
+  @Test
+  public void testSecurityAddressBookGlobalAddress() throws IOException {
+    Configuration config = parseConfig("security-address-book-global-address");
+    Map<String, IpSpace> ipSpaces = config.getIpSpaces();
+    assertThat(ipSpaces.keySet(), contains("global~NAME"));
   }
 
   @Test

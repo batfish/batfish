@@ -1290,25 +1290,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return CommonUtil.communityStringToLong(text);
   }
 
-  private static long toCommunityLong(Sc_namedContext ctx) {
+  private @Nullable Long toCommunityLong(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
-    }
-    if (ctx.NO_EXPORT() != null) {
+    } else if (ctx.NO_EXPORT() != null) {
       return WellKnownCommunity.NO_EXPORT;
+    } else if (ctx.NO_EXPORT_SUBCONFED() != null) {
+      return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else {
-      throw new BatfishException(
-          "missing named-community-to-long mapping for: \"" + ctx.getText() + "\"");
+      return convProblem(Long.class, ctx, null);
     }
   }
 
-  private static long toCommunityLong(Standard_communityContext ctx) {
+  private @Nullable Long toCommunityLong(Standard_communityContext ctx) {
     if (ctx.sc_literal() != null) {
       return toCommunityLong(ctx.sc_literal());
     } else if (ctx.sc_named() != null) {
       return toCommunityLong(ctx.sc_named());
     } else {
-      throw new BatfishException("Cannot convert to community long");
+      return convProblem(Long.class, ctx, null);
     }
   }
 
@@ -4212,7 +4212,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String text = ctx.extended_community_regex().getText();
       _currentCommunityList.getLines().add(new CommunityListLine(text));
     } else if (ctx.standard_community() != null) {
-      long communityVal = toCommunityLong(ctx.standard_community());
+      Long communityVal = toCommunityLong(ctx.standard_community());
+      if (communityVal == null) {
+        return;
+      }
       _configuration.getAllStandardCommunities().add(communityVal);
       String communityStr = CommonUtil.longToCommunity(communityVal);
       _currentCommunityList.getLines().add(new CommunityListLine(communityStr));

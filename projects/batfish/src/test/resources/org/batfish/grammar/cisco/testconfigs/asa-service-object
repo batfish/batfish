@@ -11,6 +11,7 @@ object service OS_ICMP
 object-group service OGS1
  service-object object OS_TCPUDP
  service-object udp destination eq 1234
+ service-object udp source eq cifs
 !
 object-group service OGS_UNDEF
  service-object object OS_UNDEFINED
