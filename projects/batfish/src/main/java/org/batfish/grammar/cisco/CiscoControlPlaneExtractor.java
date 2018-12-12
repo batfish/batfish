@@ -9082,7 +9082,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.up_arista_sha512() != null) {
       passwordString = ctx.up_arista_sha512().pass.getText();
     } else if (ctx.up_cisco() != null) {
-      passwordString = ctx.up_cisco().pass.getText();
+      passwordString = ctx.up_cisco().up_cisco_tail().pass.getText();
+    } else if (ctx.NOPASSWORD() != null) {
+      passwordString = "";
     } else {
       throw new BatfishException("Missing username password handling");
     }

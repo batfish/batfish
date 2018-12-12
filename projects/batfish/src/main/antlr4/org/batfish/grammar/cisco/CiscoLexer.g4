@@ -7989,6 +7989,11 @@ NO
    'no'
 ;
 
+NOPASSWORD
+:
+   'nopassword'
+;
+
 NO_ADVERTISE
 :
    'no-advertise'
@@ -8152,6 +8157,11 @@ NSSA
 NSSA_EXTERNAL
 :
    'nssa-external'
+;
+
+NT_ENCRYPTED
+:
+   'nt-encrypted'
 ;
 
 NTP
@@ -8662,6 +8672,11 @@ PATHS_OF_STATISTICS_KEPT
 PAUSE
 :
    'pause'
+;
+
+PBKDF2
+:
+   'pbkdf2'
 ;
 
 PBR
