@@ -23945,6 +23945,17 @@
             "        (if_no_nameif",
             "          NO:'no'",
             "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_interface",
@@ -62887,8 +62898,8 @@
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                340,
-                341
+                342,
+                343
               ],
               "numReferrers" : 1
             },
@@ -62905,79 +62916,81 @@
             "Loopback0" : {
               "definitionLines" : [
                 310,
-                311
+                311,
+                312,
+                313
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                313
+                315
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                315
+                317
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                324
+                326
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                330
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                332
+                334
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                319
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                334
+                336
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                326
+                328
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                328
+                330
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                336
+                338
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                321
+                323
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                338
+                340
               ],
               "numReferrers" : 1
             },
@@ -62989,7 +63002,7 @@
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                317
+                319
               ],
               "numReferrers" : 1
             }
@@ -66935,7 +66948,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                340
+                342
               ]
             },
             "GigabitEthernet0/0" : {
@@ -66950,62 +66963,62 @@
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                313
+                315
               ]
             },
             "Null0" : {
               "interface" : [
-                315
+                317
               ]
             },
             "Vlan1" : {
               "interface" : [
-                324
+                326
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                330
+                332
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                332
+                334
               ]
             },
             "Vlan111" : {
               "interface" : [
-                319
+                321
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                334
+                336
               ]
             },
             "Vlan2" : {
               "interface" : [
-                326
+                328
               ]
             },
             "Vlan3" : {
               "interface" : [
-                328
+                330
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                336
+                338
               ]
             },
             "Vxlan1" : {
               "interface" : [
-                321
+                323
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                338
+                340
               ]
             },
             "dynamic" : {
@@ -67020,7 +67033,7 @@
             },
             "tunnel-ip6" : {
               "interface" : [
-                317
+                319
               ]
             }
           },
