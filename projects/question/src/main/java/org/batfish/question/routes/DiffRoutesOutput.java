@@ -25,11 +25,11 @@ public class DiffRoutesOutput {
     }
   }
 
-  @Nonnull private RouteRowKey _routeRowKey;
+  @Nonnull private final RouteRowKey _routeRowKey;
 
-  @Nonnull private List<List<RouteRowAttribute>> _diffInAttributes;
+  @Nonnull private final List<List<RouteRowAttribute>> _diffInAttributes;
 
-  @Nonnull private PresenceStatus _networkPresenceStatus;
+  @Nonnull private final PresenceStatus _networkPresenceStatus;
 
   public DiffRoutesOutput(
       @Nonnull RouteRowKey routeRowKey,
