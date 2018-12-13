@@ -10,11 +10,13 @@ import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
@@ -28,6 +30,9 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 @ParametersAreNonnullByDefault
 final class TracerouteUtils {
@@ -160,5 +165,14 @@ final class TracerouteUtils {
         finalAction = INSUFFICIENT_INFO;
     }
     return finalAction;
+  }
+
+  public static TransformationStep transformationStep(
+      TransformationType type, Flow inputFlow, Flow transformedFlow) {
+    SortedSet<FlowDiff> flowDiffs = FlowDiff.flowDiffs(inputFlow, transformedFlow);
+    TransformationStepDetail detail = new TransformationStepDetail(type, flowDiffs);
+    return flowDiffs.isEmpty()
+        ? new TransformationStep(detail, StepAction.PERMITTED)
+        : new TransformationStep(detail, StepAction.TRANSFORMED);
   }
 }

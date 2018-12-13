@@ -1,6 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
@@ -10,6 +11,11 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.contains;
@@ -68,6 +74,8 @@ import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
@@ -512,8 +520,7 @@ public class TracerouteEngineImplTest {
     i2.setIncomingFilter(
         nf.aclBuilder()
             .setOwner(c2)
-            .setLines(
-                ImmutableList.of(IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(natPoolIp))))
+            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(natPoolIp))))
             .build());
     i2.setSourceNats(
         ImmutableList.of(
@@ -583,14 +590,14 @@ public class TracerouteEngineImplTest {
             .setName(filterName)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting(
+                    accepting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(iface1)),
-                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix)))),
+                            matchSrc(Prefix.parse(prefix)))),
                     IpAccessListLine.rejecting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(iface2)),
-                            AclLineMatchExprs.matchSrc(Prefix.parse(prefix))))))
+                            matchSrc(Prefix.parse(prefix))))))
             .build();
 
     Flow flow = makeFlow();
@@ -660,10 +667,10 @@ public class TracerouteEngineImplTest {
             .setName(filterName)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting(
+                    accepting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(i1.getName())),
-                            AclLineMatchExprs.matchSrc(Prefix.parse("10.0.0.1/32"))))))
+                            matchSrc(Prefix.parse("10.0.0.1/32"))))))
             .build();
 
     c1.getIpAccessLists().put(filterName, filter);
@@ -791,10 +798,10 @@ public class TracerouteEngineImplTest {
             .setName(filterName)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting(
+                    accepting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(i1.getName())),
-                            AclLineMatchExprs.matchSrc(Prefix.parse("10.0.0.1/32")))),
+                            matchSrc(Prefix.parse("10.0.0.1/32")))),
                     new IpAccessListLine(
                         LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND")))
             .build();
@@ -836,5 +843,263 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
     assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+  }
+
+  @Test
+  public void testTransformationSteps() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+
+    IpAccessList.Builder ab = nf.aclBuilder().setOwner(c);
+    Ip ip21 = new Ip("2.0.0.1");
+    Ip ip22 = new Ip("2.0.0.2");
+    Ip ip33 = new Ip("3.0.0.3");
+    Ip ip41 = new Ip("4.0.0.1");
+    Prefix prefix2 = Prefix.parse("2.0.0.0/24");
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
+    Interface inInterface =
+        ib.setAddress(new InterfaceAddress("1.0.0.0/24"))
+            .setDestinationNats(
+                ImmutableList.of(
+                    DestinationNat.builder()
+                        .setAcl(ab.setLines(ImmutableList.of(accepting(matchDst(ip21)))).build())
+                        .build(),
+                    DestinationNat.builder()
+                        .setAcl(ab.setLines(ImmutableList.of(accepting(matchDst(prefix2)))).build())
+                        .setPoolIpFirst(ip33)
+                        .setPoolIpLast(ip33)
+                        .build()))
+            .build();
+    ib.setAddress(new InterfaceAddress("4.0.0.0/24"))
+        .setSourceNats(
+            ImmutableList.of(
+                SourceNat.builder()
+                    .setAcl(ab.setLines(ImmutableList.of(accepting(matchSrc(ip21)))).build())
+                    .build(),
+                SourceNat.builder()
+                    .setAcl(ab.setLines(ImmutableList.of(accepting(matchSrc(prefix2)))).build())
+                    .setPoolIpFirst(ip33)
+                    .setPoolIpLast(ip33)
+                    .build()))
+        .build();
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+
+    // Test flows matched by dest nat rules that permit but don't transform
+    Flow flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip22)
+            .setDstIp(ip21)
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    List<Trace> traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    Trace trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(NO_ROUTE));
+
+    assertThat(trace.getHops(), hasSize(1));
+    Hop hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(3));
+    List<Step<?>> steps = hop.getSteps();
+
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+
+    // Test flows matched and transformed by dest nat rules
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip21)
+            .setDstIp(ip22)
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(NO_ROUTE));
+
+    assertThat(trace.getHops(), hasSize(1));
+    hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(3));
+    steps = hop.getSteps();
+
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(
+                    DEST_NAT, flowDiffs(flow, flow.toBuilder().setDstIp(ip33).build())),
+                StepAction.TRANSFORMED)));
+
+    // Test flows not matched by dest nat rules
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip21)
+            .setDstIp(ip33)
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(NO_ROUTE));
+
+    assertThat(trace.getHops(), hasSize(1));
+    hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(3));
+    steps = hop.getSteps();
+
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+
+    // Test flows matched by source nat rules that permit but don't transform
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip21)
+            .setDstIp(ip41)
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(DELIVERED_TO_SUBNET));
+
+    assertThat(trace.getHops(), hasSize(1));
+    hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(5));
+    steps = hop.getSteps();
+
+    // dest nat step
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+    // source nat step
+    assertThat(
+        steps.get(3),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+
+    // Test flows matched and transformed by source nat rules
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip22)
+            .setDstIp(ip41)
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(DELIVERED_TO_SUBNET));
+
+    assertThat(trace.getHops(), hasSize(1));
+    hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(5));
+    steps = hop.getSteps();
+
+    // dest nat step
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+    // source nat step
+    assertThat(
+        steps.get(3),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(
+                    SOURCE_NAT, flowDiffs(flow, flow.toBuilder().setSrcIp(ip33).build())),
+                StepAction.TRANSFORMED)));
+
+    // Test flows that match no source nat rule
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inInterface.getName())
+            .setSrcIp(ip33)
+            .setDstIp(ip41)
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traces = flowTraces.get(flow);
+    assertThat(traces, hasSize(1));
+
+    trace = traces.get(0);
+    assertThat(trace.getDisposition(), equalTo(DELIVERED_TO_SUBNET));
+
+    assertThat(trace.getHops(), hasSize(1));
+    hop = trace.getHops().get(0);
+
+    assertThat(hop.getSteps(), hasSize(5));
+    steps = hop.getSteps();
+
+    // dest nat step
+    assertThat(
+        steps.get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
+    // source nat step
+    assertThat(
+        steps.get(3),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
+                StepAction.PERMITTED)));
   }
 }
