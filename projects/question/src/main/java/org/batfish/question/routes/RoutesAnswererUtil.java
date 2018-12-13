@@ -508,9 +508,13 @@ public class RoutesAnswererUtil {
    * Given two sorted {@link List}s of {@link RouteRowAttribute}s, outputs a 2-dimensional list
    * showing the diff in the two input lists
    *
-   * <p>In each row of the output 2-dimensional {@link List} the two columns contain matching {@link
-   * RouteRowAttribute}s and for {@link RouteRowAttribute}s with no matching values the other column
-   * contains a null.
+   * <p>The aligning is done using two pointers method where we place the two pointers at the
+   * beginning of both lists in the beginning and then keep incrementing the one pointing to a
+   * smaller element. If the elements at the two pointers are equal, we found a match, otherwise it
+   * is a missing route.
+   *
+   * <p>The output is a nested {@link List} with the inner list of always size 2. The inner list
+   * contains {@link RouteRowAttribute} for matching routes and contains nulls for missing routes.
    *
    * @param routeRowAttributes1 First sorted {@link List} of {@link RouteRowAttribute}s
    * @param routeRowAttributes2 Second sorted {@link List} of {@link RouteRowAttribute}s
@@ -519,6 +523,8 @@ public class RoutesAnswererUtil {
   static List<List<RouteRowAttribute>> alignRouteRowAttributes(
       List<RouteRowAttribute> routeRowAttributes1, List<RouteRowAttribute> routeRowAttributes2) {
     List<List<RouteRowAttribute>> alignedRouteRowAttrs = new ArrayList<>();
+
+    // i and j are two pointers initialized to the starting of both lists
     int i = 0;
     int j = 0;
     while (i < routeRowAttributes1.size() && j < routeRowAttributes2.size()) {
@@ -531,13 +537,15 @@ public class RoutesAnswererUtil {
         j++;
         alignedRouteRowAttrs.add(Lists.newArrayList(null, routeRowAttribute2));
       } else {
+        // the two pointers are pointing to equal elements, so we found a match
         i++;
         j++;
         alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttribute1, routeRowAttribute2));
       }
     }
 
-    // adding one sided pairs for whichever list remains un-traversed
+    // adding one sided pairs for whichever list remains un-traversed, the other element in the
+    // inner list will be null
     // only one of these loops will execute
     while (i < routeRowAttributes1.size()) {
       alignedRouteRowAttrs.add(Lists.newArrayList(routeRowAttributes1.get(i++), null));
