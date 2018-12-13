@@ -183,9 +183,10 @@ public class RoutesAnswererUtilTest {
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rraConnected1), ImmutableList.of(rraConnected2));
 
-    // metric should not affect pairing
+    // different metric will affect the pairing
     List<List<RouteRowAttribute>> expectedOutput =
-        ImmutableList.of(Lists.newArrayList(rraConnected1, rraConnected2));
+        ImmutableList.of(
+            Lists.newArrayList(rraConnected1, null), Lists.newArrayList(null, rraConnected2));
 
     assertThat(alignedRouteRowattrs, equalTo(expectedOutput));
   }
