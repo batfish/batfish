@@ -76,7 +76,6 @@
         "Unreachable_Line_Action" : "PERMIT",
         "Unreachable_Line" : "permit icmp any any",
         "Blocking_Lines" : [
-          "permit ip 2.128.0.0 0.0.255.255 any",
           "deny   ip any any"
         ],
         "Different_Action" : true,
