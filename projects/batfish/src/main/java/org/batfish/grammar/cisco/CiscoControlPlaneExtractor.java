@@ -5863,6 +5863,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_no_security_level(If_no_security_levelContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Security level can only be configured in single-interface context");
+      return;
+    }
+    setIfaceSecurityLevel(_currentInterfaces.get(0), 0);
+  }
+
+  @Override
   public void exitIf_security_level(If_security_levelContext ctx) {
     if (_currentInterfaces.size() != 1) {
       _w.addWarning(
@@ -5872,8 +5885,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    int level = ctx.NO() == null ? toInteger(ctx.level) : 0;
-    setIfaceSecurityLevel(_currentInterfaces.get(0), level);
+    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
   }
 
   private void setIfaceSecurityLevel(Interface iface, int level) {
