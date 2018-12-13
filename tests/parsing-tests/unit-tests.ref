@@ -111,6 +111,9 @@
         "asa_banner" : [
           "configs/asa_banner"
         ],
+        "asa_interface" : [
+          "configs/asa_interface"
+        ],
         "asa_object_groups" : [
           "configs/asa_object_groups"
         ],
@@ -459,6 +462,9 @@
         ],
         "if_tag_is" : [
           "configs/if_tag_is"
+        ],
+        "interface-reth" : [
+          "configs/juniper_reth_interfaces"
         ],
         "interface_exit" : [
           "configs/interface_exit"
@@ -827,6 +833,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_interface" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
@@ -997,6 +1004,7 @@
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
         "configs/juniper_relay" : "PASSED",
+        "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
         "configs/juniper_security" : "PASSED",
@@ -7278,6 +7286,50 @@
             "      (banner",
             "        ASA_BANNER_LINE:'**************************************************'  <== mode:M_BannerText",
             "        NEWLINE:'\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "asa_interface" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa_interface'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_nameif",
+            "          NAMEIF:'nameif'",
+            "          name = (variable",
+            "            VARIABLE:'ifname')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_service_policy_interface",
+            "      SERVICE_POLICY:'service-policy'",
+            "      name = (variable",
+            "        VARIABLE:'some-interface-policy')",
+            "      INTERFACE:'interface'",
+            "      iface = (interface_name",
+            "        VARIABLE:'ifname')",
+            "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -14262,7 +14314,66 @@
             "          EQ:'eq'",
             "          (port",
             "            BFD_ECHO:'bfd-echo'))",
-            "        NEWLINE:'\\n\\n')))",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          level = DEC:'7'",
+            "          INTERVAL:'interval'",
+            "          secs = DEC:'600')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          DEFAULT:'default')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (variable_aclname",
+            "        VARIABLE:'TEST')",
+            "      EXTENDED:'extended'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        (extended_access_list_additional_feature",
+            "          LOG:'log'",
+            "          DISABLE:'disable')",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -29145,18 +29256,6 @@
             "      GLOBAL:'global'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (s_service_policy_interface",
-            "      SERVICE_POLICY:'service-policy'",
-            "      name = (variable",
-            "        VARIABLE:'some-interface-policy')",
-            "      INTERFACE:'interface'",
-            "      iface = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'0'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
-            "  (stanza",
             "    (s_null",
             "      (null_block",
             "        SLOT_TABLE_COS:'slot-table-cos'",
@@ -39658,6 +39757,128 @@
             "          NEWLINE:'\\n'))",
             "      END_POLICY:'end-policy'",
             "      NEWLINE:'\\n\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "interface-reth" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'interface-reth'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.0.0.0/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_gigether_options",
+            "                  GIGETHER_OPTIONS:'gigether-options'",
+            "                  (ether_options",
+            "                    (eo_redundant_parent",
+            "                      REDUNDANT_PARENT:'redundant-parent'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'reth0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.0.0.1/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_gigether_options",
+            "                  GIGETHER_OPTIONS:'gigether-options'",
+            "                  (ether_options",
+            "                    (eo_redundant_parent",
+            "                      REDUNDANT_PARENT:'redundant-parent'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'reth0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'reth0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'3'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'3.3.3.3/31'))))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -61399,6 +61620,23 @@
           }
         },
         "configs/asa_banner" : { },
+        "configs/asa_interface" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "definitionLines" : [
+                6,
+                7
+              ],
+              "numReferrers" : 2
+            },
+            "ifname" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
@@ -61862,6 +62100,14 @@
                 26,
                 27,
                 28
+              ],
+              "numReferrers" : 0
+            },
+            "TEST" : {
+              "definitionLines" : [
+                66,
+                67,
+                68
               ],
               "numReferrers" : 0
             },
@@ -65026,6 +65272,48 @@
             }
           }
         },
+        "configs/juniper_reth_interfaces" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/1" : {
+              "definitionLines" : [
+                6,
+                7
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/1.0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "reth0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "reth0.3" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_route_filter" : {
           "policy-statement" : {
             "route-filter-test-v4" : {
@@ -65880,6 +66168,30 @@
             "drawbridge_hosts" : {
               "extended access-list network object-group" : [
                 9
+              ]
+            }
+          }
+        },
+        "configs/asa_interface" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "interface" : [
+                6
+              ],
+              "service-policy interface" : [
+                8
+              ]
+            },
+            "ifname" : {
+              "interface" : [
+                7
+              ]
+            }
+          },
+          "policy-map" : {
+            "some-interface-policy" : {
+              "service-policy interface policy" : [
+                8
               ]
             }
           }
@@ -66885,13 +67197,6 @@
               ]
             }
           },
-          "interface" : {
-            "Loopback0" : {
-              "service-policy interface" : [
-                238
-              ]
-            }
-          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
@@ -66903,11 +67208,6 @@
             "global_policy" : {
               "service-policy global" : [
                 237
-              ]
-            },
-            "some-interface-policy" : {
-              "service-policy interface policy" : [
-                238
               ]
             }
           }
@@ -68306,6 +68606,42 @@
             }
           }
         },
+        "configs/juniper_reth_interfaces" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4,
+                5
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "ge-0/0/1" : {
+              "interface" : [
+                6,
+                7
+              ]
+            },
+            "ge-0/0/1.0" : {
+              "interface" : [
+                6
+              ]
+            },
+            "reth0" : {
+              "interface" : [
+                8
+              ]
+            },
+            "reth0.3" : {
+              "interface" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_options" : {
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
@@ -68788,6 +69124,15 @@
             "drawbridge_hosts" : {
               "extended access-list network object-group" : [
                 9
+              ]
+            }
+          }
+        },
+        "configs/asa_interface" : {
+          "policy-map" : {
+            "some-interface-policy" : {
+              "service-policy interface policy" : [
+                8
               ]
             }
           }
@@ -69328,24 +69673,10 @@
               ]
             }
           },
-          "interface" : {
-            "Loopback0" : {
-              "service-policy interface" : [
-                238
-              ]
-            }
-          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
                 42
-              ]
-            }
-          },
-          "policy-map" : {
-            "some-interface-policy" : {
-              "service-policy interface policy" : [
-                238
               ]
             }
           }
@@ -70833,6 +71164,7 @@
         "configs/as_path_prepend" : "PASSED",
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
+        "configs/asa_interface" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
@@ -71003,6 +71335,7 @@
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
         "configs/juniper_relay" : "PASSED",
+        "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
         "configs/juniper_security" : "PASSED",

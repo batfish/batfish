@@ -35,7 +35,7 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     private ExitOutputIfaceStepDetail(
         NodeInterfacePair outInterface,
         @Nullable String outputFilter,
-        @Nullable() Flow transformedFlow) {
+        @Nullable Flow transformedFlow) {
       _outputInterface = outInterface;
       _outputFilter = outputFilter;
       _transformedFlow = transformedFlow;

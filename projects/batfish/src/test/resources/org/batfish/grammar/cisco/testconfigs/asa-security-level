@@ -22,5 +22,6 @@ interface GigabitEthernet0/3
 !
 interface GigabitEthernet0/4
   nameif outside
-  description implicit level of 0
+  description implicit level of 0, explicit 1
+  security-level 1
   ip address 3.0.3.2 255.255.255.0 standby 3.0.3.3

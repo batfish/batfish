@@ -13,8 +13,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -120,6 +122,9 @@ public interface IBatfish extends IPluginConsumer {
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
+  @Nonnull
+  TopologyProvider getTopologyProvider();
+
   Map<String, String> getQuestionTemplates(boolean verbose);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
@@ -147,6 +152,9 @@ public interface IBatfish extends IPluginConsumer {
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
   SortedMap<String, Configuration> loadConfigurations();
+
+  /** Returns the configurations for given snapshot. */
+  SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
 
@@ -227,7 +235,11 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
+  /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
   SpecifierContext specifierContext();
+
+  /** Return a {@link SpecifierContext} for a given {@link NetworkSnapshot} */
+  SpecifierContext specifierContext(NetworkSnapshot networkSnapshot);
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
