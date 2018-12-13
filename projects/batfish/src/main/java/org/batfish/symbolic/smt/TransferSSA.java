@@ -596,17 +596,6 @@ class TransferSSA {
   }
 
   /*
-   * Apply the effect of modifying an integer value (e.g., to set the local pref)
-   */
-  private ArithExpr applyIntExprModification(ArithExpr x, IntExpr e) {
-    if (e instanceof LiteralInt) {
-      LiteralInt z = (LiteralInt) e;
-      return _enc.mkInt(z.getValue());
-    }
-    throw new BatfishException("TODO: int expr transfer function: " + e);
-  }
-
-  /*
    * Create a constraint that the metric field does not overflow
    * for a given routing protocol.
    */

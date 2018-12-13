@@ -135,18 +135,6 @@ class TransferBDD {
   }
 
   /*
-   * Apply the effect of modifying an integer value (e.g., to set the local pref)
-   */
-  private BDDInteger applyIntExprModification(TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
-    if (e instanceof LiteralInt) {
-      LiteralInt z = (LiteralInt) e;
-      p.debug("LiteralInt: " + z.getValue());
-      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
-    }
-    throw new BatfishException("TODO: int expr transfer function: " + e);
-  }
-
-  /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
   private BDDInteger applyLongExprModification(
