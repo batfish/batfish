@@ -2495,9 +2495,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                           dependency)));
 
               // Traverse interfaces in topological order and deactivate if necessary
-              TopologicalOrderIterator<String, Dependency> iterator =
-                  new TopologicalOrderIterator<>(graph);
-              while (iterator.hasNext()) {
+              for (TopologicalOrderIterator<String, Dependency> iterator =
+                      new TopologicalOrderIterator<>(graph);
+                  iterator.hasNext(); ) {
                 String ifaceName = iterator.next();
                 deactivateInterfaceIfNeeded(allInterfaces.get(ifaceName));
               }
@@ -2526,13 +2526,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .collect(ImmutableSet.toImmutableSet());
     if (!aggregateDependencies.isEmpty()
         && aggregateDependencies
-                .stream()
-                // Extract existing and active interfaces
-                .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
-                .filter(Objects::nonNull)
-                .filter(Interface::getActive)
-                .count()
-            < 1) {
+            .stream()
+            // Extract existing and active interfaces
+            .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
+            .filter(Objects::nonNull)
+            .noneMatch(Interface::getActive)) {
       iface.setActive(false);
     }
   }
