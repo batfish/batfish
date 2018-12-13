@@ -7286,6 +7286,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -7703,6 +7704,51 @@
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "Allow traffic originating from this device"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                  "srcInterfaces" : [
+                    "Loopback0"
+                  ]
+                },
+                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Loopback0'"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                  "srcInterfaces" : [
+                    "GigabitEthernet0/0"
+                  ]
+                },
+                "name" : "Traffic from security level 100"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
+          },
           "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~" : {
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
             "lines" : [
@@ -7782,6 +7828,12 @@
           }
         },
         "zones" : {
+          "SECURITY_LEVEL_0_Loopback0" : {
+            "name" : "SECURITY_LEVEL_0_Loopback0",
+            "interfaces" : [
+              "Loopback0"
+            ]
+          },
           "SECURITY_LEVEL_100_GigabitEthernet0/0" : {
             "name" : "SECURITY_LEVEL_100_GigabitEthernet0/0",
             "interfaces" : [

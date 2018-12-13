@@ -5872,7 +5872,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
+    int level = ctx.NO() == null ? toInteger(ctx.level) : 0;
+    setIfaceSecurityLevel(_currentInterfaces.get(0), level);
   }
 
   private void setIfaceSecurityLevel(Interface iface, int level) {

@@ -592,10 +592,9 @@ enable_password
 :
    PASSWORD (LEVEL level = DEC)?
    (
-      (
-        ep_plaintext
-        | ep_sha512
-      )
+      ep_plaintext
+      | ep_sha512
+      // Do not reorder ep_cisco_encryption
       | ep_cisco_encryption
    ) NEWLINE
 ;

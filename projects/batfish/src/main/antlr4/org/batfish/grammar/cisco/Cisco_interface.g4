@@ -572,11 +572,6 @@ if_no_nameif
    NO NAMEIF NEWLINE
 ;
 
-if_no_security_level
-:
-   NO SECURITY_LEVEL NEWLINE
-;
-
 if_null_block
 :
    NO?
@@ -1397,7 +1392,7 @@ if_zone_member
 
 if_security_level
 :
-   SECURITY_LEVEL level = DEC NEWLINE
+   NO? SECURITY_LEVEL (level = DEC)? NEWLINE
 ;
 
 ifdhcp_null
@@ -1683,7 +1678,6 @@ if_inner
    | if_no_bfd
    | if_no_ip_address
    | if_no_nameif
-   | if_no_security_level
    | if_port_security
    | if_private_vlan
    | if_service_instance
