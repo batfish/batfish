@@ -9,7 +9,7 @@ Batfish is a network validation tool that provides correctness guarantees for se
 
 A primary use case for Batfish is to validate configuration changes *before* deployment (though it can be used to validate deployed configurations as well). Pre-deployment validation is a critical gap in existing network automation workflows. By  Batfish in automation workflows, network engineers can close this gap and ensure that only correct changes are deployed.
 
-**The Batfish service does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. Additional information from the network may be fed into Batfish to enhance the analysis. Examples of such information include:
+**Batfish does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. Additional information from the network may be fed into Batfish to enhance the analysis. Examples of such information include:
 
 * BGP routes received from external peers
 * Topology information represented by LLDP/CDP
