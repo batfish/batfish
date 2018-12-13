@@ -20,7 +20,7 @@ import org.batfish.datamodel.Flow;
   @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(
       value = PreSourceNatOutgoingFilterStep.class,
-      name = "PreSourceNatOutgoingFilterStep"),
+      name = "PreSourceNatOutgoingFilter"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
 })
 public abstract class Step<D> {
