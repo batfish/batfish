@@ -9,7 +9,7 @@ Batfish is a network validation tool that provides correctness guarantees for se
 
 A primary use case for Batfish is to validate configuration changes *before* deployment (though it can be used to validate deployed configurations as well). Pre-deployment validation is a critical gap in existing network automation workflows. By  Batfish in automation workflows, network engineers can close this gap and ensure that only correct changes are deployed.
 
-**Batfish does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. Additional information from the network may be fed into Batfish to enhance the analysis. Examples include:
+**Batfish does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. This analysis may be enhanced using additional information from the network such as:
 * BGP routes received from external peers
 * Topology information represented by LLDP/CDP
 
@@ -17,10 +17,9 @@ See [www.batfish.org](http://www.batfish.org) for technical information on how i
 
 ## What kinds of correctness checks does Batfish support?
 
-Batfish's YouTube channel illustrates many types of checks.
 [![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
 
-These checks span a range of network behaviors and device configuration attributes, for example:
+The Batfish YouTube channel illustrates many types of checks. These checks span a range of network behaviors and device configuration attributes, for example:
 #### Configuration Compliance
 * Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
 * Configuration settings for MTUs, AAA, NTP, logging, etc. match templates
