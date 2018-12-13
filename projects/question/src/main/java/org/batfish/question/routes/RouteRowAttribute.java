@@ -4,7 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,8 +25,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private Integer _adminDistance;
 
-  /** list of communities converted to comma separated communities */
-  @Nullable private String _communities;
+  @Nonnull private List<String> _communities;
 
   @Nullable private Integer _localPreference;
 
@@ -47,7 +48,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long metric,
       AsPath asPath,
       Integer localPreference,
-      String communities,
+      List<String> communities,
       String originalProtocol,
       String protocol,
       Integer tag) {
@@ -57,7 +58,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _metric = metric;
     _asPath = asPath;
     _localPreference = localPreference;
-    _communities = communities;
+    _communities = firstNonNull(communities, ImmutableList.of());
     _originProtocol = originalProtocol;
     _protocol = protocol;
     _tag = tag;
@@ -94,7 +95,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nonnull
-  public String getCommunities() {
+  public List<String> getCommunities() {
     return _communities;
   }
 
@@ -118,8 +119,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
-      comparing(RouteRowAttribute::getNextHop, nullsLast(String::compareToIgnoreCase))
-          .thenComparing(RouteRowAttribute::getNextHopIp, nullsLast(Ip::compareTo));
+      comparing(RouteRowAttribute::getNextHopIp, nullsLast(Ip::compareTo))
+          .thenComparing(RouteRowAttribute::getProtocol, nullsLast(String::compareTo));
 
   @Override
   public int compareTo(RouteRowAttribute o) {
@@ -175,7 +176,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     @Nullable private Integer _localPreference;
 
-    @Nullable private String _communities;
+    @Nullable private List<String> _communities;
 
     @Nullable private String _originProtocol;
 
@@ -231,7 +232,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setCommunities(String communities) {
+    public Builder setCommunities(List<String> communities) {
       _communities = communities;
       return this;
     }

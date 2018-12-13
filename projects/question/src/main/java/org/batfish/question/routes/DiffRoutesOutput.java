@@ -1,50 +1,26 @@
 package org.batfish.question.routes;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.table.TableDiff;
 
-/** Class to contain the difference and difference type in Routes per {@link RouteRowKey} */
+/** Class to contain the difference and type of the difference in Routes per {@link RouteRowKey} */
 public class DiffRoutesOutput {
 
-  public enum KeyPresenceStatus {
-    ONLY_IN_SNAPSHOT("Only in Snapshot"),
-    ONLY_IN_REFERENCE("Only in Reference"),
-    IN_BOTH("In both");
-
-    private static final Map<String, KeyPresenceStatus> _map = buildMap();
-
-    private static Map<String, KeyPresenceStatus> buildMap() {
-      ImmutableMap.Builder<String, KeyPresenceStatus> map = ImmutableMap.builder();
-      for (KeyPresenceStatus value : KeyPresenceStatus.values()) {
-        String name = value._name;
-        map.put(name, value);
-      }
-      return map.build();
-    }
-
-    @JsonCreator
-    public static KeyPresenceStatus fromName(String name) {
-      KeyPresenceStatus instance = _map.get(name);
-      if (instance == null) {
-        throw new BatfishException(
-            String.format("No %s with name: '%s'", KeyPresenceStatus.class.getSimpleName(), name));
-      }
-      return instance;
-    }
+  public enum PresenceStatus {
+    ONLY_IN_SNAPSHOT(TableDiff.COL_KEY_STATUS_ONLY_BASE),
+    ONLY_IN_REFERENCE(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
+    IN_BOTH(TableDiff.COL_KEY_STATUS_BOTH);
 
     private final String _name;
 
-    KeyPresenceStatus(String name) {
+    PresenceStatus(String name) {
       _name = name;
     }
 
     @JsonValue
-    public String keyPresenceStatusName() {
+    public String presenceStatusName() {
       return _name;
     }
   }
@@ -53,15 +29,15 @@ public class DiffRoutesOutput {
 
   @Nonnull private List<List<RouteRowAttribute>> _diffInAttributes;
 
-  @Nonnull private KeyPresenceStatus _keyPresenceStatusStatus;
+  @Nonnull private PresenceStatus _networkPresenceStatus;
 
   public DiffRoutesOutput(
       @Nonnull RouteRowKey routeRowKey,
       @Nonnull List<List<RouteRowAttribute>> diffInAttributes,
-      @Nonnull KeyPresenceStatus keyPresenceStatusStatus) {
+      @Nonnull PresenceStatus networkPresenceStatus) {
+    _networkPresenceStatus = networkPresenceStatus;
     _routeRowKey = routeRowKey;
     _diffInAttributes = diffInAttributes;
-    _keyPresenceStatusStatus = keyPresenceStatusStatus;
   }
 
   @Nonnull
@@ -75,7 +51,7 @@ public class DiffRoutesOutput {
   }
 
   @Nonnull
-  public KeyPresenceStatus getKeyPresenceStatus() {
-    return _keyPresenceStatusStatus;
+  public PresenceStatus getNetworkPresenceStatus() {
+    return _networkPresenceStatus;
   }
 }

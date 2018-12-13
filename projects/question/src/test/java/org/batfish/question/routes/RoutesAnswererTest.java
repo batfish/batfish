@@ -2,22 +2,25 @@ package org.batfish.question.routes;
 
 import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static java.util.Comparator.naturalOrder;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCES;
-import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATHS;
+import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
+import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
-import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREFS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_METRICS;
+import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
+import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOPS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IPS;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOLS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOLS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_TAGs;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_NETWORK_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
-import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
-import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRows;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -26,14 +29,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import java.util.Arrays;
 import java.util.List;
@@ -76,8 +76,7 @@ public class RoutesAnswererTest {
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
+    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -102,14 +101,13 @@ public class RoutesAnswererTest {
                             .setAdministrativeCost(1)
                             .build()))));
 
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
+    Multiset<Row> actual =
         getMainRibRoutes(
             ribs, ImmutableSet.of("n1"), new Prefix(new Ip("2.2.2.0"), 24), ".*", ".*", null);
 
-    assertThat(actual.entrySet(), hasSize(1));
+    assertThat(actual, hasSize(1));
     assertThat(
-        actual.entrySet().iterator().next().getKey().getPrefix(),
-        equalTo(Prefix.parse("2.2.2.0/24")));
+        actual.iterator().next().getPrefix(COL_NETWORK), equalTo(Prefix.parse("2.2.2.0/24")));
   }
 
   @Test
@@ -127,10 +125,10 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .build()))));
 
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
+    Multiset<Row> actual =
         getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), null, ".*", ".*", null);
 
-    assertThat(actual.entrySet(), hasSize(0));
+    assertThat(actual, hasSize(0));
   }
 
   @Test
@@ -149,13 +147,12 @@ public class RoutesAnswererTest {
                             .build(),
                         new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
 
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
+    Multiset<Row> actual =
         getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, "stati.*", ".*", null);
 
-    assertThat(actual.entrySet(), hasSize(1));
+    assertThat(actual, hasSize(1));
     assertThat(
-        actual.entrySet().iterator().next().getKey().getPrefix(),
-        equalTo(Prefix.parse("1.1.1.0/24")));
+        actual.iterator().next().getPrefix(COL_NETWORK), equalTo(Prefix.parse("1.1.1.0/24")));
   }
 
   @Test
@@ -181,56 +178,12 @@ public class RoutesAnswererTest {
                             .setAdministrativeCost(1)
                             .build()))));
 
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
+    Multiset<Row> actual =
         getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", "^not.*", null);
 
-    assertThat(actual.entrySet(), hasSize(1));
+    assertThat(actual, hasSize(1));
     assertThat(
-        actual.entrySet().iterator().next().getKey().getPrefix(),
-        equalTo(Prefix.parse("2.2.2.0/24")));
-  }
-
-  @Test
-  public void testHasAdminDistanceValue() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        StaticRoute.builder()
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopInterface("Null")
-                            .setAdministrativeCost(10)
-                            .build()))));
-
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
-
-    assertThat(actual.values().iterator().next().iterator().next().getAdminDistance(), equalTo(10));
-  }
-
-  @Test
-  public void testHasMetric() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        StaticRoute.builder()
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopInterface("Null")
-                            .setMetric(111)
-                            .setAdministrativeCost(1)
-                            .build()))));
-
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
-
-    assertThat(actual.values().iterator().next().iterator().next().getMetric(), equalTo(111L));
+        actual.iterator().next().getPrefix(COL_NETWORK), equalTo(Prefix.parse("2.2.2.0/24")));
   }
 
   @Test
@@ -246,12 +199,12 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
-            COL_NEXT_HOPS,
-            COL_NEXT_HOP_IPS,
-            COL_PROTOCOLS,
-            COL_ADMIN_DISTANCES,
-            COL_METRICS,
-            COL_TAGs));
+            COL_NEXT_HOP,
+            COL_NEXT_HOP_IP,
+            COL_PROTOCOL,
+            COL_ADMIN_DISTANCE,
+            COL_METRIC,
+            COL_TAG));
 
     assertThat(
         columnMetadata
@@ -262,12 +215,12 @@ public class RoutesAnswererTest {
             Schema.NODE,
             Schema.STRING,
             Schema.PREFIX,
-            Schema.list(Schema.STRING),
-            Schema.list(Schema.IP),
-            Schema.list(Schema.STRING),
-            Schema.list(Schema.INTEGER),
-            Schema.list(Schema.INTEGER),
-            Schema.list(Schema.INTEGER)));
+            Schema.STRING,
+            Schema.IP,
+            Schema.STRING,
+            Schema.INTEGER,
+            Schema.INTEGER,
+            Schema.INTEGER));
   }
 
   @Test
@@ -277,16 +230,15 @@ public class RoutesAnswererTest {
         COL_NODE,
         COL_VRF_NAME,
         COL_NETWORK,
-        COL_NEXT_HOPS,
-        COL_NEXT_HOP_IPS,
-        COL_PROTOCOLS,
+        COL_NEXT_HOP_IP,
+        COL_PROTOCOL,
         // BGP attributes
-        COL_AS_PATHS,
-        COL_METRICS,
-        COL_LOCAL_PREFS,
+        COL_AS_PATH,
+        COL_METRIC,
+        COL_LOCAL_PREF,
         COL_COMMUNITIES,
-        COL_ORIGIN_PROTOCOLS,
-        COL_TAGs);
+        COL_ORIGIN_PROTOCOL,
+        COL_TAG);
     List<String> expected = expectedBuilder.build();
 
     for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
@@ -301,61 +253,126 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetBgpRoutesCommunities() {
-    Multiset<Row> rows =
-        getBgpRouteRows(
-            ImmutableMap.of(
-                new RouteRowKey("node", "vrf", Prefix.parse("1.2.3.4/24")),
-                ImmutableSortedSet.of(
-                    RouteRowAttribute.builder()
-                        .setNextHopIp(new Ip("1.1.1.1"))
-                        .setNextHop("node1")
-                        .setCommunities("1:1")
-                        .build(),
-                    RouteRowAttribute.builder()
-                        .setNextHopIp(new Ip("1.1.1.2"))
-                        .setNextHop("node2")
-                        .setCommunities("2:2")
-                        .build())));
+  public void testGetDiffTableMetadataProtocolAll() {
+    List<ColumnMetadata> columnMetadata =
+        getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
-    assertThat(rows, hasSize(1));
     assertThat(
-        rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
-        equalTo(ImmutableList.of("1:1", "2:2")));
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            COL_NODE,
+            COL_VRF_NAME,
+            COL_NETWORK,
+            COL_ROUTE_NETWORK_PRESENCE,
+            COL_ROUTE_PRESENCE,
+            COL_BASE_PREFIX + COL_NEXT_HOP,
+            COL_DELTA_PREFIX + COL_NEXT_HOP,
+            COL_BASE_PREFIX + COL_NEXT_HOP_IP,
+            COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
+            COL_BASE_PREFIX + COL_PROTOCOL,
+            COL_DELTA_PREFIX + COL_PROTOCOL,
+            COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
+            COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
+            COL_BASE_PREFIX + COL_METRIC,
+            COL_DELTA_PREFIX + COL_METRIC,
+            COL_BASE_PREFIX + COL_TAG,
+            COL_DELTA_PREFIX + COL_TAG));
+
+    assertThat(
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            Schema.NODE,
+            Schema.STRING,
+            Schema.PREFIX,
+            Schema.STRING,
+            Schema.STRING,
+            Schema.STRING,
+            Schema.STRING,
+            Schema.IP,
+            Schema.IP,
+            Schema.STRING,
+            Schema.STRING,
+            Schema.INTEGER,
+            Schema.INTEGER,
+            Schema.INTEGER,
+            Schema.INTEGER,
+            Schema.INTEGER,
+            Schema.INTEGER));
   }
 
   @Test
-  public void testBgpRoutesHaveTagColumn() {
-    Multiset<Row> rows =
-        getBgpRouteRows(
-            ImmutableMap.of(
-                new RouteRowKey("node", "vrf", Prefix.parse("1.2.3.4/24")),
-                ImmutableSortedSet.of(
-                    RouteRowAttribute.builder()
-                        .setNextHopIp(new Ip("1.1.1.1"))
-                        .setNextHop("node1")
-                        .setCommunities("1:1")
-                        .build())));
+  public void testGetDiffTableMetadataBGP() {
+    ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
+    expectedBuilder.add(
+        COL_NODE,
+        COL_VRF_NAME,
+        COL_NETWORK,
+        COL_ROUTE_NETWORK_PRESENCE,
+        COL_ROUTE_PRESENCE,
+        COL_BASE_PREFIX + COL_NEXT_HOP_IP,
+        COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
+        COL_BASE_PREFIX + COL_PROTOCOL,
+        COL_DELTA_PREFIX + COL_PROTOCOL,
+        COL_BASE_PREFIX + COL_AS_PATH,
+        COL_DELTA_PREFIX + COL_AS_PATH,
+        COL_BASE_PREFIX + COL_METRIC,
+        COL_DELTA_PREFIX + COL_METRIC,
+        COL_BASE_PREFIX + COL_LOCAL_PREF,
+        COL_DELTA_PREFIX + COL_LOCAL_PREF,
+        COL_BASE_PREFIX + COL_COMMUNITIES,
+        COL_DELTA_PREFIX + COL_COMMUNITIES,
+        COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_BASE_PREFIX + COL_TAG,
+        COL_DELTA_PREFIX + COL_TAG);
+    expectedBuilder.build();
 
-    String nullTag = null;
-    assertThat(
-        rows.iterator().next().get(COL_TAGs, Schema.list(Schema.STRING)),
-        equalTo(Lists.newArrayList(nullTag)));
-  }
+    ImmutableList.Builder<Schema> schemaBuilderList = ImmutableList.builder();
+    schemaBuilderList.add(
+        Schema.NODE,
+        Schema.STRING,
+        Schema.PREFIX,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.IP,
+        Schema.IP,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.list(Schema.STRING),
+        Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER);
 
-  @Test
-  public void testComputeNextHopNode() {
-    assertThat(computeNextHopNode(null, ImmutableMap.of()), nullValue());
-    assertThat(computeNextHopNode(new Ip("1.1.1.1"), null), nullValue());
-    assertThat(computeNextHopNode(new Ip("1.1.1.1"), ImmutableMap.of()), nullValue());
-    assertThat(
-        computeNextHopNode(
-            new Ip("1.1.1.1"), ImmutableMap.of(new Ip("1.1.1.1"), ImmutableSet.of("n1"))),
-        equalTo("n1"));
-    assertThat(
-        computeNextHopNode(
-            new Ip("1.1.1.1"), ImmutableMap.of(new Ip("1.1.1.2"), ImmutableSet.of("n1"))),
-        nullValue());
+    for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
+      List<ColumnMetadata> columnMetadata = getDiffTableMetadata(rib).getColumnMetadata();
+      assertThat(
+          columnMetadata
+              .stream()
+              .map(ColumnMetadata::getName)
+              .collect(ImmutableList.toImmutableList()),
+          equalTo(expectedBuilder.build()));
+
+      assertThat(
+          columnMetadata
+              .stream()
+              .map(ColumnMetadata::getSchema)
+              .collect(ImmutableList.toImmutableList()),
+          equalTo(schemaBuilderList.build()));
+    }
   }
 
   /** Run through full pipeline (create question and answerer), */

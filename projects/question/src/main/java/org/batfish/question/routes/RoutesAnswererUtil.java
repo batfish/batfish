@@ -1,22 +1,24 @@
 package org.batfish.question.routes;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static org.batfish.datamodel.table.TableDiff.COL_KEY_PRESENCE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCES;
-import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATHS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_BASE_PREFIX;
+import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
+import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
-import static org.batfish.question.routes.RoutesAnswerer.COL_DELTA_PREFIX;
-import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREFS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_METRICS;
+import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
+import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOPS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IPS;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOLS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOLS;
-import static org.batfish.question.routes.RoutesAnswerer.COL_TAGs;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_NETWORK_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
@@ -29,14 +31,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -44,9 +44,13 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
+import org.batfish.datamodel.table.Row.RowBuilder;
+import org.batfish.question.routes.DiffRoutesOutput.PresenceStatus;
+import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 
 public class RoutesAnswererUtil {
 
@@ -66,61 +70,160 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Takes in a {@link Map} of {@link RouteRowKey}s and a {@link SortedSet} of {@link
-   * RouteRowAttribute}s and forms one {@link Row} per {@link RouteRowKey}
+   * Returns a {@link Multiset} of {@link Row}s for all routes present in all RIBs
    *
-   * @param bgpRawRows {@link Map} containing BGP routes in the form of {@link RouteRowKey} and
-   *     {@link SortedSet} of {@link RouteRowAttribute}s
-   * @return {@link Multiset} of {@link Row}s formed for the BGP routes
+   * @param ribs {@link Map} representing all RIBs of all nodes
+   * @param matchingNodes {@link Set} of hostnames whose routes are to be returned
+   * @param network {@link Prefix} of the network used to filter the routes
+   * @param protocolRegex protocols used to filter the {@link AbstractRoute}s
+   * @param vrfRegex Regex used to filter the VRF of routes
+   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
+   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static Multiset<Row> getBgpRouteRows(Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRawRows) {
+  static Multiset<Row> getMainRibRoutes(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+      Set<String> matchingNodes,
+      @Nullable Prefix network,
+      String protocolRegex,
+      String vrfRegex,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
     Multiset<Row> rows = HashMultiset.create();
-    for (Entry<RouteRowKey, SortedSet<RouteRowAttribute>> entry : bgpRawRows.entrySet()) {
-      Row.RowBuilder rowBuilder = Row.builder();
-      RouteRowKey routeRowKey = entry.getKey();
-      rowBuilder
-          .put(COL_NODE, new Node(routeRowKey.getHostName()))
-          .put(COL_VRF_NAME, routeRowKey.getVrfName())
-          .put(COL_NETWORK, routeRowKey.getPrefix());
-
-      List<String> nextHopsList = new ArrayList<>();
-      List<Ip> nextHopsIpsList = new ArrayList<>();
-      List<String> protocolsList = new ArrayList<>();
-      List<String> asPathsList = new ArrayList<>();
-      List<Long> metricsList = new ArrayList<>();
-      List<Integer> localPrefsList = new ArrayList<>();
-      List<String> communitiesList = new ArrayList<>();
-      List<String> originProtocolsList = new ArrayList<>();
-      List<Integer> tagsList = new ArrayList<>();
-
-      for (RouteRowAttribute routeRowAttribute : entry.getValue()) {
-        nextHopsList.add(routeRowAttribute.getNextHop());
-        nextHopsIpsList.add(routeRowAttribute.getNextHopIp());
-        protocolsList.add(routeRowAttribute.getProtocol());
-        asPathsList.add(
-            routeRowAttribute.getAsPath() == null
-                ? null
-                : routeRowAttribute.getAsPath().getAsPathString());
-        metricsList.add(routeRowAttribute.getMetric());
-        localPrefsList.add(routeRowAttribute.getLocalPreference());
-        communitiesList.add(routeRowAttribute.getCommunities());
-        originProtocolsList.add(routeRowAttribute.getOriginProtocol());
-        tagsList.add(routeRowAttribute.getTag());
-      }
-      rowBuilder
-          .put(COL_NEXT_HOPS, nextHopsList)
-          .put(COL_NEXT_HOP_IPS, nextHopsIpsList)
-          .put(COL_PROTOCOLS, protocolsList)
-          .put(COL_AS_PATHS, asPathsList)
-          .put(COL_METRICS, metricsList)
-          .put(COL_LOCAL_PREFS, localPrefsList)
-          .put(COL_COMMUNITIES, communitiesList)
-          .put(COL_ORIGIN_PROTOCOLS, originProtocolsList)
-          .put(COL_TAGs, tagsList);
-
-      rows.add(rowBuilder.build());
-    }
+    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
+    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getTableMetadata(RibProtocol.MAIN).toColumnMap();
+    ribs.forEach(
+        (node, vrfMap) -> {
+          if (matchingNodes.contains(node)) {
+            vrfMap.forEach(
+                (vrfName, rib) -> {
+                  if (compiledVrfRegex.matcher(vrfName).matches()) {
+                    rib.getRoutes()
+                        .stream()
+                        .filter(
+                            route ->
+                                (network == null || network.equals(route.getNetwork()))
+                                    && compiledProtocolRegex
+                                        .matcher(route.getProtocol().protocolName())
+                                        .matches())
+                        .forEach(
+                            route ->
+                                rows.add(
+                                    abstractRouteToRow(
+                                        node, vrfName, route, columnMetadataMap, ipOwners)));
+                  }
+                });
+          }
+        });
     return rows;
+  }
+
+  /**
+   * Filters a {@link Table} of {@link BgpRoute}s to produce a flattened {@link List} of rows
+   *
+   * @param bgpRoutes {@link Table} of all {@link BgpRoute}s
+   * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
+   * @param network {@link Prefix} of the network used to filter the routes
+   * @param protocolRegex protocols used to filter the {@link BgpRoute}s
+   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
+   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   */
+  static Multiset<Row> getBgpRibRoutes(
+      Table<String, String, Set<BgpRoute>> bgpRoutes,
+      RibProtocol ribProtocol,
+      Set<String> matchingNodes,
+      @Nullable Prefix network,
+      String protocolRegex,
+      String vrfRegex) {
+    Multiset<Row> rows = HashMultiset.create();
+    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
+    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
+    matchingNodes.forEach(
+        hostname ->
+            bgpRoutes
+                .row(hostname)
+                .forEach(
+                    (vrfName, routes) -> {
+                      if (compiledVrfRegex.matcher(vrfName).matches()) {
+                        routes
+                            .stream()
+                            .filter(
+                                route ->
+                                    (network == null || network.equals(route.getNetwork()))
+                                        && compiledProtocolRegex
+                                            .matcher(route.getProtocol().protocolName())
+                                            .matches())
+                            .forEach(
+                                route ->
+                                    rows.add(
+                                        bgpRouteToRow(
+                                            hostname, vrfName, route, columnMetadataMap)));
+                      }
+                    }));
+    return rows;
+  }
+
+  /**
+   * Converts a {@link AbstractRoute} to a {@link Row}
+   *
+   * @param hostName {@link String} host-name of the node containing the bgpRoute
+   * @param vrfName {@link String} name of the VRF containing the bgpRoute
+   * @param abstractRoute {@link BgpRoute} BGP route to convert
+   * @return {@link Row} representing the bgpRoute
+   */
+  static Row abstractRouteToRow(
+      String hostName,
+      String vrfName,
+      AbstractRoute abstractRoute,
+      Map<String, ColumnMetadata> columnMetadataMap,
+      @Nullable Map<Ip, Set<String>> ipOwners) {
+    return Row.builder(columnMetadataMap)
+        .put(COL_NODE, new Node(hostName))
+        .put(COL_VRF_NAME, vrfName)
+        .put(COL_NETWORK, abstractRoute.getNetwork())
+        .put(COL_NEXT_HOP_IP, abstractRoute.getNextHopIp())
+        .put(COL_NEXT_HOP, computeNextHopNode(abstractRoute.getNextHopIp(), ipOwners))
+        .put(COL_PROTOCOL, abstractRoute.getProtocol())
+        .put(
+            COL_TAG, abstractRoute.getTag() == AbstractRoute.NO_TAG ? null : abstractRoute.getTag())
+        .put(COL_ADMIN_DISTANCE, abstractRoute.getAdministrativeCost())
+        .put(COL_METRIC, abstractRoute.getMetric())
+        .build();
+  }
+
+  /**
+   * Converts a {@link BgpRoute} to a {@link Row}
+   *
+   * @param hostName {@link String} host-name of the node containing the bgpRoute
+   * @param vrfName {@link String} name of the VRF containing the bgpRoute
+   * @param bgpRoute {@link BgpRoute} BGP route to convert
+   * @return {@link Row} representing the bgpRoute
+   */
+  static Row bgpRouteToRow(
+      String hostName,
+      String vrfName,
+      BgpRoute bgpRoute,
+      Map<String, ColumnMetadata> columnMetadataMap) {
+    return Row.builder(columnMetadataMap)
+        .put(COL_NODE, new Node(hostName))
+        .put(COL_VRF_NAME, vrfName)
+        .put(COL_NETWORK, bgpRoute.getNetwork())
+        .put(COL_NEXT_HOP_IP, bgpRoute.getNextHopIp())
+        .put(COL_PROTOCOL, bgpRoute.getProtocol())
+        .put(COL_AS_PATH, bgpRoute.getAsPath().getAsPathString())
+        .put(COL_METRIC, bgpRoute.getMetric())
+        .put(COL_LOCAL_PREF, bgpRoute.getLocalPreference())
+        .put(
+            COL_COMMUNITIES,
+            bgpRoute
+                .getCommunities()
+                .stream()
+                .map(CommonUtil::longToCommunity)
+                .collect(toImmutableList()))
+        .put(COL_ORIGIN_PROTOCOL, bgpRoute.getSrcProtocol())
+        .put(COL_TAG, bgpRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpRoute.getTag())
+        .build();
   }
 
   /**
@@ -134,201 +237,66 @@ public class RoutesAnswererUtil {
   static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
-      Row.RowBuilder rowBuilder = Row.builder();
       RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
-      rowBuilder
-          .put(COL_NODE, new Node(routeRowKey.getHostName()))
-          .put(COL_VRF_NAME, routeRowKey.getVrfName())
-          .put(COL_NETWORK, routeRowKey.getPrefix());
-
-      List<String> nextHopsListBase = new ArrayList<>();
-      List<String> nextHopsListRef = new ArrayList<>();
-      List<Ip> nextHopsIpsListBase = new ArrayList<>();
-      List<Ip> nextHopsIpsListRef = new ArrayList<>();
-      List<String> protocolsListBase = new ArrayList<>();
-      List<String> protocolsListRef = new ArrayList<>();
-      List<String> asPathsListBase = new ArrayList<>();
-      List<String> asPathsListRef = new ArrayList<>();
-      List<Long> metricsListBase = new ArrayList<>();
-      List<Long> metricsListRef = new ArrayList<>();
-      List<Integer> localPrefsListBase = new ArrayList<>();
-      List<Integer> localPrefsListRef = new ArrayList<>();
-      List<String> communitiesListBase = new ArrayList<>();
-      List<String> communitiesListRef = new ArrayList<>();
-      List<String> originProtocolsListBase = new ArrayList<>();
-      List<String> originProtocolsListRef = new ArrayList<>();
-      List<Integer> tagsListBase = new ArrayList<>();
-      List<Integer> tagsListRef = new ArrayList<>();
+      String hostName = routeRowKey.getHostName();
+      String vrfName = routeRowKey.getVrfName();
+      Prefix network = routeRowKey.getPrefix();
+      PresenceStatus networkPresenceStatus = diffRoutesOutput.getNetworkPresenceStatus();
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
+        Row.RowBuilder rowBuilder = Row.builder();
+        rowBuilder
+            .put(COL_NODE, new Node(hostName))
+            .put(COL_VRF_NAME, vrfName)
+            .put(COL_NETWORK, network)
+            .put(COL_ROUTE_NETWORK_PRESENCE, networkPresenceStatus);
+
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.ONLY_IN_SNAPSHOT)) {
-          nextHopsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
-          nextHopsIpsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHopIp());
-          protocolsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getProtocol());
-          asPathsListBase.add(
-              routeRowAttributeBase == null
-                  ? null
-                  : routeRowAttributeBase.getAsPath() == null
-                      ? null
-                      : routeRowAttributeBase.getAsPath().getAsPathString());
-          metricsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getMetric());
-          localPrefsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getLocalPreference());
-          communitiesListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getCommunities());
-          originProtocolsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getOriginProtocol());
-          tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
-        }
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
-            || diffRoutesOutput
-                .getKeyPresenceStatus()
-                .equals(KeyPresenceStatus.ONLY_IN_REFERENCE)) {
-          nextHopsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
-          nextHopsIpsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHopIp());
-          protocolsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getProtocol());
-          asPathsListRef.add(
-              routeRowAttributeRef == null
-                  ? null
-                  : routeRowAttributeRef.getAsPath() == null
-                      ? null
-                      : routeRowAttributeRef.getAsPath().getAsPathString());
-          metricsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getMetric());
-          localPrefsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getLocalPreference());
-          communitiesListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getCommunities());
-          originProtocolsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getOriginProtocol());
-          tagsListRef.add(routeRowAttributeRef == null ? null : routeRowAttributeRef.getTag());
-        }
-      }
-      rowBuilder
-          .put(COL_KEY_PRESENCE, diffRoutesOutput.getKeyPresenceStatus())
-          .put(COL_BASE_PREFIX + COL_NEXT_HOPS, nextHopsListBase)
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOPS, nextHopsListRef)
-          .put(COL_BASE_PREFIX + COL_NEXT_HOP_IPS, nextHopsIpsListBase)
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOP_IPS, nextHopsIpsListRef)
-          .put(COL_BASE_PREFIX + COL_PROTOCOLS, protocolsListBase)
-          .put(COL_DELTA_PREFIX + COL_PROTOCOLS, protocolsListRef)
-          .put(COL_BASE_PREFIX + COL_AS_PATHS, asPathsListBase)
-          .put(COL_DELTA_PREFIX + COL_AS_PATHS, asPathsListRef)
-          .put(COL_BASE_PREFIX + COL_METRICS, metricsListBase)
-          .put(COL_DELTA_PREFIX + COL_METRICS, metricsListRef)
-          .put(COL_BASE_PREFIX + COL_LOCAL_PREFS, localPrefsListBase)
-          .put(COL_DELTA_PREFIX + COL_LOCAL_PREFS, localPrefsListRef)
-          .put(COL_BASE_PREFIX + COL_COMMUNITIES, communitiesListBase)
-          .put(COL_DELTA_PREFIX + COL_COMMUNITIES, communitiesListRef)
-          .put(COL_BASE_PREFIX + COL_ORIGIN_PROTOCOLS, originProtocolsListBase)
-          .put(COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOLS, originProtocolsListRef)
-          .put(COL_BASE_PREFIX + COL_TAGs, tagsListBase)
-          .put(COL_DELTA_PREFIX + COL_TAGs, tagsListRef);
+        PresenceStatus routePathPresenceStatus =
+            routeRowAttributeBase != null && routeRowAttributeRef != null
+                ? PresenceStatus.IN_BOTH
+                : routeRowAttributeBase != null
+                    ? PresenceStatus.ONLY_IN_SNAPSHOT
+                    : PresenceStatus.ONLY_IN_REFERENCE;
+        rowBuilder.put(COL_ROUTE_PRESENCE, routePathPresenceStatus);
+        populateBgpRouteAttributes(rowBuilder, routeRowAttributeBase, true);
+        populateBgpRouteAttributes(rowBuilder, routeRowAttributeRef, false);
 
-      rows.add(rowBuilder.build());
+        rows.add(rowBuilder.build());
+      }
     }
     return rows;
   }
 
-  /**
-   * Groups the matching BGP routes as per the input filters to a {@link Map} of {@link RouteRowKey}
-   * and {@link SortedSet} of {@link RouteRowAttribute}s
-   *
-   * @param bgpRoutes all {@link BgpRoute}s
-   * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
-   * @param network {@link Prefix} of the network used to filter the routees
-   * @param protocolRegex protocols used to filter the {@link BgpRoute}s
-   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
-   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
-   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
-   */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getBgpRibRoutes(
-      Table<String, String, Set<BgpRoute>> bgpRoutes,
-      Set<String> matchingNodes,
-      @Nullable Prefix network,
-      String protocolRegex,
-      String vrfRegex,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRoutesGroupedByKey = new HashMap<>();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    matchingNodes.forEach(
-        hostname ->
-            bgpRoutes
-                .row(hostname)
-                .forEach(
-                    (vrfName, routes) -> {
-                      if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        bgpRoutesGroupedByKey.putAll(
-                            groupBgpRoutesByPrefix(
-                                hostname,
-                                vrfName,
-                                routes,
-                                ipOwners,
-                                network,
-                                compiledProtocolRegex));
-                      }
-                    }));
-    return bgpRoutesGroupedByKey;
-  }
-
-  /**
-   * Takes in a {@link Map} of {@link RouteRowKey}s and a {@link SortedSet} of {@link
-   * RouteRowAttribute}s and forms one {@link Row} per {@link RouteRowKey}
-   *
-   * @param abstractRouteRawRows {@link Map} containing Main RIB routes in the form of {@link
-   *     RouteRowKey} and {@link SortedSet} of {@link RouteRowAttribute}s
-   * @return {@link Multiset} of {@link Row}s formed for the Main RIB routes
-   */
-  @Nonnull
-  static Multiset<Row> getAbstractRouteRows(
-      Map<RouteRowKey, SortedSet<RouteRowAttribute>> abstractRouteRawRows) {
-    Multiset<Row> rows = HashMultiset.create();
-
-    for (Entry<RouteRowKey, SortedSet<RouteRowAttribute>> entry : abstractRouteRawRows.entrySet()) {
-      RouteRowKey routeRowKey = entry.getKey();
-      Row.RowBuilder rowBuilder = Row.builder();
-      rowBuilder
-          .put(COL_NODE, new Node(routeRowKey.getHostName()))
-          .put(COL_VRF_NAME, routeRowKey.getVrfName())
-          .put(COL_NETWORK, routeRowKey.getPrefix());
-
-      List<String> nextHopsList = new ArrayList<>();
-      List<Ip> nextHopsIpsList = new ArrayList<>();
-      List<String> protocolsList = new ArrayList<>();
-      List<Integer> tagsList = new ArrayList<>();
-      List<Integer> adminDistancesList = new ArrayList<>();
-      List<Long> metricsList = new ArrayList<>();
-
-      for (RouteRowAttribute routeRowAttribute : entry.getValue()) {
-        nextHopsList.add(routeRowAttribute.getNextHop());
-        nextHopsIpsList.add(routeRowAttribute.getNextHopIp());
-        protocolsList.add(routeRowAttribute.getProtocol());
-        tagsList.add(routeRowAttribute.getTag());
-        adminDistancesList.add(routeRowAttribute.getAdminDistance());
-        metricsList.add(routeRowAttribute.getMetric());
-      }
-      rowBuilder
-          .put(COL_NEXT_HOPS, nextHopsList)
-          .put(COL_NEXT_HOP_IPS, nextHopsIpsList)
-          .put(COL_PROTOCOLS, protocolsList)
-          .put(COL_TAGs, tagsList)
-          .put(COL_ADMIN_DISTANCES, adminDistancesList)
-          .put(COL_METRICS, metricsList);
-      rows.add(rowBuilder.build());
-    }
-    return rows;
+  private static void populateBgpRouteAttributes(
+      RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
+    rowBuilder
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_IP,
+            routeRowAttribute != null ? routeRowAttribute.getNextHopIp() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_PROTOCOL,
+            routeRowAttribute != null ? routeRowAttribute.getProtocol() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_AS_PATH,
+            routeRowAttribute != null ? routeRowAttribute.getAsPath() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
+            routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_LOCAL_PREF,
+            routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_COMMUNITIES,
+            routeRowAttribute != null ? routeRowAttribute.getCommunities() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ORIGIN_PROTOCOL,
+            routeRowAttribute != null ? routeRowAttribute.getOriginProtocol() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_TAG,
+            routeRowAttribute != null ? routeRowAttribute.getTag() : null);
   }
 
   /**
@@ -341,103 +309,83 @@ public class RoutesAnswererUtil {
    */
   static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
-
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
       RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
-      Row.RowBuilder rowBuilder = Row.builder();
-      rowBuilder
-          .put(COL_NODE, new Node(routeRowKey.getHostName()))
-          .put(COL_VRF_NAME, routeRowKey.getVrfName())
-          .put(COL_NETWORK, routeRowKey.getPrefix());
+      String hostName = routeRowKey.getHostName();
+      String vrfName = routeRowKey.getVrfName();
+      Prefix network = routeRowKey.getPrefix();
 
-      List<String> nextHopsListBase = new ArrayList<>();
-      List<String> nextHopsListRef = new ArrayList<>();
-      List<Ip> nextHopsIpsListBase = new ArrayList<>();
-      List<Ip> nextHopsIpsListRef = new ArrayList<>();
-      List<String> protocolsListBase = new ArrayList<>();
-      List<String> protocolsListRef = new ArrayList<>();
-      List<Integer> adminDistancesListBase = new ArrayList<>();
-      List<Integer> adminDistancesListRef = new ArrayList<>();
-      List<Long> metricsListBase = new ArrayList<>();
-      List<Long> metricsListRef = new ArrayList<>();
-      List<Integer> tagsListBase = new ArrayList<>();
-      List<Integer> tagsListRef = new ArrayList<>();
+      PresenceStatus networkPresenceStatus = diffRoutesOutput.getNetworkPresenceStatus();
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
+        Row.RowBuilder rowBuilder = Row.builder();
+        rowBuilder
+            .put(COL_NODE, new Node(hostName))
+            .put(COL_VRF_NAME, vrfName)
+            .put(COL_NETWORK, network)
+            .put(COL_ROUTE_NETWORK_PRESENCE, networkPresenceStatus);
+
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
-            || diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.ONLY_IN_SNAPSHOT)) {
-          nextHopsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHop());
-          nextHopsIpsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getNextHopIp());
-          protocolsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getProtocol());
-          metricsListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getMetric());
-          adminDistancesListBase.add(
-              routeRowAttributeBase == null ? null : routeRowAttributeBase.getAdminDistance());
-          tagsListBase.add(routeRowAttributeBase == null ? null : routeRowAttributeBase.getTag());
-        }
-        if (diffRoutesOutput.getKeyPresenceStatus().equals(KeyPresenceStatus.IN_BOTH)
-            || diffRoutesOutput
-                .getKeyPresenceStatus()
-                .equals(KeyPresenceStatus.ONLY_IN_REFERENCE)) {
-          nextHopsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHop());
-          nextHopsIpsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getNextHopIp());
-          protocolsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getProtocol());
-          metricsListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getMetric());
-          adminDistancesListRef.add(
-              routeRowAttributeRef == null ? null : routeRowAttributeRef.getAdminDistance());
-          tagsListRef.add(routeRowAttributeRef == null ? null : routeRowAttributeRef.getTag());
-        }
-      }
-      rowBuilder
-          .put(COL_KEY_PRESENCE, diffRoutesOutput.getKeyPresenceStatus())
-          .put(COL_BASE_PREFIX + COL_NEXT_HOPS, nextHopsListBase)
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOPS, nextHopsListRef)
-          .put(COL_BASE_PREFIX + COL_NEXT_HOP_IPS, nextHopsIpsListBase)
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOP_IPS, nextHopsIpsListRef)
-          .put(COL_BASE_PREFIX + COL_PROTOCOLS, protocolsListBase)
-          .put(COL_DELTA_PREFIX + COL_PROTOCOLS, protocolsListRef)
-          .put(COL_BASE_PREFIX + COL_METRICS, metricsListBase)
-          .put(COL_DELTA_PREFIX + COL_METRICS, metricsListRef)
-          .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCES, adminDistancesListBase)
-          .put(COL_DELTA_PREFIX + COL_ADMIN_DISTANCES, adminDistancesListRef)
-          .put(COL_BASE_PREFIX + COL_TAGs, tagsListBase)
-          .put(COL_DELTA_PREFIX + COL_TAGs, tagsListRef);
 
-      rows.add(rowBuilder.build());
+        PresenceStatus routePathPresenceStatus =
+            routeRowAttributeBase != null && routeRowAttributeRef != null
+                ? PresenceStatus.IN_BOTH
+                : routeRowAttributeBase != null
+                    ? PresenceStatus.ONLY_IN_SNAPSHOT
+                    : PresenceStatus.ONLY_IN_REFERENCE;
+        rowBuilder.put(COL_ROUTE_PRESENCE, routePathPresenceStatus);
+        populateRouteAttributes(rowBuilder, routeRowAttributeBase, true);
+        populateRouteAttributes(rowBuilder, routeRowAttributeRef, false);
+        rows.add(rowBuilder.build());
+      }
     }
     return rows;
   }
 
+  private static void populateRouteAttributes(
+      RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
+    rowBuilder
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP,
+            routeRowAttribute != null ? routeRowAttribute.getNextHop() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_IP,
+            routeRowAttribute != null ? routeRowAttribute.getNextHopIp() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_PROTOCOL,
+            routeRowAttribute != null ? routeRowAttribute.getProtocol() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
+            routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ADMIN_DISTANCE,
+            routeRowAttribute != null ? routeRowAttribute.getAdminDistance() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_TAG,
+            routeRowAttribute != null ? routeRowAttribute.getTag() : null);
+  }
+
   /**
-   * Groups the matching routes as per the input filters to a {@link Map} of {@link RouteRowKey} and
-   * {@link SortedSet} of {@link RouteRowAttribute}s
+   * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
+   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
+   * RouteRowAttribute}
    *
-   * @param ribs {@link SortedMap} of routes in all RIBs
-   * @param matchingNodes {@link Set} of nodes from which {@link AbstractRoute}s are to be selected
-   * @param network {@link Prefix} of the network used to filter the routes
-   * @param protocolRegex protocols used to filter the {@link AbstractRoute}s
-   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
-   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
-   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   * @param ribs {@link Map} of the RIBs
+   * @param matchingNodes {@link Set} of nodes to be matched
+   * @param network {@link Prefix}
+   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
+   *     RouteRowAttribute}s
    */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> getMainRibRoutes(
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupMatchingRoutesByPrefix(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
-      String protocolRegex,
       String vrfRegex,
+      String protocolRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> abstractRoutesGroupedByKey = new HashMap<>();
+    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByPrefix = new HashMap<>();
     Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     ribs.forEach(
@@ -446,128 +394,115 @@ public class RoutesAnswererUtil {
             vrfMap.forEach(
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    abstractRoutesGroupedByKey.putAll(
-                        groupRoutesByPrefix(
-                            node,
-                            vrfName,
-                            rib.getRoutes(),
-                            ipOwners,
-                            network,
-                            compiledProtocolRegex));
+                    rib.getRoutes()
+                        .stream()
+                        .filter(
+                            route ->
+                                (network == null || network.equals(route.getNetwork()))
+                                    && compiledProtocolRegex
+                                        .matcher(route.getProtocol().protocolName())
+                                        .matches())
+                        .forEach(
+                            route ->
+                                routesGroupedByPrefix
+                                    .computeIfAbsent(
+                                        new RouteRowKey(node, vrfName, route.getNetwork()),
+                                        k -> new TreeSet<>())
+                                    .add(
+                                        RouteRowAttribute.builder()
+                                            .setProtocol(
+                                                route.getProtocol() != null
+                                                    ? route.getProtocol().protocolName()
+                                                    : null)
+                                            .setNextHopIp(route.getNextHopIp())
+                                            .setNextHop(
+                                                computeNextHopNode(route.getNextHopIp(), ipOwners))
+                                            .setAdminDistance(route.getAdministrativeCost())
+                                            .setMetric(route.getMetric())
+                                            .setTag(route.getTag())
+                                            .build()));
                   }
                 });
           }
         });
-    return abstractRoutesGroupedByKey;
-  }
-
-  /**
-   * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
-   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
-   * RouteRowAttribute}
-   *
-   * @param hostName Hostname for the node containing the routes
-   * @param vrfName VRF name of the host containing the routes
-   * @param routes {@link Set} of {@link AbstractRoute}s which need to be processed
-   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
-   *     RouteRowAttribute}s
-   */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupRoutesByPrefix(
-      String hostName,
-      String vrfName,
-      Set<AbstractRoute> routes,
-      @Nullable Map<Ip, Set<String>> ipOwners,
-      @Nullable Prefix network,
-      Pattern compiledProtocolRegex) {
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByPrefix = new HashMap<>();
-    for (AbstractRoute route : routes) {
-      if ((network == null || network.equals(route.getNetwork()))
-          && compiledProtocolRegex.matcher(route.getProtocol().protocolName()).matches()) {
-
-        RouteRowKey routeRowKey = new RouteRowKey(hostName, vrfName, route.getNetwork());
-        RouteRowAttribute routeRowAttribute =
-            RouteRowAttribute.builder()
-                .setProtocol(
-                    route.getProtocol() != null ? route.getProtocol().protocolName() : null)
-                .setNextHopIp(route.getNextHopIp())
-                .setNextHop(computeNextHopNode(route.getNextHopIp(), ipOwners))
-                .setAdminDistance(route.getAdministrativeCost())
-                .setMetric(route.getMetric())
-                .setTag(route.getTag())
-                .build();
-        routesGroupedByPrefix
-            .computeIfAbsent(routeRowKey, k -> new TreeSet<>())
-            .add(routeRowAttribute);
-      }
-    }
     return routesGroupedByPrefix;
   }
 
   /**
-   * Given a {@link Set} of {@link BgpRoute}s, groups the routes by the fields of {@link
-   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
-   * RouteRowAttribute}
+   * Given a {@link Table} of {@link BgpRoute}s indexed by Node name and VRF name, applies given
+   * filters groups the routes by {@link RouteRowKey} and for the routes with the same key, sorts
+   * them according to {@link RouteRowAttribute}
    *
-   * @param hostName Hostname for the node containing the routes
-   * @param vrfName VRF name of the host containing the routes
-   * @param routes {@link Set} of {@link BgpRoute}s which need to be processed
+   * @param bgpRoutes {@link Table} of BGP routes with rows per node and columns per VRF
    * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupBgpRoutesByPrefix(
-      String hostName,
-      String vrfName,
-      Set<BgpRoute> routes,
-      @Nullable Map<Ip, Set<String>> ipOwners,
+  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupMatchingBgpRoutesByPrefix(
+      Table<String, String, Set<BgpRoute>> bgpRoutes,
+      Set<String> matchingNodes,
+      String vrfRegex,
       @Nullable Prefix network,
-      Pattern compiledProtocolRegex) {
+      String protocolRegex) {
     Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRoutesGroupedByPrefix = new HashMap<>();
-    for (BgpRoute bgpRoute : routes) {
-      if ((network == null || network.equals(bgpRoute.getNetwork()))
-          && compiledProtocolRegex.matcher(bgpRoute.getProtocol().protocolName()).matches()) {
-
-        RouteRowKey routeRowKey = new RouteRowKey(hostName, vrfName, bgpRoute.getNetwork());
-        RouteRowAttribute routeRowAttribute =
-            RouteRowAttribute.builder()
-                .setProtocol(bgpRoute.getProtocol().protocolName())
-                .setNextHopIp(bgpRoute.getNextHopIp())
-                .setNextHop(computeNextHopNode(bgpRoute.getNextHopIp(), ipOwners))
-                .setAsPath(bgpRoute.getAsPath())
-                .setMetric(bgpRoute.getMetric())
-                .setLocalPreference(bgpRoute.getLocalPreference())
-                .setCommunities(
-                    String.join(
-                        ", ",
-                        bgpRoute
-                            .getCommunities()
+    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
+    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
+    matchingNodes.forEach(
+        hostname ->
+            bgpRoutes
+                .row(hostname)
+                .forEach(
+                    (vrfName, routes) -> {
+                      if (compiledVrfRegex.matcher(vrfName).matches()) {
+                        routes
                             .stream()
-                            .map(CommonUtil::longToCommunity)
-                            .collect(toImmutableList())))
-                .setOriginProtocol(
-                    bgpRoute.getSrcProtocol() != null
-                        ? bgpRoute.getSrcProtocol().protocolName()
-                        : null)
-                .setTag(bgpRoute.getTag())
-                .build();
-        bgpRoutesGroupedByPrefix
-            .computeIfAbsent(routeRowKey, k -> new TreeSet<>())
-            .add(routeRowAttribute);
-      }
-    }
+                            .filter(
+                                route ->
+                                    (network == null || network.equals(route.getNetwork()))
+                                        && compiledProtocolRegex
+                                            .matcher(route.getProtocol().protocolName())
+                                            .matches())
+                            .forEach(
+                                route ->
+                                    bgpRoutesGroupedByPrefix
+                                        .computeIfAbsent(
+                                            new RouteRowKey(hostname, vrfName, route.getNetwork()),
+                                            k -> new TreeSet<>())
+                                        .add(
+                                            RouteRowAttribute.builder()
+                                                .setNextHopIp(route.getNextHopIp())
+                                                .setProtocol(route.getProtocol().protocolName())
+                                                .setAdminDistance(route.getAdministrativeCost())
+                                                .setMetric(route.getMetric())
+                                                .setAsPath(route.getAsPath())
+                                                .setLocalPreference(route.getLocalPreference())
+                                                .setCommunities(
+                                                    route
+                                                        .getCommunities()
+                                                        .stream()
+                                                        .map(CommonUtil::longToCommunity)
+                                                        .collect(toImmutableList()))
+                                                .setTag(
+                                                    route.getTag() == Route.UNSET_ROUTE_TAG
+                                                        ? null
+                                                        : route.getTag())
+                                                .build()));
+                      }
+                    }));
+
     return bgpRoutesGroupedByPrefix;
   }
 
   /**
-   * Given two {@link List}s of {@link RouteRowAttribute}s (which should be sorted), outputs a
-   * 2-dimensional list with two columns
+   * Given two sorted {@link List}s of {@link RouteRowAttribute}s, outputs a 2-dimensional list
+   * showing the diff in the two input lists
    *
    * <p>In each row of the output 2-dimensional {@link List} the two columns contain matching {@link
-   * RouteRowAttribute}s and for {@link RouteRowAttribute}s with no matching value in the other
-   * routeRowAttributes {@link List} the other column contains a null.
+   * RouteRowAttribute}s and for {@link RouteRowAttribute}s with no matching values the other column
+   * contains a null.
    *
-   * @param routeRowAttributes1 Sorted {@link List} of first {@link RouteRowAttribute}s
-   * @param routeRowAttributes2 Sorted {@link List} of second {@link RouteRowAttribute}s
-   * @return A 2-dimensional (nested) {@link List} with the inner list of size 2
+   * @param routeRowAttributes1 First sorted {@link List} of {@link RouteRowAttribute}s
+   * @param routeRowAttributes2 Second sorted {@link List} of {@link RouteRowAttribute}s
+   * @return A 2-dimensional {@link List} of columns size two showing the diff
    */
   static List<List<RouteRowAttribute>> alignRouteRowAttributes(
       List<RouteRowAttribute> routeRowAttributes1, List<RouteRowAttribute> routeRowAttributes2) {
@@ -631,7 +566,7 @@ public class RoutesAnswererUtil {
                   alignRouteRowAttributes(
                       new ArrayList<>(routeRowAttributesInBase),
                       new ArrayList<>(routeRowAttributesInRef)),
-                  KeyPresenceStatus.IN_BOTH));
+                  PresenceStatus.IN_BOTH));
         }
       } else if (routesInBase.containsKey(routeRowKey)) {
         SortedSet<RouteRowAttribute> routeRowAttributesInBase = routesInBase.get(routeRowKey);
@@ -642,7 +577,7 @@ public class RoutesAnswererUtil {
                 .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
                 .collect(Collectors.toList());
         listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresenceStatus.ONLY_IN_SNAPSHOT));
+            new DiffRoutesOutput(routeRowKey, diffMatrix, PresenceStatus.ONLY_IN_SNAPSHOT));
       } else {
         SortedSet<RouteRowAttribute> routeRowAttributesInRef = routesInRef.get(routeRowKey);
         // base route attribute in the 2 column diff Matrix will be unset for elements
@@ -652,7 +587,7 @@ public class RoutesAnswererUtil {
                 .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
                 .collect(Collectors.toList());
         listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, KeyPresenceStatus.ONLY_IN_REFERENCE));
+            new DiffRoutesOutput(routeRowKey, diffMatrix, PresenceStatus.ONLY_IN_REFERENCE));
       }
     }
     return listOfDiffPerKeys;
