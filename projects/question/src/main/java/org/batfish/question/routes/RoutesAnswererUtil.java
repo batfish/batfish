@@ -73,12 +73,12 @@ public class RoutesAnswererUtil {
    * Returns a {@link Multiset} of {@link Row}s for all routes present in all RIBs
    *
    * @param ribs {@link Map} representing all RIBs of all nodes
-   * @param matchingNodes {@link Set} of hostnames whose routes are to be returned
+   * @param matchingNodes {@link Set} of hostnames of nodes whose routes are to be returned
    * @param network {@link Prefix} of the network used to filter the routes
-   * @param protocolRegex protocols used to filter the {@link AbstractRoute}s
+   * @param protocolRegex protocols used to filter the routes
    * @param vrfRegex Regex used to filter the VRF of routes
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
-   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
@@ -119,14 +119,16 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Filters a {@link Table} of {@link BgpRoute}s to produce a flattened {@link List} of rows
+   * Filters a {@link Table} of {@link BgpRoute}s to produce a {@link Multiset} of rows
    *
    * @param bgpRoutes {@link Table} of all {@link BgpRoute}s
+   * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP} or {@link
+   *     RibProtocol#BGPMP}
    * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolRegex protocols used to filter the {@link BgpRoute}s
    * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
-   * @return {@link Map} of {@link RouteRowKey} to a {@link SortedSet} of {@link RouteRowAttribute}s
+   * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
@@ -167,12 +169,13 @@ public class RoutesAnswererUtil {
   /**
    * Converts a {@link AbstractRoute} to a {@link Row}
    *
-   * @param hostName {@link String} host-name of the node containing the bgpRoute
-   * @param vrfName {@link String} name of the VRF containing the bgpRoute
-   * @param abstractRoute {@link BgpRoute} BGP route to convert
-   * @return {@link Row} representing the bgpRoute
+   * @param hostName {@link String} host-name of the node containing the route
+   * @param vrfName {@link String} name of the VRF containing the route
+   * @param abstractRoute {@link AbstractRoute} to convert
+   * @param columnMetadataMap Column metadata of the columns for this {@link Row} c
+   * @return {@link Row} representing the {@link AbstractRoute}
    */
-  static Row abstractRouteToRow(
+  private static Row abstractRouteToRow(
       String hostName,
       String vrfName,
       AbstractRoute abstractRoute,
@@ -198,7 +201,8 @@ public class RoutesAnswererUtil {
    * @param hostName {@link String} host-name of the node containing the bgpRoute
    * @param vrfName {@link String} name of the VRF containing the bgpRoute
    * @param bgpRoute {@link BgpRoute} BGP route to convert
-   * @return {@link Row} representing the bgpRoute
+   * @param columnMetadataMap Column metadata of the columns for this {@link Row}
+   * @return {@link Row} representing the {@link BgpRoute}
    */
   static Row bgpRouteToRow(
       String hostName,
@@ -228,11 +232,10 @@ public class RoutesAnswererUtil {
 
   /**
    * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
-   * each {@link DiffRoutesOutput}
+   * each {@link DiffRoutesOutput#_diffInAttributes} of the {@link DiffRoutesOutput}
    *
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link BgpRoute}s
-   * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
-   *     in the input
+   * @return {@link Multiset} of {@link Row}s
    */
   static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
@@ -301,11 +304,10 @@ public class RoutesAnswererUtil {
 
   /**
    * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
-   * each {@link DiffRoutesOutput}
+   * each {@link DiffRoutesOutput#_diffInAttributes} of the {@link DiffRoutesOutput}
    *
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for routes in Main RIB
-   * @return {@link Multiset} of {@link Row}s with a row generated for each {@link DiffRoutesOutput}
-   *     in the input
+   * @return {@link Multiset} of {@link Row}s
    */
   static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
@@ -369,12 +371,15 @@ public class RoutesAnswererUtil {
 
   /**
    * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
-   * RouteRowKey} and for the routes with the same key, sorts them according to {@link
-   * RouteRowAttribute}
+   * RouteRowKey} and for routes with the same key, sorts them according to {@link
+   * RouteRowAttribute}s
    *
    * @param ribs {@link Map} of the RIBs
    * @param matchingNodes {@link Set} of nodes to be matched
    * @param network {@link Prefix}
+   * @param vrfRegex Regex to filter the VRF
+   * @param protocolRegex Regex to filter the protocols of the routes
+   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
    *     RouteRowAttribute}s
    */

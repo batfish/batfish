@@ -313,7 +313,7 @@ public class RoutesAnswererUtilTest {
             .setMetric(2L)
             .setOriginProtocol("bgp")
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
-            .setLocalPreference(1);
+            .setLocalPreference(1L);
     List<List<RouteRowAttribute>> diffMatrix = new ArrayList<>();
     diffMatrix.add(Lists.newArrayList(routeRowAttrBuilder.build(), routeRowAttrBuilder.build()));
     diffMatrix.add(

@@ -27,7 +27,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nonnull private List<String> _communities;
 
-  @Nullable private Integer _localPreference;
+  @Nullable private Long _localPreference;
 
   @Nullable private Long _metric;
 
@@ -47,7 +47,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Integer adminDistance,
       Long metric,
       AsPath asPath,
-      Integer localPreference,
+      Long localPreference,
       List<String> communities,
       String originalProtocol,
       String protocol,
@@ -90,7 +90,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
-  public Integer getLocalPreference() {
+  public Long getLocalPreference() {
     return _localPreference;
   }
 
@@ -174,7 +174,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     @Nullable private AsPath _asPath;
 
-    @Nullable private Integer _localPreference;
+    @Nullable private Long _localPreference;
 
     @Nullable private List<String> _communities;
 
@@ -227,7 +227,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setLocalPreference(Integer localPreference) {
+    public Builder setLocalPreference(Long localPreference) {
       _localPreference = localPreference;
       return this;
     }

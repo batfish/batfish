@@ -216,7 +216,7 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_LOCAL_PREF,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Local Preference",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -366,14 +366,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_LOCAL_PREF,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Local Preference",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_LOCAL_PREF,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Local Preference",
                 Boolean.FALSE,
                 Boolean.TRUE));
