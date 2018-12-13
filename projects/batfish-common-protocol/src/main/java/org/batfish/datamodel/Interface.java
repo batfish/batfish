@@ -48,6 +48,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
+
     private List<DestinationNat> _destinationNats;
 
     @Nullable private EigrpInterfaceSettings _eigrp;
@@ -117,6 +119,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setDependencies(_dependencies);
       iface.setDestinationNats(_destinationNats);
       iface.setEigrp(_eigrp);
       iface.setHsrpGroups(_hsrpGroups);
@@ -221,6 +224,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDeclaredNames(Iterable<String> declaredNames) {
       _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+      return this;
+    }
+
+    public Builder setDependencies(@Nonnull Iterable<Dependency> dependencies) {
+      _dependencies = ImmutableSet.copyOf(dependencies);
       return this;
     }
 
@@ -1616,5 +1624,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ZONE)
   public void setZoneName(String zoneName) {
     _zoneName = zoneName;
+  }
+
+  /** Blacklist this interface, making it inactive and blacklisted */
+  public void blacklist() {
+    setActive(false);
+    setBlacklisted(true);
   }
 }
