@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -139,6 +140,11 @@ public class BgpSessionCompatibilityAnswererTest {
         new IBatfishTestAdapter() {
           @Override
           public SortedMap<String, Configuration> loadConfigurations() {
+            return configurations;
+          }
+
+          @Override
+          public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
             return configurations;
           }
         };

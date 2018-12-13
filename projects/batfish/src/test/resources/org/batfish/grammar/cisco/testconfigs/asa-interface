@@ -8,3 +8,4 @@ interface GigabitEthernet0/1
   description blah
   security-level 95
   ip address 3.0.0.2 255.255.255.0 standby 3.0.0.3
+mtu ifname 1400

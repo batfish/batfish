@@ -94,6 +94,7 @@ import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.Layer3Topology;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -219,6 +220,7 @@ import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.smt.PropertyChecker;
+import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
@@ -454,6 +456,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
+  private final TopologyProvider _topologyProvider;
+
   public Batfish(
       Settings settings,
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedCompressedConfigurations,
@@ -490,6 +494,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateIdResolver != null
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
+    _topologyProvider = new TopologyProviderImpl(this);
   }
 
   private Answer analyze() {
@@ -1454,6 +1459,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _testrigSettings.getName();
   }
 
+  @Nonnull
+  @Override
+  public TopologyProvider getTopologyProvider() {
+    return _topologyProvider;
+  }
+
   @Override
   public PluginClientType getType() {
     return PluginClientType.BATFISH;
@@ -1657,11 +1668,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  /**
-   * Returns the configurations for given snapshot, including any environmental features such as
-   * failed links.
-   */
-  SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+  @Override
+  public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
     if (configurations != null) {
@@ -3767,7 +3775,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, loadConfigurations());
+    return new SpecifierContextImpl(this, getNetworkSnapshot());
+  }
+
+  @Override
+  public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
+    return new SpecifierContextImpl(this, networkSnapshot);
   }
 
   @Override
@@ -3933,7 +3946,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, loadConfigurations());
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, getNetworkSnapshot());
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,

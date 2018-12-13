@@ -1,0 +1,7 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name apply-path-warning
+#
+set policy-options prefix-list pl1 apply-path "routing-options rib inet6.0 static route <*>"
+set policy-options prefix-list pl1 apply-path "routing-options rib inet6.0 static route <*> next-hop <*>"
+set routing-options rib inet6.0 static route 1::/64 next-hop 2::1
+#

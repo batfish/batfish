@@ -186,6 +186,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
@@ -1943,7 +1944,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private LogicalSystem _currentLogicalSystem;
 
-  public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
+  private final Map<Token, String> _tokenInputs;
+
+  public ConfigurationBuilder(
+      FlatJuniperCombinedParser parser,
+      String text,
+      Warnings warnings,
+      Map<Token, String> tokenInputs) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
@@ -1952,6 +1959,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+    _tokenInputs = tokenInputs;
   }
 
   private void setLogicalSystem(LogicalSystem logicalSystem) {
@@ -3441,6 +3449,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // TODO: handle node
     String interfaceName = ctx.name.getText();
     _currentInterface.set8023adInterface(interfaceName);
+  }
+
+  @Override
+  public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
+    _currentInterface.setRedundantParentInterface(ctx.name.getText());
   }
 
   @Override
@@ -5476,7 +5489,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
+    String text = _tokenInputs.getOrDefault(ctx.getStart(), _text).substring(start, end + 1);
     return text;
   }
 

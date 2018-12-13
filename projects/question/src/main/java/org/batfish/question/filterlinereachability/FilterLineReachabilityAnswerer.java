@@ -70,7 +70,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
-    answerAclReachability(aclSpecs, answerRows, question.getIgnoreComposites());
+    answerAclReachability(aclSpecs, answerRows);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, answerRows.getRows());
     return answer;
@@ -466,9 +466,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
   @VisibleForTesting
   static void answerAclReachability(
-      List<AclSpecs> aclSpecs,
-      FilterLineReachabilityRows answerRows,
-      boolean ignoreGeneratedFilters) {
+      List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
     BDDPacket bddPacket = new BDDPacket();
     BDDFactory bddFactory = bddPacket.getFactory();
 

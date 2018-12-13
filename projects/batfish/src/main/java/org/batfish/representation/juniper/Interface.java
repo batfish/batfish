@@ -108,6 +108,8 @@ public class Interface implements Serializable {
 
   private InterfaceAddress _primaryAddress;
 
+  @Nullable private String _redundantParentInterface;
+
   private String _routingInstance;
 
   private SwitchportMode _switchportMode;
@@ -248,6 +250,11 @@ public class Interface implements Serializable {
     return _primaryAddress;
   }
 
+  @Nullable
+  public String getRedundantParentInterface() {
+    return _redundantParentInterface;
+  }
+
   public String getRoutingInstance() {
     return _routingInstance;
   }
@@ -366,6 +373,10 @@ public class Interface implements Serializable {
 
   public void setPrimaryAddress(InterfaceAddress address) {
     _primaryAddress = address;
+  }
+
+  public void setRedundantParentInterface(@Nullable String redundantParentInterface) {
+    _redundantParentInterface = redundantParentInterface;
   }
 
   public void setRoutingInstance(String routingInstance) {
