@@ -2,8 +2,12 @@ package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.datamodel.LineAction.DENY;
+import static org.batfish.datamodel.LineAction.PERMIT;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.findBlockingLinesForLine;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.getSpecifiedFilters;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
@@ -17,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -27,7 +33,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -618,6 +626,133 @@ public class FilterLineReachabilityAnswererTest {
     assertThat(aclSpecs, hasSize(1));
     AclSpecs spec = aclSpecs.get(0);
     assertThat(spec.acl.getSanitizedAcl().getLines(), equalTo(ImmutableList.of(UNMATCHABLE)));
+  }
+
+  @Test
+  public void testSmallBlockersIgnored() {
+    BDDPacket p = new BDDPacket();
+    // deny IP <ddos src> any
+    BDD ddos1 = p.getSrcIp().value(new Ip("1.2.3.1").asLong());
+    BDD ddos2 = p.getSrcIp().value(new Ip("1.2.3.2").asLong());
+    BDD ddos3 = p.getSrcIp().value(new Ip("1.2.3.3").asLong());
+    // permit tcp any any eq ssh
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD ssh = tcp.and(p.getDstPort().value(22));
+    // permit tcp any DST_IP eq ssh
+    BDD selectiveSSH = ssh.and(p.getDstIp().value(new Ip("2.3.4.5").asLong()));
+
+    /*
+     * [deny|permit] ip   1.2.3.1  any
+     * [deny|permit] ip   1.2.3.2  any
+     * [deny|permit] ip   1.2.3.3  any
+     * permit        tcp  any      any      eq ssh
+     * permit        tcp  any      2.3.4.5  eq ssh
+     */
+    // Make the BDDS
+    List<BDD> bdds = ImmutableList.of(ddos1, ddos2, ddos3, ssh, selectiveSSH);
+
+    // last line (#4) is really blocked by (#3). Also report #0 as first line with diff action.
+    List<LineAction> actions = ImmutableList.of(DENY, DENY, DENY, PERMIT, PERMIT);
+    assertThat(findBlockingLinesForLine(4, actions, bdds), contains(0, 3));
+
+    // if there are no lines with different actions, only report #3.
+    List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT, PERMIT);
+    assertThat(findBlockingLinesForLine(4, sameActions, bdds), contains(3));
+  }
+
+  @Test
+  public void testPartialOverlaps() {
+    BDDPacket p = new BDDPacket();
+    BDD first32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD second32 = p.getDstIp().value(new Ip("1.2.3.5").asLong());
+    BDD slash31 = first32.or(second32);
+
+    /*
+     * permit ip   any  1.2.3.4/32
+     * deny   ip   any  1.2.3.5/32
+     * permit ip   any  1.2.3.4/31
+     */
+    List<BDD> bdds = ImmutableList.of(first32, second32, slash31);
+    List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
+
+    // last line (#2) is blocked by both first two lines.
+    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0, 1));
+
+    //  Action should not matter.
+    List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
+    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(0, 1));
+  }
+
+  @Test
+  public void testPartialOverlapsDominateFull() {
+    BDDPacket p = new BDDPacket();
+    BDD first32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD second32 = p.getDstIp().value(new Ip("1.2.3.5").asLong());
+    BDD slash31 = first32.or(second32);
+
+    /*
+     * permit ip   any  1.2.3.4/31
+     * deny   ip   any  any
+     * permit ip   any  1.2.3.5/32
+     */
+    List<BDD> bdds = ImmutableList.of(slash31, p.getFactory().one(), second32);
+    List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
+
+    // last line (#2) is blocked only by #0. #1 is ignored since it terminates no flows.
+    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0));
+  }
+
+  @Test
+  public void testDifferentActionPreservation() {
+    BDDPacket p = new BDDPacket();
+    BDD slash32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD not80 = tcp.and(p.getDstPort().value(80).not());
+
+    /*
+     * [deny|permit]   tcp any 1.2.3.4/32 neq 80
+     * [permit|deny]   ip  any any
+     * permit          ip  any 1.2.3.4/32
+     */
+    List<BDD> bdds = ImmutableList.of(slash32.and(not80), p.getFactory().one(), slash32);
+    List<LineAction> actions = ImmutableList.of(DENY, PERMIT, PERMIT);
+
+    // last line (#2) is blocked entirely by #1. But #0 is included since it matches with different
+    // action.
+    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0, 1));
+
+    // #0 is not included when all lines have same action.
+    List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
+    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
+
+    // #0 is not included despite different action when #1 already has different action.
+    List<LineAction> actionsAndCover = ImmutableList.of(DENY, DENY, PERMIT);
+    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
+  }
+
+  @Test
+  public void testDifferenceActionsPreserved() {
+    BDDPacket p = new BDDPacket();
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD tcpEstablished = p.getTcpAck().or(p.getTcpRst());
+    BDD slash32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD port80 = p.getDstPort().value(80);
+
+    /*
+     * permit tcp any any established   ! means ACK or RST is true.
+     * deny tcp any 1.2.3.4/32
+     * permit tcp any 1.2.3.4/32 eq 80
+     */
+    List<BDD> bdds =
+        ImmutableList.of(tcpEstablished, tcp.and(slash32), tcp.and(slash32).and(port80));
+
+    // last line (#2) is blocked entirely by #1. Since #1 has a different action, and even though #0
+    // matches many packets, we will not include #0 independent of action of #0.
+    List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
+    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(1));
+
+    List<LineAction> sameActions = ImmutableList.of(DENY, DENY, PERMIT);
+    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
   }
 
   private List<AclSpecs> getAclSpecs(Set<String> configNames) {
