@@ -49,6 +49,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
+/** Answers {@link FilterLineReachabilityQuestion}. */
 @ParametersAreNonnullByDefault
 public class FilterLineReachabilityAnswerer extends Answerer {
 
@@ -496,42 +497,57 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     BDD blockedLine = bdds.get(blockedLineNum);
     LineAction blockedLineAction = actions.get(blockedLineNum);
 
-    TreeSet<LineAndWeight> linesByWeight = new TreeSet<>(LineAndWeight.COMPARATOR);
+    ImmutableSortedSet.Builder<LineAndWeight> linesByWeight =
+        ImmutableSortedSet.orderedBy(LineAndWeight.COMPARATOR);
 
+    // First, we find all lines before blockedLine that actually terminate any packets
+    // blockedLine intends to. These, collectively, are the (partially-)blocking lines.
+    //
+    // In this same loop, we also compute the overlap of each such line with the blocked line
+    // and weight each blocking line by that overlap.
+    //
+    // Finally, we record whether any of these lines has a different action than the blocked line.
     BDD restOfLine = blockedLine;
     boolean diffAction = false; // true if some partially-blocking line has a different action.
     for (int prevLineNum = 0; prevLineNum < blockedLineNum && !restOfLine.isZero(); prevLineNum++) {
       BDD prevLine = bdds.get(prevLineNum);
 
-      BDD intersection = prevLine.and(restOfLine);
-      if (intersection.isZero()) {
+      BDD restOfLineOverlap = prevLine.and(restOfLine);
+      if (restOfLineOverlap.isZero()) {
         continue;
       }
 
-      linesByWeight.add(new LineAndWeight(prevLineNum, prevLine.and(blockedLine).satCount()));
-      restOfLine = restOfLine.and(intersection.not());
+      BDD blockedLineOverlap = prevLine.and(blockedLine);
+      linesByWeight.add(new LineAndWeight(prevLineNum, blockedLineOverlap.satCount()));
+      restOfLine = restOfLine.and(restOfLineOverlap.not());
       diffAction = diffAction || actions.get(prevLineNum) != blockedLineAction;
     }
 
+    // In this second loop, we compute the answer:
+    // * include partially-blocking lines in weight order until the blocked line is fully blocked by
+    //   this subset.
+    // * also include the largest blocking line with a different action than the blocked line, if
+    //   not already in the above subset.
     ImmutableSortedSet.Builder<Integer> answerLines = ImmutableSortedSet.naturalOrder();
     restOfLine = blockedLine;
     boolean needDiffAction = diffAction;
-    // Loop through all partially-blocking lines in decreasing weight.
-    for (LineAndWeight line : linesByWeight) {
+    for (LineAndWeight line : linesByWeight.build()) {
       int curLineNum = line.getLine();
       boolean curDiff = actions.get(curLineNum) != blockedLineAction;
 
-      // Add this "heavy" line if the original line is not blocked or if the current line is
-      // the first line we've seen with a different action than the blocked line.
+      // The original line is still not blocked, or this is the first line with a different action.
       if (!restOfLine.isZero() || needDiffAction && curDiff) {
         restOfLine = restOfLine.and(bdds.get(curLineNum).not());
         answerLines.add(curLineNum);
         needDiffAction = needDiffAction && !curDiff;
       }
+
+      // The original line is blocked and we have a line with a different action (if such exists).
       if (restOfLine.isZero() && !needDiffAction) {
         break;
       }
     }
+
     return answerLines.build();
   }
 

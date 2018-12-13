@@ -56,6 +56,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests of {@link FilterLineReachabilityAnswerer}. */
 public class FilterLineReachabilityAnswererTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
