@@ -7,10 +7,10 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_NETWORK_PRESENCE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswererUtil.alignRouteRowAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
@@ -333,20 +333,20 @@ public class RoutesAnswererUtilTest {
             ImmutableList.of(
                 allOf(
                     hasColumn(
-                        COL_ROUTE_NETWORK_PRESENCE,
+                        COL_NETWORK_PRESENCE,
                         equalTo(PresenceStatus.IN_BOTH.presenceStatusName()),
                         Schema.STRING),
                     hasColumn(
-                        COL_ROUTE_PRESENCE,
+                        COL_ROUTE_ENTRY_PRESENCE,
                         equalTo(PresenceStatus.IN_BOTH.presenceStatusName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
-                        COL_ROUTE_NETWORK_PRESENCE,
+                        COL_NETWORK_PRESENCE,
                         equalTo(PresenceStatus.IN_BOTH.presenceStatusName()),
                         Schema.STRING),
                     hasColumn(
-                        COL_ROUTE_PRESENCE,
+                        COL_ROUTE_ENTRY_PRESENCE,
                         equalTo(PresenceStatus.ONLY_IN_SNAPSHOT.presenceStatusName()),
                         Schema.STRING)))));
   }

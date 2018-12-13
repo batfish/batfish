@@ -58,8 +58,8 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   // Diff Only
-  static final String COL_ROUTE_NETWORK_PRESENCE = "Route_Network_Presence";
-  static final String COL_ROUTE_PRESENCE = "Route_Presence";
+  static final String COL_NETWORK_PRESENCE = "Network_Presence";
+  static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -292,14 +292,14 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumnsAtStart(columnBuilder);
     columnBuilder.add(
         new ColumnMetadata(
-            COL_ROUTE_NETWORK_PRESENCE,
+            COL_NETWORK_PRESENCE,
             Schema.STRING,
             "Presence of the Route's Network (Prefix)",
             Boolean.FALSE,
             Boolean.TRUE));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_ROUTE_PRESENCE,
+            COL_ROUTE_ENTRY_PRESENCE,
             Schema.STRING,
             "Presence of a Route for the given Network (Prefix)",
             Boolean.FALSE,

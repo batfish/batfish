@@ -10,13 +10,13 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_NETWORK_PRESENCE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -266,8 +266,8 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
-            COL_ROUTE_NETWORK_PRESENCE,
-            COL_ROUTE_PRESENCE,
+            COL_NETWORK_PRESENCE,
+            COL_ROUTE_ENTRY_PRESENCE,
             COL_BASE_PREFIX + COL_NEXT_HOP,
             COL_DELTA_PREFIX + COL_NEXT_HOP,
             COL_BASE_PREFIX + COL_NEXT_HOP_IP,
@@ -313,8 +313,8 @@ public class RoutesAnswererTest {
         COL_NODE,
         COL_VRF_NAME,
         COL_NETWORK,
-        COL_ROUTE_NETWORK_PRESENCE,
-        COL_ROUTE_PRESENCE,
+        COL_NETWORK_PRESENCE,
+        COL_ROUTE_ENTRY_PRESENCE,
         COL_BASE_PREFIX + COL_NEXT_HOP_IP,
         COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
         COL_BASE_PREFIX + COL_PROTOCOL,
