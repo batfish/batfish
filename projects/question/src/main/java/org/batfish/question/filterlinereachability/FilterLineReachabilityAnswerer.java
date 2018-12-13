@@ -9,13 +9,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -33,6 +33,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.CircularReferenceException;
@@ -466,7 +467,28 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
-  private static final double SIGNIFICANCE_THRESHOLD = 0.3;
+  private static class LineAndWeight {
+    private final int _line;
+    private final double _weight;
+
+    public LineAndWeight(int line, double weight) {
+      _line = line;
+      _weight = weight;
+    }
+
+    private int getLine() {
+      return _line;
+    }
+
+    private double getWeight() {
+      return _weight;
+    }
+
+    private static final Comparator<LineAndWeight> COMPARATOR =
+        Comparator.comparing(LineAndWeight::getWeight)
+            .reversed()
+            .thenComparing(LineAndWeight::getLine);
+  }
 
   private static void answerAclReachability(
       List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
@@ -507,34 +529,46 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       // compute blocking lines
       for (int lineNum : unreachableButMatchableLineNums) {
         BDD blockedLine = ipLineToBDDMap.get(lineNum);
+        LineAction blockedLineAction = lines.get(lineNum).getAction();
 
-        // all lines in [0, lineNum) that match part of the blocked line's address space.
-        ImmutableSortedSet.Builder<Integer> allMatchers = ImmutableSortedSet.naturalOrder();
-        // signicant lines are those that match at least satThreshold of the address space.
-        ImmutableSortedSet.Builder<Integer> significantMatchers = ImmutableSortedSet.naturalOrder();
-        double satThreshold = blockedLine.satCount() * SIGNIFICANCE_THRESHOLD;
+        TreeSet<LineAndWeight> linesByWeight = new TreeSet<>(LineAndWeight.COMPARATOR);
 
         BDD restOfLine = blockedLine;
-        BDD significantRest = blockedLine;
+        boolean diffAction = false; // true if some partially-blocking line has a different action.
         for (int prevLineNum = 0; prevLineNum < lineNum && !restOfLine.isZero(); prevLineNum++) {
           BDD prevLine = ipLineToBDDMap.get(prevLineNum);
+
           BDD intersection = prevLine.and(restOfLine);
           if (intersection.isZero()) {
             continue;
           }
 
-          allMatchers.add(prevLineNum);
-          if (prevLine.and(blockedLine).satCount() > satThreshold) {
-            significantMatchers.add(prevLineNum);
-            significantRest = significantRest.and(prevLine.not());
-          }
+          linesByWeight.add(new LineAndWeight(prevLineNum, prevLine.and(blockedLine).satCount()));
           restOfLine = restOfLine.and(intersection.not());
+          diffAction = diffAction || lines.get(prevLineNum).getAction() != blockedLineAction;
         }
 
-        // Use the blockingLines as the answer, unless it is not a complete cover.
-        SortedSet<Integer> answerLines =
-            significantRest.isZero() ? significantMatchers.build() : allMatchers.build();
-        answerRows.addUnreachableLine(aclSpec, lineNum, false, answerLines);
+        ImmutableSortedSet.Builder<Integer> answerLines = ImmutableSortedSet.naturalOrder();
+        restOfLine = blockedLine;
+        boolean needDiffAction = diffAction;
+        // Loop through all partially-blocking lines in decreasing weight.
+        for (LineAndWeight line : linesByWeight) {
+          int curLineNum = line.getLine();
+          boolean curDiff = lines.get(curLineNum).getAction() != blockedLineAction;
+
+          // Add this "heavy" line if the original line is not blocked or if the current line is
+          // the first line we've seen with a different action than the blocked line.
+          if (!restOfLine.isZero() || needDiffAction && curDiff) {
+            restOfLine = restOfLine.and(ipLineToBDDMap.get(curLineNum).not());
+            answerLines.add(curLineNum);
+            needDiffAction = needDiffAction && !curDiff;
+          }
+          if (restOfLine.isZero() && !needDiffAction) {
+            break;
+          }
+        }
+
+        answerRows.addUnreachableLine(aclSpec, lineNum, false, answerLines.build());
       }
     }
   }
