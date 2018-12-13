@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IncrementLocalPreference extends IntExpr {
+public class IncrementLocalPreference extends LongExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private int _addend;
+  private long _addend;
 
   @JsonCreator
   private IncrementLocalPreference() {}
@@ -37,23 +37,20 @@ public class IncrementLocalPreference extends IntExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
+  public long evaluate(Environment environment) {
     BgpRoute oldRoute = (BgpRoute) environment.getOriginalRoute();
-    int oldLp = oldRoute.getLocalPreference();
-    int newVal = oldLp + _addend;
+    long oldLp = oldRoute.getLocalPreference();
+    long newVal = oldLp + _addend;
     return newVal;
   }
 
-  public int getAddend() {
+  public long getAddend() {
     return _addend;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _addend;
-    return result;
+    return Long.hashCode(_addend);
   }
 
   public void setAddend(int addend) {
