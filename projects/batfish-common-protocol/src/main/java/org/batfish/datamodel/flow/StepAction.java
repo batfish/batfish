@@ -24,6 +24,8 @@ public enum StepAction {
   ORIGINATED,
   /** Action to show the receiving of a flow at a hop */
   RECEIVED,
+  /** Action to show the transformation of a flow */
+  TRANSFORMED,
   /** Action to show the transmission of a flow from an output interface */
   TRANSMITTED,
   /** Action that a filter permits a packet */

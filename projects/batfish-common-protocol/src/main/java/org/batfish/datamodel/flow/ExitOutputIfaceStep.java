@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,22 +28,18 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
   public static final class ExitOutputIfaceStepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_OUTPUT_FILTER = "outputFilter";
-    private static final String PROP_FLOW_DIFFS = "flowDiffs";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
     private @Nonnull NodeInterfacePair _outputInterface;
     private @Nullable String _outputFilter;
-    private @Nullable SortedSet<FlowDiff> _flowDiffs;
     private @Nullable Flow _transformedFlow;
 
     private ExitOutputIfaceStepDetail(
         NodeInterfacePair outInterface,
         @Nullable String outputFilter,
-        @Nullable SortedSet<FlowDiff> flowDiffs,
         @Nullable Flow transformedFlow) {
       _outputInterface = outInterface;
       _outputFilter = outputFilter;
-      _flowDiffs = flowDiffs;
       _transformedFlow = transformedFlow;
     }
 
@@ -52,10 +47,9 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     private static ExitOutputIfaceStepDetail jsonCreator(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
         @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
-        @JsonProperty(PROP_FLOW_DIFFS) @Nullable SortedSet<FlowDiff> flowDiffs,
         @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
       checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
-      return new ExitOutputIfaceStepDetail(outInterface, outputFilter, flowDiffs, transformedFlow);
+      return new ExitOutputIfaceStepDetail(outInterface, outputFilter, transformedFlow);
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
@@ -68,12 +62,6 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     @Nullable
     public String getOutputFilter() {
       return _outputFilter;
-    }
-
-    @JsonProperty(PROP_FLOW_DIFFS)
-    @Nullable
-    public SortedSet<FlowDiff> getFlowDiffs() {
-      return _flowDiffs;
     }
 
     @JsonProperty(PROP_TRANSFORMED_FLOW)
@@ -95,8 +83,7 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
 
       public ExitOutputIfaceStepDetail build() {
         checkState(_outputInterface != null, "Must call setOutputInterface before building");
-        return new ExitOutputIfaceStepDetail(
-            _outputInterface, _outputFilter, _flowDiffs, _transformedFlow);
+        return new ExitOutputIfaceStepDetail(_outputInterface, _outputFilter, _transformedFlow);
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {
@@ -106,11 +93,6 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
 
       public Builder setOutputFilter(@Nullable String outputFilter) {
         _outputFilter = outputFilter;
-        return this;
-      }
-
-      public Builder setFlowDiffs(@Nullable SortedSet<FlowDiff> flowDiffs) {
-        _flowDiffs = flowDiffs == null ? null : ImmutableSortedSet.copyOf(flowDiffs);
         return this;
       }
 
