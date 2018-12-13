@@ -2,6 +2,7 @@ package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
@@ -243,33 +244,28 @@ public class TracerouteEngineImplContext {
       boolean ignoreFilters) {
 
     checkArgument(
-        node != null && inInterfaceName != null && outInterfaceName != null,
+        node != null && outInterfaceName != null,
         "Node, inputInterface and outgoingInterface cannot be null");
 
-    PreSourceNatOutgoingFilterStep.Builder preSourceNatOutgoingFilterStepBuilder =
-        PreSourceNatOutgoingFilterStep.builder();
-    PreSourceNatOutgoingFilterStepDetail.Builder preSourceNatOutgoingFilterStepDetailBuilder =
-        PreSourceNatOutgoingFilterStepDetail.builder();
-    preSourceNatOutgoingFilterStepDetailBuilder
-        .setNode(node)
-        .setInputInterface(inInterfaceName)
-        .setOutputInterface(outInterfaceName);
+    PreSourceNatOutgoingFilterStep.Builder stepBuilder = PreSourceNatOutgoingFilterStep.builder();
+    stepBuilder.setAction(PERMITTED);
+    stepBuilder.setDetail(
+        PreSourceNatOutgoingFilterStepDetail.builder()
+            .setNode(node)
+            .setOutputInterface(outInterfaceName)
+            .setFilter(filter.getName())
+            .build());
 
-    preSourceNatOutgoingFilterStepBuilder.setAction(PERMITTED);
-
-    preSourceNatOutgoingFilterStepDetailBuilder.setFilter(filter.getName());
     // check filter
     if (!ignoreFilters) {
       FilterResult filterResult =
           filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
       if (filterResult.getAction() == LineAction.DENY) {
-        preSourceNatOutgoingFilterStepBuilder.setAction(DENIED);
+        stepBuilder.setAction(DENIED);
       }
     }
 
-    return preSourceNatOutgoingFilterStepBuilder
-        .setDetail(preSourceNatOutgoingFilterStepDetailBuilder.build())
-        .build();
+    return stepBuilder.build();
   }
 
   private void processCurrentNextHopInterfaceEdges(
@@ -305,6 +301,10 @@ public class TracerouteEngineImplContext {
                     .setOutputInterface(
                         new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
                     .setOutputFilter(outFilter != null ? outFilter.getName() : null)
+                    .setFlowDiffs(
+                        flowDiffs(
+                            transmissionContext._originalFlow,
+                            transmissionContext._transformedFlow))
                     .setTransformedFlow(
                         hopFlow(
                             transmissionContext._originalFlow,
@@ -677,8 +677,7 @@ public class TracerouteEngineImplContext {
 
                   IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
                   // Apply preSourceNatOutgoingFilter
-                  if (inputIfaceName != null && filter != null) {
-                    // check preSourceNat only for packets originating from other nodes
+                  if (filter != null) {
                     PreSourceNatOutgoingFilterStep step =
                         applyPreSourceNatFilter(
                             currentFlow,

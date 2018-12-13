@@ -25,48 +25,34 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
    */
   public static final class PreSourceNatOutgoingFilterStepDetail {
     private static final String PROP_NODE = "node";
-    private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_FILTER = "preSourceNatFilter";
 
     private @Nonnull String _node;
-    private @Nonnull String _inputInterface;
     private @Nonnull String _outputInterface;
     private @Nullable String _filter;
 
     private PreSourceNatOutgoingFilterStepDetail(
-        String node, String inInterface, String outInterface, @Nullable String filter) {
+        String node, String outInterface, @Nullable String filter) {
       _node = node;
-      _inputInterface = inInterface;
       _outputInterface = outInterface;
       _filter = filter;
     }
 
     @JsonCreator
     private static PreSourceNatOutgoingFilterStepDetail jsonCreator(
-        @JsonProperty(PROP_NODE) @Nonnull String node,
-        @JsonProperty(PROP_INPUT_INTERFACE) @Nonnull String inInterface,
-        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nonnull String outInterface,
+        @JsonProperty(PROP_NODE) @Nullable String node,
+        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable String outInterface,
         @JsonProperty(PROP_FILTER) @Nullable String filter) {
-      checkArgument(
-          node != null && inInterface != null && outInterface != null,
-          "Missing one of %s, %s, %s",
-          PROP_NODE,
-          PROP_INPUT_INTERFACE,
-          PROP_OUTPUT_INTERFACE);
-      return new PreSourceNatOutgoingFilterStepDetail(node, inInterface, outInterface, filter);
+      checkArgument(node != null, "Missing %s", PROP_NODE);
+      checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
+      return new PreSourceNatOutgoingFilterStepDetail(node, outInterface, filter);
     }
 
     @JsonProperty(PROP_NODE)
     @Nonnull
     public String getNode() {
       return _node;
-    }
-
-    @JsonProperty(PROP_INPUT_INTERFACE)
-    @Nonnull
-    public String getInputInterface() {
-      return _inputInterface;
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
@@ -88,25 +74,17 @@ public class PreSourceNatOutgoingFilterStep extends Step<PreSourceNatOutgoingFil
     /** Chained builder to create a {@link PreSourceNatOutgoingFilterStepDetail} object */
     public static class Builder {
       private @Nullable String _node;
-      private @Nullable String _inputInterface;
       private @Nullable String _outputInterface;
       private @Nullable String _filter;
 
       public PreSourceNatOutgoingFilterStepDetail build() {
-        checkState(
-            _node != null && _inputInterface != null && _outputInterface != null,
-            "Must call setNode, setInputInterface and setOutputInterface before building");
-        return new PreSourceNatOutgoingFilterStepDetail(
-            _node, _inputInterface, _outputInterface, _filter);
+        checkState(_node != null, "Missing %s", _node);
+        checkState(_outputInterface != null, "Missing %s", _outputInterface);
+        return new PreSourceNatOutgoingFilterStepDetail(_node, _outputInterface, _filter);
       }
 
       public Builder setNode(String node) {
         _node = node;
-        return this;
-      }
-
-      public Builder setInputInterface(String inputIface) {
-        _inputInterface = inputIface;
         return this;
       }
 
