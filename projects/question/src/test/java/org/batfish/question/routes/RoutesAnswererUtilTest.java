@@ -325,7 +325,7 @@ public class RoutesAnswererUtilTest {
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
                 diffMatrix,
                 PresenceStatus.IN_BOTH));
-    Multiset<Row> rows = getBgpRouteRowsDiff(diff);
+    Multiset<Row> rows = getBgpRouteRowsDiff(diff, RibProtocol.BGP);
 
     assertThat(
         rows,

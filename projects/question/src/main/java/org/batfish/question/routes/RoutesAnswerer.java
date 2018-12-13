@@ -146,7 +146,7 @@ public class RoutesAnswerer extends Answerer {
                 dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = getBgpRouteRowsDiff(routesDiffRaw);
+        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
         break;
 
       case BGPMP:
@@ -164,7 +164,7 @@ public class RoutesAnswerer extends Answerer {
                 dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = getBgpRouteRowsDiff(routesDiffRaw);
+        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGPMP);
         break;
 
       case MAIN:

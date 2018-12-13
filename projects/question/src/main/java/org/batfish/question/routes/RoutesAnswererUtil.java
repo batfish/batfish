@@ -18,6 +18,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_NETWORK_PRESE
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 
 import com.google.common.collect.HashMultiset;
@@ -237,8 +238,10 @@ public class RoutesAnswererUtil {
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link BgpRoute}s
    * @return {@link Multiset} of {@link Row}s
    */
-  static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
+  static Multiset<Row> getBgpRouteRowsDiff(
+      List<DiffRoutesOutput> diffRoutesList, RibProtocol ribProtocol) {
     Multiset<Row> rows = HashMultiset.create();
+    Map<String, ColumnMetadata> columnMetadataMap = getDiffTableMetadata(ribProtocol).toColumnMap();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
       RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
       String hostName = routeRowKey.getHostName();
@@ -248,7 +251,7 @@ public class RoutesAnswererUtil {
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
-        Row.RowBuilder rowBuilder = Row.builder();
+        Row.RowBuilder rowBuilder = Row.builder(columnMetadataMap);
         rowBuilder
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
@@ -284,7 +287,9 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getProtocol() : null)
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_AS_PATH,
-            routeRowAttribute != null ? routeRowAttribute.getAsPath() : null)
+            routeRowAttribute != null && routeRowAttribute.getAsPath() != null
+                ? routeRowAttribute.getAsPath().getAsPathString()
+                : null)
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
             routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
@@ -310,6 +315,8 @@ public class RoutesAnswererUtil {
    * @return {@link Multiset} of {@link Row}s
    */
   static Multiset<Row> getAbstractRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getDiffTableMetadata(RibProtocol.MAIN).toColumnMap();
     Multiset<Row> rows = HashMultiset.create();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
       RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
@@ -321,7 +328,7 @@ public class RoutesAnswererUtil {
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
-        Row.RowBuilder rowBuilder = Row.builder();
+        Row.RowBuilder rowBuilder = Row.builder(columnMetadataMap);
         rowBuilder
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
