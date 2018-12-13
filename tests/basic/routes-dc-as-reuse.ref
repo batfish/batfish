@@ -18,53 +18,53 @@
           "schema" : "String"
         },
         {
-          "description" : "Route network (prefix)",
+          "description" : "Network for this route",
           "isKey" : true,
           "isValue" : true,
           "name" : "Network",
           "schema" : "Prefix"
         },
         {
-          "description" : "Route's next hop (as node hostname)",
+          "description" : "Route's Next Hop's Hostname",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Next_Hops",
-          "schema" : "List<String>"
+          "name" : "Next_Hop",
+          "schema" : "String"
         },
         {
-          "description" : "Next Hop IPs for the given prefix",
+          "description" : "Route's Next Hop IP",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Next_Hop_IPs",
-          "schema" : "List<Ip>"
+          "name" : "Next_Hop_IP",
+          "schema" : "Ip"
         },
         {
-          "description" : "Protocols of all routes for this prefix",
+          "description" : "Route's Protocol",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Protocols",
-          "schema" : "List<String>"
+          "name" : "Protocol",
+          "schema" : "String"
         },
         {
-          "description" : "Admin distances of routes for this prefix",
+          "description" : "Route's Admin distance",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Admin_Distances",
-          "schema" : "List<Integer>"
+          "name" : "Admin_Distance",
+          "schema" : "Integer"
         },
         {
-          "description" : "Metrics of routes for this prefix",
+          "description" : "Route's Metric",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Metrics",
-          "schema" : "List<Integer>"
+          "name" : "Metric",
+          "schema" : "Integer"
         },
         {
-          "description" : "Route tag",
+          "description" : "Tag for this route",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Tags",
-          "schema" : "List<Integer>"
+          "name" : "Tag",
+          "schema" : "Integer"
         }
       ],
       "textDesc" : "Display RIB routes"
@@ -72,3931 +72,17 @@
     "rows" : [
       {
         "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_1_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_0_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_0_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
           "id" : "node-pod_0_leaf_1",
           "name" : "pod_0_leaf_1"
         },
         "VRF" : "default",
         "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_1_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.2/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_1_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.2/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.0.3/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.3/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "pod_1_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/31",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.2/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_tor_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_0_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_0_tor_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.2"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.0.1",
-          "1.1.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.3/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_1",
-          "name" : "pod_0_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1",
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.0.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_0",
-          "name" : "pod_0_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4005,212 +91,12 @@
         },
         "VRF" : "default",
         "Network" : "1.1.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.1.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "pod_1_leaf_0",
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1",
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4218,25 +104,13 @@
           "name" : "pod_0_leaf_0"
         },
         "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4244,389 +118,251 @@
           "name" : "pod_0_tor_0"
         },
         "VRF" : "default",
-        "Network" : "6.1.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
         },
         "VRF" : "default",
         "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
           "id" : "node-pod_0_tor_0",
           "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.0.1.0",
+        "Next_Hop" : "pod_0_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
         },
         "VRF" : "default",
         "Network" : "1.0.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
       },
       {
         "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
         },
         "VRF" : "default",
-        "Network" : "5.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_tor_1",
-          "name" : "pod_0_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.2/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "2.0.0.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "6.0.0.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "1.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_1_spine_0",
-          "name" : "plane_1_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.1.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.3/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-plane_0_spine_0",
-          "name" : "plane_0_spine_0"
-        },
-        "VRF" : "default",
-        "Network" : "4.1.1.1/32",
-        "Next_Hops" : [
-          "pod_1_leaf_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.0"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_0",
-          "name" : "pod_1_tor_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.0.2/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.0/31",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "connected"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_leaf_1",
-          "name" : "pod_1_leaf_1"
-        },
-        "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "plane_1_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.1.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_0_leaf_0",
-          "name" : "pod_0_leaf_0"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.0.0/31",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.0.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-pod_1_tor_1",
-          "name" : "pod_1_tor_1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop" : "pod_0_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4634,51 +370,153 @@
           "name" : "pod_0_tor_0"
         },
         "VRF" : "default",
-        "Network" : "5.0.1.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.0.3"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
-          "id" : "node-pod_1_leaf_0",
-          "name" : "pod_1_leaf_0"
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
         },
         "VRF" : "default",
-        "Network" : "3.0.1.0/31",
-        "Next_Hops" : [
-          "plane_0_spine_0"
-        ],
-        "Next_Hop_IPs" : [
-          "2.1.0.1"
-        ],
-        "Protocols" : [
-          "bgp"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          20
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "2.1.0.0",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "2.0.0.0",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4687,24 +525,740 @@
         },
         "VRF" : "default",
         "Network" : "2.0.0.0/32",
-        "Next_Hops" : [
-          null
-        ],
-        "Next_Hop_IPs" : [
-          "AUTO/NONE(-1l)"
-        ],
-        "Protocols" : [
-          "local"
-        ],
-        "Tags" : [
-          null
-        ],
-        "Admin_Distances" : [
-          0
-        ],
-        "Metrics" : [
-          0
-        ]
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "2.1.1.0",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "2.0.1.0",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.1.1.0",
+        "Next_Hop" : "pod_1_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.1.1.2",
+        "Next_Hop" : "pod_1_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "2.0.1.0",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "2.1.1.0",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "2.0.0.0",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.3/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4713,37 +1267,1587 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.1/32",
-        "Next_Hops" : [
-          "pod_0_leaf_0",
-          "pod_0_leaf_1"
-        ],
-        "Next_Hop_IPs" : [
-          "1.0.1.1",
-          "1.0.1.3"
-        ],
-        "Protocols" : [
-          "bgp",
-          "bgp"
-        ],
-        "Tags" : [
-          null,
-          null
-        ],
-        "Admin_Distances" : [
-          20,
-          20
-        ],
-        "Metrics" : [
-          0,
-          0
-        ]
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "2.1.1.0",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.2/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.0.0.0",
+        "Next_Hop" : "pod_0_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.0.0.2",
+        "Next_Hop" : "pod_0_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.3/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "2.0.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.3/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.1.1.0",
+        "Next_Hop" : "pod_1_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.1.1.2",
+        "Next_Hop" : "pod_1_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.2/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "2.1.0.0",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "2.1.0.0",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.1.0.2",
+        "Next_Hop" : "pod_1_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.1.0.0",
+        "Next_Hop" : "pod_1_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "2.0.0.0",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.0/31",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.0.1.0",
+        "Next_Hop" : "pod_0_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop" : "pod_0_tor_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.1.1/32",
+        "Next_Hop_IP" : "2.1.0.0",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.2/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.0.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "2.0.0.0",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.0.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.1.0.0",
+        "Next_Hop" : "pod_1_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.0.1/32",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "2.1.0.0",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.1.0.2",
+        "Next_Hop" : "pod_1_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.1.1/32",
+        "Next_Hop_IP" : "2.0.0.0",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.0.0.0",
+        "Next_Hop" : "pod_0_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "2.1.1.0",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.1.0.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "2.0.1.0",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "2.0.1.0",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.1.1.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.1.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_1",
+          "name" : "pod_1_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.1.1.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.1.0.3",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "2.0.1.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_0",
+          "name" : "pod_1_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/31",
+        "Next_Hop_IP" : "2.1.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.1.0.1",
+        "Next_Hop" : "pod_1_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.0.0/31",
+        "Next_Hop_IP" : "1.0.1.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.3/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.0.0.3",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "5.0.1.1/32",
+        "Next_Hop_IP" : "2.1.1.1",
+        "Next_Hop" : "plane_1_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "1.0.0.2",
+        "Next_Hop" : "pod_0_tor_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.0.0/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_0",
+          "name" : "pod_0_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.1.0/31",
+        "Next_Hop_IP" : "1.0.0.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_0_spine_0",
+          "name" : "plane_0_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.0.1/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "5.1.1.1/32",
+        "Next_Hop_IP" : "2.1.1.0",
+        "Next_Hop" : "pod_1_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_1",
+          "name" : "pod_0_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_tor_1",
+          "name" : "pod_0_tor_1"
+        },
+        "VRF" : "default",
+        "Network" : "6.0.0.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop" : "pod_0_leaf_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_0_leaf_0",
+          "name" : "pod_0_leaf_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.1.0.1/32",
+        "Next_Hop_IP" : "2.0.0.1",
+        "Next_Hop" : "plane_0_spine_0",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.2/32",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "local",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_tor_0",
+          "name" : "pod_1_tor_0"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.0/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-plane_1_spine_0",
+          "name" : "plane_1_spine_0"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.1/32",
+        "Next_Hop_IP" : "2.0.1.0",
+        "Next_Hop" : "pod_0_leaf_1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-pod_1_leaf_1",
+          "name" : "pod_1_leaf_1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.0.2/31",
+        "Next_Hop_IP" : "AUTO/NONE(-1l)",
+        "Next_Hop" : null,
+        "Protocol" : "connected",
+        "Tag" : null,
+        "Admin_Distance" : 0,
+        "Metric" : 0
       }
     ],
     "summary" : {
-      "notes" : "Found 174 results",
+      "notes" : "Found 198 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 174
+      "numResults" : 198
     }
   }
 ]
