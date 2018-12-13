@@ -6,11 +6,9 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 
@@ -78,7 +76,6 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     public static final class Builder {
       private @Nullable NodeInterfacePair _outputInterface;
       private @Nullable String _outputFilter;
-      private @Nullable SortedSet<FlowDiff> _flowDiffs;
       private @Nullable Flow _transformedFlow;
 
       public ExitOutputIfaceStepDetail build() {

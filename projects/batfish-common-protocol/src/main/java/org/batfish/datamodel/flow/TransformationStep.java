@@ -10,12 +10,10 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 
 /** A {@link Step} for packet transformations. */
-@ParametersAreNonnullByDefault
 public final class TransformationStep extends Step<TransformationStepDetail> {
   public enum TransformationType {
     /** Destination nat */
@@ -63,7 +61,7 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
     }
 
     @JsonProperty(PROP_TRANSFORMATION_TYPE)
-    public TransformationType getTransformationType() {
+    public @Nonnull TransformationType getTransformationType() {
       return _type;
     }
 
@@ -84,7 +82,7 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
           !detail._flowDiffs.isEmpty(),
           "Cannot construct a TRANSFORMED TransformationStep with no FlowDiffs");
     } else {
-      // PERMITTED transformations means it goes through the NAT with being transformed
+      // PERMITTED transformations means it goes through the NAT without being transformed
       checkArgument(
           detail._flowDiffs.isEmpty(),
           "Cannot construct a PERMITTED TransformationStep with FlowDiffs");

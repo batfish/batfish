@@ -896,7 +896,7 @@ public class TracerouteEngineImplTest {
             .setTag("tag")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
-            .setSrcIp(ip21)
+            .setSrcIp(ip22)
             .setDstIp(ip21)
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
