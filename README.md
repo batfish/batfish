@@ -5,28 +5,23 @@
 
 ## What is Batfish?
 
-[![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/watch?v=Ca7kPAtfFqo)
+Batfish is a network validation tool that provides correctness guarantees for security, reliability, and compliance by analyzing the configuration of network devices. It builds complete models of network behavior from device configurations and finds violations of network policies (built-in, user-defined, and best-practices).
 
-Batfish is a network validation tool that provides correctness guarantees for security, reliability, and compliance by analyzing the configuration of network devices. 
+A primary use case for Batfish is to validate configuration changes *before* deployment (though it can be used to validate deployed configurations as well). Pre-deployment validation is a critical gap in existing network automation workflows. By  Batfish in automation workflows, network engineers can close this gap and ensure that only correct changes are deployed.
 
-The primary use case for Batfish is to evaluate planned configuration changes in order to understand the impact of the change. Pre-deployment validation is a critical gap in existing network automation workflows. 
-
-While pre-deployment validation is the primary use case, Batfish can also be used to provide post-change validation.
-
-Batfish builds complete models of network behavior from device configurations and finds violations of network policies (built-in, user-defined, and best-practices). By integrating Batfish into their network automation workflow, network engineers can close this gap and ensure that only correct changes are deployed.
-
-
-**The Batfish service does NOT require direct access to network devices**, as the core analysis just requires the configuration of network devices. Additional information from the network can also be fed into Batfish to enhance the analysis. That information includes, but is not limited to:
+**The Batfish service does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. Additional information from the network may be fed into Batfish to enhance the analysis. Examples of such information include:
 
 * BGP routes received from external peers
 * Topology information represented by LLDP/CDP
 
 See [www.batfish.org](http://www.batfish.org) for technical information on how it works. ![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
 
-
 ## What kinds of correctness checks does Batfish support?
 
-Batfish can provide correctness guarantees for a wide range of network behaviors and device configuration attributes, for example:
+Batfish's YouTube channel illustrates many types of checks.
+[![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
+
+These checks span a range of network behaviors and device configuration attributes, for example:
 #### Configuration Compliance
 * Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
 * Configuration settings for MTUs, AAA, NTP, logging, etc. match templates
@@ -42,7 +37,7 @@ Batfish can provide correctness guarantees for a wide range of network behaviors
 * Planned ACL or firewall changes are provably correct and causes no collateral damage for other traffic
 * Two configurations, potentially from different vendors, are functionally equivalent
 
-Batfish's [YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) has videos that illustrate many of these use cases.
+
   
 ## How do I get started?
 
