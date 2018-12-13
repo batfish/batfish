@@ -38,7 +38,7 @@ public final class PsFromInterface extends PsFrom {
       // No such interface, won't match anything
       return BooleanExprs.FALSE;
     }
-    // Convert to conjuction of connected protocol and matching at least one of the interface
+    // Convert to conjunction of connected protocol and matching at least one of the interface
     // prefixes
     return new Conjunction(
         ImmutableList.of(
