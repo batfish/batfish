@@ -28,14 +28,14 @@
           "description" : "Presence of the Route's Network (Prefix)",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Route_Network_Presence",
+          "name" : "Network_Presence",
           "schema" : "String"
         },
         {
           "description" : "Presence of a Route for the given Network (Prefix)",
           "isKey" : false,
           "isValue" : true,
-          "name" : "Route_Presence",
+          "name" : "Entry_Presence",
           "schema" : "String"
         },
         {
@@ -128,13 +128,13 @@
     "rows" : [
       {
         "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
+          "id" : "node-as1border1",
+          "name" : "as1border1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "Route_Network_Presence" : "Only in Snapshot",
-        "Route_Presence" : "Only in Snapshot",
+        "Network_Presence" : "Only in Snapshot",
+        "Entry_Presence" : "Only in Snapshot",
         "Snapshot_Next_Hop" : null,
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "ibgp",
@@ -155,8 +155,8 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "Route_Network_Presence" : "Only in Snapshot",
-        "Route_Presence" : "Only in Snapshot",
+        "Network_Presence" : "Only in Snapshot",
+        "Entry_Presence" : "Only in Snapshot",
         "Snapshot_Next_Hop" : null,
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "bgp",
@@ -172,13 +172,13 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as1core1",
+          "name" : "as1core1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "Route_Network_Presence" : "Only in Snapshot",
-        "Route_Presence" : "Only in Snapshot",
+        "Network_Presence" : "Only in Snapshot",
+        "Entry_Presence" : "Only in Snapshot",
         "Snapshot_Next_Hop" : null,
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "ibgp",
