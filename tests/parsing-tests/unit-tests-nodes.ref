@@ -10479,7 +10479,7 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                 "localPreference" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                   "value" : 100
                 }
               },
@@ -21260,7 +21260,7 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                 "localPreference" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                   "value" : 100
                 }
               },
@@ -21298,7 +21298,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 5
                     }
                   },
@@ -21338,7 +21338,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 50
                     }
                   },
@@ -21378,7 +21378,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 100
                     }
                   },
@@ -21418,7 +21418,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 150
                     }
                   },
@@ -21458,7 +21458,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 200
                     }
                   },
@@ -21498,7 +21498,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 250
                     }
                   },
@@ -21538,7 +21538,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
                   },
@@ -21578,7 +21578,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 350
                     }
                   },
@@ -21618,7 +21618,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 500
                     }
                   },
@@ -21687,7 +21687,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 1000
                     }
                   },
@@ -22144,7 +22144,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 150
                     }
                   },
@@ -22194,7 +22194,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 200
                     }
                   },
@@ -22244,7 +22244,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 250
                     }
                   },
@@ -22294,7 +22294,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
                   },
@@ -25124,7 +25124,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                       "localPreference" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 350
                       }
                     }
@@ -25163,7 +25163,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                       "localPreference" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 350
                       }
                     }

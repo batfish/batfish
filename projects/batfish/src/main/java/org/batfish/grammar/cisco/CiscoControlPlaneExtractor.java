@@ -8741,7 +8741,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_local_preference_rm_stanza(Set_local_preference_rm_stanzaContext ctx) {
-    IntExpr localPreference = toLocalPreferenceIntExpr(ctx.pref);
+    LongExpr localPreference = toLocalPreferenceLongExpr(ctx.pref);
     RouteMapSetLocalPreferenceLine line = new RouteMapSetLocalPreferenceLine(localPreference);
     _currentRouteMapClause.addSetLine(line);
   }
@@ -9868,7 +9868,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private IntExpr toLocalPreferenceIntExpr(Int_exprContext ctx) {
+  private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
     if (ctx.DEC() != null) {
       int val = toInteger(ctx.DEC());
       if (ctx.PLUS() != null) {
@@ -9876,10 +9876,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (ctx.DASH() != null) {
         return new DecrementLocalPreference(val);
       } else {
-        return new LiteralInt(val);
+        return new LiteralLong(val);
       }
     } else if (ctx.RP_VARIABLE() != null) {
-      return new VarInt(ctx.RP_VARIABLE().getText());
+      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
        * Unsupported local-preference integer expression - do not add cases
@@ -10659,7 +10659,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_local_preference_rp_stanzaContext ctx) {
-    return new RoutePolicySetLocalPref(toLocalPreferenceIntExpr(ctx.pref));
+    return new RoutePolicySetLocalPref(toLocalPreferenceLongExpr(ctx.pref));
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_med_rp_stanzaContext ctx) {

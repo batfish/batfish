@@ -172,7 +172,7 @@ public class BgpProtocolHelper {
 
     // Outgoing nextHopIp & localPreference
     Ip nextHopIp;
-    int localPreference;
+    long localPreference;
     if (sessionProperties.isEbgp() || !remoteRouteIsBgp) {
       nextHopIp = fromNeighbor.getLocalIp();
       localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
