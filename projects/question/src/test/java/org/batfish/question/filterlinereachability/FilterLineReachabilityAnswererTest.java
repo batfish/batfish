@@ -727,11 +727,13 @@ public class FilterLineReachabilityAnswererTest {
 
     // #0 is not included despite different action when #1 already has different action.
     List<LineAction> actionsAndCover = ImmutableList.of(DENY, DENY, PERMIT);
-    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
+    assertThat(findBlockingLinesForLine(2, actionsAndCover, bdds), contains(1));
   }
 
+  // This is really a documentation test for a case where we might want #0 to be reported, but
+  // it won't be.
   @Test
-  public void testDifferenceActionsPreserved() {
+  public void testSameActionNotReported() {
     BDDPacket p = new BDDPacket();
     BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
     BDD tcpEstablished = p.getTcpAck().or(p.getTcpRst());
