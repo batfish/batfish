@@ -21,25 +21,25 @@ import org.batfish.datamodel.Ip;
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
-  @Nullable private AsPath _asPath;
+  @Nullable private final AsPath _asPath;
 
-  @Nullable private Integer _adminDistance;
+  @Nullable private final Integer _adminDistance;
 
-  @Nonnull private List<String> _communities;
+  @Nonnull private final List<String> _communities;
 
-  @Nullable private Long _localPreference;
+  @Nullable private final Long _localPreference;
 
-  @Nullable private Long _metric;
+  @Nullable private final Long _metric;
 
-  @Nullable private String _nextHop;
+  @Nullable private final String _nextHop;
 
-  @Nonnull private Ip _nextHopIp;
+  @Nonnull private final Ip _nextHopIp;
 
-  @Nullable private String _originProtocol;
+  @Nullable private final String _originProtocol;
 
-  @Nullable private String _protocol;
+  @Nullable private final String _protocol;
 
-  @Nullable private Integer _tag;
+  @Nullable private final Integer _tag;
 
   private RouteRowAttribute(
       @Nonnull Ip nextHopIp,
@@ -120,7 +120,17 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
       comparing(RouteRowAttribute::getNextHopIp, nullsLast(Ip::compareTo))
-          .thenComparing(RouteRowAttribute::getProtocol, nullsLast(String::compareTo));
+          .thenComparing(RouteRowAttribute::getProtocol, nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getNextHop, nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Integer::compareTo))
+          .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
+          .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
+          .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
+          .thenComparing(RouteRowAttribute::getOriginProtocol, nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getTag, nullsLast(Integer::compareTo))
+          .thenComparing(
+              routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
+              nullsLast(String::compareTo));
 
   @Override
   public int compareTo(RouteRowAttribute o) {
