@@ -19,7 +19,7 @@ See [www.batfish.org](http://www.batfish.org) for technical information on how i
 
 [![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
 
-The Batfish YouTube channel illustrates many types of checks. These checks span a range of network behaviors and device configuration attributes, for example:
+The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) (which you can subscribe to for new content) illustrates many types of checks. These checks span a range of network behaviors and device configuration attributes.
 #### Configuration Compliance
 * Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
 * Configuration settings for MTUs, AAA, NTP, logging, etc. match templates
