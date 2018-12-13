@@ -3533,7 +3533,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_OBJECT, CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
+        CiscoStructureType.SERVICE_OBJECT,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
+        CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(
         CiscoStructureType.PROTOCOL_OBJECT,
         CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
