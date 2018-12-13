@@ -1,63 +1,73 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchSourceInterface extends BooleanExpr {
+/** Match a specific interface name */
+@ParametersAreNonnullByDefault
+public final class MatchSourceInterface extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
+  private static final String PROP_INTERFACE = "interface";
 
-  private String _srcInterface;
+  @Nonnull private final String _srcInterface;
 
   @JsonCreator
-  private MatchSourceInterface() {}
+  private static MatchSourceInterface create(
+      @Nullable @JsonProperty(PROP_INTERFACE) String srcInterface) {
+    checkArgument(!Strings.isNullOrEmpty(srcInterface), "Missing %s", PROP_INTERFACE);
+    return new MatchSourceInterface(srcInterface);
+  }
 
   public MatchSourceInterface(String srcInterface) {
     _srcInterface = srcInterface;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof MatchSourceInterface)) {
       return false;
     }
     MatchSourceInterface other = (MatchSourceInterface) obj;
-    if (_srcInterface == null) {
-      if (other._srcInterface != null) {
-        return false;
-      }
-    } else if (!_srcInterface.equals(other._srcInterface)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_srcInterface, other._srcInterface);
   }
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+    Result result = new Result();
+    Interface iface = environment.getConfiguration().getAllInterfaces().get(_srcInterface);
+    if (iface == null) {
+      // No such interface, return false
+      result.setBooleanValue(false);
+      return result;
+    }
+
+    // Check that route's network equals to the connected subnet of the interface
+    result.setBooleanValue(
+        environment.getOriginalRoute().getNetwork().equals(iface.getPrimaryNetwork()));
+    return result;
   }
 
-  public String getList() {
+  @JsonProperty(PROP_INTERFACE)
+  public String getInterfaceName() {
     return _srcInterface;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_srcInterface == null) ? 0 : _srcInterface.hashCode());
-    return result;
-  }
-
-  public void setList(String srcInterface) {
-    _srcInterface = srcInterface;
+    return Objects.hash(_srcInterface);
   }
 }

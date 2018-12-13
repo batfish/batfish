@@ -27505,7 +27505,7 @@
                 "comment" : "lo0",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchSourceInterface",
-                  "list" : "lo0.0"
+                  "interface" : "lo0.0"
                 },
                 "trueStatements" : [
                   {
