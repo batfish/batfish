@@ -5951,6 +5951,11 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "convertStatus" : {
+        "junos-srx-1" : "PASSED",
+        "junos-srx-2" : "PASSED",
+        "junos-srx-3" : "PASSED"
+      },
       "definedStructures" : {
         "configs/junos-srx-1.cfg" : {
           "bgp group" : {
