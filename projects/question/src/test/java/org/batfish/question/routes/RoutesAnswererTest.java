@@ -331,7 +331,6 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
         COL_BASE_PREFIX + COL_TAG,
         COL_DELTA_PREFIX + COL_TAG);
-    expectedBuilder.build();
 
     ImmutableList.Builder<Schema> schemaBuilderList = ImmutableList.builder();
     schemaBuilderList.add(
