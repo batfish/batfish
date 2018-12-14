@@ -18,49 +18,49 @@
           "schema" : "String"
         },
         {
-          "description" : "Route network (prefix)",
+          "description" : "Network for this route",
           "isKey" : true,
           "isValue" : true,
           "name" : "Network",
           "schema" : "Prefix"
         },
         {
-          "description" : "Route protocol",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Protocol",
-          "schema" : "String"
-        },
-        {
-          "description" : "Route's next hop IP",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Next_Hop_IP",
-          "schema" : "Ip"
-        },
-        {
-          "description" : "Route's next hop (as node hostname)",
+          "description" : "Route's Next Hop's Hostname",
           "isKey" : false,
           "isValue" : true,
           "name" : "Next_Hop",
           "schema" : "String"
         },
         {
-          "description" : "Route's admin distance",
+          "description" : "Route's Next Hop IP",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Next_Hop_IP",
+          "schema" : "Ip"
+        },
+        {
+          "description" : "Route's Protocol",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Protocol",
+          "schema" : "String"
+        },
+        {
+          "description" : "Route's Admin distance",
           "isKey" : false,
           "isValue" : true,
           "name" : "Admin_Distance",
           "schema" : "Integer"
         },
         {
-          "description" : "Route's metric",
+          "description" : "Route's Metric",
           "isKey" : false,
           "isValue" : true,
           "name" : "Metric",
           "schema" : "Integer"
         },
         {
-          "description" : "Route tag",
+          "description" : "Tag for this route",
           "isKey" : false,
           "isValue" : true,
           "name" : "Tag",
