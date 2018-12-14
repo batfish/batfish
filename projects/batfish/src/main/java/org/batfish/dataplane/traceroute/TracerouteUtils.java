@@ -2,14 +2,13 @@ package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.DELIVERED_TO_SUBNET;
-import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.EXITS_NETWORK;
 import static org.batfish.datamodel.flow.StepAction.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -27,6 +26,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
+import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -91,23 +92,11 @@ final class TracerouteUtils {
    *
    * @param node Name of the {@link Hop}
    * @param inputIfaceName Name of the source interface
-   * @param ignoreFilters if set to true, ACLs are ignored
-   * @param currentFlow {@link Flow} for the current packet entering the source interface
-   * @param aclDefinitions {@link Map} from ACL names to definitions ({@link IpAccessList}) for the
-   *     node
-   * @param namedIpSpaces {@link NavigableMap} of named {@link IpSpace} for the current node ({@link
-   *     Hop})
    * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
   @Nonnull
-  static EnterInputIfaceStep createEnterSrcIfaceStep(
-      Configuration node,
-      String inputIfaceName,
-      boolean ignoreFilters,
-      Flow currentFlow,
-      Map<String, IpAccessList> aclDefinitions,
-      NavigableMap<String, IpSpace> namedIpSpaces) {
+  static EnterInputIfaceStep createEnterSrcIfaceStep(Configuration node, String inputIfaceName) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
@@ -119,29 +108,34 @@ final class TracerouteUtils {
         .setInputInterface(new NodeInterfacePair(node.getHostname(), inputIfaceName))
         .setInputVrf(inputInterface.getVrfName());
 
-    // If inbound filter is present, add the detail and verify it permits the flow.
-    IpAccessList inputFilter = inputInterface.getIncomingFilter();
-    if (inputFilter != null) {
-      enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
-      // check input filter
-      if (!ignoreFilters) {
-        FilterResult filterResult =
-            inputFilter.filter(currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces);
-        enterSrcStepDetailBuilder.setInputFilter(inputFilter.getName());
-        if (filterResult.getAction() == LineAction.DENY) {
-          return enterSrcIfaceStepBuilder
-              .setDetail(enterSrcStepDetailBuilder.build())
-              .setAction(DENIED)
-              .build();
-        }
-      }
-    }
-
     // Send in the flow to the next steps
     return enterSrcIfaceStepBuilder
         .setDetail(enterSrcStepDetailBuilder.build())
         .setAction(RECEIVED)
         .build();
+  }
+
+  @VisibleForTesting
+  static FilterStep applyFilter(
+      Flow currentFlow,
+      String inInterfaceName,
+      IpAccessList filter,
+      Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
+      boolean ignoreFilters) {
+    checkArgument(filter != null, "Missing filter");
+
+    StepAction action = StepAction.PERMITTED;
+    // check filter
+    if (!ignoreFilters) {
+      FilterResult filterResult =
+          filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
+      if (filterResult.getAction() == LineAction.DENY) {
+        action = StepAction.DENIED;
+      }
+    }
+
+    return new FilterStep(new FilterStepDetail(filter.getName()), action);
   }
 
   /**

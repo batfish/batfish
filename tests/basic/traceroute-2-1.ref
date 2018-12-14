@@ -85,10 +85,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "filter::OUTPUT"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host2",
                         "interface" : "eth0"
@@ -107,12 +113,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet3/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
                     }
                   },
                   {
@@ -197,12 +209,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet2/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "blocktelnet"
                     }
                   },
                   {
@@ -261,10 +279,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "INSIDE_TO_AS1"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -328,10 +352,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "filter::OUTPUT"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host2",
                         "interface" : "eth0"
@@ -350,12 +380,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet3/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
                     }
                   },
                   {
@@ -503,10 +539,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "INSIDE_TO_AS1"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -570,10 +612,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "filter::OUTPUT"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host2",
                         "interface" : "eth0"
@@ -592,12 +640,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet3/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
                     }
                   },
                   {
@@ -745,10 +799,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "INSIDE_TO_AS1"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
@@ -812,10 +872,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "filter::OUTPUT"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "filter::OUTPUT",
                       "outputInterface" : {
                         "hostname" : "host2",
                         "interface" : "eth0"
@@ -834,12 +900,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "RESTRICT_HOST_TRAFFIC_IN",
                       "inputInterface" : {
                         "hostname" : "as2dept1",
                         "interface" : "GigabitEthernet3/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
                     }
                   },
                   {
@@ -924,12 +996,18 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "blocktelnet",
                       "inputInterface" : {
                         "hostname" : "as2core1",
                         "interface" : "GigabitEthernet3/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "blocktelnet"
                     }
                   },
                   {
@@ -988,10 +1066,16 @@
                     }
                   },
                   {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "INSIDE_TO_AS1"
+                    }
+                  },
+                  {
                     "type" : "ExitOutputInterface",
                     "action" : "TRANSMITTED",
                     "detail" : {
-                      "outputFilter" : "INSIDE_TO_AS1",
                       "outputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"

@@ -25,38 +25,28 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
-    private static final String PROP_INPUT_FILTER = "inputFilter";
 
     private @Nonnull NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
-    private @Nullable String _inputFilter;
 
     private EnterInputIfaceStepDetail(
-        NodeInterfacePair inputInterface, @Nullable String inputFilter, @Nullable String inputVrf) {
+        NodeInterfacePair inputInterface, @Nullable String inputVrf) {
       _inputInterface = inputInterface;
-      _inputFilter = inputFilter;
       _inputVrf = inputVrf;
     }
 
     @JsonCreator
     private static EnterInputIfaceStepDetail jsonCreator(
         @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
-        @JsonProperty(PROP_INPUT_FILTER) @Nullable String inputFilter,
         @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf) {
       checkArgument(inputInterface != null, "Input interface should be set");
-      return new EnterInputIfaceStepDetail(inputInterface, inputFilter, inputVrf);
+      return new EnterInputIfaceStepDetail(inputInterface, inputVrf);
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
     @Nonnull
     public NodeInterfacePair getInputInterface() {
       return _inputInterface;
-    }
-
-    @JsonProperty(PROP_INPUT_FILTER)
-    @Nullable
-    public String getInputFilter() {
-      return _inputFilter;
     }
 
     @JsonProperty(PROP_INPUT_VRF)
@@ -73,11 +63,10 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     public static final class Builder {
       private NodeInterfacePair _inputInterface;
       private String _inputVrf;
-      private String _inputFilter;
 
       public EnterInputIfaceStepDetail build() {
         checkState(_inputInterface != null, "Must call setInputInterface before building");
-        return new EnterInputIfaceStepDetail(_inputInterface, _inputFilter, _inputVrf);
+        return new EnterInputIfaceStepDetail(_inputInterface, _inputVrf);
       }
 
       public Builder setInputInterface(NodeInterfacePair inputInterface) {
@@ -87,11 +76,6 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
       public Builder setInputVrf(@Nullable String inputVrf) {
         _inputVrf = inputVrf;
-        return this;
-      }
-
-      public Builder setInputFilter(@Nullable String inputFilter) {
-        _inputFilter = inputFilter;
         return this;
       }
 
