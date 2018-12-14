@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedMap;
@@ -107,15 +108,21 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     return _definedStructures;
   }
 
+  @JsonIgnore
+  public SortedMap<String, ConvertStatus> getConvertStatus() {
+    return _convertStatus;
+  }
+
+  @VisibleForTesting
   @JsonProperty(PROP_CONVERT_STATUS)
   @Nonnull
-  public SortedMap<String, ConvertStatus> getConvertStatus() {
+  SortedMap<String, ConvertStatus> getConvertStatusProp() {
     if (_convertStatus != null) {
-      return _convertStatus;
+      return ImmutableSortedMap.copyOf(_convertStatus);
     } else if (_failed != null) {
-      SortedMap<String, ConvertStatus> map = new TreeMap<>();
+      ImmutableSortedMap.Builder<String, ConvertStatus> map = ImmutableSortedMap.naturalOrder();
       _failed.stream().forEach(n -> map.put(n, ConvertStatus.FAILED));
-      return map;
+      return map.build();
     } else {
       return ImmutableSortedMap.of();
     }
@@ -218,6 +225,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   @VisibleForTesting
+  @JsonIgnore
   void setConvertStatus(@Nullable SortedMap<String, ConvertStatus> convertStatus) {
     _convertStatus = convertStatus;
   }
@@ -235,6 +243,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   @VisibleForTesting
+  @JsonIgnore
   void setFailed(Set<String> failed) {
     _failed = failed;
   }

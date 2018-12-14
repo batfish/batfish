@@ -39,9 +39,9 @@ public class ConvertConfigurationAnswerElementTest {
 
   @Test
   public void testConvertStatus() {
-    assertThat(_element.getConvertStatus(), anEmptyMap());
+    assertThat(_element.getConvertStatusProp(), anEmptyMap());
     _element.getConvertStatus().put("node", ConvertStatus.PASSED);
-    assertThat(_element.getConvertStatus(), hasEntry("node", ConvertStatus.PASSED));
+    assertThat(_element.getConvertStatusProp(), hasEntry("node", ConvertStatus.PASSED));
   }
 
   @Test
@@ -50,11 +50,11 @@ public class ConvertConfigurationAnswerElementTest {
     _element.setFailed(set);
     _element.setConvertStatus(null);
 
-    assertThat(_element.getConvertStatus(), anEmptyMap());
+    assertThat(_element.getConvertStatusProp(), anEmptyMap());
 
     // Confirm object containing failed-set, not convert-status-map still returns a correct map
     set.add("node");
-    assertThat(_element.getConvertStatus(), hasEntry("node", ConvertStatus.FAILED));
+    assertThat(_element.getConvertStatusProp(), hasEntry("node", ConvertStatus.FAILED));
   }
 
   @Test
