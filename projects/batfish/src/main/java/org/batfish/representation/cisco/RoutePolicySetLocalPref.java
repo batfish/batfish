@@ -1,22 +1,25 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
+@ParametersAreNonnullByDefault
+public final class RoutePolicySetLocalPref extends RoutePolicySetStatement {
 
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _pref;
+  private LongExpr _pref;
 
-  public RoutePolicySetLocalPref(IntExpr intExpr) {
+  public RoutePolicySetLocalPref(LongExpr intExpr) {
     _pref = intExpr;
   }
 
-  public IntExpr getLocalPref() {
+  public @Nonnull LongExpr getLocalPref() {
     return _pref;
   }
 

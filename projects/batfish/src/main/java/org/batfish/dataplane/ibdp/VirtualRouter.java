@@ -679,7 +679,7 @@ public class VirtualRouter implements Serializable {
         AsPath asPath = advert.getAsPath();
         SortedSet<Long> clusterList = advert.getClusterList();
         SortedSet<Long> communities = ImmutableSortedSet.copyOf(advert.getCommunities());
-        int localPreference = advert.getLocalPreference();
+        long localPreference = advert.getLocalPreference();
         long metric = advert.getMed();
         Prefix network = advert.getNetwork();
         Ip nextHopIp = advert.getNextHopIp();
@@ -708,7 +708,7 @@ public class VirtualRouter implements Serializable {
         BgpRoute route = builder.build();
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
       } else {
-        int localPreference;
+        long localPreference;
         if (ebgp) {
           localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
         } else {

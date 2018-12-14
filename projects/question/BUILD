@@ -63,6 +63,7 @@ junit_tests(
         ":question_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
+        "//projects/lib/bdd",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
         "@guava//:compile",
