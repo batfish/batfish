@@ -3788,7 +3788,7 @@ public final class FlatJuniperGrammarTest {
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setNextHopInterface("iface")
-                            .setNetwork(Prefix.parse("3.3.3.3/24"))
+                            .setNetwork(Prefix.parse("1.1.1.1/24"))
                             .setAdministrativeCost(1)
                             .build())
                     .build());
