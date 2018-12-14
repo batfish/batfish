@@ -26,6 +26,11 @@ logging console disable
 logging console 3
 logging count
 logging debug-trace
+logging device-id cluster-id
+logging device-id context-name
+logging device-id hostname
+logging device-id ipaddress inside
+logging device-id string ident_string
 logging discriminator AFLSEC severity drops 6 msg-body drops AFLSEC
 logging discriminator MPLS-NOL mnemonics drops NOLFDSB 
 logging enable
@@ -50,6 +55,10 @@ logging ip access-list cache interval 5
 logging ip access-list cache threshold 50000
 logging level acllog 3
 logging level acllog 6
+logging message 1222444
+logging message 1233334 level 1
+logging message 1233334 standby
+logging message 1111234 level emergencies standby
 logging monitor errors
 logging linecard informational
 logging logfile aclfile 3
@@ -60,6 +69,7 @@ logging origin-id ipv6
 logging origin-id string my_origin
 logging origin-id string "my origin"
 logging permit-hostdown
+logging queue 0
 logging queue-limit 100
 logging rate-limit 100
 logging rate-limit console 9

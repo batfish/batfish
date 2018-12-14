@@ -340,6 +340,10 @@ extended_access_list_tail
       (
          OBJECT_GROUP ogs = variable
       )
+      |
+      (
+         OBJECT obj = variable
+      )
    ) srcipr = access_list_ip_range
    (
       alps_src = port_specifier
