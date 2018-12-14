@@ -16,6 +16,7 @@ vlan 396 name grgrgrgrgr
  stp type ieee
  priority force
  router-interface ve 396
+ shutdown
  no spanning-tree
 !
 vlan dot1Q tag native

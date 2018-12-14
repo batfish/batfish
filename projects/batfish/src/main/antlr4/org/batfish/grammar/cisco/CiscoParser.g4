@@ -4152,6 +4152,7 @@ vlan_null
       | PRIVATE_VLAN
       | REMOTE_SPAN
       | ROUTER_INTERFACE
+      | SHUTDOWN
       | SPANNING_TREE
       | STATE
       | STATISTICS
