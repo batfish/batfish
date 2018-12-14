@@ -21275,6 +21275,28 @@
             "            RP_VARIABLE:'$i5Rkls3LoyxzS8t9'))",
             "        NEWLINE:'\\n')))",
             "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'",
+            "      (enable_password",
+            "        PASSWORD:'password'",
+            "        (ep_cisco_encryption",
+            "          pass = (variable_secret",
+            "            VARIABLE:'pswd3')",
+            "          LEVEL:'level'",
+            "          level = DEC:'1'",
+            "          ENCRYPTED:'encrypted')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'",
+            "      (enable_password",
+            "        PASSWORD:'password'",
+            "        (ep_cisco_encryption",
+            "          pass = (variable_secret",
+            "            VARIABLE:'pswd4')",
+            "          PBKDF2:'pbkdf2')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
             "    (s_no_enable",
             "      NO:'no'",
             "      ENABLE:'enable'",
@@ -23949,6 +23971,17 @@
             "        (if_no_nameif",
             "          NO:'no'",
             "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_interface",
@@ -26974,6 +27007,50 @@
             "    (s_logging",
             "      LOGGING:'logging'",
             "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          CLUSTER_ID:'cluster-id'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          CONTEXT_NAME:'context-name'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          HOSTNAME:'hostname'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          IPADDRESS:'ipaddress'",
+            "          (variable",
+            "            INSIDE:'inside')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          STRING:'string'",
+            "          (variable",
+            "            VARIABLE:'ident_string')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
             "        (logging_null",
             "          DISCRIMINATOR:'discriminator'",
             "          (null_rest_of_line",
@@ -27251,6 +27328,46 @@
             "    (s_logging",
             "      LOGGING:'logging'",
             "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1222444'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1233334'",
+            "          LEVEL:'level'",
+            "          level = (variable",
+            "            DEC:'1')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1233334'",
+            "          STANDBY:'standby'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1111234'",
+            "          LEVEL:'level'",
+            "          level = (variable",
+            "            EMERGENCIES:'emergencies')",
+            "          STANDBY:'standby'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
             "        (logging_null",
             "          MONITOR:'monitor'",
             "          (null_rest_of_line",
@@ -27342,6 +27459,14 @@
             "          PERMIT_HOSTDOWN:'permit-hostdown'",
             "          (null_rest_of_line",
             "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_queue",
+            "          QUEUE:'queue'",
+            "          size = DEC:'0'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_logging",
             "      LOGGING:'logging'",
@@ -29465,74 +29590,6 @@
             "          (null_rest_of_line",
             "            VARIABLE:'nocheck'",
             "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'abc')",
-            "      NEWLINE:'\\n'",
-            "      (u",
-            "        (u_role",
-            "          GROUP:'group'",
-            "          role = (variable",
-            "            VARIABLE:'def')))",
-            "      NEWLINE:'\\n'",
-            "      (u",
-            "        (u_password",
-            "          SECRET:'secret'",
-            "          (up_arista_md5",
-            "            DEC:'5'",
-            "            pass = MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_username_attributes",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'rancid')",
-            "      ATTRIBUTES:'attributes'",
-            "      NEWLINE:'\\n'",
-            "      (ua_null",
-            "        VPN_GROUP_POLICY:'vpn-group-policy'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'GroupPolicy_NOC-VPN'",
-            "          NEWLINE:'\\n'))",
-            "      (ua_null",
-            "        GROUP_LOCK:'group-lock'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'value'",
-            "          VARIABLE:'NOC-VPN'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'bob1')",
-            "      (u",
-            "        (u_password",
-            "          PASSWORD:'password'",
-            "          (up_cisco",
-            "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              DEC:'1234'))))",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'bob2')",
-            "      (u",
-            "        (u_privilege",
-            "          PRIVILEGE:'privilege'",
-            "          privilege = (variable",
-            "            DEC:'1')))",
-            "      (u",
-            "        (u_password",
-            "          PASSWORD:'password'",
-            "          (up_cisco",
-            "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              DEC:'1234'))))",
-            "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -36021,8 +36078,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'5'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'SOMEPASSWORD1'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'SOMEPASSWORD1')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -36047,8 +36105,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'0'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'demo'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'demo')))))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -36060,8 +36119,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'5'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'SOMEPASSWORD2'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'SOMEPASSWORD2')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -36111,6 +36171,186 @@
             "            DEC:'5'",
             "            pass = MD5_ARISTA:'$1$pdQG$60trnJU5CpHjXSffvKXzd.')))",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'blah')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'user2')",
+            "      (u",
+            "        (u_password",
+            "          NOPASSWORD:'nopassword'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD1')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user2')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD2')",
+            "              ENCRYPTED:'encrypted'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user3')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD3')",
+            "              MSCHAP:'mschap'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user4')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD4')",
+            "              NT_ENCRYPTED:'nt-encrypted'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user5')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD5')",
+            "              PBKDF2:'pbkdf2'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD6')",
+            "              ENCRYPTED:'encrypted'))))",
+            "      (u",
+            "        (u_privilege",
+            "          PRIVILEGE:'privilege'",
+            "          privilege = (variable",
+            "            DEC:'0')))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'abc')",
+            "      NEWLINE:'\\n'",
+            "      (u",
+            "        (u_role",
+            "          GROUP:'group'",
+            "          role = (variable",
+            "            VARIABLE:'def')))",
+            "      NEWLINE:'\\n'",
+            "      (u",
+            "        (u_password",
+            "          SECRET:'secret'",
+            "          (up_arista_md5",
+            "            DEC:'5'",
+            "            pass = MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username_attributes",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'rancid')",
+            "      ATTRIBUTES:'attributes'",
+            "      NEWLINE:'\\n'",
+            "      (ua_null",
+            "        VPN_GROUP_POLICY:'vpn-group-policy'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'GroupPolicy_NOC-VPN'",
+            "          NEWLINE:'\\n'))",
+            "      (ua_null",
+            "        GROUP_LOCK:'group-lock'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'value'",
+            "          VARIABLE:'NOC-VPN'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'bob1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            DEC:'1'",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                DEC:'1234')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'bob2')",
+            "      (u",
+            "        (u_privilege",
+            "          PRIVILEGE:'privilege'",
+            "          privilege = (variable",
+            "            DEC:'1')))",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            DEC:'1'",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                DEC:'1234')))))",
+            "      NEWLINE:'\\n\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -36143,8 +36383,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'blah'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'blah')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -63049,8 +63290,8 @@
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                340,
-                341
+                342,
+                343
               ],
               "numReferrers" : 1
             },
@@ -63067,79 +63308,81 @@
             "Loopback0" : {
               "definitionLines" : [
                 310,
-                311
+                311,
+                312,
+                313
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                313
+                315
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                315
+                317
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                324
+                326
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                330
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                332
+                334
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                319
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                334
+                336
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                326
+                328
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                328
+                330
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                336
+                338
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                321
+                323
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                338
+                340
               ],
               "numReferrers" : 1
             },
@@ -63151,7 +63394,7 @@
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                317
+                319
               ],
               "numReferrers" : 1
             }
@@ -67126,7 +67369,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                340
+                342
               ]
             },
             "GigabitEthernet0/0" : {
@@ -67141,62 +67384,62 @@
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                313
+                315
               ]
             },
             "Null0" : {
               "interface" : [
-                315
+                317
               ]
             },
             "Vlan1" : {
               "interface" : [
-                324
+                326
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                330
+                332
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                332
+                334
               ]
             },
             "Vlan111" : {
               "interface" : [
-                319
+                321
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                334
+                336
               ]
             },
             "Vlan2" : {
               "interface" : [
-                326
+                328
               ]
             },
             "Vlan3" : {
               "interface" : [
-                328
+                330
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                336
+                338
               ]
             },
             "Vxlan1" : {
               "interface" : [
-                321
+                323
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                338
+                340
               ]
             },
             "dynamic" : {
@@ -67211,7 +67454,7 @@
             },
             "tunnel-ip6" : {
               "interface" : [
-                317
+                319
               ]
             }
           },

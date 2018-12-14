@@ -588,7 +588,7 @@ variable_permissive
 
 variable_secret
 :
-   ~( NEWLINE | ROLE )+
+   ~( NEWLINE | ATTRIBUTES | ENCRYPTED | LEVEL |  MSCHAP | NT_ENCRYPTED | PBKDF2 | PRIVILEGE | ROLE )+
 ;
 
 variable_group_id

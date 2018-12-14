@@ -1,0 +1,24 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-acl-object
+!
+object network on1
+ host 1.1.1.1
+!
+object network on2
+ host 2.2.2.2
+!
+object network onunused1
+ host 3.3.3.3
+!
+object service osunused1
+ service tcp-udp source eq 65535
+!
+object service os1
+ service icmp echo
+!
+access-list acl1 extended permit object os1 object on1 object on2
+!
+access-list acl2 extended permit object osfake object onfake1 object onfake2
+!

@@ -309,6 +309,8 @@ interface GigabitEthernet0/0
 !
 interface Loopback0
  no nameif
+ no security-level
+ no ip address
 !
 interface Modular-Cable1/2/3:4
 !
