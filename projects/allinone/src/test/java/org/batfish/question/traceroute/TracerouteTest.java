@@ -930,6 +930,11 @@ public class TracerouteTest {
                     hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)))));
   }
 
+  /*
+   *  Test setup: Send packets with destination 8.8.8.8 to the next hop 1.0.0.2.
+   *  Since the destination Ip 8.8.8.8 is outside the network and next hop Ip 1.0.0.2 is not
+   *  owned by any device, so this is EXITS_NETWORK.
+   */
   @Test
   public void testInsufficientInfoVsExitsNetwork1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -987,6 +992,11 @@ public class TracerouteTest {
                         Schema.set(Schema.TRACE))))));
   }
 
+  /*
+   *  Test setup: Send packets with destination 8.8.8.8 to the next hop 2.0.0.2.
+   *  Since the destination Ip 8.8.8.8 is outside the network and next hop Ip 2.0.0.2 is
+   *  owned by a device, so this is INSUFFICIENT_INFO.
+   */
   @Test
   public void testInsufficientInfoVsExitsNetwork2() throws IOException {
     NetworkFactory nf = new NetworkFactory();

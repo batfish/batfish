@@ -18,6 +18,7 @@ import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -919,16 +920,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _deliveredToSubnet;
   }
 
+  private Stream<Entry<String, IpSpace>> getInterceIpSpacceEntries(
+      Map<String, Map<String, IpSpace>> vrfInterfaceIpspaceMap) {
+    return vrfInterfaceIpspaceMap.values().stream().flatMap(entry -> entry.entrySet().stream());
+  }
+
   private Map<String, Map<String, BDD>> computeInterfaceHostSubnetIpBDDs() {
     return toImmutableMap(
         _interfaceHostSubnetIps,
         Entry::getKey /* host name */,
         nodeEntry ->
-            nodeEntry
-                .getValue()
-                .values()
-                .stream()
-                .flatMap(entry -> entry.entrySet().stream())
+            getInterceIpSpacceEntries(nodeEntry.getValue())
                 .collect(
                     ImmutableMap.toImmutableMap(
                         Entry::getKey, ifaceEntry -> _ipSpaceToBDD.visit(ifaceEntry.getValue()))));

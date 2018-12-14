@@ -1031,6 +1031,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(edge.traverseForward(ONE), equalTo(preNatOutAclBdd.not()));
   }
 
+  /*
+   *  Test setup: Send packets with destination 8.8.8.0/24 to the next hop 1.0.0.2.
+   *  Since the destination Ip 8.8.8.0/24 is outside the network and next hop Ip 1.0.0.2 is not
+   *  owned by any device, so traffic of destination 8.8.8.0/24 should have disposition EXITS NETWORK.
+   */
   @Test
   public void testInsufficientInfoVsExitsNetwork1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -1096,6 +1101,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(edgeII, nullValue());
   }
 
+  /*
+   *  Test setup: Send packets with destination 8.8.8.0/24 to the next hop 2.0.0.2.
+   *  Since the destination Ip 8.8.8.0/24 is outside the network and next hop Ip 2.0.0.2 is
+   *  owned by a device, so traffic of destination 8.8.8.0/24 should have disposition INSUFFICIENT_INFO.
+   */
   @Test
   public void testInsufficientInfoVsExitsNetwork2() throws IOException {
     NetworkFactory nf = new NetworkFactory();
