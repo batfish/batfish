@@ -232,6 +232,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -3744,5 +3745,53 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         securityPolicy2, rejects(flow2, ifaceOut, config.getIpAccessLists(), config.getIpSpaces()));
+  }
+
+  @Test
+  public void testPsFromInterface() throws IOException {
+    Configuration config = parseConfig("juniper-routing-policy");
+
+    // Matches iface prefix, connected route
+    for (Prefix p : ImmutableList.of(Prefix.parse("1.1.1.1/24"), Prefix.parse("2.2.2.2/24"))) {
+      Result result =
+          config
+              .getRoutingPolicies()
+              .get("POLICY-NAME")
+              .call(
+                  Environment.builder(config)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .setOriginalRoute(new ConnectedRoute(p, "iface"))
+                      .build());
+      assertThat(result.getBooleanValue(), equalTo(true));
+    }
+
+    // Does not match wrong prefix
+    Result result =
+        config
+            .getRoutingPolicies()
+            .get("POLICY-NAME")
+            .call(
+                Environment.builder(config)
+                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.3/24"), "iface"))
+                    .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    // Does not match static route, even with correct prefix
+    result =
+        config
+            .getRoutingPolicies()
+            .get("POLICY-NAME")
+            .call(
+                Environment.builder(config)
+                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setOriginalRoute(
+                        StaticRoute.builder()
+                            .setNextHopInterface("iface")
+                            .setNetwork(Prefix.parse("1.1.1.1/24"))
+                            .setAdministrativeCost(1)
+                            .build())
+                    .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
   }
 }
