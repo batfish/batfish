@@ -52,6 +52,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
@@ -408,6 +409,7 @@ public class TracerouteEngineImplContext {
                 inputFlow,
                 inputIfaceName,
                 inputFilter,
+                FilterType.INGRESS_FILTER,
                 aclDefinitions,
                 namedIpSpaces,
                 _ignoreFilters);
@@ -607,6 +609,7 @@ public class TracerouteEngineImplContext {
                             currentFlow,
                             inputIfaceName,
                             filter,
+                            FilterType.PRE_SOURCE_NAT_FILTER,
                             aclDefinitions,
                             namedIpSpaces,
                             _ignoreFilters);
@@ -662,6 +665,7 @@ public class TracerouteEngineImplContext {
                             clonedTransmissionContext._transformedFlow,
                             inputIfaceName,
                             outFilter,
+                            FilterType.EGRESS_FILTER,
                             clonedTransmissionContext._aclDefinitions,
                             clonedTransmissionContext._namedIpSpaces,
                             _ignoreFilters);

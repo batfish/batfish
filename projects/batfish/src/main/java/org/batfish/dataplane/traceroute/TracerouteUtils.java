@@ -28,6 +28,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -120,6 +121,7 @@ final class TracerouteUtils {
       Flow currentFlow,
       String inInterfaceName,
       IpAccessList filter,
+      FilterType filterType,
       Map<String, IpAccessList> aclDefinitions,
       Map<String, IpSpace> namedIpSpaces,
       boolean ignoreFilters) {
@@ -135,7 +137,7 @@ final class TracerouteUtils {
       }
     }
 
-    return new FilterStep(new FilterStepDetail(filter.getName()), action);
+    return new FilterStep(new FilterStepDetail(filter.getName(), filterType), action);
   }
 
   /**

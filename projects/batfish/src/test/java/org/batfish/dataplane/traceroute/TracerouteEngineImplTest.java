@@ -67,6 +67,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
@@ -603,7 +604,13 @@ public class TracerouteEngineImplTest {
 
     FilterStep step =
         TracerouteUtils.applyFilter(
-            flow, iface1, filter, ImmutableMap.of(filterName, filter), ImmutableMap.of(), false);
+            flow,
+            iface1,
+            filter,
+            FilterType.INGRESS_FILTER,
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
 
     assertThat(step.getAction(), equalTo(StepAction.PERMITTED));
 
@@ -612,7 +619,13 @@ public class TracerouteEngineImplTest {
 
     step =
         TracerouteUtils.applyFilter(
-            flow, iface2, filter, ImmutableMap.of(filterName, filter), ImmutableMap.of(), false);
+            flow,
+            iface2,
+            filter,
+            FilterType.INGRESS_FILTER,
+            ImmutableMap.of(filterName, filter),
+            ImmutableMap.of(),
+            false);
 
     assertThat(step.getAction(), equalTo(StepAction.DENIED));
 

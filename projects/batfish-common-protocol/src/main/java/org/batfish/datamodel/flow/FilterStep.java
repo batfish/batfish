@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
@@ -13,26 +14,45 @@ import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 @JsonTypeName("Filter")
 public class FilterStep extends Step<FilterStepDetail> {
 
+  public enum FilterType {
+    /** ingress filter */
+    INGRESS_FILTER,
+    /** egress filter */
+    EGRESS_FILTER,
+    /** preSourceNat filter */
+    PRE_SOURCE_NAT_FILTER
+  }
+
   /** Details of {@link Step} about applying the filter to a {@link Flow} */
   public static final class FilterStepDetail {
     private static final String PROP_FILTER = "filter";
+    private static final String PROP_TYPE = "type";
 
-    private @Nullable String _filter;
+    private @Nonnull String _filter;
+    private @Nonnull FilterType _type;
 
-    public FilterStepDetail(@Nullable String filter) {
+    public FilterStepDetail(@Nonnull String filter, FilterType type) {
       _filter = filter;
+      _type = type;
     }
 
     @JsonCreator
     private static FilterStepDetail jsonCreator(
-        @JsonProperty(PROP_FILTER) @Nullable String filter) {
-      return new FilterStepDetail(filter);
+        @JsonProperty(PROP_FILTER) @Nonnull String filter,
+        @JsonProperty(PROP_TYPE) @Nonnull FilterType type) {
+      return new FilterStepDetail(filter, type);
     }
 
     @JsonProperty(PROP_FILTER)
-    @Nullable
+    @Nonnull
     public String getFilter() {
       return _filter;
+    }
+
+    @JsonProperty(PROP_TYPE)
+    @Nonnull
+    public FilterType getType() {
+      return _type;
     }
   }
 
