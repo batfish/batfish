@@ -29,8 +29,7 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     private @Nonnull NodeInterfacePair _inputInterface;
     private @Nullable String _inputVrf;
 
-    private EnterInputIfaceStepDetail(
-        NodeInterfacePair inputInterface, @Nullable String inputVrf) {
+    private EnterInputIfaceStepDetail(NodeInterfacePair inputInterface, @Nullable String inputVrf) {
       _inputInterface = inputInterface;
       _inputVrf = inputVrf;
     }

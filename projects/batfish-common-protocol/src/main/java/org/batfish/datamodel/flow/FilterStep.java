@@ -13,9 +13,7 @@ import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 @JsonTypeName("Filter")
 public class FilterStep extends Step<FilterStepDetail> {
 
-  /**
-   * Details of {@link Step} about applying the filter to a {@link Flow}
-   */
+  /** Details of {@link Step} about applying the filter to a {@link Flow} */
   public static final class FilterStepDetail {
     private static final String PROP_FILTER = "filter";
 
