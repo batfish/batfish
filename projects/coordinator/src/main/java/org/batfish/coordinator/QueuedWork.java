@@ -44,6 +44,14 @@ public class QueuedWork {
     return _assignedWorker;
   }
 
+  public Date getDateCreated() {
+    return _dateCreated;
+  }
+
+  public Date getDateTerminated() {
+    return _dateTerminated;
+  }
+
   public WorkDetails getDetails() {
     return _details;
   }
