@@ -29,7 +29,7 @@ public class Environment {
 
   private boolean _callStatementContext;
 
-  private final Configuration _configuration;
+  @Nonnull private final Configuration _configuration;
 
   private boolean _defaultAction;
 
@@ -119,6 +119,7 @@ public class Environment {
     return _callStatementContext;
   }
 
+  @Nonnull
   public Configuration getConfiguration() {
     return _configuration;
   }

@@ -616,6 +616,9 @@
         "juniper_routing_options" : [
           "configs/juniper_routing_options"
         ],
+        "juniper_routing_policy" : [
+          "configs/juniper_routing_policy"
+        ],
         "juniper_security" : [
           "configs/juniper_security"
         ],
@@ -1007,6 +1010,7 @@
         "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
+        "configs/juniper_routing_policy" : "PASSED",
         "configs/juniper_security" : "PASSED",
         "configs/juniper_snmp" : "PASSED",
         "configs/juniper_syslog" : "PASSED",
@@ -49898,6 +49902,164 @@
             "  EOF:<EOF>)"
           ]
         },
+        "juniper_routing_policy" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'juniper_routing_policy'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.1.1.1/24'",
+            "                        (ifia_primary",
+            "                          PRIMARY:'primary')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'2.2.2.2/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM1')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_interface",
+            "                      INTERFACE:'interface'",
+            "                      id = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM1')",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'",
+            "                    (popst_common",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM2')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_interface",
+            "                      INTERFACE:'interface'",
+            "                      id = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'99'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM2')",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'",
+            "                    (popst_common",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "juniper_security" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -65341,6 +65503,35 @@
           }
         },
         "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "policy-statement" : {
+            "POLICY-NAME" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_security" : {
           "ike policy" : {
             "1.2.3.4" : {
@@ -68651,6 +68842,30 @@
             }
           }
         },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4,
+                5
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4,
+                5
+              ],
+              "policy-statement from interface" : [
+                7
+              ]
+            },
+            "ge-0/0/0.99" : {
+              "policy-statement from interface" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_security" : {
           "ike proposal" : {
             "PROPOSAL" : {
@@ -70512,6 +70727,15 @@
             }
           }
         },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0.99" : {
+              "policy-statement from interface" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_snmp" : {
           "prefix-list" : {
             "bippetyboo" : {
@@ -71338,6 +71562,7 @@
         "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
+        "configs/juniper_routing_policy" : "PASSED",
         "configs/juniper_security" : "PASSED",
         "configs/juniper_snmp" : "PASSED",
         "configs/juniper_syslog" : "PASSED",
