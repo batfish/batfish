@@ -8,6 +8,7 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertStatus;
 
 public class ConvertConfigurationResult
     extends BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
@@ -67,6 +68,9 @@ public class ConvertConfigurationResult
           configurations.put(hostname, config);
           if (_warningsByHost.containsKey(hostname) && !_warningsByHost.get(hostname).isEmpty()) {
             answerElement.getWarnings().put(hostname, _warningsByHost.get(hostname));
+            answerElement.getConvertStatus().put(_name, ConvertStatus.WARNINGS);
+          } else {
+            answerElement.getConvertStatus().put(_name, ConvertStatus.PASSED);
           }
           answerElement.getDefinedStructures().putAll(_answerElement.getDefinedStructures());
           answerElement.getUndefinedReferences().putAll(_answerElement.getUndefinedReferences());
@@ -74,7 +78,7 @@ public class ConvertConfigurationResult
         }
       }
     } else {
-      answerElement.getFailed().add(_name);
+      answerElement.getConvertStatus().put(_name, ConvertStatus.FAILED);
       answerElement
           .getErrors()
           .put(_name, ((BatfishException) _failureCause).getBatfishStackTrace());
