@@ -1,36 +1,31 @@
 package org.batfish.question.routes;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
+import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
+import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.groupMatchingBgpRoutesByPrefix;
+import static org.batfish.question.routes.RoutesAnswererUtil.groupMatchingRoutesByPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Table;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.SortedSet;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -45,12 +40,12 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
+  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
   static final String COL_PROTOCOL = "Protocol";
   static final String COL_TAG = "Tag";
 
   // Present sometimes
-  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_METRIC = "Metric";
 
   // Main RIB
@@ -62,6 +57,10 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_COMMUNITIES = "Communities";
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
+  // Diff Only
+  static final String COL_NETWORK_PRESENCE = "Network_Presence";
+  static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
+
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -70,185 +69,128 @@ public class RoutesAnswerer extends Answerer {
   public AnswerElement answer() {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
+
     DataPlane dp = _batfish.loadDataPlane();
-    answer.postProcessAnswer(
-        _question,
-        generateRows(
-            dp,
-            question.getRib(),
-            question.getNodes().getMatchingNodes(_batfish),
-            question.getNetwork(),
-            question.getProtocols(),
-            question.getVrfs(),
-            computeIpNodeOwners(_batfish.loadConfigurations(), true)));
+    Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
+    Prefix network = question.getNetwork();
+    String protocolRegex = question.getProtocols();
+    String vrfRegex = question.getVrfs();
+    Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+
+    Multiset<Row> rows;
+
+    switch (question.getRib()) {
+      case BGP:
+        rows =
+            getBgpRibRoutes(
+                dp.getBgpRoutes(false),
+                RibProtocol.BGP,
+                matchingNodes,
+                network,
+                protocolRegex,
+                vrfRegex);
+        break;
+
+      case BGPMP:
+        rows =
+            getBgpRibRoutes(
+                dp.getBgpRoutes(true),
+                RibProtocol.BGPMP,
+                matchingNodes,
+                network,
+                protocolRegex,
+                vrfRegex);
+        break;
+      case MAIN:
+      default:
+        rows =
+            getMainRibRoutes(
+                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+    }
+
+    answer.postProcessAnswer(_question, rows);
     return answer;
   }
 
-  private static Multiset<Row> generateRows(
-      DataPlane dp,
-      RibProtocol rib,
-      Set<String> matchingNodes,
-      @Nullable Prefix network,
-      String protocolRegex,
-      String vrfRegex,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
-    switch (rib) {
+  @Override
+  public AnswerElement answerDiff() {
+    RoutesQuestion question = (RoutesQuestion) _question;
+    TableAnswerElement diffAnswer = new TableAnswerElement(getDiffTableMetadata(question.getRib()));
+
+    Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
+    Prefix network = question.getNetwork();
+    String protocolRegex = question.getProtocols();
+    String vrfRegex = question.getVrfs();
+
+    Multiset<Row> rows;
+    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByKeyInBase;
+    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByKeyInDelta;
+    Map<Ip, Set<String>> ipOwners;
+    DataPlane dp;
+
+    List<DiffRoutesOutput> routesDiffRaw;
+
+    switch (question.getRib()) {
       case BGP:
-        return getBgpRibRoutes(
-            dp.getBgpRoutes(false), matchingNodes, network, protocolRegex, vrfRegex);
+        _batfish.pushBaseSnapshot();
+        dp = _batfish.loadDataPlane();
+        routesGroupedByKeyInBase =
+            groupMatchingBgpRoutesByPrefix(
+                dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+        _batfish.popSnapshot();
+
+        _batfish.pushDeltaSnapshot();
+        dp = _batfish.loadDataPlane();
+        routesGroupedByKeyInDelta =
+            groupMatchingBgpRoutesByPrefix(
+                dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+        _batfish.popSnapshot();
+        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
+        break;
+
       case BGPMP:
-        return getBgpRibRoutes(
-            dp.getBgpRoutes(true), matchingNodes, network, protocolRegex, vrfRegex);
+        _batfish.pushBaseSnapshot();
+        dp = _batfish.loadDataPlane();
+        routesGroupedByKeyInBase =
+            groupMatchingBgpRoutesByPrefix(
+                dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
+        _batfish.popSnapshot();
+
+        _batfish.pushDeltaSnapshot();
+        dp = _batfish.loadDataPlane();
+        routesGroupedByKeyInDelta =
+            groupMatchingBgpRoutesByPrefix(
+                dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
+        _batfish.popSnapshot();
+        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGPMP);
+        break;
+
       case MAIN:
       default:
-        return getMainRibRoutes(
-            dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+        _batfish.pushBaseSnapshot();
+        dp = _batfish.loadDataPlane();
+        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        routesGroupedByKeyInBase =
+            groupMatchingRoutesByPrefix(
+                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+        _batfish.popSnapshot();
+
+        _batfish.pushDeltaSnapshot();
+        dp = _batfish.loadDataPlane();
+        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        routesGroupedByKeyInDelta =
+            groupMatchingRoutesByPrefix(
+                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+        _batfish.popSnapshot();
+
+        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+        rows = getAbstractRouteRowsDiff(routesDiffRaw);
     }
-  }
 
-  private static Multiset<Row> getBgpRibRoutes(
-      Table<String, String, Set<BgpRoute>> bgpRoutes,
-      Set<String> matchingNodes,
-      @Nullable Prefix network,
-      String protocolRegex,
-      String vrfRegex) {
-    HashMultiset<Row> rows = HashMultiset.create();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    matchingNodes.forEach(
-        hostname ->
-            bgpRoutes
-                .row(hostname)
-                .forEach(
-                    (vrfName, routes) -> {
-                      if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        rows.addAll(
-                            getRowsForBgpRoutes(
-                                hostname, vrfName, network, compiledProtocolRegex, routes));
-                      }
-                    }));
-    return rows;
-  }
-
-  /** Get the rows for MainRib routes. */
-  @VisibleForTesting
-  static Multiset<Row> getMainRibRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
-      Set<String> matchingNodes,
-      @Nullable Prefix network,
-      String protocolRegex,
-      String vrfRegex,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
-    HashMultiset<Row> rows = HashMultiset.create();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    ribs.forEach(
-        (node, vrfMap) -> {
-          if (matchingNodes.contains(node)) {
-            vrfMap.forEach(
-                (vrfName, rib) -> {
-                  if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rows.addAll(
-                        getRowsForAbstractRoutes(
-                            node,
-                            vrfName,
-                            network,
-                            compiledProtocolRegex,
-                            rib.getRoutes(),
-                            ipOwners));
-                  }
-                });
-          }
-        });
-    return rows;
-  }
-
-  /** Convert a {@link Set} of {@link AbstractRoute} into a list of rows. */
-  @Nonnull
-  private static List<Row> getRowsForAbstractRoutes(
-      String node,
-      String vrfName,
-      @Nullable Prefix network,
-      Pattern compiledProtocolRegex,
-      Set<AbstractRoute> routes,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
-    Node nodeObj = new Node(node);
-    return routes
-        .stream()
-        .filter(
-            route ->
-                (network == null || network.equals(route.getNetwork()))
-                    && compiledProtocolRegex.matcher(route.getProtocol().protocolName()).matches())
-        .map(
-            route ->
-                Row.builder()
-                    .put(COL_NODE, nodeObj)
-                    .put(COL_VRF_NAME, vrfName)
-                    .put(COL_NETWORK, route.getNetwork())
-                    .put(COL_NEXT_HOP_IP, route.getNextHopIp())
-                    .put(COL_NEXT_HOP, computeNextHopNode(route.getNextHopIp(), ipOwners))
-                    .put(COL_PROTOCOL, route.getProtocol())
-                    .put(COL_TAG, route.getTag() == AbstractRoute.NO_TAG ? null : route.getTag())
-                    .put(COL_ADMIN_DISTANCE, route.getAdministrativeCost())
-                    .put(COL_METRIC, route.getMetric())
-                    .build())
-        .collect(toImmutableList());
-  }
-
-  /** Compute the next hop node for a given next hop IP. */
-  @Nullable
-  @VisibleForTesting
-  static String computeNextHopNode(
-      @Nullable Ip nextHopIp, @Nullable Map<Ip, Set<String>> ipOwners) {
-    if (nextHopIp == null || ipOwners == null) {
-      return null;
-    }
-    // TODO: https://github.com/batfish/batfish/issues/1862
-    return ipOwners
-        .getOrDefault(nextHopIp, ImmutableSet.of())
-        .stream()
-        .min(Comparator.naturalOrder())
-        .orElse(null);
-  }
-
-  /** Convert a set of {@link BgpRoute} into a list of rows. */
-  @Nonnull
-  @VisibleForTesting
-  static List<Row> getRowsForBgpRoutes(
-      String hostname,
-      String vrfName,
-      @Nullable Prefix network,
-      Pattern compiledProtocolRegex,
-      Set<BgpRoute> routes) {
-    Node nodeObj = new Node(hostname);
-    return routes
-        .stream()
-        .filter(
-            route ->
-                (network == null || network.equals(route.getNetwork()))
-                    && compiledProtocolRegex.matcher(route.getProtocol().protocolName()).matches())
-        .map(
-            route ->
-                Row.builder()
-                    .put(COL_NODE, nodeObj)
-                    .put(COL_VRF_NAME, vrfName)
-                    .put(COL_NETWORK, route.getNetwork())
-                    .put(COL_NEXT_HOP_IP, route.getNextHopIp())
-                    .put(COL_PROTOCOL, route.getProtocol())
-                    .put(COL_AS_PATH, route.getAsPath().getAsPathString())
-                    .put(COL_METRIC, route.getMetric())
-                    .put(COL_LOCAL_PREF, route.getLocalPreference())
-                    .put(
-                        COL_COMMUNITIES,
-                        route
-                            .getCommunities()
-                            .stream()
-                            .map(CommonUtil::longToCommunity)
-                            .collect(toImmutableList()))
-                    .put(COL_ORIGIN_PROTOCOL, route.getSrcProtocol())
-                    .put(COL_TAG, route.getTag() == Route.UNSET_ROUTE_TAG ? null : route.getTag())
-                    .build())
-        .collect(toImmutableList());
+    diffAnswer.postProcessAnswer(_question, rows);
+    return diffAnswer;
   }
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
@@ -261,26 +203,35 @@ public class RoutesAnswerer extends Answerer {
       case BGPMP:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(COL_AS_PATH, Schema.STRING, "AS path", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(COL_METRIC, Schema.INTEGER, "Metric", Boolean.FALSE, Boolean.TRUE));
+                COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_LOCAL_PREF, Schema.INTEGER, "Local Preference", Boolean.FALSE, Boolean.TRUE));
+                COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_LOCAL_PREF,
+                Schema.LONG,
+                "Route's Local Preference",
+                Boolean.FALSE,
+                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_COMMUNITIES,
                 Schema.list(Schema.STRING),
-                "BGP communities",
+                "Route's List of communities",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_ORIGIN_PROTOCOL,
                 Schema.STRING,
-                "Origin protocol",
+                "Route's Origin protocol",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
@@ -288,24 +239,27 @@ public class RoutesAnswerer extends Answerer {
       default:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's next hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
                 COL_NEXT_HOP,
                 Schema.STRING,
-                "Route's next hop (as node hostname)",
+                "Route's Next Hop's Hostname",
                 Boolean.FALSE,
                 Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_ADMIN_DISTANCE,
                 Schema.INTEGER,
-                "Route's admin distance",
+                "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's metric", Boolean.FALSE, Boolean.TRUE));
+                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");
@@ -315,7 +269,8 @@ public class RoutesAnswerer extends Answerer {
   private static void addCommonTableColumnsAtEnd(
       ImmutableList.Builder<ColumnMetadata> columnBuilder) {
     columnBuilder.add(
-        new ColumnMetadata(COL_TAG, Schema.INTEGER, "Route tag", Boolean.FALSE, Boolean.TRUE));
+        new ColumnMetadata(
+            COL_TAG, Schema.INTEGER, "Tag for this route", Boolean.FALSE, Boolean.TRUE));
   }
 
   /** Generate table columns that should be always present, at the start of table. */
@@ -327,9 +282,218 @@ public class RoutesAnswerer extends Answerer {
         new ColumnMetadata(COL_VRF_NAME, Schema.STRING, "VRF name", Boolean.TRUE, Boolean.FALSE));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_NETWORK, Schema.PREFIX, "Route network (prefix)", Boolean.TRUE, Boolean.TRUE));
+            COL_NETWORK, Schema.PREFIX, "Network for this route", Boolean.TRUE, Boolean.TRUE));
+  }
+
+  /** Generate the table metadata based on the {@code rib} we are pulling */
+  @VisibleForTesting
+  static TableMetadata getDiffTableMetadata(RibProtocol rib) {
+    ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
+    addCommonTableColumnsAtStart(columnBuilder);
     columnBuilder.add(
         new ColumnMetadata(
-            COL_PROTOCOL, Schema.STRING, "Route protocol", Boolean.FALSE, Boolean.TRUE));
+            COL_NETWORK_PRESENCE,
+            Schema.STRING,
+            "Presence of the Route's Network (Prefix)",
+            Boolean.FALSE,
+            Boolean.TRUE));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_ROUTE_ENTRY_PRESENCE,
+            Schema.STRING,
+            "Presence of a Route for the given Network (Prefix)",
+            Boolean.FALSE,
+            Boolean.TRUE));
+    switch (rib) {
+      case BGP:
+      case BGPMP:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP_IP,
+                Schema.IP,
+                "Route's Next Hop IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
+                Schema.IP,
+                "Route's Next Hop IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_AS_PATH,
+                Schema.STRING,
+                "Route's AS path",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_AS_PATH,
+                Schema.STRING,
+                "Route's AS path",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_METRIC,
+                Schema.INTEGER,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_METRIC,
+                Schema.INTEGER,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_LOCAL_PREF,
+                Schema.LONG,
+                "Route's Local Preference",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_LOCAL_PREF,
+                Schema.LONG,
+                "Route's Local Preference",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_COMMUNITIES,
+                Schema.list(Schema.STRING),
+                "Route's List of communities",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_COMMUNITIES,
+                Schema.list(Schema.STRING),
+                "Route's List of communities",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
+                Schema.STRING,
+                "Route's Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+                Schema.STRING,
+                "Route's Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        break;
+      case MAIN:
+      default:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP,
+                Schema.STRING,
+                "Route's Next Hop's Hostname",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP,
+                Schema.STRING,
+                "Route's Next Hop's Hostname",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP_IP,
+                Schema.IP,
+                "Route's Next Hop IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
+                Schema.IP,
+                "Route's Next Hop IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_METRIC,
+                Schema.INTEGER,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_METRIC,
+                Schema.INTEGER,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+    }
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_BASE_PREFIX + COL_TAG,
+            Schema.INTEGER,
+            "Tag for this route",
+            Boolean.FALSE,
+            Boolean.TRUE));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_DELTA_PREFIX + COL_TAG,
+            Schema.INTEGER,
+            "Tag for this route",
+            Boolean.FALSE,
+            Boolean.TRUE));
+
+    return new TableMetadata(columnBuilder.build(), "Display diff of RIB routes");
   }
 }
