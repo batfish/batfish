@@ -62038,6 +62038,7 @@
         "juniper_relay" : "PASSED",
         "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
+        "juniper_routing_policy" : "PASSED",
         "juniper_security" : "WARNINGS",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",

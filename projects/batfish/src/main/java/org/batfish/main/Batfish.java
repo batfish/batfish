@@ -1918,16 +1918,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ConvertConfigurationAnswerElement convertAnswer =
         loadConvertConfigurationAnswerElementOrReparse();
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
-    for (String failed :
-        convertAnswer
-            .getConvertStatus()
-            .entrySet()
-            .stream()
-            .filter(s -> s.getValue() == ConvertStatus.FAILED)
-            .map(Entry::getKey)
-            .collect(Collectors.toList())) {
-      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
-    }
+    convertAnswer
+        .getConvertStatus()
+        .entrySet()
+        .stream()
+        .filter(s -> s.getValue() == ConvertStatus.FAILED)
+        .forEach(s -> answerElement.getParseStatus().put(s.getKey(), ParseStatus.FAILED));
   }
 
   private void mergeInitStepAnswer(
