@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_COMPLETED_WORK;
 import static org.batfish.common.CoordConstsV2.RSC_INFERRED_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_INPUT;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
@@ -9,6 +10,8 @@ import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -63,6 +66,28 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();
+  }
+
+  /**
+   * Get completed work for the specified network's snapshot.
+   *
+   * @return List of {@link WorkBean}
+   */
+  @Path(RSC_COMPLETED_WORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  @GET
+  public Response getCompletedWork() {
+    try {
+      List<WorkBean> completedWork =
+          Main.getWorkMgr()
+              .getCompletedWork(_network, _snapshot)
+              .stream()
+              .map(WorkBean::new)
+              .collect(Collectors.toList());
+      return Response.ok().entity(completedWork).build();
+    } catch (IllegalArgumentException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
   }
 
   @GET

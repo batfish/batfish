@@ -859,6 +859,19 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  /**
+   * Get all completed work for the specified network and snapshot.
+   *
+   * @param networkName name of the network to get completed work for.
+   * @param snapshotName name of the snapshot to get completed work for.
+   * @return {@link List} of completed {@link QueuedWork}.
+   */
+  public List<QueuedWork> getCompletedWork(String networkName, String snapshotName) {
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    return _workQueueMgr.getCompletedWork(
+        networkId, _idManager.getSnapshotId(snapshotName, networkId));
+  }
+
   private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
       NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
