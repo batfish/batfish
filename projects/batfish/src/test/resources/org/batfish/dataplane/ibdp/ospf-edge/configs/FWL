@@ -1,0 +1,19 @@
+hostname FWL
+!
+interface FastEthernet0/0
+ ip address 12.1.1.1 255.255.255.254
+ description connection to BOR
+ no shutdown
+!
+interface GigabitEthernet1/0
+ ip address 10.1.1.4 255.255.255.0
+ description connection to R1 and R2
+ no shutdown
+!
+router ospf 1
+ network 10.1.1.0 0.0.0.255 area 0
+ network 11.1.1.0 0.0.0.255 area 0
+ default-information originate
+!
+ip route 0.0.0.0 0.0.0.0 FastEthernet0/0 12.1.1.2
+end

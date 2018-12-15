@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class DecrementLocalPreference extends IntExpr {
+public final class DecrementLocalPreference extends LongExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  private int _subtrahend;
+  private long _subtrahend;
 
   @JsonCreator
   private DecrementLocalPreference() {}
@@ -23,40 +22,30 @@ public class DecrementLocalPreference extends IntExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
+    if (!(obj instanceof DecrementLocalPreference)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    DecrementLocalPreference other = (DecrementLocalPreference) obj;
-    if (_subtrahend != other._subtrahend) {
-      return false;
-    }
-    return true;
+    return _subtrahend == ((DecrementLocalPreference) obj)._subtrahend;
   }
 
   @Override
-  public int evaluate(Environment environment) {
+  public long evaluate(Environment environment) {
     BgpRoute oldRoute = (BgpRoute) environment.getOriginalRoute();
-    int oldLp = oldRoute.getLocalPreference();
-    int newVal = oldLp - _subtrahend;
+    long oldLp = oldRoute.getLocalPreference();
+    long newVal = oldLp - _subtrahend;
     return newVal;
   }
 
-  public int getSubtrahend() {
+  public long getSubtrahend() {
     return _subtrahend;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _subtrahend;
-    return result;
+    return Long.hashCode(_subtrahend);
   }
 
-  public void setSubtrahend(int subtrahend) {
+  public void setSubtrahend(long subtrahend) {
     _subtrahend = subtrahend;
   }
 }

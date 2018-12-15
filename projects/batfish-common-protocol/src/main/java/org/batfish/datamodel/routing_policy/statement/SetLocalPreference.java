@@ -2,24 +2,26 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
-public class SetLocalPreference extends Statement {
+@ParametersAreNonnullByDefault
+public final class SetLocalPreference extends Statement {
 
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _localPreference;
+  private LongExpr _localPreference;
 
   @JsonCreator
   private SetLocalPreference() {}
 
-  public SetLocalPreference(IntExpr localPreference) {
+  public SetLocalPreference(LongExpr localPreference) {
     _localPreference = localPreference;
   }
 
@@ -28,28 +30,17 @@ public class SetLocalPreference extends Statement {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
+    if (!(obj instanceof SetLocalPreference)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    SetLocalPreference other = (SetLocalPreference) obj;
-    if (_localPreference == null) {
-      if (other._localPreference != null) {
-        return false;
-      }
-    } else if (!_localPreference.equals(other._localPreference)) {
-      return false;
-    }
-    return true;
+    return _localPreference.equals(((SetLocalPreference) obj)._localPreference);
   }
 
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
     BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-    int localPreference = _localPreference.evaluate(environment);
+    long localPreference = _localPreference.evaluate(environment);
     bgpBuilder.setLocalPreference(localPreference);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setLocalPreference(localPreference);
@@ -58,20 +49,17 @@ public class SetLocalPreference extends Statement {
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
-  public IntExpr getLocalPreference() {
+  public LongExpr getLocalPreference() {
     return _localPreference;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_localPreference == null) ? 0 : _localPreference.hashCode());
-    return result;
+    return _localPreference.hashCode();
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
-  public void setLocalPreference(IntExpr localPreference) {
+  public void setLocalPreference(LongExpr localPreference) {
     _localPreference = localPreference;
   }
 }

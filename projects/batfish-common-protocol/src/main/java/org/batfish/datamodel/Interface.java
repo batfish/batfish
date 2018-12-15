@@ -48,6 +48,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<String> _declaredNames;
 
+    @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
+
     private List<DestinationNat> _destinationNats;
 
     @Nullable private EigrpInterfaceSettings _eigrp;
@@ -77,6 +79,8 @@ public final class Interface extends ComparableStructure<String> {
     private Configuration _owner;
 
     private boolean _proxyArp;
+
+    private IpAccessList _preSourceNatOutgoingFilter;
 
     private Set<InterfaceAddress> _secondaryAddresses;
 
@@ -115,6 +119,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
+      iface.setDependencies(_dependencies);
       iface.setDestinationNats(_destinationNats);
       iface.setEigrp(_eigrp);
       iface.setHsrpGroups(_hsrpGroups);
@@ -135,6 +140,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getAllInterfaces().put(name, iface);
       }
+      iface.setPreSourceNatOutgoingFilter(_preSourceNatOutgoingFilter);
       iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
       iface.setVrf(_vrf);
@@ -221,6 +227,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setDependencies(@Nonnull Iterable<Dependency> dependencies) {
+      _dependencies = ImmutableSet.copyOf(dependencies);
+      return this;
+    }
+
     public Builder setDestinationNats(Iterable<DestinationNat> destinationNats) {
       _destinationNats = ImmutableList.copyOf(destinationNats);
       return this;
@@ -288,6 +299,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOwner(Configuration owner) {
       _owner = owner;
+      return this;
+    }
+
+    public Builder setPreSourceNatOutgoingFilter(IpAccessList preSourceNatOutgoingFilter) {
+      _preSourceNatOutgoingFilter = preSourceNatOutgoingFilter;
       return this;
     }
 
@@ -455,6 +471,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
 
   private static final String PROP_PREFIX = "prefix";
+
+  private static final String PROP_PRESOUNRCENAT_OUTGOING_FILTER = "preSourceNatOutgoingFilter";
 
   private static final String PROP_PROXY_ARP = "proxyArp";
 
@@ -729,6 +747,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _proxyArp;
 
+  private IpAccessList _preSourceNatOutgoingFilter;
+
+  private transient String _preSourceNatOutgoingFilterName;
+
   private boolean _ripEnabled;
 
   private boolean _ripPassive;
@@ -880,6 +902,10 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(this._zoneName, other._zoneName)) {
+      return false;
+    }
+    if (!IpAccessList.bothNullOrSameName(
+        this._preSourceNatOutgoingFilter, other._preSourceNatOutgoingFilter)) {
       return false;
     }
     return true;
@@ -1156,6 +1182,22 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @JsonIgnore
+  public IpAccessList getPreSourceNatOutgoingFilter() {
+    return _preSourceNatOutgoingFilter;
+  }
+
+  @JsonProperty(PROP_PRESOUNRCENAT_OUTGOING_FILTER)
+  @JsonPropertyDescription(
+      "The IPV4 access-list used to filter outgoing traffic before applying source NAT.")
+  public String getPreSourceNatOutgoingFilterName() {
+    if (_preSourceNatOutgoingFilter != null) {
+      return _preSourceNatOutgoingFilter.getName();
+    } else {
+      return _preSourceNatOutgoingFilterName;
+    }
   }
 
   @JsonIgnore
@@ -1496,6 +1538,16 @@ public final class Interface extends ComparableStructure<String> {
     _address = address;
   }
 
+  @JsonIgnore
+  public void setPreSourceNatOutgoingFilter(IpAccessList preSourceNatOutgoingFilter) {
+    _preSourceNatOutgoingFilter = preSourceNatOutgoingFilter;
+  }
+
+  @JsonProperty(PROP_PRESOUNRCENAT_OUTGOING_FILTER)
+  public void setPreSourceNatOutgoingFilter(String preSourceNatOutgoingFilterName) {
+    _preSourceNatOutgoingFilterName = preSourceNatOutgoingFilterName;
+  }
+
   @JsonProperty(PROP_PROXY_ARP)
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
@@ -1572,5 +1624,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ZONE)
   public void setZoneName(String zoneName) {
     _zoneName = zoneName;
+  }
+
+  /** Blacklist this interface, making it inactive and blacklisted */
+  public void blacklist() {
+    setActive(false);
+    setBlacklisted(true);
   }
 }

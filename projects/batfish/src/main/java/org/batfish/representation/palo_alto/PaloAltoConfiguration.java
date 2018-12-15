@@ -9,11 +9,13 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
@@ -62,6 +65,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private Configuration _c;
 
+  private List<CryptoProfile> _cryptoProfiles;
+
   private String _dnsServerPrimary;
 
   private String _dnsServerSecondary;
@@ -69,6 +74,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private String _hostname;
 
   private final SortedMap<String, Interface> _interfaces;
+
+  private Ip _mgmtIfaceAddress;
+
+  private Ip _mgmtIfaceGateway;
+
+  private Ip _mgmtIfaceNetmask;
 
   private String _ntpServerPrimary;
 
@@ -81,6 +92,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private final SortedMap<String, Vsys> _virtualSystems;
 
   public PaloAltoConfiguration() {
+    _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
@@ -97,6 +109,27 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
+  public List<CryptoProfile> getCryptoProfiles() {
+    return _cryptoProfiles;
+  }
+
+  /** Gets the crypto profile by the provided name and type; creates anew if one does not exist */
+  public CryptoProfile getCryptoProfileOrCreate(String name, CryptoProfile.Type cpType) {
+    Optional<CryptoProfile> optCp =
+        _cryptoProfiles
+            .stream()
+            .filter(p -> p.getName().equals(name) && p.getType() == cpType)
+            .findAny();
+
+    if (optCp.isPresent()) {
+      return optCp.get();
+    }
+
+    CryptoProfile cp = new CryptoProfile(name, cpType);
+    _cryptoProfiles.add(cp);
+    return cp;
+  }
+
   @Override
   public String getHostname() {
     return _hostname;
@@ -104,6 +137,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public SortedMap<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  public Ip getMgmtIfaceAddress() {
+    return _mgmtIfaceAddress;
+  }
+
+  public Ip getMgmtIfaceGateway() {
+    return _mgmtIfaceGateway;
+  }
+
+  public Ip getMgmtIfaceNetmask() {
+    return _mgmtIfaceNetmask;
   }
 
   private NavigableSet<String> getNtpServers() {
@@ -137,6 +182,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+  }
+
+  public void setMgmtIfaceAddress(Ip ip) {
+    _mgmtIfaceAddress = ip;
+  }
+
+  public void setMgmtIfaceGateway(Ip ip) {
+    _mgmtIfaceGateway = ip;
+  }
+
+  public void setMgmtIfaceNetmask(Ip ip) {
+    _mgmtIfaceNetmask = ip;
   }
 
   public void setNtpServerPrimary(String ntpServerPrimary) {
@@ -446,6 +503,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Count and mark simple structure usages and identify undefined references
+    markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,

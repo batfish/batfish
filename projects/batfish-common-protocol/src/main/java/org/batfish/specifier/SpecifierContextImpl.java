@@ -4,15 +4,14 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.TopologyUtil;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -28,13 +27,10 @@ public class SpecifierContextImpl implements SpecifierContext {
 
   private final @Nonnull IpSpace _snapshotDeviceOwnedIps;
 
-  private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
-
-  public SpecifierContextImpl(
-      @Nonnull IBatfish batfish, @Nonnull Map<String, Configuration> configs) {
+  public SpecifierContextImpl(@Nonnull IBatfish batfish, @Nonnull NetworkSnapshot networkSnapshot) {
     _batfish = batfish;
-    _configs = configs;
-    Map<String, Set<Interface>> nodeInterfaces = TopologyUtil.computeNodeInterfaces(configs);
+    _configs = _batfish.loadConfigurations(networkSnapshot);
+    IpOwners ipOwners = _batfish.getTopologyProvider().getIpOwners(networkSnapshot);
 
     /* Include inactive interfaces here so their IPs are considered part of the network (even though
      * they are unreachable). This means when ARP fails for those IPs we'll use NEIGHBOR_UNREACHABLE
@@ -43,19 +39,15 @@ public class SpecifierContextImpl implements SpecifierContext {
     _snapshotDeviceOwnedIps =
         firstNonNull(
             AclIpSpace.union(
-                TopologyUtil.computeIpInterfaceOwners(nodeInterfaces, false)
+                ipOwners
+                    .getAllDeviceOwnedIps()
                     .keySet()
                     .stream()
                     .map(Ip::toIpSpace)
                     .collect(Collectors.toList())),
             EmptyIpSpace.INSTANCE);
 
-    Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
-        TopologyUtil.computeIpInterfaceOwners(nodeInterfaces, true);
-    _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIpSpaces(ipInterfaceOwners);
-    _vrfOwnedIps =
-        TopologyUtil.computeVrfOwnedIpSpaces(
-            TopologyUtil.computeIpVrfOwners(ipInterfaceOwners, configs));
+    _interfaceOwnedIps = ipOwners.getInterfaceOwnedIpSpaces();
   }
 
   @Nonnull
@@ -75,14 +67,10 @@ public class SpecifierContextImpl implements SpecifierContext {
     return _batfish.getNodeRoleDimension(dimension);
   }
 
+  @Nonnull
   @Override
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
     return _interfaceOwnedIps;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getVrfOwnedIps() {
-    return _vrfOwnedIps;
   }
 
   @Override

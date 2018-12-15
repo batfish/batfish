@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -13,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
@@ -31,6 +33,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
@@ -39,8 +42,13 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -219,6 +227,25 @@ public class BatfishTest {
     assertThat(
         batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
+  }
+
+  @Test
+  public void testFlatten() throws IOException {
+    Path root = _folder.getRoot().toPath();
+    Path inputDir = root.resolve("input");
+    Path outputDir = root.resolve("output");
+    Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
+    Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
+    inputFile.getParent().toFile().mkdirs();
+    CommonUtil.writeFile(
+        inputFile, CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/hierarchical"));
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder().build(), _folder);
+    batfish.flatten(inputDir, outputDir);
+
+    assertThat(
+        CommonUtil.readFile(outputFile),
+        equalTo(CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/flat")));
   }
 
   @Test
@@ -628,5 +655,83 @@ public class BatfishTest {
 
     // none of the interfaces should be active
     assertThat(config1.activeInterfaces(), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testPostProcessInterfaceDependenciesBind() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
+
+    ib.setName("eth0").setActive(false).build();
+    ib.setName("eth1")
+        .setActive(true)
+        .setDependencies(ImmutableSet.of(new Dependency("eth0", DependencyType.BIND)))
+        .build();
+    ib.setName("eth2")
+        .setActive(true)
+        .setDependencies(ImmutableSet.of(new Dependency("eth1", DependencyType.BIND)))
+        .build();
+    ib.setName("eth9").setActive(true).build();
+
+    ImmutableSet<String> activeIfaces = ImmutableSet.of("eth9");
+    ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth1", "eth2");
+
+    // Test
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+
+    activeIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
+    inactiveIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
+  }
+
+  @Test
+  public void testPostProcessInterfaceDependenciesAggregate() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
+
+    ib.setName("eth0").setActive(false).build();
+    ib.setName("eth1").setActive(true).build();
+    ib.setName("eth2")
+        .setActive(true)
+        .setDependencies(
+            ImmutableSet.of(
+                new Dependency("eth1", DependencyType.AGGREGATE),
+                new Dependency("eth0", DependencyType.AGGREGATE)))
+        .build();
+
+    ib.setName("eth3").setActive(false).build();
+    ib.setName("eth4")
+        .setActive(true)
+        .setDependencies(
+            ImmutableSet.of(
+                new Dependency("eth0", DependencyType.AGGREGATE),
+                new Dependency("eth3", DependencyType.AGGREGATE)))
+        .build();
+
+    ImmutableSet<String> activeIfaces = ImmutableSet.of("eth1", "eth2");
+    ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth3", "eth4");
+
+    // Test
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+
+    activeIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
+    inactiveIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
   }
 }

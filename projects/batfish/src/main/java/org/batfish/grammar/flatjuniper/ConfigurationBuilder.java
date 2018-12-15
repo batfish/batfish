@@ -186,6 +186,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
@@ -1290,25 +1291,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return CommonUtil.communityStringToLong(text);
   }
 
-  private static long toCommunityLong(Sc_namedContext ctx) {
+  private @Nullable Long toCommunityLong(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
-    }
-    if (ctx.NO_EXPORT() != null) {
+    } else if (ctx.NO_EXPORT() != null) {
       return WellKnownCommunity.NO_EXPORT;
+    } else if (ctx.NO_EXPORT_SUBCONFED() != null) {
+      return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else {
-      throw new BatfishException(
-          "missing named-community-to-long mapping for: \"" + ctx.getText() + "\"");
+      return convProblem(Long.class, ctx, null);
     }
   }
 
-  private static long toCommunityLong(Standard_communityContext ctx) {
+  private @Nullable Long toCommunityLong(Standard_communityContext ctx) {
     if (ctx.sc_literal() != null) {
       return toCommunityLong(ctx.sc_literal());
     } else if (ctx.sc_named() != null) {
       return toCommunityLong(ctx.sc_named());
     } else {
-      throw new BatfishException("Cannot convert to community long");
+      return convProblem(Long.class, ctx, null);
     }
   }
 
@@ -1943,7 +1944,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private LogicalSystem _currentLogicalSystem;
 
-  public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text, Warnings warnings) {
+  private final Map<Token, String> _tokenInputs;
+
+  public ConfigurationBuilder(
+      FlatJuniperCombinedParser parser,
+      String text,
+      Warnings warnings,
+      Map<Token, String> tokenInputs) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
@@ -1952,6 +1959,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+    _tokenInputs = tokenInputs;
   }
 
   private void setLogicalSystem(LogicalSystem logicalSystem) {
@@ -2349,7 +2357,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_rule_set(Nat_rule_setContext ctx) {
     String rulesetName = ctx.name.getText();
     _currentNatRuleSet =
-        _currentNat.getRuleSets().computeIfAbsent(rulesetName, k -> new NatRuleSet());
+        _currentNat.getRuleSets().computeIfAbsent(rulesetName, k -> new NatRuleSet(rulesetName));
     defineStructure(NAT_RULE_SET, rulesetName, ctx);
   }
 
@@ -3444,6 +3452,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
+    _currentInterface.setRedundantParentInterface(ctx.name.getText());
+  }
+
+  @Override
   public void exitF_filter(F_filterContext ctx) {
     _currentFilter = null;
   }
@@ -4212,7 +4225,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String text = ctx.extended_community_regex().getText();
       _currentCommunityList.getLines().add(new CommunityListLine(text));
     } else if (ctx.standard_community() != null) {
-      long communityVal = toCommunityLong(ctx.standard_community());
+      Long communityVal = toCommunityLong(ctx.standard_community());
+      if (communityVal == null) {
+        return;
+      }
       _configuration.getAllStandardCommunities().add(communityVal);
       String communityStr = CommonUtil.longToCommunity(communityVal);
       _currentCommunityList.getLines().add(new CommunityListLine(communityStr));
@@ -5473,7 +5489,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
+    String text = _tokenInputs.getOrDefault(ctx.getStart(), _text).substring(start, end + 1);
     return text;
   }
 
@@ -5691,9 +5707,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private long toCommunityLong(Ec_literalContext ctx) {
     String[] parts = ctx.getText().split(":");
-    int part1 = Integer.parseInt(parts[0]);
+    long part1 = Long.parseLong(parts[0]);
     long part2 = Long.parseLong(parts[1]);
-    int part3 = Integer.parseInt(parts[2]);
+    long part3 = Long.parseLong(parts[2]);
     ExtendedCommunity c = new ExtendedCommunity(part1, part2, part3);
     return c.asLong();
   }

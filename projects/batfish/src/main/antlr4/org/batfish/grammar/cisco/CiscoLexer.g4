@@ -1956,6 +1956,11 @@ CHECK
    'check'
 ;
 
+CIFS
+:
+   'cifs'
+;
+
 CIPC
 :
    'cipc'
@@ -2324,6 +2329,11 @@ CONTENT_TYPE
 CONTEXT
 :
    'context'
+;
+
+CONTEXT_NAME
+:
+   'context-name'
 ;
 
 CONTINUE
@@ -3135,6 +3145,11 @@ DEV
 DEVICE
 :
    'device'
+;
+
+DEVICE_ID
+:
+   'device-id'
 ;
 
 DEVICE_SENSOR
@@ -5809,6 +5824,11 @@ IP
    'ip'
 ;
 
+IPADDRESS
+:
+   'ipaddress'
+;
+
 IP_ADDRESS_LITERAL
 :
    'ip-address'
@@ -7179,6 +7199,11 @@ MESH_RADIO_PROFILE
    'mesh-radio-profile'
 ;
 
+MESSAGE
+:
+   'message'
+;
+
 MESSAGE_COUNTER
 :
    'message-counter'
@@ -7944,6 +7969,11 @@ NEXTHOP_LIST
    'nexthop-list'
 ;
 
+NFS
+:
+   'nfs'
+;
+
 NHOP_ONLY
 :
    'nhop-only'
@@ -7977,6 +8007,11 @@ NNTP
 NO
 :
    'no'
+;
+
+NOPASSWORD
+:
+   'nopassword'
 ;
 
 NO_ADVERTISE
@@ -8142,6 +8177,11 @@ NSSA
 NSSA_EXTERNAL
 :
    'nssa-external'
+;
+
+NT_ENCRYPTED
+:
+   'nt-encrypted'
 ;
 
 NTP
@@ -8652,6 +8692,11 @@ PATHS_OF_STATISTICS_KEPT
 PAUSE
 :
    'pause'
+;
+
+PBKDF2
+:
+   'pbkdf2'
 ;
 
 PBR
@@ -10234,6 +10279,11 @@ RSA_SIG
 RSAKEYPAIR
 :
    'rsakeypair'
+;
+
+RSH
+:
+   'rsh'
 ;
 
 RST

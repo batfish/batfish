@@ -1670,6 +1670,63 @@
           }
         }
       },
+      "asa_interface" : {
+        "configurationFormat" : "CISCO_ASA",
+        "name" : "asa_interface",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ifname" : {
+            "name" : "ifname",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/1",
+              "ifname"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa_interface",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ifname"
+            ]
+          }
+        }
+      },
       "asa_object_groups" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "asa_object_groups",
@@ -5018,6 +5075,67 @@
             "sourceName" : "BLAH-BLAH",
             "sourceType" : "extended ipv4 access-list"
           },
+          "TEST" : {
+            "name" : "TEST",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log 7 interval 600"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log default"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny ip any any log disable"
+              }
+            ],
+            "sourceName" : "TEST",
+            "sourceType" : "extended ipv4 access-list"
+          },
           "blah" : {
             "name" : "blah",
             "lines" : [
@@ -7168,6 +7286,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -7585,6 +7704,51 @@
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "Allow traffic originating from this device"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                  "srcInterfaces" : [
+                    "Loopback0"
+                  ]
+                },
+                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Loopback0'"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                  "srcInterfaces" : [
+                    "GigabitEthernet0/0"
+                  ]
+                },
+                "name" : "Traffic from security level 100"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
+          },
           "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~" : {
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
             "lines" : [
@@ -7664,6 +7828,12 @@
           }
         },
         "zones" : {
+          "SECURITY_LEVEL_0_Loopback0" : {
+            "name" : "SECURITY_LEVEL_0_Loopback0",
+            "interfaces" : [
+              "Loopback0"
+            ]
+          },
           "SECURITY_LEVEL_100_GigabitEthernet0/0" : {
             "name" : "SECURITY_LEVEL_100_GigabitEthernet0/0",
             "interfaces" : [
@@ -9229,21 +9399,6 @@
                   "name" : "1.2.3.4"
                 }
               }
-            },
-            "users" : {
-              "abc" : {
-                "name" : "abc",
-                "password" : "5514c1ad6173b3f5f18ecaf3d4393210891247bda114b989b961b0eabc73cc32",
-                "role" : "def"
-              },
-              "bob1" : {
-                "name" : "bob1",
-                "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
-              },
-              "bob2" : {
-                "name" : "bob2",
-                "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
-              }
             }
           }
         },
@@ -10361,7 +10516,7 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                 "localPreference" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                   "value" : 100
                 }
               },
@@ -10808,10 +10963,43 @@
               "on" : true
             },
             "users" : {
+              "abc" : {
+                "name" : "abc",
+                "password" : "5514c1ad6173b3f5f18ecaf3d4393210891247bda114b989b961b0eabc73cc32",
+                "role" : "def"
+              },
               "admin" : {
                 "name" : "admin",
                 "password" : "a5521bc2b747bd3730859fdc9513dfb9d1f392dd635973ba26ba3b5ed773480b",
                 "role" : "network-admin"
+              },
+              "asa-user1" : {
+                "name" : "asa-user1",
+                "password" : "e57d0980b00332adec4a8f35ed3bb4aa100c16569333086650b7cee87afb3943"
+              },
+              "asa-user2" : {
+                "name" : "asa-user2",
+                "password" : "57fb9c5f73be9c46e60695e27d3b5b47b9f0f80f7bcf7568b845427511caa7d8"
+              },
+              "asa-user3" : {
+                "name" : "asa-user3",
+                "password" : "f4cd51437d954a2a173904016c655f0028c4f044094330793d0a80581d6a2f7a"
+              },
+              "asa-user4" : {
+                "name" : "asa-user4",
+                "password" : "b8147b388c211766944459f51608e0c0b0756ddf53ebd2457ab51b6fc26ec8cc"
+              },
+              "asa-user5" : {
+                "name" : "asa-user5",
+                "password" : "7af149243cccf4aea32d18cf68e3047f293ed8b99200557c0f05cbde9a751831"
+              },
+              "bob1" : {
+                "name" : "bob1",
+                "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
+              },
+              "bob2" : {
+                "name" : "bob2",
+                "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
               },
               "demo" : {
                 "name" : "demo",
@@ -10825,6 +11013,14 @@
               "sha" : {
                 "name" : "sha",
                 "password" : "a4529fb0f43b244a1b6b728f6df9f2c046ae279b1e484476fbde109b190284a7"
+              },
+              "user1" : {
+                "name" : "user1",
+                "password" : "be59343a049d615b82040dc3af33858a6308efc6f273756be6d4ea6afa7a8248"
+              },
+              "user2" : {
+                "name" : "user2",
+                "password" : "0fe7613547b0f0d5103fb6f4cc2178bb6a3671ebb0bc0299d877c4061f16576b"
               }
             }
           }
@@ -12748,6 +12944,235 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "interface-reth" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "interface-reth",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ge-0/0/0" : {
+            "name" : "ge-0/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "channelGroup" : "reth0",
+            "declaredNames" : [
+              "ge-0/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/0.0" : {
+            "name" : "ge-0/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.0.0.0/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.0.0.0/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/1" : {
+            "name" : "ge-0/0/1",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "channelGroup" : "reth0",
+            "declaredNames" : [
+              "ge-0/0/1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/1.0" : {
+            "name" : "ge-0/0/1.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.0.0.1/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/1.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.0.0.1/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "reth0" : {
+            "name" : "reth0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "channelGroupMembers" : [
+              "ge-0/0/0",
+              "ge-0/0/1"
+            ],
+            "declaredNames" : [
+              "reth0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT",
+            "vrf" : "default"
+          },
+          "reth0.3" : {
+            "name" : "reth0.3",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "3.3.3.3/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "reth0.3"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "3.3.3.3/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ge-0/0/0",
+              "ge-0/0/0.0",
+              "ge-0/0/1",
+              "ge-0/0/1.0",
+              "reth0",
+              "reth0.3"
+            ]
           }
         }
       },
@@ -17253,12 +17678,12 @@
                         "headerSpace" : {
                           "dstIps" : {
                             "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "NAME"
+                            "name" : "global~NAME"
                           },
                           "negate" : false,
                           "srcIps" : {
                             "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "SA-NAME"
+                            "name" : "global~SA-NAME"
                           }
                         }
                       }
@@ -17280,6 +17705,40 @@
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
+            "sourceNats" : [
+              {
+                "acl" : {
+                  "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
+                  "lines" : [
+                    {
+                      "action" : "PERMIT",
+                      "matchCondition" : {
+                        "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                        "conjuncts" : [
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpSpaceReference",
+                                "name" : "global~NAME"
+                              },
+                              "negate" : false,
+                              "srcIps" : {
+                                "class" : "org.batfish.datamodel.IpSpaceReference",
+                                "name" : "global~SA-NAME"
+                              }
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
             "spanningTreePortfast" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -17298,14 +17757,44 @@
                   "headerSpace" : {
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
-                      "name" : "NAME"
+                      "name" : "global~NAME"
                     },
                     "negate" : false,
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
-                      "name" : "SA-NAME"
+                      "name" : "global~SA-NAME"
                     }
                   }
+                }
+              }
+            ]
+          },
+          "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~" : {
+            "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstIps" : {
+                          "class" : "org.batfish.datamodel.IpSpaceReference",
+                          "name" : "global~NAME"
+                        },
+                        "negate" : false,
+                        "srcIps" : {
+                          "class" : "org.batfish.datamodel.IpSpaceReference",
+                          "name" : "global~SA-NAME"
+                        }
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
+                    }
+                  ]
                 }
               }
             ]
@@ -18492,6 +18981,252 @@
                 "network" : "40.0.0.0/8",
                 "nextHopIp" : "AUTO/NONE(-1l)"
               }
+            ]
+          }
+        }
+      },
+      "juniper_routing_policy" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_routing_policy",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ge-0/0/0" : {
+            "name" : "ge-0/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/0.0" : {
+            "name" : "ge-0/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.1.1.1/24",
+              "2.2.2.2/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.1/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/0.99" : {
+            "name" : "ge-0/0/0.99",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.99"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          }
+        },
+        "routingPolicies" : {
+          "POLICY-NAME" : {
+            "name" : "POLICY-NAME",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "TERM1",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "connected"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "2.2.2.0/24",
+                          "1.1.1.0/24"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "TERM2",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "connected"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [ ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Return"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                }
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ge-0/0/0",
+              "ge-0/0/0.0",
+              "ge-0/0/0.99"
             ]
           }
         }
@@ -20849,7 +21584,7 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                 "localPreference" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                   "value" : 100
                 }
               },
@@ -20887,7 +21622,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 5
                     }
                   },
@@ -20927,7 +21662,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 50
                     }
                   },
@@ -20967,7 +21702,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 100
                     }
                   },
@@ -21007,7 +21742,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 150
                     }
                   },
@@ -21047,7 +21782,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 200
                     }
                   },
@@ -21087,7 +21822,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 250
                     }
                   },
@@ -21127,7 +21862,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
                   },
@@ -21167,7 +21902,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 350
                     }
                   },
@@ -21207,7 +21942,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 500
                     }
                   },
@@ -21276,7 +22011,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 1000
                     }
                   },
@@ -21733,7 +22468,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 150
                     }
                   },
@@ -21783,7 +22518,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 200
                     }
                   },
@@ -21833,7 +22568,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 250
                     }
                   },
@@ -21883,7 +22618,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                     "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
                   },
@@ -24713,7 +25448,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                       "localPreference" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 350
                       }
                     }
@@ -24752,7 +25487,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
                       "localPreference" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 350
                       }
                     }
@@ -27093,8 +27828,23 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "lo0",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchSourceInterface",
-                  "list" : "lo0.0"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "connected"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [ ]
+                      }
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {

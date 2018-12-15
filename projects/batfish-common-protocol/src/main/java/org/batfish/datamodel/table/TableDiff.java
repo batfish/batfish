@@ -23,8 +23,8 @@ public final class TableDiff {
 
   private TableDiff() {}
 
-  private static final String COL_BASE_PREFIX = "Snapshot_";
-  private static final String COL_DELTA_PREFIX = "Reference_";
+  public static final String COL_BASE_PREFIX = "Snapshot_";
+  public static final String COL_DELTA_PREFIX = "Reference_";
 
   public static final String COL_KEY_PRESENCE = "KeyPresence";
   public static final String COL_KEY_PRESENCE_DESC = "In which table(s) is the key present";
@@ -65,8 +65,7 @@ public final class TableDiff {
    * delta values and one for the difference of the two. For remaining columns (which are neither
    * keys nor values), two columns are included for base and delta values.
    */
-  @VisibleForTesting
-  static TableMetadata diffMetadata(TableMetadata inputMetadata) {
+  public static TableMetadata diffMetadata(TableMetadata inputMetadata) {
     ImmutableList.Builder<ColumnMetadata> diffColumnMetatadata = ImmutableList.builder();
     // 1. Insert all key columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {

@@ -1,6 +1,7 @@
 package org.batfish.datamodel.ospf;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -25,7 +26,7 @@ public class OspfEdgeTest {
         .addEqualityGroup(new OspfEdge(node1, node3))
         .addEqualityGroup(new OspfEdge(node2, node3))
         .addEqualityGroup(new OspfEdge(node3, node2))
-        .addEqualityGroup(new OspfEdge(node3, node1))
+        .addEqualityGroup(new OspfEdge(node3, node1), new OspfEdge(node1, node3).reverse())
         .addEqualityGroup(new OspfEdge(node1, node1))
         .testEquals();
   }
@@ -48,6 +49,15 @@ public class OspfEdgeTest {
             new OspfEdge(node3, node3));
     assertThat(Ordering.natural().sortedCopy(expected), equalTo(expected));
     assertThat(Ordering.natural().sortedCopy(Lists.reverse(expected)), equalTo(expected));
+  }
+
+  @Test
+  public void testReverse() {
+    OspfNode node1 = new OspfNode("a", "i", new Ip("1.2.3.4"));
+    OspfNode node2 = new OspfNode("b", "i", new Ip("1.2.3.5"));
+    OspfEdge rev = new OspfEdge(node1, node2).reverse();
+    assertThat(rev.getNode1(), is(node2));
+    assertThat(rev.getNode2(), is(node1));
   }
 
   @Test

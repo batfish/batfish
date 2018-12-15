@@ -592,9 +592,10 @@ enable_password
 :
    PASSWORD (LEVEL level = DEC)?
    (
-      ep_cisco_encryption
-      | ep_plaintext
+      ep_plaintext
       | ep_sha512
+      // Do not reorder ep_cisco_encryption
+      | ep_cisco_encryption
    ) NEWLINE
 ;
 
@@ -611,7 +612,7 @@ enable_secret
 
 ep_cisco_encryption
 :
-   type = DEC (pass = variable_secret)
+   (type = DEC)? (pass = variable_secret) (LEVEL level = DEC)? (PBKDF2 | ENCRYPTED)?
 ;
 
 ep_plaintext
@@ -2799,7 +2800,7 @@ s_monitor_session
 
 s_mtu
 :
-   MTU variable DEC NEWLINE
+   MTU iface = variable bytes = DEC NEWLINE
 ;
 
 s_name
@@ -4003,13 +4004,19 @@ u_passphrase
 u_password
 :
    (
-      PASSWORD
-      | SECRET
+      (
+         PASSWORD
+         | SECRET
+      )
+      (
+         up_arista_md5
+         | up_arista_sha512
+         | up_cisco
+      )
    )
+   |
    (
-      up_arista_md5
-      | up_arista_sha512
-      | up_cisco
+      NOPASSWORD
    )
 ;
 
@@ -4049,7 +4056,18 @@ up_arista_sha512
 
 up_cisco
 :
-   DEC pass = variable_secret
+   DEC? up_cisco_tail
+;
+
+up_cisco_tail
+:
+   (pass = variable_secret)
+   (
+      ENCRYPTED
+      | MSCHAP
+      | NT_ENCRYPTED
+      | PBKDF2
+   )?
 ;
 
 ur_access_list

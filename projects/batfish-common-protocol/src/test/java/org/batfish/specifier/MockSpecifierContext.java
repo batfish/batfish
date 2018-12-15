@@ -23,11 +23,6 @@ public class MockSpecifierContext implements SpecifierContext {
     return _interfaceOwnedIps;
   }
 
-  @Nonnull
-  public Map<String, Map<String, IpSpace>> get_vrfOwnedIps() {
-    return _vrfOwnedIps;
-  }
-
   public static final class Builder {
     private @Nonnull SortedSet<ReferenceBook> _referenceBooks = ImmutableSortedSet.of();
 
@@ -88,15 +83,12 @@ public class MockSpecifierContext implements SpecifierContext {
 
   private final @Nonnull IpSpace _snapshotOwnedIps;
 
-  private final @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps;
-
   private MockSpecifierContext(Builder builder) {
     _referenceBooks = builder._referenceBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
     _nodeRoleDimensions = builder._nodeRoleDimensions;
     _snapshotOwnedIps = builder._snapshotOwnedIps;
-    _vrfOwnedIps = builder._vrfOwnedIps;
   }
 
   @Override
@@ -125,11 +117,5 @@ public class MockSpecifierContext implements SpecifierContext {
   @Override
   public Optional<ReferenceBook> getReferenceBook(String bookName) {
     return _referenceBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
-  }
-
-  @Override
-  @Nonnull
-  public Map<String, Map<String, IpSpace>> getVrfOwnedIps() {
-    return _vrfOwnedIps;
   }
 }

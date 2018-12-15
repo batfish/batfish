@@ -115,6 +115,18 @@
         }
       },
       {
+        "File_Name" : "configs/asa_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "some-interface-policy",
+        "Context" : "service-policy interface policy",
+        "Lines" : {
+          "filename" : "configs/asa_interface",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/bgp_address_family",
         "Struct_Type" : "interface",
         "Ref_Name" : "Loopback0",
@@ -1098,18 +1110,6 @@
       },
       {
         "File_Name" : "configs/cisco_misc",
-        "Struct_Type" : "interface",
-        "Ref_Name" : "Loopback0",
-        "Context" : "service-policy interface",
-        "Lines" : {
-          "filename" : "configs/cisco_misc",
-          "lines" : [
-            238
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_misc",
         "Struct_Type" : "ipv4/6 acl",
         "Ref_Name" : "cops-acl",
         "Context" : "cops listener access-list",
@@ -1117,18 +1117,6 @@
           "filename" : "configs/cisco_misc",
           "lines" : [
             42
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_misc",
-        "Struct_Type" : "policy-map",
-        "Ref_Name" : "some-interface-policy",
-        "Context" : "service-policy interface policy",
-        "Lines" : {
-          "filename" : "configs/cisco_misc",
-          "lines" : [
-            238
           ]
         }
       },
@@ -2700,6 +2688,18 @@
           "filename" : "configs/juniper_relay",
           "lines" : [
             8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_routing_policy",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ge-0/0/0.99",
+        "Context" : "policy-statement from interface",
+        "Lines" : {
+          "filename" : "configs/juniper_routing_policy",
+          "lines" : [
+            9
           ]
         }
       },

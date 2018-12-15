@@ -181,8 +181,10 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
@@ -628,6 +630,70 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaAclObject() throws IOException {
+    String hostname = "asa-acl-object";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * The produced ACL should permit if source matcher object on1, destination matches on2, and
+     * service matches os1.
+     */
+    assertThat(
+        c,
+        hasIpAccessList(
+            "acl1",
+            hasLines(
+                hasItem(
+                    hasMatchCondition(
+                        isAndMatchExprThat(
+                            hasConjuncts(
+                                containsInAnyOrder(
+                                    ImmutableList.of(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                allOf(
+                                                    hasDstIps(
+                                                        isIpSpaceReferenceThat(hasName("on2"))),
+                                                    hasSrcIps(
+                                                        isIpSpaceReferenceThat(hasName("on1")))))),
+                                        isPermittedByAclThat(
+                                            hasAclName(
+                                                computeServiceObjectAclName("os1"))))))))))));
+
+    /*
+     * We expect only objects osunused1, onunused1 to have zero referrers
+     */
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "os1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "on1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "on2", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "osunused1", 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "onunused1", 0));
+
+    /*
+     * We expect undefined references only to objects osfake, onfake1, onfake2
+     */
+    assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT, "os1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "on1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "on2")));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, SERVICE_OBJECT, "osfake", EXTENDED_ACCESS_LIST_SERVICE_OBJECT));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT, "onfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT, "onfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
+  }
+
+  @Test
   public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(3e6d));
@@ -737,7 +803,8 @@ public class CiscoGrammarTest {
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
-    Flow flowInlinePass = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
@@ -758,7 +825,8 @@ public class CiscoGrammarTest {
     /* Confirm object-group permits and rejects the flows determined by its constituent service objects */
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowTcpPass, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
-    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
   }
 
   @Test
@@ -3687,6 +3755,9 @@ public class CiscoGrammarTest {
         hasInterface(
             "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
 
+    // Confirm that interface MTU is set correctly
+    assertThat(c, hasInterface("ifname", hasMtu(1400)));
+
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
   }
@@ -3712,7 +3783,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
     assertThat(
         c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(0, outsideInterface), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeZoneName(1, outsideInterface), hasMemberInterfaces(hasSize(1))));
 
     IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
     IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();

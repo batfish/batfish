@@ -235,7 +235,6 @@ sap cache-timeout 30
 no schedule tech-support
 sensor fanspeed-control off
 service-policy global_policy global
-service-policy some-interface-policy interface Loopback0
 slot-table-cos queuemap-red
  destination-slot all queuemap-red
 !
@@ -265,14 +264,6 @@ tls-proxy ASA-tls-proxy
 transceiver qsfp default-mode 4x10G
 tunnel-group 1.2.3.4 ipsec-attributes
  peer-id-validate nocheck
-username abc
- group def
- secret 5 $1$aaaa$bbbbbbbbbbbbbbbbbbbbbb
-username rancid attributes
- vpn-group-policy GroupPolicy_NOC-VPN
- group-lock value NOC-VPN
-username bob1 password 1 1234
-username bob2 privilege 1 password 1 1234
 Using 12345 out of 5678 bytes
 virtual-service
   signing level cisco

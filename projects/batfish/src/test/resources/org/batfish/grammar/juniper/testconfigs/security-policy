@@ -1,0 +1,13 @@
+#
+set system host-name security-policy
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+set interfaces ge-0/0/1 unit 0 family inet address 2.0.0.1/24
+#
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+#
+set security policies from-zone trust to-zone untrust policy policy1 match application any
+set security policies from-zone trust to-zone untrust policy policy1 then permit
+#
+set routing-options static route 0.0.0.0/0 next-hop 2.0.0.1

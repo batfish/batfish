@@ -9,6 +9,7 @@ import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -47,7 +49,12 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class OspfTest {
 
@@ -852,5 +859,25 @@ public class OspfTest {
     assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.4.5.0/24"));
     assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.6.0/24"));
     assertNoRoute(routesWithSummaries, "R3", Prefix.parse("10.10.10.10/32"));
+  }
+
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  @Test
+  public void testOspfWithMultipleEdgesInSameIface() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText("org/batfish/dataplane/ibdp/ospf-edge", "A1", "A2", "FWL")
+                .build(),
+            _folder);
+    batfish.computeDataPlane(false);
+    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dataplane);
+    assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, new Ip("10.1.1.4"));
+    assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, new Ip("10.1.1.4"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.1"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.2"));
   }
 }

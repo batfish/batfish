@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
@@ -856,6 +857,19 @@ public class WorkMgr extends AbstractCoordinator {
       answer = BatfishObjectMapper.writePrettyString(ans);
       return answer;
     }
+  }
+
+  /**
+   * Get all completed work for the specified network and snapshot.
+   *
+   * @param networkName name of the network to get completed work for.
+   * @param snapshotName name of the snapshot to get completed work for.
+   * @return {@link List} of completed {@link QueuedWork}.
+   */
+  public List<QueuedWork> getCompletedWork(String networkName, String snapshotName) {
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    return _workQueueMgr.getCompletedWork(
+        networkId, _idManager.getSnapshotId(snapshotName, networkId));
   }
 
   private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
@@ -2780,7 +2794,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
+  @MustBeClosed
+  @Nullable
+  public InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
       throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network);
     try {
@@ -2851,7 +2867,9 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
-  public @Nullable InputStream getSnapshotObject(
+  @MustBeClosed
+  @Nullable
+  public InputStream getSnapshotObject(
       @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
@@ -2944,6 +2962,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading the object
    */
+  @MustBeClosed
   public InputStream getSnapshotInputObject(String network, String snapshot, String key)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {

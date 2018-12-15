@@ -64,11 +64,14 @@ logging_common
    | logging_archive
    | logging_buffered
    | logging_console
+   | logging_device_id
    | logging_enable
    | logging_format
    | logging_host
+   | logging_message
    | logging_null
    | logging_on
+   | logging_queue
    | logging_server
    | logging_source_interface
    | logging_suppress
@@ -85,6 +88,18 @@ logging_console
    (
       EXCEPT ERRORS
    )? NEWLINE
+;
+
+logging_device_id
+:
+   DEVICE_ID
+   (
+      CLUSTER_ID
+      | CONTEXT_NAME
+      | HOSTNAME
+      | (IPADDRESS variable)
+      | (STRING variable)
+   ) NEWLINE
 ;
 
 logging_enable
@@ -141,6 +156,11 @@ logging_host
    )? NEWLINE
 ;
 
+logging_message
+:
+   MESSAGE (syslog_id = DEC) (LEVEL level = variable)? STANDBY? NEWLINE
+;
+
 logging_null
 :
    (
@@ -185,6 +205,11 @@ logging_null
 logging_on
 :
    ON NEWLINE
+;
+
+logging_queue
+:
+   QUEUE (size = DEC)? NEWLINE
 ;
 
 logging_severity

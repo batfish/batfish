@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -66,20 +67,20 @@ public class FilterLineReachabilityQuestion extends Question {
         ignoreComposites);
   }
 
-  public FilterLineReachabilityQuestion() {
+  @VisibleForTesting
+  FilterLineReachabilityQuestion() {
     this(null, null, null, null, null);
   }
 
-  public FilterLineReachabilityQuestion(String filterSpecifierInput) {
+  @VisibleForTesting
+  FilterLineReachabilityQuestion(String filterSpecifierInput) {
     this(null, filterSpecifierInput, null, null, null);
   }
 
-  public FilterLineReachabilityQuestion(String filterSpecifierInput, String nodeSpecifierInput) {
-    this(null, filterSpecifierInput, null, nodeSpecifierInput, null);
-  }
-
   public FilterLineReachabilityQuestion(
-      String filterSpecifierInput, String nodeSpecifierInput, boolean ignoreComposites) {
+      @Nullable String filterSpecifierInput,
+      @Nullable String nodeSpecifierInput,
+      boolean ignoreComposites) {
     this(null, filterSpecifierInput, null, nodeSpecifierInput, ignoreComposites);
   }
 

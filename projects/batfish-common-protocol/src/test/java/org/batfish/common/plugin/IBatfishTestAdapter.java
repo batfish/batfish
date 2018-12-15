@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -14,8 +15,11 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -206,6 +210,18 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
+  @Nonnull
+  @Override
+  public TopologyProvider getTopologyProvider() {
+    return new TopologyProvider() {
+      @Nonnull
+      @Override
+      public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+        return new IpOwners(loadConfigurations(snapshot));
+      }
+    };
+  }
+
   @Override
   public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
@@ -234,6 +250,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -412,7 +433,12 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, this.loadConfigurations());
+    return new SpecifierContextImpl(this, networkSnapshot());
+  }
+
+  @Override
+  public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
+    return new SpecifierContextImpl(this, networkSnapshot);
   }
 
   @Override
@@ -438,5 +464,10 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     throw new UnsupportedOperationException();
+  }
+
+  public NetworkSnapshot networkSnapshot() {
+    return new NetworkSnapshot(
+        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
   }
 }

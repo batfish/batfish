@@ -177,14 +177,12 @@ class IncrementalBdpEngine {
    * </ul>
    *
    * @param nodes nodes that are participating in the computation
-   * @param topology network Topology
    * @param iteration iteration number (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
    * @param bgpTopology the bgp peering relationships
    */
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
-      Topology topology,
       int iteration,
       Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
@@ -315,7 +313,7 @@ class IncrementalBdpEngine {
         .forEach(
             n -> {
               for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.initOspfExports();
+                vr.initOspfExports(allNodes);
               }
             });
 
@@ -339,8 +337,9 @@ class IncrementalBdpEngine {
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
                   Entry<RibDelta<OspfExternalType1Route>, RibDelta<OspfExternalType2Route>> p =
-                      vr.propagateOspfExternalRoutes(allNodes, topology);
-                  if (p != null && vr.unstageOspfExternalRoutes(p.getKey(), p.getValue())) {
+                      vr.propagateOspfExternalRoutes(allNodes);
+                  if (p != null
+                      && vr.unstageOspfExternalRoutes(allNodes, p.getKey(), p.getValue())) {
                     ospfExternalChanged.set(true);
                   }
                 }
@@ -562,7 +561,7 @@ class IncrementalBdpEngine {
       while (schedule.hasNext()) {
         Map<String, Node> iterationNodes = schedule.next();
         computeDependentRoutesIteration(
-            iterationNodes, topology, _numIterations, nodes, bgpTopology, networkConfigurations);
+            iterationNodes, _numIterations, nodes, bgpTopology, networkConfigurations);
       }
 
       /*
