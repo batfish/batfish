@@ -31,15 +31,17 @@ public class FilterStep extends Step<FilterStepDetail> {
     private @Nonnull String _filter;
     private @Nonnull FilterType _type;
 
-    public FilterStepDetail(@Nonnull String filter, FilterType type) {
+    public FilterStepDetail(@Nonnull String filter, @Nonnull FilterType type) {
       _filter = filter;
       _type = type;
     }
 
     @JsonCreator
     private static FilterStepDetail jsonCreator(
-        @JsonProperty(PROP_FILTER) @Nonnull String filter,
-        @JsonProperty(PROP_TYPE) @Nonnull FilterType type) {
+        @JsonProperty(PROP_FILTER) @Nullable String filter,
+        @JsonProperty(PROP_TYPE) @Nullable FilterType type) {
+      checkArgument(filter != null, "Missing %s", PROP_FILTER);
+      checkArgument(type != null, "Missing %s", PROP_TYPE);
       return new FilterStepDetail(filter, type);
     }
 
