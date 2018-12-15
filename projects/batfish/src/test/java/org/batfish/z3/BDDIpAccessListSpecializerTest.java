@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
@@ -64,7 +65,7 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void testSpecializeIpAccessListLine_singleDst() {
     IpAccessListLine ipAccessListLine =
-        IpAccessListLine.accepting()
+        accepting()
             .setMatchCondition(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
@@ -82,9 +83,7 @@ public class BDDIpAccessListSpecializerTest {
     BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.toBDD(new Ip("1.2.3.4"));
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
-    assertThat(
-        specializer.specialize(ipAccessListLine),
-        equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
+    assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(accepting(TRUE))));
 
     // specialize to a headerspace that blacklists part of the dstIp
     specializer = new BDDIpAccessListSpecializer(PKT, headerSpaceBDD.not(), ImmutableMap.of());
@@ -103,8 +102,7 @@ public class BDDIpAccessListSpecializerTest {
             .setDstIps(Prefix.parse("1.2.0.0/16").toIpSpace())
             .setNotDstIps(Prefix.parse("1.2.3.0/24").toIpSpace())
             .build();
-    IpAccessListLine line =
-        IpAccessListLine.accepting().setMatchCondition(match(headerSpace)).build();
+    IpAccessListLine line = accepting().setMatchCondition(match(headerSpace)).build();
     assertThat(specializer.specialize(line), equalTo(Optional.empty()));
   }
 
@@ -124,9 +122,7 @@ public class BDDIpAccessListSpecializerTest {
     BDD headerSpaceBDD = SRC_IP_SPACE_TO_BDD.toBDD(new Ip("1.2.3.4"));
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
-    assertThat(
-        specializer.specialize(ipAccessListLine),
-        equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
+    assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(accepting(TRUE))));
 
     // specialize to a headerspace that blacklists part of the srcIp
     specializer = new BDDIpAccessListSpecializer(PKT, headerSpaceBDD.not(), ImmutableMap.of());
