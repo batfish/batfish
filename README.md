@@ -17,7 +17,8 @@ See [www.batfish.org](http://www.batfish.org) for technical information on how i
 
 ## What kinds of correctness checks does Batfish support?
 
-[<img src=batfish_video.png width=420>](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
+[<img src=batfish_video.png width=370>](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
+[<img src=batfish_notebook.png width=470>](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks)
 
 The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) (subscribe!) and [Python notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) illustrate many checks. Batfish checks span a range of network behaviors.
 #### Configuration Compliance
