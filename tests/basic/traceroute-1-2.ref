@@ -163,7 +163,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -348,7 +349,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -463,7 +465,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -648,7 +651,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -763,7 +767,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -948,7 +953,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1063,7 +1069,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1248,7 +1255,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1393,7 +1401,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1578,7 +1587,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1693,7 +1703,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1878,7 +1889,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1993,7 +2005,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -2178,7 +2191,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -2293,7 +2307,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "OUTSIDE_TO_INSIDE"
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -2478,7 +2493,8 @@
                     "type" : "Filter",
                     "action" : "DENIED",
                     "detail" : {
-                      "filter" : "filter::INPUT"
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]

@@ -88,7 +88,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "filter::OUTPUT"
+                      "filter" : "filter::OUTPUT",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -124,7 +125,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -220,7 +222,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "blocktelnet"
+                      "filter" : "blocktelnet",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -282,7 +285,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "INSIDE_TO_AS1"
+                      "filter" : "INSIDE_TO_AS1",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -355,7 +359,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "filter::OUTPUT"
+                      "filter" : "filter::OUTPUT",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -391,7 +396,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -542,7 +548,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "INSIDE_TO_AS1"
+                      "filter" : "INSIDE_TO_AS1",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -615,7 +622,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "filter::OUTPUT"
+                      "filter" : "filter::OUTPUT",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -651,7 +659,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -802,7 +811,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "INSIDE_TO_AS1"
+                      "filter" : "INSIDE_TO_AS1",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -875,7 +885,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "filter::OUTPUT"
+                      "filter" : "filter::OUTPUT",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
@@ -911,7 +922,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "RESTRICT_HOST_TRAFFIC_IN"
+                      "filter" : "RESTRICT_HOST_TRAFFIC_IN",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1007,7 +1019,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "blocktelnet"
+                      "filter" : "blocktelnet",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1069,7 +1082,8 @@
                     "type" : "Filter",
                     "action" : "PERMITTED",
                     "detail" : {
-                      "filter" : "INSIDE_TO_AS1"
+                      "filter" : "INSIDE_TO_AS1",
+                      "type" : "EGRESS_FILTER"
                     }
                   },
                   {
