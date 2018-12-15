@@ -1450,6 +1450,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
       return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+    } else if (ctx.DEC() != null) {
+      return Integer.parseInt(ctx.DEC().getText());
     } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
       return IcmpCode.DESTINATION_HOST_PROHIBITED;
     } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
@@ -1505,7 +1507,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    */
   @Nullable
   private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
-    if (ctx.DESTINATION_UNREACHABLE() != null) {
+    if (ctx.DEC() != null) {
+      return Integer.parseInt(ctx.DEC().getText());
+    } else if (ctx.DESTINATION_UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
     } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
