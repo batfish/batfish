@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
@@ -50,6 +51,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -926,5 +928,142 @@ public class TracerouteTest {
                 allOf(
                     hasColumn(TracerouteAnswerer.COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
                     hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)))));
+  }
+
+  /*
+   *  Test setup: Send packets with destination 8.8.8.8 to the next hop 1.0.0.2.
+   *  Since the destination Ip 8.8.8.8 is outside the network and next hop Ip 1.0.0.2 is not
+   *  owned by any device, so this is EXITS_NETWORK.
+   */
+  @Test
+  public void testInsufficientInfoVsExitsNetwork1() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    nf.interfaceBuilder()
+        .setAddress(new InterfaceAddress("1.0.0.1/30"))
+        .setOwner(c1)
+        .setVrf(v1)
+        .build();
+
+    // set up static route "8.8.8.0/24" -> 1.0.0.2
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNetwork(Prefix.parse("8.8.8.0/24"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("8.8.8.8").build(),
+            false,
+            DEFAULT_MAX_TRACES);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    // should only have one trace with disposition EXITS_NETWORK
+    assertThat(
+        answer,
+        hasRows(
+            contains(
+                allOf(
+                    hasColumn(TracerouteAnswerer.COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+                    hasColumn(
+                        TracerouteAnswerer.COL_TRACES,
+                        containsInAnyOrder(
+                            ImmutableList.of(
+                                TraceMatchers.hasDisposition(FlowDisposition.EXITS_NETWORK))),
+                        Schema.set(Schema.TRACE))))));
+  }
+
+  /*
+   *  Test setup: Send packets with destination 8.8.8.8 to the next hop 2.0.0.2.
+   *  Since the destination Ip 8.8.8.8 is outside the network and next hop Ip 2.0.0.2 is
+   *  owned by a device, so this is INSUFFICIENT_INFO.
+   */
+  @Test
+  public void testInsufficientInfoVsExitsNetwork2() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    ImmutableSortedMap.Builder<String, Configuration> configs =
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
+    Configuration c1 = cb.build();
+    configs.put(c1.getHostname(), c1);
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+
+    // set up another node
+    Configuration c2 = cb.build();
+    configs.put(c2.getHostname(), c2);
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    nf.interfaceBuilder()
+        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .build();
+
+    // set up static route "8.8.8.0/24" -> 2.0.0.2
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopIp(new Ip("2.0.0.2"))
+                .setNextHopInterface(i1.getName())
+                .setNetwork(Prefix.parse("8.8.8.0/24"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
+    batfish.computeDataPlane(false);
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(
+            c1.getHostname(),
+            PacketHeaderConstraints.builder().setDstIp("8.8.8.8").build(),
+            false,
+            DEFAULT_MAX_TRACES);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+
+    // should only have one trace with disposition INSUFFICIENT_INFO
+    assertThat(
+        answer,
+        hasRows(
+            contains(
+                allOf(
+                    hasColumn(TracerouteAnswerer.COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
+                    hasColumn(
+                        TracerouteAnswerer.COL_TRACES,
+                        containsInAnyOrder(
+                            ImmutableList.of(
+                                TraceMatchers.hasDisposition(FlowDisposition.INSUFFICIENT_INFO))),
+                        Schema.set(Schema.TRACE))))));
   }
 }

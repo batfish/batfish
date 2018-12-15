@@ -90,14 +90,14 @@ public class ForwardingAnalysisImplTest {
   private Map<String, Set<String>> _interfacesWithMissingDevices;
 
   private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      _routesWithExternalNextHopIpArpFalse;
+      _routesWithUnownedNextHopIpArpFalse;
 
   private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      _routesWithInternalNextHopIpArpFalse;
+      _routesWithOwnedNextHopIpArpFalse;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithExternalNextHopIpArpFalse;
+  private Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithUnownedNextHopIpArpFalse;
 
-  private Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithInternalNextHopIpArpFalse;
+  private Map<String, Map<String, Map<String, IpSpace>>> _dstIpsWithOwnedNextHopIpArpFalse;
 
   private Vrf.Builder _vb;
 
@@ -124,10 +124,10 @@ public class ForwardingAnalysisImplTest {
         _someoneReplies,
         _interfaceHostSubnetIps,
         _interfacesWithMissingDevices,
-        _routesWithExternalNextHopIpArpFalse,
-        _routesWithInternalNextHopIpArpFalse,
-        _dstIpsWithExternalNextHopIpArpFalse,
-        _dstIpsWithInternalNextHopIpArpFalse,
+        _routesWithUnownedNextHopIpArpFalse,
+        _routesWithOwnedNextHopIpArpFalse,
+        _dstIpsWithUnownedNextHopIpArpFalse,
+        _dstIpsWithOwnedNextHopIpArpFalse,
         _internalIps);
   }
 
@@ -1329,52 +1329,52 @@ public class ForwardingAnalysisImplTest {
     }
 
     if (nextHopIpStatus == NextHopIpStatus.EXTERNAL) {
-      _routesWithExternalNextHopIpArpFalse =
+      _routesWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(route))));
-      _routesWithInternalNextHopIpArpFalse =
+      _routesWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of())));
       _arpFalseDestIp =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      _dstIpsWithInternalNextHopIpArpFalse =
+      _dstIpsWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      _dstIpsWithExternalNextHopIpArpFalse =
+      _dstIpsWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
     } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
-      _routesWithExternalNextHopIpArpFalse =
+      _routesWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of())));
-      _routesWithInternalNextHopIpArpFalse =
+      _routesWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(route))));
       _arpFalseDestIp =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
       internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
-      _dstIpsWithInternalNextHopIpArpFalse =
+      _dstIpsWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-      _dstIpsWithExternalNextHopIpArpFalse =
+      _dstIpsWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
     } else {
-      _routesWithExternalNextHopIpArpFalse =
+      _routesWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of())));
-      _routesWithInternalNextHopIpArpFalse =
+      _routesWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, ImmutableSet.of())));
       _arpFalseDestIp =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-      _dstIpsWithInternalNextHopIpArpFalse =
+      _dstIpsWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      _dstIpsWithExternalNextHopIpArpFalse =
+      _dstIpsWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
     }
