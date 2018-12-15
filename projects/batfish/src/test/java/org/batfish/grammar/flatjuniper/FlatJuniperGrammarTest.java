@@ -143,6 +143,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -243,6 +244,9 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.InterfaceRange;
+import org.batfish.representation.juniper.InterfaceRangeMember;
+import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -1915,10 +1919,50 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInteraceOspfPointToPoint() throws IOException {
+  public void testInterfaceOspfPointToPoint() throws IOException {
     String hostname = "ospf-interface-point-to-point";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+  }
+
+  @Test
+  public void testInterfaceRange() throws IOException {
+    String hostname = "interface-range";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+
+    InterfaceRange ae1 = new InterfaceRange("ae1-members");
+    ae1.setMtu(8000);
+    ae1.setDescription("dodo");
+    ae1.getMembers().add(new InterfaceRangeMember("xe-0/0/[0,1]"));
+    ae1.getMemberRanges().add(new InterfaceRangeMemberRange("xe-0/0/0", "xe-0/0/1"));
+
+    InterfaceRange ae2 = new InterfaceRange("ae2-members");
+    ae2.setDescription("dodo");
+    ae2.getMembers().add(new InterfaceRangeMember("xe-8/1/2"));
+    ae2.set8023adInterface("ae1");
+    ae2.setRedundantParentInterface("reth0");
+
+    // range definitions are inserted properly into the vendor model
+    assertThat(
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges(),
+        equalTo(ImmutableMap.of(ae1.getName(), ae1, ae2.getName(), ae2)));
+
+    // all interfaces are expanded in the vendor model
+    org.batfish.representation.juniper.Interface xe000 =
+        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-0/0/0");
+    assertThat(xe000.getMtu(), equalTo(9000));
+    assertThat(xe000.getDescription(), equalTo("dodo"));
+
+    org.batfish.representation.juniper.Interface xe001 =
+        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-0/0/1");
+    assertThat(xe001.getMtu(), equalTo(8000));
+    assertThat(xe001.getDescription(), equalTo("dodo"));
+
+    org.batfish.representation.juniper.Interface xe812 =
+        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-8/1/2");
+    assertThat(xe812.getDescription(), equalTo("dodo"));
+    assertThat(xe812.get8023adInterface(), equalTo("ae1"));
+    assertThat(xe812.getRedundantParentInterface(), equalTo("reth0"));
   }
 
   @Test

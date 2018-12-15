@@ -255,8 +255,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_methodContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_interface_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
@@ -577,6 +580,9 @@ import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.InterfaceRange;
+import org.batfish.representation.juniper.InterfaceRangeMember;
+import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
@@ -1848,6 +1854,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Interface _currentInterface;
 
+  private InterfaceRange _currentInterfaceRange;
+
   private InterfaceAddress _currentInterfaceAddress;
 
   private IpsecPolicy _currentIpsecPolicy;
@@ -2241,6 +2249,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterface.getVrrpGroups().put(group, currentVrrpGroup);
     }
     _currentVrrpGroup = currentVrrpGroup;
+  }
+
+  @Override
+  public void enterInt_interface_range(Int_interface_rangeContext ctx) {
+    String name = ctx.irange.getText();
+    _currentInterfaceRange =
+        _currentLogicalSystem.getInterfaceRanges().computeIfAbsent(name, InterfaceRange::new);
+  }
+
+  @Override
+  public void exitInt_interface_range(Int_interface_rangeContext ctx) {
+    _currentInterfaceRange = null;
   }
 
   @Override
@@ -3448,12 +3468,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitEo8023ad_interface(Eo8023ad_interfaceContext ctx) {
     // TODO: handle node
     String interfaceName = ctx.name.getText();
-    _currentInterface.set8023adInterface(interfaceName);
+    if (_currentInterface != null) {
+      _currentInterface.set8023adInterface(interfaceName);
+    } else {
+      _currentInterfaceRange.set8023adInterface(interfaceName);
+    }
   }
 
   @Override
   public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
-    _currentInterface.setRedundantParentInterface(ctx.name.getText());
+    String interfaceName = ctx.name.getText();
+    if (_currentInterface != null) {
+      _currentInterface.setRedundantParentInterface(interfaceName);
+    } else {
+      _currentInterfaceRange.setRedundantParentInterface(interfaceName);
+    }
   }
 
   @Override
@@ -3770,6 +3799,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       _currentLogicalSystem.setDefaultInboundAction(LineAction.PERMIT);
     }
+    _currentLogicalSystem.expandInterfaceRanges();
   }
 
   @Override
@@ -3818,7 +3848,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitI_description(I_descriptionContext ctx) {
     String text = unquote(ctx.description().text.getText());
-    _currentInterface.setDescription(text);
+    if (_currentInterface != null) {
+      _currentInterface.setDescription(text);
+    } else {
+      _currentInterfaceRange.setDescription(text);
+    }
   }
 
   @Override
@@ -3834,7 +3868,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitI_mtu(I_mtuContext ctx) {
     int size = toInt(ctx.size);
-    _currentInterface.setMtu(size);
+    if (_currentInterface != null) {
+      _currentInterface.setMtu(size);
+    } else {
+      _currentInterfaceRange.setMtu(size);
+    }
   }
 
   @Override
@@ -3962,6 +4000,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIfiso_address(Ifiso_addressContext ctx) {
     IsoAddress address = new IsoAddress(ctx.ISO_ADDRESS().getText());
     _currentInterface.setIsoAddress(address);
+  }
+
+  @Override
+  public void exitIntir_member(Intir_memberContext ctx) {
+    String member =
+        ctx.DOUBLE_QUOTED_STRING() != null
+            ? unquote(ctx.DOUBLE_QUOTED_STRING().getText())
+            : ctx.interface_id().getText();
+    try {
+      InterfaceRangeMember mc = new InterfaceRangeMember(member);
+      _currentInterfaceRange.getMembers().add(mc);
+    } catch (IllegalArgumentException e) {
+      _w.redFlag(
+          String.format(
+              "Could not include member '%s' in interface range '%s': %s",
+              member, _currentInterfaceRange.getName(), e.getMessage()));
+    }
+  }
+
+  @Override
+  public void exitIntir_member_range(Intir_member_rangeContext ctx) {
+    String from = ctx.from_i.getText();
+    String to = ctx.to_i.getText();
+    try {
+      InterfaceRangeMemberRange range = new InterfaceRangeMemberRange(from, to);
+      _currentInterfaceRange.getMemberRanges().add(range);
+    } catch (IllegalArgumentException e) {
+      _w.redFlag(
+          String.format(
+              "Could not include member range '%s to %s' in interface-range '%s': %s",
+              from, to, _currentInterfaceRange.getName(), e.getMessage()));
+    }
   }
 
   @Override

@@ -586,7 +586,14 @@ ifm_mtu
 
 int_interface_range
 :
-   INTERFACE_RANGE irange = variable MEMBER member = DOUBLE_QUOTED_STRING
+   INTERFACE_RANGE irange = variable
+   (
+       i_description
+       | i_gigether_options
+       | intir_member
+       | intir_member_range
+       | i_mtu
+   )
 ;
 
 int_named
@@ -615,6 +622,20 @@ int_null
 interface_mode
 :
    TRUNK
+;
+
+intir_member
+:
+   MEMBER
+   (
+       DOUBLE_QUOTED_STRING
+       | interface_id
+   )
+;
+
+intir_member_range
+:
+   MEMBER_RANGE from_i = interface_id TO to_i = interface_id
 ;
 
 s_interfaces

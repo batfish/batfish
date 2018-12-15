@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -48,6 +49,8 @@ public class LogicalSystem implements Serializable {
   private final Map<String, IkePolicy> _ikePolicies;
 
   private final Map<String, IkeProposal> _ikeProposals;
+
+  private final Map<String, InterfaceRange> _interfaceRanges;
 
   private final Map<String, Interface> _interfaces;
 
@@ -102,6 +105,7 @@ public class LogicalSystem implements Serializable {
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _interfaceRanges = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _interfaceZones = new TreeMap<>();
     _ipsecPolicies = new TreeMap<>();
@@ -118,6 +122,38 @@ public class LogicalSystem implements Serializable {
     _tacplusServers = new TreeSet<>();
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private void expandInterfaceRange(InterfaceRange interfaceRange) {
+    interfaceRange
+        .getAllMembers()
+        .stream()
+        .forEach(
+            iname ->
+                expandInterfaceRangeInterface(
+                    interfaceRange, _interfaces.computeIfAbsent(iname, Interface::new)));
+  }
+
+  @VisibleForTesting
+  static void expandInterfaceRangeInterface(InterfaceRange interfaceRange, Interface iface) {
+    // inherit unset properties from the range
+    if (iface.get8023adInterface() == null) {
+      iface.set8023adInterface(interfaceRange.get8023adInterface());
+    }
+    if (iface.getDescription() == null) {
+      iface.setDescription(interfaceRange.getDescription());
+    }
+    if (iface.getMtu() == null) {
+      iface.setMtu(interfaceRange.getMtu());
+    }
+    if (iface.getRedundantParentInterface() == null) {
+      iface.setRedundantParentInterface(interfaceRange.getRedundantParentInterface());
+    }
+  }
+
+  /** Inserts members of interface ranges into the interfaces */
+  public void expandInterfaceRanges() {
+    _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
   }
 
   public Map<String, BaseApplication> getApplications() {
@@ -186,6 +222,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  public Map<String, InterfaceRange> getInterfaceRanges() {
+    return _interfaceRanges;
   }
 
   public Map<String, Interface> getInterfaces() {
