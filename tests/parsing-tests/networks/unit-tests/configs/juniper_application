@@ -3,3 +3,8 @@ set system host-name juniper_application
 #
 set applications application APP description APP-description
 #
+set applications application traceroute-icmp icmp-type 8
+set applications application traceroute-icmp icmp-type destination-unreachable
+#
+set applications application traceroute-icmp icmp-code 0
+set applications application traceroute-icmp icmp-code communication-prohibited-by-filtering

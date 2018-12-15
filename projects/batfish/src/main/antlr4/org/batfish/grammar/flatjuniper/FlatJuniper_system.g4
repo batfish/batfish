@@ -293,7 +293,8 @@ sys_null
 sysh_null
 :
    (
-      ANY
+      ALLOW_DUPLICATES
+      | ANY
       | CHANGE_LOG
       | DAEMON
       | EXPLICIT_PRIORITY

@@ -42,7 +42,8 @@ snmp_name
 snmp_null
 :
    (
-      CONTACT
+      CLIENT_LIST
+      | CONTACT
       | DESCRIPTION
       | FILTER_DUPLICATES
       | INTERFACE
