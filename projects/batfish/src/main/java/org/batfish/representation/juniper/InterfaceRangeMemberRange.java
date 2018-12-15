@@ -26,18 +26,18 @@ public class InterfaceRangeMemberRange implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Nonnull final String type;
-    final int fpc;
-    final int pic;
-    final int port;
+    @Nonnull final String _type;
+    final int _fpc;
+    final int _pic;
+    final int _port;
 
     public InterfaceComponents(String interfaceId) {
       Matcher matcher = INTERFACE_ID_PATTERN.matcher(interfaceId);
       if (matcher.matches()) {
-        type = matcher.group(1);
-        fpc = Integer.parseInt(matcher.group(2));
-        pic = Integer.parseInt(matcher.group(3));
-        port = Integer.parseInt(matcher.group(4));
+        _type = matcher.group(1);
+        _fpc = Integer.parseInt(matcher.group(2));
+        _pic = Integer.parseInt(matcher.group(3));
+        _port = Integer.parseInt(matcher.group(4));
       } else {
         throw new IllegalArgumentException("Unexpected interface id pattern: " + interfaceId);
       }
@@ -49,24 +49,24 @@ public class InterfaceRangeMemberRange implements Serializable {
         return false;
       }
       InterfaceComponents rhs = (InterfaceComponents) o;
-      return Objects.equals(type, rhs.type)
-          && Objects.equals(fpc, rhs.fpc)
-          && Objects.equals(pic, rhs.pic)
-          && Objects.equals(port, rhs.port);
+      return Objects.equals(_type, rhs._type)
+          && Objects.equals(_fpc, rhs._fpc)
+          && Objects.equals(_pic, rhs._pic)
+          && Objects.equals(_port, rhs._port);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(type, fpc, pic, port);
+      return Objects.hash(_type, _fpc, _pic, _port);
     }
 
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(getClass())
-          .add("type", type)
-          .add("fpc", fpc)
-          .add("pic", pic)
-          .add("port", port)
+          .add("type", _type)
+          .add("fpc", _fpc)
+          .add("pic", _pic)
+          .add("port", _port)
           .toString();
     }
   }
@@ -79,10 +79,10 @@ public class InterfaceRangeMemberRange implements Serializable {
     _fromInterface = new InterfaceComponents(fromInterfaceId);
     _toInterface = new InterfaceComponents(toInterface);
     checkArgument(
-        _fromInterface.type.equals(_toInterface.type),
+        _fromInterface._type.equals(_toInterface._type),
         String.format(
             "Cannot have a range with different interface types: %s and %s",
-            _fromInterface.type, _toInterface.type));
+            _fromInterface._type, _toInterface._type));
   }
 
   /**
@@ -91,10 +91,10 @@ public class InterfaceRangeMemberRange implements Serializable {
    */
   public List<String> getAllMembers() {
     List<String> retList = new LinkedList<>();
-    for (int fpc = _fromInterface.fpc; fpc <= _toInterface.fpc; fpc++) {
-      for (int pic = _fromInterface.pic; pic <= _toInterface.pic; pic++) {
-        for (int port = _fromInterface.port; port <= _toInterface.port; port++) {
-          retList.add(toInterfaceId(_fromInterface.type, fpc, pic, port));
+    for (int fpc = _fromInterface._fpc; fpc <= _toInterface._fpc; fpc++) {
+      for (int pic = _fromInterface._pic; pic <= _toInterface._pic; pic++) {
+        for (int port = _fromInterface._port; port <= _toInterface._port; port++) {
+          retList.add(toInterfaceId(_fromInterface._type, fpc, pic, port));
         }
       }
     }
