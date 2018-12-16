@@ -119,7 +119,7 @@ i_common
    | i_vlan_tagging
 ;
 
-// configuration relevant for physical interfaces; there can be overlap with non-physical ones too
+// configuration relevant for physical interfaces; there can be overlap with non-physical ones
 i_common_physical
 :
     apply
@@ -128,6 +128,7 @@ i_common_physical
     | i_ether_options
     | i_fastether_options
     | i_gigether_options
+    | i_mac
     | i_mtu
     | i_null
     | i_redundant_ether_options
