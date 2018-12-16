@@ -1852,9 +1852,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private IkeProposal _currentIkeProposal;
 
-  private Interface _currentInterface;
-
-  private InterfaceRange _currentInterfaceRange;
+  private Interface _currentInterfaceOrRange;
 
   private InterfaceAddress _currentInterfaceAddress;
 
@@ -2200,14 +2198,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterI_unit(I_unitContext ctx) {
     String unit = ctx.num.getText();
-    String unitFullName = _currentMasterInterface.getName() + "." + unit;
+    String unitFullName = _currentMasterInterface.getRangeName() + "." + unit;
     Map<String, Interface> units = _currentMasterInterface.getUnits();
-    _currentInterface = units.get(unitFullName);
-    if (_currentInterface == null) {
-      _currentInterface = new Interface(unitFullName);
-      _currentInterface.setRoutingInstance(_currentRoutingInstance.getName());
-      _currentInterface.setParent(_currentMasterInterface);
-      units.put(unitFullName, _currentInterface);
+    _currentInterfaceOrRange = units.get(unitFullName);
+    if (_currentInterfaceOrRange == null) {
+      _currentInterfaceOrRange = new Interface(unitFullName);
+      _currentInterfaceOrRange.setRoutingInstance(_currentRoutingInstance.getName());
+      _currentInterfaceOrRange.setParent(_currentMasterInterface);
+      units.put(unitFullName, _currentInterfaceOrRange);
     }
     defineStructure(INTERFACE, unitFullName, ctx);
     _configuration.referenceStructure(
@@ -2216,7 +2214,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIfi_address(Ifi_addressContext ctx) {
-    Set<InterfaceAddress> allAddresses = _currentInterface.getAllAddresses();
+    Set<InterfaceAddress> allAddresses = _currentInterfaceOrRange.getAllAddresses();
     InterfaceAddress address;
     if (ctx.IP_PREFIX() != null) {
       address = new InterfaceAddress(ctx.IP_PREFIX().getText());
@@ -2227,26 +2225,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       throw new BatfishException("Invalid or missing address");
     }
     _currentInterfaceAddress = address;
-    if (_currentInterface.getPrimaryAddress() == null) {
-      _currentInterface.setPrimaryAddress(address);
+    if (_currentInterfaceOrRange.getPrimaryAddress() == null) {
+      _currentInterfaceOrRange.setPrimaryAddress(address);
     }
-    if (_currentInterface.getPreferredAddress() == null) {
-      _currentInterface.setPreferredAddress(address);
+    if (_currentInterfaceOrRange.getPreferredAddress() == null) {
+      _currentInterfaceOrRange.setPreferredAddress(address);
     }
     allAddresses.add(address);
     Ip ip = address.getIp();
-    _currentInterface.getAllAddressIps().add(ip);
+    _currentInterfaceOrRange.getAllAddressIps().add(ip);
   }
 
   @Override
   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
     int group = toInt(ctx.number);
-    VrrpGroup currentVrrpGroup = _currentInterface.getVrrpGroups().get(group);
+    VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(group);
     if (currentVrrpGroup == null) {
       currentVrrpGroup = new VrrpGroup(group);
       currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
-      _currentInterface.getVrrpGroups().put(group, currentVrrpGroup);
+      _currentInterfaceOrRange.getVrrpGroups().put(group, currentVrrpGroup);
     }
     _currentVrrpGroup = currentVrrpGroup;
   }
@@ -2254,13 +2252,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterInt_interface_range(Int_interface_rangeContext ctx) {
     String name = ctx.irange.getText();
-    _currentInterfaceRange =
+    _currentInterfaceOrRange =
         _currentLogicalSystem.getInterfaceRanges().computeIfAbsent(name, InterfaceRange::new);
   }
 
   @Override
   public void exitInt_interface_range(Int_interface_rangeContext ctx) {
-    _currentInterfaceRange = null;
+    _currentInterfaceOrRange = null;
   }
 
   @Override
@@ -2289,11 +2287,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
       }
-      defineStructure(INTERFACE, currentInterface.getName(), ctx);
+      defineStructure(INTERFACE, currentInterface.getRangeName(), ctx);
       _configuration.referenceStructure(
-          INTERFACE, currentInterface.getName(), INTERFACE_SELF_REFERENCE, getLine(ctx.getStart()));
+          INTERFACE,
+          currentInterface.getRangeName(),
+          INTERFACE_SELF_REFERENCE,
+          getLine(ctx.getStart()));
     }
-    _currentInterface = currentInterface;
+    _currentInterfaceOrRange = currentInterface;
     _currentMasterInterface = currentInterface;
   }
 
@@ -2322,7 +2323,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     }
     _configuration.referenceStructure(
-        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
+        INTERFACE, _currentIsisInterface.getRangeName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
     _currentIsisInterface.getIsisSettings().setEnabled(true);
   }
 
@@ -2419,7 +2420,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         for (Interface unit : iface.getUnits().values()) {
           if (unit.getAllAddressIps().contains(ip)) {
             _currentOspfInterface = unit;
-            unitFullName = unit.getName();
+            unitFullName = unit.getRangeName();
           }
         }
       }
@@ -2428,7 +2429,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else {
       _currentOspfInterface = initInterface(ctx.id);
-      unitFullName = _currentOspfInterface.getName();
+      unitFullName = _currentOspfInterface.getRangeName();
       _configuration.referenceStructure(
           INTERFACE, unitFullName, OSPF_AREA_INTERFACE, getLine(ctx.id.getStop()));
     }
@@ -3142,18 +3143,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_host_inbound_traffic(Sezs_host_inbound_trafficContext ctx) {
     if (_currentZoneInterface != null) {
       _currentZoneInboundFilter =
-          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getName());
+          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getRangeName());
       if (_currentZoneInboundFilter == null) {
         String name =
             "~ZONE_INTERFACE_FILTER~"
                 + _currentZone.getName()
                 + "~INTERFACE~"
-                + _currentZoneInterface.getName();
+                + _currentZoneInterface.getRangeName();
         _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
         _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
-            .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
+            .put(_currentZoneInterface.getRangeName(), _currentZoneInboundFilter);
       }
     }
   }
@@ -3162,10 +3163,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
+    _currentLogicalSystem
+        .getInterfaceZones()
+        .put(_currentZoneInterface.getRangeName(), _currentZone);
     _configuration.referenceStructure(
         INTERFACE,
-        _currentZoneInterface.getName(),
+        _currentZoneInterface.getRangeName(),
         SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
         getLine(ctx.interface_id().getStop()));
   }
@@ -3468,21 +3471,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitEo8023ad_interface(Eo8023ad_interfaceContext ctx) {
     // TODO: handle node
     String interfaceName = ctx.name.getText();
-    if (_currentInterface != null) {
-      _currentInterface.set8023adInterface(interfaceName);
-    } else {
-      _currentInterfaceRange.set8023adInterface(interfaceName);
-    }
+    _currentInterfaceOrRange.set8023adInterface(interfaceName);
   }
 
   @Override
   public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
     String interfaceName = ctx.name.getText();
-    if (_currentInterface != null) {
-      _currentInterface.setRedundantParentInterface(interfaceName);
-    } else {
-      _currentInterfaceRange.setRedundantParentInterface(interfaceName);
-    }
+    _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
   }
 
   @Override
@@ -3829,7 +3824,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentDhcpRelayGroup.setAllInterfaces(true);
     } else {
       Interface iface = initInterface(ctx.interface_id());
-      String interfaceName = iface.getName();
+      String interfaceName = iface.getRangeName();
       _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
       _configuration.referenceStructure(
           INTERFACE,
@@ -3842,47 +3837,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitI_bandwidth(FlatJuniperParser.I_bandwidthContext ctx) {
     long bandwidth = toBandwidth(ctx.bandwidth());
-    _currentInterface.setBandwidth((double) bandwidth);
+    _currentInterfaceOrRange.setBandwidth((double) bandwidth);
   }
 
   @Override
   public void exitI_description(I_descriptionContext ctx) {
     String text = unquote(ctx.description().text.getText());
-    if (_currentInterface != null) {
-      _currentInterface.setDescription(text);
-    } else {
-      _currentInterfaceRange.setDescription(text);
-    }
+    _currentInterfaceOrRange.setDescription(text);
   }
 
   @Override
   public void exitI_disable(I_disableContext ctx) {
-    _currentInterface.setActive(false);
+    _currentInterfaceOrRange.setActive(false);
   }
 
   @Override
   public void exitI_enable(I_enableContext ctx) {
-    _currentInterface.setActive(true);
+    _currentInterfaceOrRange.setActive(true);
   }
 
   @Override
   public void exitI_mtu(I_mtuContext ctx) {
     int size = toInt(ctx.size);
-    if (_currentInterface != null) {
-      _currentInterface.setMtu(size);
-    } else {
-      _currentInterfaceRange.setMtu(size);
-    }
+    _currentInterfaceOrRange.setMtu(size);
   }
 
   @Override
   public void exitI_native_vlan_id(I_native_vlan_idContext ctx) {
-    _currentInterface.setNativeVlan(toInt(ctx.id));
+    _currentInterfaceOrRange.setNativeVlan(toInt(ctx.id));
   }
 
   @Override
   public void exitI_unit(I_unitContext ctx) {
-    _currentInterface = _currentMasterInterface;
+    _currentInterfaceOrRange = _currentMasterInterface;
   }
 
   @Override
@@ -3895,32 +3882,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIfe_native_vlan_id(Ife_native_vlan_idContext ctx) {
-    _currentInterface.setNativeVlan(toInt(ctx.id));
+    _currentInterfaceOrRange.setNativeVlan(toInt(ctx.id));
   }
 
   @Override
   public void exitIfe_port_mode(Ife_port_modeContext ctx) {
     if (ctx.TRUNK() != null) {
-      _currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.TRUNK);
     }
   }
 
   @Override
   public void exitIfe_vlan(Ife_vlanContext ctx) {
-    if (_currentInterface.getSwitchportMode() == SwitchportMode.TRUNK) {
+    if (_currentInterfaceOrRange.getSwitchportMode() == SwitchportMode.TRUNK) {
       if (ctx.range() != null) {
         List<SubRange> subRanges = toRange(ctx.range());
-        subRanges.forEach(subRange -> _currentInterface.getAllowedVlans().add(subRange));
+        subRanges.forEach(subRange -> _currentInterfaceOrRange.getAllowedVlans().add(subRange));
       } else if (ctx.name != null) {
         String name = ctx.name.getText();
-        _currentInterface.getAllowedVlanNames().add(name);
+        _currentInterfaceOrRange.getAllowedVlanNames().add(name);
         _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
       }
     } else if (ctx.name != null) {
       // SwitchPortMode here can be ACCESS or NONE, overwrite both with ACCESS(considered default)
-      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
       String name = ctx.name.getText();
-      _currentInterface.setAccessVlan(name);
+      _currentInterfaceOrRange.setAccessVlan(name);
       _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
     }
   }
@@ -3938,10 +3925,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (filter.direction() != null) {
       DirectionContext direction = filter.direction();
       if (direction.INPUT() != null) {
-        _currentInterface.setIncomingFilter(name);
+        _currentInterfaceOrRange.setIncomingFilter(name);
         usage = INTERFACE_INCOMING_FILTER;
       } else if (direction.OUTPUT() != null) {
-        _currentInterface.setOutgoingFilter(name);
+        _currentInterfaceOrRange.setOutgoingFilter(name);
         usage = INTERFACE_OUTGOING_FILTER;
       }
     }
@@ -3952,25 +3939,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIfi_tcp_mss(Ifi_tcp_mssContext ctx) {
     int tcpMss = toInt(ctx.size);
-    _currentInterface.setTcpMss(tcpMss);
+    _currentInterfaceOrRange.setTcpMss(tcpMss);
     todo(ctx);
   }
 
   @Override
   public void exitIfia_arp(Ifia_arpContext ctx) {
     Ip ip = new Ip(ctx.ip.getText());
-    _currentInterface.setAdditionalArpIps(
-        ImmutableSet.<Ip>builder().addAll(_currentInterface.getAdditionalArpIps()).add(ip).build());
+    _currentInterfaceOrRange.setAdditionalArpIps(
+        ImmutableSet.<Ip>builder()
+            .addAll(_currentInterfaceOrRange.getAdditionalArpIps())
+            .add(ip)
+            .build());
   }
 
   @Override
   public void exitIfia_preferred(Ifia_preferredContext ctx) {
-    _currentInterface.setPreferredAddress(_currentInterfaceAddress);
+    _currentInterfaceOrRange.setPreferredAddress(_currentInterfaceAddress);
   }
 
   @Override
   public void exitIfia_primary(Ifia_primaryContext ctx) {
-    _currentInterface.setPrimaryAddress(_currentInterfaceAddress);
+    _currentInterfaceOrRange.setPrimaryAddress(_currentInterfaceAddress);
   }
 
   @Override
@@ -3999,23 +3989,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIfiso_address(Ifiso_addressContext ctx) {
     IsoAddress address = new IsoAddress(ctx.ISO_ADDRESS().getText());
-    _currentInterface.setIsoAddress(address);
+    _currentInterfaceOrRange.setIsoAddress(address);
   }
 
   @Override
   public void exitIntir_member(Intir_memberContext ctx) {
     String member =
-        ctx.DOUBLE_QUOTED_STRING() != null
-            ? unquote(ctx.DOUBLE_QUOTED_STRING().getText())
-            : ctx.interface_id().getText();
+        unquote(
+            (ctx.interface_id() == null ? ctx.DOUBLE_QUOTED_STRING() : ctx.interface_id())
+                .getText());
     try {
       InterfaceRangeMember mc = new InterfaceRangeMember(member);
-      _currentInterfaceRange.getMembers().add(mc);
+      ((InterfaceRange) _currentInterfaceOrRange).getMembers().add(mc);
     } catch (IllegalArgumentException e) {
       _w.redFlag(
           String.format(
               "Could not include member '%s' in interface range '%s': %s",
-              member, _currentInterfaceRange.getName(), e.getMessage()));
+              member, _currentInterfaceOrRange.getRangeName(), e.getMessage()));
     }
   }
 
@@ -4025,18 +4015,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String to = ctx.to_i.getText();
     try {
       InterfaceRangeMemberRange range = new InterfaceRangeMemberRange(from, to);
-      _currentInterfaceRange.getMemberRanges().add(range);
+      ((InterfaceRange) _currentInterfaceOrRange).getMemberRanges().add(range);
     } catch (IllegalArgumentException e) {
       _w.redFlag(
           String.format(
               "Could not include member range '%s to %s' in interface-range '%s': %s",
-              from, to, _currentInterfaceRange.getName(), e.getMessage()));
+              from, to, _currentInterfaceOrRange.getRangeName(), e.getMessage()));
     }
   }
 
   @Override
   public void exitInt_named(Int_namedContext ctx) {
-    _currentInterface = null;
+    _currentInterfaceOrRange = null;
     _currentMasterInterface = null;
   }
 
@@ -4648,7 +4638,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
+        INTERFACE, iface.getRangeName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
@@ -4674,7 +4664,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRi_vtep_source_interface(Ri_vtep_source_interfaceContext ctx) {
     Interface iface = initInterface(ctx.iface);
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
+        INTERFACE, iface.getRangeName(), VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
   }
 
   @Override
@@ -4818,10 +4808,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentStaticRoute.setNextHopIp(nextHopIp);
     } else if (ctx.interface_id() != null) {
       Interface iface = initInterface(ctx.interface_id());
-      _currentStaticRoute.setNextHopInterface(iface.getName());
+      _currentStaticRoute.setNextHopInterface(iface.getRangeName());
       _configuration.referenceStructure(
           INTERFACE,
-          iface.getName(),
+          iface.getRangeName(),
           STATIC_ROUTE_NEXT_HOP_INTERFACE,
           getLine(ctx.interface_id().getStop()));
     }
@@ -5004,7 +4994,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentIkeGateway.setExternalInterface(iface);
     _configuration.referenceStructure(
         INTERFACE,
-        iface.getName(),
+        iface.getRangeName(),
         IKE_GATEWAY_EXTERNAL_INTERFACE,
         getLine(ctx.interface_id().getStart()));
   }
@@ -5153,7 +5143,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentIpsecVpn.setBindInterface(iface);
     _configuration.referenceStructure(
         INTERFACE,
-        iface.getName(),
+        iface.getRangeName(),
         IPSEC_VPN_BIND_INTERFACE,
         getLine(ctx.interface_id().getStart()));
   }

@@ -143,7 +143,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -1930,22 +1929,23 @@ public final class FlatJuniperGrammarTest {
     String hostname = "interface-range";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
 
-    InterfaceRange ae1 = new InterfaceRange("ae1-members");
-    ae1.setMtu(8000);
-    ae1.setDescription("dodo");
-    ae1.getMembers().add(new InterfaceRangeMember("xe-0/0/[0,1]"));
-    ae1.getMemberRanges().add(new InterfaceRangeMemberRange("xe-0/0/0", "xe-0/0/1"));
-
-    InterfaceRange ae2 = new InterfaceRange("ae2-members");
-    ae2.setDescription("dodo");
-    ae2.getMembers().add(new InterfaceRangeMember("xe-8/1/2"));
-    ae2.set8023adInterface("ae1");
-    ae2.setRedundantParentInterface("reth0");
-
     // range definitions are inserted properly into the vendor model
+    InterfaceRange ae1 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae1-members");
+    assertThat(ae1.getMtu(), equalTo(8000));
+    assertThat(ae1.getDescription(), equalTo("dodo"));
     assertThat(
-        juniperConfig.getMasterLogicalSystem().getInterfaceRanges(),
-        equalTo(ImmutableMap.of(ae1.getName(), ae1, ae2.getName(), ae2)));
+        ae1.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-0/0/[0,1]"))));
+    assertThat(
+        ae1.getMemberRanges(),
+        equalTo(ImmutableList.of(new InterfaceRangeMemberRange("xe-0/0/0", "xe-0/0/1"))));
+
+    InterfaceRange ae2 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae2-members");
+    assertThat(ae2.getDescription(), equalTo("dodo"));
+    assertThat(ae2.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-8/1/2"))));
+    assertThat(ae2.get8023adInterface(), equalTo("ae1"));
+    assertThat(ae2.getRedundantParentInterface(), equalTo("reth0"));
 
     // all interfaces are expanded in the vendor model
     org.batfish.representation.juniper.Interface xe000 =

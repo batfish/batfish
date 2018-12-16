@@ -109,20 +109,29 @@ i_common
    apply
    | i_arp_resp
    | i_description
+   | i_common_physical
    | i_disable
    | i_enable
-   | i_ether_options
    | i_family
-   | i_fastether_options
-   | i_gigether_options
-   | i_mac
-   | i_mtu
    | i_null
-   | i_redundant_ether_options
-   | i_speed
    | i_vlan_id
    | i_vlan_id_list
    | i_vlan_tagging
+;
+
+// configuration relevant for physical interfaces; there can be overlap with non-physical ones too
+i_common_physical
+:
+    apply
+    | i_description
+    | i_disable
+    | i_ether_options
+    | i_fastether_options
+    | i_gigether_options
+    | i_mtu
+    | i_null
+    | i_redundant_ether_options
+    | i_speed
 ;
 
 i_description
@@ -588,11 +597,9 @@ int_interface_range
 :
    INTERFACE_RANGE irange = variable
    (
-       i_description
-       | i_gigether_options
+       i_common_physical
        | intir_member
        | intir_member_range
-       | i_mtu
    )
 ;
 

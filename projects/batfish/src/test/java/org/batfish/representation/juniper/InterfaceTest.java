@@ -6,28 +6,26 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-public class LogicalSystemTest {
+public class InterfaceTest {
 
   @Test
-  public void testExpandInterfaceRangeInterfaceInheritance() {
+  public void testInheritUnsetPhysicalFields() {
     // only set one of the fields
     Interface i1 = new Interface("i1");
     i1.setMtu(1200);
 
-    // set other fields here, one overlapping
-    InterfaceRange irange = new InterfaceRange("irange");
-    irange.setMtu(1000);
-    irange.setDescription("dodo");
-    irange.set8023adInterface("ae1");
+    // set twp fields here, one overlapping
+    Interface bestower = new Interface("bestower");
+    bestower.setMtu(1000);
+    bestower.setDescription("dodo");
 
-    LogicalSystem.expandInterfaceRangeInterface(irange, i1);
+    i1.inheritUnsetPhysicalFields(bestower);
 
     // retain original MTU
     assertThat(i1.getMtu(), equalTo(1200));
 
-    // insert description and 8023ad
+    // inherit description
     assertThat(i1.getDescription(), equalTo("dodo"));
-    assertThat(i1.get8023adInterface(), equalTo("ae1"));
 
     // leave redundant parent along
     assertNull(i1.getRedundantParentInterface());

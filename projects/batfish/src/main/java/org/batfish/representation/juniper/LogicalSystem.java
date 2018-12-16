@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -130,25 +129,9 @@ public class LogicalSystem implements Serializable {
         .stream()
         .forEach(
             iname ->
-                expandInterfaceRangeInterface(
-                    interfaceRange, _interfaces.computeIfAbsent(iname, Interface::new)));
-  }
-
-  @VisibleForTesting
-  static void expandInterfaceRangeInterface(InterfaceRange interfaceRange, Interface iface) {
-    // inherit unset properties from the range
-    if (iface.get8023adInterface() == null) {
-      iface.set8023adInterface(interfaceRange.get8023adInterface());
-    }
-    if (iface.getDescription() == null) {
-      iface.setDescription(interfaceRange.getDescription());
-    }
-    if (iface.getMtu() == null) {
-      iface.setMtu(interfaceRange.getMtu());
-    }
-    if (iface.getRedundantParentInterface() == null) {
-      iface.setRedundantParentInterface(interfaceRange.getRedundantParentInterface());
-    }
+                _interfaces
+                    .computeIfAbsent(iname, Interface::new)
+                    .inheritUnsetPhysicalFields(interfaceRange));
   }
 
   /** Inserts members of interface ranges into the interfaces */

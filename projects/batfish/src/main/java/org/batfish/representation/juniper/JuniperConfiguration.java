@@ -606,7 +606,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _w.pedantic(
             String.format(
                 "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is 0.",
-                iface.getName()));
+                iface.getRangeName()));
       } else {
         defaultCost = Math.max((long) (settings.getReferenceBandwidth() / iface.getBandwidth()), 1);
       }
@@ -849,7 +849,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (NodeDevice nd : _nodeDevices.values()) {
         for (Interface iface : nd.getInterfaces().values()) {
           for (Interface unit : iface.getUnits().values()) {
-            if (p.matcher(unit.getName()).matches()) {
+            if (p.matcher(unit.getRangeName()).matches()) {
               _lo0 = unit;
               return;
             }
@@ -861,7 +861,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (Interface iface :
           _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values()) {
         for (Interface unit : iface.getUnits().values()) {
-          if (q.matcher(unit.getName()).matches()) {
+          if (q.matcher(unit.getRangeName()).matches()) {
             _lo0 = unit;
             return;
           }
@@ -1112,7 +1112,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
     if (oldExternalInterface != null) {
       org.batfish.datamodel.Interface newExternalInterface =
-          _c.getAllInterfaces().get(oldExternalInterface.getName());
+          _c.getAllInterfaces().get(oldExternalInterface.getRangeName());
       if (newExternalInterface != null) {
         newIkeGateway.setExternalInterface(newExternalInterface);
       }
@@ -1206,7 +1206,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * settings; track VRF membership.
    */
   private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
-    String name = iface.getName();
+    String name = iface.getRangeName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
@@ -1226,7 +1226,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
-    String name = iface.getName();
+    String name = iface.getRangeName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
@@ -1237,11 +1237,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
-    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
+    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getRangeName());
     if (zone != null) {
       // filter for interface in zone
       FirewallFilter zoneInboundInterfaceFilter =
-          zone.getInboundInterfaceFilters().get(iface.getName());
+          zone.getInboundInterfaceFilters().get(iface.getRangeName());
       if (zoneInboundInterfaceFilter != null) {
         String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
         IpAccessList zoneInboundInterfaceFilterList =
@@ -1277,7 +1277,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Assume the config will need security policies only if it has zones
     IpAccessList securityPolicyAcl = null;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
-      String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
+      String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getRangeName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
@@ -1347,7 +1347,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface,
       List<NatRuleSet> orderedRuleSetList,
       Map<NatPacketLocation, Set<String>> locationToInterfacesMap) {
-    String name = iface.getName();
+    String name = iface.getRangeName();
     String zone =
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
             .map(Zone::getName)
@@ -1372,7 +1372,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .map(
                         natRule ->
                             toSourceNat(
-                                iface.getName(),
+                                iface.getRangeName(),
                                 ruleSet.getName(),
                                 pools,
                                 locationToInterfacesMap.get(ruleSet.getFromLocation()),
@@ -1405,7 +1405,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (location.getZone() != null) {
       Zone zone = _masterLogicalSystem.getZones().get(location.getZone());
       if (zone != null) {
-        zone.getInterfaces().stream().map(Interface::getName).forEach(builder::add);
+        zone.getInterfaces().stream().map(Interface::getRangeName).forEach(builder::add);
       }
     }
     if (location.getRoutingInstance() != null) {
@@ -1436,7 +1436,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Map<String, NatPool> pools = dnat.getPools();
 
-    String ifaceName = iface.getName();
+    String ifaceName = iface.getRangeName();
     String zone =
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(ifaceName))
             .map(Zone::getName)
@@ -1697,7 +1697,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .get(zoneName)
                   .getInterfaces()
                   .stream()
-                  .map(Interface::getName)
+                  .map(Interface::getRangeName)
                   .collect(ImmutableList.toImmutableList()));
     }
 
@@ -1730,7 +1730,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
-    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getName());
+    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getRangeName());
     IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
 
     if (ikeGateway == null) {
@@ -1741,7 +1741,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
-    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
+    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getRangeName());
 
     if (ikeGateway.getLocalAddress() != null) {
       ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
@@ -1753,7 +1753,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _w.redFlag(
           String.format(
               "External interface %s configured on IKE Gateway %s does not have any IP",
-              ikeGateway.getExternalInterface().getName(), ikeGateway.getName()));
+              ikeGateway.getExternalInterface().getRangeName(), ikeGateway.getName()));
       return null;
     }
 
@@ -1798,7 +1798,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // bind interface
     Interface oldBindInterface = oldIpsecVpn.getBindInterface();
     if (oldBindInterface != null) {
-      String bindInterfaceName = oldBindInterface.getName();
+      String bindInterfaceName = oldBindInterface.getRangeName();
       org.batfish.datamodel.Interface newBindInterface =
           _c.getAllInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
@@ -2567,7 +2567,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .getInterfaces()
               .values()
               .stream()
-              .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+              .filter(i -> i.getRangeName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
               .map(Interface::getIsoAddress)
               .filter(Objects::nonNull)
               .min(Comparator.comparing(IsoAddress::toString));
@@ -2733,7 +2733,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               // Process parent interface
               iface.inheritUnsetFields();
               org.batfish.datamodel.Interface newParentIface = toInterfaceNonUnit(iface);
-              resolveInterfacePointers(iface.getName(), iface, newParentIface);
+              resolveInterfacePointers(iface.getRangeName(), iface, newParentIface);
 
               // Process the units, which hold the bulk of the configuration
               iface
@@ -2745,7 +2745,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
                         newUnitInterface.addDependency(
                             new Dependency(newParentIface.getName(), DependencyType.BIND));
-                        resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
+                        resolveInterfacePointers(unit.getRangeName(), unit, newUnitInterface);
                       });
             });
 
@@ -2767,7 +2767,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 if (viIface == null) {
                   return;
                 }
-                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+                viIface.addDependency(
+                    new Dependency(iface.getRangeName(), DependencyType.AGGREGATE));
               }
               /*
                * TODO: reth interfaces are NOT aggregates in pure form, but for now approximate them
@@ -2780,7 +2781,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 if (viIface == null) {
                   return;
                 }
-                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+                viIface.addDependency(
+                    new Dependency(iface.getRangeName(), DependencyType.AGGREGATE));
               }
             });
 
@@ -2804,7 +2806,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       .forEach(
                           unit -> {
                             org.batfish.datamodel.Interface newUnitInterface =
-                                _c.getAllInterfaces().get(unit.getName());
+                                _c.getAllInterfaces().get(unit.getRangeName());
                             newUnitInterface.setSourceNats(
                                 buildSourceNats(
                                     unit, sourceNatRuleSetList, locationToInterfacesMap));
@@ -2873,7 +2875,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
     for (Interface iface : zone.getInterfaces()) {
-      String ifaceName = iface.getName();
+      String ifaceName = iface.getRangeName();
       org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
       newIface.setZoneName(zoneName);
       FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
