@@ -266,17 +266,6 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testMkdirsFail() throws IOException {
-    File parentDir = _folder.newFolder();
-    parentDir.setReadOnly();
-    Path dir = parentDir.toPath().resolve("testDir");
-
-    // Confirm mkdirs throws when creating a dir within a read-only dir
-    _thrown.expectMessage(containsString("Unable to create directory"));
-    mkdirs(dir);
-  }
-
-  @Test
   public void testLoadSnapshotInputObjectFile() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
