@@ -27,7 +27,7 @@ steps:
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl allinone install -am -P '!fast'"
+      - "mvn -f projects -pl allinone install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
@@ -40,7 +40,7 @@ steps:
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl batfish install -am -P '!fast'"
+      - "mvn -f projects -pl batfish install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
@@ -53,7 +53,7 @@ steps:
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl batfish-client install -am -P '!fast'"
+      - "mvn -f projects -pl batfish-client install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
@@ -66,7 +66,7 @@ steps:
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl batfish-common-protocol install -am -P '!fast'"
+      - "mvn -f projects -pl batfish-common-protocol install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
@@ -79,7 +79,7 @@ steps:
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl coordinator install -am -P '!fast'"
+      - "mvn -f projects -pl coordinator install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
@@ -87,12 +87,12 @@ steps:
           download:
             - "workspace/workdir.tar"
             - "workspace/mvn-repo.tar"
-  - label: "questions project verification"
+  - label: "question project verification"
     command: 
       - "tar -xf workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -xf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl questions install -am -P '!fast'"
+      - "mvn -f projects -pl question install -P '!fast'"
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
