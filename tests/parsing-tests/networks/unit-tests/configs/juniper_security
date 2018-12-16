@@ -5,6 +5,9 @@ set security address-book global address ADDRESS description "ADDRESS descriptio
 #
 set security address-book global address-set ASET description "ASET description"
 #
+# a non-global address book
+set security address-book notglobal address-set ASET description "ASET description"
+#
 set security ike proposal PROPOSAL description "IKE proposal"
 set security ike policy 1.2.3.4 proposals [ PROPOSAL ]
 #

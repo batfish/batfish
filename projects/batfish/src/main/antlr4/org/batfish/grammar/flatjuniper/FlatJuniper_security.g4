@@ -411,7 +411,7 @@ s_security
 
 se_address_book
 :
-   ADDRESS_BOOK GLOBAL
+   ADDRESS_BOOK name = variable
    (
        apply
        | sead_address
