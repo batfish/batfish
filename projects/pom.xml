@@ -123,21 +123,9 @@
       </properties>
     </profile>
     <profile>
-      <id>checkstyle</id>
+      <id>lint</id>
       <properties>
-        <findbugs.skip>true</findbugs.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <mdep.analyze.skip>true</mdep.analyze.skip>
-        <pmd.skip>true</pmd.skip>
-        <skipTests>true</skipTests>
-      </properties>
-    </profile>
-    <profile>
-      <id>findbugs</id>
-      <properties>
-        <checkstyle.skip>true</checkstyle.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <mdep.analyze.skip>true</mdep.analyze.skip>
         <pmd.skip>true</pmd.skip>
         <skipTests>true</skipTests>
       </properties>
@@ -148,16 +136,6 @@
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
-        <pmd.skip>true</pmd.skip>
-        <skipTests>true</skipTests>
-      </properties>
-    </profile>
-    <profile>
-      <id>mdep</id>
-      <properties>
-        <checkstyle.skip>true</checkstyle.skip>
-        <findbugs.skip>true</findbugs.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
         <pmd.skip>true</pmd.skip>
         <skipTests>true</skipTests>
       </properties>
