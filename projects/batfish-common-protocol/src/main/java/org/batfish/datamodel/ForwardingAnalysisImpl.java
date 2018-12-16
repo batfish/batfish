@@ -920,9 +920,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _deliveredToSubnet;
   }
 
-  private Stream<Entry<String, IpSpace>> getInterceIpSpacceEntries(
-      Map<String, Map<String, IpSpace>> vrfInterfaceIpspaceMap) {
-    return vrfInterfaceIpspaceMap.values().stream().flatMap(entry -> entry.entrySet().stream());
+  private Stream<Entry<String, IpSpace>> getInterfaceIpSpaceEntries(
+      Map<String, Map<String, IpSpace>> vrfInterfaceIpSpaceMap) {
+    return vrfInterfaceIpSpaceMap.values().stream().flatMap(entry -> entry.entrySet().stream());
   }
 
   private Map<String, Map<String, BDD>> computeInterfaceHostSubnetIpBDDs() {
@@ -930,7 +930,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         _interfaceHostSubnetIps,
         Entry::getKey /* host name */,
         nodeEntry ->
-            getInterceIpSpacceEntries(nodeEntry.getValue())
+            getInterfaceIpSpaceEntries(nodeEntry.getValue())
                 .collect(
                     ImmutableMap.toImmutableMap(
                         Entry::getKey, ifaceEntry -> _ipSpaceToBDD.visit(ifaceEntry.getValue()))));

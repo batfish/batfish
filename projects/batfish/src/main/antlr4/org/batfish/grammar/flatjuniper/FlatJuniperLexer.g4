@@ -256,6 +256,11 @@ ALLOW
    'allow'
 ;
 
+ALLOW_DUPLICATES
+:
+   'allow-duplicates'
+;
+
 ALLOW_SNOOPED_CLIENTS
 :
    'allow-snooped-clients'

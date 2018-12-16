@@ -2128,7 +2128,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
-    _masterLogicalSystem.getGlobalAddressBooks().putAll(ls.getGlobalAddressBooks());
+    _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());
     _masterLogicalSystem.getIkeGateways().clear();
     _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
     _masterLogicalSystem.getIkePolicies().clear();
@@ -2237,7 +2237,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Convert AddressBooks to IpSpaces
     _masterLogicalSystem
-        .getGlobalAddressBooks()
+        .getAddressBooks()
         .forEach(
             (name, addressBook) -> {
               Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);

@@ -19,6 +19,8 @@ public class LogicalSystem implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final Map<String, AddressBook> _addressBooks;
+
   private final Map<String, BaseApplication> _applications;
 
   private final Map<String, ApplicationSet> _applicationSets;
@@ -40,8 +42,6 @@ public class LogicalSystem implements Serializable {
   private NavigableSet<String> _dnsServers;
 
   private final Map<String, FirewallFilter> _filters;
-
-  private final Map<String, AddressBook> _globalAddressBooks;
 
   private final Map<String, IkeGateway> _ikeGateways;
 
@@ -91,6 +91,7 @@ public class LogicalSystem implements Serializable {
 
   public LogicalSystem(String name) {
     _name = name;
+    _addressBooks = new TreeMap<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
@@ -100,7 +101,6 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _filters = new TreeMap<>();
-    _globalAddressBooks = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -137,6 +137,10 @@ public class LogicalSystem implements Serializable {
   /** Inserts members of interface ranges into the interfaces */
   public void expandInterfaceRanges() {
     _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
+  }
+
+  public Map<String, AddressBook> getAddressBooks() {
+    return _addressBooks;
   }
 
   public Map<String, BaseApplication> getApplications() {
@@ -181,10 +185,6 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, FirewallFilter> getFirewallFilters() {
     return _filters;
-  }
-
-  public Map<String, AddressBook> getGlobalAddressBooks() {
-    return _globalAddressBooks;
   }
 
   public Interface getGlobalMasterInterface() {

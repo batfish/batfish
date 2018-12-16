@@ -1456,6 +1456,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
       return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+    } else if (ctx.DEC() != null) {
+      return Integer.parseInt(ctx.DEC().getText());
     } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
       return IcmpCode.DESTINATION_HOST_PROHIBITED;
     } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
@@ -1511,7 +1513,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    */
   @Nullable
   private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
-    if (ctx.DESTINATION_UNREACHABLE() != null) {
+    if (ctx.DEC() != null) {
+      return Integer.parseInt(ctx.DEC().getText());
+    } else if (ctx.DESTINATION_UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
     } else if (ctx.ECHO_REPLY() != null) {
       return IcmpType.ECHO_REPLY;
@@ -1973,7 +1977,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
     _globalAddressBook =
         _currentLogicalSystem
-            .getGlobalAddressBooks()
+            .getAddressBooks()
             .computeIfAbsent(GLOBAL_ADDRESS_BOOK_NAME, n -> new AddressBook(n, new TreeMap<>()));
   }
 
@@ -2861,10 +2865,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSe_address_book(Se_address_bookContext ctx) {
-    String name = ctx.GLOBAL().getText();
+    String name = ctx.name.getText();
     _currentAddressBook =
         _currentLogicalSystem
-            .getGlobalAddressBooks()
+            .getAddressBooks()
             .computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
   }
 
@@ -3042,7 +3046,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.from.JUNOS_HOST() == null) {
         _currentFromZone = _currentLogicalSystem.getZones().get(fromName);
         if (_currentFromZone == null) {
-          _currentFromZone = new Zone(fromName, _currentLogicalSystem.getGlobalAddressBooks());
+          _currentFromZone = new Zone(fromName, _currentLogicalSystem.getAddressBooks());
           _currentLogicalSystem.getZones().put(fromName, _currentFromZone);
           _currentLogicalSystem
               .getFirewallFilters()
@@ -3055,7 +3059,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.to.JUNOS_HOST() == null) {
         _currentToZone = _currentLogicalSystem.getZones().get(toName);
         if (_currentToZone == null) {
-          _currentToZone = new Zone(toName, _currentLogicalSystem.getGlobalAddressBooks());
+          _currentToZone = new Zone(toName, _currentLogicalSystem.getAddressBooks());
           _currentLogicalSystem
               .getFirewallFilters()
               .put(_currentToZone.getInboundFilter().getName(), _currentToZone.getInboundFilter());
@@ -3125,7 +3129,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String zoneName = ctx.zone().getText();
     _currentZone = _currentLogicalSystem.getZones().get(zoneName);
     if (_currentZone == null) {
-      _currentZone = new Zone(zoneName, _currentLogicalSystem.getGlobalAddressBooks());
+      _currentZone = new Zone(zoneName, _currentLogicalSystem.getAddressBooks());
       _currentLogicalSystem
           .getFirewallFilters()
           .put(_currentZone.getInboundFilter().getName(), _currentZone.getInboundFilter());
