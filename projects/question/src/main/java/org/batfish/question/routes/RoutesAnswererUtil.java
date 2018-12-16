@@ -715,9 +715,9 @@ public class RoutesAnswererUtil {
    *
    * @param routeRowKey {@link RouteRowKey} for the {@link RouteRowAttribute}s in innerGroup1 and
    *     innerGroup2
-   * @param innerGroup1{@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   * @param innerGroup1 {@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
    *     RouteRowAttribute}s for a given {@link RouteRowKey} in base snapshot
-   * @param innerGroup2{@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   * @param innerGroup2 {@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
    *     RouteRowAttribute}s for a given {@link RouteRowKey} in ref snapshot
    * @return {@link List} of {@link DiffRoutesOutput}
    */
