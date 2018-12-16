@@ -22,6 +22,7 @@ import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -443,9 +444,9 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
-   * RouteRowKey} and for routes with the same key, sorts them according to {@link
-   * RouteRowAttribute}s
+   * Given a {@link Map} of all RIBs groups the routes in them by the fields of {@link RouteRowKey}
+   * and further sub-groups them by {@link RouteRowSecondaryKey} and for routes in the same
+   * sub-group, sorts them according to {@link RouteRowAttribute}s
    *
    * @param ribs {@link Map} of the RIBs
    * @param matchingNodes {@link Set} of nodes to be matched
@@ -453,8 +454,8 @@ public class RoutesAnswererUtil {
    * @param vrfRegex Regex to filter the VRF
    * @param protocolRegex Regex to filter the protocols of the routes
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
-   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
-   *     RouteRowAttribute}s
+   * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
   static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
@@ -511,12 +512,18 @@ public class RoutesAnswererUtil {
 
   /**
    * Given a {@link Table} of {@link BgpRoute}s indexed by Node name and VRF name, applies given
-   * filters groups the routes by {@link RouteRowKey} and for the routes with the same key, sorts
-   * them according to {@link RouteRowAttribute}
+   * filters and groups the routes by {@link RouteRowKey} and sub-groups them further by {@link
+   * RouteRowSecondaryKey} and for the routes in same sub-groups, sorts them according to {@link
+   * RouteRowAttribute}
    *
-   * @param bgpRoutes {@link Table} of BGP routes with rows per node and columns per VRF
-   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
-   *     RouteRowAttribute}s
+   * @param bgpRoutes {@link Table} of BGP routes with rows per node and columns per VRF * @param
+   *     ribs {@link Map} of the RIBs
+   * @param matchingNodes {@link Set} of nodes to be matched
+   * @param vrfRegex Regex to filter the VRF
+   * @param network {@link Prefix}
+   * @param protocolRegex Regex to filter the protocols of the routes
+   * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
   static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
@@ -635,14 +642,16 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given two {@link Map}s containing mapping from {@link RouteRowKey} to {@link SortedSet} of
-   * {@link RouteRowAttribute}s produces diff in the form of a {@link List} of {@link
-   * DiffRoutesOutput}
+   * Given two {@link Map}s containing mapping from {@link RouteRowKey} to {@link Map}s of {@link
+   * RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s, produces diff in the
+   * form of a {@link List} of {@link DiffRoutesOutput}
    *
-   * @param routesInBase {@link Map} containing mapping from {@link RouteRowKey} to {@link
-   *     SortedSet} of {@link RouteRowAttribute}s in the base snapshot
-   * @param routesInRef {@link Map} containing mapping from {@link RouteRowKey} to {@link SortedSet}
-   *     of {@link RouteRowAttribute}s in the reference snapshot
+   * @param routesInBase {@link Map} from {@link RouteRowKey} to {@link Map} of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s in the base
+   *     snapshot
+   * @param routesInRef {@link Map} from {@link RouteRowKey} to {@link Map} of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s in the ref
+   *     snapshot
    * @return {@link List} of {@link DiffRoutesOutput}
    */
   static List<DiffRoutesOutput> getRoutesDiff(
@@ -700,6 +709,19 @@ public class RoutesAnswererUtil {
     return listDiffs;
   }
 
+  /**
+   * Gets the diff in the form of {@link List} of {@link DiffRoutesOutput} for {@link
+   * RouteRowAttribute}s for a given {@link RouteRowKey}
+   *
+   * @param routeRowKey {@link RouteRowKey} for the {@link RouteRowAttribute}s in innerGroup1 and
+   *     innerGroup2
+   * @param innerGroup1{@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   *     RouteRowAttribute}s for a given {@link RouteRowKey} in base snapshot
+   * @param innerGroup2{@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   *     RouteRowAttribute}s for a given {@link RouteRowKey} in ref snapshot
+   * @return {@link List} of {@link DiffRoutesOutput}
+   */
+  @VisibleForTesting
   static List<DiffRoutesOutput> getDiffPerKey(
       RouteRowKey routeRowKey,
       Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup1,
