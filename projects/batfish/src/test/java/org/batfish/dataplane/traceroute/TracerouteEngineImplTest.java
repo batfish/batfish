@@ -65,10 +65,11 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.OriginateStep;
-import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
-import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
@@ -579,7 +580,6 @@ public class TracerouteEngineImplTest {
 
   @Test
   public void testApplyPreSourceNatFilter() {
-    String node = "node";
     String iface1 = "iface1";
     String iface2 = "iface2";
     String prefix = "1.2.3.4/24";
@@ -602,31 +602,27 @@ public class TracerouteEngineImplTest {
 
     Flow flow = makeFlow();
 
-    PreSourceNatOutgoingFilterStep step =
-        TracerouteEngineImplContext.applyPreSourceNatFilter(
+    FilterStep step =
+        TracerouteUtils.applyFilter(
             flow,
-            node,
             iface1,
-            iface2,
             filter,
+            FilterType.INGRESS_FILTER,
             ImmutableMap.of(filterName, filter),
             ImmutableMap.of(),
             false);
 
     assertThat(step.getAction(), equalTo(StepAction.PERMITTED));
 
-    PreSourceNatOutgoingFilterStepDetail detail = step.getDetail();
+    FilterStepDetail detail = step.getDetail();
     assertThat(detail.getFilter(), equalTo(filterName));
-    assertThat(detail.getOutputInterface(), equalTo(iface2));
-    assertThat(detail.getNode(), equalTo(node));
 
     step =
-        TracerouteEngineImplContext.applyPreSourceNatFilter(
+        TracerouteUtils.applyFilter(
             flow,
-            node,
             iface2,
-            iface1,
             filter,
+            FilterType.INGRESS_FILTER,
             ImmutableMap.of(filterName, filter),
             ImmutableMap.of(),
             false);
@@ -635,8 +631,6 @@ public class TracerouteEngineImplTest {
 
     detail = step.getDetail();
     assertThat(detail.getFilter(), equalTo(filterName));
-    assertThat(detail.getOutputInterface(), equalTo(iface1));
-    assertThat(detail.getNode(), equalTo(node));
   }
 
   @Test
@@ -703,12 +697,11 @@ public class TracerouteEngineImplTest {
 
     assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
-    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+    assertThat(steps.get(2), instanceOf(FilterStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
 
     EnterInputIfaceStep step0 = (EnterInputIfaceStep) steps.get(0);
     assertThat(step0.getAction(), equalTo(StepAction.RECEIVED));
-    assertThat(step0.getDetail().getInputFilter(), nullValue());
     assertThat(step0.getDetail().getInputVrf(), equalTo(v1.getName()));
     assertThat(
         step0.getDetail().getInputInterface(),
@@ -721,15 +714,12 @@ public class TracerouteEngineImplTest {
         step1.getDetail().getRoutes(),
         contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO)));
 
-    PreSourceNatOutgoingFilterStep step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
+    FilterStep step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));
-    assertThat(step2.getDetail().getNode(), equalTo(c1.getHostname()));
-    assertThat(step2.getDetail().getOutputInterface(), equalTo(i2.getName()));
     assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
 
     ExitOutputIfaceStep step3 = (ExitOutputIfaceStep) steps.get(3);
     assertThat(step3.getAction(), equalTo(StepAction.EXITS_NETWORK));
-    assertThat(step3.getDetail().getOutputFilter(), nullValue());
     assertThat(
         step3.getDetail().getOutputInterface(),
         equalTo(new NodeInterfacePair(c1.getHostname(), i2.getName())));
@@ -759,9 +749,9 @@ public class TracerouteEngineImplTest {
 
     assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
-    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+    assertThat(steps.get(2), instanceOf(FilterStep.class));
 
-    step2 = (PreSourceNatOutgoingFilterStep) steps.get(2);
+    step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.DENIED));
 
     flowTraces =
@@ -836,7 +826,7 @@ public class TracerouteEngineImplTest {
 
     assertThat(steps.get(0), instanceOf(OriginateStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
-    assertThat(steps.get(2), instanceOf(PreSourceNatOutgoingFilterStep.class));
+    assertThat(steps.get(2), instanceOf(FilterStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
 
     assertThat(steps.get(0).getAction(), equalTo(StepAction.ORIGINATED));
@@ -1101,5 +1091,199 @@ public class TracerouteEngineImplTest {
             new TransformationStep(
                 new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
                 StepAction.PERMITTED)));
+  }
+
+  @Test
+  public void testIngressSteps() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress i1Addr = new InterfaceAddress("1.0.0.1/31");
+    InterfaceAddress i2Addr = new InterfaceAddress("2.0.0.1/31");
+    Interface i1 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+    Interface i2 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("0.0.0.0/0"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i2.getName())
+                .build()));
+
+    String filter = "ingressFilter";
+
+    IpAccessList ingressFilter =
+        IpAccessList.builder()
+            .setName(filter)
+            .setLines(ImmutableList.of(accepting(matchSrc(Prefix.parse("10.0.0.1/32")))))
+            .build();
+
+    c1.getIpAccessLists().put(filter, ingressFilter);
+    i1.setIncomingFilter(ingressFilter);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("10.0.0.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    List<Trace> traceList = flowTraces.get(flow);
+    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, hasSize(1));
+    List<Hop> hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+    List<Step<?>> steps = hops.get(0).getSteps();
+    // should have enter interface -> filter -> routing -> exit
+    assertThat(steps, hasSize(4));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(FilterStep.class));
+    assertThat(steps.get(2), instanceOf(RoutingStep.class));
+    assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+
+    assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(steps.get(1).getAction(), equalTo(StepAction.PERMITTED));
+    assertThat(steps.get(2).getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("20.0.0.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traceList = flowTraces.get(flow);
+    assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_IN)));
+    assertThat(traceList, hasSize(1));
+    hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+    steps = hops.get(0).getSteps();
+    // should have enter interface -> filter
+    assertThat(steps, hasSize(2));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(FilterStep.class));
+
+    assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(steps.get(1).getAction(), equalTo(StepAction.DENIED));
+  }
+
+  @Test
+  public void testOutgoingSteps() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress i1Addr = new InterfaceAddress("1.0.0.1/31");
+    InterfaceAddress i2Addr = new InterfaceAddress("2.0.0.1/31");
+    Interface i1 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+    Interface i2 =
+        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("0.0.0.0/0"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i2.getName())
+                .build()));
+
+    String filter = "outgoingFilter";
+
+    IpAccessList outgoingFilter =
+        IpAccessList.builder()
+            .setName(filter)
+            .setLines(ImmutableList.of(accepting(matchSrc(Prefix.parse("10.0.0.1/32")))))
+            .build();
+
+    c1.getIpAccessLists().put(filter, outgoingFilter);
+    i2.setOutgoingFilter(outgoingFilter);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("10.0.0.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    List<Trace> traceList = flowTraces.get(flow);
+    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, hasSize(1));
+    List<Hop> hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+    List<Step<?>> steps = hops.get(0).getSteps();
+    // should have enter interface -> routing -> filter -> exit
+    assertThat(steps, hasSize(4));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(RoutingStep.class));
+    assertThat(steps.get(2), instanceOf(FilterStep.class));
+    assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+
+    assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+
+    flow =
+        Flow.builder()
+            .setTag("tag")
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .setIngressInterface(i1.getName())
+            .setSrcIp(new Ip("20.0.0.1"))
+            .setDstIp(new Ip("20.6.6.6"))
+            .build();
+    flowTraces =
+        TracerouteEngineImpl.getInstance()
+            .buildFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false);
+    traceList = flowTraces.get(flow);
+    assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_OUT)));
+    assertThat(traceList, hasSize(1));
+    hops = traceList.get(0).getHops();
+    assertThat(hops, hasSize(1));
+    steps = hops.get(0).getSteps();
+    // should have enter interface -> routing -> filter
+    assertThat(steps, hasSize(3));
+
+    assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(steps.get(1), instanceOf(RoutingStep.class));
+    assertThat(steps.get(2), instanceOf(FilterStep.class));
+
+    assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
+    assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(steps.get(2).getAction(), equalTo(StepAction.DENIED));
   }
 }
