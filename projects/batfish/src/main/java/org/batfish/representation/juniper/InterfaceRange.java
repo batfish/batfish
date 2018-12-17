@@ -48,7 +48,6 @@ public class InterfaceRange extends Interface implements Serializable {
     return _members;
   }
 
-  @Override
   public String getRangeName() {
     return _rangeName;
   }

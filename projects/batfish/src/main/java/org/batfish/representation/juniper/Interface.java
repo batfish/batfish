@@ -202,7 +202,7 @@ public class Interface implements Serializable {
     return _mtu;
   }
 
-  public String getRangeName() {
+  public String getName() {
     return _name;
   }
 
