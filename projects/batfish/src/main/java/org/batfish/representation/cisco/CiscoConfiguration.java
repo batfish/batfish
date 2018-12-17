@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
+import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -79,6 +80,8 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -3107,6 +3110,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           c.getAllInterfaces().put(newIfaceName, newInterface);
           c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
+        });
+    /*
+     * Second pass over the interfaces to set dependency pointers correctly for portchannels
+     * and tunnel interfaces
+     * TODO: VLAN interfaces
+     */
+    _interfaces.forEach(
+        (ifaceName, iface) -> {
+          // Portchannels
+          String chGroup = iface.getChannelGroup();
+          if (chGroup != null) {
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+            if (viIface != null) {
+              viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+            }
+          }
+          // Tunnels
+          Tunnel tunnel = iface.getTunnel();
+          if (tunnel != null && isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+            if (viIface != null) {
+              viIface.addDependency(
+                  new Dependency(tunnel.getSourceInterfaceName(), DependencyType.BIND));
+            }
+          }
         });
 
     // copy tracking groups
