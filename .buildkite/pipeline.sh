@@ -76,3 +76,9 @@ EOF
 done
 echo "branches: buildkite"
 
+### Block
+cat <<EOF
+  - wait
+  - command: "buildkite-agent pipeline upload .buildkite/example_block.yml"
+EOF
+
