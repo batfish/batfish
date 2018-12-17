@@ -3,7 +3,7 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
-import static org.batfish.datamodel.flow.StepAction.PERMITTED;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.applyFilter;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
@@ -37,7 +37,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -52,13 +51,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
+import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
-import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep;
-import org.batfish.datamodel.flow.PreSourceNatOutgoingFilterStep.PreSourceNatOutgoingFilterStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
@@ -228,45 +227,8 @@ public class TracerouteEngineImplContext {
     return flow;
   }
 
-  @VisibleForTesting
-  static PreSourceNatOutgoingFilterStep applyPreSourceNatFilter(
-      Flow currentFlow,
-      String node,
-      String inInterfaceName,
-      String outInterfaceName,
-      IpAccessList filter,
-      Map<String, IpAccessList> aclDefinitions,
-      Map<String, IpSpace> namedIpSpaces,
-      boolean ignoreFilters) {
-
-    checkArgument(
-        node != null && outInterfaceName != null,
-        "Node, inputInterface and outgoingInterface cannot be null");
-
-    PreSourceNatOutgoingFilterStep.Builder stepBuilder = PreSourceNatOutgoingFilterStep.builder();
-    stepBuilder.setAction(PERMITTED);
-    stepBuilder.setDetail(
-        PreSourceNatOutgoingFilterStepDetail.builder()
-            .setNode(node)
-            .setOutputInterface(outInterfaceName)
-            .setFilter(filter.getName())
-            .build());
-
-    // check filter
-    if (!ignoreFilters) {
-      FilterResult filterResult =
-          filter.filter(currentFlow, inInterfaceName, aclDefinitions, namedIpSpaces);
-      if (filterResult.getAction() == LineAction.DENY) {
-        stepBuilder.setAction(DENIED);
-      }
-    }
-
-    return stepBuilder.build();
-  }
-
   private void processCurrentNextHopInterfaceEdges(
       String currentNodeName,
-      @Nullable String srcInterface,
       Ip dstIp,
       String nextHopInterfaceName,
       @Nullable Ip finalNextHopIp,
@@ -276,7 +238,6 @@ public class TracerouteEngineImplContext {
       Stack<Breadcrumb> breadcrumbs) {
     if (!processFlowTransmission(
         currentNodeName,
-        srcInterface,
         dstIp,
         nextHopInterfaceName,
         finalNextHopIp,
@@ -284,19 +245,13 @@ public class TracerouteEngineImplContext {
         stepBuilder)) {
       return;
     }
-    IpAccessList outFilter =
-        _configurations
-            .get(transmissionContext._currentNode.getName())
-            .getAllInterfaces()
-            .get(nextHopInterfaceName)
-            .getOutgoingFilter();
+
     stepBuilder.add(
         ExitOutputIfaceStep.builder()
             .setDetail(
                 ExitOutputIfaceStepDetail.builder()
                     .setOutputInterface(
                         new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
-                    .setOutputFilter(outFilter != null ? outFilter.getName() : null)
                     .setTransformedFlow(
                         hopFlow(
                             transmissionContext._originalFlow,
@@ -327,48 +282,11 @@ public class TracerouteEngineImplContext {
 
   private boolean processFlowTransmission(
       String currentNodeName,
-      @Nullable String srcInterface,
       Ip dstIp,
       String nextHopInterfaceName,
       @Nullable Ip finalNextHopIp,
       TransmissionContext transmissionContext,
       ImmutableList.Builder<Step<?>> stepBuilder) {
-    // check output filter
-    IpAccessList outFilter =
-        _configurations
-            .get(transmissionContext._currentNode.getName())
-            .getAllInterfaces()
-            .get(nextHopInterfaceName)
-            .getOutgoingFilter();
-    if (!_ignoreFilters && outFilter != null) {
-      FilterResult filterResult =
-          outFilter.filter(
-              transmissionContext._transformedFlow,
-              srcInterface,
-              transmissionContext._aclDefinitions,
-              transmissionContext._namedIpSpaces);
-      if (filterResult.getAction() == LineAction.DENY) {
-        stepBuilder.add(
-            ExitOutputIfaceStep.builder()
-                .setDetail(
-                    ExitOutputIfaceStepDetail.builder()
-                        .setOutputInterface(
-                            new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
-                        .setOutputFilter(outFilter.getName())
-                        .setTransformedFlow(
-                            hopFlow(
-                                transmissionContext._originalFlow,
-                                transmissionContext._transformedFlow))
-                        .build())
-                .setAction(StepAction.DENIED)
-                .build());
-        Hop deniedOutHop = new Hop(new Node(currentNodeName), stepBuilder.build());
-        transmissionContext._hopsSoFar.add(deniedOutHop);
-        Trace trace = new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(trace);
-        return false;
-      }
-    }
     Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
     Configuration c = _configurations.get(transmissionContext._currentNode.getName());
     // halt processing and add neighbor-unreachable trace if no one would respond
@@ -390,7 +308,6 @@ public class TracerouteEngineImplContext {
                   ExitOutputIfaceStepDetail.builder()
                       .setOutputInterface(
                           new NodeInterfacePair(currentNodeName, nextHopInterfaceName))
-                      .setOutputFilter(outFilter != null ? outFilter.getName() : null)
                       .setTransformedFlow(
                           hopFlow(
                               transmissionContext._originalFlow,
@@ -480,21 +397,37 @@ public class TracerouteEngineImplContext {
     Flow dstNatFlow = null;
     if (inputIfaceName != null) {
       EnterInputIfaceStep enterIfaceStep =
-          createEnterSrcIfaceStep(
-              currentConfiguration,
-              inputIfaceName,
-              _ignoreFilters,
-              inputFlow,
-              aclDefinitions,
-              namedIpSpaces);
+          createEnterSrcIfaceStep(currentConfiguration, inputIfaceName);
       steps.add(enterIfaceStep);
 
-      if (enterIfaceStep.getAction() == DENIED) {
-        Hop deniedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
-        transmissionContext._hopsSoFar.add(deniedHop);
-        Trace trace = new Trace(FlowDisposition.DENIED_IN, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(trace);
-        return;
+      // apply ingress filter
+      IpAccessList inputFilter =
+          currentConfiguration.getAllInterfaces().get(inputIfaceName).getIncomingFilter();
+      if (inputFilter != null) {
+        FilterStep filterStep =
+            applyFilter(
+                inputFlow,
+                inputIfaceName,
+                inputFilter,
+                FilterType.INGRESS_FILTER,
+                aclDefinitions,
+                namedIpSpaces,
+                _ignoreFilters);
+
+        steps.add(filterStep);
+
+        if (filterStep.getAction() == DENIED) {
+          Hop deniedOutHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
+          Trace trace =
+              new Trace(
+                  FlowDisposition.DENIED_IN,
+                  ImmutableList.<Hop>builder()
+                      .addAll(transmissionContext._hopsSoFar)
+                      .add(deniedOutHop)
+                      .build());
+          transmissionContext._flowTraces.add(trace);
+          return;
+        }
       }
 
       List<DestinationNat> destinationNats =
@@ -671,13 +604,12 @@ public class TracerouteEngineImplContext {
                   IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
                   // Apply preSourceNatOutgoingFilter
                   if (filter != null) {
-                    PreSourceNatOutgoingFilterStep step =
-                        applyPreSourceNatFilter(
+                    FilterStep step =
+                        applyFilter(
                             currentFlow,
-                            currentNodeName,
                             inputIfaceName,
-                            outgoingInterface.getName(),
                             filter,
+                            FilterType.PRE_SOURCE_NAT_FILTER,
                             aclDefinitions,
                             namedIpSpaces,
                             _ignoreFilters);
@@ -723,17 +655,46 @@ public class TracerouteEngineImplContext {
                           namedIpSpaces,
                           currentFlow,
                           newTransformedFlow);
+
+                  // apply outgoing filter
+                  IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
+
+                  if (outFilter != null) {
+                    FilterStep step =
+                        applyFilter(
+                            clonedTransmissionContext._transformedFlow,
+                            inputIfaceName,
+                            outFilter,
+                            FilterType.EGRESS_FILTER,
+                            clonedTransmissionContext._aclDefinitions,
+                            clonedTransmissionContext._namedIpSpaces,
+                            _ignoreFilters);
+                    clonedStepsBuilder.add(step);
+
+                    if (step.getAction() == StepAction.DENIED) {
+                      Hop deniedOutHop =
+                          new Hop(new Node(currentNodeName), clonedStepsBuilder.build());
+                      Trace trace =
+                          new Trace(
+                              FlowDisposition.DENIED_OUT,
+                              ImmutableList.<Hop>builder()
+                                  .addAll(clonedTransmissionContext._hopsSoFar)
+                                  .add(deniedOutHop)
+                                  .build());
+                      clonedTransmissionContext._flowTraces.add(trace);
+                      return;
+                    }
+                  }
+
                   if (edges == null || edges.isEmpty()) {
-                    updateDeniedOrUnreachableTrace(
+                    updateUnreachableTrace(
                         currentNodeName,
                         outgoingInterface,
-                        inputIfaceName,
                         clonedTransmissionContext,
                         clonedStepsBuilder);
                   } else {
                     processCurrentNextHopInterfaceEdges(
                         currentNodeName,
-                        inputIfaceName,
                         dstIp,
                         nextHopInterfaceName,
                         finalNextHopIp,
@@ -758,55 +719,34 @@ public class TracerouteEngineImplContext {
     }
   }
 
-  private void updateDeniedOrUnreachableTrace(
+  private void updateUnreachableTrace(
       String currentNodeName,
       Interface outInterface,
-      String sourceInterfaceName,
       TransmissionContext transmissionContext,
       ImmutableList.Builder<Step<?>> stepsTillNow) {
-    IpAccessList outFilter = outInterface.getOutgoingFilter();
-    boolean denied = false;
-    if (!_ignoreFilters && outFilter != null) {
-      FilterResult filterResult =
-          outFilter.filter(
-              transmissionContext._transformedFlow,
-              sourceInterfaceName,
-              transmissionContext._aclDefinitions,
-              transmissionContext._namedIpSpaces);
-      denied = filterResult.getAction() == LineAction.DENY;
-    }
     ExitOutputIfaceStep.Builder exitOutIfaceBuilder = ExitOutputIfaceStep.builder();
     exitOutIfaceBuilder.setDetail(
         ExitOutputIfaceStepDetail.builder()
             .setOutputInterface(new NodeInterfacePair(currentNodeName, outInterface.getName()))
-            .setOutputFilter(outFilter != null ? outFilter.getName() : null)
             .setTransformedFlow(
                 hopFlow(transmissionContext._originalFlow, transmissionContext._transformedFlow))
             .build());
     Trace trace;
-    if (denied) {
-      // add a denied out step action and terminate the current trace
-      exitOutIfaceBuilder.setAction(DENIED);
-      List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
-      Hop deniedOutHop = new Hop(new Node(currentNodeName), currentSteps);
-      transmissionContext._hopsSoFar.add(deniedOutHop);
-      trace = new Trace(FlowDisposition.DENIED_OUT, transmissionContext._hopsSoFar);
-    } else {
-      FlowDisposition disposition =
-          computeDisposition(
-              currentNodeName,
-              outInterface.getName(),
-              transmissionContext._transformedFlow.getDstIp());
+    FlowDisposition disposition =
+        computeDisposition(
+            currentNodeName,
+            outInterface.getName(),
+            transmissionContext._transformedFlow.getDstIp());
 
-      // create appropriate step
-      exitOutIfaceBuilder.setAction(getFinalActionForDisposition(disposition));
-      List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
+    // create appropriate step
+    exitOutIfaceBuilder.setAction(getFinalActionForDisposition(disposition));
+    List<Step<?>> currentSteps = stepsTillNow.add(exitOutIfaceBuilder.build()).build();
 
-      Hop terminalHop = new Hop(new Node(currentNodeName), currentSteps);
+    Hop terminalHop = new Hop(new Node(currentNodeName), currentSteps);
 
-      transmissionContext._hopsSoFar.add(terminalHop);
-      trace = new Trace(disposition, transmissionContext._hopsSoFar);
-    }
+    transmissionContext._hopsSoFar.add(terminalHop);
+    trace = new Trace(disposition, transmissionContext._hopsSoFar);
+
     transmissionContext._flowTraces.add(trace);
   }
 
