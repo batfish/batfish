@@ -83,6 +83,6 @@ EOF
 
 ### Branches
 cat <<EOF
-  - branches: "master"
+branches: "master"
 EOF
 
