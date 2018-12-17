@@ -61,7 +61,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesAnswererTest.MockRib;
-import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresence;
+import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.junit.Test;
 
@@ -337,7 +337,7 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.UNCHANGED.presenceStatusName()),
+                        equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
@@ -346,7 +346,7 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.CHANGED.presenceStatusName()),
+                        equalTo(RouteEntryPresenceStatus.CHANGED.routeEntryPresenceName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
@@ -355,7 +355,7 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.ONLY_IN_SNAPSHOT.presenceStatusName()),
+                        equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
@@ -364,7 +364,8 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.ONLY_IN_REFERENCE.presenceStatusName()),
+                        equalTo(
+                            RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
@@ -373,7 +374,7 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.ONLY_IN_SNAPSHOT.presenceStatusName()),
+                        equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
                         Schema.STRING)),
                 allOf(
                     hasColumn(
@@ -382,7 +383,8 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.ONLY_IN_REFERENCE.presenceStatusName()),
+                        equalTo(
+                            RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
                         Schema.STRING)))));
   }
 
@@ -651,7 +653,7 @@ public class RoutesAnswererUtilTest {
                         Schema.STRING),
                     hasColumn(
                         COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresence.UNCHANGED.presenceStatusName()),
+                        equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
                         Schema.STRING)))));
   }
 }

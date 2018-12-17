@@ -2,20 +2,21 @@ package org.batfish.question.routes;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
 /**
  * Class representing the secondary key used for grouping {@link
  * org.batfish.datamodel.AbstractRoute}s and {@link org.batfish.datamodel.BgpRoute}s
  */
+@ParametersAreNonnullByDefault
 public class RouteRowSecondaryKey {
 
   @Nonnull private final Ip _nextHopIp;
 
-  @Nullable private final String _protocol;
+  @Nonnull private final String _protocol;
 
-  public RouteRowSecondaryKey(@Nonnull Ip nextHopIp, @Nullable String protocol) {
+  public RouteRowSecondaryKey(Ip nextHopIp, String protocol) {
     _nextHopIp = nextHopIp;
     _protocol = protocol;
   }
@@ -42,7 +43,7 @@ public class RouteRowSecondaryKey {
     return _nextHopIp;
   }
 
-  @Nullable
+  @Nonnull
   public String getProtocol() {
     return _protocol;
   }

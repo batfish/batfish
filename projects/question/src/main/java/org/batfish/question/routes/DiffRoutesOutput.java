@@ -1,9 +1,13 @@
 package org.batfish.question.routes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.table.TableDiff;
 
 /** Class to contain the difference and type of the difference in Routes per {@link RouteRowKey} */
@@ -13,6 +17,26 @@ public class DiffRoutesOutput {
     ONLY_IN_SNAPSHOT(TableDiff.COL_KEY_STATUS_ONLY_BASE),
     ONLY_IN_REFERENCE(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
     IN_BOTH(TableDiff.COL_KEY_STATUS_BOTH);
+
+    private static final Map<String, KeyPresenceStatus> _map = buildMap();
+
+    private static Map<String, KeyPresenceStatus> buildMap() {
+      ImmutableMap.Builder<String, KeyPresenceStatus> map = ImmutableMap.builder();
+      for (KeyPresenceStatus value : KeyPresenceStatus.values()) {
+        map.put(value._name, value);
+      }
+      return map.build();
+    }
+
+    @JsonCreator
+    public static KeyPresenceStatus fromName(String name) {
+      KeyPresenceStatus instance = _map.get(name);
+      if (instance == null) {
+        throw new BatfishException(
+            String.format("No %s with name: '%s'", KeyPresenceStatus.class.getSimpleName(), name));
+      }
+      return instance;
+    }
 
     private final String _name;
 
