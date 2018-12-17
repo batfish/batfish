@@ -25,41 +25,29 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
    */
   public static final class ExitOutputIfaceStepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
-    private static final String PROP_OUTPUT_FILTER = "outputFilter";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
     private @Nonnull NodeInterfacePair _outputInterface;
-    private @Nullable String _outputFilter;
     private @Nullable Flow _transformedFlow;
 
     private ExitOutputIfaceStepDetail(
-        NodeInterfacePair outInterface,
-        @Nullable String outputFilter,
-        @Nullable Flow transformedFlow) {
+        NodeInterfacePair outInterface, @Nullable Flow transformedFlow) {
       _outputInterface = outInterface;
-      _outputFilter = outputFilter;
       _transformedFlow = transformedFlow;
     }
 
     @JsonCreator
     private static ExitOutputIfaceStepDetail jsonCreator(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_OUTPUT_FILTER) @Nullable String outputFilter,
         @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow) {
       checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
-      return new ExitOutputIfaceStepDetail(outInterface, outputFilter, transformedFlow);
+      return new ExitOutputIfaceStepDetail(outInterface, transformedFlow);
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
     @Nonnull
     public NodeInterfacePair getOutputInterface() {
       return _outputInterface;
-    }
-
-    @JsonProperty(PROP_OUTPUT_FILTER)
-    @Nullable
-    public String getOutputFilter() {
-      return _outputFilter;
     }
 
     @JsonProperty(PROP_TRANSFORMED_FLOW)
@@ -75,21 +63,15 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     /** Chained builder to create a {@link ExitOutputIfaceStepDetail} object */
     public static final class Builder {
       private @Nullable NodeInterfacePair _outputInterface;
-      private @Nullable String _outputFilter;
       private @Nullable Flow _transformedFlow;
 
       public ExitOutputIfaceStepDetail build() {
         checkState(_outputInterface != null, "Must call setOutputInterface before building");
-        return new ExitOutputIfaceStepDetail(_outputInterface, _outputFilter, _transformedFlow);
+        return new ExitOutputIfaceStepDetail(_outputInterface, _transformedFlow);
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {
         _outputInterface = outputIface;
-        return this;
-      }
-
-      public Builder setOutputFilter(@Nullable String outputFilter) {
-        _outputFilter = outputFilter;
         return this;
       }
 
