@@ -11,7 +11,7 @@ import org.batfish.question.QuestionPlugin;
 
 /** Exposes {@link ConversionStatusQuestion}. */
 @AutoService(Plugin.class)
-public class ConversionStatusQuestionPlugin extends QuestionPlugin {
+public final class ConversionStatusQuestionPlugin extends QuestionPlugin {
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
     checkArgument(

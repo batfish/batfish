@@ -16,7 +16,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link ConversionStatusQuestion}. */
-class ConversionStatusAnswerer extends Answerer {
+final class ConversionStatusAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer() {
     ConvertConfigurationAnswerElement ccae =
@@ -40,9 +40,9 @@ class ConversionStatusAnswerer extends Answerer {
 
   @Nonnull
   @VisibleForTesting
-  static Row getRow(String filename, ConvertStatus status) {
+  static Row getRow(String node, ConvertStatus status) {
     Row.TypedRowBuilder builder = Row.builder(TABLE_METADATA.toColumnMap());
-    builder.put(COL_NODE, filename);
+    builder.put(COL_NODE, node);
     builder.put(COL_CONVERT_STATUS, status.toString());
     return builder.build();
   }
