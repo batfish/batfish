@@ -23,11 +23,6 @@ public class UniverseIpSpace extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    return EmptyIpSpace.INSTANCE;
-  }
-
-  @Override
   public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return true;
   }

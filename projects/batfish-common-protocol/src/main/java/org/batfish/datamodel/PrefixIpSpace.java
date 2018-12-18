@@ -31,14 +31,6 @@ public class PrefixIpSpace extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    return AclIpSpace.builder()
-        .thenRejecting(this)
-        .thenPermitting(UniverseIpSpace.INSTANCE)
-        .build();
-  }
-
-  @Override
   public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _prefix.containsIp(ip);
   }
