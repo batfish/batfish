@@ -20,6 +20,7 @@ steps:
       - "cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar"
       - "tar -cf workspace/workdir.tar \$(find -maxdepth 1 -mindepth 1 -not -name '.*' -not -name workspace)"
       - "tar -cf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish ."
+      - "tar -cf workspace/questions.tar questions
     artifact_paths:
       - "workspace/*"
     plugins:
@@ -82,6 +83,10 @@ cat <<EOF
   - label: "Trigger batfish-docker build"
     trigger: "batfish-docker"
     branches: "master"
+    build:
+      env:
+        BATFISH_TAG: "\$(git rev-parse --short HEAD)"
+        BATFISH_VERSION: "\$(grep -1 batfish-parent 'projects/pom.xml' | grep version | sed 's/[<>]/|/g' | cut -f3 -d\\|)"
 EOF
 
 ### Branches
