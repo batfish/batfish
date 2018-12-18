@@ -37,7 +37,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -1857,23 +1856,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
               // If this address book references other entries, add them to an AclIpSpace
               if (!entry.getEntries().isEmpty()) {
-                ImmutableList.Builder<AclIpSpaceLine> aclIpSpaceLineBuilder =
-                    ImmutableList.builder();
+                AclIpSpace.Builder aclIpSpaceBuilder = AclIpSpace.builder();
                 entry
                     .getEntries()
                     .keySet()
                     .forEach(
                         name -> {
                           String subEntryName = bookName + "~" + name;
-                          aclIpSpaceLineBuilder.add(
-                              AclIpSpaceLine.builder()
-                                  .setIpSpace(new IpSpaceReference(subEntryName))
-                                  .setAction(LineAction.PERMIT)
-                                  .build());
+                          aclIpSpaceBuilder.thenPermitting(new IpSpaceReference(subEntryName));
                         });
-                ipSpaces.put(
-                    entryName,
-                    AclIpSpace.builder().setLines(aclIpSpaceLineBuilder.build()).build());
+                ipSpaces.put(entryName, aclIpSpaceBuilder.build());
               } else {
                 ipSpaces.put(
                     entryName,

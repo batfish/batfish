@@ -52,4 +52,21 @@ public class AclIpSpaceTest {
     assertThat(union(EmptyIpSpace.INSTANCE), equalTo(EmptyIpSpace.INSTANCE));
     assertThat(union(EmptyIpSpace.INSTANCE, ipSpace), equalTo(ipSpace));
   }
+
+  @Test
+  public void testStopWhenEmpty() {
+    AclIpSpace space =
+        AclIpSpace.builder()
+            .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .thenPermitting(Prefix.parse("2.0.0.0/8").toIpSpace())
+            .build();
+
+    AclIpSpace expected =
+        AclIpSpace.builder()
+            .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .build();
+    assertThat(space, equalTo(expected));
+  }
 }
