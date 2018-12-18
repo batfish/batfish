@@ -39,8 +39,8 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitAclIpSpace() {
     AclIpSpace ipSpace =
         AclIpSpace.builder()
-            .thenRejecting(UniverseIpSpace.INSTANCE)
             .thenPermitting(EmptyIpSpace.INSTANCE)
+            .thenRejecting(UniverseIpSpace.INSTANCE)
             .build();
 
     BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
@@ -51,15 +51,15 @@ public class IpSpaceBooleanExprTransformerTest {
             new OrExpr(
                 ImmutableList.of(
                     new IfThenElse(
-                        // Matches UniverseIpSpace
-                        TrueExpr.INSTANCE,
-                        // Reject
+                        // Matches EmptyIpSpace
                         FalseExpr.INSTANCE,
+                        // Accept
+                        TrueExpr.INSTANCE,
                         new IfThenElse(
-                            // Matches EmptyIpSpace
-                            FalseExpr.INSTANCE,
-                            // Accept
+                            // Matches UniverseIpSpace
                             TrueExpr.INSTANCE,
+                            // Reject
+                            FalseExpr.INSTANCE,
                             // Matches nothing so reject
                             FalseExpr.INSTANCE))))));
   }

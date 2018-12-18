@@ -3,7 +3,6 @@ package org.batfish.datamodel.visitors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -15,7 +14,6 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTracer;
@@ -50,15 +48,7 @@ public final class IpSpaceDescriberTest {
     IpSpace lineIpSpace = UniverseIpSpace.INSTANCE;
     String lineIpSpaceName = "lineIpSpace";
     IpSpaceMetadata lineIpSpaceMetadata = new IpSpaceMetadata("line_space_name", "line_space_type");
-    IpSpace ipSpace =
-        AclIpSpace.builder()
-            .setLines(
-                ImmutableList.of(
-                    AclIpSpaceLine.builder()
-                        .setAction(LineAction.PERMIT)
-                        .setIpSpace(lineIpSpace)
-                        .build()))
-            .build();
+    IpSpace ipSpace = AclIpSpace.of(AclIpSpaceLine.permit(lineIpSpace));
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
             new AclTracer(

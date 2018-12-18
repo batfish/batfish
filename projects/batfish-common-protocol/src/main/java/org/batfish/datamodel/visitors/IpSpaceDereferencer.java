@@ -1,7 +1,5 @@
 package org.batfish.datamodel.visitors;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -85,13 +83,13 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace)
       throws CircularReferenceException, UndefinedReferenceException {
-    List<AclIpSpaceLine> sanitizedLines = new ArrayList<>();
+    AclIpSpace.Builder sanitizedSpace = AclIpSpace.builder();
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
       IpSpace ipSpace = line.getIpSpace().accept(this);
-      sanitizedLines.add(AclIpSpaceLine.builder().setIpSpace(ipSpace).build());
+      sanitizedSpace.thenAction(line.getAction(), ipSpace);
     }
     // No cycles/undefined references in this AclIpSpace. Return reference-free version.
-    return AclIpSpace.builder().setLines(sanitizedLines).build();
+    return sanitizedSpace.build();
   }
 
   @Override
