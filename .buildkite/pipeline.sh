@@ -27,7 +27,7 @@ steps:
           image: "dhalperi/build-base:latest"
   - wait
 EOF
-### Project verification
+### maven javadoc, mpd, tests
 for proj in allinone batfish batfish-client batfish-common-protocol coordinator question; do
   for prof in javadoc pmd tests; do
     cat <<EOF
@@ -47,6 +47,7 @@ for proj in allinone batfish batfish-client batfish-common-protocol coordinator 
 EOF
   done
 done
+### maven checkstyle, findbugs, depedency analysis
 cat <<EOF
   - label: "maven lint checks"
     command:
