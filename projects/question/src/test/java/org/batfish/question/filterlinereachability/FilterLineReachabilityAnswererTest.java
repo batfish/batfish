@@ -565,12 +565,9 @@ public class FilterLineReachabilityAnswererTest {
                 acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(
-                            AclIpSpace.builder()
-                                .setLines(
-                                    ImmutableList.of(
-                                        AclIpSpaceLine.permit(new IpSpaceReference("ipSpace")),
-                                        AclIpSpaceLine.permit(new IpSpaceReference("ipSpace"))))
-                                .build())
+                            AclIpSpace.of(
+                                AclIpSpaceLine.permit(new IpSpaceReference("ipSpace")),
+                                AclIpSpaceLine.permit(new IpSpaceReference("ipSpace"))))
                         .build())))
         .build();
 
@@ -586,12 +583,9 @@ public class FilterLineReachabilityAnswererTest {
                 acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(
-                            AclIpSpace.builder()
-                                .setLines(
-                                    ImmutableList.of(
-                                        AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace()),
-                                        AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace())))
-                                .build())
+                            AclIpSpace.of(
+                                AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace()),
+                                AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace())))
                         .build()))));
   }
 
@@ -602,13 +596,7 @@ public class FilterLineReachabilityAnswererTest {
     _c1.setIpSpaces(
         ImmutableSortedMap.of(
             "aclIpSpace",
-            AclIpSpace.builder()
-                .setLines(
-                    ImmutableList.of(
-                        AclIpSpaceLine.builder()
-                            .setIpSpace(new IpSpaceReference("aclIpSpace"))
-                            .build()))
-                .build()));
+            AclIpSpace.of(AclIpSpaceLine.permit(new IpSpaceReference("aclIpSpace")))));
     _aclb
         .setLines(
             ImmutableList.of(

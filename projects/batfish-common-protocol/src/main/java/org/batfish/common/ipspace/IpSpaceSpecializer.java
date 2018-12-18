@@ -80,7 +80,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
       return EmptyIpSpace.INSTANCE;
     }
 
-    return AclIpSpace.builder().setLines(specializedLines).build();
+    return AclIpSpace.of(specializedLines);
   }
 
   @Override

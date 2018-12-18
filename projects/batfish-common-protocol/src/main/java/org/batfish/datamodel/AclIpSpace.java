@@ -27,7 +27,12 @@ public class AclIpSpace extends IpSpace {
 
   public static class Builder {
 
-    private ImmutableList.Builder<AclIpSpaceLine> _lines;
+    private final ImmutableList.Builder<AclIpSpaceLine> _lines;
+    /*
+     * Whether we know this Builder is full, aka whether it has an empty complement. If true, we
+     * will stop adding new lines, since they could never match anything.
+     */
+    private boolean _full;
 
     private Builder() {
       _lines = ImmutableList.builder();
@@ -37,9 +42,17 @@ public class AclIpSpace extends IpSpace {
       return new AclIpSpace(_lines.build());
     }
 
-    public Builder setLines(List<AclIpSpaceLine> lines) {
-      _lines = ImmutableList.<AclIpSpaceLine>builder().addAll(lines);
+    public Builder then(AclIpSpaceLine line) {
+      if (_full) {
+        return this;
+      }
+      _full = line.getIpSpace() instanceof UniverseIpSpace;
+      _lines.add(line);
       return this;
+    }
+
+    public Builder thenAction(LineAction action, IpSpace space) {
+      return then(AclIpSpaceLine.builder().setAction(action).setIpSpace(space).build());
     }
 
     public Builder thenPermitting(IpSpace... ipSpaces) {
@@ -51,7 +64,10 @@ public class AclIpSpace extends IpSpace {
     }
 
     public Builder thenPermitting(Stream<IpSpace> ipSpaces) {
-      ipSpaces.map(AclIpSpaceLine::permit).forEach(_lines::add);
+      if (_full) {
+        return this;
+      }
+      ipSpaces.map(AclIpSpaceLine::permit).forEach(this::then);
       return this;
     }
 
@@ -64,15 +80,17 @@ public class AclIpSpace extends IpSpace {
     }
 
     private Builder thenRejecting(Stream<IpSpace> ipSpaces) {
-      ipSpaces.map(AclIpSpaceLine::reject).forEach(_lines::add);
+      if (_full) {
+        return this;
+      }
+      ipSpaces.map(AclIpSpaceLine::reject).forEach(this::then);
       return this;
     }
   }
 
   public static final AclIpSpace DENY_ALL = AclIpSpace.builder().build();
 
-  public static final AclIpSpace PERMIT_ALL =
-      AclIpSpace.builder().setLines(ImmutableList.of(AclIpSpaceLine.PERMIT_ALL)).build();
+  public static final AclIpSpace PERMIT_ALL = AclIpSpace.of(AclIpSpaceLine.PERMIT_ALL);
 
   private static final String PROP_LINES = "lines";
 
@@ -81,6 +99,16 @@ public class AclIpSpace extends IpSpace {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static AclIpSpace of(Iterable<AclIpSpaceLine> lines) {
+    Builder builder = builder();
+    lines.forEach(builder::then);
+    return builder.build();
+  }
+
+  public static AclIpSpace of(AclIpSpaceLine... lines) {
+    return of(Arrays.asList(lines));
   }
 
   /**

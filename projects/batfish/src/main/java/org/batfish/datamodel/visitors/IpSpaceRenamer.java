@@ -1,6 +1,5 @@
 package org.batfish.datamodel.visitors;
 
-import com.google.common.collect.ImmutableList;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
@@ -27,14 +26,15 @@ public class IpSpaceRenamer implements Function<IpSpace, IpSpace> {
 
     @Override
     public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
-      return AclIpSpace.builder()
-          .setLines(
-              aclIpSpace
-                  .getLines()
-                  .stream()
-                  .map(ln -> ln.toBuilder().setIpSpace(ln.getIpSpace().accept(this)).build())
-                  .collect(ImmutableList.toImmutableList()))
-          .build();
+      AclIpSpace.Builder renamedSpace = AclIpSpace.builder();
+      aclIpSpace
+          .getLines()
+          .forEach(
+              line -> {
+                IpSpace space = line.getIpSpace().accept(this);
+                renamedSpace.thenAction(line.getAction(), space);
+              });
+      return renamedSpace.build();
     }
 
     @Override
