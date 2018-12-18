@@ -258,6 +258,8 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -3061,6 +3063,12 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel1").getDependencies(),
+        equalTo(
+            ImmutableSet.of(
+                new Dependency("Ethernet0", DependencyType.AGGREGATE),
+                new Dependency("Ethernet1", DependencyType.AGGREGATE))));
   }
 
   @Test

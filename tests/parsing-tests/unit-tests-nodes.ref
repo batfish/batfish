@@ -14881,7 +14881,7 @@
           "ae16" : {
             "name" : "ae16",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -14907,7 +14907,7 @@
           "ae16.0" : {
             "name" : "ae16.0",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -14927,7 +14927,7 @@
             "spanningTreePortfast" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "AGGREGATED",
+            "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
           },
           "xe-0/0/1" : {
@@ -16879,7 +16879,7 @@
             "spanningTreePortfast" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "AGGREGATED",
+            "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
           },
           "ge-0/0/0" : {

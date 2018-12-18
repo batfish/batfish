@@ -4,6 +4,8 @@ package org.batfish.datamodel;
 public enum InterfaceType {
   /** Logical interface that aggregates multiple (physical) interfaces */
   AGGREGATED,
+  /** Child of a aggregate interface: logical, sub-interface of an AGGREGATED interface */
+  AGGREGATE_CHILD,
   /** Generic Logical interface, (e.g., units on Juniper devices) */
   LOGICAL,
   /** Logical loopback interface */
