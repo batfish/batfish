@@ -16,9 +16,7 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
 
   public abstract boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces);
 
-  /**
-   * Return the {@link IpSpace} of all IPs not in {@code this}.
-   */
+  /** Return the {@link IpSpace} of all IPs not in {@code this}. */
   public final IpSpace complement() {
     if (this == UniverseIpSpace.INSTANCE) {
       return EmptyIpSpace.INSTANCE;
