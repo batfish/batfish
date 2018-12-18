@@ -709,15 +709,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             toImmutableMap(
                 nodeEntry.getValue().getVrfs(),
                 Entry::getKey,
-                vrfEntry ->
-                    toImmutableMap(
-                        vrfEntry.getValue().getInterfaces(),
-                        Entry::getKey,
-                        ifaceEntry ->
-                            fibs.get(nodeEntry.getKey())
-                                .get(vrfEntry.getKey())
-                                .getRoutesByNextHopInterface()
-                                .getOrDefault(ifaceEntry.getKey(), ImmutableSet.of()))));
+                vrfEntry -> {
+                  Map<String, Set<AbstractRoute>> routesByNextHopInterface =
+                      fibs.get(nodeEntry.getKey())
+                          .get(vrfEntry.getKey())
+                          .getRoutesByNextHopInterface();
+                  return toImmutableMap(
+                      vrfEntry.getValue().getInterfaces(),
+                      Entry::getKey,
+                      ifaceEntry ->
+                          routesByNextHopInterface.getOrDefault(
+                              ifaceEntry.getKey(), ImmutableSet.of()));
+                }));
   }
 
   Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
