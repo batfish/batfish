@@ -19,7 +19,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -614,14 +613,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static IpSpace computeRouteMatchConditions(
       Set<AbstractRoute> routes, Map<Prefix, IpSpace> matchingIps) {
     // get the union of IpSpace that match one of the routes
-    return AclIpSpace.permitting(
+    return firstNonNull(
+        AclIpSpace.union(
             routes
                 .stream()
                 .map(AbstractRoute::getNetwork)
                 .collect(ImmutableSet.toImmutableSet())
                 .stream()
-                .map(matchingIps::get))
-        .build();
+                .map(matchingIps::get)
+                .toArray(IpSpace[]::new)),
+        EmptyIpSpace.INSTANCE);
   }
 
   /*
@@ -993,19 +994,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         .getAllAddresses()
                                         .stream()
                                         .map(InterfaceAddress::getPrefix)
-                                        .map(ForwardingAnalysisImpl::hostSubnetIpSpace)
+                                        .map(Prefix::toHostIpSpace)
                                         .collect(ImmutableList.toImmutableList())),
                                 EmptyIpSpace.INSTANCE))));
-  }
-
-  @Nonnull
-  static IpSpace hostSubnetIpSpace(Prefix prefix) {
-    return prefix.getPrefixLength() >= 31
-        ? prefix.toIpSpace()
-        : AclIpSpace.rejecting(prefix.getStartIp().toIpSpace())
-            .thenRejecting(prefix.getEndIp().toIpSpace())
-            .thenPermitting(prefix.toIpSpace())
-            .build();
   }
 
   private IpSpace computeInternalIps() {

@@ -234,21 +234,6 @@ public class AclIpSpace extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    Builder builder = AclIpSpace.builder();
-    _lines.forEach(
-        line -> {
-          if (line.getAction() == LineAction.PERMIT) {
-            builder.thenRejecting(line.getIpSpace());
-          } else {
-            builder.thenPermitting(line.getIpSpace());
-          }
-        });
-    builder.thenPermitting(UniverseIpSpace.INSTANCE);
-    return builder.build();
-  }
-
-  @Override
   public boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
     return action(ip, namedIpSpaces) == LineAction.PERMIT;
   }
