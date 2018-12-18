@@ -85,8 +85,8 @@ cat <<EOF
     branches: "master"
     build:
       env:
-        BATFISH_TAG: "\$(git rev-parse --short HEAD)"
-        BATFISH_VERSION: "\$(grep -1 batfish-parent 'projects/pom.xml' | grep version | sed 's/[<>]/|/g' | cut -f3 -d\\|)"
+        BATFISH_TAG: "$(git rev-parse --short HEAD)"
+        BATFISH_VERSION: "$(grep -1 batfish-parent 'projects/pom.xml' | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
 EOF
 
 ### Branches
