@@ -75,5 +75,15 @@ for testdir in aws basic java-smt jsonpath-addons jsonpathtotable parsing-errors
           download: "workspace/allinone.jar"
 EOF
 done
-echo "branches: buildkite"
+
+### Block
+cat <<EOF
+  - wait
+  - command: "buildkite-agent pipeline upload .buildkite/example_block.yml"
+EOF
+
+### Branches
+cat <<EOF
+branches: "master"
+EOF
 

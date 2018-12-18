@@ -3,4 +3,4 @@ steps:
     command:
       - ".buildkite/pipeline.sh > .buildkite/pipeline.yml"
       - "buildkite-agent pipeline upload"
-branches: "buildkite"
+branches: "master"
