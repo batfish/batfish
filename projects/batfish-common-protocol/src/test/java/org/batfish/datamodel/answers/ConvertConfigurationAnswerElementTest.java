@@ -1,11 +1,15 @@
 package org.batfish.datamodel.answers;
 
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.junit.Before;
@@ -31,6 +35,26 @@ public class ConvertConfigurationAnswerElementTest {
   @Before
   public void setUp() {
     _element = new ConvertConfigurationAnswerElement();
+  }
+
+  @Test
+  public void testConvertStatus() {
+    assertThat(_element.getConvertStatusProp(), anEmptyMap());
+    _element.getConvertStatus().put("node", ConvertStatus.PASSED);
+    assertThat(_element.getConvertStatusProp(), hasEntry("node", ConvertStatus.PASSED));
+  }
+
+  @Test
+  public void testConvertStatusFromFailed() {
+    Set<String> set = new TreeSet<>();
+    _element.setFailed(set);
+    _element.setConvertStatus(null);
+
+    assertThat(_element.getConvertStatusProp(), anEmptyMap());
+
+    // Confirm object containing failed-set, not convert-status-map still returns a correct map
+    set.add("node");
+    assertThat(_element.getConvertStatusProp(), hasEntry("node", ConvertStatus.FAILED));
   }
 
   @Test

@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -87,6 +88,7 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
+import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
@@ -1027,6 +1029,159 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     edge = preOutEdgeOutEdges.get(new NodeDropAclOut(hostname));
     assertThat(edge.traverseForward(ONE), equalTo(preNatOutAclBdd.not()));
+  }
+
+  /*
+   *  Test setup: Send packets with destination 8.8.8.0/24 to the next hop 1.0.0.2.
+   *  Since the destination Ip 8.8.8.0/24 is outside the network and next hop Ip 1.0.0.2 is not
+   *  owned by any device, so traffic of destination 8.8.8.0/24 should have disposition EXITS NETWORK.
+   */
+  @Test
+  public void testInsufficientInfoVsExitsNetwork1() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.build();
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+
+    // set up static route "8.8.8.0/24" -> 1.0.0.2
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNetwork(Prefix.parse("8.8.8.0/24"))
+                .setAdministrativeCost(1)
+                .build()));
+
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(
+                    new InterfaceLocation(c1.getHostname(), i1.getName()), UniverseIpSpace.INSTANCE)
+                .build());
+
+    Edge edge =
+        analysis
+            .getEdges()
+            .get(new PreOutVrf(c1.getHostname(), v1.getName()))
+            .get(new NodeInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
+
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
+
+    BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
+
+    assertThat(edge.traverseForward(resultBDD), equalTo(resultBDD));
+
+    Edge edgeII =
+        analysis
+            .getEdges()
+            .get(new PreOutVrf(c1.getHostname(), v1.getName()))
+            .get(new NodeInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
+
+    assertThat(edgeII, nullValue());
+  }
+
+  /*
+   *  Test setup: Send packets with destination 8.8.8.0/24 to the next hop 2.0.0.2.
+   *  Since the destination Ip 8.8.8.0/24 is outside the network and next hop Ip 2.0.0.2 is
+   *  owned by a device, so traffic of destination 8.8.8.0/24 should have disposition INSUFFICIENT_INFO.
+   */
+  @Test
+  public void testInsufficientInfoVsExitsNetwork2() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.build();
+
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    // set up interface
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+
+    // set up static route "8.8.8.0/24" -> 1.0.0.2
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNextHopIp(new Ip("2.0.0.2"))
+                .setNetwork(Prefix.parse("8.8.8.0/24"))
+                .setNextHopInterface(i1.getName())
+                .setAdministrativeCost(1)
+                .build()));
+
+    // set up another node
+    Configuration c2 = cb.build();
+
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    nf.interfaceBuilder()
+        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setOwner(c2)
+        .setVrf(v2)
+        .build();
+
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+
+    batfish.computeDataPlane(false);
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(
+                    new InterfaceLocation(c1.getHostname(), i1.getName()), UniverseIpSpace.INSTANCE)
+                .build());
+
+    Edge edge =
+        analysis
+            .getEdges()
+            .get(new PreOutVrf(c1.getHostname(), v1.getName()))
+            .get(new NodeInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
+
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
+
+    BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
+
+    assertThat(edge.traverseForward(resultBDD), equalTo(resultBDD));
+
+    Edge edgeEN =
+        analysis
+            .getEdges()
+            .get(new PreOutVrf(c1.getHostname(), v1.getName()))
+            .get(new NodeInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
+
+    assertThat(edgeEN.traverseForward(resultBDD), equalTo(PKT.getFactory().zero()));
   }
 
   @Test

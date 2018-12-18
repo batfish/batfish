@@ -3,14 +3,17 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
@@ -28,12 +31,15 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final long serialVersionUID = 2L;
 
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
+  private static final String PROP_CONVERT_STATUS = "convertStatus";
   private static final String PROP_ERRORS = "errors";
-  private static final String PROP_FAILED = "failed";
   private static final String PROP_REFERENCED_STRUCTURES = "referencedStructures";
   private static final String PROP_UNDEFINED_REFERENCES = "undefinedReferences";
   private static final String PROP_VERSION = "version";
   private static final String PROP_WARNINGS = "warnings";
+
+  // This will only be null in legacy objects, which used _failed set instead
+  @Nullable private SortedMap<String, ConvertStatus> _convertStatus;
 
   // filename -> structType -> structName -> info
   @Nonnull
@@ -48,7 +54,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  @Nonnull private Set<String> _failed;
+  // This is just to support legacy objects, before _convertStatus map was used
+  @Nullable private Set<String> _failed;
 
   // filename -> structType -> structName -> usage -> lines
   @Nonnull
@@ -64,8 +71,9 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     this(null, null, null, null, null, null, null);
   }
 
+  @VisibleForTesting
   @JsonCreator
-  private ConvertConfigurationAnswerElement(
+  ConvertConfigurationAnswerElement(
       @JsonProperty(PROP_DEFINED_STRUCTURES)
           SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
               definedStructures,
@@ -74,8 +82,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
                   String,
                   SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
               referencedstructures,
+      @JsonProperty(PROP_CONVERT_STATUS) SortedMap<String, ConvertStatus> convertStatus,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
-      @JsonProperty(PROP_FAILED) SortedSet<String> failed,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
           SortedMap<
                   String,
@@ -85,7 +93,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
       @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
-    _failed = firstNonNull(failed, new TreeSet<>());
+    _convertStatus = firstNonNull(convertStatus, new TreeMap<>());
+
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
     _version = firstNonNull(version, Version.getVersion());
@@ -99,17 +108,31 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     return _definedStructures;
   }
 
+  @JsonIgnore
+  public SortedMap<String, ConvertStatus> getConvertStatus() {
+    return _convertStatus;
+  }
+
+  @VisibleForTesting
+  @JsonProperty(PROP_CONVERT_STATUS)
+  @Nonnull
+  SortedMap<String, ConvertStatus> getConvertStatusProp() {
+    if (_convertStatus != null) {
+      return ImmutableSortedMap.copyOf(_convertStatus);
+    } else if (_failed != null) {
+      ImmutableSortedMap.Builder<String, ConvertStatus> map = ImmutableSortedMap.naturalOrder();
+      _failed.stream().forEach(n -> map.put(n, ConvertStatus.FAILED));
+      return map.build();
+    } else {
+      return ImmutableSortedMap.of();
+    }
+  }
+
   @Override
   @JsonProperty(PROP_ERRORS)
   @Nonnull
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
-  }
-
-  @JsonProperty(PROP_FAILED)
-  @Nonnull
-  public Set<String> getFailed() {
-    return _failed;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)
@@ -201,9 +224,10 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     return sb.toString();
   }
 
-  @Override
-  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
-    _errors = errors;
+  @VisibleForTesting
+  @JsonIgnore
+  void setConvertStatus(@Nullable SortedMap<String, ConvertStatus> convertStatus) {
+    _convertStatus = convertStatus;
   }
 
   public void setDefinedStructures(
@@ -211,6 +235,17 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
           SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
               definedStructures) {
     _definedStructures = definedStructures;
+  }
+
+  @Override
+  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
+    _errors = errors;
+  }
+
+  @VisibleForTesting
+  @JsonIgnore
+  void setFailed(Set<String> failed) {
+    _failed = failed;
   }
 
   public void setUndefinedReferences(

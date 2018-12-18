@@ -150,6 +150,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
@@ -593,6 +594,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
+import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
@@ -1219,6 +1221,7 @@ import org.batfish.representation.cisco.ServiceObjectGroup.ServiceProtocol;
 import org.batfish.representation.cisco.ServiceObjectGroupLine;
 import org.batfish.representation.cisco.ServiceObjectGroupReferenceServiceObjectGroupLine;
 import org.batfish.representation.cisco.ServiceObjectReferenceServiceObjectGroupLine;
+import org.batfish.representation.cisco.ServiceObjectServiceSpecifier;
 import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -5200,6 +5203,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           line);
       return new ProtocolOrServiceObjectGroupServiceSpecifier(name);
+    } else if (ctx.obj != null) {
+      String name = ctx.obj.getText();
+      int line = ctx.obj.getStart().getLine();
+      _configuration.referenceStructure(
+          SERVICE_OBJECT, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT, line);
+      return new ServiceObjectServiceSpecifier(name);
     } else {
       return convProblem(
           AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
@@ -5852,6 +5861,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         }
       }
     }
+  }
+
+  @Override
+  public void exitIf_no_security_level(If_no_security_levelContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Security level can only be configured in single-interface context");
+      return;
+    }
+    setIfaceSecurityLevel(_currentInterfaces.get(0), 0);
   }
 
   @Override
@@ -9082,7 +9104,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.up_arista_sha512() != null) {
       passwordString = ctx.up_arista_sha512().pass.getText();
     } else if (ctx.up_cisco() != null) {
-      passwordString = ctx.up_cisco().pass.getText();
+      passwordString = ctx.up_cisco().up_cisco_tail().pass.getText();
+    } else if (ctx.NOPASSWORD() != null) {
+      passwordString = "";
     } else {
       throw new BatfishException("Missing username password handling");
     }

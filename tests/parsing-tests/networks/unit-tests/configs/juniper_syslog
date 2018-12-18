@@ -61,6 +61,7 @@ set system syslog file security authorization any
 set system syslog file security firewall any
 set system syslog file security interactive-commands any
 set system syslog source-address 5.6.7.8
+set system syslog host 1.2.3.4 allow-duplicates
 set system syslog host 1.2.3.4 any any
 set system syslog host 1.2.3.4 any emergency
 set system syslog host 1.2.3.4 any info

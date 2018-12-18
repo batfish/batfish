@@ -93,6 +93,7 @@ aaa group server tacacs+ authservers
  !
  server-private 2.3.4.5 port 49
  !
+ server-private 1.2.3.4 auth-port 1812 acct-port 1813 key 7 KKKKAAA
 !
 aaa new-model
 no aaa new-model

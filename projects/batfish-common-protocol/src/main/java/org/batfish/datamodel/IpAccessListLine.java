@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
@@ -55,8 +56,7 @@ public final class IpAccessListLine implements Serializable {
     }
   }
 
-  public static final IpAccessListLine ACCEPT_ALL =
-      accepting().setMatchCondition(TrueExpr.INSTANCE).build();
+  public static final IpAccessListLine ACCEPT_ALL = accepting("ACCEPT_ALL", TrueExpr.INSTANCE);
 
   private static final String PROP_ACTION = "action";
 
@@ -64,8 +64,7 @@ public final class IpAccessListLine implements Serializable {
 
   private static final String PROP_NAME = "name";
 
-  public static final IpAccessListLine REJECT_ALL =
-      rejecting().setMatchCondition(TrueExpr.INSTANCE).build();
+  public static final IpAccessListLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);
 
   private static final long serialVersionUID = 1L;
 
@@ -73,12 +72,25 @@ public final class IpAccessListLine implements Serializable {
     return new Builder().setAction(LineAction.PERMIT);
   }
 
+  /** Prefer {@link #accepting(String, AclLineMatchExpr)}. */
+  @VisibleForTesting
   public static IpAccessListLine accepting(AclLineMatchExpr expr) {
-    return new Builder().setAction(LineAction.PERMIT).setMatchCondition(expr).build();
+    return accepting().setMatchCondition(expr).build();
   }
 
+  public static IpAccessListLine accepting(@Nonnull String name, AclLineMatchExpr expr) {
+    return accepting().setMatchCondition(expr).setName(name).build();
+  }
+
+  /** Prefer {@link #acceptingHeaderSpace(String, HeaderSpace)}. */
+  @VisibleForTesting
   public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
-    return accepting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
+    return accepting(new MatchHeaderSpace(headerSpace));
+  }
+
+  public static IpAccessListLine acceptingHeaderSpace(
+      @Nonnull String name, HeaderSpace headerSpace) {
+    return accepting(name, new MatchHeaderSpace(headerSpace));
   }
 
   public static Builder builder() {
@@ -89,12 +101,24 @@ public final class IpAccessListLine implements Serializable {
     return new Builder().setAction(LineAction.DENY);
   }
 
+  /** Prefer {@link #rejecting(String, AclLineMatchExpr)}. */
+  @VisibleForTesting
   public static IpAccessListLine rejecting(AclLineMatchExpr expr) {
-    return new Builder().setAction(LineAction.DENY).setMatchCondition(expr).build();
+    return rejecting().setMatchCondition(expr).build();
   }
 
+  public static IpAccessListLine rejecting(String name, AclLineMatchExpr expr) {
+    return rejecting().setMatchCondition(expr).setName(name).build();
+  }
+
+  /** Prefer {@link #rejectingHeaderSpace(String, HeaderSpace)}. */
+  @VisibleForTesting
   public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {
-    return rejecting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
+    return rejecting(new MatchHeaderSpace(headerSpace));
+  }
+
+  public static IpAccessListLine rejectingHeaderSpace(String name, HeaderSpace headerSpace) {
+    return rejecting(name, new MatchHeaderSpace(headerSpace));
   }
 
   private final LineAction _action;

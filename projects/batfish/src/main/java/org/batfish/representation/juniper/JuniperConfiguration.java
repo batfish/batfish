@@ -2128,7 +2128,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
-    _masterLogicalSystem.getGlobalAddressBooks().putAll(ls.getGlobalAddressBooks());
+    _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());
     _masterLogicalSystem.getIkeGateways().clear();
     _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
     _masterLogicalSystem.getIkePolicies().clear();
@@ -2237,7 +2237,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Convert AddressBooks to IpSpaces
     _masterLogicalSystem
-        .getGlobalAddressBooks()
+        .getAddressBooks()
         .forEach(
             (name, addressBook) -> {
               Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
@@ -2341,6 +2341,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getCommunityLists().put(name, newCl);
     }
 
+    // convert interfaces. Before policies because some policies depend on interfaces
+    convertInterfaces();
+
     // convert policy-statements to RoutingPolicy objects
     for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
       String name = e.getKey();
@@ -2348,9 +2351,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingPolicy routingPolicy = toRoutingPolicy(ps);
       _c.getRoutingPolicies().put(name, routingPolicy);
     }
-
-    // convert interfaces
-    convertInterfaces();
 
     // set router-id
     if (_masterLogicalSystem.getDefaultRoutingInstance().getRouterId() == null) {

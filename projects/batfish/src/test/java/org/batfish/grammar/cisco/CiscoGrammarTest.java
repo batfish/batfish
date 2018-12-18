@@ -181,8 +181,10 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
@@ -625,6 +627,70 @@ public class CiscoGrammarTest {
     Configuration arubaConfig = parseConfig("arubaConfiguration");
 
     assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
+  }
+
+  @Test
+  public void testAsaAclObject() throws IOException {
+    String hostname = "asa-acl-object";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * The produced ACL should permit if source matcher object on1, destination matches on2, and
+     * service matches os1.
+     */
+    assertThat(
+        c,
+        hasIpAccessList(
+            "acl1",
+            hasLines(
+                hasItem(
+                    hasMatchCondition(
+                        isAndMatchExprThat(
+                            hasConjuncts(
+                                containsInAnyOrder(
+                                    ImmutableList.of(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                allOf(
+                                                    hasDstIps(
+                                                        isIpSpaceReferenceThat(hasName("on2"))),
+                                                    hasSrcIps(
+                                                        isIpSpaceReferenceThat(hasName("on1")))))),
+                                        isPermittedByAclThat(
+                                            hasAclName(
+                                                computeServiceObjectAclName("os1"))))))))))));
+
+    /*
+     * We expect only objects osunused1, onunused1 to have zero referrers
+     */
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "os1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "on1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "on2", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "osunused1", 0));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "onunused1", 0));
+
+    /*
+     * We expect undefined references only to objects osfake, onfake1, onfake2
+     */
+    assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT, "os1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "on1")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "on2")));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, SERVICE_OBJECT, "osfake", EXTENDED_ACCESS_LIST_SERVICE_OBJECT));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT, "onfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, NETWORK_OBJECT, "onfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
   }
 
   @Test

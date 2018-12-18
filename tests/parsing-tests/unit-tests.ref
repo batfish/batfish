@@ -616,6 +616,9 @@
         "juniper_routing_options" : [
           "configs/juniper_routing_options"
         ],
+        "juniper_routing_policy" : [
+          "configs/juniper_routing_policy"
+        ],
         "juniper_security" : [
           "configs/juniper_security"
         ],
@@ -1007,6 +1010,7 @@
         "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
+        "configs/juniper_routing_policy" : "PASSED",
         "configs/juniper_security" : "PASSED",
         "configs/juniper_snmp" : "PASSED",
         "configs/juniper_syslog" : "PASSED",
@@ -13655,13 +13659,25 @@
             "          SERVER_PRIVATE:'server-private'",
             "          IP_ADDRESS:'1.2.3.4'",
             "          PORT:'port'",
-            "          DEC:'49'",
+            "          prt = DEC:'49'",
             "          NEWLINE:'\\n')",
             "        (aaa_group_server_private",
             "          SERVER_PRIVATE:'server-private'",
             "          IP_ADDRESS:'2.3.4.5'",
             "          PORT:'port'",
-            "          DEC:'49'",
+            "          prt = DEC:'49'",
+            "          NEWLINE:'\\n')",
+            "        (aaa_group_server_private",
+            "          SERVER_PRIVATE:'server-private'",
+            "          IP_ADDRESS:'1.2.3.4'",
+            "          AUTH_PORT:'auth-port'",
+            "          auth_port = DEC:'1812'",
+            "          ACCT_PORT:'acct-port'",
+            "          acct_port = DEC:'1813'",
+            "          KEY:'key'",
+            "          DEC:'7'",
+            "          (variable_secret",
+            "            VARIABLE:'KKKKAAA')",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_aaa",
@@ -21271,6 +21287,28 @@
             "            RP_VARIABLE:'$i5Rkls3LoyxzS8t9'))",
             "        NEWLINE:'\\n')))",
             "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'",
+            "      (enable_password",
+            "        PASSWORD:'password'",
+            "        (ep_cisco_encryption",
+            "          pass = (variable_secret",
+            "            VARIABLE:'pswd3')",
+            "          LEVEL:'level'",
+            "          level = DEC:'1'",
+            "          ENCRYPTED:'encrypted')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'",
+            "      (enable_password",
+            "        PASSWORD:'password'",
+            "        (ep_cisco_encryption",
+            "          pass = (variable_secret",
+            "            VARIABLE:'pswd4')",
+            "          PBKDF2:'pbkdf2')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
             "    (s_no_enable",
             "      NO:'no'",
             "      ENABLE:'enable'",
@@ -23199,6 +23237,17 @@
             "          VARIABLE:'exclusive'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
+            "        (if_routing_dynamic",
+            "          ROUTING:'routing'",
+            "          DYNAMIC:'dynamic'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_routing_dynamic",
+            "          NO:'no'",
+            "          ROUTING:'routing'",
+            "          DYNAMIC:'dynamic'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_service_instance",
             "          SERVICE:'service'",
             "          INSTANCE:'instance'",
@@ -23945,6 +23994,17 @@
             "        (if_no_nameif",
             "          NO:'no'",
             "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_interface",
@@ -26970,6 +27030,50 @@
             "    (s_logging",
             "      LOGGING:'logging'",
             "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          CLUSTER_ID:'cluster-id'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          CONTEXT_NAME:'context-name'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          HOSTNAME:'hostname'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          IPADDRESS:'ipaddress'",
+            "          (variable",
+            "            INSIDE:'inside')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_device_id",
+            "          DEVICE_ID:'device-id'",
+            "          STRING:'string'",
+            "          (variable",
+            "            VARIABLE:'ident_string')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
             "        (logging_null",
             "          DISCRIMINATOR:'discriminator'",
             "          (null_rest_of_line",
@@ -27247,6 +27351,46 @@
             "    (s_logging",
             "      LOGGING:'logging'",
             "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1222444'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1233334'",
+            "          LEVEL:'level'",
+            "          level = (variable",
+            "            DEC:'1')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1233334'",
+            "          STANDBY:'standby'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_message",
+            "          MESSAGE:'message'",
+            "          syslog_id = DEC:'1111234'",
+            "          LEVEL:'level'",
+            "          level = (variable",
+            "            EMERGENCIES:'emergencies')",
+            "          STANDBY:'standby'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
             "        (logging_null",
             "          MONITOR:'monitor'",
             "          (null_rest_of_line",
@@ -27338,6 +27482,14 @@
             "          PERMIT_HOSTDOWN:'permit-hostdown'",
             "          (null_rest_of_line",
             "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'",
+            "      (logging_common",
+            "        (logging_queue",
+            "          QUEUE:'queue'",
+            "          size = DEC:'0'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_logging",
             "      LOGGING:'logging'",
@@ -29461,74 +29613,6 @@
             "          (null_rest_of_line",
             "            VARIABLE:'nocheck'",
             "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'abc')",
-            "      NEWLINE:'\\n'",
-            "      (u",
-            "        (u_role",
-            "          GROUP:'group'",
-            "          role = (variable",
-            "            VARIABLE:'def')))",
-            "      NEWLINE:'\\n'",
-            "      (u",
-            "        (u_password",
-            "          SECRET:'secret'",
-            "          (up_arista_md5",
-            "            DEC:'5'",
-            "            pass = MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_username_attributes",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'rancid')",
-            "      ATTRIBUTES:'attributes'",
-            "      NEWLINE:'\\n'",
-            "      (ua_null",
-            "        VPN_GROUP_POLICY:'vpn-group-policy'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'GroupPolicy_NOC-VPN'",
-            "          NEWLINE:'\\n'))",
-            "      (ua_null",
-            "        GROUP_LOCK:'group-lock'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'value'",
-            "          VARIABLE:'NOC-VPN'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'bob1')",
-            "      (u",
-            "        (u_password",
-            "          PASSWORD:'password'",
-            "          (up_cisco",
-            "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              DEC:'1234'))))",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_username",
-            "      USERNAME:'username'",
-            "      user = (variable",
-            "        VARIABLE:'bob2')",
-            "      (u",
-            "        (u_privilege",
-            "          PRIVILEGE:'privilege'",
-            "          privilege = (variable",
-            "            DEC:'1')))",
-            "      (u",
-            "        (u_password",
-            "          PASSWORD:'password'",
-            "          (up_cisco",
-            "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              DEC:'1234'))))",
-            "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -36017,8 +36101,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'5'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'SOMEPASSWORD1'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'SOMEPASSWORD1')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -36043,8 +36128,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'0'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'demo'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'demo')))))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -36056,8 +36142,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'5'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'SOMEPASSWORD2'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'SOMEPASSWORD2')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -36107,6 +36194,186 @@
             "            DEC:'5'",
             "            pass = MD5_ARISTA:'$1$pdQG$60trnJU5CpHjXSffvKXzd.')))",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'blah')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'user2')",
+            "      (u",
+            "        (u_password",
+            "          NOPASSWORD:'nopassword'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD1')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user2')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD2')",
+            "              ENCRYPTED:'encrypted'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user3')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD3')",
+            "              MSCHAP:'mschap'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user4')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD4')",
+            "              NT_ENCRYPTED:'nt-encrypted'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user5')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD5')",
+            "              PBKDF2:'pbkdf2'))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'asa-user1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'PASSWORD6')",
+            "              ENCRYPTED:'encrypted'))))",
+            "      (u",
+            "        (u_privilege",
+            "          PRIVILEGE:'privilege'",
+            "          privilege = (variable",
+            "            DEC:'0')))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'abc')",
+            "      NEWLINE:'\\n'",
+            "      (u",
+            "        (u_role",
+            "          GROUP:'group'",
+            "          role = (variable",
+            "            VARIABLE:'def')))",
+            "      NEWLINE:'\\n'",
+            "      (u",
+            "        (u_password",
+            "          SECRET:'secret'",
+            "          (up_arista_md5",
+            "            DEC:'5'",
+            "            pass = MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username_attributes",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'rancid')",
+            "      ATTRIBUTES:'attributes'",
+            "      NEWLINE:'\\n'",
+            "      (ua_null",
+            "        VPN_GROUP_POLICY:'vpn-group-policy'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'GroupPolicy_NOC-VPN'",
+            "          NEWLINE:'\\n'))",
+            "      (ua_null",
+            "        GROUP_LOCK:'group-lock'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'value'",
+            "          VARIABLE:'NOC-VPN'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'bob1')",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            DEC:'1'",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                DEC:'1234')))))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_username",
+            "      USERNAME:'username'",
+            "      user = (variable",
+            "        VARIABLE:'bob2')",
+            "      (u",
+            "        (u_privilege",
+            "          PRIVILEGE:'privilege'",
+            "          privilege = (variable",
+            "            DEC:'1')))",
+            "      (u",
+            "        (u_password",
+            "          PASSWORD:'password'",
+            "          (up_cisco",
+            "            DEC:'1'",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                DEC:'1234')))))",
+            "      NEWLINE:'\\n\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -36139,8 +36406,9 @@
             "          PASSWORD:'password'",
             "          (up_cisco",
             "            DEC:'1'",
-            "            pass = (variable_secret",
-            "              VARIABLE:'blah'))))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                VARIABLE:'blah')))))",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -36411,6 +36679,10 @@
             "        (null_rest_of_line",
             "          VARIABLE:'ve'",
             "          DEC:'396'",
+            "          NEWLINE:'\\n'))",
+            "      (vlan_null",
+            "        SHUTDOWN:'shutdown'",
+            "        (null_rest_of_line",
             "          NEWLINE:'\\n'))",
             "      (vlan_null",
             "        NO:'no'",
@@ -43661,7 +43933,7 @@
             "                DESCRIPTION:'description'",
             "                (null_filler",
             "                  M_Description_DESCRIPTION:'APP-description'  <== mode:M_Description)))))))",
-            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "    NEWLINE:'\\n\\n'  <== mode:M_Description)",
             "  EOF:<EOF>)"
           ]
         },
@@ -45918,6 +46190,58 @@
             "                        IP_SOURCE_ADDRESS:'ip-source-address'",
             "                        (fftfa_address_mask_prefix",
             "                          IP_PREFIX:'2.4.6.9/32')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'blorp')",
+            "                    (fft_from",
+            "                      FROM:'from'",
+            "                      (fftf_icmp_type",
+            "                        ICMP_TYPE:'icmp-type'",
+            "                        (icmp_type",
+            "                          DEC:'1')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'blorp')",
+            "                    (fft_from",
+            "                      FROM:'from'",
+            "                      (fftf_icmp_code",
+            "                        ICMP_CODE:'icmp-code'",
+            "                        (icmp_code",
+            "                          DEC:'2')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -49898,6 +50222,164 @@
             "  EOF:<EOF>)"
           ]
         },
+        "juniper_routing_policy" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'juniper_routing_policy'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.1.1.1/24'",
+            "                        (ifia_primary",
+            "                          PRIMARY:'primary')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'2.2.2.2/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM1')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_interface",
+            "                      INTERFACE:'interface'",
+            "                      id = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'0'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM1')",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'",
+            "                    (popst_common",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM2')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_interface",
+            "                      INTERFACE:'interface'",
+            "                      id = (interface_id",
+            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        PERIOD:'.'",
+            "                        unit = DEC:'99'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM2')",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'",
+            "                    (popst_common",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "juniper_security" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -49922,7 +50404,8 @@
             "            SECURITY:'security'",
             "            (se_address_book",
             "              ADDRESS_BOOK:'address-book'",
-            "              GLOBAL:'global'",
+            "              name = (variable",
+            "                text = GLOBAL:'global')",
             "              (sead_address",
             "                ADDRESS:'address'",
             "                name = (variable",
@@ -49940,7 +50423,28 @@
             "            SECURITY:'security'",
             "            (se_address_book",
             "              ADDRESS_BOOK:'address-book'",
-            "              GLOBAL:'global'",
+            "              name = (variable",
+            "                text = GLOBAL:'global')",
+            "              (sead_address_set",
+            "                ADDRESS_SET:'address-set'",
+            "                name = (variable",
+            "                  text = VARIABLE:'ASET')",
+            "                (seada_description",
+            "                  DESCRIPTION:'description'",
+            "                  (null_filler",
+            "                    M_Description_DESCRIPTION:'\"ASET description\"'  <== mode:M_Description))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_address_book",
+            "              ADDRESS_BOOK:'address-book'",
+            "              name = (variable",
+            "                text = VARIABLE:'notglobal')",
             "              (sead_address_set",
             "                ADDRESS_SET:'address-set'",
             "                name = (variable",
@@ -51532,6 +52036,23 @@
             "                SOURCE_ADDRESS:'source-address'",
             "                (null_filler",
             "                  IP_ADDRESS:'5.6.7.8')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_syslog",
+            "              SYSLOG:'syslog'",
+            "              (sys_host",
+            "                HOST:'host'",
+            "                hostname = (variable",
+            "                  text = IP_ADDRESS:'1.2.3.4')",
+            "                (sysh_null",
+            "                  ALLOW_DUPLICATES:'allow-duplicates'",
+            "                  (null_filler))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -60938,7 +61459,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 277,
+              "Line" : 279,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -61432,6 +61953,271 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "convertStatus" : {
+        "aaa_accounting" : "PASSED",
+        "aaa_authentication_login_default_tacacs_local" : "PASSED",
+        "aaa_group_server_source_interface" : "PASSED",
+        "access_list" : "PASSED",
+        "address_family" : "WARNINGS",
+        "aggaddress" : "PASSED",
+        "arista-event-handler" : "PASSED",
+        "arista_acl" : "PASSED",
+        "arista_bgp" : "PASSED",
+        "arista_dhcp_relay" : "PASSED",
+        "arista_interface" : "PASSED",
+        "arista_ip_route" : "PASSED",
+        "arista_logging" : "PASSED",
+        "arista_misc" : "PASSED",
+        "arista_ospf" : "WARNINGS",
+        "arista_queue_monitor" : "PASSED",
+        "arista_username" : "PASSED",
+        "arista_vrf" : "PASSED",
+        "aruba_aaa" : "PASSED",
+        "aruba_acl" : "PASSED",
+        "aruba_airgroup" : "PASSED",
+        "aruba_crypto" : "PASSED",
+        "aruba_dhcp" : "PASSED",
+        "aruba_interface" : "PASSED",
+        "aruba_logging" : "PASSED",
+        "aruba_misc" : "PASSED",
+        "aruba_net" : "PASSED",
+        "aruba_snmp" : "PASSED",
+        "aruba_time_range" : "PASSED",
+        "aruba_user_role" : "PASSED",
+        "aruba_vlan" : "PASSED",
+        "aruba_voice" : "PASSED",
+        "aruba_vpn" : "PASSED",
+        "as_path_prepend" : "PASSED",
+        "asa_acl" : "PASSED",
+        "asa_banner" : "PASSED",
+        "asa_interface" : "PASSED",
+        "asa_object_groups" : "PASSED",
+        "asa_ospf" : "PASSED",
+        "asa_ssh" : "PASSED",
+        "aws_configs" : "WARNINGS",
+        "banner" : "PASSED",
+        "banner_dos" : "PASSED",
+        "bgp-allow" : "PASSED",
+        "bgp-enforce-first-as" : "WARNINGS",
+        "bgp_address_family" : "WARNINGS",
+        "bgp_default_originate_policy" : "PASSED",
+        "bgp_foundry" : "PASSED",
+        "bgp_nsr" : "PASSED",
+        "bgp_route_policy" : "WARNINGS",
+        "cadant_acl" : "PASSED",
+        "cadant_banner" : "PASSED",
+        "cadant_bgp" : "PASSED",
+        "cadant_cable" : "PASSED",
+        "cadant_interface" : "PASSED",
+        "cadant_ip_route" : "PASSED",
+        "cadant_isis" : "PASSED",
+        "cadant_line" : "PASSED",
+        "cadant_logging" : "PASSED",
+        "cadant_misc" : "PASSED",
+        "cadant_prefix_list" : "PASSED",
+        "cadant_qos" : "PASSED",
+        "cadant_rip" : "PASSED",
+        "cadant_route_map" : "PASSED",
+        "cadant_snmp" : "PASSED",
+        "cisco-zone" : "PASSED",
+        "cisco_aaa" : "PASSED",
+        "cisco_acl" : "PASSED",
+        "cisco_additional_paths" : "PASSED",
+        "cisco_authentication" : "PASSED",
+        "cisco_bgp" : "WARNINGS",
+        "cisco_bgp_confederation" : "PASSED",
+        "cisco_cable" : "PASSED",
+        "cisco_callhome" : "PASSED",
+        "cisco_control_plane" : "PASSED",
+        "cisco_controller" : "PASSED",
+        "cisco_crypto" : "WARNINGS",
+        "cisco_dhcp" : "PASSED",
+        "cisco_domain" : "PASSED",
+        "cisco_dot11" : "PASSED",
+        "cisco_dot1x" : "PASSED",
+        "cisco_dspfarm" : "PASSED",
+        "cisco_dynamic_access_policy_record" : "PASSED",
+        "cisco_eigrp" : "WARNINGS",
+        "cisco_enable" : "PASSED",
+        "cisco_flow" : "PASSED",
+        "cisco_hardware" : "PASSED",
+        "cisco_hsrp" : "PASSED",
+        "cisco_interface" : "WARNINGS",
+        "cisco_ios_neighbor" : "PASSED",
+        "cisco_ip" : "PASSED",
+        "cisco_ip_nat" : "PASSED",
+        "cisco_ip_route" : "PASSED",
+        "cisco_ipsla" : "PASSED",
+        "cisco_ipv6" : "PASSED",
+        "cisco_ipv6_access_list" : "PASSED",
+        "cisco_isis" : "PASSED",
+        "cisco_l2tp" : "PASSED",
+        "cisco_line" : "PASSED",
+        "cisco_logging" : "PASSED",
+        "cisco_mac_acl" : "PASSED",
+        "cisco_misc" : "PASSED",
+        "cisco_monitor" : "PASSED",
+        "cisco_mpls" : "PASSED",
+        "cisco_multicast" : "PASSED",
+        "cisco_ntp" : "PASSED",
+        "cisco_nxos" : "PASSED",
+        "cisco_nxos_bgp" : "WARNINGS",
+        "cisco_ospf" : "PASSED",
+        "cisco_pim" : "PASSED",
+        "cisco_platform" : "PASSED",
+        "cisco_privilege" : "PASSED",
+        "cisco_qos" : "PASSED",
+        "cisco_queue_monitor" : "PASSED",
+        "cisco_redundancy" : "PASSED",
+        "cisco_rip" : "PASSED",
+        "cisco_role" : "PASSED",
+        "cisco_route_map" : "PASSED",
+        "cisco_sccp" : "PASSED",
+        "cisco_snmp" : "PASSED",
+        "cisco_spanning_tree" : "PASSED",
+        "cisco_ssh" : "PASSED",
+        "cisco_stcapp" : "PASSED",
+        "cisco_style_acl1" : "PASSED",
+        "cisco_style_acl2" : "PASSED",
+        "cisco_system" : "PASSED",
+        "cisco_tacacs" : "PASSED",
+        "cisco_track" : "PASSED",
+        "cisco_username" : "PASSED",
+        "cisco_username_without_password" : "PASSED",
+        "cisco_vdc" : "PASSED",
+        "cisco_vlan" : "PASSED",
+        "cisco_voice" : "PASSED",
+        "cisco_vpdn" : "PASSED",
+        "cisco_vpn" : "PASSED",
+        "cisco_vrf" : "PASSED",
+        "cisco_vrrp" : "PASSED",
+        "cisco_webvpn" : "PASSED",
+        "cisco_wsma" : "PASSED",
+        "colon_in_vrf" : "PASSED",
+        "commset" : "PASSED",
+        "community-name-numbers" : "PASSED",
+        "community-name-numbers_dos" : "PASSED",
+        "community_list_named" : "PASSED",
+        "community_set" : "PASSED",
+        "foundry_access_list" : "PASSED",
+        "foundry_bgp" : "PASSED",
+        "foundry_interface" : "PASSED",
+        "foundry_misc" : "PASSED",
+        "foundry_vlan_group" : "PASSED",
+        "host1" : "PASSED",
+        "host2" : "PASSED",
+        "if_tag_is" : "PASSED",
+        "interface-reth" : "PASSED",
+        "interface_exit" : "PASSED",
+        "interface_name" : "PASSED",
+        "interface_sdr" : "PASSED",
+        "ios_bfd" : "PASSED",
+        "ios_bgp" : "PASSED",
+        "ios_interface" : "PASSED",
+        "ios_standby" : "PASSED",
+        "ios_template" : "PASSED",
+        "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
+        "ios_xr_bgp_neighbor_group" : "WARNINGS",
+        "ios_xr_class_map" : "PASSED",
+        "ios_xr_isis" : "WARNINGS",
+        "ios_xr_logging" : "PASSED",
+        "ios_xr_misc" : "PASSED",
+        "ios_xr_multipart" : "PASSED",
+        "ios_xr_ntp" : "PASSED",
+        "ios_xr_ospf" : "PASSED",
+        "ios_xr_router_static" : "PASSED",
+        "ios_xr_ssh" : "PASSED",
+        "ios_xr_taskgroup" : "PASSED",
+        "iosxrmulticast" : "PASSED",
+        "ip_prefix_list_single_line" : "PASSED",
+        "isr_crypto_gdoi" : "PASSED",
+        "isr_voip" : "PASSED",
+        "juniper-ospf" : "WARNINGS",
+        "juniper-tcpflags" : "WARNINGS",
+        "juniper_application" : "PASSED",
+        "juniper_apply_macro" : "PASSED",
+        "juniper_as_path_group" : "PASSED",
+        "juniper_bgp" : "WARNINGS",
+        "juniper_bgp_authentication" : "WARNINGS",
+        "juniper_bgp_remove_private_as" : "WARNINGS",
+        "juniper_extended_community" : "PASSED",
+        "juniper_firewall" : "WARNINGS",
+        "juniper_forwarding_options" : "PASSED",
+        "juniper_interfaces" : "PASSED",
+        "juniper_isis" : "PASSED",
+        "juniper_l2_learning" : "PASSED",
+        "juniper_misc" : "PASSED",
+        "juniper_nat" : "WARNINGS",
+        "juniper_ntp" : "PASSED",
+        "juniper_ospf_stub_areas" : "WARNINGS",
+        "juniper_passwords" : "PASSED",
+        "juniper_policy_statement" : "PASSED",
+        "juniper_relay" : "PASSED",
+        "juniper_route_filter" : "PASSED",
+        "juniper_routing_options" : "PASSED",
+        "juniper_routing_policy" : "PASSED",
+        "juniper_security" : "WARNINGS",
+        "juniper_snmp" : "PASSED",
+        "juniper_syslog" : "PASSED",
+        "juniper_system" : "PASSED",
+        "juniper_tacplus" : "PASSED",
+        "juniper_vlan" : "PASSED",
+        "l2vpn" : "PASSED",
+        "local_v6_addr" : "PASSED",
+        "mac_access_list" : "PASSED",
+        "mcastrouting" : "PASSED",
+        "mos_interface" : "PASSED",
+        "mos_misc" : "PASSED",
+        "msdp_originator_id" : "PASSED",
+        "named_and_numbered_lists" : "PASSED",
+        "neighbor_mix" : "WARNINGS",
+        "neighbor_nxos" : "WARNINGS",
+        "network6" : "PASSED",
+        "nexus" : "PASSED",
+        "nexus_bgp" : "WARNINGS",
+        "nexus_ntp" : "PASSED",
+        "nexus_ssh" : "PASSED",
+        "no_aaa_group_server" : "PASSED",
+        "no_ip_name_server" : "PASSED",
+        "no_mask_reply" : "PASSED",
+        "no_snmp_server" : "PASSED",
+        "non_nexus_neighbor_af" : "WARNINGS",
+        "nxos_acl" : "PASSED",
+        "nxos_bgp" : "WARNINGS",
+        "nxos_interface" : "PASSED",
+        "nxos_misc" : "PASSED",
+        "nxos_ospf" : "PASSED",
+        "nxos_route_map_continue" : "PASSED",
+        "nxos_system" : "PASSED",
+        "openflow" : "PASSED",
+        "peer_template" : "WARNINGS",
+        "pim" : "PASSED",
+        "pim_snooping" : "PASSED",
+        "prefix_list_ipv4" : "PASSED",
+        "preset" : "PASSED",
+        "route_maps_in_two_address_families" : "WARNINGS",
+        "route_policy_as_path_set" : "PASSED",
+        "route_policy_igp_cost" : "PASSED",
+        "route_policy_metric_type" : "PASSED",
+        "route_policy_param" : "PASSED",
+        "router_msdp" : "PASSED",
+        "rp" : "PASSED",
+        "set_inline_community" : "PASSED",
+        "statistics" : "PASSED",
+        "switchport_range" : "PASSED",
+        "syslog_source_interface" : "PASSED",
+        "taskgroup" : "PASSED",
+        "tcpflags" : "PASSED",
+        "test" : "PASSED",
+        "underscore_variable" : "PASSED",
+        "variables" : "PASSED",
+        "variables_dos" : "PASSED",
+        "vlan_access_map4" : "PASSED",
+        "vmx4" : "WARNINGS",
+        "vrf_context" : "PASSED",
+        "vxlan" : "PASSED"
+      },
       "definedStructures" : {
         "configs/aaa_accounting" : { },
         "configs/aaa_authentication_login_default_tacacs_local" : { },
@@ -62566,25 +63352,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                294
+                296
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                296
+                298
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                298
+                300
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                300
+                302
               ],
               "numReferrers" : 1
             },
@@ -62875,121 +63661,125 @@
                 289,
                 290,
                 291,
-                292
+                292,
+                293,
+                294
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                302
+                304
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                340,
-                341
+                344,
+                345
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                304,
-                305,
                 306,
                 307,
-                308
+                308,
+                309,
+                310
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                310,
-                311
+                312,
+                313,
+                314,
+                315
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                313
+                317
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                315
+                319
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                324
+                328
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                330
+                334
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                332
+                336
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                319
+                323
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                334
+                338
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                326
+                330
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                328
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                336
+                340
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                321
+                325
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                338
+                342
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                305
+                307
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                317
+                321
               ],
               "numReferrers" : 1
             }
@@ -64956,7 +65746,7 @@
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : [
-                34
+                38
               ],
               "numReferrers" : 0
             },
@@ -64984,15 +65774,17 @@
                 24,
                 25,
                 26,
-                27
+                27,
+                30,
+                31
               ],
               "numReferrers" : 0
             },
             "blah6" : {
               "definitionLines" : [
-                29,
-                30,
-                31
+                33,
+                34,
+                35
               ],
               "numReferrers" : 0
             },
@@ -65341,11 +66133,40 @@
           }
         },
         "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 2
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "policy-statement" : {
+            "POLICY-NAME" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_security" : {
           "ike policy" : {
             "1.2.3.4" : {
               "definitionLines" : [
-                9
+                12
               ],
               "numReferrers" : 0
             }
@@ -65353,7 +66174,7 @@
           "ike proposal" : {
             "PROPOSAL" : {
               "definitionLines" : [
-                8
+                11
               ],
               "numReferrers" : 1
             }
@@ -66897,27 +67718,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                294
+                296
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                296
+                298
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                280
+                282
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                298
+                300
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                300
+                302
               ]
             },
             "Ethernet0" : {
@@ -66925,102 +67746,102 @@
                 7
               ],
               "tunnel source" : [
-                281
+                283
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                302
+                304
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                340
+                344
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                304
+                306
               ]
             },
             "Loopback0" : {
               "interface" : [
-                310
+                312
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                313
+                317
               ]
             },
             "Null0" : {
               "interface" : [
-                315
+                319
               ]
             },
             "Vlan1" : {
               "interface" : [
-                324
+                328
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                330
+                334
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                332
+                336
               ]
             },
             "Vlan111" : {
               "interface" : [
-                319
+                323
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                334
+                338
               ]
             },
             "Vlan2" : {
               "interface" : [
-                326
+                330
               ]
             },
             "Vlan3" : {
               "interface" : [
-                328
+                332
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                336
+                340
               ]
             },
             "Vxlan1" : {
               "interface" : [
-                321
+                325
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                338
+                342
               ]
             },
             "dynamic" : {
               "tunnel source" : [
-                282
+                284
               ]
             },
             "inside" : {
               "interface" : [
-                305
+                307
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                317
+                321
               ]
             }
           },
@@ -67095,7 +67916,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                292
+                294
               ]
             }
           }
@@ -68651,11 +69472,35 @@
             }
           }
         },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4,
+                5
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4,
+                5
+              ],
+              "policy-statement from interface" : [
+                7
+              ]
+            },
+            "ge-0/0/0.99" : {
+              "policy-statement from interface" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_security" : {
           "ike proposal" : {
             "PROPOSAL" : {
               "ike policy ike proposal" : [
-                9
+                12
               ]
             }
           }
@@ -69609,7 +70454,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                292
+                294
               ]
             }
           }
@@ -70512,6 +71357,15 @@
             }
           }
         },
+        "configs/juniper_routing_policy" : {
+          "interface" : {
+            "ge-0/0/0.99" : {
+              "policy-statement from interface" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_snmp" : {
           "prefix-list" : {
             "bippetyboo" : {
@@ -71338,6 +72192,7 @@
         "configs/juniper_reth_interfaces" : "PASSED",
         "configs/juniper_route_filter" : "PASSED",
         "configs/juniper_routing_options" : "PASSED",
+        "configs/juniper_routing_policy" : "PASSED",
         "configs/juniper_security" : "PASSED",
         "configs/juniper_snmp" : "PASSED",
         "configs/juniper_syslog" : "PASSED",

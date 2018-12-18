@@ -201,6 +201,8 @@ interface Ethernet0
  queue-monitor length thresholds 12 1
  redundancy rii 1
  redundancy group 1 ip 1.2.3.4 exclusive
+ routing dynamic
+ no routing dynamic
  service instance 1 ethernet
   bridge-domain 710
   encapsulation default
@@ -309,6 +311,8 @@ interface GigabitEthernet0/0
 !
 interface Loopback0
  no nameif
+ no security-level
+ no ip address
 !
 interface Modular-Cable1/2/3:4
 !
