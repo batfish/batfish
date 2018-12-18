@@ -76,14 +76,15 @@ for testdir in aws basic java-smt jsonpath-addons jsonpathtotable parsing-errors
 EOF
 done
 
-### Block
+### Trigger docker tests
 cat <<EOF
   - wait
-  - command: "buildkite-agent pipeline upload .buildkite/example_block.yml"
+  - label: "Trigger batfish-docker build"
+    trigger: "batfish-docker"
+    branches: "master"
 EOF
 
 ### Branches
 cat <<EOF
-branches: "master"
+branches: "*"
 EOF
-

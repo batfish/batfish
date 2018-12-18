@@ -1,4 +1,0 @@
-steps:
-  - block: "Example block"
-  - command: "echo 'Success!'"
-
