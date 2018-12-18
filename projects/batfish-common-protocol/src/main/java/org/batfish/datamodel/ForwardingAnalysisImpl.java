@@ -994,7 +994,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         .getAllAddresses()
                                         .stream()
                                         .map(InterfaceAddress::getPrefix)
-                                        .map(Prefix::toIpSpace)
+                                        .map(Prefix::toHostIpSpace)
                                         .collect(ImmutableList.toImmutableList())),
                                 EmptyIpSpace.INSTANCE))));
   }
