@@ -26,11 +26,6 @@ public class MockIpSpace extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
   public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
