@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.Ip;
 
 /**
  * Contains the non-key attributes of {@link org.batfish.datamodel.BgpRoute}s and {@link
@@ -21,6 +20,8 @@ import org.batfish.datamodel.Ip;
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
+  @Nullable private final String _nextHop;
+
   @Nullable private final AsPath _asPath;
 
   @Nullable private final Integer _adminDistance;
@@ -31,18 +32,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final Long _metric;
 
-  @Nullable private final String _nextHop;
-
-  @Nonnull private final Ip _nextHopIp;
-
   @Nullable private final String _originProtocol;
-
-  @Nullable private final String _protocol;
 
   @Nullable private final Integer _tag;
 
   private RouteRowAttribute(
-      @Nonnull Ip nextHopIp,
       String nextHop,
       Integer adminDistance,
       Long metric,
@@ -50,9 +44,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long localPreference,
       List<String> communities,
       String originalProtocol,
-      String protocol,
       Integer tag) {
-    _nextHopIp = nextHopIp;
     _nextHop = nextHop;
     _adminDistance = adminDistance;
     _metric = metric;
@@ -60,18 +52,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _localPreference = localPreference;
     _communities = firstNonNull(communities, ImmutableList.of());
     _originProtocol = originalProtocol;
-    _protocol = protocol;
     _tag = tag;
-  }
-
-  @Nonnull
-  public Ip getNextHopIp() {
-    return _nextHopIp;
-  }
-
-  @Nullable
-  public String getNextHop() {
-    return _nextHop;
   }
 
   @Nullable
@@ -100,13 +81,13 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
-  public String getOriginProtocol() {
-    return _originProtocol;
+  public String getNextHop() {
+    return _nextHop;
   }
 
   @Nullable
-  public String getProtocol() {
-    return _protocol;
+  public String getOriginProtocol() {
+    return _originProtocol;
   }
 
   @Nullable
@@ -119,9 +100,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
-      comparing(RouteRowAttribute::getNextHopIp, nullsLast(Ip::compareTo))
-          .thenComparing(RouteRowAttribute::getProtocol, nullsLast(String::compareTo))
-          .thenComparing(RouteRowAttribute::getNextHop, nullsLast(String::compareTo))
+      comparing(RouteRowAttribute::getNextHop, nullsLast(String::compareTo))
           .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Integer::compareTo))
           .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
@@ -146,22 +125,19 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return false;
     }
     RouteRowAttribute that = (RouteRowAttribute) o;
-    return Objects.equals(_nextHopIp, that._nextHopIp)
-        && Objects.equals(_nextHop, that._nextHop)
+    return Objects.equals(_nextHop, that._nextHop)
         && Objects.equals(_adminDistance, that._adminDistance)
         && Objects.equals(_metric, that._metric)
         && Objects.equals(_asPath, that._asPath)
         && Objects.equals(_localPreference, that._localPreference)
         && Objects.equals(_communities, that._communities)
         && Objects.equals(_originProtocol, that._originProtocol)
-        && Objects.equals(_protocol, that._protocol)
         && Objects.equals(_tag, that._tag);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _nextHopIp,
         _nextHop,
         _adminDistance,
         _metric,
@@ -169,13 +145,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _localPreference,
         _communities,
         _originProtocol,
-        _protocol,
         _tag);
   }
 
+  /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
-    @Nullable private Ip _nextHopIp;
-
     @Nullable private String _nextHop;
 
     @Nullable private Integer _adminDistance;
@@ -190,17 +164,13 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     @Nullable private String _originProtocol;
 
-    @Nullable private String _protocol;
-
     @Nullable private Integer _tag;
 
     public RouteRowAttribute build() {
-      _nextHopIp = firstNonNull(_nextHopIp, Ip.AUTO);
       if (_tag != null && _tag == AbstractRoute.NO_TAG) {
         _tag = null;
       }
       return new RouteRowAttribute(
-          _nextHopIp,
           _nextHop,
           _adminDistance,
           _metric,
@@ -208,18 +178,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _localPreference,
           _communities,
           _originProtocol,
-          _protocol,
           _tag);
-    }
-
-    public Builder setNextHopIp(@Nonnull Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
-      return this;
-    }
-
-    public Builder setNextHop(String nextHop) {
-      _nextHop = nextHop;
-      return this;
     }
 
     public Builder setAdminDistance(Integer adminDistance) {
@@ -252,8 +211,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setProtocol(String protocol) {
-      _protocol = protocol;
+    public Builder setNextHop(String nextHop) {
+      _nextHop = nextHop;
       return this;
     }
 
