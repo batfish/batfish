@@ -158,7 +158,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
 
-  @VisibleForTesting static final long DEFAULT_ISIS_COST = 10L;
+  @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
+
+  /** Maximum IS-IS route cost if wide-metrics-only is not set */
+  @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
@@ -616,12 +619,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(
-              interfaceSettings, interfaceSettings.getLevel1Settings(), defaultCost));
+              settings.getLevel1Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel1Settings(),
+              defaultCost));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
           toIsisInterfaceLevelSettings(
-              interfaceSettings, interfaceSettings.getLevel2Settings(), defaultCost));
+              settings.getLevel2Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel2Settings(),
+              defaultCost));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
@@ -633,15 +642,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+      IsisLevelSettings levelSettings,
       IsisInterfaceSettings interfaceSettings,
-      IsisInterfaceLevelSettings settings,
+      IsisInterfaceLevelSettings interfaceLevelSettings,
       long defaultCost) {
+    long cost = firstNonNull(interfaceLevelSettings.getMetric(), defaultCost);
+    if (!levelSettings.getWideMetricsOnly()) {
+      cost = Math.min(cost, MAX_ISIS_COST_WITHOUT_WIDE_METRICS);
+    }
     return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
-        .setCost(firstNonNull(settings.getMetric(), defaultCost))
-        .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
-        .setHelloAuthenticationType(settings.getHelloAuthenticationType())
-        .setHelloInterval(settings.getHelloInterval())
-        .setHoldTime(settings.getHoldTime())
+        .setCost(cost)
+        .setHelloAuthenticationKey(interfaceLevelSettings.getHelloAuthenticationKey())
+        .setHelloAuthenticationType(interfaceLevelSettings.getHelloAuthenticationType())
+        .setHelloInterval(interfaceLevelSettings.getHelloInterval())
+        .setHoldTime(interfaceLevelSettings.getHoldTime())
         .setMode(
             interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE)
         .build();
