@@ -14,7 +14,6 @@ steps:
       - ". .venv/bin/activate"
       - "pip install pytest"
       - "cd tests && pytest"
-
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
