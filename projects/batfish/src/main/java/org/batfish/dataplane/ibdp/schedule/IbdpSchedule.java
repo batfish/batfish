@@ -70,6 +70,7 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
    * Create a new schedule based on type and the set of all nodes in the network
    *
    * @param settings {@link IncrementalDataPlaneSettings}
+   * @param schedule {@link Schedule} to use
    * @param allNodes map of all nodes in the network
    * @param bgpTopology the bgp peering relationships
    * @return a new {@link IbdpSchedule}
@@ -77,9 +78,9 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
    */
   public static IbdpSchedule getSchedule(
       IncrementalDataPlaneSettings settings,
+      Schedule schedule,
       Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-    Schedule schedule = settings.getScheduleName();
     switch (schedule) {
       case ALL:
         return new MaxParallelSchedule(allNodes);
