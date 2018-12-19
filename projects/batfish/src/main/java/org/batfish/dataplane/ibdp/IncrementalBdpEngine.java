@@ -545,17 +545,17 @@ class IncrementalBdpEngine {
     Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
 
     AtomicBoolean dependentRoutesChanged = new AtomicBoolean(false);
+    Schedule currentSchedule = _settings.getScheduleName();
 
     // Go into iteration mode, until the routes converge (or oscillation is detected)
     do {
       _numIterations++;
 
-      AtomicBoolean currentChangedMonitor;
-      currentChangedMonitor = dependentRoutesChanged;
-      currentChangedMonitor.set(false);
+      dependentRoutesChanged.set(false);
 
       // Compute node schedule
-      IbdpSchedule schedule = IbdpSchedule.getSchedule(_settings, nodes, bgpTopology);
+      IbdpSchedule schedule =
+          IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, bgpTopology);
 
       // compute dependent routes for each allowable set of nodes until we cover all nodes
       while (schedule.hasNext()) {
@@ -586,11 +586,11 @@ class IncrementalBdpEngine {
         iterationsWithThisHashCode.add(_numIterations);
       } else {
         // If oscillation detected, switch to a more restrictive schedule
-        if (_settings.getScheduleName() != Schedule.NODE_SERIALIZED) {
+        if (currentSchedule != Schedule.NODE_SERIALIZED) {
           _bfLogger.debugf(
               "Switching to a more restrictive schedule %s, iteration %d\n",
               Schedule.NODE_SERIALIZED, _numIterations);
-          _settings.setScheduleName(Schedule.NODE_SERIALIZED);
+          currentSchedule = Schedule.NODE_SERIALIZED;
         } else {
           return true; // Found an oscillation
         }
