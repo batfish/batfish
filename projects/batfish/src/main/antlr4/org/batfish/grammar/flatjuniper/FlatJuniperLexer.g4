@@ -1030,6 +1030,11 @@ DOMAIN_SEARCH
    'domain-search'
 ;
 
+DROP_PATH_ATTRIBUTES
+:
+   'drop-path-attributes'
+;
+
 DSA_SIGNATURES
 :
    'dsa-signatures'
