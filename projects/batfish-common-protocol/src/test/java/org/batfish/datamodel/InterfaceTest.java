@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Interface.isRealInterfaceName;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -33,5 +35,16 @@ public class InterfaceTest {
 
     assertThat("Interface is blacklisted", i.getBlacklisted());
     assertThat("Interface is disabled", !i.getActive());
+  }
+
+  @Test
+  public void testRealInterafceName() {
+    assertThat(isRealInterfaceName("Ethernet0"), equalTo(true));
+    assertThat(isRealInterfaceName("ge-0/0/0"), equalTo(true));
+    assertThat(isRealInterfaceName("asdfasdf"), equalTo(true));
+    assertThat(isRealInterfaceName("null_interface"), equalTo(false));
+    assertThat(isRealInterfaceName("unset_local_interface"), equalTo(false));
+    assertThat(isRealInterfaceName("invalid_local_interface"), equalTo(false));
+    assertThat(isRealInterfaceName("dynamic"), equalTo(false));
   }
 }

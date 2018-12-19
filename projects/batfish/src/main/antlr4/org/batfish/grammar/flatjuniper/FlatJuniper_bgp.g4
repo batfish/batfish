@@ -75,6 +75,7 @@ b_common
    | b_damping
    | b_description
    | b_disable_4byte_as
+   | b_drop_path_attributes
    | b_enforce_first_as
    | b_export
    | b_family
@@ -106,6 +107,11 @@ b_description
 b_disable_4byte_as
 :
    DISABLE_4BYTE_AS
+;
+
+b_drop_path_attributes
+:
+   DROP_PATH_ATTRIBUTES attr = DEC
 ;
 
 b_enable

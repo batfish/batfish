@@ -55,6 +55,7 @@ public final class Tunnel implements Serializable {
     return _sourceAddress;
   }
 
+  @Nonnull
   public String getSourceInterfaceName() {
     return _sourceInterfaceName;
   }
@@ -75,7 +76,7 @@ public final class Tunnel implements Serializable {
     _protocol = protocol;
   }
 
-  public void setSourceAddress(Ip source) {
+  public void setSourceAddress(@Nullable Ip source) {
     _sourceAddress = source;
   }
 

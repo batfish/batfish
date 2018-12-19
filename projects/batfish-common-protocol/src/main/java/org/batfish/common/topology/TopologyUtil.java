@@ -10,6 +10,8 @@ import com.google.common.collect.Sets;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import com.google.common.graph.Graphs;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -457,12 +459,19 @@ public final class TopologyUtil {
    */
   public static Map<Ip, Set<String>> computeIpNodeOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return CommonUtil.toImmutableMap(
-        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
-        Entry::getKey, /* Ip */
-        ipInterfaceOwnersEntry ->
-            /* project away interfaces */
-            ipInterfaceOwnersEntry.getValue().keySet());
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyUtil.computeIpNodeOwners excludeInactive=" + excludeInactive)
+            .startActive()) {
+      assert span != null; // avoid unused warning
+
+      return CommonUtil.toImmutableMap(
+          computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
+          Entry::getKey, /* Ip */
+          ipInterfaceOwnersEntry ->
+              /* project away interfaces */
+              ipInterfaceOwnersEntry.getValue().keySet());
+    }
   }
 
   /**

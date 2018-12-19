@@ -95,7 +95,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
       return UniverseIpSpace.INSTANCE;
     }
 
-    return AclIpSpace.builder().setLines(simplifiedLines).build();
+    return AclIpSpace.of(simplifiedLines);
   }
 
   @Override
