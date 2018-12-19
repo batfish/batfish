@@ -14,6 +14,8 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcPort;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.MATCH_LINE_RENAMER;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.NEGATED_RENAMER;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toDenyAcl;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toMatchLineAcl;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
@@ -40,7 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
@@ -207,11 +209,13 @@ public final class SearchFiltersTest {
             .setAction("permit")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
-    String queryConfig = queryAcls.get(0).getFirst();
-    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    String queryConfig = queryAcls.get(0).getLeft();
+    String queryAclName = queryAcls.get(0).getMiddle();
+    IpAccessList queryAcl = queryAcls.get(0).getRight();
     assertThat(queryConfig, equalTo(_config.getHostname()));
+    assertThat(queryAclName, equalTo(ACL.getName()));
     assertThat(queryAcl, is(ACL));
   }
 
@@ -220,11 +224,14 @@ public final class SearchFiltersTest {
     SearchFiltersQuestion question =
         SearchFiltersQuestion.builder().setFilterSpecifier(ACL.getName()).setAction("deny").build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
-    String queryConfig = queryAcls.get(0).getFirst();
-    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    String queryConfig = queryAcls.get(0).getLeft();
+    String queryAclName = queryAcls.get(0).getMiddle();
+    IpAccessList queryAcl = queryAcls.get(0).getRight();
     assertThat(queryConfig, equalTo(_config.getHostname()));
+    assertThat(queryAclName, equalTo(ACL.getName()));
+    assertThat(queryAcl.getName(), equalTo(NEGATED_RENAMER.apply(ACL.getName())));
     assertThat(queryAcl, is(DENY_ACL));
   }
 
@@ -236,11 +243,14 @@ public final class SearchFiltersTest {
             .setAction("matchLine 2")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Pair<String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
     assertThat(queryAcls, hasSize(1));
-    String queryConfig = queryAcls.get(0).getFirst();
-    IpAccessList queryAcl = queryAcls.get(0).getSecond();
+    String queryConfig = queryAcls.get(0).getLeft();
+    String queryAclName = queryAcls.get(0).getMiddle();
+    IpAccessList queryAcl = queryAcls.get(0).getRight();
     assertThat(queryConfig, equalTo(_config.getHostname()));
+    assertThat(queryAclName, equalTo(ACL.getName()));
+    assertThat(queryAcl.getName(), equalTo(MATCH_LINE_RENAMER.apply(2, ACL.getName())));
     assertThat(queryAcl, is(MATCH_LINE2_ACL));
   }
 
@@ -364,6 +374,29 @@ public final class SearchFiltersTest {
                             COL_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING)),
                     allOf(
                         hasColumn(COL_ACTION, equalTo("PERMIT"), Schema.STRING),
+                        hasColumn(COL_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING))))));
+  }
+
+  @Test
+  public void testAnswerWithRenamingAndExplanations() {
+    SearchFiltersQuestion question =
+        SearchFiltersQuestion.builder().setGenerateExplanations(true).setAction("deny").build();
+    SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    assertThat(
+        ae,
+        hasRows(
+            containsInAnyOrder(
+                ImmutableList.of(
+                    allOf(
+                        hasColumn(COL_ACTION, equalTo("DENY"), Schema.STRING),
+                        hasColumn(COL_FILTER_NAME, equalTo(ACL.getName()), Schema.STRING)),
+                    allOf(
+                        hasColumn(COL_ACTION, equalTo("DENY"), Schema.STRING),
+                        hasColumn(
+                            COL_FILTER_NAME, equalTo(BLOCKED_LINE_ACL.getName()), Schema.STRING)),
+                    allOf(
+                        hasColumn(COL_ACTION, equalTo("DENY"), Schema.STRING),
                         hasColumn(COL_FILTER_NAME, equalTo(SRC_ACL.getName()), Schema.STRING))))));
   }
 
