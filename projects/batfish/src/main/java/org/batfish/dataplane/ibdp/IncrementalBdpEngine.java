@@ -631,54 +631,58 @@ class IncrementalBdpEngine {
       boolean hadChanges;
       do {
         _numIterations++;
+        try (ActiveSpan iterSpan =
+            GlobalTracer.get().buildSpan("Iteration " + _numIterations).startActive()) {
+          assert iterSpan != null; // avoid unused warning
 
-        IbdpSchedule schedule;
-        try (ActiveSpan innerSpan =
-            GlobalTracer.get().buildSpan("Compute schedule").startActive()) {
-          assert innerSpan != null; // avoid unused warning
-          // Compute node schedule
-          schedule = IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, bgpTopology);
-        }
-
-        // compute dependent routes for each allowable set of nodes until we cover all nodes
-        int nodeSet = 0;
-        while (schedule.hasNext()) {
-          Map<String, Node> iterationNodes = schedule.next();
-          String iterationlabel =
-              String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
-          computeDependentRoutesIteration(
-              iterationNodes, iterationlabel, nodes, bgpTopology, networkConfigurations);
-          ++nodeSet;
-        }
-
-        /*
-         * Perform various bookkeeping at the end of the iteration:
-         * - Collect sizes of certain RIBs this iteration
-         * - Compute iteration hashcode
-         * - Check for oscillations
-         */
-        computeIterationStatistics(nodes, ae, _numIterations);
-
-        // This hashcode uniquely identifies the iteration (i.e., network state)
-        int iterationHashCode = computeIterationHashCode(nodes);
-        SortedSet<Integer> iterationsWithThisHashCode =
-            iterationsByHashCode.computeIfAbsent(iterationHashCode, h -> new TreeSet<>());
-
-        if (iterationsWithThisHashCode.isEmpty()) {
-          iterationsWithThisHashCode.add(_numIterations);
-        } else {
-          // If oscillation detected, switch to a more restrictive schedule
-          if (currentSchedule != Schedule.NODE_SERIALIZED) {
-            _bfLogger.debugf(
-                "Switching to a more restrictive schedule %s, iteration %d\n",
-                Schedule.NODE_SERIALIZED, _numIterations);
-            currentSchedule = Schedule.NODE_SERIALIZED;
-          } else {
-            return true; // Found an oscillation
+          IbdpSchedule schedule;
+          try (ActiveSpan innerSpan =
+              GlobalTracer.get().buildSpan("Compute schedule").startActive()) {
+            assert innerSpan != null; // avoid unused warning
+            // Compute node schedule
+            schedule = IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, bgpTopology);
           }
-        }
 
-        hadChanges = compareToPreviousIteration(nodes);
+          // compute dependent routes for each allowable set of nodes until we cover all nodes
+          int nodeSet = 0;
+          while (schedule.hasNext()) {
+            Map<String, Node> iterationNodes = schedule.next();
+            String iterationlabel =
+                String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
+            computeDependentRoutesIteration(
+                iterationNodes, iterationlabel, nodes, bgpTopology, networkConfigurations);
+            ++nodeSet;
+          }
+
+          /*
+           * Perform various bookkeeping at the end of the iteration:
+           * - Collect sizes of certain RIBs this iteration
+           * - Compute iteration hashcode
+           * - Check for oscillations
+           */
+          computeIterationStatistics(nodes, ae, _numIterations);
+
+          // This hashcode uniquely identifies the iteration (i.e., network state)
+          int iterationHashCode = computeIterationHashCode(nodes);
+          SortedSet<Integer> iterationsWithThisHashCode =
+              iterationsByHashCode.computeIfAbsent(iterationHashCode, h -> new TreeSet<>());
+
+          if (iterationsWithThisHashCode.isEmpty()) {
+            iterationsWithThisHashCode.add(_numIterations);
+          } else {
+            // If oscillation detected, switch to a more restrictive schedule
+            if (currentSchedule != Schedule.NODE_SERIALIZED) {
+              _bfLogger.debugf(
+                  "Switching to a more restrictive schedule %s, iteration %d\n",
+                  Schedule.NODE_SERIALIZED, _numIterations);
+              currentSchedule = Schedule.NODE_SERIALIZED;
+            } else {
+              return true; // Found an oscillation
+            }
+          }
+
+          hadChanges = compareToPreviousIteration(nodes);
+        }
       } while (hadChanges || !areQueuesEmpty(nodes));
 
       ae.setDependentRoutesIterations(_numIterations);
