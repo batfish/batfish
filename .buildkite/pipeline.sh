@@ -9,7 +9,12 @@ steps:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
   - label: "Python templates"
-    command: "cd tests && python3 -m pytest"
+    command:
+      - "python3 -m virtualenv .venv"
+      - ". .venv/bin/activate"
+      - "pip install pytest"
+      - "cd tests && pytest"
+
     plugins:
       - docker#v1.1.1:
           image: "dhalperi/build-base:latest"
