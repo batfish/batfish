@@ -396,6 +396,7 @@ public class BgpRoute extends AbstractRoute {
         _discard,
         _localPreference,
         _med,
+        _network,
         _nextHopIp,
         _originatorIp,
         _originType.ordinal(),
