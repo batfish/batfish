@@ -1,6 +1,7 @@
 #
 set system host-name juniper_bgp
 #
+set protocols bgp drop-path-attributes 128
 set protocols bgp family inet unicast
 set protocols bgp family inet6 unicast
 set protocols bgp graceful-restart
