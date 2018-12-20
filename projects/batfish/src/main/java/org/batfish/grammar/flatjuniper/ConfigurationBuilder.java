@@ -377,6 +377,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_defaultsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
@@ -388,6 +389,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_defaultsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
@@ -2751,6 +2753,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitRog_discard(Rog_discardContext ctx) {
+    _currentGeneratedRoute.setDrop(true);
+  }
+
+  @Override
   public void exitRog_passive(Rog_passiveContext ctx) {
     _currentGeneratedRoute.setActive(false);
   }
@@ -4653,6 +4660,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     long community = CommonUtil.communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
     _configuration.getAllStandardCommunities().add(community);
     _currentAggregateRoute.getCommunities().add(community);
+  }
+
+  @Override
+  public void exitRoa_discard(Roa_discardContext ctx) {
+    _currentAggregateRoute.setDrop(true);
   }
 
   @Override
