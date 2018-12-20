@@ -85,7 +85,7 @@ done
 cat <<EOF
   - wait
   - label: "Trigger batfish-docker build"
-    trigger: "batfish-docker"
+    trigger: "batfish-docker-pipeline"
     branches: "master"
     build:
       env:
