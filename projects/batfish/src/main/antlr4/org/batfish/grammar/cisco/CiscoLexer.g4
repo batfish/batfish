@@ -4642,6 +4642,11 @@ FLOATING_CONN
    'floating-conn'
 ;
 
+FLOOD
+:
+   'flood'
+;
+
 FLOW
 :
    'flow'
@@ -7602,6 +7607,11 @@ MULTICAST
 MULTICAST_BOUNDARY
 :
    'multicast-boundary'
+;
+
+MULTICAST_GROUP
+:
+   'multicast-group'
 ;
 
 MULTICAST_ROUTING
@@ -12508,6 +12518,11 @@ UDP
    'udp'
 ;
 
+UDP_PORT
+:
+   'udp-port'
+;
+
 UDP_JITTER
 :
    'udp-jitter'
@@ -12983,6 +12998,11 @@ VMTRACER
    'vmtracer'
 ;
 
+VNI
+:
+   'vni'
+;
+
 VOCERA
 :
    'vocera'
@@ -13123,6 +13143,11 @@ VSERVER
 VSTACK
 :
    'vstack'
+;
+
+VTEP
+:
+   'vtep'
 ;
 
 VTP
