@@ -575,8 +575,8 @@ public class VirtualRouter implements Serializable {
                     .setAdmin(admin)
                     .setMetric(metric)
                     .setArea(areaNum)
+                    .setNonRouting(true)
                     .build();
-        summaryRoute.setNonRouting(true);
         if (_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute) != null) {
           changed = true;
         }
@@ -922,10 +922,10 @@ public class VirtualRouter implements Serializable {
     for (AbstractRoute grAbstract : _generatedRib.getRoutes()) {
       GeneratedRoute gr = (GeneratedRoute) grAbstract;
 
+      // Prevent route from being merged into the main RIB by marking it non-routing
       BgpRoute br =
-          BgpProtocolHelper.convertGeneratedRouteToBgp(gr, _vrf.getBgpProcess().getRouterId());
-      // Prevent route from being merged into the main RIB.
-      br.setNonRouting(true);
+          BgpProtocolHelper.convertGeneratedRouteToBgp(
+              gr, _vrf.getBgpProcess().getRouterId(), true);
       /* TODO: tests for this */
       RibDelta<BgpRoute> d1 = _bgpRib.mergeRouteGetDelta(br);
       _bgpDeltaBuilder.from(d1);
@@ -1006,8 +1006,8 @@ public class VirtualRouter implements Serializable {
     outputRouteBuilder.setAdvertiser(_c.getHostname());
     outputRouteBuilder.setArea(OspfRoute.NO_AREA);
     outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
+    outputRouteBuilder.setNonRouting(true);
     OspfExternalRoute outputRoute = outputRouteBuilder.build();
-    outputRoute.setNonRouting(true);
     return outputRoute;
   }
 
@@ -2494,7 +2494,7 @@ public class VirtualRouter implements Serializable {
             generatedRoute, policy, _mainRib.getRoutes(), _vrf.getName());
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-            builder.build(), _vrf.getBgpProcess().getRouterId())
+            builder.build(), _vrf.getBgpProcess().getRouterId(), false)
         : null;
   }
 

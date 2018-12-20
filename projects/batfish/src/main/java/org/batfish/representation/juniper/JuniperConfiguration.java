@@ -2081,9 +2081,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(tag)
+            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
             .build();
-
-    newStaticRoute.setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE));
     return newStaticRoute;
   }
 
