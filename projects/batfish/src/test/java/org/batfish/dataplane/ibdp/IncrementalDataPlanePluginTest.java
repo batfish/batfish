@@ -440,7 +440,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpSingleHopSucess() throws IOException {
+  public void testEbgpSinglehopSuccess() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -469,7 +469,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpSingleHopFailure() throws IOException {
+  public void testEbgpSinglehopFailure() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -498,7 +498,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpMultihopHopSucess() throws IOException {
+  public void testEbgpMultihopSuccess() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -527,7 +527,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpMultihopHopFailure() throws IOException {
+  public void testEbgpMultihopFailureWithAcl() throws IOException {
     // use a network with a deny all ACL on node 3
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true);
 
@@ -559,11 +559,22 @@ public class IncrementalDataPlanePluginTest {
 
   /**
    * Generates the configuration for a three node network with connectivity between node1 to node2
-   * and node1 to node3. Also backwards connectivity between node3 to node1
+   * and node1 to node3, and also node2 to node3. Also adds backwards connectivity between node3 to
+   * node1. The diagram of the network is below.
    *
-   * @param denyIntoHop3 If true denied any flow entering node3
+   * @param denyIntoHop3 If true, add an incoming ACL on node3 that blocks all traffic
    * @return {@link SortedMap} of generated configuration names and {@link Configuration}s
    */
+
+  /* +-----------+                       +-------------+                   +--------------+
+     |           |1.0.0.0/31             |             |                   |              |
+     |           +-----------------------+             |                   |    node3     |
+     |   node1   |            1.0.0.1/31 |   node2     |1.0.0.2/31         |              |
+     |           |                       |             +-------------------+              |
+     |           |                       |             |         1.0.0.3/31|              |
+     +-----------+                       +-------------+                   +--------------+
+
+  */
   private static SortedMap<String, Configuration> generateNetworkWithThreeHops(
       boolean denyIntoHop3) {
     NetworkFactory nf = new NetworkFactory();
@@ -597,12 +608,6 @@ public class IncrementalDataPlanePluginTest {
     // static routes on node1
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("1.0.0.1/32"))
-                .setAdministrativeCost(1)
-                .setNextHopInterface(i11.getName())
-                .setNextHopIp(c2Addr1.getIp())
-                .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("1.0.0.3/32"))
                 .setAdministrativeCost(1)
