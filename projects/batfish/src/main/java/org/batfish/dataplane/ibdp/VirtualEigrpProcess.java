@@ -165,9 +165,8 @@ class VirtualEigrpProcess {
     }
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
     outputRouteBuilder.setProcessAsn(_asn);
-    EigrpExternalRoute outputRoute = requireNonNull(outputRouteBuilder.build());
-    outputRoute.setNonRouting(true);
-    return outputRoute;
+    outputRouteBuilder.setNonRouting(true);
+    return requireNonNull(outputRouteBuilder.build());
   }
 
   /**

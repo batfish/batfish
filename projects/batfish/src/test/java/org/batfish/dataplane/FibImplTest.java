@@ -131,13 +131,14 @@ public class FibImplTest {
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
+            .setNonForwarding(true)
             .build();
-    nonForwardingRoute.setNonForwarding(true);
     StaticRoute forwardingRoute =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     rib.mergeRoute(nonForwardingRoute);
@@ -159,14 +160,15 @@ public class FibImplTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth2")
             .setAdministrativeCost(1)
+            .setNonForwarding(true)
             .build();
-    nonForwardingRoute.setNonForwarding(true);
 
     StaticRoute forwardingLessSpecificRoute =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/31"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     StaticRoute testRoute =
@@ -174,6 +176,7 @@ public class FibImplTest {
             .setNetwork(Prefix.parse("2.2.2.0/24"))
             .setNextHopIp(new Ip("1.1.1.1")) // matches both routes defined above
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     rib.mergeRoute(nonForwardingRoute);
@@ -200,20 +203,22 @@ public class FibImplTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth2")
             .setAdministrativeCost(1)
+            .setNonForwarding(true)
             .build();
-    nonForwardingRoute.setNonForwarding(true);
 
     StaticRoute ecmpForwardingRoute1 =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth3")
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
     StaticRoute ecmpForwardingRoute2 =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth4")
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     StaticRoute forwardingLessSpecificRoute =
@@ -221,6 +226,7 @@ public class FibImplTest {
             .setNetwork(Prefix.parse("1.1.1.0/31"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     final Prefix TEST_PREFIX = Prefix.parse("2.2.2.0/24");
@@ -229,6 +235,7 @@ public class FibImplTest {
             .setNetwork(TEST_PREFIX)
             .setNextHopIp(new Ip("1.1.1.1")) // matches multiple routes defined above
             .setAdministrativeCost(1)
+            .setNonForwarding(false)
             .build();
 
     rib.mergeRoute(nonForwardingRoute);

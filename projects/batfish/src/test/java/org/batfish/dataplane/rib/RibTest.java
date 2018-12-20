@@ -33,8 +33,8 @@ public class RibTest {
             .setNextHopInterface("foo")
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
+            .setNonRouting(true)
             .build();
-    route.setNonRouting(true);
 
     assertThat(rib.mergeRouteGetDelta(route), is(nullValue()));
     assertThat(rib.mergeRoute(route), equalTo(false));
