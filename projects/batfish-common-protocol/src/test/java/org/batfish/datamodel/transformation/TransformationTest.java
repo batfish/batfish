@@ -18,7 +18,7 @@ public class TransformationTest {
         .addEqualityGroup(when(FALSE).build(), when(FALSE).build())
         .addEqualityGroup(
             always().apply(shiftDestinationIp(Prefix.ZERO)).build(),
-            always().apply(shiftDestinationIp(Prefix.ZERO)))
+            always().apply(shiftDestinationIp(Prefix.ZERO)).build())
         .addEqualityGroup(
             always().setAndThen(always().build()).build(),
             always().setAndThen(always().build()).build())

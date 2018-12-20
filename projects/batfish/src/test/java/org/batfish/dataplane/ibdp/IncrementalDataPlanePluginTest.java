@@ -43,12 +43,16 @@ import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -433,5 +437,202 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
         hasItem(hasPrefix(genRoutePrefix)));
+  }
+
+  @Test
+  public void testEbgpSinglehopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(new Ip("1.0.0.0"))
+            .setPeerAddress(new Ip("1.0.0.1"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be reachable because it is only one hop away from the initiator
+    assertTrue(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpSinglehopFailure() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(new Ip("1.0.0.0"))
+            .setPeerAddress(new Ip("1.0.0.3"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be not be reachable because it is two hops away from the initiator
+    assertFalse(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpMultihopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(new Ip("1.0.0.0"))
+            .setPeerAddress(new Ip("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be reachable because multi-hops are allowed
+    assertTrue(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpMultihopFailureWithAcl() throws IOException {
+    // use a network with a deny all ACL on node 3
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(new Ip("1.0.0.0"))
+            .setPeerAddress(new Ip("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should not be reachable even though multihops are allowed as traceroute would be
+    // denied in on node 3
+    assertFalse(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  /**
+   * Generates configurations for a three node network with connectivity as shown in the diagram
+   * below. Also adds static routes from node 1 to node 3 and back from node 3 to node 1
+   *
+   * @param denyIntoHop3 If true, add an incoming ACL on node3 that blocks all traffic
+   * @return {@link SortedMap} of generated configuration names and corresponding {@link
+   *     Configuration}s
+   */
+
+  /* +-----------+                       +-------------+                   +--------------+
+     |           |1.0.0.0/31             |             |                   |              |
+     |           +-----------------------+             |                   |    node3     |
+     |   node1   |            1.0.0.1/31 |   node2     |1.0.0.2/31         |              |
+     |           |                       |             +-------------------+              |
+     |           |                       |             |         1.0.0.3/31|              |
+     +-----------+                       +-------------+                   +--------------+
+
+  */
+  private static SortedMap<String, Configuration> generateNetworkWithThreeHops(
+      boolean denyIntoHop3) {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    // first node
+    Configuration c1 = cb.setHostname("node1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress c1Addr1 = new InterfaceAddress("1.0.0.0/31");
+    Interface i11 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
+
+    // second node
+    Configuration c2 = cb.setHostname("node2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    InterfaceAddress c2Addr1 = new InterfaceAddress("1.0.0.1/31");
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
+    InterfaceAddress c2Addr2 = new InterfaceAddress("1.0.0.2/31");
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
+
+    // third node
+    Configuration c3 = cb.setHostname("node3").build();
+    Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
+    InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
+    Interface i31 = nf.interfaceBuilder().setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
+
+    // static routes on node1
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.3/32"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i11.getName())
+                .setNextHopIp(c2Addr1.getIp())
+                .build()));
+
+    // static routes on node 3 to get back to node1
+    v3.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.0/32"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i31.getName())
+                .setNextHopIp(c2Addr2.getIp())
+                .build()));
+
+    if (denyIntoHop3) {
+      // stop the flow from entering Node3
+      i31.setIncomingFilter(
+          nf.aclBuilder()
+              .setOwner(c3)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.rejecting(
+                          AclLineMatchExprs.matchSrc(UniverseIpSpace.INSTANCE))))
+              .build());
+    }
+
+    return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
   }
 }

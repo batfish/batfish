@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import org.batfish.common.BatfishException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,13 +23,13 @@ public class RipInternalRouteTest {
 
   @Test
   public void testConstructorRejectsLowMetric() {
-    _expectedException.expect(BatfishException.class);
+    _expectedException.expect(IllegalArgumentException.class);
     new RipInternalRoute(Prefix.parse("1.1.1.1/32"), new Ip("2.2.2.2"), adminCost, 17);
   }
 
   @Test
   public void testConstructorRejectsHighMetric() {
-    _expectedException.expect(BatfishException.class);
+    _expectedException.expect(IllegalArgumentException.class);
     new RipInternalRoute(Prefix.parse("1.1.1.1/32"), new Ip("2.2.2.2"), adminCost, -1);
   }
 

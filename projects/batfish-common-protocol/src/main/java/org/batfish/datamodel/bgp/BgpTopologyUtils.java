@@ -1,7 +1,7 @@
 package org.batfish.datamodel.bgp;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
@@ -12,12 +12,13 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -33,14 +34,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Trace;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
@@ -244,7 +244,8 @@ public final class BgpTopologyUtils {
    * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code src} is
    * initiating the connection according to its local configuration
    */
-  private static boolean isReachableBgpNeighbor(
+  @VisibleForTesting
+  public static boolean isReachableBgpNeighbor(
       BgpPeerConfigId initiator,
       BgpPeerConfigId listener,
       BgpActivePeerConfig src,
@@ -275,35 +276,34 @@ public final class BgpTopologyUtils {
     Flow forwardFlow = fb.build();
 
     // Execute the "initiate connection" traceroute
-    SortedMap<Flow, Set<FlowTrace>> traces =
-        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
+    SortedMap<Flow, List<Trace>> traces =
+        tracerouteEngine.buildFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
 
-    SortedSet<FlowTrace> acceptedFlows =
+    boolean isEbgpSingleHop =
+        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
+
+    List<Trace> acceptedFlows =
         traces
             .get(forwardFlow)
             .stream()
+            .filter(trace -> !isEbgpSingleHop || trace.getHops().size() <= 2)
             .filter(
                 trace ->
                     trace.getDisposition() == FlowDisposition.ACCEPTED
-                        && trace.getAcceptingNode() != null
-                        && trace.getAcceptingNode().getHostname().equals(listener.getHostname()))
-            .collect(ImmutableSortedSet.toImmutableSortedSet(FlowTrace::compareTo));
+                        && trace.getHops().size() > 0
+                        && trace
+                            .getHops()
+                            .get(trace.getHops().size() - 1)
+                            .getNode()
+                            .getName()
+                            .equals(listener.getHostname()))
+            .collect(Collectors.toList());
 
     if (acceptedFlows.isEmpty()) {
       return false;
     }
-    NodeInterfacePair acceptPoint = acceptedFlows.first().getAcceptingNode();
-    if (SessionType.isEbgp(BgpSessionProperties.getSessionType(src))
-        && !src.getEbgpMultihop()
-        && acceptedFlows.first().getHops().size() > 1) {
-      // eBGP expects direct connection (single hop) unless explicitly configured multi-hop
-      return false;
-    }
 
-    if (acceptPoint == null) {
-      return false;
-    }
-    String acceptedHostname = acceptPoint.getHostname();
+    String acceptedHostname = listener.getHostname();
     // The reply traceroute
     fb.setIngressNode(acceptedHostname);
     fb.setIngressVrf(listener.getVrfName());
@@ -312,7 +312,7 @@ public final class BgpTopologyUtils {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
+    traces = tracerouteEngine.buildFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -323,9 +323,14 @@ public final class BgpTopologyUtils {
         .filter(
             trace ->
                 trace.getDisposition() == FlowDisposition.ACCEPTED
-                    && trace.getAcceptingNode() != null
-                    && trace.getAcceptingNode().getHostname().equals(initiator.getHostname()))
-        .collect(ImmutableSet.toImmutableSet())
+                    && trace.getHops().size() > 0
+                    && trace
+                        .getHops()
+                        .get(trace.getHops().size() - 1)
+                        .getNode()
+                        .getName()
+                        .equals(initiator.getHostname()))
+        .collect(Collectors.toList())
         .isEmpty();
   }
 

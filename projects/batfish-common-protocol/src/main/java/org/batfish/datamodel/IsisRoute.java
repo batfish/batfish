@@ -10,20 +10,16 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.isis.IsisLevel;
 
+/** IS-IS route */
 public class IsisRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
 
     private String _area;
-
     private boolean _attach;
-
     private boolean _down;
-
     private IsisLevel _level;
-
     private RoutingProtocol _protocol;
-
     private String _systemId;
 
     @Override
@@ -79,16 +75,13 @@ public class IsisRoute extends AbstractRoute {
     }
   }
 
+  /** Default Isis route metric, unless one is explicitly specified */
   public static final long DEFAULT_METRIC = 10L;
 
   private static final String PROP_AREA = "area";
-
   private static final String PROP_ATTACH = "attach";
-
   private static final String PROP_DOWN = "down";
-
   private static final String PROP_LEVEL = "level";
-
   private static final String PROP_SYSTEM_ID = "systemId";
 
   private static final long serialVersionUID = 1L;
@@ -151,9 +144,7 @@ public class IsisRoute extends AbstractRoute {
       @Nonnull String systemId,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
+    super(network, administrativeCost, nonRouting, nonForwarding);
     _administrativeCost = administrativeCost;
     _area = area;
     _attach = attach;
@@ -184,13 +175,6 @@ public class IsisRoute extends AbstractRoute {
         && _nextHopIp.equals(rhs._nextHopIp)
         && _protocol == rhs._protocol
         && _systemId.equals(rhs._systemId);
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_ADMINISTRATIVE_COST)
-  @Override
-  public int getAdministrativeCost() {
-    return _administrativeCost;
   }
 
   @JsonProperty(PROP_AREA)
@@ -263,22 +247,6 @@ public class IsisRoute extends AbstractRoute {
         _metric,
         _nextHopIp,
         _protocol.ordinal(),
-        _systemId);
-  }
-
-  @Override
-  protected String protocolRouteString() {
-    return String.format(
-        " %s:%s %s:%s %s:%s %s:%s %s:%s",
-        PROP_AREA,
-        _area,
-        PROP_ATTACH,
-        _attach,
-        PROP_DOWN,
-        _down,
-        PROP_LEVEL,
-        _level,
-        PROP_SYSTEM_ID,
         _systemId);
   }
 
