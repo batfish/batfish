@@ -959,6 +959,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newRoute.setTag(route.getTag());
     }
 
+    newRoute.setDiscard(firstNonNull(route.getDrop(), Boolean.FALSE));
+
     return newRoute.build();
   }
 
@@ -978,7 +980,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newRoute.setTag(route.getTag());
     }
 
-    // sole semantic difference from generated route
+    // sole semantic difference from generated route: aggregate routes are "reject" by default.
+    // Note that this can be overridden to "discard", but we model both as discard in Batfish
+    // semantics since the sole difference is whether ICMP unreachables are sent.
     newRoute.setDiscard(true);
 
     return newRoute.build();
