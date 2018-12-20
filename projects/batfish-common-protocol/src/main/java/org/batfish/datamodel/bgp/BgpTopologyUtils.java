@@ -1,5 +1,6 @@
 package org.batfish.datamodel.bgp;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.ImmutableValueGraph;
