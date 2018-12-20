@@ -5,12 +5,15 @@ set protocols bgp drop-path-attributes 128
 set protocols bgp family inet unicast
 set protocols bgp family inet6 unicast
 set protocols bgp graceful-restart
+set protocols bgp family inet unicast loops 2
 set protocols bgp group someipv4bgpgroup advertise-inactive
 set protocols bgp group someipv4bgpgroup export someexportpolicy
 set protocols bgp group someipv4bgpgroup family inet unicast accepted-prefix-limit maximum 1000
+set protocols bgp group someipv4bgpgroup family inet unicast loops 2
 set protocols bgp group someipv4bgpgroup import someimportpolicy
 set protocols bgp group someipv4bgpgroup multipath
 set protocols bgp group someipv4bgpgroup neighbor 3.4.5.6 description bippety
+set protocols bgp group someipv4bgpgroup neighbor 3.4.5.7 family inet unicast loops 3
 set protocols bgp group someipv4bgpgroup peer-as 12345
 set protocols bgp group someipv4bgpgroup type external
 set protocols bgp group someipv6bgpgroup export someexportpolicy

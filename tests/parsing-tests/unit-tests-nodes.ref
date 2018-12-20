@@ -15715,6 +15715,71 @@
               }
             ]
           },
+          "~PEER_EXPORT_POLICY:3.4.5.7/32~" : {
+            "name" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
           "~PEER_IMPORT_POLICY:1.2.3.5/32~" : {
             "name" : "~PEER_IMPORT_POLICY:1.2.3.5/32~",
             "statements" : [
@@ -15748,6 +15813,37 @@
           },
           "~PEER_IMPORT_POLICY:3.4.5.6/32~" : {
             "name" : "~PEER_IMPORT_POLICY:3.4.5.6/32~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~PEER_IMPORT_POLICY:3.4.5.7/32~" : {
+            "name" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
