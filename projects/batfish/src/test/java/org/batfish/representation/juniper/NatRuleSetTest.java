@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.datamodel.transformation.Transformation.Builder.when;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -89,12 +89,12 @@ public class NatRuleSetTest {
             // first apply natRule1
             when(matchDst(prefix1))
                 .apply()
-                .andThen(andThen)
-                .orElse(
+                .setAndThen(andThen)
+                .setOrElse(
                     // only apply natRule2 if natRule1 doesn't match
                     when(matchDst(prefix2))
                         .apply(assignDestinationIp(poolStart, poolEnd))
-                        .andThen(andThen)
+                        .setAndThen(andThen)
                         .build())
                 .build()));
   }

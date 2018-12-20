@@ -86,7 +86,8 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     for (NatRule rule : Lists.reverse(_rules)) {
       Optional<Builder> optionalBuilder = rule.toTransformationBuilder(ipField, pools);
       if (optionalBuilder.isPresent()) {
-        transformation = optionalBuilder.get().andThen(andThen).orElse(transformation).build();
+        transformation =
+            optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();
       }
     }
     return Optional.ofNullable(transformation);

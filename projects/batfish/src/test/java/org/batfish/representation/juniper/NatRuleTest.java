@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
-import static org.batfish.datamodel.transformation.Transformation.Builder.when;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

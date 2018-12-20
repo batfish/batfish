@@ -1,6 +1,5 @@
 package org.batfish.datamodel.transformation;
 
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
 import com.google.common.collect.ImmutableList;
@@ -10,18 +9,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /** A representation of a composite packet transformation. */
 @ParametersAreNonnullByDefault
 public final class Transformation {
   public static final class Builder {
-    private @Nullable AclLineMatchExpr _guard;
-    private @Nullable List<TransformationStep> _transformationSteps;
+    private @NonNull AclLineMatchExpr _guard;
+    private @NonNull List<TransformationStep> _transformationSteps;
     private @Nullable Transformation _andThen;
     private @Nullable Transformation _orElse;
 
     Builder(AclLineMatchExpr guard) {
       _guard = guard;
+      _transformationSteps = ImmutableList.of();
     }
 
     public Builder apply(TransformationStep... transformationSteps) {
@@ -39,29 +40,27 @@ public final class Transformation {
       return this;
     }
 
-    public Builder andThen(@Nullable Transformation andThen) {
+    public Builder setAndThen(@Nullable Transformation andThen) {
       _andThen = andThen;
       return this;
     }
 
-    public Builder orElse(@Nullable Transformation orElse) {
+    public Builder setOrElse(@Nullable Transformation orElse) {
       _orElse = orElse;
       return this;
     }
 
-    public static Builder always() {
-      return new Builder(TRUE);
-    }
-
-    public static Builder when(AclLineMatchExpr guard) {
-      return new Builder(guard);
-    }
-
     public Transformation build() {
-      checkState(_guard != null, "Guard has not been set");
-      checkState(_transformationSteps != null, "Transformation steps have not been set");
       return new Transformation(_guard, _transformationSteps, _andThen, _orElse);
     }
+  }
+
+  public static Builder always() {
+    return new Builder(TRUE);
+  }
+
+  public static Builder when(AclLineMatchExpr guard) {
+    return new Builder(guard);
   }
 
   private final @Nonnull AclLineMatchExpr _guard;
@@ -94,13 +93,13 @@ public final class Transformation {
 
   /** The next transformation to apply (if any) when this one matches and transforms. */
   @Nullable
-  public Transformation andThen() {
+  public Transformation getAndThen() {
     return _andThen;
   }
 
   /** The next transformation to apply (if any) when this one does not match. */
   @Nullable
-  public Transformation orElse() {
+  public Transformation getOrElse() {
     return _orElse;
   }
 
@@ -121,7 +120,6 @@ public final class Transformation {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(_guard, _transformationSteps, _andThen, _orElse);
   }
 }

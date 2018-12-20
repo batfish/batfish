@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.transformation.Transformation.Builder.when;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
 import java.io.Serializable;

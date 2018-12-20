@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 
-/** A {@link TransformationStep} that transforms the destination IP */
+/**
+ * A {@link TransformationStep} that transforms the an IP by shifting it into a subnet. For example,
+ * the result of shifting {@code 1.2.3.4} into the subnet {@code 5.5.0.0/24} is {@code 5.5.3.4}.
+ */
 public final class ShiftIpAddressIntoSubnet implements TransformationStep, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
