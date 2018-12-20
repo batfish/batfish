@@ -47,10 +47,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   @JsonCreator
   protected AbstractRoute(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_NON_ROUTING) boolean nonRouting,
-      @JsonProperty(PROP_NON_FORWARDING) boolean nonForwarding) {
+      @Nullable Prefix network, int admin, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
     checkArgument(admin >= 0, "Invalid admin distance for a route: %d", admin);
     _network = network;
