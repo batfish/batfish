@@ -591,9 +591,9 @@ public class IncrementalDataPlanePluginTest {
     Configuration c2 = cb.setHostname("node2").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     InterfaceAddress c2Addr1 = new InterfaceAddress("1.0.0.1/31");
-    Interface i21 = nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
     InterfaceAddress c2Addr2 = new InterfaceAddress("1.0.0.2/31");
-    Interface i22 = nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
 
     // third node
     Configuration c3 = cb.setHostname("node3").build();
