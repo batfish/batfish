@@ -2,6 +2,18 @@
 set system host-name juniper_policy_statement
 #
 set policy-options policy-statement POLICY-NAME term TERM from as-path-group AS_PATH_GROUP
+set policy-options policy-statement POLICY-NAME term TERM from family evpn
+set policy-options policy-statement POLICY-NAME term TERM from family inet
+set policy-options policy-statement POLICY-NAME term TERM from family inet-mdt
+set policy-options policy-statement POLICY-NAME term TERM from family inet-mvpn
+set policy-options policy-statement POLICY-NAME term TERM from family inet-vpn
+set policy-options policy-statement POLICY-NAME term TERM from family inet6
+set policy-options policy-statement POLICY-NAME term TERM from family inet6-mvpn
+set policy-options policy-statement POLICY-NAME term TERM from family inet6-vpn
+set policy-options policy-statement POLICY-NAME term TERM from family iso
+set policy-options policy-statement POLICY-NAME term TERM from family iso-vpn
+set policy-options policy-statement POLICY-NAME term TERM from family route-target
+set policy-options policy-statement POLICY-NAME term TERM from family traffic-engineering
 set policy-options policy-statement POLICY-NAME term TERM from instance FORWARDING
 set policy-options policy-statement POLICY-NAME term TERM from protocol static
 set policy-options policy-statement POLICY-NAME term TERM from rib inet6.0
