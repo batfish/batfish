@@ -50166,6 +50166,22 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
+            "                prefix = IP_PREFIX:'35.0.0.0/8'",
+            "                (roa_common",
+            "                  (roa_discard",
+            "                    DISCARD:'discard'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_aggregate",
+            "              AGGREGATE:'aggregate'",
+            "              (roa_route",
+            "                ROUTE:'route'",
             "                prefix = IP_PREFIX:'40.0.0.0/8'",
             "                (roa_common",
             "                  (roa_policy",
@@ -50211,6 +50227,22 @@
             "                ROUTE:'route'",
             "                IP_PREFIX:'10.0.1.0/24'",
             "                (rog_common",
+            "                  (rog_active",
+            "                    ACTIVE:'active'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_generate",
+            "              GENERATE:'generate'",
+            "              (rog_route",
+            "                ROUTE:'route'",
+            "                IP_PREFIX:'10.0.1.0/24'",
+            "                (rog_common",
             "                  (rog_community",
             "                    COMMUNITY:'community'",
             "                    (standard_community",
@@ -50230,8 +50262,8 @@
             "                ROUTE:'route'",
             "                IP_PREFIX:'10.0.1.0/24'",
             "                (rog_common",
-            "                  (rog_active",
-            "                    ACTIVE:'active'))))))))",
+            "                  (rog_discard",
+            "                    DISCARD:'discard'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -61915,13 +61947,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 8,
+              "Line" : 9,
               "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "policy AGGREGATE_ROUTE_POLICY"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 9,
+              "Line" : 10,
               "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "confederation 11111 members 22222"
             }
@@ -69481,7 +69513,7 @@
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
-                8
+                9
               ]
             }
           }

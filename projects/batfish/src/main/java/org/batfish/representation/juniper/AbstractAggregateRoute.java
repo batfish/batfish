@@ -28,6 +28,8 @@ public abstract class AbstractAggregateRoute implements Serializable {
 
   private Set<Long> _communities;
 
+  private Boolean _drop;
+
   private Integer _metric;
 
   private final List<String> _policies;
@@ -54,6 +56,10 @@ public abstract class AbstractAggregateRoute implements Serializable {
 
   public final @Nonnull Set<Long> getCommunities() {
     return _communities;
+  }
+
+  public final @Nullable Boolean getDrop() {
+    return _drop;
   }
 
   public final @Nullable Integer getMetric() {
@@ -89,6 +95,10 @@ public abstract class AbstractAggregateRoute implements Serializable {
 
   public final void setAsPath(@Nullable AsPath asPath) {
     _asPath = asPath;
+  }
+
+  public final void setDrop(@Nullable Boolean drop) {
+    _drop = drop;
   }
 
   public final void setMetric(@Nullable Integer metric) {
