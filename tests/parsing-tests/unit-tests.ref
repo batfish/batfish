@@ -44050,6 +44050,20 @@
             "            (p_bgp",
             "              BGP:'bgp'",
             "              (b_common",
+            "                (b_drop_path_attributes",
+            "                  DROP_PATH_ATTRIBUTES:'drop-path-attributes'",
+            "                  attr = DEC:'128')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_common",
             "                (b_family",
             "                  FAMILY:'family'",
             "                  (bf_inet",
@@ -65603,7 +65617,6 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "definitionLines" : [
-                22,
                 23,
                 24,
                 25,
@@ -65611,45 +65624,46 @@
                 27,
                 28,
                 29,
-                30
+                30,
+                31
               ],
               "numReferrers" : 2
             },
             "someinternalipv6group" : {
               "definitionLines" : [
-                31,
                 32,
                 33,
                 34,
                 35,
                 36,
                 37,
-                38
+                38,
+                39
               ],
               "numReferrers" : 1
             },
             "someipv4bgpgroup" : {
               "definitionLines" : [
-                7,
                 8,
                 9,
                 10,
                 11,
                 12,
                 13,
-                14
+                14,
+                15
               ],
               "numReferrers" : 1
             },
             "someipv6bgpgroup" : {
               "definitionLines" : [
-                15,
                 16,
                 17,
                 18,
                 19,
                 20,
-                21
+                21,
+                22
               ],
               "numReferrers" : 1
             }
@@ -69105,41 +69119,41 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "bgp group neighbor" : [
-                27,
-                28
+                28,
+                29
               ]
             },
             "someinternalipv6group" : {
               "bgp group neighbor" : [
-                36
+                37
               ]
             },
             "someipv4bgpgroup" : {
               "bgp group neighbor" : [
-                12
+                13
               ]
             },
             "someipv6bgpgroup" : {
               "bgp group neighbor" : [
-                19
+                20
               ]
             }
           },
           "policy-statement" : {
             "someexportpolicy" : {
               "bgp export policy-statement" : [
-                8,
-                15,
-                22,
-                31
+                9,
+                16,
+                23,
+                32
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
-                10,
-                17,
-                24,
-                33
+                11,
+                18,
+                25,
+                34
               ]
             }
           }
@@ -71233,18 +71247,18 @@
           "policy-statement" : {
             "someexportpolicy" : {
               "bgp export policy-statement" : [
-                8,
-                15,
-                22,
-                31
+                9,
+                16,
+                23,
+                32
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
-                10,
-                17,
-                24,
-                33
+                11,
+                18,
+                25,
+                34
               ]
             }
           }

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.pojo;
 
+import static org.batfish.datamodel.pojo.Link.interfaceTypesToLinkType;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.InterfaceType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -58,5 +60,14 @@ public class LinkTest {
     assertThat(jsonNode.get("srcId").asText(), equalTo("src"));
     assertThat(jsonNode.get("dstId").asText(), equalTo("dst"));
     assertThat(jsonNode.get("properties").get("key").asText(), equalTo("value"));
+  }
+
+  @Test
+  public void testLinkTypeSymmetric() {
+    for (InterfaceType t1 : InterfaceType.values()) {
+      for (InterfaceType t2 : InterfaceType.values()) {
+        assertThat(interfaceTypesToLinkType(t1, t2), equalTo(interfaceTypesToLinkType(t2, t1)));
+      }
+    }
   }
 }
