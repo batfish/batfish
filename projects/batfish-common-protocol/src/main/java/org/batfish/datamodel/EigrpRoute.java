@@ -13,17 +13,13 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 public abstract class EigrpRoute extends AbstractRoute {
 
   static final String PROP_EIGRP_METRIC = "eigrp-metric";
-
   static final String PROP_PROCESS_ASN = "process-asn";
 
   private static final long serialVersionUID = 1L;
 
   final int _admin;
-
   final EigrpMetric _metric;
-
   final String _nextHopInterface;
-
   final Ip _nextHopIp;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
@@ -38,21 +34,12 @@ public abstract class EigrpRoute extends AbstractRoute {
       long processAsn,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
+    super(network, admin, nonRouting, nonForwarding);
     _admin = admin;
     _metric = requireNonNull(metric);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _processAsn = processAsn;
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_ADMINISTRATIVE_COST)
-  @Override
-  public final int getAdministrativeCost() {
-    return _admin;
   }
 
   @JsonIgnore
@@ -97,11 +84,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     // TODO support EIGRP route tags
     // https://github.com/batfish/batfish/issues/1945
     return NO_TAG;
-  }
-
-  @Override
-  protected String protocolRouteString() {
-    return _metric.prettyPrint();
   }
 
   @Override

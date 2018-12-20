@@ -7,29 +7,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedSet;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
-@JsonSchemaDescription("A generated/aggregate IPV4 route.")
+/** A generated/aggregate IPV4 route. */
 public final class GeneratedRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    @Nullable private AsPath _asPath;
-
+    private AsPath _asPath;
     private String _attributePolicy;
-
     private SortedSet<Long> _communities;
-
     private boolean _discard;
-
     private String _generationPolicy;
-
     private String _nextHopInterface;
 
     public Builder() {
@@ -58,7 +51,7 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public static Builder fromRoute(GeneratedRoute route) {
+    public static Builder fromRoute(@Nonnull GeneratedRoute route) {
       return new Builder()
           // General route properties
           .setNetwork(route.getNetwork())
@@ -73,7 +66,7 @@ public final class GeneratedRoute extends AbstractRoute {
           .setNextHopInterface(route.getNextHopInterface());
     }
 
-    public Builder setAsPath(AsPath asPath) {
+    public Builder setAsPath(@Nonnull AsPath asPath) {
       _asPath = asPath;
       return this;
     }
@@ -121,8 +114,6 @@ public final class GeneratedRoute extends AbstractRoute {
   private static final String PROP_METRIC = "metric";
 
   private static final long serialVersionUID = 1L;
-
-  private final int _administrativeCost;
 
   private final AsPath _asPath;
 
@@ -184,10 +175,7 @@ public final class GeneratedRoute extends AbstractRoute {
       String nextHopInterface,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
-    _administrativeCost = administrativeCost;
+    super(network, administrativeCost, nonRouting, nonForwarding);
     _asPath = asPath;
     _attributePolicy = attributePolicy;
     _attributePolicySources = Collections.emptySortedSet();
@@ -209,13 +197,6 @@ public final class GeneratedRoute extends AbstractRoute {
     }
     GeneratedRoute rhs = (GeneratedRoute) o;
     return _network.equals(rhs._network);
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_ADMINISTRATIVE_COST)
-  @Override
-  public int getAdministrativeCost() {
-    return _administrativeCost;
   }
 
   @JsonProperty(PROP_AS_PATH)
@@ -297,25 +278,12 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @Override
-  protected String protocolRouteString() {
-    return " asPath:"
-        + _asPath
-        + " attributePolicy:"
-        + _attributePolicy
-        + " communities:"
-        + _communities
-        + " discard:"
-        + _discard
-        + " generationPolicy:"
-        + _generationPolicy;
-  }
-
-  @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
     GeneratedRoute castRhs = (GeneratedRoute) rhs;
+
     int ret;
     if (_asPath == null) {
       if (castRhs._asPath != null) {

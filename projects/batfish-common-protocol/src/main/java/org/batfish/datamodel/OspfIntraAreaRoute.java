@@ -2,9 +2,11 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** OSPF intra-area route. Must stay within a single OSPF area. */
 public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
@@ -36,30 +38,25 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof OspfIntraAreaRoute)) {
       return false;
     }
     OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
-    if (_nextHopIp == null) {
-      if (other._nextHopIp != null) {
-        return false;
-      }
-    } else if (!_nextHopIp.equals(other._nextHopIp)) {
-      return false;
-    }
-    if (_admin != other._admin) {
-      return false;
-    }
-    if (_area != other._area) {
-      return false;
-    }
-    if (_metric != other._metric) {
-      return false;
-    }
-    return _network.equals(other._network);
+    return Objects.equals(_network, other._network)
+        && _admin == other._admin
+        && _area == other._area
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
+        && Objects.equals(_metric, other._metric)
+        && Objects.equals(_nextHopIp, other._nextHopIp);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_network, _admin, _area, _metric, _nextHopIp);
   }
 
   @Override
@@ -68,7 +65,6 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       return 0;
     }
     OspfIntraAreaRoute castRhs = (OspfIntraAreaRoute) rhs;
-    int ret = Long.compare(_area, castRhs._area);
-    return ret;
+    return Long.compare(_area, castRhs._area);
   }
 }

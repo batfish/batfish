@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
+/** Base class for OSPF external routes */
 public abstract class OspfExternalRoute extends OspfRoute {
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
@@ -104,15 +105,10 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   protected static final String PROP_LSA_METRIC = "lsaMetric";
 
-  protected static final String PROP_OSPF_METRIC_TYPE = "ospfMetricType";
-
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _advertiser;
-
   private final long _costToAdvertiser;
-
   private final long _lsaMetric;
 
   public static Builder builder() {
@@ -130,9 +126,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       long costToAdvertiser,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(prefix, nextHopIp, admin, metric, area);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
+    super(prefix, nextHopIp, admin, metric, area, nonRouting, nonForwarding);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
     _lsaMetric = lsaMetric;
@@ -216,18 +210,5 @@ public abstract class OspfExternalRoute extends OspfRoute {
     result = prime * result + Long.hashCode(_lsaMetric);
     result = prime * result + ((getOspfMetricType() == null) ? 0 : getOspfMetricType().ordinal());
     return result;
-  }
-
-  protected abstract String ospfExternalRouteString();
-
-  @Override
-  protected final String protocolRouteString() {
-    return " ospfMetricType:"
-        + getOspfMetricType()
-        + " lsaMetric:"
-        + _lsaMetric
-        + " advertiser:"
-        + _advertiser
-        + ospfExternalRouteString();
   }
 }

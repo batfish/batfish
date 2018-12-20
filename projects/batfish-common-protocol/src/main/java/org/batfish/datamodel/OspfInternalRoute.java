@@ -1,16 +1,13 @@
 package org.batfish.datamodel;
 
-import java.util.Objects;
-
+/** A base class for OSPF inter-area and intra-area routes */
 public abstract class OspfInternalRoute extends OspfRoute {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfInternalRoute> {
 
     private Long _area;
-
     private RoutingProtocol _protocol;
 
     @Override
@@ -66,18 +63,6 @@ public abstract class OspfInternalRoute extends OspfRoute {
       long area,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHopIp, admin, metric, area);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
-  }
-
-  @Override
-  protected final String protocolRouteString() {
-    return " area:" + _area;
-  }
-
-  @Override
-  public final int hashCode() {
-    return Objects.hash(_admin, _area, _metric, _network, _nextHopIp);
+    super(network, nextHopIp, admin, metric, area, nonRouting, nonForwarding);
   }
 }
