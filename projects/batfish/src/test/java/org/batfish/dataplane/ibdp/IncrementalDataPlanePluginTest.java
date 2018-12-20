@@ -585,25 +585,21 @@ public class IncrementalDataPlanePluginTest {
     Configuration c1 = cb.setHostname("node1").build();
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
     InterfaceAddress c1Addr1 = new InterfaceAddress("1.0.0.0/31");
-    Interface i11 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
+    Interface i11 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
 
     // second node
     Configuration c2 = cb.setHostname("node2").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     InterfaceAddress c2Addr1 = new InterfaceAddress("1.0.0.1/31");
-    Interface i21 =
-        nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
+    Interface i21 = nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
     InterfaceAddress c2Addr2 = new InterfaceAddress("1.0.0.2/31");
-    Interface i22 =
-        nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
+    Interface i22 = nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
 
     // third node
     Configuration c3 = cb.setHostname("node3").build();
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
     InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
-    Interface i31 =
-        nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
+    Interface i31 = nf.interfaceBuilder().setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
 
     // static routes on node1
     v1.setStaticRoutes(
@@ -613,22 +609,6 @@ public class IncrementalDataPlanePluginTest {
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i11.getName())
                 .setNextHopIp(c2Addr1.getIp())
-                .build()));
-
-    // static routes on node2
-    v2.setStaticRoutes(
-        ImmutableSortedSet.of(
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("1.0.0.3/32"))
-                .setAdministrativeCost(1)
-                .setNextHopInterface(i22.getName())
-                .setNextHopIp(c3Addr1.getIp())
-                .build(),
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("1.0.0.0/32"))
-                .setAdministrativeCost(1)
-                .setNextHopInterface(i21.getName())
-                .setNextHopIp(c1Addr1.getIp())
                 .build()));
 
     // static routes on node 3 to get back to node1
