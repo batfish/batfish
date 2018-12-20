@@ -95,7 +95,7 @@ if [ "${BUILDKITE_PULL_REQUEST}" = "false" ]; then
   - label: "Trigger pybatfish build"
     trigger: "pybatfish-pipeline"
     branches: "master"
- EOF
+EOF
 fi
 
 ### Branches
