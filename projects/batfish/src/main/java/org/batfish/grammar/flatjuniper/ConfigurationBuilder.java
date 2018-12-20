@@ -633,6 +633,7 @@ import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -4321,7 +4322,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.INET6() != null) {
       from = new PsFromFamilyInet6();
     } else {
-      throw new BatfishException("Unsupported family: " + ctx.getText());
+      _w.redFlag(
+          String.format(
+              "unimplemented 'policy-options policy-statement term' from clause: %s",
+              getFullText(ctx)));
+      from = new PsFromUnsupported();
     }
     _currentPsTerm.getFroms().add(from);
   }
@@ -4332,6 +4337,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String.format(
             "unimplemented 'policy-options policy-statement term' from clause: %s",
             getFullText(ctx)));
+    _currentPsTerm.getFroms().add(new PsFromUnsupported());
   }
 
   @Override
@@ -4428,6 +4434,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String.format(
             "unimplemented 'policy-options policy-statement term' from clause: %s",
             getFullText(ctx)));
+    _currentPsTerm.getFroms().add(new PsFromUnsupported());
   }
 
   @Override
