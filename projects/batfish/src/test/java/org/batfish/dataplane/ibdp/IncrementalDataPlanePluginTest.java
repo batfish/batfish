@@ -550,20 +550,20 @@ public class IncrementalDataPlanePluginTest {
             .setRemoteAs(2L)
             .build();
 
-    // the neighbor should be not be reachable even though multihops are allowed traceroute would be
-    // denied in
+    // the neighbor should not be reachable even though multihops are allowed as traceroute would be
+    // denied in on node 3
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
             initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
   }
 
   /**
-   * Generates the configuration for a three node network with connectivity between node1 to node2
-   * and node1 to node3, and also node2 to node3. Also adds backwards connectivity between node3 to
-   * node1. The diagram of the network is below.
+   * Generates configurations for a three node network with connectivity as shown in the diagram
+   * below. Also adds static routes from node 1 to node 3 and back from node 3 to node 1
    *
    * @param denyIntoHop3 If true, add an incoming ACL on node3 that blocks all traffic
-   * @return {@link SortedMap} of generated configuration names and {@link Configuration}s
+   * @return {@link SortedMap} of generated configuration names and corresponding {@link
+   *     Configuration}s
    */
 
   /* +-----------+                       +-------------+                   +--------------+
