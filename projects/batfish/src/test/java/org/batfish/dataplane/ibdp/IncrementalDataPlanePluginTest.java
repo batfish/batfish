@@ -527,7 +527,8 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpMulltihopHopFailure() throws IOException {
+  public void testEbgpMultihopHopFailure() throws IOException {
+    // use a network with a deny all ACL on node 3
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -549,8 +550,8 @@ public class IncrementalDataPlanePluginTest {
             .setRemoteAs(2L)
             .build();
 
-    // the neighbor should be not be reachable even though multihops are allowed because the
-    // traceroute would be denied in
+    // the neighbor should be not be reachable even though multihops are allowed traceroute would be
+    // denied in
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
             initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
