@@ -81,7 +81,7 @@ for testdir in aws basic java-smt jsonpath-addons jsonpathtotable parsing-errors
 EOF
 done
 
-### Trigger docker tests when not PR
+### Trigger docker and pybatfish builds when not PR
 if [ "${BUILDKITE_PULL_REQUEST}" = "false" ]; then
   cat <<EOF
   - wait
@@ -92,7 +92,10 @@ if [ "${BUILDKITE_PULL_REQUEST}" = "false" ]; then
       env:
         BATFISH_TAG: "$(git rev-parse --short HEAD)"
         BATFISH_VERSION: "$(grep -1 batfish-parent 'projects/pom.xml' | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
-EOF
+  - label: "Trigger pybatfish build"
+    trigger: "pybatfish-pipeline"
+    branches: "master"
+ EOF
 fi
 
 ### Branches
