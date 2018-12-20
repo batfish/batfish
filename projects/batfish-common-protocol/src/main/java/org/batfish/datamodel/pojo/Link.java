@@ -96,10 +96,8 @@ public class Link extends BfObject {
       case LOOPBACK:
       case NULL:
       case UNKNOWN:
-        return LinkType.UNKNOWN;
-
       default:
-        throw new IllegalArgumentException(String.format("Unknown InterfaceType: %s", iface1type));
+        return LinkType.UNKNOWN;
     }
   }
 
