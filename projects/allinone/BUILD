@@ -126,6 +126,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],
