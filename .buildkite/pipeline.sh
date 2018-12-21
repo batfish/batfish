@@ -6,8 +6,8 @@ steps:
   - label: "Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
   - label: "Python templates"
     command:
       - "python3 -m virtualenv .venv"
@@ -15,8 +15,8 @@ steps:
       - "pip install pytest"
       - "cd tests && pytest"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
   - label: "Build"
     command:
       - "mkdir workspace"
@@ -28,8 +28,8 @@ steps:
     artifact_paths:
       - "workspace/*"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
   - wait
 EOF
 ### maven javadoc, mpd, tests
@@ -43,8 +43,8 @@ for proj in allinone batfish batfish-client batfish-common-protocol coordinator 
       - "tar -x --no-same-owner -f workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
       - "mvn -f projects -pl allinone install -P '!fast,${prof}'"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
       - artifacts#v1.2.0:
           download:
             - "workspace/workdir.tar"
@@ -61,8 +61,8 @@ cat <<EOF
       - "tar -x --no-same-owner -f workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
       - "mvn -f projects install -P '!fast,lint'"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
       - artifacts#v1.2.0:
           download:
             - "workspace/workdir.tar"
@@ -74,8 +74,8 @@ for testdir in aws basic java-smt jsonpath-addons jsonpathtotable parsing-errors
   - label: "${testdir} ref tests"
     command: ".buildkite/ref_test.sh tests/${testdir}/commands"
     plugins:
-      - docker#v1.1.1:
-          image: "dhalperi/build-base:latest"
+      - docker#v2.1.0:
+          image: "arfogel/batfish-docker-build-base:latest"
       - artifacts#v1.2.0:
           download: "workspace/allinone.jar"
 EOF
