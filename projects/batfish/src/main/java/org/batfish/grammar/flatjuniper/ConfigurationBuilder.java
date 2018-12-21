@@ -3807,7 +3807,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       _currentLogicalSystem.setDefaultInboundAction(LineAction.PERMIT);
     }
-    _currentLogicalSystem.expandInterfaceRanges();
   }
 
   @Override

@@ -1946,23 +1946,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(ae2.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-8/1/2"))));
     assertThat(ae2.get8023adInterface(), equalTo("ae1"));
     assertThat(ae2.getRedundantParentInterface(), equalTo("reth0"));
-
-    // all interfaces are expanded in the vendor model
-    org.batfish.representation.juniper.Interface xe000 =
-        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-0/0/0");
-    assertThat(xe000.getMtu(), equalTo(9000));
-    assertThat(xe000.getDescription(), equalTo("dodo"));
-
-    org.batfish.representation.juniper.Interface xe001 =
-        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-0/0/1");
-    assertThat(xe001.getMtu(), equalTo(8000));
-    assertThat(xe001.getDescription(), equalTo("dodo"));
-
-    org.batfish.representation.juniper.Interface xe812 =
-        juniperConfig.getMasterLogicalSystem().getInterfaces().get("xe-8/1/2");
-    assertThat(xe812.getDescription(), equalTo("dodo"));
-    assertThat(xe812.get8023adInterface(), equalTo("ae1"));
-    assertThat(xe812.getRedundantParentInterface(), equalTo("reth0"));
   }
 
   @Test

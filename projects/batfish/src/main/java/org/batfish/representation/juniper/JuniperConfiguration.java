@@ -2093,6 +2093,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    _logicalSystems.forEach((key, ls) -> ls.expandInterfaceRanges());
     _logicalSystems
         .keySet()
         .stream()
