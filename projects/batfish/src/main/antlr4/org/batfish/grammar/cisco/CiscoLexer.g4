@@ -14954,6 +14954,12 @@ M_Interface_PRECFONFIGURE
    'preconfigure' -> type ( PRECONFIGURE )
 ;
 
+// M_Interface_VXLAN must come before M_Interface_PREFIX
+M_Interface_VXLAN
+:
+   [Vv]'xlan' -> type (VXLAN)
+;
+
 M_Interface_PREFIX
 :
    (

@@ -1667,7 +1667,7 @@ ifvrrp_priority
 
 s_eos_vxlan_interface
 :
-   INTERFACE iname = interface_name NEWLINE
+   INTERFACE iname = eos_vxlan_interface_name NEWLINE
    eos_vxlan_if_inner*
 ;
 
