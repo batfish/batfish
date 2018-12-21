@@ -68487,7 +68487,7 @@
           },
           "zone security" : {
             "z1" : {
-              "interface zone-member" : [
+              "interface zone-member security" : [
                 294
               ]
             }
@@ -71030,7 +71030,7 @@
           },
           "zone security" : {
             "z1" : {
-              "interface zone-member" : [
+              "interface zone-member security" : [
                 294
               ]
             }

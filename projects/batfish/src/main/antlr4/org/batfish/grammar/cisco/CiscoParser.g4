@@ -2941,6 +2941,15 @@ s_router_vrrp
    )*
 ;
 
+s_same_security_traffic
+:
+  SAME_SECURITY_TRAFFIC PERMIT
+  (
+     INTER_INTERFACE
+     | INTRA_INTERFACE
+  ) NEWLINE
+;
+
 s_sccp
 :
    NO? SCCP null_rest_of_line
@@ -3685,6 +3694,7 @@ stanza
    | s_router_rip
    | s_router_static
    | s_router_vrrp
+   | s_same_security_traffic
    | s_sccp
    | s_service
    | s_service_policy_global

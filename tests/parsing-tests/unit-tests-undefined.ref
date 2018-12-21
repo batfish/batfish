@@ -991,7 +991,7 @@
         "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "zone security",
         "Ref_Name" : "z1",
-        "Context" : "interface zone-member",
+        "Context" : "interface zone-member security",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [

@@ -949,6 +949,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
+import org.batfish.grammar.cisco.CiscoParser.S_same_security_trafficContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
@@ -5928,10 +5929,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (iface.getSecurityLevel() == null) {
         switch (alias) {
           case TRUST_SECURITY_LEVEL_ALIAS:
-            setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+            iface.setSecurityLevel(TRUST_SECURITY_LEVEL);
             break;
           case NO_TRUST_SECURITY_LEVEL_ALIAS:
-            setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+            iface.setSecurityLevel(NO_TRUST_SECURITY_LEVEL);
             break;
           default:
             // don't set a level
@@ -5950,7 +5951,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    setIfaceSecurityLevel(_currentInterfaces.get(0), 0);
+    _currentInterfaces.get(0).setSecurityLevel(0);
   }
 
   @Override
@@ -5963,14 +5964,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
-  }
-
-  private void setIfaceSecurityLevel(Interface iface, int level) {
-    iface.setSecurityLevel(level);
-    String zoneName = CiscoConfiguration.computeSecurityLevelZoneName(level, iface.getName());
-    iface.setSecurityZone(zoneName);
-    _configuration.getSecurityZones().put(zoneName, new SecurityZone(zoneName));
+    _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
   }
 
   @Override
@@ -8629,6 +8623,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_router_rip(S_router_ripContext ctx) {
     _currentRipProcess = null;
+  }
+
+  @Override
+  public void exitS_same_security_traffic(S_same_security_trafficContext ctx) {
+    if (ctx.INTER_INTERFACE() != null) {
+      _configuration.setSameSecurityTrafficInter(true);
+    }
+    if (ctx.INTRA_INTERFACE() != null) {
+      _configuration.setSameSecurityTrafficIntra(true);
+    }
   }
 
   @Override

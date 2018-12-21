@@ -1820,7 +1820,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
             "prefix" : "192.168.1.0/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -1833,8 +1833,30 @@
           }
         },
         "ipAccessLists" : {
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+          "~COMBINED_OUTGOING_ACL~blah~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~blah~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_0'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
+                      "defaultAccept" : false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -1842,16 +1864,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Ethernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Ethernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -1913,10 +1925,10 @@
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Ethernet0/0" : {
-            "name" : "SECURITY_LEVEL_0_Ethernet0/0",
+          "SECURITY_LEVEL_0" : {
+            "name" : "SECURITY_LEVEL_0",
             "interfaces" : [
-              "Ethernet0/0"
+              "blah"
             ]
           }
         }
@@ -7286,7 +7298,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -7637,7 +7648,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
             "prefix" : "192.168.0.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -7704,53 +7715,30 @@
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
+          "~COMBINED_OUTGOING_ACL~inside~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~inside~",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Loopback0"
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_100'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
+                      "defaultAccept" : false
+                    }
                   ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Loopback0'"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Traffic from security level 100"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "states" : [
-                      "ESTABLISHED"
-                    ]
-                  }
-                },
-                "name" : "~EXISTING_CONNECTION~"
+                }
               }
             ]
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -7758,16 +7746,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_100_GigabitEthernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -7828,16 +7806,10 @@
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Loopback0" : {
-            "name" : "SECURITY_LEVEL_0_Loopback0",
+          "SECURITY_LEVEL_100" : {
+            "name" : "SECURITY_LEVEL_100",
             "interfaces" : [
-              "Loopback0"
-            ]
-          },
-          "SECURITY_LEVEL_100_GigabitEthernet0/0" : {
-            "name" : "SECURITY_LEVEL_100_GigabitEthernet0/0",
-            "interfaces" : [
-              "GigabitEthernet0/0"
+              "inside"
             ]
           }
         }

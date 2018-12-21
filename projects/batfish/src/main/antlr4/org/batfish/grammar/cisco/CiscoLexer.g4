@@ -6002,6 +6002,11 @@ INTEGRITY
    'integrity'
 ;
 
+INTER_INTERFACE
+:
+   'inter-interface'
+;
+
 INTERAREA
 :
    'interarea'
@@ -6037,6 +6042,11 @@ INTERVAL
 INTERWORKING
 :
    'interworking'
+;
+
+INTRA_INTERFACE
+:
+   'intra-interface'
 ;
 
 INVALID_SPI_RECOVERY
