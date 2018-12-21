@@ -175,6 +175,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
@@ -3430,6 +3431,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.EXTERNAL() != null) {
       _currentBgpGroup.setType(BgpGroupType.EXTERNAL);
     }
+  }
+
+  @Override
+  public void exitBfiu_loops(Bfiu_loopsContext ctx) {
+    _currentBgpGroup.setLoops(toInt(ctx.DEC()));
   }
 
   @Override
