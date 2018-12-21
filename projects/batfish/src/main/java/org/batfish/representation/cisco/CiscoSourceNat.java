@@ -1,8 +1,17 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.transformation.Transformation;
 
 public class CiscoSourceNat implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -61,5 +70,31 @@ public class CiscoSourceNat implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_aclName, _aclNameLine, _natPool, _natPoolLine);
+  }
+
+  /**
+   * Convert to vendor-independent model of a packet transformation. If this is incomplete/invalid,
+   * return {@link Optional#empty}.
+   */
+  public Optional<Transformation> toTransformation(
+      Map<String, IpAccessList> ipAccessLists, Map<String, NatPool> natPools) {
+    if (_aclName == null
+        || !ipAccessLists.containsKey(_aclName)
+        || _natPool == null
+        || !natPools.containsKey(_natPool)) {
+      // Unknown ACL or pool.
+      return Optional.empty();
+    }
+
+    NatPool pool = natPools.get(_natPool);
+    Ip firstIp = pool.getFirst();
+    Ip lastIp = pool.getLast();
+    if (firstIp == null || lastIp == null) {
+      // pool is undefined
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        when(permittedByAcl(_aclName)).apply(assignSourceIp(firstIp, lastIp)).build());
   }
 }
