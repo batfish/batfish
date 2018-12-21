@@ -3435,11 +3435,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBfiu_loops(Bfiu_loopsContext ctx) {
-    BgpGroup group = _currentBgpGroup;
-    if (group == null) {
-      group = _currentRoutingInstance.getMasterBgpGroup();
-    }
-    group.setLoops(toInt(ctx.DEC()));
+    _currentBgpGroup.setLoops(toInt(ctx.DEC()));
   }
 
   @Override

@@ -13,6 +13,7 @@ set protocols bgp group someipv4bgpgroup family inet unicast loops 2
 set protocols bgp group someipv4bgpgroup import someimportpolicy
 set protocols bgp group someipv4bgpgroup multipath
 set protocols bgp group someipv4bgpgroup neighbor 3.4.5.6 description bippety
+set protocols bgp group someipv4bgpgroup neighbor 3.4.5.7 local-as 1
 set protocols bgp group someipv4bgpgroup neighbor 3.4.5.7 family inet unicast loops 3
 set protocols bgp group someipv4bgpgroup peer-as 12345
 set protocols bgp group someipv4bgpgroup type external

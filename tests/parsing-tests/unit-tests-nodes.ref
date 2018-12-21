@@ -15911,9 +15911,36 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : false,
+              "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
+              "neighbors" : {
+                "3.4.5.7/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : true,
+                  "allowLocalAsIn" : true,
+                  "allowRemoteAsOut" : false,
+                  "authenticationSettings" : {
+                    "authenticationAlgorithm" : "HMAC_SHA_1_96"
+                  },
+                  "clusterId" : 0,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
+                  "group" : "someipv4bgpgroup",
+                  "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
+                  "localAs" : 1,
+                  "peerAddress" : "3.4.5.7",
+                  "remoteAs" : 12345,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                }
+              },
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }

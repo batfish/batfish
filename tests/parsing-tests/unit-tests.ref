@@ -44365,6 +44365,29 @@
             "                  NEIGHBOR:'neighbor'",
             "                  IP_ADDRESS:'3.4.5.7'",
             "                  (b_common",
+            "                    (b_local_as",
+            "                      LOCAL_AS:'local-as'",
+            "                      (bl_number",
+            "                        asn = (bgp_asn",
+            "                          asn = DEC:'1')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_neighbor",
+            "                  NEIGHBOR:'neighbor'",
+            "                  IP_ADDRESS:'3.4.5.7'",
+            "                  (b_common",
             "                    (b_family",
             "                      FAMILY:'family'",
             "                      (bf_inet",
@@ -66102,7 +66125,6 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "definitionLines" : [
-                26,
                 27,
                 28,
                 29,
@@ -66110,20 +66132,21 @@
                 31,
                 32,
                 33,
-                34
+                34,
+                35
               ],
               "numReferrers" : 2
             },
             "someinternalipv6group" : {
               "definitionLines" : [
-                35,
                 36,
                 37,
                 38,
                 39,
                 40,
                 41,
-                42
+                42,
+                43
               ],
               "numReferrers" : 1
             },
@@ -66138,19 +66161,20 @@
                 15,
                 16,
                 17,
-                18
+                18,
+                19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 3
             },
             "someipv6bgpgroup" : {
               "definitionLines" : [
-                19,
                 20,
                 21,
                 22,
                 23,
                 24,
-                25
+                25,
+                26
               ],
               "numReferrers" : 1
             }
@@ -69618,24 +69642,25 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "bgp group neighbor" : [
-                31,
-                32
+                32,
+                33
               ]
             },
             "someinternalipv6group" : {
               "bgp group neighbor" : [
-                40
+                41
               ]
             },
             "someipv4bgpgroup" : {
               "bgp group neighbor" : [
                 15,
-                16
+                16,
+                17
               ]
             },
             "someipv6bgpgroup" : {
               "bgp group neighbor" : [
-                23
+                24
               ]
             }
           },
@@ -69643,17 +69668,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                19,
-                26,
-                35
+                20,
+                27,
+                36
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                21,
-                28,
-                37
+                22,
+                29,
+                38
               ]
             }
           }
@@ -71751,17 +71776,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                19,
-                26,
-                35
+                20,
+                27,
+                36
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                21,
-                28,
-                37
+                22,
+                29,
+                38
               ]
             }
           }
@@ -72334,7 +72359,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 3.4.5.7/32"
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.4.5.7"
             }
           ]
         },
