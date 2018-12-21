@@ -348,6 +348,7 @@ bfi_unicast
    (
       apply
       | bfiu_add_path
+      | bfiu_loops
       | bfiu_prefix_limit
       | bfiu_rib_group
    )
@@ -387,6 +388,11 @@ bfiu_add_path
       bfiua_receive
       | bfiua_send
    )
+;
+
+bfiu_loops
+:
+   LOOPS count = DEC
 ;
 
 bfiu_prefix_limit
