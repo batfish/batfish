@@ -232,11 +232,15 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -330,6 +334,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -387,6 +392,19 @@ public class CiscoGrammarTest {
     fb.setState(state);
     fb.setTag("test");
     return fb.build();
+  }
+
+  private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
+    CiscoControlPlaneExtractor extractor =
+        new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(
+            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    return (CiscoConfiguration) extractor.getVendorConfiguration();
   }
 
   @Test
@@ -3069,6 +3087,36 @@ public class CiscoGrammarTest {
             ImmutableSet.of(
                 new Dependency("Ethernet0", DependencyType.AGGREGATE),
                 new Dependency("Ethernet1", DependencyType.AGGREGATE))));
+  }
+
+  @Test
+  public void testEosVxlan() throws IOException {
+    String hostname = "eos-vxlan";
+
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
+
+    assertThat(config, not(equalTo(null)));
+    AristaEosVxlan eosVxlan = config.getEosVxlan();
+    assertThat(eosVxlan, not(equalTo(null)));
+
+    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
+    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
+    assertThat(eosVxlan.getUdpPort(), equalTo(4789));
+    // Confirm flood address set doesn't contain the removed address
+    assertThat(
+        eosVxlan.getFloodAddresses(), containsInAnyOrder(new Ip("1.1.1.5"), new Ip("1.1.1.7")));
+
+    SortedMap<Integer, Integer> vlanVnis = eosVxlan.getVlanVnis();
+    assertThat(vlanVnis, hasEntry(equalTo(2), equalTo(10002)));
+
+    // Confirm flood address set was overwritten as expected
+    assertThat(
+        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(new Ip("1.1.1.10"))));
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    assertThat(c, not(equalTo(null)));
   }
 
   @Test
