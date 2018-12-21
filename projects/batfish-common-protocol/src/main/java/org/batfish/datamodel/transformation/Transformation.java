@@ -9,14 +9,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 /** A representation of a composite packet transformation. */
 @ParametersAreNonnullByDefault
 public final class Transformation {
   public static final class Builder {
-    private @NonNull AclLineMatchExpr _guard;
-    private @NonNull List<TransformationStep> _transformationSteps;
+    private @Nonnull AclLineMatchExpr _guard;
+    private @Nonnull List<TransformationStep> _transformationSteps;
     private @Nullable Transformation _andThen;
     private @Nullable Transformation _orElse;
 
