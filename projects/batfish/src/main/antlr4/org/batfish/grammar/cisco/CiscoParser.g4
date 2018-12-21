@@ -3605,6 +3605,7 @@ stanza
    |
    // do not move below s_interface
    s_interface_line
+   | s_eos_vxlan_interface
    | s_interface
    | s_ip_access_list_eth
    | s_ip_access_list_session
