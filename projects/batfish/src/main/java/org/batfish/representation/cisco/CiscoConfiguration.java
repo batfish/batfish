@@ -3342,7 +3342,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoStructureUsage.TRACK_INTERFACE);
+        CiscoStructureUsage.TRACK_INTERFACE,
+        CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3588,6 +3589,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
+
+    // VXLAN
+    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(

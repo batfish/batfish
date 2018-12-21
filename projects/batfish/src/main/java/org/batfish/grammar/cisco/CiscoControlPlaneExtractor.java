@@ -67,6 +67,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
@@ -247,6 +248,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVIC
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SELF_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -2170,6 +2173,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
     _eosVxlan = new AristaEosVxlan();
     _configuration.setEosVxlan(_eosVxlan);
+    String vxlanName = ctx.iname.getText();
+    defineStructure(VXLAN, vxlanName, ctx);
+    _configuration.referenceStructure(
+        VXLAN, vxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -2208,7 +2215,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
-    _eosVxlan.setSourceInterface(ctx.iface.getText());
+    String ifaceName = ctx.iface.getText();
+    _eosVxlan.setSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, VXLAN_SOURCE_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override

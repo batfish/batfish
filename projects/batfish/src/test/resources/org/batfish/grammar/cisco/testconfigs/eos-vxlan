@@ -2,6 +2,10 @@
 hostname eos-vxlan
 boot system flash fake.swi
 !
+interface Loopback1
+ description vxlan_vtep
+ ip address 1.1.1.4/32
+!
 interface Vxlan1
   description vxlan vti
   vxlan source-interface Loopback1
