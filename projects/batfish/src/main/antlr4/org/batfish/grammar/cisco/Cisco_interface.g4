@@ -1402,7 +1402,7 @@ ifvrrpno_preempt
 
 if_zone_member
 :
-   ZONE_MEMBER SECURITY name = variable_permissive NEWLINE
+   ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
 if_security_level

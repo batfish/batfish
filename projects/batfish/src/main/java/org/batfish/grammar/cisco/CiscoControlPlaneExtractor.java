@@ -68,6 +68,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
@@ -173,6 +174,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SEL
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -4589,8 +4591,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     String name = ctx.name.getText();
-    _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
-    defineStructure(SECURITY_ZONE, name, ctx);
+    if (ctx.SECURITY() != null) {
+      _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
+      defineStructure(SECURITY_ZONE, name, ctx);
+    } else {
+      todo(ctx);
+      defineStructure(TRAFFIC_ZONE, name, ctx);
+    }
   }
 
   @Override
@@ -4628,8 +4635,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_zone_member(If_zone_memberContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
-    _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
+    if (ctx.SECURITY() != null) {
+      _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
+      _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
+    } else {
+      _configuration.referenceStructure(TRAFFIC_ZONE, name, INTERFACE_TRAFFIC_ZONE_MEMBER, line);
+      todo(ctx);
+    }
   }
 
   @Override
