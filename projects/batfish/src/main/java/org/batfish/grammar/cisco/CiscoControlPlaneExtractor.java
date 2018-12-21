@@ -549,6 +549,7 @@ import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_udp_portContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlanContext;
@@ -2198,6 +2199,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Token host : ctx.hosts) {
       floodAddresses.add(toIp(host));
     }
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_multicast_group(Eos_vxif_vxlan_multicast_groupContext ctx) {
+    _eosVxlan.setMulticastGroup(toIp(ctx.IP_ADDRESS()));
   }
 
   @Override

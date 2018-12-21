@@ -3100,11 +3100,12 @@ public class CiscoGrammarTest {
     assertThat(eosVxlan, not(equalTo(null)));
 
     assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
-    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
-    assertThat(eosVxlan.getUdpPort(), equalTo(4789));
     // Confirm flood address set doesn't contain the removed address
     assertThat(
         eosVxlan.getFloodAddresses(), containsInAnyOrder(new Ip("1.1.1.5"), new Ip("1.1.1.7")));
+    assertThat(eosVxlan.getMulticastGroup(), equalTo(new Ip("227.10.1.1")));
+    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
+    assertThat(eosVxlan.getUdpPort(), equalTo(4789));
 
     SortedMap<Integer, Integer> vlanVnis = eosVxlan.getVlanVnis();
     assertThat(vlanVnis, hasEntry(equalTo(2), equalTo(10002)));

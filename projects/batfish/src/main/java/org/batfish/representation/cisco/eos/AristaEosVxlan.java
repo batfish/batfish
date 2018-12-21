@@ -66,6 +66,10 @@ public class AristaEosVxlan implements Serializable {
     _description = description;
   }
 
+  public void setMulticastGroup(Ip multicastGroup) {
+    _multicastGroup = multicastGroup;
+  }
+
   public void setSourceInterface(String sourceInterface) {
     _sourceInterface = sourceInterface;
   }
