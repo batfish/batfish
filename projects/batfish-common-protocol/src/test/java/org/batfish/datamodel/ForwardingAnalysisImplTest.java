@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceHostSubnetIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.hostSubnetIpSpace;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -1525,7 +1524,7 @@ public class ForwardingAnalysisImplTest {
     Ip ip2 = new Ip("1.0.0.2");
     _interfaceHostSubnetIps =
         ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, subnet.toHostIpSpace())));
     _interfaceOwnedIps =
         ImmutableMap.of(
             CONFIG1,
@@ -1541,7 +1540,7 @@ public class ForwardingAnalysisImplTest {
     Ip ip2 = new Ip("1.0.0.1");
     _interfaceHostSubnetIps =
         ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, subnet.toHostIpSpace())));
     _interfaceOwnedIps =
         ImmutableMap.of(
             CONFIG1,
@@ -1556,7 +1555,7 @@ public class ForwardingAnalysisImplTest {
     Ip ip1 = new Ip("1.0.0.0");
     _interfaceHostSubnetIps =
         ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, subnet.toHostIpSpace())));
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
@@ -1569,7 +1568,7 @@ public class ForwardingAnalysisImplTest {
     Ip ip1 = new Ip("1.0.0.1");
     _interfaceHostSubnetIps =
         ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, subnet.toHostIpSpace())));
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
@@ -1583,7 +1582,7 @@ public class ForwardingAnalysisImplTest {
     Ip ip1 = new Ip("1.0.0.0");
     _interfaceHostSubnetIps =
         ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, hostSubnetIpSpace(subnet))));
+            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, subnet.toHostIpSpace())));
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();

@@ -175,6 +175,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
@@ -380,6 +381,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_defaultsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
@@ -391,6 +393,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_defaultsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
@@ -637,6 +640,7 @@ import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -2769,6 +2773,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitRog_discard(Rog_discardContext ctx) {
+    _currentGeneratedRoute.setDrop(true);
+  }
+
+  @Override
   public void exitRog_passive(Rog_passiveContext ctx) {
     _currentGeneratedRoute.setActive(false);
   }
@@ -3440,6 +3449,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.EXTERNAL() != null) {
       _currentBgpGroup.setType(BgpGroupType.EXTERNAL);
     }
+  }
+
+  @Override
+  public void exitBfiu_loops(Bfiu_loopsContext ctx) {
+    _currentBgpGroup.setLoops(toInt(ctx.DEC()));
   }
 
   @Override
@@ -4369,7 +4383,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.INET6() != null) {
       from = new PsFromFamilyInet6();
     } else {
-      throw new BatfishException("Unsupported family: " + ctx.getText());
+      _w.redFlag(
+          String.format(
+              "unimplemented 'policy-options policy-statement term' from clause: %s",
+              getFullText(ctx)));
+      from = new PsFromUnsupported();
     }
     _currentPsTerm.getFroms().add(from);
   }
@@ -4380,6 +4398,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String.format(
             "unimplemented 'policy-options policy-statement term' from clause: %s",
             getFullText(ctx)));
+    _currentPsTerm.getFroms().add(new PsFromUnsupported());
   }
 
   @Override
@@ -4476,6 +4495,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         String.format(
             "unimplemented 'policy-options policy-statement term' from clause: %s",
             getFullText(ctx)));
+    _currentPsTerm.getFroms().add(new PsFromUnsupported());
   }
 
   @Override
@@ -4708,6 +4728,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     long community = CommonUtil.communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
     _configuration.getAllStandardCommunities().add(community);
     _currentAggregateRoute.getCommunities().add(community);
+  }
+
+  @Override
+  public void exitRoa_discard(Roa_discardContext ctx) {
+    _currentAggregateRoute.setDrop(true);
   }
 
   @Override

@@ -88,6 +88,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private SortedSet<Ip> _additionalArpIps;
 
+    private InterfaceType _type;
+
     private Vrf _vrf;
 
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
@@ -143,6 +145,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPreSourceNatOutgoingFilter(_preSourceNatOutgoingFilter);
       iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
+      if (_type != null) {
+        iface.setInterfaceType(_type);
+      }
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -332,6 +337,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setType(InterfaceType type) {
+      _type = type;
+      return this;
+    }
+
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
@@ -395,6 +405,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static final int DEFAULT_MTU = 1500;
+
+  public static final String DYNAMIC_INTERFACE_NAME = "dynamic";
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
 
@@ -649,6 +661,8 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.VPN;
     } else if (name.startsWith("reth")) {
       return InterfaceType.REDUNDANT;
+    } else if (name.startsWith("ae") && name.contains(".")) {
+      return InterfaceType.AGGREGATE_CHILD;
     } else if (name.startsWith("ae")) {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("lo")) {
@@ -1630,5 +1644,18 @@ public final class Interface extends ComparableStructure<String> {
   public void blacklist() {
     setActive(false);
     setBlacklisted(true);
+  }
+
+  /**
+   * Check if the given interface name is <b>not</b> one of the special values defined by batfish or
+   * virtual null interface.
+   */
+  public static boolean isRealInterfaceName(@Nonnull String name) {
+    return !ImmutableList.of(
+            UNSET_LOCAL_INTERFACE,
+            DYNAMIC_INTERFACE_NAME,
+            NULL_INTERFACE_NAME,
+            INVALID_LOCAL_INTERFACE)
+        .contains(name);
   }
 }

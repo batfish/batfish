@@ -2491,10 +2491,10 @@
         "Lines" : {
           "filename" : "configs/juniper_bgp",
           "lines" : [
-            8,
-            15,
-            22,
-            31
+            10,
+            20,
+            27,
+            36
           ]
         }
       },
@@ -2506,10 +2506,10 @@
         "Lines" : {
           "filename" : "configs/juniper_bgp",
           "lines" : [
-            10,
-            17,
-            24,
-            33
+            13,
+            22,
+            29,
+            38
           ]
         }
       },
@@ -2622,12 +2622,12 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            14,
-            15,
-            16,
             17,
+            18,
             19,
-            20
+            20,
+            22,
+            23
           ]
         }
       },
@@ -2639,7 +2639,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            12
+            15
           ]
         }
       },
@@ -2651,7 +2651,10 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            3
+            3,
+            4,
+            5,
+            6
           ]
         }
       },
@@ -2663,7 +2666,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            4
+            7
           ]
         }
       },

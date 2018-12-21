@@ -8,8 +8,8 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
-import static org.batfish.question.routes.RoutesAnswererUtil.groupMatchingBgpRoutesByPrefix;
-import static org.batfish.question.routes.RoutesAnswererUtil.groupMatchingRoutesByPrefix;
+import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -123,8 +123,10 @@ public class RoutesAnswerer extends Answerer {
     String vrfRegex = question.getVrfs();
 
     Multiset<Row> rows;
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByKeyInBase;
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByKeyInDelta;
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
+        routesGroupedByKeyInBase;
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
+        routesGroupedByKeyInDelta;
     Map<Ip, Set<String>> ipOwners;
     DataPlane dp;
 
@@ -135,15 +137,13 @@ public class RoutesAnswerer extends Answerer {
         _batfish.pushBaseSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInBase =
-            groupMatchingBgpRoutesByPrefix(
-                dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInDelta =
-            groupMatchingBgpRoutesByPrefix(
-                dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
@@ -153,15 +153,13 @@ public class RoutesAnswerer extends Answerer {
         _batfish.pushBaseSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInBase =
-            groupMatchingBgpRoutesByPrefix(
-                dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInDelta =
-            groupMatchingBgpRoutesByPrefix(
-                dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGPMP);
@@ -173,16 +171,14 @@ public class RoutesAnswerer extends Answerer {
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInBase =
-            groupMatchingRoutesByPrefix(
-                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInDelta =
-            groupMatchingRoutesByPrefix(
-                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
         _batfish.popSnapshot();
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);

@@ -43542,6 +43542,84 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
+            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      COLON:':'",
+            "                      suffix = DEC:'0'",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (oai_ldp_synchronization",
+            "                      LDP_SYNCHRONIZATION:'ldp-synchronization'",
+            "                      (apply))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      COLON:':'",
+            "                      suffix = DEC:'0'",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (oai_ldp_synchronization",
+            "                      LDP_SYNCHRONIZATION:'ldp-synchronization'",
+            "                      (oai_ls_disable",
+            "                        DISABLE:'disable'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      COLON:':'",
+            "                      suffix = DEC:'0'",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (oai_ldp_synchronization",
+            "                      LDP_SYNCHRONIZATION:'ldp-synchronization'",
+            "                      (oai_ls_hold_time",
+            "                        HOLD_TIME:'hold-time'",
+            "                        time = DEC:'30'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
             "                      name = VARIABLE:'xe-0/0/21'  <== mode:M_Interface",
             "                      COLON:':'",
             "                      suffix = DEC:'0'",
@@ -44052,6 +44130,20 @@
             "            (p_bgp",
             "              BGP:'bgp'",
             "              (b_common",
+            "                (b_drop_path_attributes",
+            "                  DROP_PATH_ATTRIBUTES:'drop-path-attributes'",
+            "                  attr = DEC:'128')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_common",
             "                (b_family",
             "                  FAMILY:'family'",
             "                  (bf_inet",
@@ -44091,6 +44183,26 @@
             "                (b_null",
             "                  GRACEFUL_RESTART:'graceful-restart'",
             "                  (null_filler))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_common",
+            "                (b_family",
+            "                  FAMILY:'family'",
+            "                  (bf_inet",
+            "                    INET:'inet'",
+            "                    (bfi_unicast",
+            "                      UNICAST:'unicast'",
+            "                      (bfiu_loops",
+            "                        LOOPS:'loops'",
+            "                        count = DEC:'2'))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -44169,6 +44281,30 @@
             "                name = (variable",
             "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
             "                (b_common",
+            "                  (b_family",
+            "                    FAMILY:'family'",
+            "                    (bf_inet",
+            "                      INET:'inet'",
+            "                      (bfi_unicast",
+            "                        UNICAST:'unicast'",
+            "                        (bfiu_loops",
+            "                          LOOPS:'loops'",
+            "                          count = DEC:'2')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
             "                  (b_import",
             "                    IMPORT:'import'",
             "                    expr = (policy_expression",
@@ -44214,6 +44350,56 @@
             "                        DESCRIPTION:'description'",
             "                        text = M_Description_DESCRIPTION:'bippety'  <== mode:M_Description))))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_neighbor",
+            "                  NEIGHBOR:'neighbor'",
+            "                  IP_ADDRESS:'3.4.5.7'",
+            "                  (b_common",
+            "                    (b_local_as",
+            "                      LOCAL_AS:'local-as'",
+            "                      (bl_number",
+            "                        asn = (bgp_asn",
+            "                          asn = DEC:'1')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_neighbor",
+            "                  NEIGHBOR:'neighbor'",
+            "                  IP_ADDRESS:'3.4.5.7'",
+            "                  (b_common",
+            "                    (b_family",
+            "                      FAMILY:'family'",
+            "                      (bf_inet",
+            "                        INET:'inet'",
+            "                        (bfi_unicast",
+            "                          UNICAST:'unicast'",
+            "                          (bfiu_loops",
+            "                            LOOPS:'loops'",
+            "                            count = DEC:'3'))))))))))))",
+            "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
@@ -49210,6 +49396,270 @@
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      EVPN:'evpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET:'inet')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET_MDT:'inet-mdt')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET_MVPN:'inet-mvpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET_VPN:'inet-vpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET6:'inet6')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET6_MVPN:'inet6-mvpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      INET6_VPN:'inet6-vpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      ISO:'iso')))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_ISO)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      ISO_VPN:'iso-vpn')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      ROUTE_TARGET:'route-target')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_family",
+            "                      FAMILY:'family'",
+            "                      TRAFFIC_ENGINEERING:'traffic-engineering')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
             "                    (popsf_instance",
             "                      INSTANCE:'instance'",
             "                      name = (variable",
@@ -50157,6 +50607,22 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
+            "                prefix = IP_PREFIX:'35.0.0.0/8'",
+            "                (roa_common",
+            "                  (roa_discard",
+            "                    DISCARD:'discard'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_aggregate",
+            "              AGGREGATE:'aggregate'",
+            "              (roa_route",
+            "                ROUTE:'route'",
             "                prefix = IP_PREFIX:'40.0.0.0/8'",
             "                (roa_common",
             "                  (roa_policy",
@@ -50202,6 +50668,22 @@
             "                ROUTE:'route'",
             "                IP_PREFIX:'10.0.1.0/24'",
             "                (rog_common",
+            "                  (rog_active",
+            "                    ACTIVE:'active'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_generate",
+            "              GENERATE:'generate'",
+            "              (rog_route",
+            "                ROUTE:'route'",
+            "                IP_PREFIX:'10.0.1.0/24'",
+            "                (rog_common",
             "                  (rog_community",
             "                    COMMUNITY:'community'",
             "                    (standard_community",
@@ -50221,8 +50703,8 @@
             "                ROUTE:'route'",
             "                IP_PREFIX:'10.0.1.0/24'",
             "                (rog_common",
-            "                  (rog_active",
-            "                    ACTIVE:'active'))))))))",
+            "                  (rog_discard",
+            "                    DISCARD:'discard'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -61833,13 +62315,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 11,
+              "Line" : 14,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 11,
+              "Line" : 14,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             }
@@ -61897,6 +62379,46 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family evpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mdt"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mvpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-vpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-mvpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-vpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso-vpn"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family route-target"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING"
             },
             {
@@ -61909,13 +62431,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 8,
+              "Line" : 9,
               "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "policy AGGREGATE_ROUTE_POLICY"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 9,
+              "Line" : 10,
               "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "confederation 11111 members 22222"
             }
@@ -65611,53 +66133,56 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "definitionLines" : [
-                22,
-                23,
-                24,
-                25,
-                26,
                 27,
                 28,
                 29,
-                30
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
               ],
               "numReferrers" : 2
             },
             "someinternalipv6group" : {
               "definitionLines" : [
-                31,
-                32,
-                33,
-                34,
-                35,
                 36,
                 37,
-                38
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
               ],
               "numReferrers" : 1
             },
             "someipv4bgpgroup" : {
               "definitionLines" : [
-                7,
-                8,
                 9,
                 10,
                 11,
                 12,
                 13,
-                14
-              ],
-              "numReferrers" : 1
-            },
-            "someipv6bgpgroup" : {
-              "definitionLines" : [
+                14,
                 15,
                 16,
                 17,
                 18,
-                19,
+                19
+              ],
+              "numReferrers" : 3
+            },
+            "someipv6bgpgroup" : {
+              "definitionLines" : [
                 20,
-                21
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
               ],
               "numReferrers" : 1
             }
@@ -66056,7 +66581,19 @@
                 18,
                 19,
                 20,
-                21
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
               ],
               "numReferrers" : 0
             }
@@ -69113,41 +69650,43 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "bgp group neighbor" : [
-                27,
-                28
+                32,
+                33
               ]
             },
             "someinternalipv6group" : {
               "bgp group neighbor" : [
-                36
+                41
               ]
             },
             "someipv4bgpgroup" : {
               "bgp group neighbor" : [
-                12
+                15,
+                16,
+                17
               ]
             },
             "someipv6bgpgroup" : {
               "bgp group neighbor" : [
-                19
+                24
               ]
             }
           },
           "policy-statement" : {
             "someexportpolicy" : {
               "bgp export policy-statement" : [
-                8,
-                15,
-                22,
-                31
+                10,
+                20,
+                27,
+                36
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
-                10,
-                17,
-                24,
-                33
+                13,
+                22,
+                29,
+                38
               ]
             }
           }
@@ -69379,27 +69918,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                14,
-                15,
-                16,
                 17,
+                18,
                 19,
-                20
+                20,
+                22,
+                23
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                12
+                15
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3
+                3,
+                4,
+                5,
+                6
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                4
+                7
               ]
             }
           }
@@ -69475,7 +70017,7 @@
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
-                8
+                9
               ]
             }
           }
@@ -71241,18 +71783,18 @@
           "policy-statement" : {
             "someexportpolicy" : {
               "bgp export policy-statement" : [
-                8,
-                15,
-                22,
-                31
+                10,
+                20,
+                27,
+                36
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
-                10,
-                17,
-                24,
-                33
+                13,
+                22,
+                29,
+                38
               ]
             }
           }
@@ -71326,27 +71868,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                14,
-                15,
-                16,
                 17,
+                18,
                 19,
-                20
+                20,
+                22,
+                23
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                12
+                15
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3
+                3,
+                4,
+                5,
+                6
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                4
+                7
               ]
             }
           }
@@ -71819,6 +72364,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 3.4.5.6/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.4.5.7"
             }
           ]
         },

@@ -520,14 +520,14 @@
       },
       {
         "Filename" : "juniper-ospf",
-        "Line" : 11,
+        "Line" : 14,
         "Text" : "area-range dead:beef::/56 override-metric 100",
         "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "juniper-ospf",
-        "Line" : 11,
+        "Line" : 14,
         "Text" : "area-range dead:beef::/56 override-metric 100",
         "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -555,16 +555,16 @@
       },
       {
         "Filename" : "juniper_routing_options",
-        "Line" : 8,
-        "Text" : "policy AGGREGATE_ROUTE_POLICY",
-        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Line" : 10,
+        "Text" : "confederation 11111 members 22222",
+        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "juniper_routing_options",
         "Line" : 9,
-        "Text" : "confederation 11111 members 22222",
-        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Text" : "policy AGGREGATE_ROUTE_POLICY",
+        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

@@ -45,6 +45,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
@@ -704,19 +705,21 @@ public class BatfishTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
 
-    ib.setName("eth0").setActive(false).build();
-    ib.setName("eth1").setActive(true).build();
+    ib.setName("eth0").setActive(false).setType(InterfaceType.PHYSICAL).build();
+    ib.setName("eth1").setActive(true).setType(InterfaceType.PHYSICAL).build();
     ib.setName("eth2")
         .setActive(true)
+        .setType(InterfaceType.AGGREGATED)
         .setDependencies(
             ImmutableSet.of(
                 new Dependency("eth1", DependencyType.AGGREGATE),
                 new Dependency("eth0", DependencyType.AGGREGATE)))
         .build();
 
-    ib.setName("eth3").setActive(false).build();
+    ib.setName("eth3").setActive(false).setType(InterfaceType.PHYSICAL).build();
     ib.setName("eth4")
         .setActive(true)
+        .setType(InterfaceType.AGGREGATED)
         .setDependencies(
             ImmutableSet.of(
                 new Dependency("eth0", DependencyType.AGGREGATE),

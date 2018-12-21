@@ -2,12 +2,12 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfExternalType1Route extends OspfExternalRoute {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
@@ -63,11 +63,6 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   }
 
   @Override
-  protected final String ospfExternalRouteString() {
-    return "";
-  }
-
-  @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     return 0;
   }
@@ -85,5 +80,10 @@ public class OspfExternalType1Route extends OspfExternalRoute {
     }
     OspfExternalType1Route other = (OspfExternalType1Route) obj;
     return getCostToAdvertiser() == other.getCostToAdvertiser();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), getCostToAdvertiser());
   }
 }

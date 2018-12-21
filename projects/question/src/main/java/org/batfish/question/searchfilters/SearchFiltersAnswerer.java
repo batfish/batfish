@@ -21,11 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -52,6 +55,15 @@ import org.batfish.specifier.SpecifierContext;
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
   public static final String COL_HEADER_SPACE = "Header_Space";
+
+  @VisibleForTesting
+  public static final Function<String, String> NEGATED_RENAMER =
+      name -> String.format("~~ Negated ACL: %s ~~", name);
+
+  @VisibleForTesting
+  public static final BiFunction<Integer, String, String> MATCH_LINE_RENAMER =
+      (line, name) -> String.format("~~ Match-Line %d ACL: %s ~~", line, name);
+
   private TableAnswerElement _tableAnswerElement;
 
   public SearchFiltersAnswerer(Question question, IBatfish batfish) {
@@ -140,12 +152,12 @@ public final class SearchFiltersAnswerer extends Answerer {
                   baseTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(true, node, baseAcl.get().getName(), flow),
+                          testFiltersRow(true, node, aclName, flow),
                           question.getGenerateExplanations()));
                   deltaTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(false, node, deltaAcl.get().getName(), flow),
+                          testFiltersRow(false, node, aclName, flow),
                           question.getGenerateExplanations()));
                 });
       }
@@ -208,7 +220,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   private void nonDifferentialAnswer(SearchFiltersQuestion question) {
-    List<Pair<String, IpAccessList>> acls = getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> acls = getQueryAcls(question);
     if (acls.isEmpty()) {
       throw new BatfishException("No matching filters");
     }
@@ -219,23 +231,19 @@ public final class SearchFiltersAnswerer extends Answerer {
      * Concatenate the answers for all flows into one big table.
      */
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    for (Pair<String, IpAccessList> pair : acls) {
-      String hostname = pair.getFirst();
+    for (Triple<String, String, IpAccessList> triple : acls) {
+      String hostname = triple.getLeft();
+      String aclname = triple.getMiddle();
       Configuration node = configurations.get(hostname);
-      IpAccessList acl = pair.getSecond();
+      IpAccessList acl = triple.getRight();
       Optional<SearchFiltersResult> optionalResult;
-      try {
-        optionalResult = _batfish.reachFilter(node, acl, question.toSearchFiltersParameters());
-      } catch (Throwable t) {
-        _batfish.getLogger().warn(t.getMessage());
-        continue;
-      }
+      optionalResult = _batfish.reachFilter(node, acl, question.toSearchFiltersParameters());
       optionalResult.ifPresent(
           result ->
               rows.add(
                   toSearchFiltersRow(
                       result.getHeaderSpaceDescription().orElse(null),
-                      testFiltersRow(true, hostname, acl.getName(), result.getExampleFlow()),
+                      testFiltersRow(true, hostname, aclname, result.getExampleFlow()),
                       question.getGenerateExplanations())));
     }
 
@@ -284,8 +292,10 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
   }
 
+  // Each triple in the result is a node name, ACL name, and the ACL itself.  The ACL itself
+  // may rename the ACL, so we explicitly keep track of the original name for later use.
   @VisibleForTesting
-  List<Pair<String, IpAccessList>> getQueryAcls(SearchFiltersQuestion question) {
+  List<Triple<String, String, IpAccessList>> getQueryAcls(SearchFiltersQuestion question) {
     Map<String, Configuration> configs = _batfish.loadConfigurations();
     return getSpecifiedAcls(question)
         .entries()
@@ -296,7 +306,7 @@ public final class SearchFiltersAnswerer extends Answerer {
               String aclName = entry.getValue();
               Optional<IpAccessList> queryAcl =
                   makeQueryAcl(configs.get(hostName).getIpAccessLists().get(aclName));
-              return queryAcl.map(acl -> new Pair<>(hostName, acl));
+              return queryAcl.map(acl -> ImmutableTriple.of(hostName, aclName, acl));
             })
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -318,7 +328,10 @@ public final class SearchFiltersAnswerer extends Answerer {
                         .setAction(LineAction.PERMIT)
                         .build()))
             .collect(ImmutableList.toImmutableList());
-    return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
+    return IpAccessList.builder()
+        .setName(MATCH_LINE_RENAMER.apply(lineNumber, acl.getName()))
+        .setLines(lines)
+        .build();
   }
 
   @VisibleForTesting
@@ -339,7 +352,10 @@ public final class SearchFiltersAnswerer extends Answerer {
                 // accept if we reach the end of the ACL
                 Stream.of(IpAccessListLine.ACCEPT_ALL))
             .collect(ImmutableList.toImmutableList());
-    return IpAccessList.builder().setName(acl.getName()).setLines(lines).build();
+    return IpAccessList.builder()
+        .setName(NEGATED_RENAMER.apply(acl.getName()))
+        .setLines(lines)
+        .build();
   }
 
   private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {

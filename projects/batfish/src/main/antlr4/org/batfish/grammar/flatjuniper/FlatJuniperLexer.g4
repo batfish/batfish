@@ -1030,6 +1030,11 @@ DOMAIN_SEARCH
    'domain-search'
 ;
 
+DROP_PATH_ATTRIBUTES
+:
+   'drop-path-attributes'
+;
+
 DSA_SIGNATURES
 :
    'dsa-signatures'
@@ -1840,6 +1845,11 @@ INET_MVPN
    'inet-mvpn'
 ;
 
+INET6_MVPN
+:
+   'inet6-mvpn'
+;
+
 INET_VPN
 :
    'inet-vpn'
@@ -2058,6 +2068,11 @@ ISIS_ENHANCED
 ISO
 :
    'iso' -> pushMode ( M_ISO )
+;
+
+ISO_VPN
+:
+   'iso-vpn'
 ;
 
 JUNOS_AOL
@@ -4700,6 +4715,11 @@ ROUTE_DISTINGUISHER_ID
 ROUTE_FILTER
 :
    'route-filter'
+;
+
+ROUTE_TARGET
+:
+   'route-target'
 ;
 
 ROUTE_TYPE
