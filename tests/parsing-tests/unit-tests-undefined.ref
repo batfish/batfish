@@ -857,6 +857,18 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback1",
+        "Context" : "vxlan source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            322
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "ipv4 acl",
         "Ref_Name" : "167",
         "Context" : "interface ip verify access-list",
@@ -995,7 +1007,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            294
+            290
           ]
         }
       },
@@ -3149,10 +3161,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 255 results",
+      "notes" : "Found 256 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 255
+      "numResults" : 256
     }
   }
 ]

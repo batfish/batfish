@@ -3091,7 +3091,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosVxlan() throws IOException {
+  public void testEosVxlanCiscoConfig() throws IOException {
     String hostname = "eos-vxlan";
 
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);

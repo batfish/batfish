@@ -7564,32 +7564,6 @@
             "vlan" : 4094,
             "vrf" : "default"
           },
-          "Vxlan1" : {
-            "name" : "Vxlan1",
-            "accessVlan" : 0,
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "Vxlan1"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
-            "vrf" : "default"
-          },
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
             "accessVlan" : 0,
@@ -7820,7 +7794,6 @@
               "Vlan2",
               "Vlan3",
               "Vlan4094",
-              "Vxlan1",
               "Wideband-Cable1/2/3:4",
               "inside",
               "tunnel-ip6"
