@@ -547,6 +547,12 @@ import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_source_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_udp_portContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlanContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlan_vniContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -920,6 +926,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.S_eos_vxlan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
@@ -1243,6 +1250,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
@@ -1488,6 +1496,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private User _currentUser;
 
+  private Integer _currentVlanNum;
+
   private String _currentVrf;
 
   private VrrpGroup _currentVrrpGroup;
@@ -1537,6 +1547,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Integer _currentHsrpGroup;
 
   private String _currentTrackingGroup;
+
+  private AristaEosVxlan _eosVxlan;
 
   public CiscoControlPlaneExtractor(
       String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
@@ -2151,6 +2163,66 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(
         L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
+    _eosVxlan = new AristaEosVxlan();
+    _configuration.setEosVxlan(_eosVxlan);
+  }
+
+  @Override
+  public void enterEos_vxif_description(Eos_vxif_descriptionContext ctx) {
+    _eosVxlan.setDescription(ctx.description_line().text.getText().trim());
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_flood(Eos_vxif_vxlan_floodContext ctx) {
+    SortedSet<Ip> floodAddresses = _eosVxlan.getFloodAddresses();
+    if (_currentVlanNum != null) {
+      floodAddresses =
+          _eosVxlan.getVlanFloodAddresses().computeIfAbsent(_currentVlanNum, n -> new TreeSet<>());
+    }
+
+    if (ctx.REMOVE() != null) {
+      for (Token host : ctx.hosts) {
+        floodAddresses.remove(toIp(host));
+      }
+      return;
+    }
+
+    if (ctx.ADD() == null) {
+      // Replace existing addresses instead of adding
+      floodAddresses.clear();
+    }
+    for (Token host : ctx.hosts) {
+      floodAddresses.add(toIp(host));
+    }
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
+    _eosVxlan.setSourceInterface(ctx.iface.getText());
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
+    _eosVxlan.setUdpPort(toInteger(ctx.num));
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
+    _currentVlanNum = toInteger(ctx.num);
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
+    _currentVlanNum = null;
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
+    _eosVxlan.getVlanVnis().computeIfAbsent(_currentVlanNum, n -> toInteger(ctx.num));
   }
 
   @Override
