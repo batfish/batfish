@@ -41,7 +41,7 @@ for proj in allinone batfish batfish-client batfish-common-protocol coordinator 
       - "tar -x --no-same-owner -f workspace/workdir.tar"
       - "mkdir -p /root/.m2/repository/org/batfish"
       - "tar -x --no-same-owner -f workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish"
-      - "mvn -f projects -pl allinone install -P '!fast,${prof}'"
+      - "mvn -f projects -pl ${proj} install -P '!fast,${prof}'"
     plugins:
       - docker#v2.1.0:
           image: "arfogel/batfish-docker-build-base:latest"
