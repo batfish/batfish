@@ -120,7 +120,6 @@ class VirtualEigrpProcess {
                   .setNextHopInterface(iface.getName())
                   .setProcessAsn(_asn)
                   .build();
-          requireNonNull(route);
           _internalRib.mergeRoute(route);
         }
       }
@@ -166,7 +165,7 @@ class VirtualEigrpProcess {
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
     outputRouteBuilder.setProcessAsn(_asn);
     outputRouteBuilder.setNonRouting(true);
-    return requireNonNull(outputRouteBuilder.build());
+    return outputRouteBuilder.build();
   }
 
   /**
@@ -270,9 +269,6 @@ class VirtualEigrpProcess {
                 .setEigrpMetric(metric)
                 .setNetwork(neighborRoute.getNetwork());
             EigrpExternalRoute newRoute = routeBuilder.build();
-            if (newRoute == null) {
-              continue;
-            }
 
             if (routeAdvert.isWithdrawn()) {
               deltaBuilder.remove(newRoute, Reason.WITHDRAW);
@@ -354,7 +350,6 @@ class VirtualEigrpProcess {
               .setNextHopIp(nextHopIp)
               .setProcessAsn(_asn)
               .build();
-      requireNonNull(newRoute);
       changed |= _internalStagingRib.mergeRoute(newRoute);
     }
     return changed;

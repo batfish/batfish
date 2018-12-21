@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +17,7 @@ public class EigrpInternalRoute extends EigrpRoute {
   private EigrpInternalRoute(
       int admin,
       long processAsn,
-      @Nonnull Prefix network,
+      @Nullable Prefix network,
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
@@ -73,25 +73,21 @@ public class EigrpInternalRoute extends EigrpRoute {
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {
 
     @Nullable private EigrpMetric _eigrpMetric;
-
     @Nullable String _nextHopInterface;
-
     @Nullable Long _processAsn;
 
-    @Nullable
     @Override
+    @Nonnull
     public EigrpInternalRoute build() {
-      if (getNetwork() == null || _eigrpMetric == null || _processAsn == null) {
-        return null;
-      }
+      checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+      checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
       return new EigrpInternalRoute(
           getAdmin(),
           _processAsn,
           getNetwork(),
           _nextHopInterface,
           getNextHopIp(),
-          // Metric required to build route
-          requireNonNull(_eigrpMetric),
+          _eigrpMetric,
           getNonForwarding(),
           getNonRouting());
     }
@@ -101,17 +97,17 @@ public class EigrpInternalRoute extends EigrpRoute {
       return this;
     }
 
-    public Builder setEigrpMetric(EigrpMetric metric) {
+    public Builder setEigrpMetric(@Nonnull EigrpMetric metric) {
       _eigrpMetric = metric;
       return this;
     }
 
-    public Builder setNextHopInterface(String nextHopInterface) {
+    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
       return this;
     }
 
-    public Builder setProcessAsn(Long processAsn) {
+    public Builder setProcessAsn(@Nonnull Long processAsn) {
       _processAsn = processAsn;
       return this;
     }
