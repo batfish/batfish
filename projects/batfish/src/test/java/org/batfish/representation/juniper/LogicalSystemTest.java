@@ -5,10 +5,10 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class LogicalSystemTest {
+public final class LogicalSystemTest {
 
   @Test
-  public void expandInterfaceRanges() {
+  public void testExpandInterfaceRanges() {
     LogicalSystem ls = new LogicalSystem("ls");
 
     // add an explicit interface with a configured MTU

@@ -1946,6 +1946,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(ae2.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-8/1/2"))));
     assertThat(ae2.get8023adInterface(), equalTo("ae1"));
     assertThat(ae2.getRedundantParentInterface(), equalTo("reth0"));
+
+    // all interfaces should show up; no need to test their specific settings here
+    Configuration c = parseConfig("interface-range");
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
   }
 
   @Test

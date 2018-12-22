@@ -128,10 +128,12 @@ public class LogicalSystem implements Serializable {
         .getAllMembers()
         .stream()
         .forEach(
-            iname ->
-                _interfaces
-                    .computeIfAbsent(iname, Interface::new)
-                    .inheritUnsetPhysicalFields(interfaceRange));
+            iname -> {
+              Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
+              iface.inheritUnsetPhysicalFields(interfaceRange);
+              iface.setRoutingInstance(interfaceRange.getRoutingInstance());
+              iface.setParent(interfaceRange.getParent());
+            });
   }
 
   /** Inserts members of interface ranges into the interfaces */

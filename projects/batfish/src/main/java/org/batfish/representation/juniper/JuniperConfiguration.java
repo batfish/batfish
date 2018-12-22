@@ -2093,7 +2093,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    _logicalSystems.forEach((key, ls) -> ls.expandInterfaceRanges());
     _logicalSystems
         .keySet()
         .stream()
@@ -2229,6 +2228,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
+
+    // process interface ranges. this changes the _interfaces map
+    _masterLogicalSystem.expandInterfaceRanges();
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {

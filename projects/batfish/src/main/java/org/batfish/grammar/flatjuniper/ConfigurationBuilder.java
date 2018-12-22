@@ -2260,8 +2260,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterInt_interface_range(Int_interface_rangeContext ctx) {
     String name = ctx.irange.getText();
-    _currentInterfaceOrRange =
-        _currentLogicalSystem.getInterfaceRanges().computeIfAbsent(name, InterfaceRange::new);
+    InterfaceRange currentInterfaceRange = _currentLogicalSystem.getInterfaceRanges().get(name);
+    if (currentInterfaceRange == null) {
+      currentInterfaceRange =
+          _currentLogicalSystem.getInterfaceRanges().computeIfAbsent(name, InterfaceRange::new);
+      currentInterfaceRange.setRoutingInstance(_currentRoutingInstance.getName());
+      currentInterfaceRange.setParent(_currentLogicalSystem.getGlobalMasterInterface());
+    }
+    _currentInterfaceOrRange = currentInterfaceRange;
   }
 
   @Override
