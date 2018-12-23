@@ -295,6 +295,28 @@ public class Interface implements Serializable {
     }
   }
 
+  /**
+   * Copies the values of fields associated with physical interfaces from {@code bestower} to this
+   * interface.
+   *
+   * <p>TODO: This list is incomplete. We don't have a clean separation of which properties are
+   * physical only
+   */
+  public void inheritUnsetPhysicalFields(Interface bestower) {
+    if (_agg8023adInterface == null) {
+      _agg8023adInterface = bestower._agg8023adInterface;
+    }
+    if (_description == null) {
+      _description = bestower._description;
+    }
+    if (_mtu == null) {
+      _mtu = bestower._mtu;
+    }
+    if (_redundantParentInterface == null) {
+      _redundantParentInterface = bestower._redundantParentInterface;
+    }
+  }
+
   public void set8023adInterface(String interfaceName) {
     _agg8023adInterface = interfaceName;
   }

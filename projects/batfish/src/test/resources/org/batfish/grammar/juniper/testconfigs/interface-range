@@ -1,0 +1,15 @@
+#
+set system host-name interface-range
+#
+set interfaces xe-0/0/0 mtu 9000
+#
+set interfaces interface-range ae1-members member "xe-0/0/[0,1]"
+set interfaces interface-range ae1-members member-range xe-0/0/0 to xe-0/0/1
+set interfaces interface-range ae1-members description "dodo"
+set interfaces interface-range ae1-members mtu 8000
+#
+#
+set interfaces interface-range ae2-members description dodo
+set interfaces interface-range ae2-members member xe-8/1/2
+set interfaces interface-range ae2-members gigether-options redundant-parent reth0
+set interfaces interface-range ae2-members gigether-options 802.3ad ae1
