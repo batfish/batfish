@@ -49,6 +49,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, IkeProposal> _ikeProposals;
 
+  private final Map<String, InterfaceRange> _interfaceRanges;
+
   private final Map<String, Interface> _interfaces;
 
   private final Map<String, Zone> _interfaceZones;
@@ -102,6 +104,7 @@ public class LogicalSystem implements Serializable {
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _interfaceRanges = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _interfaceZones = new TreeMap<>();
     _ipsecPolicies = new TreeMap<>();
@@ -118,6 +121,24 @@ public class LogicalSystem implements Serializable {
     _tacplusServers = new TreeSet<>();
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private void expandInterfaceRange(InterfaceRange interfaceRange) {
+    interfaceRange
+        .getAllMembers()
+        .stream()
+        .forEach(
+            iname -> {
+              Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
+              iface.inheritUnsetPhysicalFields(interfaceRange);
+              iface.setRoutingInstance(interfaceRange.getRoutingInstance());
+              iface.setParent(interfaceRange.getParent());
+            });
+  }
+
+  /** Inserts members of interface ranges into the interfaces */
+  public void expandInterfaceRanges() {
+    _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
   }
 
   public Map<String, AddressBook> getAddressBooks() {
@@ -186,6 +207,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  public Map<String, InterfaceRange> getInterfaceRanges() {
+    return _interfaceRanges;
   }
 
   public Map<String, Interface> getInterfaces() {

@@ -243,6 +243,9 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.InterfaceRange;
+import org.batfish.representation.juniper.InterfaceRangeMember;
+import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -1915,10 +1918,40 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInteraceOspfPointToPoint() throws IOException {
+  public void testInterfaceOspfPointToPoint() throws IOException {
     String hostname = "ospf-interface-point-to-point";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+  }
+
+  @Test
+  public void testInterfaceRange() throws IOException {
+    String hostname = "interface-range";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+
+    // range definitions are inserted properly into the vendor model
+    InterfaceRange ae1 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae1-members");
+    assertThat(ae1.getMtu(), equalTo(8000));
+    assertThat(ae1.getDescription(), equalTo("dodo"));
+    assertThat(
+        ae1.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-0/0/[0,1]"))));
+    assertThat(
+        ae1.getMemberRanges(),
+        equalTo(ImmutableList.of(new InterfaceRangeMemberRange("xe-0/0/0", "xe-0/0/1"))));
+
+    InterfaceRange ae2 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae2-members");
+    assertThat(ae2.getDescription(), equalTo("dodo"));
+    assertThat(ae2.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-8/1/2"))));
+    assertThat(ae2.get8023adInterface(), equalTo("ae1"));
+    assertThat(ae2.getRedundantParentInterface(), equalTo("reth0"));
+
+    // all interfaces should show up; no need to test their specific settings here
+    Configuration c = parseConfig("interface-range");
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
   }
 
   @Test
