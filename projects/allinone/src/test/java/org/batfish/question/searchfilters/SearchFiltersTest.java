@@ -75,13 +75,13 @@ public final class SearchFiltersTest {
 
   private static final String IFACE2 = "iface2";
 
-  private static final Ip IP0 = new Ip("1.1.1.0");
+  private static final Ip IP0 = Ip.parse("1.1.1.0");
 
-  private static final Ip IP1 = new Ip("1.1.1.1");
+  private static final Ip IP1 = Ip.parse("1.1.1.1");
 
-  private static final Ip IP2 = new Ip("1.1.1.2");
+  private static final Ip IP2 = Ip.parse("1.1.1.2");
 
-  private static final Ip IP3 = new Ip("1.1.1.3");
+  private static final Ip IP3 = Ip.parse("1.1.1.3");
 
   private static final IpAccessList ACL =
       IpAccessList.builder()
@@ -478,7 +478,7 @@ public final class SearchFiltersTest {
 
   @Test
   public void testReachFilter_ACCEPT_ALL_dstIpConstraint() {
-    Ip constraintIp = new Ip("21.21.21.21");
+    Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
         _allLocationsParams
             .toBuilder()
@@ -492,7 +492,7 @@ public final class SearchFiltersTest {
 
   @Test
   public void testReachFilter_ACCEPT_ALL_srcIpConstraint() {
-    Ip constraintIp = new Ip("21.21.21.21");
+    Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
         _allLocationsParams
             .toBuilder()

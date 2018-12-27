@@ -56,7 +56,7 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
 
   @Override
   public Void visitIpIpSpace(IpIpSpace ipIpSpace) {
-    _prefixes.add(new Prefix(ipIpSpace.getIp(), Prefix.MAX_PREFIX_LENGTH));
+    _prefixes.add(Prefix.create(ipIpSpace.getIp(), Prefix.MAX_PREFIX_LENGTH));
     return null;
   }
 

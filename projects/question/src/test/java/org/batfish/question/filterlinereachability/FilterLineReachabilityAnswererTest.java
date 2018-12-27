@@ -79,7 +79,7 @@ public class FilterLineReachabilityAnswererTest {
     _c2 = cb.setHostname("c2").build();
     _aclb = nf.aclBuilder().setOwner(_c1);
     _aclb2 = nf.aclBuilder().setOwner(_c2);
-    _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
+    _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", Ip.parse("1.2.3.4").toIpSpace()));
     _c1.setInterfaces(
         ImmutableSortedMap.of(
             "iface",
@@ -239,7 +239,7 @@ public class FilterLineReachabilityAnswererTest {
 
     MatchHeaderSpace dereferencedIpSpace =
         new MatchHeaderSpace(
-            HeaderSpace.builder().setSrcIps(new Ip("1.2.3.4").toIpSpace()).build());
+            HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build());
 
     Set<AclLineMatchExpr> matchExprs =
         aclSpecs
@@ -387,7 +387,7 @@ public class FilterLineReachabilityAnswererTest {
         equalTo(
             ImmutableList.of(
                 rejectingHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(new Ip("1.2.3.4").toIpSpace()).build()))));
+                    HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build()))));
   }
 
   @Test
@@ -400,7 +400,7 @@ public class FilterLineReachabilityAnswererTest {
             "ipSpace2",
             new IpSpaceReference("ipSpace3"),
             "ipSpace3",
-            new Ip("1.2.3.4").toIpSpace()));
+            Ip.parse("1.2.3.4").toIpSpace()));
 
     _aclb
         .setLines(
@@ -424,7 +424,7 @@ public class FilterLineReachabilityAnswererTest {
         equalTo(
             ImmutableList.of(
                 rejectingHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(new Ip("1.2.3.4").toIpSpace()).build()))));
+                    HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build()))));
   }
 
   @Test
@@ -584,8 +584,8 @@ public class FilterLineReachabilityAnswererTest {
                     HeaderSpace.builder()
                         .setSrcIps(
                             AclIpSpace.of(
-                                AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace()),
-                                AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace())))
+                                AclIpSpaceLine.permit(Ip.parse("1.2.3.4").toIpSpace()),
+                                AclIpSpaceLine.permit(Ip.parse("1.2.3.4").toIpSpace())))
                         .build()))));
   }
 
@@ -621,14 +621,14 @@ public class FilterLineReachabilityAnswererTest {
   public void testSmallBlockersIgnored() {
     BDDPacket p = new BDDPacket();
     // deny IP <ddos src> any
-    BDD ddos1 = p.getSrcIp().value(new Ip("1.2.3.1").asLong());
-    BDD ddos2 = p.getSrcIp().value(new Ip("1.2.3.2").asLong());
-    BDD ddos3 = p.getSrcIp().value(new Ip("1.2.3.3").asLong());
+    BDD ddos1 = p.getSrcIp().value(Ip.parse("1.2.3.1").asLong());
+    BDD ddos2 = p.getSrcIp().value(Ip.parse("1.2.3.2").asLong());
+    BDD ddos3 = p.getSrcIp().value(Ip.parse("1.2.3.3").asLong());
     // permit tcp any any eq ssh
     BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
     BDD ssh = tcp.and(p.getDstPort().value(22));
     // permit tcp any DST_IP eq ssh
-    BDD selectiveSSH = ssh.and(p.getDstIp().value(new Ip("2.3.4.5").asLong()));
+    BDD selectiveSSH = ssh.and(p.getDstIp().value(Ip.parse("2.3.4.5").asLong()));
 
     /*
      * [deny|permit] ip   1.2.3.1  any
@@ -652,8 +652,8 @@ public class FilterLineReachabilityAnswererTest {
   @Test
   public void testPartialOverlaps() {
     BDDPacket p = new BDDPacket();
-    BDD first32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
-    BDD second32 = p.getDstIp().value(new Ip("1.2.3.5").asLong());
+    BDD first32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD second32 = p.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
 
     /*
@@ -675,8 +675,8 @@ public class FilterLineReachabilityAnswererTest {
   @Test
   public void testPartialOverlapsDominateFull() {
     BDDPacket p = new BDDPacket();
-    BDD first32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
-    BDD second32 = p.getDstIp().value(new Ip("1.2.3.5").asLong());
+    BDD first32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD second32 = p.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
 
     /*
@@ -694,7 +694,7 @@ public class FilterLineReachabilityAnswererTest {
   @Test
   public void testDifferentActionPreservation() {
     BDDPacket p = new BDDPacket();
-    BDD slash32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
     BDD not80 = tcp.and(p.getDstPort().value(80).not());
 
@@ -726,7 +726,7 @@ public class FilterLineReachabilityAnswererTest {
     BDDPacket p = new BDDPacket();
     BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
     BDD tcpEstablished = p.getTcpAck().or(p.getTcpRst());
-    BDD slash32 = p.getDstIp().value(new Ip("1.2.3.4").asLong());
+    BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD port80 = p.getDstPort().value(80);
 
     /*

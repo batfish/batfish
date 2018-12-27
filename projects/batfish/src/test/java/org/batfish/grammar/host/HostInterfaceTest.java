@@ -75,7 +75,7 @@ public class HostInterfaceTest {
 
   @Test
   public void testShared() throws IOException {
-    Ip sharedIp = new Ip("1.0.0.1");
+    Ip sharedIp = Ip.parse("1.0.0.1");
     InterfaceAddress sharedAddress = new InterfaceAddress(sharedIp, 24);
     Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
     Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");

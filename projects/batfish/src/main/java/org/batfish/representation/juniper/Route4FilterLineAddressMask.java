@@ -27,7 +27,7 @@ public final class Route4FilterLineAddressMask extends Route4FilterLine {
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT,
             new IpWildcard(
-                new Prefix(_prefix.getStartIp(), prefixLength).getStartIp(), _addressMask),
+                Prefix.create(_prefix.getStartIp(), prefixLength).getStartIp(), _addressMask),
             new SubRange(prefixLength, prefixLength));
     rfl.addLine(line);
   }

@@ -57,7 +57,7 @@ public final class ExtendedCommunity implements Serializable {
     if (gaParts.length == 4) {
       // type 0x01, 1-byte subtype, 4-byte ip address, 2-byte number la
       typeByte = 0x01;
-      gaLong = new Ip(globalAdministrator).asLong();
+      gaLong = Ip.parse(globalAdministrator).asLong();
       gaBytes = 4;
     } else if (gaParts.length == 2) {
       // type 0x02, 1-byte subtype, 2-byte.2-byte dotted as, 2-byte number la

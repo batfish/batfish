@@ -17,10 +17,10 @@ import org.junit.Test;
 public final class FlowDiffTest {
   @Test
   public void testFlowDiffs() {
-    Ip dst1 = new Ip("1.1.1.1");
-    Ip src1 = new Ip("2.2.2.2");
-    Ip dst2 = new Ip("3.3.3.3");
-    Ip src2 = new Ip("4.4.4.4");
+    Ip dst1 = Ip.parse("1.1.1.1");
+    Ip src1 = Ip.parse("2.2.2.2");
+    Ip dst2 = Ip.parse("3.3.3.3");
+    Ip src2 = Ip.parse("4.4.4.4");
     Flow orig =
         Flow.builder()
             .setIngressNode("ingressNode")

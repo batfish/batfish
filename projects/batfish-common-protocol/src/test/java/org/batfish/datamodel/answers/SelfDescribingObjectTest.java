@@ -53,7 +53,7 @@ public final class SelfDescribingObjectTest {
 
   @Test
   public void testGetTypedValue() {
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     SelfDescribingObject ipObject = new SelfDescribingObject(Schema.IP, ip);
     assertThat(ipObject.getTypedValue(), equalTo(ip));
   }

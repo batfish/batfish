@@ -11,7 +11,7 @@ public class OspfExternalType2RouteTest {
   public void testEquals() {
     OspfExternalType2Route.Builder b =
         OspfExternalRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setAdmin(1)
             .setMetric(1)

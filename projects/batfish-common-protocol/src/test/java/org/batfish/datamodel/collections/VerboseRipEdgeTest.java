@@ -13,8 +13,8 @@ import org.junit.Test;
 public class VerboseRipEdgeTest {
   @Test
   public void testCompareTo() {
-    Ip ip1 = new Ip("1.1.1.1");
-    Ip ip2 = new Ip("2.2.2.2");
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
     Pair<Ip, Ip> ipPair1 = new Pair<>(ip1, ip1);
     Pair<Ip, Ip> ipPair2 = new Pair<>(ip2, ip2);
     String node1 = "node1";

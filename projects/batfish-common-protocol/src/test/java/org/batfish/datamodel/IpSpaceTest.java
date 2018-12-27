@@ -61,15 +61,15 @@ public class IpSpaceTest {
 
   @Test
   public void testIpSpaceJacksonSerialization() throws IOException {
-    Ip ip = new Ip("1.0.0.0");
+    Ip ip = Ip.parse("1.0.0.0");
     IpIpSpace ipIpSpace = ip.toIpSpace();
-    Prefix p = new Prefix(ip, 24);
+    Prefix p = Prefix.create(ip, 24);
     PrefixIpSpace prefixIpSpace = p.toIpSpace();
     IpWildcard ipWildcard1 = new IpWildcard(p);
     IpWildcardIpSpace ipWildcard1IpSpace = ipWildcard1.toIpSpace();
     IpWildcard ipWildcard2 = new IpWildcard(ip);
     IpWildcardIpSpace ipWildcard2IpSpace = ipWildcard2.toIpSpace();
-    IpWildcard ipWildcard3 = new IpWildcard(ip, new Ip("0.255.0.255"));
+    IpWildcard ipWildcard3 = new IpWildcard(ip, Ip.parse("0.255.0.255"));
     IpWildcardIpSpace ipWildcard3IpSpace = ipWildcard3.toIpSpace();
     IpSpace ipWildcardSetIpSpace =
         IpWildcardSetIpSpace.builder().including(ipWildcard1, ipWildcard2, ipWildcard3).build();

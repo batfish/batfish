@@ -271,7 +271,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     RibTreeNode<R> oldNode = node;
 
     // newNetwork has the max prefix match up to nextUnmatchedBit
-    Prefix newNetwork = new Prefix(route.getNetwork().getStartIp(), nextUnmatchedBit);
+    Prefix newNetwork = Prefix.create(route.getNetwork().getStartIp(), nextUnmatchedBit);
     node = new RibTreeNode<>(newNetwork, _owner); // node is the node we are inserting in the middle
     RibTreeNode<R> child = new RibTreeNode<>(route.getNetwork(), _owner);
     child._routes.add(route);

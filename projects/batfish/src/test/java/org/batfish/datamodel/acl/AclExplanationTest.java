@@ -37,7 +37,7 @@ public class AclExplanationTest {
   @Test
   public void testSimpleWithProvenance() {
     MatchHeaderSpace require = matchDst(Prefix.parse("1.2.3.0/24"));
-    MatchHeaderSpace forbid = matchDst(new Ip("1.2.3.4"));
+    MatchHeaderSpace forbid = matchDst(Ip.parse("1.2.3.4"));
 
     _explanation.requireHeaderSpace(require);
     _explanation.forbidHeaderSpace(forbid);
@@ -98,8 +98,8 @@ public class AclExplanationTest {
 
   @Test
   public void testMultipleForbids() {
-    MatchHeaderSpace forbid1 = matchDst(new Ip("1.2.3.4"));
-    MatchHeaderSpace forbid2 = matchDst(new Ip("1.2.3.5"));
+    MatchHeaderSpace forbid1 = matchDst(Ip.parse("1.2.3.4"));
+    MatchHeaderSpace forbid2 = matchDst(Ip.parse("1.2.3.5"));
 
     _explanation.forbidHeaderSpace(forbid1);
     _explanation.forbidHeaderSpace(forbid2);
@@ -108,7 +108,7 @@ public class AclExplanationTest {
 
   @Test
   public void testIntersectRequire() {
-    MatchHeaderSpace matchDstIp = matchDst(new Ip("1.2.3.4"));
+    MatchHeaderSpace matchDstIp = matchDst(Ip.parse("1.2.3.4"));
     MatchHeaderSpace matchDstPrefix = matchDst(Prefix.parse("1.2.3.0/24"));
     MatchHeaderSpace matchDstPort =
         new MatchHeaderSpace(

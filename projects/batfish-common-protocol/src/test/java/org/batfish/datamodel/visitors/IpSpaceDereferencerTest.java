@@ -20,7 +20,7 @@ public class IpSpaceDereferencerTest {
           "empty",
           EmptyIpSpace.INSTANCE,
           "ip",
-          new Ip("1.2.3.4").toIpSpace(),
+          Ip.parse("1.2.3.4").toIpSpace(),
           "prefix",
           Prefix.parse("1.0.0.0/8").toIpSpace(),
           "namedIp",

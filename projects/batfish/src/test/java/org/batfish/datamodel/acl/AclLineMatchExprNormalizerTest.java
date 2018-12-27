@@ -26,15 +26,15 @@ public class AclLineMatchExprNormalizerTest {
   private static final String IFACE = "IFACE";
 
   private static final AclLineMatchExpr A =
-      matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFFFFFF0L)));
+      matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFFFFFF0L)));
   private static final AclLineMatchExpr B =
-      matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFFFFF0FL)));
+      matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFFFFF0FL)));
   private static final AclLineMatchExpr C =
-      matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFFFF0FFL)));
+      matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFFFF0FFL)));
   private static final AclLineMatchExpr D =
-      matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFFF0FFFL)));
+      matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFFF0FFFL)));
   private static final AclLineMatchExpr E =
-      matchDst(new IpWildcard(new Ip(0x00000000L), new Ip(0xFFF0FFFFL)));
+      matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFF0FFFFL)));
 
   private IpAccessListToBDD _toBDD;
 
