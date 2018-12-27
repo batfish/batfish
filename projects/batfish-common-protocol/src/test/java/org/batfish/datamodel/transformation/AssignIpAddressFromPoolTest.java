@@ -11,8 +11,8 @@ import org.junit.Test;
 public class AssignIpAddressFromPoolTest {
   @Test
   public void testEquals() {
-    Ip ip1 = new Ip("1.1.1.1");
-    Ip ip2 = new Ip("2.2.2.2");
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
     new EqualsTester()
         .addEqualityGroup(
             new AssignIpAddressFromPool(DESTINATION, ip1, ip2),

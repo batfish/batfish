@@ -17,18 +17,18 @@ public class IpWildcardSetIpSpaceTest {
 
   @Test
   public void testContainsIp() {
-    assertThat(ipSpace, containsIp(new Ip("1.1.1.0")));
-    assertThat(ipSpace, not(containsIp(new Ip("1.1.1.1"))));
-    assertThat(ipSpace, containsIp(new Ip("1.1.2.0")));
-    assertThat(ipSpace, not(containsIp(new Ip("1.1.3.0"))));
+    assertThat(ipSpace, containsIp(Ip.parse("1.1.1.0")));
+    assertThat(ipSpace, not(containsIp(Ip.parse("1.1.1.1"))));
+    assertThat(ipSpace, containsIp(Ip.parse("1.1.2.0")));
+    assertThat(ipSpace, not(containsIp(Ip.parse("1.1.3.0"))));
   }
 
   @Test
   public void testComplement() {
     IpSpace notIpSpace = ipSpace.complement();
-    assertThat(notIpSpace, not(containsIp(new Ip("1.1.1.0"))));
-    assertThat(notIpSpace, containsIp(new Ip("1.1.1.1")));
-    assertThat(notIpSpace, not(containsIp(new Ip("1.1.2.0"))));
-    assertThat(notIpSpace, containsIp(new Ip("1.1.3.0")));
+    assertThat(notIpSpace, not(containsIp(Ip.parse("1.1.1.0"))));
+    assertThat(notIpSpace, containsIp(Ip.parse("1.1.1.1")));
+    assertThat(notIpSpace, not(containsIp(Ip.parse("1.1.2.0"))));
+    assertThat(notIpSpace, containsIp(Ip.parse("1.1.3.0")));
   }
 }

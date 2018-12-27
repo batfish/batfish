@@ -22,7 +22,7 @@ public class CiscoConfigurationTest {
   private Interface _interface;
   private static final String ACL = "acl";
   private static final String POOL = "pool";
-  private static final Ip IP = new Ip("1.2.3.4");
+  private static final Ip IP = Ip.parse("1.2.3.4");
 
   // Initializes an empty CiscoConfiguration with a single Interface and minimal settings to not
   // crash.

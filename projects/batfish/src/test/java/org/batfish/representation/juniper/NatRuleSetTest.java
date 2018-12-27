@@ -75,8 +75,8 @@ public class NatRuleSetTest {
     ruleSet.getRules().add(natRule2);
 
     NatPool pool = new NatPool();
-    Ip poolStart = new Ip("3.0.0.0");
-    Ip poolEnd = new Ip("4.0.0.0");
+    Ip poolStart = Ip.parse("3.0.0.0");
+    Ip poolEnd = Ip.parse("4.0.0.0");
     pool.setFromAddress(poolStart);
     pool.setToAddress(poolEnd);
 

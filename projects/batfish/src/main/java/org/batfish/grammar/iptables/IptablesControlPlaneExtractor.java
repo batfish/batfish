@@ -205,7 +205,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
   @Nullable
   private Object getEndpoint(EndpointContext endpoint) {
     if (endpoint.IP_ADDRESS() != null) {
-      return new Ip(endpoint.IP_ADDRESS().getText());
+      return Ip.parse(endpoint.IP_ADDRESS().getText());
     } else if (endpoint.IP_PREFIX() != null) {
       return Prefix.parse(endpoint.IP_PREFIX().getText());
     } else if (endpoint.IPV6_ADDRESS() != null) {

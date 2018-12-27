@@ -24,7 +24,7 @@ public class IpSpaceRenamerTest {
   private static final String BAR = "bar";
   private static final IpSpaceReference BAR_REFERENCE = new IpSpaceReference(BAR);
 
-  private static final IpIpSpace IP_IP_SPACE = new Ip("1.1.1.1").toIpSpace();
+  private static final IpIpSpace IP_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
 
   private static final IpSpaceRenamer RENAMER = new IpSpaceRenamer(ImmutableMap.of(FOO, BAR)::get);
   private static final PrefixIpSpace PREFIX_IP_SPACE = Prefix.parse("1.0.0.0/8").toIpSpace();

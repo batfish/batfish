@@ -81,16 +81,16 @@ public class CiscoNxosTest {
   public void testRouterId() {
     Configuration c = parseConfig("nxosBgpRouterId");
     // default VRF has manually set router id.
-    assertThat(c, hasVrf("default", hasBgpProcess(hasRouterId(new Ip("4.4.4.4")))));
+    assertThat(c, hasVrf("default", hasBgpProcess(hasRouterId(Ip.parse("4.4.4.4")))));
     // vrf1 has manually set router id.
-    assertThat(c, hasVrf("vrf1", hasBgpProcess(hasRouterId(new Ip("2.3.1.4")))));
+    assertThat(c, hasVrf("vrf1", hasBgpProcess(hasRouterId(Ip.parse("2.3.1.4")))));
     // vrf2 has no configured router id, but there is an associated loopback.
-    assertThat(c, hasVrf("vrf2", hasBgpProcess(hasRouterId(new Ip("1.1.1.1")))));
+    assertThat(c, hasVrf("vrf2", hasBgpProcess(hasRouterId(Ip.parse("1.1.1.1")))));
     // vrf3 has no configured router id and no interfaces. Cisco uses 0.0.0.0. Note that it does NOT
     // inherit from default VRF's manual config or pickup Loopback0 in another VRF.
     assertThat(c, hasVrf("vrf3", hasBgpProcess(hasRouterId(Ip.ZERO))));
     // vrf4 has loopback0.
-    assertThat(c, hasVrf("vrf4", hasBgpProcess(hasRouterId(new Ip("1.2.3.4")))));
+    assertThat(c, hasVrf("vrf4", hasBgpProcess(hasRouterId(Ip.parse("1.2.3.4")))));
   }
 
   private GenericRib<AbstractRoute> parseDpAndGetRib(

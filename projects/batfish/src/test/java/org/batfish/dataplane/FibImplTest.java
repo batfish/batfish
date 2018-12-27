@@ -39,11 +39,11 @@ import org.junit.runners.JUnit4;
 public class FibImplTest {
   @Rule public TemporaryFolder folder = new TemporaryFolder();
 
-  private static final Ip DST_IP = new Ip("3.3.3.3");
+  private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
   private static final String FAST_ETHERNET_0 = "FastEthernet0/0";
   private static final InterfaceAddress NODE1_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.1/8");
-  private static final Ip EXTERNAL_IP = new Ip("7.7.7.7");
+  private static final Ip EXTERNAL_IP = Ip.parse("7.7.7.7");
 
   private NetworkFactory _nf;
   private Builder _cb;
@@ -75,7 +75,7 @@ public class FibImplTest {
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNetwork(new Prefix(DST_IP, 32))
+                .setNetwork(Prefix.create(DST_IP, 32))
                 .setNextHopInterface(FAST_ETHERNET_0)
                 .setNextHopIp(EXTERNAL_IP)
                 .setAdministrativeCost(1)
@@ -104,8 +104,8 @@ public class FibImplTest {
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNetwork(new Prefix(DST_IP, 32))
-                .setNextHopIp(new Ip("2.1.1.1"))
+                .setNetwork(Prefix.create(DST_IP, 32))
+                .setNextHopIp(Ip.parse("2.1.1.1"))
                 .setAdministrativeCost(1)
                 .build()));
 
@@ -174,7 +174,7 @@ public class FibImplTest {
     StaticRoute testRoute =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1")) // matches both routes defined above
+            .setNextHopIp(Ip.parse("1.1.1.1")) // matches both routes defined above
             .setAdministrativeCost(1)
             .setNonForwarding(false)
             .build();
@@ -233,7 +233,7 @@ public class FibImplTest {
     StaticRoute testRoute =
         StaticRoute.builder()
             .setNetwork(TEST_PREFIX)
-            .setNextHopIp(new Ip("1.1.1.1")) // matches multiple routes defined above
+            .setNextHopIp(Ip.parse("1.1.1.1")) // matches multiple routes defined above
             .setAdministrativeCost(1)
             .setNonForwarding(false)
             .build();

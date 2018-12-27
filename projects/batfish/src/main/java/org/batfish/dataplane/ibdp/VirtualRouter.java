@@ -634,7 +634,7 @@ public class VirtualRouter implements Serializable {
 
       Ip srcIp = advert.getSrcIp();
       // TODO: support passive bgp connections
-      Prefix srcPrefix = new Prefix(srcIp, Prefix.MAX_PREFIX_LENGTH);
+      Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {
         continue;

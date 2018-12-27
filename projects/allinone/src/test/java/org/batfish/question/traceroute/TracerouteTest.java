@@ -70,10 +70,10 @@ public class TracerouteTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
-  private static final Ip NODE1_FAST_ETHERNET_IP = new Ip("1.1.1.2");
-  private static final Ip NODE1_LOOPBACK_IP = new Ip("1.1.1.1");
-  private static final Ip NODE2_FAST_ETHERNET_IP = new Ip("1.1.1.3");
-  private static final Ip NODE2_LOOPBACK_IP = new Ip("2.2.2.2");
+  private static final Ip NODE1_FAST_ETHERNET_IP = Ip.parse("1.1.1.2");
+  private static final Ip NODE1_LOOPBACK_IP = Ip.parse("1.1.1.1");
+  private static final Ip NODE2_FAST_ETHERNET_IP = Ip.parse("1.1.1.3");
+  private static final Ip NODE2_LOOPBACK_IP = Ip.parse("2.2.2.2");
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
@@ -165,7 +165,7 @@ public class TracerouteTest {
                 hasIngressInterface(LOOPBACK),
                 hasIngressNode("node1"),
                 hasIngressVrf(nullValue()),
-                hasSrcIp(new Ip("1.1.1.0")),
+                hasSrcIp(Ip.parse("1.1.1.0")),
                 hasIpProtocol(IpProtocol.UDP),
                 hasTag(TAG))));
     assertThat(
@@ -175,7 +175,7 @@ public class TracerouteTest {
                 hasIngressInterface(FAST_ETHERNET),
                 hasIngressNode("node1"),
                 hasIngressVrf(nullValue()),
-                hasSrcIp(new Ip("1.1.1.0")),
+                hasSrcIp(Ip.parse("1.1.1.0")),
                 hasIpProtocol(IpProtocol.UDP),
                 hasTag(TAG))));
   }
@@ -388,7 +388,7 @@ public class TracerouteTest {
         ImmutableSortedSet.of(
             StaticRoute.builder()
                 .setNextHopInterface(i1.getName())
-                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("1.0.0.128/26"))
                 .setAdministrativeCost(1)
                 .build()));
@@ -959,7 +959,7 @@ public class TracerouteTest {
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setAdministrativeCost(1)
                 .build()));
@@ -1033,7 +1033,7 @@ public class TracerouteTest {
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNextHopIp(new Ip("2.0.0.2"))
+                .setNextHopIp(Ip.parse("2.0.0.2"))
                 .setNextHopInterface(i1.getName())
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setAdministrativeCost(1)

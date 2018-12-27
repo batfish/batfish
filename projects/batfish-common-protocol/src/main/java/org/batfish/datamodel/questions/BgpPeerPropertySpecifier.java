@@ -104,7 +104,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   private static Object getClusterId(BgpPeerConfig peer) {
     return !peer.getRouteReflectorClient() || peer.getClusterId() == null
         ? null
-        : new Ip(peer.getClusterId());
+        : Ip.create(peer.getClusterId());
   }
 
   @Override

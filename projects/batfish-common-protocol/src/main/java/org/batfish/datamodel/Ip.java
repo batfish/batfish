@@ -2,29 +2,38 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public class Ip implements Comparable<Ip>, Serializable {
 
-  public static final Ip AUTO = new Ip(-1L);
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (long), would be 8 MiB total).
+  private static final Cache<Long, Ip> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build();
 
-  public static final Ip FIRST_CLASS_A_PRIVATE_IP = new Ip("10.0.0.0");
+  public static final Ip AUTO = create(-1L);
 
-  public static final Ip FIRST_CLASS_B_PRIVATE_IP = new Ip("172.16.0.0");
+  public static final Ip FIRST_CLASS_A_PRIVATE_IP = parse("10.0.0.0");
 
-  public static final Ip FIRST_CLASS_C_PRIVATE_IP = new Ip("192.168.0.0");
+  public static final Ip FIRST_CLASS_B_PRIVATE_IP = parse("172.16.0.0");
 
-  public static final Ip FIRST_CLASS_E_EXPERIMENTAL_IP = new Ip("240.0.0.0");
+  public static final Ip FIRST_CLASS_C_PRIVATE_IP = parse("192.168.0.0");
 
-  public static final Ip FIRST_MULTICAST_IP = new Ip("224.0.0.0");
+  public static final Ip FIRST_CLASS_E_EXPERIMENTAL_IP = parse("240.0.0.0");
 
-  public static final Ip MAX = new Ip(0xFFFFFFFFL);
+  public static final Ip FIRST_MULTICAST_IP = parse("224.0.0.0");
+
+  public static final Ip MAX = create(0xFFFFFFFFL);
 
   private static final long serialVersionUID = 1L;
 
-  public static final Ip ZERO = new Ip(0L);
+  public static final Ip ZERO = create(0L);
 
   /**
    * See {@link #getBitAtPosition(long, int)}. Equivalent to {@code getBitAtPosition(ip.asLong(),
@@ -88,18 +97,27 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static Ip numSubnetBitsToSubnetMask(int numBits) {
     long mask = numSubnetBitsToSubnetLong(numBits);
-    return new Ip(mask);
+    return create(mask);
   }
 
   private final long _ip;
 
-  public Ip(long ipAsLong) {
+  private Ip(long ipAsLong) {
     _ip = ipAsLong;
   }
 
   @JsonCreator
-  public Ip(String ipAsString) {
-    _ip = ipStrToLong(ipAsString);
+  public static Ip parse(String ipAsString) {
+    return create(ipStrToLong(ipAsString));
+  }
+
+  public static Ip create(long ipAsLong) {
+    try {
+      return CACHE.get(ipAsLong, () -> new Ip(ipAsLong));
+    } catch (ExecutionException e) {
+      // This shouldn't happen, but handle anyway.
+      return new Ip(ipAsLong);
+    }
   }
 
   public long asLong() {
@@ -125,11 +143,11 @@ public class Ip implements Comparable<Ip>, Serializable {
   public Ip getClassMask() {
     long firstOctet = _ip >> 24;
     if (firstOctet <= 127) {
-      return new Ip(0xFF000000L);
+      return create(0xFF000000L);
     } else if (firstOctet <= 191) {
-      return new Ip(0XFFFF0000L);
+      return create(0XFFFF0000L);
     } else if (firstOctet <= 223) {
-      return new Ip(0xFFFFFF00L);
+      return create(0xFFFFFF00L);
     } else {
       throw new BatfishException("Cannot compute classmask");
     }
@@ -154,19 +172,19 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public Ip getNetworkAddress(int subnetBits) {
     long mask = numSubnetBitsToSubnetLong(subnetBits);
-    return new Ip(_ip & mask);
+    return create(_ip & mask);
   }
 
   public Ip getNetworkAddress(Ip mask) {
-    return new Ip(_ip & mask.asLong());
+    return create(_ip & mask.asLong());
   }
 
   public Ip getSubnetEnd(Ip mask) {
-    return new Ip(_ip | mask.inverted().asLong());
+    return create(_ip | mask.inverted().asLong());
   }
 
   public Ip getWildcardEndIp(Ip wildcard) {
-    return new Ip(_ip | wildcard.asLong());
+    return create(_ip | wildcard.asLong());
   }
 
   @Override
@@ -176,7 +194,7 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public Ip inverted() {
     long invertedLong = (~_ip) & 0xFFFFFFFFL;
-    return new Ip(invertedLong);
+    return create(invertedLong);
   }
 
   public String networkString(int prefixLength) {

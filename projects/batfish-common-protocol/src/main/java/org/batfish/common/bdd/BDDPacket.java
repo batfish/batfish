@@ -303,8 +303,8 @@ public class BDDPacket {
     checkArgument(isAssignment(satAssignment));
 
     Flow.Builder fb = Flow.builder();
-    fb.setDstIp(new Ip(_dstIp.satAssignmentToLong(satAssignment)));
-    fb.setSrcIp(new Ip(_srcIp.satAssignmentToLong(satAssignment)));
+    fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(satAssignment)));
+    fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(satAssignment)));
     fb.setDstPort(_dstPort.satAssignmentToLong(satAssignment).intValue());
     fb.setSrcPort(_srcPort.satAssignmentToLong(satAssignment).intValue());
     fb.setIpProtocol(

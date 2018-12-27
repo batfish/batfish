@@ -69,14 +69,14 @@ public class MultipathConsistencyTest {
             COL_FLOW,
             allOf(
                 ImmutableList.of(
-                    hasDstIp(new Ip("2.1.0.0")),
+                    hasDstIp(Ip.parse("2.1.0.0")),
                     hasDstPort(1234),
                     hasIcmpCode(0),
                     hasIcmpType(8),
                     hasIngressNode("~Configuration_0~"),
                     hasIngressVrf("default"),
                     hasIpProtocol(IpProtocol.ICMP),
-                    hasSrcIp(oneOf(new Ip("2.0.0.0"), new Ip("1.0.0.0"))),
+                    hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),
                     hasTag("BASE"))),
             Schema.FLOW));
 
@@ -107,14 +107,14 @@ public class MultipathConsistencyTest {
             COL_FLOW,
             allOf(
                 ImmutableList.of(
-                    hasDstIp(new Ip("2.1.0.0")),
+                    hasDstIp(Ip.parse("2.1.0.0")),
                     hasDstPort(1234),
                     hasIcmpCode(0),
                     hasIcmpType(8),
                     hasIngressNode("~Configuration_0~"),
                     hasIngressVrf("default"),
                     hasIpProtocol(IpProtocol.ICMP),
-                    hasSrcIp(oneOf(new Ip("2.0.0.0"), new Ip("1.0.0.0"))),
+                    hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),
                     hasTag("BASE"))),
             Schema.FLOW));
 

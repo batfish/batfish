@@ -166,14 +166,14 @@ final class CiscoNxConversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> new Prefix(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                e -> Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
                 e ->
                     (BgpActivePeerConfig)
                         CiscoNxConversions.toBgpNeighbor(
                             c,
                             vrf,
                             proc,
-                            new Prefix(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                            Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
                             bgpConfig,
                             nxBgpVrf,
                             e.getValue(),

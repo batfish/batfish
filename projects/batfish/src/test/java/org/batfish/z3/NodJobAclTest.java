@@ -98,22 +98,22 @@ public class NodJobAclTest {
 
     ib.setOwner(srcNode)
         .setVrf(srcVrf)
-        .setAddresses(new InterfaceAddress(new Ip("1.0.0.0"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("1.0.0.0"), 8))
         .build();
-    ib.setAddresses(new InterfaceAddress(new Ip("2.0.0.0"), 8)).build();
+    ib.setAddresses(new InterfaceAddress(Ip.parse("2.0.0.0"), 8)).build();
 
     // create iface1
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setName(iface1)
-        .setAddresses(new InterfaceAddress(new Ip("1.0.0.1"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("1.0.0.1"), 8))
         .build();
 
     // create iface2
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setName(iface2)
-        .setAddresses(new InterfaceAddress(new Ip("2.0.0.1"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("2.0.0.1"), 8))
         .build();
 
     // For the destination
@@ -126,8 +126,8 @@ public class NodJobAclTest {
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
-    srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("1.0.0.1")).build());
-    srcVrf.getStaticRoutes().add(bld.setNextHopIp(new Ip("2.0.0.1")).build());
+    srcVrf.getStaticRoutes().add(bld.setNextHopIp(Ip.parse("1.0.0.1")).build());
+    srcVrf.getStaticRoutes().add(bld.setNextHopIp(Ip.parse("2.0.0.1")).build());
 
     ImmutableSortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(srcNode.getHostname(), srcNode, dstNode.getHostname(), dstNode);
@@ -187,8 +187,9 @@ public class NodJobAclTest {
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
@@ -245,14 +246,14 @@ public class NodJobAclTest {
     ib.setOwner(node)
         .setVrf(vrf)
         .setName(iface1)
-        .setAddresses(new InterfaceAddress(new Ip("1.0.0.1"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("1.0.0.1"), 8))
         .build();
 
     // create iface2
     ib.setOwner(node)
         .setVrf(vrf)
         .setName(iface2)
-        .setAddresses(new InterfaceAddress(new Ip("2.0.0.1"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("2.0.0.1"), 8))
         .build();
 
     // For the destination
@@ -327,8 +328,9 @@ public class NodJobAclTest {
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
@@ -392,7 +394,7 @@ public class NodJobAclTest {
 
     ib.setOwner(node)
         .setVrf(vrf)
-        .setAddresses(new InterfaceAddress(new Ip("1.0.0.0"), 8))
+        .setAddresses(new InterfaceAddress(Ip.parse("1.0.0.0"), 8))
         .setOutgoingFilter(outgoingFilter)
         .build();
 

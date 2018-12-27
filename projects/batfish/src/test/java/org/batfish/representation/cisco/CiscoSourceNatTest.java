@@ -28,8 +28,8 @@ public class CiscoSourceNatTest {
         nat.toTransformation(ImmutableMap.of(), ImmutableMap.of()), equalTo(Optional.empty()));
 
     NatPool pool = new NatPool();
-    Ip first = new Ip("1.1.1.1");
-    Ip last = new Ip("1.1.1.2");
+    Ip first = Ip.parse("1.1.1.1");
+    Ip last = Ip.parse("1.1.1.2");
     pool.setFirst(first);
     pool.setLast(last);
     assertThat(

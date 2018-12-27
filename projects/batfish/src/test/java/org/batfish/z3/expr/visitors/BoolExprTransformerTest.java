@@ -149,7 +149,8 @@ public class BoolExprTransformerTest {
             hb.setDscps(ImmutableSet.of(intCounter++, intCounter++))
                 .setDstIps(
                     ImmutableSet.of(
-                        new IpWildcard(new Ip(ipCounter++)), new IpWildcard(new Ip(ipCounter++))))
+                        new IpWildcard(Ip.create(ipCounter++)),
+                        new IpWildcard(Ip.create(ipCounter++))))
                 .setDstPorts(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
@@ -173,7 +174,8 @@ public class BoolExprTransformerTest {
                 .setNotDscps(ImmutableSet.of(intCounter++, intCounter++))
                 .setNotDstIps(
                     ImmutableSet.of(
-                        new IpWildcard(new Ip(ipCounter++)), new IpWildcard(new Ip(ipCounter++))))
+                        new IpWildcard(Ip.create(ipCounter++)),
+                        new IpWildcard(Ip.create(ipCounter++))))
                 .setNotDstPorts(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
@@ -199,7 +201,8 @@ public class BoolExprTransformerTest {
                         new SubRange(intCounter++, intCounter++)))
                 .setNotSrcIps(
                     ImmutableSet.of(
-                        new IpWildcard(new Ip(ipCounter++)), new IpWildcard(new Ip(ipCounter++))))
+                        new IpWildcard(Ip.create(ipCounter++)),
+                        new IpWildcard(Ip.create(ipCounter++))))
                 .setNotSrcPorts(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),
@@ -211,10 +214,12 @@ public class BoolExprTransformerTest {
                         new SubRange(intCounter++, intCounter++)))
                 .setSrcIps(
                     ImmutableSet.of(
-                        new IpWildcard(new Ip(ipCounter++)), new IpWildcard(new Ip(ipCounter++))))
+                        new IpWildcard(Ip.create(ipCounter++)),
+                        new IpWildcard(Ip.create(ipCounter++))))
                 .setSrcOrDstIps(
                     ImmutableSet.of(
-                        new IpWildcard(new Ip(ipCounter++)), new IpWildcard(new Ip(ipCounter++))))
+                        new IpWildcard(Ip.create(ipCounter++)),
+                        new IpWildcard(Ip.create(ipCounter++))))
                 .setSrcOrDstPorts(
                     ImmutableSet.of(
                         new SubRange(intCounter++, intCounter++),

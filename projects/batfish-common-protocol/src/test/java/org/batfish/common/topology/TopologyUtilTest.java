@@ -233,16 +233,16 @@ public final class TopologyUtilTest {
     Prefix p3 = Prefix.parse("10.0.0.2/31");
 
     int vlanPrefixLength = 24;
-    Ip c1Vlan1Ip = new Ip("10.10.1.1");
-    Ip c1Vlan2Ip = new Ip("10.10.2.1");
-    Ip c1Vlan3Ip = new Ip("10.10.3.1");
-    Ip c1Vlan4Ip = new Ip("10.10.4.1");
-    Ip c2Vlan1Ip = new Ip("10.10.1.2");
-    Ip c2Vlan2Ip = new Ip("10.10.2.2");
-    Ip c2Vlan3Ip = new Ip("10.10.3.2");
-    Ip c2Vlan4Ip = new Ip("10.10.4.2");
-    Ip c3i5Ip = new Ip("10.10.1.3");
-    Ip c3i6Ip = new Ip("10.10.4.3");
+    Ip c1Vlan1Ip = Ip.parse("10.10.1.1");
+    Ip c1Vlan2Ip = Ip.parse("10.10.2.1");
+    Ip c1Vlan3Ip = Ip.parse("10.10.3.1");
+    Ip c1Vlan4Ip = Ip.parse("10.10.4.1");
+    Ip c2Vlan1Ip = Ip.parse("10.10.1.2");
+    Ip c2Vlan2Ip = Ip.parse("10.10.2.2");
+    Ip c2Vlan3Ip = Ip.parse("10.10.3.2");
+    Ip c2Vlan4Ip = Ip.parse("10.10.4.2");
+    Ip c3i5Ip = Ip.parse("10.10.1.3");
+    Ip c3i6Ip = Ip.parse("10.10.4.3");
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
@@ -433,13 +433,13 @@ public final class TopologyUtilTest {
         computeIpInterfaceOwners(nodeInterfaces, true),
         equalTo(
             ImmutableMap.of(
-                new Ip("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
+                Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
         computeIpInterfaceOwners(nodeInterfaces, false),
         equalTo(
             ImmutableMap.of(
-                new Ip("1.1.1.1"),
+                Ip.parse("1.1.1.1"),
                 ImmutableMap.of(
                     "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
   }

@@ -57,9 +57,9 @@ public class TransformationEvaluator {
       IpField field = shiftIpAddressIntoSubnet.getIpField();
       Ip ip = get(field);
       Prefix targetSubnet = shiftIpAddressIntoSubnet.getSubnet();
-      Prefix currentSubnetPrefix = new Prefix(ip, targetSubnet.getPrefixLength());
+      Prefix currentSubnetPrefix = Prefix.create(ip, targetSubnet.getPrefixLength());
       long offset = ip.asLong() - currentSubnetPrefix.getStartIp().asLong();
-      set(field, new Ip(targetSubnet.getStartIp().asLong() + offset));
+      set(field, Ip.create(targetSubnet.getStartIp().asLong() + offset));
       return null;
     }
   }
