@@ -27,8 +27,8 @@ public final class TestNetwork {
   public static final Prefix DST_PREFIX_2 = Prefix.parse("2.1.0.0/32");
   public static final Prefix LINK_1_NETWORK = Prefix.parse("1.0.0.0/31");
   public static final Prefix LINK_2_NETWORK = Prefix.parse("2.0.0.0/31");
-  public static final Ip SOURCE_NAT_ACL_IP = new Ip("5.5.5.5");
-  public static final Ip SOURCE_NAT_POOL_IP = new Ip("6.6.6.6");
+  public static final Ip SOURCE_NAT_ACL_IP = Ip.parse("5.5.5.5");
+  public static final Ip SOURCE_NAT_POOL_IP = Ip.parse("6.6.6.6");
   public static final int POST_SOURCE_NAT_ACL_DEST_PORT = 1234;
 
   public final SortedMap<String, Configuration> _configs;

@@ -373,7 +373,7 @@ public class AclExplainerTest {
         new MatchHeaderSpace(
             HeaderSpace.builder()
                 .setDstIps(Prefix.parse("1.2.3.0/24").toIpSpace())
-                .setSrcIps(new Ip("1.1.1.1").toIpSpace())
+                .setSrcIps(Ip.parse("1.1.1.1").toIpSpace())
                 .build());
     AclLineMatchExpr explanation = explanationWithProvenance.getMatchExpr();
     assertThat(explanation, equalTo(and(permitHeaderSpace, not(matchDstIp))));

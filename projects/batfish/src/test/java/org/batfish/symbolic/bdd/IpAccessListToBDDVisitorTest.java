@@ -52,7 +52,7 @@ public class IpAccessListToBDDVisitorTest {
 
   @Test
   public void testPermittedByAcl() {
-    Ip fooIp = new Ip("1.1.1.1");
+    Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     Map<String, IpAccessList> namedAclBDDs =

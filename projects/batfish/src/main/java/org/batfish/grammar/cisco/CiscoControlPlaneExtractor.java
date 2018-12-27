@@ -1318,11 +1318,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static Ip toIp(TerminalNode t) {
-    return new Ip(t.getText());
+    return Ip.parse(t.getText());
   }
 
   private static Ip toIp(Token t) {
-    return new Ip(t.getText());
+    return Ip.parse(t.getText());
   }
 
   private static Ip6 toIp6(TerminalNode t) {
@@ -2834,7 +2834,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)).toIpSpace());
+    _currentNetworkObjectGroup.getLines().add(new IpWildcard(Prefix.create(ip, mask)).toIpSpace());
   }
 
   @Override
@@ -2963,7 +2963,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOn_host(On_hostContext ctx) {
     if (ctx.address != null) {
-      _currentNetworkObject.setIpSpace(new Ip(ctx.address.getText()).toIpSpace());
+      _currentNetworkObject.setIpSpace(Ip.parse(ctx.address.getText()).toIpSpace());
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -2979,7 +2979,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitOn_subnet(On_subnetContext ctx) {
     if (ctx.address != null) {
       _currentNetworkObject.setIpSpace(
-          new Prefix(new Ip(ctx.address.getText()), new Ip(ctx.mask.getText())).toIpSpace());
+          Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText())).toIpSpace());
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -3016,7 +3016,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentBgpNxVrfAddressFamilyAggregateNetwork =
           _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
     } else if (ctx.network != null && ctx.subnet != null) {
-      Prefix prefix = new Prefix(toIp(ctx.network), toIp(ctx.subnet));
+      Prefix prefix = Prefix.create(toIp(ctx.network), toIp(ctx.subnet));
       _currentBgpNxVrfAddressFamilyAggregateNetwork =
           _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
     } else if (ctx.prefix6 != null) {
@@ -3129,7 +3129,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
       _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
     } else if (ctx.address != null && ctx.mask != null) {
-      Prefix prefix = new Prefix(toIp(ctx.address), toIp(ctx.mask));
+      Prefix prefix = Prefix.create(toIp(ctx.address), toIp(ctx.mask));
       _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
     } else if (ctx.prefix6 != null) {
       Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
@@ -3250,7 +3250,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ip != null) {
       _currentBgpNxVrfConfiguration.setClusterId(toIp(ctx.ip));
     } else {
-      _currentBgpNxVrfConfiguration.setClusterId(new Ip(toLong(ctx.ip_as_int)));
+      _currentBgpNxVrfConfiguration.setClusterId(Ip.create(toLong(ctx.ip_as_int)));
     }
   }
 
@@ -4381,7 +4381,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           Ip network = toIp(ctx.network);
           Ip subnet = toIp(ctx.subnet);
           int prefixLength = subnet.numSubnetBits();
-          prefix = new Prefix(network, prefixLength);
+          prefix = Prefix.create(network, prefixLength);
         } else {
           // ctx.prefix != null
           prefix = Prefix.parse(ctx.prefix.getText());
@@ -4553,7 +4553,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip clusterId = null;
     if (ctx.DEC() != null) {
       long ipAsLong = toLong(ctx.DEC());
-      clusterId = new Ip(ipAsLong);
+      clusterId = Ip.create(ipAsLong);
     } else if (ctx.IP_ADDRESS() != null) {
       clusterId = toIp(ctx.IP_ADDRESS());
     }
@@ -6396,7 +6396,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip address = toIp(ctx.address);
       Ip mask = toIp(ctx.mask);
       int prefixLength = mask.numSubnetBits();
-      prefix = new Prefix(address, prefixLength);
+      prefix = Prefix.create(address, prefixLength);
     }
     Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     String nextHopInterface = null;
@@ -6865,7 +6865,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip address = toIp(ctx.ip);
       Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
       int prefixLength = mask.numSubnetBits();
-      prefix = new Prefix(address, prefixLength);
+      prefix = Prefix.create(address, prefixLength);
     }
     String map = null;
     Integer mapLine = null;
@@ -7592,7 +7592,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         PrefixList pl = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
         Prefix prefix;
         if (ctx.ipa != null) {
-          prefix = new Prefix(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
+          prefix = Prefix.create(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
         } else {
           prefix = Prefix.parse(ctx.prefix.getText());
         }
@@ -7874,7 +7874,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
     } else {
-      prefix = new Prefix(toIp(ctx.area_ip), toIp(ctx.area_subnet));
+      prefix = Prefix.create(toIp(ctx.area_ip), toIp(ctx.area_subnet));
     }
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
@@ -8268,7 +8268,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoute_tail(Route_tailContext ctx) {
     String nextHopInterface = ctx.iface.getText();
-    Prefix prefix = new Prefix(toIp(ctx.destination), toIp(ctx.mask));
+    Prefix prefix = Prefix.create(toIp(ctx.destination), toIp(ctx.mask));
     Ip nextHopIp = toIp(ctx.gateway);
 
     int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
@@ -8347,7 +8347,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRr_network(Rr_networkContext ctx) {
     Ip networkAddress = toIp(ctx.network);
     Ip mask = networkAddress.getClassMask();
-    Prefix network = new Prefix(networkAddress, mask);
+    Prefix network = Prefix.create(networkAddress, mask);
     _currentRipProcess.getNetworks().add(network);
   }
 
@@ -9029,7 +9029,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSummary_address_is_stanza(Summary_address_is_stanzaContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    Prefix prefix = new Prefix(ip, mask);
+    Prefix prefix = Prefix.create(ip, mask);
     RoutingProtocol sourceProtocol = RoutingProtocol.ISIS_L1;
     IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
     r.setSummaryPrefix(prefix);
@@ -10535,7 +10535,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           lower = prefix.getPrefixLength();
           upper = Prefix.MAX_PREFIX_LENGTH;
         } else if (pctxt.ipa != null) {
-          prefix = new Prefix(toIp(pctxt.ipa), Prefix.MAX_PREFIX_LENGTH);
+          prefix = Prefix.create(toIp(pctxt.ipa), Prefix.MAX_PREFIX_LENGTH);
           lower = prefix.getPrefixLength();
           upper = Prefix.MAX_PREFIX_LENGTH;
         } else if (pctxt.ipv6a != null) {

@@ -29,7 +29,7 @@ public class VrrpComputationTest {
   private Interface _i1;
   private Interface _i2;
   private InterfaceAddress _virtInterfaceAddr =
-      new InterfaceAddress(new Ip("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+      new InterfaceAddress(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
 
   @Before
   public void setup() {

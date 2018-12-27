@@ -168,7 +168,7 @@ public final class IpAccessListSpecializerTest {
   @Test
   public void visitMatchHeaderSpace() {
     HeaderSpace headerSpace =
-        HeaderSpace.builder().setDstIps(new Ip("1.1.1.1").toIpSpace()).build();
+        HeaderSpace.builder().setDstIps(Ip.parse("1.1.1.1").toIpSpace()).build();
     assertThat(identitySpecialize(match(headerSpace)), equalTo(match(headerSpace)));
   }
 

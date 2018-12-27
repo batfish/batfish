@@ -67,7 +67,7 @@ public class IpsecSessionStatusAnswererTest {
     Configuration responderNode;
     _ipsecStaticPeerConfigBuilder
         .setPhysicalInterface("Test_interface")
-        .setLocalAddress(new Ip("1.2.3.4"))
+        .setLocalAddress(Ip.parse("1.2.3.4"))
         .setTunnelInterface("Tunnel_interface");
     _graph = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     _ipsecSessionBuilder = IpsecSession.builder();
@@ -219,11 +219,11 @@ public class IpsecSessionStatusAnswererTest {
         ipsecPeeringInfoBuilder
             .setInitiatorHostname(INITIATOR_HOST_NAME)
             .setInitiatorInterface("Test_interface")
-            .setInitiatorIp(new Ip("1.2.3.4"))
+            .setInitiatorIp(Ip.parse("1.2.3.4"))
             .setInitiatorTunnelInterface("Tunnel_interface")
             .setResponderHostname(RESPONDER_HOST_NAME)
             .setResponderInterface("Test_interface")
-            .setResponderIp(new Ip("2.3.4.5"))
+            .setResponderIp(Ip.parse("2.3.4.5"))
             .setResponderTunnelInterface("Tunnel1_interface")
             .setIpsecSessionStatus(IPSEC_SESSION_ESTABLISHED)
             .build();
@@ -239,7 +239,7 @@ public class IpsecSessionStatusAnswererTest {
                 COL_INIT_INTERFACE,
                 equalTo(new NodeInterfacePair(INITIATOR_HOST_NAME, "Test_interface")),
                 Schema.INTERFACE),
-            hasColumn(COL_INIT_IP, equalTo(new Ip("1.2.3.4")), Schema.IP)));
+            hasColumn(COL_INIT_IP, equalTo(Ip.parse("1.2.3.4")), Schema.IP)));
 
     // Splitting the assertions to avoid "Unchecked generics arrays creation warnings for allOf()
     // varargs"
@@ -250,7 +250,7 @@ public class IpsecSessionStatusAnswererTest {
                 COL_RESPONDER_INTERFACE,
                 equalTo(new NodeInterfacePair(RESPONDER_HOST_NAME, "Test_interface")),
                 Schema.INTERFACE),
-            hasColumn(COL_RESPONDER_IP, equalTo(new Ip("2.3.4.5")), Schema.IP)));
+            hasColumn(COL_RESPONDER_IP, equalTo(Ip.parse("2.3.4.5")), Schema.IP)));
 
     assertThat(
         row,
@@ -270,11 +270,11 @@ public class IpsecSessionStatusAnswererTest {
         ipsecPeeringInfoBuilder
             .setInitiatorHostname(INITIATOR_HOST_NAME)
             .setInitiatorInterface("Test_interface")
-            .setInitiatorIp(new Ip("1.2.3.4"))
+            .setInitiatorIp(Ip.parse("1.2.3.4"))
             .setInitiatorTunnelInterface("Tunnel1_interface")
             .setResponderHostname(RESPONDER_HOST_NAME)
             .setResponderInterface("Test_interface")
-            .setResponderIp(new Ip("2.3.4.5"))
+            .setResponderIp(Ip.parse("2.3.4.5"))
             .setIpsecSessionStatus(MISSING_END_POINT)
             .build();
 
@@ -298,9 +298,9 @@ public class IpsecSessionStatusAnswererTest {
         ipsecPeeringInfoBuilder
             .setInitiatorHostname(INITIATOR_HOST_NAME)
             .setInitiatorInterface("Test_interface")
-            .setInitiatorIp(new Ip("1.2.3.4"))
+            .setInitiatorIp(Ip.parse("1.2.3.4"))
             .setResponderHostname(RESPONDER_HOST_NAME)
-            .setResponderIp(new Ip("2.3.4.5"))
+            .setResponderIp(Ip.parse("2.3.4.5"))
             .setIpsecSessionStatus(IPSEC_SESSION_ESTABLISHED)
             .build();
 

@@ -95,7 +95,7 @@ public class TracerouteEngineImplTest {
 
   private static Flow makeFlow() {
     Flow.Builder builder = new Flow.Builder();
-    builder.setSrcIp(new Ip("1.2.3.4"));
+    builder.setSrcIp(Ip.parse("1.2.3.4"));
     builder.setIngressNode("foo");
     builder.setTag("TEST");
     return builder.build();
@@ -114,13 +114,13 @@ public class TracerouteEngineImplTest {
     DestinationNat nat =
         DestinationNat.builder()
             .setAcl(makeAcl("accept", LineAction.PERMIT))
-            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpFirst(Ip.parse("4.5.6.7"))
             .build();
 
     Flow transformed =
         TracerouteEngineImplContext.applyDestinationNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
+    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.7")));
   }
 
   @Test
@@ -130,7 +130,7 @@ public class TracerouteEngineImplTest {
     DestinationNat nat =
         DestinationNat.builder()
             .setAcl(makeAcl("reject", LineAction.DENY))
-            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpFirst(Ip.parse("4.5.6.7"))
             .build();
 
     Flow transformed =
@@ -146,19 +146,19 @@ public class TracerouteEngineImplTest {
     DestinationNat nat =
         DestinationNat.builder()
             .setAcl(makeAcl("firstAccept", LineAction.PERMIT))
-            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpFirst(Ip.parse("4.5.6.7"))
             .build();
 
     DestinationNat secondNat =
         DestinationNat.builder()
             .setAcl(makeAcl("secondAccept", LineAction.PERMIT))
-            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .setPoolIpFirst(Ip.parse("4.5.6.8"))
             .build();
 
     Flow transformed =
         TracerouteEngineImplContext.applyDestinationNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.7")));
+    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.7")));
   }
 
   @Test
@@ -168,19 +168,19 @@ public class TracerouteEngineImplTest {
     DestinationNat nat =
         DestinationNat.builder()
             .setAcl(makeAcl("rejectAll", LineAction.DENY))
-            .setPoolIpFirst(new Ip("4.5.6.7"))
+            .setPoolIpFirst(Ip.parse("4.5.6.7"))
             .build();
 
     DestinationNat secondNat =
         DestinationNat.builder()
             .setAcl(makeAcl("acceptAnyway", LineAction.PERMIT))
-            .setPoolIpFirst(new Ip("4.5.6.8"))
+            .setPoolIpFirst(Ip.parse("4.5.6.8"))
             .build();
 
     Flow transformed =
         TracerouteEngineImplContext.applyDestinationNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getDstIp(), equalTo(new Ip("4.5.6.8")));
+    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.8")));
   }
 
   @Test
@@ -189,12 +189,12 @@ public class TracerouteEngineImplTest {
 
     SourceNat nat = new SourceNat();
     nat.setAcl(makeAcl("accept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
 
     Flow transformed =
         TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
+    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.7")));
   }
 
   @Test
@@ -203,7 +203,7 @@ public class TracerouteEngineImplTest {
 
     SourceNat nat = new SourceNat();
     nat.setAcl(makeAcl("reject", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
 
     Flow transformed =
         TracerouteEngineImplContext.applySourceNat(
@@ -217,16 +217,16 @@ public class TracerouteEngineImplTest {
 
     SourceNat nat = new SourceNat();
     nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
     secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
+    secondNat.setPoolIpFirst(Ip.parse("4.5.6.8"));
 
     Flow transformed =
         TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
+    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.7")));
   }
 
   @Test
@@ -235,16 +235,16 @@ public class TracerouteEngineImplTest {
 
     SourceNat nat = new SourceNat();
     nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
+    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
 
     SourceNat secondNat = new SourceNat();
     secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
+    secondNat.setPoolIpFirst(Ip.parse("4.5.6.8"));
 
     Flow transformed =
         TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
+    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.8")));
   }
 
   /*
@@ -277,7 +277,7 @@ public class TracerouteEngineImplTest {
     // Construct flows
     Flow.Builder fb =
         Flow.builder()
-            .setDstIp(new Ip("3.3.3.3"))
+            .setDstIp(Ip.parse("3.3.3.3"))
             .setIngressNode(config.getHostname())
             .setTag("TAG");
 
@@ -325,8 +325,8 @@ public class TracerouteEngineImplTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(source.getHostname())
-            .setSrcIp(new Ip("10.0.0.1"))
-            .setDstIp(new Ip("10.0.0.2"))
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("10.0.0.2"))
             .setTag("tag")
             .build();
     List<Trace> traces =
@@ -366,7 +366,7 @@ public class TracerouteEngineImplTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
-            .setDstIp(new Ip("1.0.0.1"))
+            .setDstIp(Ip.parse("1.0.0.1"))
             .setTag("tag")
             .build();
     SortedMap<Flow, List<Trace>> flowTraces = b.buildFlows(ImmutableSet.of(flow), false);
@@ -415,7 +415,7 @@ public class TracerouteEngineImplTest {
         Flow.builder()
             .setIngressNode(c1.getHostname())
             .setTag("tag")
-            .setDstIp(new Ip("1.0.0.1"))
+            .setDstIp(Ip.parse("1.0.0.1"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces = b.buildFlows(ImmutableSet.of(flow), false);
     Trace trace = flowTraces.get(flow).iterator().next();
@@ -554,7 +554,7 @@ public class TracerouteEngineImplTest {
             .setIngressVrf(v1.getName())
             .setDstIp(loopPrefix.getStartIp())
             // any src Ip other than the NAT pool IP will do
-            .setSrcIp(new Ip("6.6.6.6"))
+            .setSrcIp(Ip.parse("6.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -680,8 +680,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("10.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -731,8 +731,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("10.1.1.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("10.1.1.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -809,8 +809,8 @@ public class TracerouteEngineImplTest {
             .setTag("tag")
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
-            .setSrcIp(new Ip("1.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("1.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -843,10 +843,10 @@ public class TracerouteEngineImplTest {
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
 
     IpAccessList.Builder ab = nf.aclBuilder().setOwner(c);
-    Ip ip21 = new Ip("2.0.0.1");
-    Ip ip22 = new Ip("2.0.0.2");
-    Ip ip33 = new Ip("3.0.0.3");
-    Ip ip41 = new Ip("4.0.0.1");
+    Ip ip21 = Ip.parse("2.0.0.1");
+    Ip ip22 = Ip.parse("2.0.0.2");
+    Ip ip33 = Ip.parse("3.0.0.3");
+    Ip ip41 = Ip.parse("4.0.0.1");
     Prefix prefix2 = Prefix.parse("2.0.0.0/24");
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
     Interface inInterface =
@@ -1136,8 +1136,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("10.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -1167,8 +1167,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("20.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("20.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -1232,8 +1232,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("10.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         TracerouteEngineImpl.getInstance()
@@ -1263,8 +1263,8 @@ public class TracerouteEngineImplTest {
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
-            .setSrcIp(new Ip("20.0.0.1"))
-            .setDstIp(new Ip("20.6.6.6"))
+            .setSrcIp(Ip.parse("20.0.0.1"))
+            .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     flowTraces =
         TracerouteEngineImpl.getInstance()

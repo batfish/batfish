@@ -109,9 +109,9 @@ public class IncrementalDataPlanePluginTest {
   }
 
   private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
-    Ip coreId = new Ip("1.1.1.1");
-    Ip neighborId1 = new Ip("1.1.1.9");
-    Ip neighborId2 = new Ip("1.1.1.2");
+    Ip coreId = Ip.parse("1.1.1.1");
+    Ip neighborId1 = Ip.parse("1.1.1.9");
+    Ip neighborId2 = Ip.parse("1.1.1.2");
     final int interfcePrefixBits = 30;
     _vb.setName(DEFAULT_VRF_NAME);
 
@@ -344,7 +344,7 @@ public class IncrementalDataPlanePluginTest {
         StaticRoute.builder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface(i.getName())
-            .setNextHopIp(new Ip("10.0.0.1"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(srBoth);
@@ -455,8 +455,8 @@ public class IncrementalDataPlanePluginTest {
 
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(new Ip("1.0.0.0"))
-            .setPeerAddress(new Ip("1.0.0.1"))
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.1"))
             .setEbgpMultihop(false)
             .setLocalAs(1L)
             .setRemoteAs(2L)
@@ -484,8 +484,8 @@ public class IncrementalDataPlanePluginTest {
 
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(new Ip("1.0.0.0"))
-            .setPeerAddress(new Ip("1.0.0.3"))
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(false)
             .setLocalAs(1L)
             .setRemoteAs(2L)
@@ -513,8 +513,8 @@ public class IncrementalDataPlanePluginTest {
 
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(new Ip("1.0.0.0"))
-            .setPeerAddress(new Ip("1.0.0.3"))
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(true)
             .setLocalAs(1L)
             .setRemoteAs(2L)
@@ -543,8 +543,8 @@ public class IncrementalDataPlanePluginTest {
 
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(new Ip("1.0.0.0"))
-            .setPeerAddress(new Ip("1.0.0.3"))
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(true)
             .setLocalAs(1L)
             .setRemoteAs(2L)

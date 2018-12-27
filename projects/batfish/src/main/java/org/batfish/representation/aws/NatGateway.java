@@ -34,8 +34,8 @@ public class NatGateway implements AwsVpcEntity, Serializable {
       JSONObject childObject = addresses.getJSONObject(index);
       String allocationId = childObject.getString(JSON_KEY_ALLOCATION_ID);
       String networkInterfaceId = childObject.getString(JSON_KEY_NETWORK_INTERFACE_ID);
-      Ip privateIp = new Ip(childObject.getString(JSON_KEY_PRIVATE_IP));
-      Ip publicIp = new Ip(childObject.getString(JSON_KEY_PUBLIC_IP));
+      Ip privateIp = Ip.parse(childObject.getString(JSON_KEY_PRIVATE_IP));
+      Ip publicIp = Ip.parse(childObject.getString(JSON_KEY_PUBLIC_IP));
       _natGatewayAddresses.add(
           new NatGatewayAddress(allocationId, networkInterfaceId, privateIp, publicIp));
     }

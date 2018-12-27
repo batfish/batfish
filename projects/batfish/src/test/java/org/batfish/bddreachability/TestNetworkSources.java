@@ -66,7 +66,7 @@ public class TestNetworkSources {
             .build();
     ib.setName(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME)
         .setOutgoingFilter(acl1)
-        .setAddress(new InterfaceAddress(new Ip("1.0.0.1"), 24))
+        .setAddress(new InterfaceAddress(Ip.parse("1.0.0.1"), 24))
         .build();
 
     // only traffic from inInterface from device can go out this interface
@@ -80,7 +80,7 @@ public class TestNetworkSources {
             .build();
     ib.setName(MATCH_SRC_INTERFACE_ACL_IFACE_NAME)
         .setOutgoingFilter(acl2)
-        .setAddress(new InterfaceAddress(new Ip("2.0.0.1"), 24))
+        .setAddress(new InterfaceAddress(Ip.parse("2.0.0.1"), 24))
         .build();
 
     return config;

@@ -26,7 +26,7 @@ public class PrefixSpaceTest {
     assertThat(
         PrefixSpace.getAddressBits(Ip.MAX), equalTo(BitSet.valueOf(new long[] {0xff_ff_ff_ffL})));
     assertThat(
-        PrefixSpace.getAddressBits(new Ip("128.255.31.3")),
+        PrefixSpace.getAddressBits(Ip.parse("128.255.31.3")),
         equalTo(BitSet.valueOf(new long[] {0xc0_f8_ff_01L})));
   }
 

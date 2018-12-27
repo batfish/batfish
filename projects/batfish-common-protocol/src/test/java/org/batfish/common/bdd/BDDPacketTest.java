@@ -54,10 +54,10 @@ public class BDDPacketTest {
   @Test
   public void testGetFlow() {
     BDDPacket pkt = new BDDPacket();
-    Ip dstIp = new Ip("123.456.789.0");
+    Ip dstIp = Ip.parse("123.456.789.0");
     int dstPort = 0xA0;
 
-    Ip srcIp = new Ip("255.255.255.255");
+    Ip srcIp = Ip.parse("255.255.255.255");
     int srcPort = 0xFF;
 
     int icmpCode = 0x00;
@@ -111,8 +111,8 @@ public class BDDPacketTest {
   @Test
   public void testGetFlowPreference1() {
     BDDPacket pkt = new BDDPacket();
-    Ip dstIp = new Ip("123.456.789.0");
-    Ip srcIp = new Ip("1.2.3.4");
+    Ip dstIp = Ip.parse("123.456.789.0");
+    Ip srcIp = Ip.parse("1.2.3.4");
 
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
@@ -130,8 +130,8 @@ public class BDDPacketTest {
   @Test
   public void testGetFlowPreference2() {
     BDDPacket pkt = new BDDPacket();
-    Ip dstIp = new Ip("123.456.789.0");
-    Ip srcIp = new Ip("1.2.3.4");
+    Ip dstIp = Ip.parse("123.456.789.0");
+    Ip srcIp = Ip.parse("1.2.3.4");
 
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
@@ -151,8 +151,8 @@ public class BDDPacketTest {
   @Test
   public void testGetFlowPreference3() {
     BDDPacket pkt = new BDDPacket();
-    Ip dstIp = new Ip("123.456.789.0");
-    Ip srcIp = new Ip("1.2.3.4");
+    Ip dstIp = Ip.parse("123.456.789.0");
+    Ip srcIp = Ip.parse("1.2.3.4");
 
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 

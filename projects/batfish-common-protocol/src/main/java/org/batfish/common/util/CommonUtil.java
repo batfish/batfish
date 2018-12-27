@@ -625,7 +625,7 @@ public class CommonUtil {
                   for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
                       ipAsLong <= sourceNat.getPoolIpLast().asLong();
                       ipAsLong++) {
-                    Ip currentPoolIp = new Ip(ipAsLong);
+                    Ip currentPoolIp = Ip.create(ipAsLong);
                     builder.put(currentPoolIp, ipSpace);
                   }
                 }
@@ -872,7 +872,9 @@ public class CommonUtil {
       Set<Interface> candidateInterfaces = Sets.newIdentityHashSet();
       IntStream.range(0, Prefix.MAX_PREFIX_LENGTH)
           .mapToObj(
-              i -> prefixInterfaces.getOrDefault(new Prefix(p.getStartIp(), i), ImmutableList.of()))
+              i ->
+                  prefixInterfaces.getOrDefault(
+                      Prefix.create(p.getStartIp(), i), ImmutableList.of()))
           .flatMap(Collection::stream)
           .filter(
               iface -> iface.getAllAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))

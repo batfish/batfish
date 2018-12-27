@@ -4,8 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,13 +18,19 @@ import org.batfish.common.BatfishException;
 @ParametersAreNonnullByDefault
 public final class Prefix implements Comparable<Prefix>, Serializable {
 
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).
+  private static final Cache<Prefix, Prefix> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build();
+
   /** Maximum prefix length (number of bits) for a IPv4 address, which is 32 */
   public static final int MAX_PREFIX_LENGTH = 32;
 
   private static final long serialVersionUID = 1L;
 
   /** A "0.0.0.0/0" prefix */
-  public static final Prefix ZERO = new Prefix(Ip.ZERO, 0);
+  public static final Prefix ZERO = create(Ip.ZERO, 0);
 
   private static long getNetworkEnd(long networkStart, int prefixLength) {
     return networkStart | ((1L << (32 - prefixLength)) - 1);
@@ -44,14 +53,14 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     if (parts.length != 2) {
       throw new BatfishException("Invalid prefix string: \"" + text + "\"");
     }
-    Ip ip = new Ip(parts[0]);
+    Ip ip = Ip.parse(parts[0]);
     int prefixLength;
     try {
       prefixLength = Integer.parseInt(parts[1]);
     } catch (NumberFormatException e) {
       throw new BatfishException("Invalid prefix length: \"" + parts[1] + "\"", e);
     }
-    return new Prefix(ip, prefixLength);
+    return create(ip, prefixLength);
   }
 
   /**
@@ -69,7 +78,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   private final int _prefixLength;
 
-  public Prefix(Ip ip, int prefixLength) {
+  private Prefix(Ip ip, int prefixLength) {
     if (ip.valid()) {
       // TODO: stop using Ip as a holder for invalid values.
       _ip = ip.getNetworkAddress(prefixLength);
@@ -79,8 +88,18 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     _prefixLength = prefixLength;
   }
 
-  public Prefix(Ip address, Ip mask) {
-    this(address, mask.numSubnetBits());
+  public static Prefix create(Ip ip, int prefixLength) {
+    Prefix p = new Prefix(ip, prefixLength);
+    try {
+      return CACHE.get(p, () -> p);
+    } catch (ExecutionException e) {
+      // This shouldn't happen, but handle anyway.
+      return p;
+    }
+  }
+
+  public static Prefix create(Ip address, Ip mask) {
+    return create(address, mask.numSubnetBits());
   }
 
   @Override
@@ -116,7 +135,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Nonnull
   public Ip getEndIp() {
-    return new Ip(getNetworkEnd(_ip.asLong(), _prefixLength));
+    return Ip.create(getNetworkEnd(_ip.asLong(), _prefixLength));
   }
 
   public int getPrefixLength() {
@@ -127,7 +146,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public Ip getPrefixWildcard() {
     int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
     long wildcardLong = numWildcardBitsToWildcardLong(numWildcardBits);
-    return new Ip(wildcardLong);
+    return Ip.create(wildcardLong);
   }
 
   @Nonnull

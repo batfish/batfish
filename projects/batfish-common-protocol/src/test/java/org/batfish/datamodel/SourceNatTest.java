@@ -20,7 +20,7 @@ public class SourceNatTest {
             .setName("foo")
             .setLines(ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.TRUE)))
             .build();
-    nat = new SourceNat(acl, new Ip("1.1.1.1"), new Ip("2.2.2.2"));
+    nat = new SourceNat(acl, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
     assertThat(BatfishObjectMapper.clone(nat, SourceNat.class), equalTo(nat));
   }
 }

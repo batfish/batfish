@@ -122,7 +122,7 @@ public class NodJobTest {
     _ingressLocation = IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
-    Ip poolIp1 = new Ip("1.0.0.10");
+    Ip poolIp1 = Ip.parse("1.0.0.10");
 
     // apply NAT to all packets
     IpAccessList sourceNat1Acl =
@@ -210,11 +210,12 @@ public class NodJobTest {
     // Only one OriginateVrf choice, so this must be 0
     assertThat(
         fieldConstraints, hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
-        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
+        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(Ip.parse("3.0.0.0").asLong()))));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
@@ -227,7 +228,7 @@ public class NodJobTest {
           assertThat(hops, hasSize(1));
           FlowTraceHop hop = hops.get(0);
           assertThat(hop.getTransformedFlow(), notNullValue());
-          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(new Ip("1.0.0.10")));
+          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(Ip.parse("1.0.0.10")));
         });
   }
 
@@ -276,8 +277,9 @@ public class NodJobTest {
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
@@ -300,7 +302,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedSat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
+    headerSpace.setSrcIps(Ip.parse("3.0.0.1").toIpSpace());
     NodJob nodJob = getNodJob(headerSpace, REQUIRE_NOT_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
@@ -312,7 +314,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedUnsat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
+    headerSpace.setSrcIps(Ip.parse("3.0.0.1").toIpSpace());
     NodJob nodJob = getNodJob(headerSpace, REQUIRE_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }

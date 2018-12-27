@@ -106,7 +106,7 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
       } else {
         admin = toInteger(ctx.admin);
         cost = toInteger(ctx.cost);
-        nextHopIp = new Ip(ctx.nexthops.get(i).getText());
+        nextHopIp = Ip.parse(ctx.nexthops.get(i).getText());
       }
       RouteBuilder rb = new RouteBuilder();
       rb.setNode(_hostname);

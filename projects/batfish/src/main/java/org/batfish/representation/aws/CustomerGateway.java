@@ -19,7 +19,7 @@ public class CustomerGateway implements AwsVpcEntity, Serializable {
 
   public CustomerGateway(JSONObject jObj) throws JSONException {
     _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
-    _ipAddress = new Ip(jObj.getString(JSON_KEY_IP_ADDRESS));
+    _ipAddress = Ip.parse(jObj.getString(JSON_KEY_IP_ADDRESS));
     _type = jObj.getString(JSON_KEY_TYPE);
     _bgpAsn = jObj.getString(JSON_KEY_BGP_ASN);
   }

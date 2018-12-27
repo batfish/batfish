@@ -31,9 +31,9 @@ public class IpSpaceToBoolExprTest {
 
   @Test
   public void testAclIpSpace() {
-    IpSpace ipSpace1 = new Ip("1.1.1.1").toIpSpace();
-    IpSpace ipSpace2 = new Ip("2.2.2.2").toIpSpace();
-    IpSpace ipSpace3 = new Ip("3.3.3.3").toIpSpace();
+    IpSpace ipSpace1 = Ip.parse("1.1.1.1").toIpSpace();
+    IpSpace ipSpace2 = Ip.parse("2.2.2.2").toIpSpace();
+    IpSpace ipSpace3 = Ip.parse("3.3.3.3").toIpSpace();
 
     BoolExpr boolExpr1 = IP_SPACE_TO_BOOL_EXPR.visit(ipSpace1);
     BoolExpr boolExpr2 = IP_SPACE_TO_BOOL_EXPR.visit(ipSpace2);
@@ -68,7 +68,7 @@ public class IpSpaceToBoolExprTest {
 
   @Test
   public void testIpIpSpace() {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     assertThat(
         IP_SPACE_TO_BOOL_EXPR.visit(ip.toIpSpace()),
         equalTo(CONTEXT.mkEq(VAR, CONTEXT.mkBV(ip.asLong(), 32))));
@@ -76,8 +76,8 @@ public class IpSpaceToBoolExprTest {
 
   @Test
   public void testIpWildcardIpSpace() {
-    Ip ip = new Ip(0x01000200);
-    Ip mask = new Ip(0x00FF00FF);
+    Ip ip = Ip.create(0x01000200);
+    Ip mask = Ip.create(0x00FF00FF);
     IpWildcard ipWildcard = new IpWildcard(ip, mask);
     BitVecExpr ipBV = CONTEXT.mkBV(ip.asLong(), 32);
     BitVecExpr maskBV = CONTEXT.mkBV(mask.inverted().asLong(), 32);

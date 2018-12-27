@@ -15,7 +15,7 @@ public class IsisRouteTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setLevel(IsisLevel.LEVEL_1)
             .setArea("0")
-            .setNextHopIp(new Ip("2.2.2.2"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
             .setProtocol(RoutingProtocol.ISIS_L1)
             .setSystemId("id");
 

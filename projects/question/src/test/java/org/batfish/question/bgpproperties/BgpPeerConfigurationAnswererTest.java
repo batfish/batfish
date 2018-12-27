@@ -53,8 +53,8 @@ public class BgpPeerConfigurationAnswererTest {
         BgpActivePeerConfig.builder()
             .setLocalAs(100L)
             .setRemoteAs(200L)
-            .setLocalIp(new Ip("1.1.1.1"))
-            .setPeerAddress(new Ip("2.2.2.2"))
+            .setLocalIp(Ip.parse("1.1.1.1"))
+            .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRouteReflectorClient(false)
             .setGroup("g1")
             .setImportPolicySources(ImmutableSortedSet.of("p1"))
@@ -65,10 +65,10 @@ public class BgpPeerConfigurationAnswererTest {
         BgpPassivePeerConfig.builder()
             .setLocalAs(100L)
             .setRemoteAs(ImmutableList.of(300L))
-            .setLocalIp(new Ip("1.1.1.2"))
-            .setPeerPrefix(new Prefix(new Ip("3.3.3.0"), 24))
+            .setLocalIp(Ip.parse("1.1.1.2"))
+            .setPeerPrefix(Prefix.create(Ip.parse("3.3.3.0"), 24))
             .setRouteReflectorClient(true)
-            .setClusterId(new Ip("5.5.5.5").asLong())
+            .setClusterId(Ip.parse("5.5.5.5").asLong())
             .setGroup("g2")
             .setImportPolicySources(ImmutableSortedSet.of("p3"))
             .setExportPolicySources(ImmutableSortedSet.of("p4"))
@@ -76,9 +76,9 @@ public class BgpPeerConfigurationAnswererTest {
             .build();
 
     BgpProcess process = new BgpProcess();
-    process.setNeighbors(ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), activePeer));
+    process.setNeighbors(ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), activePeer));
     process.setPassiveNeighbors(
-        ImmutableSortedMap.of(new Prefix(new Ip("1.1.1.0"), 24), passivePeer));
+        ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), passivePeer));
 
     Vrf vrf = new Vrf("v");
     vrf.setBgpProcess(process);
@@ -103,10 +103,10 @@ public class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
-            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_AS), 100L)
             .put(getColumnName(REMOTE_AS), new SelfDescribingObject(Schema.LONG, 200L))
-            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
+            .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
             .put(getColumnName(CLUSTER_ID), null)
@@ -122,14 +122,14 @@ public class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(LOCAL_AS), 100L)
             .put(
                 COL_REMOTE_IP,
-                new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
+                new SelfDescribingObject(Schema.PREFIX, Prefix.create(Ip.parse("3.3.3.0"), 24)))
             .put(
                 getColumnName(REMOTE_AS),
                 new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(300L)))
-            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.2"))
+            .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.2"))
             .put(getColumnName(IS_PASSIVE), true)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
-            .put(getColumnName(CLUSTER_ID), new Ip("5.5.5.5"))
+            .put(getColumnName(CLUSTER_ID), Ip.parse("5.5.5.5"))
             .put(getColumnName(PEER_GROUP), "g2")
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))
             .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p4"))
@@ -157,8 +157,8 @@ public class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
-            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, new Ip("2.2.2.2")))
-            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.1"))
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
+            .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .build());
     expected.add(
         Row.builder()
@@ -166,8 +166,8 @@ public class BgpPeerConfigurationAnswererTest {
             .put(COL_VRF, "v")
             .put(
                 COL_REMOTE_IP,
-                new SelfDescribingObject(Schema.PREFIX, new Prefix(new Ip("3.3.3.0"), 24)))
-            .put(getColumnName(LOCAL_IP), new Ip("1.1.1.2"))
+                new SelfDescribingObject(Schema.PREFIX, Prefix.create(Ip.parse("3.3.3.0"), 24)))
+            .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.2"))
             .build());
 
     assertThat(rows, equalTo(expected));
@@ -175,14 +175,14 @@ public class BgpPeerConfigurationAnswererTest {
 
   @Test
   public void getRemoteIpActivePeer() {
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setPeerAddress(ip).build();
     assertThat(getRemoteIp(activePeerConfig), equalTo(new SelfDescribingObject(Schema.IP, ip)));
   }
 
   @Test
   public void getRemoteIpPassivePeer() {
-    Prefix prefix = new Prefix(new Ip("1.1.1.1"), 23);
+    Prefix prefix = Prefix.create(Ip.parse("1.1.1.1"), 23);
     BgpPassivePeerConfig passivePeerConfig =
         BgpPassivePeerConfig.builder().setPeerPrefix(prefix).build();
     assertThat(

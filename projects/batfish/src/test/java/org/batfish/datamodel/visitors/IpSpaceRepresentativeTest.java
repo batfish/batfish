@@ -19,7 +19,7 @@ import org.junit.Test;
 
 public class IpSpaceRepresentativeTest {
   private static final IpWildcard EVEN_IPS =
-      new IpWildcard(new Ip("0.0.0.0"), new Ip("255.255.255.254"));
+      new IpWildcard(Ip.parse("0.0.0.0"), Ip.parse("255.255.255.254"));
 
   private IpSpaceRepresentative _ipSpaceRepresentative;
 
@@ -36,7 +36,8 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(Prefix.parse("1.2.3.0/24").toIpSpace())
             .build();
     assertThat(
-        _ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
+        _ipSpaceRepresentative.getRepresentative(ipSpace),
+        equalTo(Optional.of(Ip.parse("1.2.3.1"))));
   }
 
   @Test
@@ -53,10 +54,10 @@ public class IpSpaceRepresentativeTest {
   /** Test that the representative is the numerically smallest IP. */
   @Test
   public void testAclIpSpace_fourIps() {
-    Ip ip1 = new Ip("1.0.0.0");
-    Ip ip2 = new Ip("0.1.0.0");
-    Ip ip3 = new Ip("0.0.1.0");
-    Ip ip4 = new Ip("0.0.0.3");
+    Ip ip1 = Ip.parse("1.0.0.0");
+    Ip ip2 = Ip.parse("0.1.0.0");
+    Ip ip3 = Ip.parse("0.0.1.0");
+    Ip ip4 = Ip.parse("0.0.0.3");
     IpSpace ipSpace =
         AclIpSpace.builder()
             .thenPermitting(ip1.toIpSpace())
@@ -77,14 +78,14 @@ public class IpSpaceRepresentativeTest {
 
   @Test
   public void testIpIpSpace() {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     assertThat(_ipSpaceRepresentative.getRepresentative(ip.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
   public void testIpWildcardIpSpace() {
-    Ip ip = new Ip("1.0.2.0");
-    Ip mask = new Ip("0.255.0.255");
+    Ip ip = Ip.parse("1.0.2.0");
+    Ip mask = Ip.parse("0.255.0.255");
     IpWildcard wc = new IpWildcard(ip, mask);
     assertThat(_ipSpaceRepresentative.getRepresentative(wc.toIpSpace()), equalTo(Optional.of(ip)));
   }
@@ -97,7 +98,8 @@ public class IpSpaceRepresentativeTest {
             .excluding(EVEN_IPS)
             .build();
     assertThat(
-        _ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
+        _ipSpaceRepresentative.getRepresentative(ipSpace),
+        equalTo(Optional.of(Ip.parse("1.2.3.1"))));
   }
 
   @Test
@@ -112,6 +114,6 @@ public class IpSpaceRepresentativeTest {
   public void testUniverseIpSpace() {
     assertThat(
         _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE),
-        equalTo(Optional.of(new Ip("0.0.0.0"))));
+        equalTo(Optional.of(Ip.parse("0.0.0.0"))));
   }
 }

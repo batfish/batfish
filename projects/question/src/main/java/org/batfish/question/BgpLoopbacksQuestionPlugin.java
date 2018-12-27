@@ -145,7 +145,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
               for (InterfaceAddress address : iface.getAllAddresses()) {
                 ConnectedRoute route =
                     new ConnectedRoute(
-                        new Prefix(address.getIp(), address.getNetworkBits()), interfaceName);
+                        Prefix.create(address.getIp(), address.getNetworkBits()), interfaceName);
                 for (RoutingPolicy exportPolicy : exportPolicies) {
                   if (exportPolicy.process(
                       route, new BgpRoute.Builder(), null, vrf.getName(), Direction.OUT)) {

@@ -72,7 +72,7 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitIp() {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
 
     BooleanExpr matchSrcExpr = ip.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     BooleanExpr eqSrcExpr =
@@ -91,7 +91,7 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitIpWildcard() {
-    IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
+    IpWildcard wildcard = new IpWildcard(Ip.parse("1.2.0.4"), Ip.create(0x0000FF00L));
     BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchExpr,

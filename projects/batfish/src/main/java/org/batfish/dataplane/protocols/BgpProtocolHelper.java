@@ -128,7 +128,7 @@ public class BgpProtocolHelper {
               fromVrf
                   .getBgpProcess()
                   .getActiveNeighbors()
-                  .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
+                  .get(Prefix.create(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
           transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
         }

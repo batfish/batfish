@@ -14,8 +14,8 @@ import org.batfish.datamodel.IntersectHeaderSpaces.NoIntersection;
 import org.junit.Test;
 
 public class IntersectHeaderSpacesTest {
-  private static final IpSpace IP1 = new Ip("1.1.1.1").toIpSpace();
-  private static final IpSpace IP2 = new Ip("2.2.2.2").toIpSpace();
+  private static final IpSpace IP1 = Ip.parse("1.1.1.1").toIpSpace();
+  private static final IpSpace IP2 = Ip.parse("2.2.2.2").toIpSpace();
 
   @Test
   public void testIntersect() {

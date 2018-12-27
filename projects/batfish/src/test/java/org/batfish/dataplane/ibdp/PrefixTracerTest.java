@@ -74,8 +74,8 @@ public class PrefixTracerTest {
 
     */
 
-    Ip neighbor1Ip = new Ip("1.1.1.2");
-    Ip neighbor2Ip = new Ip("1.1.1.3");
+    Ip neighbor1Ip = Ip.parse("1.1.1.2");
+    Ip neighbor2Ip = Ip.parse("1.1.1.3");
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
@@ -151,8 +151,8 @@ public class PrefixTracerTest {
   public void testSimpleSetters() {
     PrefixTracer pt = new PrefixTracer();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
-    Ip testIp1 = new Ip("1.1.1.2");
-    Ip testIp2 = new Ip("1.1.1.3");
+    Ip testIp1 = Ip.parse("1.1.1.2");
+    Ip testIp2 = Ip.parse("1.1.1.3");
 
     // Test considered for origination
     pt.originated(prefix);
