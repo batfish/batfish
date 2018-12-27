@@ -100,12 +100,18 @@ public class EigrpExternalRoute extends EigrpRoute {
         _admin, _destinationAsn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpExternalRoute> {
 
     @Nullable private Long _destinationAsn;
     @Nullable private EigrpMetric _eigrpMetric;
     @Nullable String _nextHopInterface;
     @Nullable Long _processAsn;
+
+    private Builder() {}
 
     @Override
     public EigrpExternalRoute build() {
