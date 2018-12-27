@@ -1267,7 +1267,7 @@ public class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     outputRouteBuilder
         .setDestinationAsn(1L)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
@@ -1316,7 +1316,7 @@ public class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     outputRouteBuilder
         .setDestinationAsn(asn)
         .setNetwork(Prefix.parse("1.0.0.0/32"))

@@ -142,7 +142,7 @@ class VirtualEigrpProcess {
    */
   @Nullable
   private EigrpExternalRoute computeEigrpExportRoute(AbstractRoute potentialExportRoute) {
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     // Set the metric to match the route metric by default for EIGRP into EIGRP
     if (potentialExportRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) potentialExportRoute).getEigrpMetric());
@@ -240,7 +240,7 @@ class VirtualEigrpProcess {
   RibDelta<EigrpExternalRoute> propagateExternalRoutes(NetworkConfigurations nc) {
 
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = new RibDelta.Builder<>(_externalStagingRib);
-    EigrpExternalRoute.Builder routeBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
     routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
 
     _incomingRoutes.forEach(
