@@ -22,7 +22,7 @@ public class EigrpExternalRoute extends EigrpRoute {
    * AS number where the destination resides if the destination is EIGRP, or where it was learned if
    * the destination is another process
    */
-  @Nonnull private final long _destinationAsn;
+  private final long _destinationAsn;
 
   private EigrpExternalRoute(
       @Nullable Prefix network,
@@ -31,7 +31,7 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
-      long processAsn,
+      @Nonnull Long processAsn,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
@@ -41,13 +41,17 @@ public class EigrpExternalRoute extends EigrpRoute {
 
   @JsonCreator
   private static EigrpExternalRoute create(
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_DESTINATION_ASN) long destinationAsn,
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
+      @Nullable @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @JsonProperty(PROP_PROCESS_ASN) long processAsn) {
+      @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
+      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn) {
+    checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
+    checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+    checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
     return new EigrpExternalRoute(
         network,
         admin,
@@ -105,6 +109,7 @@ public class EigrpExternalRoute extends EigrpRoute {
 
     @Override
     public EigrpExternalRoute build() {
+      checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
       checkArgument(_destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
       checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
       checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
