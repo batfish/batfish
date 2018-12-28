@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,10 +17,10 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   private static final long serialVersionUID = 1L;
 
-  final int _admin;
-  final EigrpMetric _metric;
-  final String _nextHopInterface;
-  final Ip _nextHopIp;
+  protected final int _admin;
+  @Nonnull protected final EigrpMetric _metric;
+  @Nonnull protected final String _nextHopInterface;
+  @Nonnull protected final Ip _nextHopIp;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
   final long _processAsn;
@@ -30,13 +30,14 @@ public abstract class EigrpRoute extends AbstractRoute {
       Prefix network,
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
-      EigrpMetric metric,
+      @Nullable EigrpMetric metric,
       long processAsn,
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, nonRouting, nonForwarding);
+    checkArgument(metric != null, "Cannot create EIGRP route: missing %s", PROP_EIGRP_METRIC);
     _admin = admin;
-    _metric = requireNonNull(metric);
+    _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _processAsn = processAsn;
@@ -48,6 +49,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   }
 
   @JsonProperty(PROP_EIGRP_METRIC)
+  @Nonnull
   public final EigrpMetric getEigrpMetric() {
     return _metric;
   }
@@ -57,6 +59,7 @@ public abstract class EigrpRoute extends AbstractRoute {
     return _metric.getRibMetric();
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   @Override
@@ -64,6 +67,7 @@ public abstract class EigrpRoute extends AbstractRoute {
     return _nextHopInterface;
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
