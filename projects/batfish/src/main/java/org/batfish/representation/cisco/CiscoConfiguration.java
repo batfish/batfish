@@ -585,10 +585,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
     we.setExpr(expr);
-    we.getPreStatements().add(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostStatements().add(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(new SetOrigin(new LiteralOrigin(originType, null)));
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
   }
 

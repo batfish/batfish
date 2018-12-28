@@ -1,10 +1,11 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -12,7 +13,7 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class WithEnvironmentExpr extends BooleanExpr {
+public final class WithEnvironmentExpr extends BooleanExpr {
 
   private static final String PROP_EXPR = "expr";
   private static final String PROP_POST_STATEMENTS = "postStatements";
@@ -31,9 +32,9 @@ public class WithEnvironmentExpr extends BooleanExpr {
   private List<Statement> _preStatements;
 
   public WithEnvironmentExpr() {
-    _preStatements = new ArrayList<>();
-    _postStatements = new ArrayList<>();
-    _postTrueStatements = new ArrayList<>();
+    _postStatements = ImmutableList.of();
+    _postTrueStatements = ImmutableList.of();
+    _preStatements = ImmutableList.of();
   }
 
   @Override
@@ -53,49 +54,6 @@ public class WithEnvironmentExpr extends BooleanExpr {
       childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     return childSources.build();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    WithEnvironmentExpr other = (WithEnvironmentExpr) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    if (_postStatements == null) {
-      if (other._postStatements != null) {
-        return false;
-      }
-    } else if (!_postStatements.equals(other._postStatements)) {
-      return false;
-    }
-    if (_postTrueStatements == null) {
-      if (other._postTrueStatements != null) {
-        return false;
-      }
-    } else if (!_postTrueStatements.equals(other._postTrueStatements)) {
-      return false;
-    }
-    if (_preStatements == null) {
-      if (other._preStatements != null) {
-        return false;
-      }
-    } else if (!_preStatements.equals(other._preStatements)) {
-      return false;
-    }
-    return true;
   }
 
   @Override
@@ -135,17 +93,6 @@ public class WithEnvironmentExpr extends BooleanExpr {
     return _preStatements;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    result = prime * result + ((_postStatements == null) ? 0 : _postStatements.hashCode());
-    result = prime * result + ((_postTrueStatements == null) ? 0 : _postTrueStatements.hashCode());
-    result = prime * result + ((_preStatements == null) ? 0 : _preStatements.hashCode());
-    return result;
-  }
-
   @JsonProperty(PROP_EXPR)
   public void setExpr(BooleanExpr expr) {
     _expr = expr;
@@ -153,16 +100,35 @@ public class WithEnvironmentExpr extends BooleanExpr {
 
   @JsonProperty(PROP_POST_STATEMENTS)
   public void setPostStatements(List<Statement> postStatements) {
-    _postStatements = postStatements;
+    _postStatements = ImmutableList.copyOf(postStatements);
   }
 
   @JsonProperty(PROP_POST_TRUE_STATEMENTS)
   public void setPostTrueStatements(List<Statement> postTrueStatements) {
-    _postTrueStatements = postTrueStatements;
+    _postTrueStatements = ImmutableList.copyOf(postTrueStatements);
   }
 
   @JsonProperty(PROP_PRE_STATEMENTS)
   public void setPreStatements(List<Statement> preStatements) {
-    _preStatements = preStatements;
+    _preStatements = ImmutableList.copyOf(preStatements);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof WithEnvironmentExpr)) {
+      return false;
+    }
+    WithEnvironmentExpr other = (WithEnvironmentExpr) obj;
+    return Objects.equals(_expr, other._expr)
+        && Objects.equals(_postStatements, other._postStatements)
+        && Objects.equals(_postTrueStatements, other._postTrueStatements)
+        && Objects.equals(_preStatements, other._preStatements);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr, _postStatements, _postTrueStatements, _preStatements);
   }
 }
