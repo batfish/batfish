@@ -32,9 +32,9 @@ public final class WithEnvironmentExpr extends BooleanExpr {
   private List<Statement> _preStatements;
 
   public WithEnvironmentExpr() {
-    _preStatements = ImmutableList.of();
     _postStatements = ImmutableList.of();
     _postTrueStatements = ImmutableList.of();
+    _preStatements = ImmutableList.of();
   }
 
   @Override
@@ -54,20 +54,6 @@ public final class WithEnvironmentExpr extends BooleanExpr {
       childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     return childSources.build();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof WithEnvironmentExpr)) {
-      return false;
-    }
-    WithEnvironmentExpr other = (WithEnvironmentExpr) obj;
-    return Objects.equals(_expr, other._expr)
-        && Objects.equals(_preStatements, other._preStatements)
-        && Objects.equals(_postStatements, other._postStatements)
-        && Objects.equals(_postTrueStatements, other._postTrueStatements);
   }
 
   @Override
@@ -107,17 +93,6 @@ public final class WithEnvironmentExpr extends BooleanExpr {
     return _preStatements;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    result = prime * result + ((_postStatements == null) ? 0 : _postStatements.hashCode());
-    result = prime * result + ((_postTrueStatements == null) ? 0 : _postTrueStatements.hashCode());
-    result = prime * result + ((_preStatements == null) ? 0 : _preStatements.hashCode());
-    return result;
-  }
-
   @JsonProperty(PROP_EXPR)
   public void setExpr(BooleanExpr expr) {
     _expr = expr;
@@ -136,5 +111,24 @@ public final class WithEnvironmentExpr extends BooleanExpr {
   @JsonProperty(PROP_PRE_STATEMENTS)
   public void setPreStatements(List<Statement> preStatements) {
     _preStatements = ImmutableList.copyOf(preStatements);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof WithEnvironmentExpr)) {
+      return false;
+    }
+    WithEnvironmentExpr other = (WithEnvironmentExpr) obj;
+    return Objects.equals(_expr, other._expr)
+        && Objects.equals(_postStatements, other._postStatements)
+        && Objects.equals(_postTrueStatements, other._postTrueStatements)
+        && Objects.equals(_preStatements, other._preStatements);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr, _postStatements, _postTrueStatements, _preStatements);
   }
 }
