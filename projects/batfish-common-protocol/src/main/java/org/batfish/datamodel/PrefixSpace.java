@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -85,18 +86,21 @@ public class PrefixSpace implements Serializable {
     private BitTrieNode _right;
 
     public BitTrieNode() {
-      _prefixRanges = new HashSet<>();
+      _prefixRanges = ImmutableSet.of();
     }
 
     public void addPrefixRange(PrefixRange prefixRange, BitSet bits, int prefixLength, int depth) {
-      for (PrefixRange nodeRange : _prefixRanges) {
-        if (nodeRange.includesPrefixRange(prefixRange)) {
-          return;
-        }
+      if (_prefixRanges.stream().anyMatch(nr -> nr.includesPrefixRange(prefixRange))) {
+        return;
       }
+
       if (prefixLength == depth) {
-        _prefixRanges.add(prefixRange);
         prune(prefixRange);
+        _prefixRanges =
+            ImmutableSet.<PrefixRange>builderWithExpectedSize(_prefixRanges.size() + 1)
+                .addAll(_prefixRanges)
+                .add(prefixRange)
+                .build();
       } else {
         boolean currentBit = bits.get(depth);
         if (currentBit) {
@@ -167,13 +171,12 @@ public class PrefixSpace implements Serializable {
           _right = null;
         }
       }
-      Set<PrefixRange> oldPrefixRanges = new HashSet<>();
-      oldPrefixRanges.addAll(_prefixRanges);
-      for (PrefixRange oldPrefixRange : oldPrefixRanges) {
-        if (!prefixRange.equals(oldPrefixRange)
-            && prefixRange.includesPrefixRange(oldPrefixRange)) {
-          _prefixRanges.remove(oldPrefixRange);
-        }
+      if (_prefixRanges.stream().anyMatch(prefixRange::includesPrefixRange)) {
+        _prefixRanges =
+            _prefixRanges
+                .stream()
+                .filter(pr -> !prefixRange.includesPrefixRange(pr))
+                .collect(ImmutableSet.toImmutableSet());
       }
     }
   }

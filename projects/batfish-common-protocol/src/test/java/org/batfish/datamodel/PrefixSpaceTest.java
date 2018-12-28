@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.BitSet;
 import java.util.Set;
 import org.junit.Before;
@@ -184,5 +185,37 @@ public class PrefixSpaceTest {
         equalTo(true));
     assertThat("don't intersect anywhere else", intersection.getPrefixRanges().size(), equalTo(3));
     assertThat("has overlap", _ps.overlaps(other), equalTo(true));
+  }
+
+  @Test
+  public void testPruning() {
+    PrefixRange ten8to15 = PrefixRange.fromString("10.0.0.0/8:8-15");
+    PrefixRange ten8to16 = PrefixRange.fromString("10.0.0.0/8:8-16");
+    PrefixRange ten9to17 = PrefixRange.fromString("10.0.0.0/8:9-17");
+    PrefixRange one9to9 = PrefixRange.fromString("1.0.0.0/8:9-9");
+    PrefixRange eleven9to9 = PrefixRange.fromString("11.0.0.0/8:9-9");
+    PrefixRange all = PrefixRange.fromString("0.0.0.0/0:0-32");
+
+    PrefixSpace space = new PrefixSpace();
+    space.addPrefixRange(ten8to15);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to15)));
+
+    space.addPrefixRange(ten8to16);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16)));
+    space.addPrefixRange(ten8to16);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16)));
+
+    space.addPrefixRange(ten9to17);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16, ten9to17)));
+
+    space.addPrefixRange(one9to9);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(one9to9, ten8to16, ten9to17)));
+
+    space.addPrefixRange(eleven9to9);
+    assertThat(
+        space.getPrefixRanges(), equalTo(ImmutableSet.of(one9to9, ten8to16, ten9to17, eleven9to9)));
+
+    space.addPrefixRange(all);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(all)));
   }
 }
