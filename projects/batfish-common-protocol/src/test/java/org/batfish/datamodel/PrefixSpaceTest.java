@@ -189,31 +189,31 @@ public class PrefixSpaceTest {
 
   @Test
   public void testPruning() {
-    PrefixRange ten8_15 = PrefixRange.fromString("10.0.0.0/8:8-15");
-    PrefixRange ten8_16 = PrefixRange.fromString("10.0.0.0/8:8-16");
-    PrefixRange ten9_17 = PrefixRange.fromString("10.0.0.0/8:9-17");
-    PrefixRange one9_9 = PrefixRange.fromString("1.0.0.0/8:9-9");
-    PrefixRange eleven9_9 = PrefixRange.fromString("11.0.0.0/8:9-9");
+    PrefixRange ten8to15 = PrefixRange.fromString("10.0.0.0/8:8-15");
+    PrefixRange ten8to16 = PrefixRange.fromString("10.0.0.0/8:8-16");
+    PrefixRange ten9to17 = PrefixRange.fromString("10.0.0.0/8:9-17");
+    PrefixRange one9to9 = PrefixRange.fromString("1.0.0.0/8:9-9");
+    PrefixRange eleven9to9 = PrefixRange.fromString("11.0.0.0/8:9-9");
     PrefixRange all = PrefixRange.fromString("0.0.0.0/0:0-32");
 
     PrefixSpace space = new PrefixSpace();
-    space.addPrefixRange(ten8_15);
-    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8_15)));
+    space.addPrefixRange(ten8to15);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to15)));
 
-    space.addPrefixRange(ten8_16);
-    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8_16)));
-    space.addPrefixRange(ten8_16);
-    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8_16)));
+    space.addPrefixRange(ten8to16);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16)));
+    space.addPrefixRange(ten8to16);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16)));
 
-    space.addPrefixRange(ten9_17);
-    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8_16, ten9_17)));
+    space.addPrefixRange(ten9to17);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(ten8to16, ten9to17)));
 
-    space.addPrefixRange(one9_9);
-    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(one9_9, ten8_16, ten9_17)));
+    space.addPrefixRange(one9to9);
+    assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(one9to9, ten8to16, ten9to17)));
 
-    space.addPrefixRange(eleven9_9);
+    space.addPrefixRange(eleven9to9);
     assertThat(
-        space.getPrefixRanges(), equalTo(ImmutableSet.of(one9_9, ten8_16, ten9_17, eleven9_9)));
+        space.getPrefixRanges(), equalTo(ImmutableSet.of(one9to9, ten8to16, ten9to17, eleven9to9)));
 
     space.addPrefixRange(all);
     assertThat(space.getPrefixRanges(), equalTo(ImmutableSet.of(all)));
