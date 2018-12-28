@@ -10022,12 +10022,30 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private NamedPort toNamedPort(PortContext ctx) {
-    if (ctx.AOL() != null) {
+    if (ctx.ACAP() != null) {
+      return NamedPort.ACAP;
+    } else if (ctx.ACR_NEMA() != null) {
+      return NamedPort.ACR_NEMA;
+    } else if (ctx.AFPOVERTCP() != null) {
+      return NamedPort.AFPOVERTCP;
+    } else if (ctx.AOL() != null) {
       return NamedPort.AOL;
+    } else if (ctx.ARNS() != null) {
+      return NamedPort.ARNS;
+    } else if (ctx.ASIP_WEBADMIN() != null) {
+      return NamedPort.ASIP_WEBADMIN;
+    } else if (ctx.AT_RTMP() != null) {
+      return NamedPort.AT_RTMP;
+    } else if (ctx.AURP() != null) {
+      return NamedPort.AURP;
     } else if (ctx.BFD() != null) {
       return NamedPort.BFD_CONTROL;
     } else if (ctx.BFD_ECHO() != null) {
       return NamedPort.BFD_ECHO;
+    } else if (ctx.BFTP() != null) {
+      return NamedPort.BFTP;
+    } else if (ctx.BGMP() != null) {
+      return NamedPort.BGMP;
     } else if (ctx.BGP() != null) {
       return NamedPort.BGP;
     } else if (ctx.BIFF() != null) {
@@ -10040,22 +10058,52 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.CHARGEN;
     } else if (ctx.CIFS() != null) {
       return NamedPort.CIFS;
+    } else if (ctx.CISCO_TDP() != null) {
+      return NamedPort.CISCO_TDP;
+    } else if (ctx.CITADEL() != null) {
+      return NamedPort.CITADEL;
     } else if (ctx.CITRIX_ICA() != null) {
       return NamedPort.CITRIX_ICA;
+    } else if (ctx.CLEARCASE() != null) {
+      return NamedPort.CLEARCASE;
     } else if (ctx.CMD() != null) {
       return NamedPort.CMDtcp_OR_SYSLOGudp;
+    } else if (ctx.COMMERCE() != null) {
+      return NamedPort.COMMERCE;
+    } else if (ctx.CSNET_NS() != null) {
+      return NamedPort.CSNET_NS;
     } else if (ctx.CTIQBE() != null) {
       return NamedPort.CTIQBE;
+    } else if (ctx.CVX() != null) {
+      return NamedPort.CVX;
+    } else if (ctx.CVX_CLUSTER() != null) {
+      return NamedPort.CVX_CLUSTER;
+    } else if (ctx.CVX_LICENSE() != null) {
+      return NamedPort.CVX_LICENSE;
     } else if (ctx.DAYTIME() != null) {
       return NamedPort.DAYTIME;
+    } else if (ctx.DHCP_FAILOVER2() != null) {
+      return NamedPort.DHCP_FAILOVER2;
+    } else if (ctx.DHCPV6_CLIENT() != null) {
+      return NamedPort.DHCPV6_CLIENT;
+    } else if (ctx.DHCPV6_SERVER() != null) {
+      return NamedPort.DHCPV6_SERVER;
     } else if (ctx.DISCARD() != null) {
       return NamedPort.DISCARD;
     } else if (ctx.DNSIX() != null) {
       return NamedPort.DNSIX;
     } else if (ctx.DOMAIN() != null) {
       return NamedPort.DOMAIN;
+    } else if (ctx.DSP() != null) {
+      return NamedPort.DSP;
     } else if (ctx.ECHO() != null) {
       return NamedPort.ECHO;
+    } else if (ctx.EFS() != null) {
+      return NamedPort.EFS;
+    } else if (ctx.EPP() != null) {
+      return NamedPort.EPP;
+    } else if (ctx.ESRO_GEN() != null) {
+      return NamedPort.ESRO_GEN;
     } else if (ctx.EXEC() != null) {
       return NamedPort.BIFFudp_OR_EXECtcp;
     } else if (ctx.FINGER() != null) {
@@ -10064,6 +10112,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.FTP;
     } else if (ctx.FTP_DATA() != null) {
       return NamedPort.FTP_DATA;
+    } else if (ctx.FTPS() != null) {
+      return NamedPort.FTPS;
+    } else if (ctx.FTPS_DATA() != null) {
+      return NamedPort.FTPS_DATA;
+    } else if (ctx.GODI() != null) {
+      return NamedPort.GODI;
     } else if (ctx.GOPHER() != null) {
       return NamedPort.GOPHER;
     } else if (ctx.H323() != null) {
@@ -10143,7 +10197,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.RADIUS_ACCT() != null) {
       return NamedPort.RADIUS_ACCT_CISCO;
     } else if (ctx.RIP() != null) {
-      return NamedPort.RIP;
+      return NamedPort.EFStcp_OR_RIPudp;
     } else if (ctx.RSH() != null) {
       return NamedPort.CMDtcp_OR_SYSLOGudp;
     } else if (ctx.RTSP() != null) {

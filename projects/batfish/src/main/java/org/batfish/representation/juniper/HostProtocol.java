@@ -145,7 +145,10 @@ public enum HostProtocol {
           headerSpaceBuilder
               .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
               .setDstPorts(
-                  ImmutableSet.of(new SubRange(NamedPort.RIP.number(), NamedPort.RIP.number())));
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.EFStcp_OR_RIPudp.number(),
+                          NamedPort.EFStcp_OR_RIPudp.number())));
           break;
         }
 
