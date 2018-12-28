@@ -7185,7 +7185,7 @@
             "allPrefixes" : [
               "1.2.3.4/30"
             ],
-            "allowedVlans" : "",
+            "allowedVlans" : "1-4094",
             "autostate" : true,
             "bandwidth" : 2.0E10,
             "channelGroup" : "Port-Channel1",
@@ -26830,7 +26830,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
+            "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"

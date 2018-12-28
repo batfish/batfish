@@ -228,6 +228,12 @@ public final class IntegerSpace implements Serializable {
       return this;
     }
 
+    /** Include all given {@link SubRange} */
+    public Builder includingAll(Iterable<SubRange> ranges) {
+      ranges.forEach(this::including);
+      return this;
+    }
+
     /** Include an integer. */
     public Builder including(@Nonnull Integer range) {
       return including(Range.singleton(range));
