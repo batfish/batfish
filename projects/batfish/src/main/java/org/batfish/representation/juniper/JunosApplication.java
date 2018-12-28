@@ -753,7 +753,7 @@ public enum JunosApplication implements Application {
 
       case JUNOS_RIP:
         {
-          portRangeStart = NamedPort.RIP.number();
+          portRangeStart = NamedPort.EFStcp_OR_RIPudp.number();
           ipProtocol = IpProtocol.UDP;
           break;
         }
