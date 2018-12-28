@@ -10099,7 +10099,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ECHO() != null) {
       return NamedPort.ECHO;
     } else if (ctx.EFS() != null) {
-      return NamedPort.EFS;
+      return NamedPort.EFStcp_OR_RIPudp;
     } else if (ctx.EPP() != null) {
       return NamedPort.EPP;
     } else if (ctx.ESRO_GEN() != null) {
