@@ -301,28 +301,57 @@ port_specifier
 port
 :
    DEC
+   | ACAP
+   | ACR_NEMA
+   | AFPOVERTCP
    | AOL
+   | ARNS
+   | ASIP_WEBADMIN
+   | AT_RTMP
+   | AURP
    | BFD
    | BFD_ECHO
+   | BFTP
+   | BGMP
    | BGP
    | BIFF
    | BOOTPC
    | BOOTPS
    | CHARGEN
    | CIFS
+   | CISCO_TDP
+   | CITADEL
    | CITRIX_ICA
+   | CLEARCASE
    | CMD
+   | COMMERCE
+   | COURIER
+   | CSNET_NS
    | CTIQBE
+   | CVX
+   | CVX_CLUSTER
+   | CVX_LICENSE
    | DAYTIME
+   | DHCP_FAILOVER2
+   | DHCPV6_CLIENT
+   | DHCPV6_SERVER
    | DISCARD
    | DNSIX
    | DOMAIN
+   | DSP
    | ECHO
+   | EFS
+   | EPP
+   | ESRO_GEN
    | EXEC
    | FINGER
    | FTP
    | FTP_DATA
+   | FTPS
+   | FTPS_DATA
+   | GODI
    | GOPHER
+   | GRE
    | H323
    | HTTP
    | HTTPS
@@ -343,6 +372,7 @@ port
    | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
+   | MSDP
    | MSRPC
    | NAMESERVER
    | NETBIOS_DGM

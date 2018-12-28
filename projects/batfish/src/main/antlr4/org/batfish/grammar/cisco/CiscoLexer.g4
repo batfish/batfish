@@ -117,6 +117,11 @@ ABSOLUTE_TIMEOUT
    'absolute-timeout'
 ;
 
+ACAP
+:
+   'acap'
+;
+
 ACCEPT_DIALIN
 :
    'accept-dialin'
@@ -232,6 +237,11 @@ ACL_POLICY
 ACLLOG
 :
    'acllog'
+;
+
+ACR_NEMA
+:
+   'acr-nema'
 ;
 
 ACTION
@@ -532,6 +542,11 @@ AFFINITY
 AFFINITY_MAP
 :
    'affinity-map'
+;
+
+AFPOVERTCP
+:
+   'afpovertcp'
 ;
 
 AGE
@@ -901,6 +916,11 @@ ARP
 
 ;
 
+ARNS
+:
+   'arns'
+;
+
 AS_NUMBER
 :
    'as-number'
@@ -949,6 +969,11 @@ ASDM
 ASDM_BUFFER_SIZE
 :
    'asdm-buffer-size'
+;
+
+ASIP_WEBADMIN
+:
+   'asip-webadmin'
 ;
 
 ASN
@@ -1041,9 +1066,19 @@ ATTRIBUTES
    'attributes'
 ;
 
+AT_RTMP
+:
+   'at-rtmp'
+;
+
 AUDIT
 :
    'audit'
+;
+
+AURP
+:
+   'aurp'
 ;
 
 AUTH
@@ -1459,6 +1494,16 @@ BFD_ENABLE
 BFD_TEMPLATE
 :
    'bfd-template'
+;
+
+BFTP
+:
+   'bftp'
+;
+
+BGMP
+:
+   'bgmp'
 ;
 
 BGP
@@ -1976,9 +2021,19 @@ CIRCUIT_TYPE
    'circuit-type'
 ;
 
+CISCO_TDP
+:
+   'cisco_TDP'
+;
+
 CISP
 :
    'cisp'
+;
+
+CITADEL
+:
+   'citadel'
 ;
 
 CITRIX_ICA
@@ -2014,6 +2069,11 @@ CLEANUP
 CLEAR
 :
    'clear'
+;
+
+CLEARCASE
+:
+   'clearcase'
 ;
 
 CLEAR_SESSION
@@ -2136,6 +2196,11 @@ COMMANDER_ADDRESS
 COMMANDS
 :
    'commands'
+;
+
+COMMERCE
+:
+   'commerce'
 ;
 
 COMMIT
@@ -2472,6 +2537,11 @@ COUNTERS
    'counters'
 ;
 
+COURIER
+:
+   'courier'
+;
+
 CPD
 :
    'cpd'
@@ -2577,6 +2647,11 @@ CSNP_INTERVAL
    'csnp-interval'
 ;
 
+CSNET_NS
+:
+   'csnet-ns'
+;
+
 CSR_PARAMS
 :
    'csr-params'
@@ -2615,6 +2690,16 @@ CUSTOMER_ID
 CVX
 :
    'cvx'
+;
+
+CVX_CLUSTER
+:
+   'cvx-cluster'
+;
+
+CVX_LICENSE
+:
+   'cvx-license'
 ;
 
 CWR
@@ -3202,6 +3287,11 @@ DHCP
    'dhcp'
 ;
 
+DHCP_FAILOVER2
+:
+   'dhcp-failover2'
+;
+
 DHCP_GIADDR
 :
    'dhcp-giaddr'
@@ -3215,6 +3305,16 @@ DHCPD
 DHCPRELAY
 :
    'dhcprelay'
+;
+
+DHCPV6_CLIENT
+:
+   'dhcpv6-client'
+;
+
+DHCPV6_SERVER
+:
+   'dhcpv6-server'
 ;
 
 DIAGNOSTIC
@@ -3772,6 +3872,11 @@ EF
    'ef'
 ;
 
+EFS
+:
+   'efs'
+;
+
 EGP
 :
    'egp'
@@ -3997,6 +4102,11 @@ EPM
    'epm'
 ;
 
+EPP
+:
+   'epp'
+;
+
 EQ
 :
    'eq'
@@ -4136,6 +4246,11 @@ ESP_SHA256_HMAC
 ESP_SHA512_HMAC
 :
    'esp-sha512-hmac'
+;
+
+ESRO_GEN
+:
+   'esro-gen'
 ;
 
 ESSID
@@ -4827,6 +4942,16 @@ FTP_SERVER
    'ftp-server'
 ;
 
+FTPS
+:
+   'ftps'
+;
+
+FTPS_DATA
+:
+   'ftps-data'
+;
+
 FULL_DUPLEX
 :
    'full-duplex'
@@ -4925,6 +5050,11 @@ GLOBAL_PORT_SECURITY
 GOPHER
 :
    'gopher'
+;
+
+GODI
+:
+   'godi'
 ;
 
 GRACEFUL
