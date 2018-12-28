@@ -771,7 +771,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.KLOGIN() != null) {
       return NamedPort.KLOGIN;
     } else if (ctx.KPASSWD() != null) {
-      return NamedPort.KPASSWD;
+      return NamedPort.KPASSWDV4;
     } else if (ctx.KRB_PROP() != null) {
       return NamedPort.KRB_PROP;
     } else if (ctx.KRBUPDATE() != null) {

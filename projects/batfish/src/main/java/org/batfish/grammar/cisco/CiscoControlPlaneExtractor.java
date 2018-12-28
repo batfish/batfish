@@ -10122,48 +10122,120 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.GOPHER;
     } else if (ctx.H323() != null) {
       return NamedPort.H323;
-    } else if (ctx.HTTP() != null) {
-      return NamedPort.HTTP;
-    } else if (ctx.HTTPS() != null) {
-      return NamedPort.HTTPS;
+    } else if (ctx.HA_CLUSTER() != null) {
+      return NamedPort.HA_CLUSTER;
     } else if (ctx.HOSTNAME() != null) {
       return NamedPort.HOSTNAME;
+    } else if (ctx.HP_ALARM_MGR() != null) {
+      return NamedPort.HP_ALARM_MGR;
+    } else if (ctx.HTTP() != null) {
+      return NamedPort.HTTP;
+    } else if (ctx.HTTP_ALT() != null) {
+      return NamedPort.HTTP_ALT;
+    } else if (ctx.HTTP_MGMT() != null) {
+      return NamedPort.HTTP_MGMT;
+    } else if (ctx.HTTP_RPC_EPMAP() != null) {
+      return NamedPort.HTTP_RPC_EPMAP;
+    } else if (ctx.HTTPS() != null) {
+      return NamedPort.HTTPS;
     } else if (ctx.IDENT() != null) {
       return NamedPort.IDENT;
+    } else if (ctx.IMAP() != null) {
+      return NamedPort.IMAP;
+    } else if (ctx.IMAP3() != null) {
+      return NamedPort.IMAP3;
     } else if (ctx.IMAP4() != null) {
       return NamedPort.IMAP;
+    } else if (ctx.IMAPS() != null) {
+      return NamedPort.IMAPS;
+    } else if (ctx.IPP() != null) {
+      return NamedPort.IPP;
+    } else if (ctx.IPX() != null) {
+      return NamedPort.IPX;
     } else if (ctx.IRC() != null) {
       return NamedPort.IRC;
+    } else if (ctx.IRIS_BEEP() != null) {
+      return NamedPort.IRIS_BEEP;
     } else if (ctx.ISAKMP() != null) {
       return NamedPort.ISAKMP;
+    } else if (ctx.ISCSI() != null) {
+      return NamedPort.ISCSI;
+    } else if (ctx.ISI_GL() != null) {
+      return NamedPort.ISI_GL;
+    } else if (ctx.ISO_TSAP() != null) {
+      return NamedPort.ISO_TSAP;
     } else if (ctx.KERBEROS() != null) {
-      return NamedPort.KERBEROS;
+      if (_format == ARISTA) {
+        return NamedPort.KERBEROS_SEC;
+      } else {
+        return NamedPort.KERBEROS;
+      }
+    } else if (ctx.KERBEROS_ADM() != null) {
+      return NamedPort.KERBEROS_ADM;
     } else if (ctx.KLOGIN() != null) {
       return NamedPort.KLOGIN;
+    } else if (ctx.KPASSWD() != null) {
+      return NamedPort.KPASSWDV5;
     } else if (ctx.KSHELL() != null) {
       return NamedPort.KSHELL;
+    } else if (ctx.LA_MAINT() != null) {
+      return NamedPort.LA_MAINT;
+    } else if (ctx.LANZ() != null) {
+      return NamedPort.LANZ;
     } else if (ctx.LDAP() != null) {
       return NamedPort.LDAP;
     } else if (ctx.LDAPS() != null) {
       return NamedPort.LDAPS;
     } else if (ctx.LDP() != null) {
       return NamedPort.LDP;
+    } else if (ctx.LMP() != null) {
+      return NamedPort.LMP;
     } else if (ctx.LPD() != null) {
       return NamedPort.LPD;
     } else if (ctx.LOGIN() != null) {
       return NamedPort.LOGINtcp_OR_WHOudp;
     } else if (ctx.LOTUSNOTES() != null) {
       return NamedPort.LOTUSNOTES;
+    } else if (ctx.MAC_SRVR_ADMIN() != null) {
+      return NamedPort.MAC_SRVR_ADMIN;
+    } else if (ctx.MATIP_TYPE_A() != null) {
+      return NamedPort.MATIP_TYPE_A;
+    } else if (ctx.MATIP_TYPE_B() != null) {
+      return NamedPort.MATIP_TYPE_B;
     } else if (ctx.MICROSOFT_DS() != null) {
       return NamedPort.MICROSOFT_DS;
     } else if (ctx.MLAG() != null) {
-      return NamedPort.MLAG;
+      if (_format == ARISTA) {
+        return NamedPort.MLAG_ARISTA;
+      } else {
+        return NamedPort.MLAG;
+      }
     } else if (ctx.MOBILE_IP() != null) {
       return NamedPort.MOBILE_IP_AGENT;
+    } else if (ctx.MPP() != null) {
+      return NamedPort.MPP;
+    } else if (ctx.MS_SQL_M() != null) {
+      return NamedPort.MS_SQL_M;
+    } else if (ctx.MS_SQL_S() != null) {
+      return NamedPort.MS_SQL;
+    } else if (ctx.MSDP() != null) {
+      return NamedPort.MSDP;
+    } else if (ctx.MSEXCH_ROUTING() != null) {
+      return NamedPort.MSEXCH_ROUTING;
+    } else if (ctx.MSG_ICP() != null) {
+      return NamedPort.MSG_ICP;
+    } else if (ctx.MSP() != null) {
+      return NamedPort.MSP;
     } else if (ctx.MSRPC() != null) {
       return NamedPort.MSRPC;
+    } else if (ctx.NAS() != null) {
+      return NamedPort.NAS;
+    } else if (ctx.NAT() != null) {
+      return NamedPort.NAT;
     } else if (ctx.NAMESERVER() != null) {
       return NamedPort.NAMESERVER;
+    } else if (ctx.NCP() != null) {
+      return NamedPort.NCP;
     } else if (ctx.NETBIOS_DGM() != null) {
       return NamedPort.NETBIOS_DGM;
     } else if (ctx.NETBIOS_NS() != null) {
@@ -10172,26 +10244,62 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.NETBIOS_SSN;
     } else if (ctx.NETBIOS_SSN() != null) {
       return NamedPort.NETBIOS_SSN;
+    } else if (ctx.NETRJS_1() != null) {
+      return NamedPort.NETRJS_1;
+    } else if (ctx.NETRJS_2() != null) {
+      return NamedPort.NETRJS_2;
+    } else if (ctx.NETRJS_3() != null) {
+      return NamedPort.NETRJS_3;
+    } else if (ctx.NETRJS_4() != null) {
+      return NamedPort.NETRJS_4;
+    } else if (ctx.NETWNEWS() != null) {
+      return NamedPort.NETWNEWS;
+    } else if (ctx.NEW_RWHO() != null) {
+      return NamedPort.NEW_RWHO;
     } else if (ctx.NFS() != null) {
       return NamedPort.NFSD;
     } else if (ctx.NNTP() != null) {
       return NamedPort.NNTP;
+    } else if (ctx.NNTPS() != null) {
+      return NamedPort.NNTPS;
     } else if (ctx.NON500_ISAKMP() != null) {
       return NamedPort.NON500_ISAKMP;
+    } else if (ctx.NSW_FE() != null) {
+      return NamedPort.NSW_FE;
     } else if (ctx.NTP() != null) {
       return NamedPort.NTP;
+    } else if (ctx.ODMR() != null) {
+      return NamedPort.ODMR;
+    } else if (ctx.OPENVPN() != null) {
+      return NamedPort.OPENVPN;
     } else if (ctx.PCANYWHERE_DATA() != null) {
       return NamedPort.PCANYWHERE_DATA;
     } else if (ctx.PCANYWHERE_STATUS() != null) {
       return NamedPort.PCANYWHERE_STATUS;
     } else if (ctx.PIM_AUTO_RP() != null) {
       return NamedPort.PIM_AUTO_RP;
+    } else if (ctx.PKIX_TIMESTAMP() != null) {
+      return NamedPort.PKIX_TIMESTAMP;
+    } else if (ctx.PKT_KRB_IPSEC() != null) {
+      return NamedPort.IPSEC;
     } else if (ctx.POP2() != null) {
       return NamedPort.POP2;
     } else if (ctx.POP3() != null) {
       return NamedPort.POP3;
+    } else if (ctx.POP3S() != null) {
+      return NamedPort.POP3S;
     } else if (ctx.PPTP() != null) {
       return NamedPort.PPTP;
+    } else if (ctx.PRINT_SRV() != null) {
+      return NamedPort.PRINT_SRV;
+    } else if (ctx.PTP_EVENT() != null) {
+      return NamedPort.PTP_EVENT;
+    } else if (ctx.PTP_GENERAL() != null) {
+      return NamedPort.PTP_GENERAL;
+    } else if (ctx.QMTP() != null) {
+      return NamedPort.QMTP;
+    } else if (ctx.QOTD() != null) {
+      return NamedPort.QOTD;
     } else if (ctx.RADIUS() != null) {
       return NamedPort.RADIUS_CISCO;
     } else if (ctx.RADIUS_ACCT() != null) {
