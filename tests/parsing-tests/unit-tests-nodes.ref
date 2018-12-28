@@ -18348,6 +18348,14 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "__POLICY-NAME__DEFAULT_TERM__",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "evpn"
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",

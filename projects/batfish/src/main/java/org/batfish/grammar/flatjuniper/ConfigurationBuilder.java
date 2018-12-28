@@ -1728,6 +1728,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return RoutingProtocol.CONNECTED;
     } else if (ctx.ISIS() != null) {
       return RoutingProtocol.ISIS;
+    } else if (ctx.EVPN() != null) {
+      return RoutingProtocol.EVPN;
     } else if (ctx.LDP() != null) {
       return RoutingProtocol.LDP;
     } else if (ctx.LOCAL() != null) {
