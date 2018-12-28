@@ -183,7 +183,6 @@ public enum NamedPort {
   MS_SQL(1433),
   /** Microsoft SQL Monitor. */
   MS_SQL_M(1434),
-  /** Microsoft SQL Server. */
   /** Multicast Source Discovery Protocol. */
   MSDP(639),
   /** Microsoft Exchange Routing. */
