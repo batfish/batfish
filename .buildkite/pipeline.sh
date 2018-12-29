@@ -24,7 +24,6 @@ steps:
       - "cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar"
       - "tar -cf workspace/workdir.tar \$(find -maxdepth 1 -mindepth 1 -not -name '.*' -not -name workspace)"
       - "tar -cf workspace/mvn-repo.tar -C /root/.m2/repository/org/batfish ."
-      - "tar -cf workspace/questions.tar questions"
     artifact_paths:
       - "workspace/*"
     plugins:
@@ -88,6 +87,9 @@ if [ "${BUILDKITE_PULL_REQUEST}" = "false" ]; then
   - label: "Deploy artifacts"
     command: ".buildkite/deploy_artifacts.sh"
     branches: "master"
+    plugins:
+      - artifacts#v1.2.0:
+          download: "workspace/allinone.jar"
 EOF
 fi
 
