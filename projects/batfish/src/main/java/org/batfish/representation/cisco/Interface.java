@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SubRange;
@@ -120,7 +120,7 @@ public class Interface implements Serializable {
 
   private String _alias;
 
-  private List<SubRange> _allowedVlans;
+  @Nullable private IntegerSpace _allowedVlans;
 
   private boolean _autoState;
 
@@ -225,6 +225,8 @@ public class Interface implements Serializable {
     return 1E16 / bandwidth;
   }
 
+  public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
+
   public String getSecurityZone() {
     return _securityZone;
   }
@@ -232,7 +234,6 @@ public class Interface implements Serializable {
   public Interface(String name, CiscoConfiguration c) {
     _active = true;
     _autoState = true;
-    _allowedVlans = new ArrayList<>();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _hsrpGroups = new TreeMap<>();
@@ -269,11 +270,16 @@ public class Interface implements Serializable {
     } else {
       _switchportMode = defaultSwitchportMode;
     }
+    if (_switchportMode == SwitchportMode.TRUNK) {
+      _allowedVlans = ALL_VLANS;
+    } else if (_switchportMode == SwitchportMode.ACCESS) {
+      _allowedVlans = null;
+    }
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
   }
 
-  public void addAllowedRanges(List<SubRange> ranges) {
-    _allowedVlans.addAll(ranges);
+  public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
+    _allowedVlans = allowedVlans;
   }
 
   public int getAccessVlan() {
@@ -288,7 +294,8 @@ public class Interface implements Serializable {
     return _alias;
   }
 
-  public List<SubRange> getAllowedVlans() {
+  @Nullable
+  public IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
