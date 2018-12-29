@@ -15,6 +15,8 @@ public enum NamedPort {
   AOL(5190),
   /** A Remote Network Server System. */
   ARNS(384),
+  /** ASF Remote Management and Control Protocol. */
+  ASF_RMCP(623),
   /** AppleShare IP Web Administration. */
   ASIP_WEBADMIN(311),
   /** AppleTalk Routing Maintenance. */
@@ -25,6 +27,8 @@ public enum NamedPort {
   BFTP(152),
   BFD_CONTROL(3784),
   BFD_ECHO(3785),
+  /** BFD over each LAG member link (RFC7130). */
+  BFD_LAG(6784),
   /** Border Gateway Multicast Protocol. */
   BGMP(264),
   /** Border Gateway Protocol. */
@@ -92,8 +96,11 @@ public enum NamedPort {
   /** Group Domain of Interpretation Protocol. */
   GODI(848),
   GOPHER(70),
+  /** GPRS Tunneling Protocol Control Data. */
   GPRS_GTP_C(2123),
+  /** GPRS Tunneling Protocol User Data. */
   GPRS_GTP_U(2152),
+  /** GPRS Tunneling Prime Protocol. */
   GPRS_GTP_V0(3386),
   /** Generic Routing Encapsulation. */
   GRE(47),
@@ -150,6 +157,8 @@ public enum NamedPort {
   KRB_PROP(754),
   KRBUPDATE(760),
   KSHELL(544),
+  /** Layer 2 Tunneling Protocol. */
+  L2TP(1701),
   /** IMP Logical Address Maintenance. */
   LA_MAINT(51),
   /** Lanz Streaming. */
@@ -171,12 +180,12 @@ public enum NamedPort {
   MGCP_CA(2727),
   MGCP_UA(2427),
   MICROSOFT_DS(445),
-  /** not authoritative */
-  MLAG(6784),
-  /** Arista MLAG port. */
-  MLAG_ARISTA(4432),
+  /** MLAG protocol. */
+  MLAG(4432),
   MOBILE_IP_AGENT(434),
   MOBILE_IP_MN(435),
+  /** Monitord. */
+  MONITORD(561),
   /** Netix Message Posting Protocol. */
   MPP(218),
   /** Microsoft SQL Server. */
@@ -212,6 +221,8 @@ public enum NamedPort {
   NETRJS_3(73),
   /** Remote Job Service. */
   NETRJS_4(74),
+  /** IANA for emergency broadcasts. */
+  NETWALL(533),
   /** Readnews. */
   NETWNEWS(532),
   /** new-who. */
@@ -227,6 +238,8 @@ public enum NamedPort {
   NTP(123),
   /** On Demand Mail Retry. */
   ODMR(366),
+  /** Optimized Link State Routing. */
+  OLSR(698),
   /** OpenVPN. */
   OPENVPN(1194),
   PCANYWHERE_DATA(5631),
@@ -277,6 +290,8 @@ public enum NamedPort {
   RLZDBASE(635),
   /** Remote Monitoring and Control Protocol. */
   RMC(657),
+  /** Remote Monitord. */
+  RMONITOR(560),
   /** Rpc2portmap. */
   RPC2PORTMAP(369),
   /** rsync File Synchronization Protocol. */
@@ -301,6 +316,7 @@ public enum NamedPort {
   SNAGAS(108),
   SNMP(161),
   SNMPTRAP(162),
+  /** Simple Network Paging Protocol. */
   SNPP(444),
   SOCKS(1080),
   SQLNET(1521),

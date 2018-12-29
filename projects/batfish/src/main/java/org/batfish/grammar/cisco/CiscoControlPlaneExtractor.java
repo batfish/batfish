@@ -10047,12 +10047,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.AOL;
     } else if (ctx.ARNS() != null) {
       return NamedPort.ARNS;
+    } else if (ctx.ASF_RMCP() != null) {
+      return NamedPort.ASF_RMCP;
     } else if (ctx.ASIP_WEBADMIN() != null) {
       return NamedPort.ASIP_WEBADMIN;
     } else if (ctx.AT_RTMP() != null) {
       return NamedPort.AT_RTMP;
     } else if (ctx.AURP() != null) {
       return NamedPort.AURP;
+    } else if (ctx.AUTH() != null) {
+      return NamedPort.IDENT;
     } else if (ctx.BFD() != null) {
       return NamedPort.BFD_CONTROL;
     } else if (ctx.BFD_ECHO() != null) {
@@ -10135,6 +10139,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.GODI;
     } else if (ctx.GOPHER() != null) {
       return NamedPort.GOPHER;
+    } else if (ctx.GTP_C() != null) {
+      return NamedPort.GPRS_GTP_C;
+    } else if (ctx.GTP_PRIME() != null) {
+      return NamedPort.GPRS_GTP_V0;
+    } else if (ctx.GTP_U() != null) {
+      return NamedPort.GPRS_GTP_U;
     } else if (ctx.H323() != null) {
       return NamedPort.H323;
     } else if (ctx.HA_CLUSTER() != null) {
@@ -10193,6 +10203,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.KPASSWDV5;
     } else if (ctx.KSHELL() != null) {
       return NamedPort.KSHELL;
+    } else if (ctx.L2TP() != null) {
+      return NamedPort.L2TP;
     } else if (ctx.LA_MAINT() != null) {
       return NamedPort.LA_MAINT;
     } else if (ctx.LANZ() != null) {
@@ -10217,14 +10229,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.MATIP_TYPE_A;
     } else if (ctx.MATIP_TYPE_B() != null) {
       return NamedPort.MATIP_TYPE_B;
+    } else if (ctx.MICRO_BFD() != null) {
+      return NamedPort.BFD_LAG;
     } else if (ctx.MICROSOFT_DS() != null) {
       return NamedPort.MICROSOFT_DS;
     } else if (ctx.MLAG() != null) {
-      if (_format == ARISTA) {
-        return NamedPort.MLAG_ARISTA;
-      } else {
-        return NamedPort.MLAG;
-      }
+      return NamedPort.MLAG;
     } else if (ctx.MOBILE_IP() != null) {
       return NamedPort.MOBILE_IP_AGENT;
     } else if (ctx.MPP() != null) {
@@ -10267,6 +10277,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.NETRJS_3;
     } else if (ctx.NETRJS_4() != null) {
       return NamedPort.NETRJS_4;
+    } else if (ctx.NETWALL() != null) {
+      return NamedPort.NETWALL;
     } else if (ctx.NETWNEWS() != null) {
       return NamedPort.NETWNEWS;
     } else if (ctx.NEW_RWHO() != null) {
@@ -10297,6 +10309,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.PKIX_TIMESTAMP;
     } else if (ctx.PKT_KRB_IPSEC() != null) {
       return NamedPort.IPSEC;
+    } else if (ctx.OLSR() != null) {
+      return NamedPort.OLSR;
     } else if (ctx.POP2() != null) {
       return NamedPort.POP2;
     } else if (ctx.POP3() != null) {
@@ -10343,6 +10357,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.RLZDBASE;
     } else if (ctx.RMC() != null) {
       return NamedPort.RMC;
+    } else if (ctx.RMONITOR() != null) {
+      return NamedPort.RMONITOR;
     } else if (ctx.RPC2PORTMAP() != null) {
       return NamedPort.RPC2PORTMAP;
     } else if (ctx.RSH() != null) {
@@ -10373,6 +10389,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.SNMPTRAP;
     } else if (ctx.SNMPTRAP() != null) {
       return NamedPort.SNMPTRAP;
+    } else if (ctx.SNPP() != null) {
+      return NamedPort.SNPP;
     } else if (ctx.SQLNET() != null) {
       return NamedPort.SQLNET;
     } else if (ctx.SQLSERV() != null) {
@@ -10409,6 +10427,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.TFTP;
     } else if (ctx.TIME() != null) {
       return NamedPort.TIME;
+    } else if (ctx.TIMED() != null) {
+      return NamedPort.TIMED;
     } else if (ctx.TUNNEL() != null) {
       return NamedPort.TUNNEL;
     } else if (ctx.UPS() != null) {
