@@ -921,6 +921,11 @@ ARNS
    'arns'
 ;
 
+AS
+:
+   'as'
+;
+
 AS_NUMBER
 :
    'as-number'
@@ -946,11 +951,6 @@ AS_SET
    'as-set'
 ;
 
-AS
-:
-   'as'
-;
-
 ASA
 :
    'ASA'
@@ -969,6 +969,11 @@ ASDM
 ASDM_BUFFER_SIZE
 :
    'asdm-buffer-size'
+;
+
+ASF_RMCP
+:
+   'asf-rmcp'
 ;
 
 ASIP_WEBADMIN
@@ -5202,6 +5207,21 @@ GT
    'gt'
 ;
 
+GTP_C
+:
+   'gtp-c'
+;
+
+GTP_PRIME
+:
+   'gtp-prime'
+;
+
+GTP_U
+:
+   'gtp-u'
+;
+
 GUARANTEED
 :
    'guaranteed'
@@ -7554,6 +7574,11 @@ MIB
    'mib'
 ;
 
+MICRO_BFD
+:
+   'micro-bfd'
+;
+
 MICROCODE
 :
    'microcode'
@@ -8174,6 +8199,11 @@ NETSERVICE
    'netservice'
 ;
 
+NETWALL
+:
+   'netwall'
+;
+
 NETWNEWS
 :
    'netwnews'
@@ -8557,6 +8587,11 @@ OFDM_THROUGHPUT
 OFFSET_LIST
 :
    'offset-list'
+;
+
+OLSR
+:
+   'olsr'
 ;
 
 ON
@@ -10516,6 +10551,11 @@ RMON
    'rmon'
 ;
 
+RMONITOR
+:
+   'rmonitor'
+;
+
 RO
 :
    [rR] [oO]
@@ -11566,6 +11606,11 @@ SNP
    'snp'
 ;
 
+SNPP
+:
+   'snpp'
+;
+
 SNR_MAX
 :
    'snr-max'
@@ -12581,6 +12626,11 @@ TIME_RANGE
 TIME_OUT
 :
    'time-out'
+;
+
+TIMED
+:
+   'timed'
 ;
 
 TIMEOUT
