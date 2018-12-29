@@ -306,9 +306,11 @@ port
    | AFPOVERTCP
    | AOL
    | ARNS
+   | ASF_RMCP
    | ASIP_WEBADMIN
    | AT_RTMP
    | AURP
+   | AUTH
    | BFD
    | BFD_ECHO
    | BFTP
@@ -352,6 +354,9 @@ port
    | GODI
    | GOPHER
    | GRE
+   | GTP_C
+   | GTP_PRIME
+   | GTP_U
    | H323
    | HA_CLUSTER
    | HOSTNAME
@@ -380,6 +385,7 @@ port
    | KLOGIN
    | KPASSWD
    | KSHELL
+   | L2TP
    | LA_MAINT
    | LANZ
    | LDAP
@@ -392,9 +398,11 @@ port
    | MAC_SRVR_ADMIN
    | MATIP_TYPE_A
    | MATIP_TYPE_B
+   | MICRO_BFD
    | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
+   | MONITOR
    | MPP
    | MS_SQL_M
    | MS_SQL_S
@@ -415,6 +423,7 @@ port
    | NETRJS_2
    | NETRJS_3
    | NETRJS_4
+   | NETWALL
    | NETWNEWS
    | NEW_RWHO
    | NFS
@@ -424,6 +433,7 @@ port
    | NSW_FE
    | NTP
    | ODMR
+   | OLSR
    | OPENVPN
    | PCANYWHERE_DATA
    | PCANYWHERE_STATUS
@@ -449,6 +459,7 @@ port
    | RLP
    | RLZDBASE
    | RMC
+   | RMONITOR
    | RPC2PORTMAP
    | RSH
    | RSYNC
@@ -464,6 +475,7 @@ port
    | SNMP
    | SNMP_TRAP
    | SNMPTRAP
+   | SNPP
    | SQLNET
    | SQLSERV
    | SQLSRV
@@ -482,6 +494,7 @@ port
    | TELNET
    | TFTP
    | TIME
+   | TIMED
    | TUNNEL
    | UPS
    | UUCP
