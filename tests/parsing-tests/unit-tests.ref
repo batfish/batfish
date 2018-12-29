@@ -50048,6 +50048,25 @@
             "                        PREFERENCE:'preference'",
             "                        preference = DEC:'100'))))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_common",
+            "                (pops_from",
+            "                  FROM:'from'",
+            "                  (popsf_protocol",
+            "                    PROTOCOL:'protocol'",
+            "                    protocol = (routing_protocol",
+            "                      EVPN:'evpn')))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -66593,7 +66612,8 @@
                 30,
                 31,
                 32,
-                33
+                33,
+                34
               ],
               "numReferrers" : 0
             }
