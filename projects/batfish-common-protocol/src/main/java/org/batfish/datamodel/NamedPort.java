@@ -360,11 +360,11 @@ public enum NamedPort {
   XDMCP(177),
   XNM_CLEAR_TEXT(3221),
   XNM_SSL(3220),
-  /** Xerox Nework Systems Clearinghouse. */
+  /** Xerox Network Systems Clearinghouse. */
   XNS_CH(54),
-  /** Xerox Nework Systems Mail. */
+  /** Xerox Network Systems Mail. */
   XNS_MAIL(58),
-  /** Xerox Nework Systems Time. */
+  /** Xerox Network Systems Time. */
   XNS_TIME(52),
   /** ANSI Z39.50. */
   Z39_50(210),
