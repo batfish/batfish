@@ -10,6 +10,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
@@ -448,5 +449,29 @@ public interface StorageProvider {
 
   /** Store a given string as a log file for a given work item ID. */
   void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException;
+
+  /**
+   * Loads the JSON-serialized CompletionMetadata for the provided network and snapshot
+   *
+   * @param networkId The ID of the network
+   * @param snapshotId The ID of the snapshot
+   * @throws IOException if there is an error reading the CompletionMetadata
+   * @return The CompletionMetadata found for the provided network and snapshot. If none is found a
+   *     CompletionMetadata will be returned with all fields empty
+   */
+  CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Writes the CompletionMetadata produced for the given network and snapshot
+   *
+   * @param completionMetadata The CompletionMetadata to write
+   * @param networkId The ID of the network
+   * @param snapshotId The ID of the snapshot
+   * @throws IOException if there is an error writing the CompletionMetadata
+   */
+  void storeCompletionMetadata(
+      CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId)
       throws IOException;
 }

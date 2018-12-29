@@ -659,6 +659,20 @@ public class BatfishTest {
   }
 
   @Test
+  public void testGetVrfs() {
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config =
+        BatfishTestUtils.createTestConfiguration(
+            "config1", ConfigurationFormat.HOST, "int1", "int2", "int3");
+    config.getAllInterfaces().get("int1").setVrfName("vrf1");
+    config.getAllInterfaces().get("int2").setVrfName("vrf2");
+    config.getAllInterfaces().get("int3").setVrfName("vrf1");
+    configs.put("config1", config);
+
+    assertThat(Batfish.getVrfs(configs), equalTo(ImmutableSet.of("vrf1", "vrf2")));
+  }
+
+  @Test
   public void testPostProcessInterfaceDependenciesBind() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =

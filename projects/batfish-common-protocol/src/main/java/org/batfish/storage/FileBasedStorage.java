@@ -45,6 +45,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
@@ -879,6 +880,37 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getWorkLoadPath(network, snapshot, workId).toFile(), logOutput, UTF_8);
+  }
+
+  @Override
+  public CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
+    if (!Files.exists(completionMetadataPath)) {
+      return new CompletionMetadata();
+    }
+    String completionMetadataStr =
+        FileUtils.readFileToString(completionMetadataPath.toFile(), UTF_8);
+    return BatfishObjectMapper.mapper()
+        .readValue(completionMetadataStr, new TypeReference<CompletionMetadata>() {});
+  }
+
+  @Override
+  public void storeCompletionMetadata(
+      CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
+    mkdirs(completionMetadataPath.getParent());
+    FileUtils.write(
+        completionMetadataPath.toFile(),
+        BatfishObjectMapper.writePrettyString(completionMetadata),
+        UTF_8);
+  }
+
+  private @Nonnull Path getSnapshotCompletionMetadataPath(
+      NetworkId networkId, SnapshotId snapshotId) {
+    return _d.getSnapshotDir(networkId, snapshotId)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPLETION_METADATA_FILE));
   }
 
   /**

@@ -75,6 +75,7 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.NetworkSnapshot;
@@ -161,6 +162,7 @@ import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
+import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -199,6 +201,8 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -3034,6 +3038,176 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    try {
+      _storage.storeCompletionMetadata(
+          computeCompletionMetadata(configurations),
+          _settings.getContainer(),
+          _testrigSettings.getName());
+    } catch (IOException e) {
+      throw new BatfishException("Error storing CompletionMetadata", e);
+    }
+  }
+
+  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    return new CompletionMetadata(
+        getAddressBooks(),
+        getAddressGroups(),
+        getFilterNames(configurations),
+        getInterfaces(configurations),
+        getIps(configurations),
+        getPrefixes(configurations),
+        getStructureNames(configurations),
+        getVrfs(configurations),
+        getZones(configurations));
+  }
+
+  @VisibleForTesting
+  Set<String> getAddressBooks() {
+    ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
+    return addressBooks
+        .addAll(
+            getReferenceLibraryData()
+                .getReferenceBooks()
+                .stream()
+                .map(ReferenceBook::getName)
+                .collect(Collectors.toSet()))
+        .build();
+  }
+
+  @VisibleForTesting
+  Set<String> getAddressGroups() {
+    ImmutableSet.Builder<String> addressGroups = ImmutableSet.builder();
+    getReferenceLibraryData()
+        .getReferenceBooks()
+        .forEach(
+            referenceBook ->
+                addressGroups.addAll(
+                    referenceBook
+                        .getAddressGroups()
+                        .stream()
+                        .map(AddressGroup::getName)
+                        .collect(Collectors.toSet())));
+    return addressGroups.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getFilterNames(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(configuration -> filterNames.addAll(configuration.getIpAccessLists().keySet()));
+    return filterNames.build();
+  }
+
+  @VisibleForTesting
+  static Set<NodeInterfacePair> getInterfaces(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<NodeInterfacePair> interfaces = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                interfaces.addAll(
+                    configuration
+                        .getAllInterfaces()
+                        .values()
+                        .stream()
+                        .map(NodeInterfacePair::new)
+                        .collect(Collectors.toSet())));
+    return interfaces.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getIps(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> ips = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                configuration
+                    .getAllInterfaces()
+                    .values()
+                    .forEach(
+                        iface ->
+                            ips.addAll(
+                                iface
+                                    .getAllAddresses()
+                                    .stream()
+                                    .map(interfaceAddress -> interfaceAddress.getIp().toString())
+                                    .collect(Collectors.toSet()))));
+
+    return ips.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getPrefixes(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> prefixes = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                configuration
+                    .getAllInterfaces()
+                    .values()
+                    .forEach(
+                        iface ->
+                            prefixes.addAll(
+                                iface
+                                    .getAllAddresses()
+                                    .stream()
+                                    .map(
+                                        interfaceAddress -> interfaceAddress.getPrefix().toString())
+                                    .collect(Collectors.toSet()))));
+    return prefixes.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getStructureNames(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                NamedStructureSpecifier.JAVA_MAP
+                    .values()
+                    .forEach(
+                        type -> {
+                          Object namedStructuresMap = type.getGetter().apply(configuration);
+                          if (namedStructuresMap instanceof Map<?, ?>) {
+                            structureNames.addAll(
+                                ((Map<?, ?>) namedStructuresMap)
+                                    .keySet()
+                                    .stream()
+                                    .map(key -> (String) key)
+                                    .collect(Collectors.toSet()));
+                          }
+                        }));
+    return structureNames.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getVrfs(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> vrfs = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                vrfs.addAll(
+                    configuration
+                        .getAllInterfaces()
+                        .values()
+                        .stream()
+                        .map(Interface::getVrfName)
+                        .collect(Collectors.toSet())));
+    return vrfs.build();
+  }
+
+  @VisibleForTesting
+  static Set<String> getZones(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> zones = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(configuration -> zones.addAll(configuration.getZones().keySet()));
+    return zones.build();
   }
 
   private void repairEnvironmentBgpTables() {
