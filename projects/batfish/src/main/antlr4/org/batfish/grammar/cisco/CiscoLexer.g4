@@ -10011,6 +10011,11 @@ RD
    'rd'
 ;
 
+RE_MAIL_CK
+:
+   're-mail-ck'
+;
+
 REACHABLE_VIA
 :
    'reachable-via'
@@ -10231,11 +10236,6 @@ REMOTE_PORTS
    'remote-ports'
 ;
 
-REMOVE_PRIVATE_AS
-:
-   'remove-private-' [Aa] [Ss]
-;
-
 REMOTE_SERVER
 :
    'remote-server'
@@ -10246,14 +10246,29 @@ REMOTE_SPAN
    'remote-span'
 ;
 
+REMOTEFS
+:
+   'remotefs'
+;
+
 REMOVE
 :
    'remove'
 ;
 
+REMOVE_PRIVATE_AS
+:
+   'remove-private-' [Aa] [Ss]
+;
+
 REOPTIMIZE
 :
    'reoptimize'
+;
+
+REPCMD
+:
+   'repcmd'
 ;
 
 REPLACE_AS
@@ -10476,6 +10491,26 @@ RIP
    'rip'
 ;
 
+RJE
+:
+   'rje'
+;
+
+RLP
+:
+   'rlp'
+;
+
+RLZDBASE
+:
+   'rlzdbase'
+;
+
+RMC
+:
+   'rmc'
+;
+
 RMON
 :
    'rmon'
@@ -10606,11 +10641,6 @@ RP
    'rp'
 ;
 
-RPF_VECTOR
-:
-   'rpf-vector'
-;
-
 RP_ADDRESS
 :
    'rp-address'
@@ -10629,6 +10659,16 @@ RP_CANDIDATE
 RP_LIST
 :
    'rp-list'
+;
+
+RPC2PORTMAP
+:
+   'rpc2portmap'
+;
+
+RPF_VECTOR
+:
+   'rpf-vector'
 ;
 
 RRM_IE_PROFILE
@@ -10671,6 +10711,11 @@ RSVP
    'rsvp'
 ;
 
+RSYNC
+:
+   'rsync'
+;
+
 RT
 :
    'rt'
@@ -10679,6 +10724,11 @@ RT
 RTCP_INACTIVITY
 :
    'rtcp-inactivity'
+;
+
+RTELNET
+:
+   'rtelnet'
 ;
 
 RTP
@@ -11206,6 +11256,11 @@ SGBP
    'sgbp'
 ;
 
+SGMP
+:
+   'sgmp'
+;
+
 SHA
 :
    'sha'
@@ -11319,6 +11374,11 @@ SIGNATURE_PROFILE
 SIGNING
 :
    'signing'
+;
+
+SILC
+:
+    'silc'
 ;
 
 SILENT
@@ -11449,6 +11509,16 @@ SMTP
 SMTP_SERVER
 :
    'smtp-server'
+;
+
+SMUX
+:
+   'smux'
+;
+
+SNAGAS
+:
+   'snagas'
 ;
 
 SNMP_AUTHFAIL
@@ -11664,6 +11734,16 @@ SPT_THRESHOLD
 SQLNET
 :
    'sqlnet'
+;
+
+SQLSRV
+:
+   'sqlsrv'
+;
+
+SQLSERV
+:
+   'sqlserv'
 ;
 
 SRC_IP
@@ -11963,6 +12043,11 @@ SUB_ROUTE_MAP
    'sub-route-map'
 ;
 
+SUBMISSION
+:
+   'submission'
+;
+
 SUBSCRIBE_TO
 :
    'subscribe-to'
@@ -12078,6 +12163,11 @@ SVP
    'svp'
 ;
 
+SVRLOC
+:
+   'svrloc'
+;
+
 SWITCH
 :
    'switch'
@@ -12171,6 +12261,11 @@ SYSLOGD
 SYSOPT
 :
    'sysopt'
+;
+
+SYSTAT
+:
+   'systat'
 ;
 
 SYSTEM
@@ -12298,6 +12393,11 @@ TB_VLAN2
    'tb-vlan2'
 ;
 
+TBRPF
+:
+   'tbrpf'
+;
+
 TCAM
 :
    'tcam'
@@ -12331,6 +12431,16 @@ TCP_SESSION
 TCP_UDP
 :
    'tcp-udp'
+;
+
+TCPMUX
+:
+   'tcpmux'
+;
+
+TCPNETHASPSRV
+:
+   'tcpnethaspsrv'
 ;
 
 TCS_LOAD_BALANCE
@@ -12993,6 +13103,11 @@ UPLINKFAST
    'uplinkfast'
 ;
 
+UPS
+:
+   'ups'
+;
+
 UPSTREAM
 :
    'upstream'
@@ -13131,6 +13246,11 @@ UTIL_INTERVAL
 UUCP
 :
    'uucp'
+;
+
+UUCP_PATH
+:
+   'uucp-path'
 ;
 
 V1_RP_REACHABILITY
@@ -13341,6 +13461,11 @@ VM_CPU
 VM_MEMORY
 :
    'vm-memory'
+;
+
+VMNET
+:
+   'vmnet'
 ;
 
 VMPS
@@ -13801,9 +13926,29 @@ XML_CONFIG
    'xml-config'
 ;
 
+XNS_CH
+:
+   'xns-ch'
+;
+
+XNS_MAIL
+:
+   'xns-mail'
+;
+
+XNS_TIME
+:
+   'xns-time'
+;
+
 YELLOW
 :
    'yellow'
+;
+
+Z39_50
+:
+   'z39-50'
 ;
 
 ZONE
