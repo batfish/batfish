@@ -5247,6 +5247,11 @@ H323_GATEWAY
    'h323-gateway'
 ;
 
+HA_CLUSTER
+:
+   'ha-cluster'
+;
+
 HA_POLICY
 :
    'ha-policy'
@@ -5462,6 +5467,11 @@ HOTSPOT
    'hotspot'
 ;
 
+HP_ALARM_MGR
+:
+   'hp-alarm-mgr'
+;
+
 HPM
 :
    'hpm'
@@ -5482,9 +5492,24 @@ HTTP
    'http'
 ;
 
+HTTP_ALT
+:
+   'http-alt'
+;
+
 HTTP_COMMANDS
 :
    'http-commands'
+;
+
+HTTP_MGMT
+:
+   'http-mgmt'
+;
+
+HTTP_RPC_EPMAP
+:
+   'http-tpc-epmap'
 ;
 
 HTTPS
@@ -5617,6 +5642,11 @@ IEC
    'iec'
 ;
 
+IEEE_MMS_SSL
+:
+   'ieee-mms-ssl'
+;
+
 IETF_FORMAT
 :
    'ietf-format'
@@ -5712,9 +5742,24 @@ ILMI_KEEPALIVE
    'ilmi-keepalive'
 ;
 
+IMAP
+:
+   'imap'
+;
+
+IMAP3
+:
+   'imap3'
+;
+
 IMAP4
 :
    'imap4'
+;
+
+IMAPS
+:
+   'imaps'
 ;
 
 IMMEDIATE
@@ -5989,6 +6034,11 @@ IPINIP
    'ipinip'
 ;
 
+IPP
+:
+   'ipp'
+;
+
 IPSEC
 :
    'ipsec'
@@ -6059,6 +6109,11 @@ IRDP
    'irdp'
 ;
 
+IRIS_BEEP
+:
+   'iris-beep'
+;
+
 ISAKMP
 :
    'isakmp'
@@ -6084,6 +6139,16 @@ IS_TYPE
    'is-type'
 ;
 
+ISCSI
+:
+   'iscsi'
+;
+
+ISI_GL
+:
+   'isi-gl'
+;
+
 ISIS
 :
    'isis'
@@ -6097,6 +6162,11 @@ ISIS_METRIC
 ISL
 :
    'isl'
+;
+
+ISO_TSAP
+:
+  'iso-tsap'
 ;
 
 ISOLATE
@@ -6164,6 +6234,11 @@ KERBEROS
    'kerberos'
 ;
 
+KERBEROS_ADM
+:
+   'kerberos-adm'
+;
+
 KERNEL
 :
    'kernel'
@@ -6229,6 +6304,16 @@ KLOGIN
    'klogin'
 ;
 
+KOD
+:
+   'kod'
+;
+
+KPASSWD
+:
+   'kpasswd'
+;
+
 KRB5
 :
    'krb5'
@@ -6237,11 +6322,6 @@ KRB5
 KRB5_TELNET
 :
    'krb5-telnet'
-;
-
-KOD
-:
-   'kod'
 ;
 
 KRON
@@ -6304,6 +6384,11 @@ LABEL
    'label'
 ;
 
+LA_MAINT
+:
+   'la-maint'
+;
+
 LABELED_UNICAST
 :
    'labeled-unicast'
@@ -6332,6 +6417,11 @@ LAN
 LANE
 :
    'lane'
+;
+
+LANZ
+:
+   'lanz'
 ;
 
 LAPB
@@ -6572,6 +6662,11 @@ LISTENER
 LLDP
 :
    'lldp'
+;
+
+LMP
+:
+   'lmp'
 ;
 
 LMS_IP
@@ -6959,6 +7054,11 @@ MAC_SERVER_GROUP
    'mac-server-group'
 ;
 
+MAC_SRVR_ADMIN
+:
+   'mac-srvr-admin'
+;
+
 MACHINE_AUTHENTICATION
 :
    'machine-authentication'
@@ -7092,6 +7192,16 @@ MATCHES_ANY
 MATCHES_EVERY
 :
    'matches-every'
+;
+
+MATIP_TYPE_A
+:
+   'matip-type-a'
+;
+
+MATIP_TYPE_B
+:
+   'matip-type-b'
 ;
 
 MAXAS_LIMIT
@@ -7649,6 +7759,11 @@ MOTD
    'motd'
 ;
 
+MPP
+:
+   'mpp'
+;
+
 MPLS
 :
    'mpls'
@@ -7669,14 +7784,14 @@ MROUTE_CACHE
    'mroute-cache'
 ;
 
-MSDP
+MS_SQL_M
 :
-   'msdp'
+   'ms-sql-m'
 ;
 
-MSDP_PEER
+MS_SQL_S
 :
-   'msdp-peer'
+   'ms-sql-s'
 ;
 
 MSCHAP
@@ -7689,14 +7804,39 @@ MSCHAPV2
    'mschapv2'
 ;
 
+MSDP
+:
+   'msdp'
+;
+
+MSDP_PEER
+:
+   'msdp-peer'
+;
+
 MSEC
 :
   'msec'
 ;
 
+MSEXCH_ROUTING
+:
+  'msexch-routing'
+;
+
+MSG_ICP
+:
+  'msg-icp'
+;
+
 MSIE_PROXY
 :
    'msie-proxy'
+;
+
+MSP
+:
+   'msp'
 ;
 
 MSRPC
@@ -7834,6 +7974,11 @@ NAMESERVER
    'nameserver'
 ;
 
+NAS
+:
+   'nas'
+;
+
 NAT
 :
    [Nn][Aa][Tt]
@@ -7867,6 +8012,11 @@ NATPOOL
 NBAR
 :
    'nbar'
+;
+
+NCP
+:
+   'ncp'
 ;
 
 ND
@@ -7999,9 +8149,34 @@ NETMASK_FORMAT
    'netmask-format'
 ;
 
+NETRJS_1
+:
+   'netrjs-1'
+;
+
+NETRJS_2
+:
+   'netrjs-2'
+;
+
+NETRJS_3
+:
+   'netrjs-3'
+;
+
+NETRJS_4
+:
+   'netrjs-4'
+;
+
 NETSERVICE
 :
    'netservice'
+;
+
+NETWNEWS
+:
+   'netwnews'
 ;
 
 NETWORK
@@ -8047,6 +8222,11 @@ NETWORK_UNKNOWN
 NEW_MODEL
 :
    'new-model'
+;
+
+NEW_RWHO
+:
+   'new-rwho'
 ;
 
 NEWINFO
@@ -8132,6 +8312,11 @@ NMSP
 NNTP
 :
    'nntp'
+;
+
+NNTPS
+:
+   'nntps'
 ;
 
 NO
@@ -8309,6 +8494,11 @@ NSSA_EXTERNAL
    'nssa-external'
 ;
 
+NSW_FE
+:
+   'nsw-fe'
+;
+
 NT_ENCRYPTED
 :
    'nt-encrypted'
@@ -8347,6 +8537,11 @@ OBJECT_GROUP
 OBJSTORE
 :
    'objstore'
+;
+
+ODMR
+:
+  'odmr'
 ;
 
 OFDM
@@ -8432,6 +8627,11 @@ OPEN
 OPENFLOW
 :
    'openflow'
+;
+
+OPENVPN
+:
+   'openvpn'
 ;
 
 OPERATION
@@ -9049,6 +9249,16 @@ PKI
    'pki'
 ;
 
+PKIX_TIMESTAMP
+:
+   'pkix-timestamp'
+;
+
+PKT_KRB_IPSEC
+:
+   'pkt-krb-ipsec'
+;
+
 PLAT
 :
    'plat'
@@ -9122,6 +9332,11 @@ POP2
 POP3
 :
    'pop3'
+;
+
+POP3S
+:
+   'pop3s'
 ;
 
 PORT
@@ -9356,6 +9571,11 @@ PRIMARY_PRIORITY
    'primary-priority'
 ;
 
+PRINT_SRV
+:
+   'print-srv'
+;
+
 PRIORITY
 :
    'priority'
@@ -9566,6 +9786,16 @@ PTP
    'ptp'
 ;
 
+PTP_EVENT
+:
+   'ptp-event'
+;
+
+PTP_GENERAL
+:
+   'ptp-general'
+;
+
 PUBKEY_CHAIN
 :
    'pubkey-chain'
@@ -9579,6 +9809,11 @@ PUBLIC_KEY
 PVC
 :
    'pvc'
+;
+
+QMTP
+:
+   'qmtp'
 ;
 
 QOS
@@ -9609,6 +9844,11 @@ QOS_POLICY_OUTPUT
 QOS_SC
 :
    'qos-sc'
+;
+
+QOTD
+:
+   'qotd'
 ;
 
 QUERY_INTERVAL
