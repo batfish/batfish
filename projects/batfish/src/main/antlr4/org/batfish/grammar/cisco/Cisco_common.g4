@@ -353,42 +353,92 @@ port
    | GOPHER
    | GRE
    | H323
-   | HTTP
-   | HTTPS
+   | HA_CLUSTER
    | HOSTNAME
+   | HP_ALARM_MGR
+   | HTTP
+   | HTTP_ALT
+   | HTTP_MGMT
+   | HTTP_RPC_EPMAP
+   | HTTPS
    | IDENT
+   | IEEE_MMS_SSL
+   | IMAP
+   | IMAP3
    | IMAP4
+   | IMAPS
+   | IPP
+   | IPX
    | IRC
+   | IRIS_BEEP
    | ISAKMP
+   | ISCSI
+   | ISI_GL
+   | ISO_TSAP
    | KERBEROS
+   | KERBEROS_ADM
    | KLOGIN
+   | KPASSWD
    | KSHELL
+   | LA_MAINT
+   | LANZ
    | LDAP
    | LDAPS
    | LDP
-   | LPD
+   | LMP
    | LOGIN
    | LOTUSNOTES
+   | LPD
+   | MAC_SRVR_ADMIN
+   | MATIP_TYPE_A
+   | MATIP_TYPE_B
    | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
+   | MPP
+   | MS_SQL_M
+   | MS_SQL_S
    | MSDP
+   | MSEXCH_ROUTING
+   | MSG_ICP
+   | MSP
    | MSRPC
    | NAMESERVER
+   | NAS
+   | NAT
+   | NCP
    | NETBIOS_DGM
    | NETBIOS_NS
    | NETBIOS_SS
    | NETBIOS_SSN
+   | NETRJS_1
+   | NETRJS_2
+   | NETRJS_3
+   | NETRJS_4
+   | NETWNEWS
+   | NEW_RWHO
    | NFS
    | NNTP
+   | NNTPS
    | NON500_ISAKMP
+   | NSW_FE
    | NTP
+   | ODMR
+   | OPENVPN
    | PCANYWHERE_DATA
    | PCANYWHERE_STATUS
    | PIM_AUTO_RP
+   | PKIX_TIMESTAMP
+   | PKT_KRB_IPSEC
    | POP2
    | POP3
+   | POP3S
    | PPTP
+   | PRINT_SRV
+   | PTP_EVENT
+   | PTP_GENERAL
+   | QMTP
+   | QOTD
    | RADIUS
    | RADIUS_ACCT
    | RIP
