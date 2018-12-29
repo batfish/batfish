@@ -59745,6 +59745,12 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
+            "        (if_switchport_mode",
+            "          SWITCHPORT:'switchport'",
+            "          MODE:'mode'",
+            "          TRUNK:'trunk'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_switchport_trunk_allowed",
             "          SWITCHPORT:'switchport'",
             "          TRUNK:'trunk'",
@@ -67365,7 +67371,8 @@
             "FastEthernet0/1" : {
               "definitionLines" : [
                 4,
-                5
+                5,
+                6
               ],
               "numReferrers" : 1
             }

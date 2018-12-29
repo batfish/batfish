@@ -1,5 +1,6 @@
 package org.batfish.grammar.cisco;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
@@ -253,6 +254,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
+import static org.batfish.representation.cisco.Interface.ALL_VLANS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -301,6 +303,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -6018,14 +6021,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setSwitchportMode(mode);
+      if (mode == SwitchportMode.TRUNK) {
+        currentInterface.setAllowedVlans(ALL_VLANS);
+      } else {
+        currentInterface.setAllowedVlans(null);
+      }
     }
   }
 
   @Override
   public void exitIf_switchport_trunk_allowed(If_switchport_trunk_allowedContext ctx) {
     List<SubRange> ranges = toRange(ctx.r);
+    IntegerSpace allowed = IntegerSpace.builder().includingAll(ranges).build();
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.addAllowedRanges(ranges);
+      if (ctx.ADD() != null) {
+        IntegerSpace current = firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY);
+        IntegerSpace space = IntegerSpace.builder().including(allowed).including(current).build();
+        currentInterface.setAllowedVlans(space);
+      } else {
+        currentInterface.setAllowedVlans(allowed);
+      }
     }
   }
 

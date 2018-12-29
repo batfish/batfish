@@ -114,6 +114,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -2173,7 +2174,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       encapsulation = SwitchportEncapsulationType.DOT1Q;
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    newIface.addAllowedRanges(iface.getAllowedVlans());
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setAllowedVlans(iface.getAllowedVlans());
+    }
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
