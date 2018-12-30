@@ -394,6 +394,11 @@ ADMINISTRATIVE_WEIGHT
    'administrative-weight'
 ;
 
+ADMINISTRATIVELY_PROHIBITED
+:
+   'administratively-prohibited'
+;
+
 ADMISSION
 :
    'admission'
@@ -3507,6 +3512,16 @@ DOCSIS30_ENABLE
    'docsis30-enable'
 ;
 
+DOD_HOST_PROHIBITED
+:
+   'dod-host-prohibited'
+;
+
+DOD_NET_PROHIBITED
+:
+   'dod-net-prohibited'
+;
+
 DOMAIN
 :
    'domain'
@@ -5007,6 +5022,11 @@ GENERAL_GROUP_DEFAULTS
    'general-group-defaults'
 ;
 
+GENERAL_PARAMETER_PROBLEM
+:
+   'general-parameter-problem'
+;
+
 GENERAL_PROFILE
 :
    'general-profile'
@@ -5452,14 +5472,39 @@ HOST_INFO
    'host-info'
 ;
 
+HOST_ISOLATED
+:
+   'host-isolated'
+;
+
+HOST_PRECEDENCE_UNREACHABLE
+:
+   'host-precedence-unreachable'
+;
+
 HOST_PROXY
 :
    'host-proxy'
 ;
 
+HOST_REDIRECT
+:
+   'host-redirect'
+;
+
 HOST_ROUTING
 :
    'host-routing'
+;
+
+HOST_TOS_REDIRECT
+:
+   'host-tos-redirect'
+;
+
+HOST_TOS_UNREACHABLE
+:
+   'host-tos-unreachable'
 ;
 
 HOST_UNKNOWN
@@ -7699,6 +7744,11 @@ MOBILE
    'mobile'
 ;
 
+MOBILE_HOST_REDIRECT
+:
+   'mobile-host-redirect'
+;
+
 MOBILE_IP
 :
    'mobile-ip'
@@ -8119,6 +8169,21 @@ NET
    'net' -> pushMode ( M_ISO_Address )
 ;
 
+NET_REDIRECT
+:
+   'net-redirect'
+;
+
+NET_TOS_REDIRECT
+:
+   'net-tos-redirect'
+;
+
+NET_TOS_UNREACHABLE
+:
+   'net-tos-unreachable'
+;
+
 NET_UNREACHABLE
 :
    'net-unreachable'
@@ -8387,6 +8452,11 @@ NO_PREPEND
 NO_REDISTRIBUTION
 :
    'no-redistribution'
+;
+
+NO_ROOM_FOR_OPTION
+:
+   'no-room-for-option'
 ;
 
 NO_SUMMARY
@@ -8707,6 +8777,11 @@ OPTIMIZED
 OPTION
 :
    'option'
+;
+
+OPTION_MISSING
+:
+   'option-missing'
 ;
 
 OPTIONS
@@ -9504,6 +9579,11 @@ PRECEDENCE
    'precedence'
 ;
 
+PRECEDENCE_UNREACHABLE
+:
+   'precedence-unreachable'
+;
+
 PRECONFIGURE
 :
    'preconfigure'
@@ -9764,6 +9844,11 @@ PROTOCOL_HTTP
 PROTOCOL_OBJECT
 :
    'protocol-object'
+;
+
+PROTOCOL_UNREACHABLE
+:
+   'protocol-unreachable'
 ;
 
 PROTOCOL_VIOLATION
@@ -10079,6 +10164,11 @@ REAL
 REAL_TIME_CONFIG
 :
    'real-time-config'
+;
+
+REASSEMBLY_TIMEOUT
+:
+   'reassembly-timeout'
 ;
 
 REAUTHENTICATION
@@ -11709,6 +11799,11 @@ SOURCE_PROTOCOL
 SOURCE_ROUTE
 :
    'source-route'
+;
+
+SOURCE_ROUTE_FAILED
+:
+   'source-route-failed'
 ;
 
 SOURCE_QUENCH

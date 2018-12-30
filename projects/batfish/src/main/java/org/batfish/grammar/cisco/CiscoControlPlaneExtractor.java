@@ -5071,12 +5071,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
+        } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+        } else if (feature.ALTERNATE_ADDRESS() != null) {
+          icmpType = IcmpType.ALTERNATE_ADDRESS;
         } else if (feature.CWR() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
                   .setTcpFlags(TcpFlags.builder().setCwr(true).build())
                   .setUseCwr(true)
                   .build());
+        } else if (feature.DOD_HOST_PROHIBITED() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED;
+        } else if (feature.DOD_NET_PROHIBITED() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED;
         } else if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
@@ -5088,10 +5099,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .build());
         } else if (feature.ECHO_REPLY() != null) {
           icmpType = IcmpType.ECHO_REPLY;
-          icmpCode = 0; /* Forced to 0 by RFC-792. */
         } else if (feature.ECHO() != null) {
           icmpType = IcmpType.ECHO_REQUEST;
-          icmpCode = 0; /* Forced to 0 by RFC-792. */
         } else if (feature.ECN() != null) {
           int ecn = toInteger(feature.ecn);
           ecns.add(ecn);
@@ -5113,20 +5122,63 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setFin(true).build())
                   .setUseFin(true)
                   .build());
+        } else if (feature.GENERAL_PARAMETER_PROBLEM() != null) {
+          icmpType = IcmpType.PARAMETER_PROBLEM;
+          icmpCode = IcmpCode.INVALID_IP_HEADER;
+        } else if (feature.HOST_ISOLATED() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED;
+        } else if (feature.HOST_PRECEDENCE_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION;
+        } else if (feature.HOST_REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+          icmpCode = IcmpCode.HOST_ERROR;
+        } else if (feature.HOST_TOS_REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+          icmpCode = IcmpCode.TOS_AND_HOST_ERROR;
+        } else if (feature.HOST_TOS_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS;
         } else if (feature.HOST_UNKNOWN() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
         } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
+        } else if (feature.INFORMATION_REPLY() != null) {
+          icmpType = IcmpType.INFO_REPLY;
+        } else if (feature.INFORMATION_REQUEST() != null) {
+          icmpType = IcmpType.INFO_REQUEST;
         } else if (feature.LOG() != null) {
           // Do nothing.
-        } else if (feature.NETWORK_UNKNOWN() != null) {
+        } else if (feature.MASK_REPLY() != null) {
+          icmpType = IcmpType.MASK_REPLY;
+        } else if (feature.MASK_REQUEST() != null) {
+          icmpType = IcmpType.MASK_REQUEST;
+        } else if (feature.MOBILE_HOST_REDIRECT() != null) {
+          icmpType = IcmpType.MOBILE_REDIRECT;
+        } else if (feature.NET_REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+          icmpCode = IcmpCode.NETWORK_ERROR;
+        } else if (feature.NET_TOS_REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR;
+        } else if (feature.NET_TOS_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
         } else if (feature.NET_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+        } else if (feature.NETWORK_UNKNOWN() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        } else if (feature.NO_ROOM_FOR_OPTION() != null) {
+          icmpType = IcmpType.PARAMETER_PROBLEM;
+          icmpCode = IcmpCode.BAD_LENGTH;
+        } else if (feature.OPTION_MISSING() != null) {
+          icmpType = IcmpType.PARAMETER_PROBLEM;
+          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING;
         } else if (feature.PACKET_TOO_BIG() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
@@ -5143,6 +5195,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .build());
         } else if (feature.REDIRECT() != null) {
           icmpType = IcmpType.REDIRECT_MESSAGE;
+        } else if (feature.ROUTER_ADVERTISEMENT() != null) {
+          icmpType = IcmpType.ROUTER_ADVERTISEMENT;
+        } else if (feature.ROUTER_SOLICITATION() != null) {
+          icmpType = IcmpType.ROUTER_SOLICITATION;
         } else if (feature.RST() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -5151,7 +5207,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .build());
         } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
-          icmpCode = 0; /* Forced to 0 by RFC 792. */
+        } else if (feature.SOURCE_ROUTE_FAILED() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED;
         } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -5160,13 +5218,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .build());
         } else if (feature.TIME_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
-        } else if (feature.TTL_EXCEEDED() != null) {
-          icmpType = IcmpType.TIME_EXCEEDED;
-          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+        } else if (feature.TIMESTAMP_REPLY() != null) {
+          icmpType = IcmpType.TIMESTAMP_REPLY;
+        } else if (feature.TIMESTAMP_REQUEST() != null) {
+          icmpType = IcmpType.TIMESTAMP_REQUEST;
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TRACKED() != null) {
           states.add(FlowState.ESTABLISHED);
+        } else if (feature.TTL_EXCEEDED() != null) {
+          icmpType = IcmpType.TIME_EXCEEDED;
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
         } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
         } else if (feature.URG() != null) {
