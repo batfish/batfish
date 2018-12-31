@@ -113,7 +113,8 @@ public final class BgpSessionProperties {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_additionalPaths, _advertiseExternal, _advertiseInactive, _sessionType);
+    return Objects.hash(
+        _additionalPaths, _advertiseExternal, _advertiseInactive, _sessionType.ordinal());
   }
 
   public enum SessionType {

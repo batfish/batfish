@@ -164,53 +164,60 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
       computeIgpDataPlane(nodes, topology, eigrpTopology, answerElement, networkConfigurations);
-      computeFibs(nodes);
 
       /*
        * Perform a fixed-point computation.
        */
-      @Nullable IntermediateComputationResult oldResult;
-      @Nullable IntermediateComputationResult newResult = null;
       int topologyIterations = 0;
-      do {
+      IntermediateComputationResult newResult = null;
+      boolean converged = false;
+      while (!converged && topologyIterations < MAX_TOPOLOGY_ITERATIONS) {
+        try (ActiveSpan iterSpan =
+            GlobalTracer.get()
+                .buildSpan("Topology iteration " + topologyIterations)
+                .startActive()) {
+          assert iterSpan != null; // avoid unused warning
 
-        // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
-        computeFibs(nodes);
-        IncrementalDataPlane partialDataplane =
-            dpBuilder.setIpVrfOwners(ipVrfOwners).setNodes(nodes).setTopology(topology).build();
+          topologyIterations++;
 
-        // Initialize BGP topology
-        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            initBgpTopology(
-                configurations,
-                ipOwners,
-                false,
-                true,
-                TracerouteEngineImpl.getInstance(),
-                partialDataplane);
+          // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
+          computeFibs(nodes);
+          IncrementalDataPlane partialDataplane =
+              dpBuilder.setIpVrfOwners(ipVrfOwners).setNodes(nodes).setTopology(topology).build();
 
-        boolean isOscillating =
-            computeNonMonotonicPortionOfDataPlane(
-                nodes,
-                topology,
-                externalAdverts,
-                answerElement,
-                bgpTopology,
-                eigrpTopology,
-                isisTopology,
-                networkConfigurations,
-                ipOwners);
-        if (isOscillating) {
-          // If we are oscillating here, network has no stable solution.
-          throw new BdpOscillationException("Network has no stable solution");
+          // Initialize BGP topology
+          ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+              initBgpTopology(
+                  configurations,
+                  ipOwners,
+                  false,
+                  true,
+                  TracerouteEngineImpl.getInstance(),
+                  partialDataplane);
+
+          boolean isOscillating =
+              computeNonMonotonicPortionOfDataPlane(
+                  nodes,
+                  topology,
+                  externalAdverts,
+                  answerElement,
+                  bgpTopology,
+                  eigrpTopology,
+                  isisTopology,
+                  networkConfigurations,
+                  ipOwners);
+          if (isOscillating) {
+            // If we are oscillating here, network has no stable solution.
+            throw new BdpOscillationException("Network has no stable solution");
+          }
+
+          IntermediateComputationResult oldResult = newResult;
+          newResult = IntermediateComputationResult.builder().setBgpTopology(bgpTopology).build();
+          converged = Objects.equals(oldResult, newResult);
         }
+      }
 
-        oldResult = newResult;
-        newResult = IntermediateComputationResult.builder().setBgpTopology(bgpTopology).build();
-        topologyIterations++;
-      } while (!Objects.equals(oldResult, newResult)
-          && topologyIterations <= MAX_TOPOLOGY_ITERATIONS);
-      if (topologyIterations > MAX_TOPOLOGY_ITERATIONS) {
+      if (!converged) {
         throw new BdpOscillationException(
             String.format(
                 "Could not reach a fixed point topology in %d iterations",
