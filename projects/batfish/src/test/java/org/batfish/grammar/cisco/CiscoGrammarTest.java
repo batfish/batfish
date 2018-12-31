@@ -1550,7 +1550,7 @@ public class CiscoGrammarTest {
     String hostname = "ios-isis";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(anything()))));
+    assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(notNullValue()))));
     assertThat(c, hasInterface("Loopback100", hasIsis(nullValue())));
   }
 
