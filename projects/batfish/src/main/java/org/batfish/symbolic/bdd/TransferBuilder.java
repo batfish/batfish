@@ -46,6 +46,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -396,7 +397,13 @@ class TransferBuilder {
     } else if (expr instanceof MatchAsPath) {
       p.debug("MatchAsPath");
       // System.out.println("Warning: use of unimplemented feature MatchAsPath");
-      BDDTransferFunction ret = new BDDTransferFunction(p.getData(), _netFactory.one());
+      BDDTransferFunction ret = new BDDTransferFunction(p.getData(), _netFactory.zero());
+      return fromExpr(ret);
+    }
+
+    if (expr instanceof MatchTag) {
+      p.debug("MatchTag");
+      BDDTransferFunction ret = new BDDTransferFunction(p.getData(), _netFactory.zero());
       return fromExpr(ret);
     }
 
@@ -1041,6 +1048,8 @@ class TransferBuilder {
     BDDRoute o = _netFactory.createRoute();
     // addCommunityAssumptions(o);
 
+    boolean debug = false; // _conf.getName().endsWith("01T3");
+
     TransferResult<BDDTransferFunction, BDD> result;
     if (_statements == null && needPolicyWhenNull) {
       BDDTransferFunction t = new BDDTransferFunction(o, _netFactory.one());
@@ -1051,7 +1060,7 @@ class TransferBuilder {
               .setReturnAssignedValue(_netFactory.one())
               .setFallthroughValue(_netFactory.one());
     } else {
-      TransferParam<BDDRoute> p = new TransferParam<>(o, false);
+      TransferParam<BDDRoute> p = new TransferParam<>(o, debug);
       result = compute(_statements, p);
     }
 
@@ -1059,8 +1068,10 @@ class TransferBuilder {
       addBatfishImplicitPolicy(result);
     }
 
-    // System.out.println("RESULT FOR: " + _edge + "," + (_edgeType == EdgeType.IMPORT));
-    // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
+    if (debug) {
+      System.out.println("RESULT FOR: " + _edge + "," + (_edgeType == EdgeType.IMPORT));
+      System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
+    }
     return result;
   }
 }

@@ -36,7 +36,7 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
 
     private String _nodeRegex = ".*";
 
-    private DomainType _domainType = DomainType.REACHABILITY;
+    private DomainType _domainType = DomainType.RDC;
 
     @Override
     public boolean getDataPlane() {

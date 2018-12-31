@@ -29,6 +29,8 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
   // Reference to BDD Route variables
   private BDDRoute _variables;
 
+  private Map<Prefix, BDD> _prefixCache;
+
   // Helper object to encapsulate common functionality
   protected DomainHelper _domainHelper;
 
@@ -39,6 +41,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
     _variables = _netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
     _network = BDDNetwork.create(graph, netFactory, false);
+    _prefixCache= new HashMap<>();
   }
 
   public ReachabilityDomain(Graph graph, BDDNetFactory netFactory, BDDNetwork network) {
@@ -88,13 +91,19 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
     BDD acc = _netFactory.zero();
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
-        BDD pfx = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, prefix);
-        acc = acc.orWith(pfx);
+        BDD pfx = _prefixCache.get(prefix);
+        if (pfx == null) {
+          pfx = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, prefix);
+          _prefixCache.put(prefix, pfx);
+        }
+        acc = acc.or(pfx);
       }
     }
     BDD prot = _variables.getProtocolHistory().value(proto);
-    BDD dst = _variables.getDstRouter().value(conf.getName());
-    acc = acc.andWith(dst);
+    if (_netFactory.getConfig().getKeepRouters()) {
+      BDD dst = _variables.getDstRouter().value(conf.getName());
+      acc = acc.andWith(dst);
+    }
     acc = acc.andWith(prot);
     return new RouteAclStateSetPair(acc, _netFactory.zero());
   }
@@ -163,6 +172,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
 
   @Override
   public String debug(RouteAclStateSetPair x) {
+    //System.out.println(BDDUtils.dot(_netFactory, x.getRoutes()));
     List<Route> ribs = _domainHelper.toRoutes(x.getRoutes());
     StringBuilder sb = new StringBuilder();
     sb.append("[");

@@ -21,7 +21,7 @@ public class AiReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       HeaderLocationQuestion q = (HeaderLocationQuestion) _question;
-      return _batfish.aiReachability(q, DomainType.REACHABILITY);
+      return _batfish.aiReachability(q, DomainType.RDC);
     }
   }
 

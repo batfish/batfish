@@ -59,7 +59,12 @@ public class QueryAnswerer {
 
   public <T> AnswerElement reachability(
       AbstractInterpreter interpreter, IAbstractDomain<T> domain, HeaderLocationQuestion question) {
+
+    double memory = currentMemory();
+    long time = System.currentTimeMillis();
+
     AbstractState<T> state = interpreter.computeFixedPoint(domain);
+
     Map<String, AbstractRib<T>> reachable = state.getPerRouterRoutes();
     Map<String, T> ribMap = new HashMap<>();
     for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
@@ -70,7 +75,13 @@ public class QueryAnswerer {
     BDDNetFactory netFactory = fibsTup.getFirst();
     BDDRoute variables = netFactory.routeVariables();
     BDD fibs = fibsTup.getSecond();
-    System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
+
+    memory = (currentMemory() - memory) / (1000.0 * 1000.0);
+    time = System.currentTimeMillis() - time;
+    System.out.println("memory:" + memory);
+    System.out.println("time:" + time);
+    System.out.println("tc: " + (System.currentTimeMillis() - t));
+
     BDD query = query(question, netFactory);
     BDD subset = query.and(fibs);
     List<AbstractFlowTrace> traces = new ArrayList<>();
@@ -95,9 +106,23 @@ public class QueryAnswerer {
     return answer;
   }
 
+  private long currentMemory() {
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
+
   public <T> SortedSet<Route> computeRoutes(
       AbstractInterpreter interpreter, IAbstractDomain<T> domain, NodesSpecifier ns) {
+
+    double memory = currentMemory();
+    long time = System.currentTimeMillis();
+
     AbstractState<T> state = interpreter.computeFixedPoint(domain);
+
+    memory = (currentMemory() - memory) / (1000.0 * 1000.0);
+    time = System.currentTimeMillis() - time;
+    System.out.println("memory:" + memory);
+    System.out.println("time:" + time);
+
     Map<String, AbstractRib<T>> reachable = state.getPerRouterRoutes();
 
     SortedSet<Route> routes = new TreeSet<>();
@@ -116,11 +141,13 @@ public class QueryAnswerer {
         }
       }
       for (Interface iface : conf.getInterfaces().values()) {
-        Ip ip = iface.getAddress().getIp();
-        Prefix pfx = new Prefix(ip, 32);
-        String x = connPrefixesMap.get(pfx);
-        if (x == null || !x.equals(iface.getName())) {
-          localPrefixesMap.put(pfx, iface.getName());
+        if (iface.getAddress() != null) {
+          Ip ip = iface.getAddress().getIp();
+          Prefix pfx = new Prefix(ip, 32);
+          String x = connPrefixesMap.get(pfx);
+          if (x == null || !x.equals(iface.getName())) {
+            localPrefixesMap.put(pfx, iface.getName());
+          }
         }
       }
 

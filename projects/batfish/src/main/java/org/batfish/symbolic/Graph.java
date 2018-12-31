@@ -382,6 +382,10 @@ public class Graph {
 
       for (NodeInterfacePair nip : nips) {
         SortedSet<Edge> es = ifaceEdges.get(nip);
+
+        //String sz = es == null ? "null" : "" + es.size();
+        //System.out.println("Router " + router + ", nip: " + nip + ", num edges=" + sz);
+
         Interface i1 = ifaceMap.get(nip);
         boolean hasNoOtherEnd = (es == null && i1.getAddress() != null);
         if (hasNoOtherEnd) {
@@ -389,11 +393,11 @@ public class Graph {
           graphEdges.add(ge);
         }
         if (es != null) {
-          boolean hasMultipleEnds = (es.size() > 2);
-          if (hasMultipleEnds) {
-            GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
-            graphEdges.add(ge);
-          } else {
+          //boolean hasMultipleEnds = (es.size() > 2);
+          //if (hasMultipleEnds) {
+          //  GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
+          //  graphEdges.add(ge);
+          //} else {
             for (Edge e : es) {
               // Weird inference behavior from Batfish here with a self-loop
               if (router.equals(e.getNode1()) && router.equals(e.getNode2())) {
@@ -411,7 +415,7 @@ public class Graph {
                 neighs.add(neighbor);
               }
             }
-          }
+          //}
         }
       }
 

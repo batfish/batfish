@@ -7,7 +7,12 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 
 public enum DomainType {
-  REACHABILITY("reachability"),
+  R("r"),
+  RD("rd"),
+  RDC("rdc"),
+  L("l"),
+  LD("ld"),
+  LDC("ldc"),
   EXACT("exact");
 
   private static final Map<String, DomainType> _map = buildMap();

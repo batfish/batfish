@@ -48,6 +48,19 @@ public class BDDNetConfig {
     }
   }
 
+  public BDDNetConfig(boolean useLength, boolean keepRouters, boolean keepCommunities) {
+    _keepAd = false;
+    _keepOspfMetric = useLength;
+    _keepMed = false;
+    _keepLp = false;
+    _keepProtocol = true;
+    _keepCommunities = keepCommunities;
+    _keepMetric = useLength;
+    _keepRouters = keepRouters;
+    _keepRRClient = true;
+    _keepNextHopIp = false;
+  }
+
   public boolean getKeepLp() {
     return _keepLp;
   }

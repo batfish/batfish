@@ -137,6 +137,7 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.MultiSet;
@@ -748,7 +749,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
     QueryAnswerer qa = new QueryAnswerer(graph);
-    return qa.reachability(interpreter, domain, q);
+    AnswerElement ae = qa.reachability(interpreter, domain, q);
+    return new StringAnswerElement("");
   }
 
   @Override
@@ -760,7 +762,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
-    return answer;
+    return new StringAnswerElement("");
   }
 
   @Override
@@ -3782,6 +3784,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
+  private long currentMemory() {
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
+
   public Answer run() {
     newBatch("Begin job", 0);
     loadPlugins();
@@ -3881,7 +3887,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
+
+      double memory = currentMemory();
+      long time = System.currentTimeMillis();
+
       answer.addAnswerElement(computeDataPlane(_settings.getDiffActive()));
+
+      memory = (currentMemory() - memory) / (1000.0 * 1000.0);
+      time = System.currentTimeMillis() - time;
+      System.out.println("memory:" + memory);
+      System.out.println("time:" + time);
+
       action = true;
     }
 
