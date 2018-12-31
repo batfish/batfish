@@ -281,7 +281,7 @@ public class Graph {
       for (OspfArea area : ospf.getAreas().values()) {
         for (String ifaceName : area.getInterfaces()) {
           Interface iface = conf.getAllInterfaces().get(ifaceName);
-          if (iface.getActive() && iface.getOspfEnabled()) {
+          if (iface != null && iface.getActive() && iface.getOspfEnabled()) {
             acc.add(iface.getAddress().getPrefix());
           }
         }
