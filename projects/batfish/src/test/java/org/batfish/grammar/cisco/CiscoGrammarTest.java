@@ -90,6 +90,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -118,6 +119,7 @@ import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedI
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
@@ -1541,6 +1543,15 @@ public class CiscoGrammarTest {
                                 .setNetwork(Prefix.ZERO)
                                 .setNextHopIp(Ip.parse("1.2.3.4"))
                                 .build()))))));
+  }
+
+  @Test
+  public void testIosIsisConfigOnInterface() throws IOException {
+    String hostname = "ios-isis";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(notNullValue()))));
+    assertThat(c, hasInterface("Loopback100", hasIsis(nullValue())));
   }
 
   @Test
