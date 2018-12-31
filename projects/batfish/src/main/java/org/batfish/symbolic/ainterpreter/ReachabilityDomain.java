@@ -41,7 +41,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
     _variables = _netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
     _network = BDDNetwork.create(graph, netFactory, false);
-    _prefixCache= new HashMap<>();
+    _prefixCache = new HashMap<>();
   }
 
   public ReachabilityDomain(Graph graph, BDDNetFactory netFactory, BDDNetwork network) {
@@ -172,7 +172,7 @@ public class ReachabilityDomain implements IAbstractDomain<RouteAclStateSetPair>
 
   @Override
   public String debug(RouteAclStateSetPair x) {
-    //System.out.println(BDDUtils.dot(_netFactory, x.getRoutes()));
+    // System.out.println(BDDUtils.dot(_netFactory, x.getRoutes()));
     List<Route> ribs = _domainHelper.toRoutes(x.getRoutes());
     StringBuilder sb = new StringBuilder();
     sb.append("[");

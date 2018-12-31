@@ -23,9 +23,9 @@ public class ReachabilityUnderDomain extends ReachabilityDomain {
     if (f != null) {
       BDD under = input.getRoutes();
       BDD allow = f.getFilter();
-      //if (allow.isZero()) {
+      // if (allow.isZero()) {
       //  System.out.println("  transformer drops everything");
-      //}
+      // }
       BDD block = allow.not();
       BDD blockedInputs = under.and(block);
       BDD blockedPrefixes = blockedInputs.exist(_domainHelper.getAllQuantifyBits());

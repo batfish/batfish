@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
@@ -93,7 +94,7 @@ public class BDDUtils {
         ads.add((long) RoutingProtocol.BGP.getDefaultAdministrativeCost(format));
         ads.add((long) RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
       } catch (Exception ignored) {
-
+        throw new BatfishException("unsupported administrative distance found");
       }
       for (Vrf vrf : conf.getVrfs().values()) {
         for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {

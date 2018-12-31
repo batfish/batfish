@@ -66,7 +66,6 @@ public class AbstractInterpreter {
         originatedOSPF.put(router, Graph.getOriginatedNetworks(conf, Protocol.OSPF));
       }
 
-
       for (Vrf vrf : conf.getVrfs().values()) {
         if (vrf.getStaticRoutes() != null) {
           for (StaticRoute sr : vrf.getStaticRoutes()) {
@@ -296,7 +295,7 @@ public class AbstractInterpreter {
           totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
 
           // System.out.println("");
-          //System.out.println("  neighbor RIB now: " + domain.debug(newNeighborRib));
+          // System.out.println("  neighbor RIB now: " + domain.debug(newNeighborRib));
 
           // If changed, then add it to the workset
           if (!newNeighborRib.equals(neighborMainRib) || !newNeighborOspf.equals(neighborOspf)) {
@@ -313,10 +312,10 @@ public class AbstractInterpreter {
       }
     }
 
-    //System.out.println("Number of iterations: " + iterations);
-    //System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
-    //System.out.println("Time in select best: " + totalTimeSelectBest);
-    //System.out.println("Time in transfer: " + totalTimeTransfer);
+    // System.out.println("Number of iterations: " + iterations);
+    // System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
+    // System.out.println("Time in select best: " + totalTimeSelectBest);
+    // System.out.println("Time in transfer: " + totalTimeTransfer);
   }
 
   /*
@@ -404,8 +403,9 @@ public class AbstractInterpreter {
 
     AbstractState<T> state = new AbstractState<>(reachable, perNeighbor, nonDynamic);
 
-    //System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
-    //System.out.println("  Create initial BDD values: " + createValues);
+    // System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() -
+    // t));
+    // System.out.println("  Create initial BDD values: " + createValues);
     computeFixedPoint(domain, state, initialRouters);
     return state;
   }
