@@ -86,7 +86,7 @@ public class TransformationToTransition {
         transformation.getOrElse() == null
             ? Identity.INSTANCE
             : toTransition(transformation.getOrElse());
-    return new BranchTransition(guard, trueBranch, falseBranch);
+    return new Branch(guard, trueBranch, falseBranch);
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {

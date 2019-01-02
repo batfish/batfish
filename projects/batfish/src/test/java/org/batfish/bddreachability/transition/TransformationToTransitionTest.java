@@ -4,8 +4,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
@@ -16,8 +19,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.Transformation;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,29 +52,29 @@ public class TransformationToTransitionTest {
     // forward -- unconstrained
     BDD expectedOut = _dstIpSpaceToBdd.toBDD(shiftIntoPrefix);
     BDD actualOut = transition.transitForward(_one);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- outside prefix
     BDD in = _dstIpSpaceToBdd.toBDD(Prefix.parse("1.2.3.0/24"));
     expectedOut = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- inside prefix
     in = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     expectedOut = in;
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // backward -- unconstrained
     BDD expectedIn = _one;
     BDD actualIn = transition.transitBackward(_one);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- constrained
     expectedIn = _dstIpSpaceToBdd.toBDD(new IpWildcard(new Ip("0.0.3.0"), new Ip("255.255.0.255")));
     actualIn = transition.transitBackward(expectedOut);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
   }
 
   @Test
@@ -85,22 +86,22 @@ public class TransformationToTransitionTest {
     // forward -- unconstrained
     BDD expectedOut = _dstIpSpaceToBdd.toBDD(shiftIntoPrefix);
     BDD actualOut = transition.transitForward(_one);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- outside prefix
     BDD in = _dstIpSpaceToBdd.toBDD(Prefix.parse("1.2.3.12/30"));
     expectedOut = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.0.44/30"));
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- inside prefix
     actualOut = transition.transitForward(expectedOut);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // backward -- unconstrained
     BDD expectedIn = _one;
     BDD actualIn = transition.transitBackward(_one);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- constrained
     Ip address = new Ip("0.0.0.12");
@@ -108,7 +109,7 @@ public class TransformationToTransitionTest {
     Ip mask = new Ip("255.255.255.227");
     expectedIn = _dstIpSpaceToBdd.toBDD(new IpWildcard(address, mask));
     actualIn = transition.transitBackward(expectedOut);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
   }
 
   @Test
@@ -124,31 +125,31 @@ public class TransformationToTransitionTest {
     // forward -- unconstrained
     BDD expectedOut = guardBdd.not();
     BDD actualOut = transition.transitForward(_one);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- matching guard
     BDD in = _dstIpSpaceToBdd.toBDD(Prefix.parse("1.2.3.0/24"));
     expectedOut = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- not matching guard
     in = _dstIpSpaceToBdd.toBDD(Prefix.parse("2.2.3.0/24"));
     expectedOut = in;
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // backward -- unconstrained
     BDD expectedIn = _one;
     BDD actualIn = transition.transitBackward(_one);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- matched and transformed or not matched
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     expectedIn =
         out.or(_dstIpSpaceToBdd.toBDD(new IpWildcard(new Ip("1.0.3.0"), new Ip("0.255.0.255"))));
     actualIn = transition.transitBackward(out);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
   }
 
   @Test
@@ -165,24 +166,24 @@ public class TransformationToTransitionTest {
     // forward -- unconstrained
     BDD expectedOut = guardBdd.imp(shiftIntoBdd);
     BDD actualOut = transition.transitForward(_one);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- matching guard
     BDD in = _dstIpSpaceToBdd.toBDD(Prefix.parse("1.2.3.0/24"));
     expectedOut = guardBdd.ite(_dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24")), in);
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- not matching guard
     in = _srcIpSpaceToBdd.toBDD(Prefix.parse("2.2.3.0/24"));
     expectedOut = in;
     actualOut = transition.transitForward(in);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // backward -- unconstrained
     BDD expectedIn = _one;
     BDD actualIn = transition.transitBackward(_one);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- matched and transformed or not matched
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
@@ -190,7 +191,7 @@ public class TransformationToTransitionTest {
         new IpWildcard(new Ip("0.0.3.0"), new Ip("255.255.0.255"));
     expectedIn = guardBdd.ite(_dstIpSpaceToBdd.toBDD(preTransformationDestIps), out);
     actualIn = transition.transitBackward(out);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
   }
 
   @Test
@@ -210,27 +211,79 @@ public class TransformationToTransitionTest {
     // forward -- unconstrainted
     BDD expectedOut = poolBdd;
     BDD actualOut = transition.transitForward(_one);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- already in pool
     expectedOut = poolBdd;
     actualOut = transition.transitForward(poolIpBdd);
-    MatcherAssert.assertThat(actualOut, Matchers.equalTo(expectedOut));
+    assertThat(actualOut, equalTo(expectedOut));
 
     // backward -- inside of pool
     BDD expectedIn = _one;
     BDD actualIn = transition.transitBackward(poolIpBdd);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- outside of pool
     expectedIn = _zero;
     actualIn = transition.transitBackward(nonPoolIpBdd);
-    MatcherAssert.assertThat(actualIn, Matchers.equalTo(expectedIn));
+    assertThat(actualIn, equalTo(expectedIn));
   }
 
   @Test
-  public void testMultipleSteps() {}
+  public void testMultipleSteps() {
+    Ip dstPoolIp = new Ip("1.1.1.1");
+    Ip srcPoolIp = new Ip("2.2.2.2");
+
+    Transformation transformation =
+        always()
+            .apply(assignDestinationIp(dstPoolIp, dstPoolIp), assignSourceIp(srcPoolIp, srcPoolIp))
+            .build();
+
+    Transition transition = _toTransition.toTransition(transformation);
+
+    BDD dstPoolIpBdd = _pkt.getDstIp().value(dstPoolIp.asLong());
+    BDD srcPoolIpBdd = _pkt.getSrcIp().value(srcPoolIp.asLong());
+
+    assertThat(transition.transitForward(_one), equalTo(dstPoolIpBdd.and(srcPoolIpBdd)));
+  }
 
   @Test
-  public void testMultipleTrasnformations() {}
+  public void testMultipleTrasnformations() {
+    Ip matchDstIp = new Ip("1.1.1.1");
+    Ip matchSrcIp = new Ip("2.2.2.2");
+    Ip truePoolIp = new Ip("3.3.3.3");
+    Ip falsePoolIp = new Ip("4.4.4.4");
+    Transformation transformation =
+        when(matchDst(matchDstIp))
+            .setAndThen(
+                when(matchSrc(matchSrcIp)).apply(assignSourceIp(truePoolIp, truePoolIp)).build())
+            .setOrElse(
+                when(matchSrc(matchSrcIp)).apply(assignSourceIp(falsePoolIp, falsePoolIp)).build())
+            .build();
+
+    Transition transition = _toTransition.toTransition(transformation);
+
+    BDD matchDstIpBdd = _pkt.getDstIp().value(matchDstIp.asLong());
+    BDD notMatchDstIpBdd = matchDstIpBdd.not();
+    BDD matchSrcIpBdd = _pkt.getSrcIp().value(matchSrcIp.asLong());
+    BDD notMatchSrcIpBdd = matchSrcIpBdd.not();
+    BDD truePoolIpBdd = _pkt.getSrcIp().value(truePoolIp.asLong());
+    BDD falsePoolIpBdd = _pkt.getSrcIp().value(falsePoolIp.asLong());
+
+    assertThat(
+        transition.transitForward(matchDstIpBdd.and(matchSrcIpBdd)),
+        equalTo(matchDstIpBdd.and(truePoolIpBdd)));
+
+    assertThat(
+        transition.transitForward(matchDstIpBdd.and(notMatchSrcIpBdd)),
+        equalTo(matchDstIpBdd.and(notMatchSrcIpBdd)));
+
+    assertThat(
+        transition.transitForward(notMatchDstIpBdd.and(matchSrcIpBdd)),
+        equalTo(notMatchDstIpBdd.and(falsePoolIpBdd)));
+
+    assertThat(
+        transition.transitForward(notMatchDstIpBdd.and(notMatchSrcIpBdd)),
+        equalTo(notMatchDstIpBdd.and(notMatchSrcIpBdd)));
+  }
 }
