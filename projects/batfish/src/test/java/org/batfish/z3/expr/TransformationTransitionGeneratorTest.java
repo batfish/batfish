@@ -59,7 +59,7 @@ public class TransformationTransitionGeneratorTest {
         stmts,
         containsInAnyOrder(
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), OUT_STATE),
-            new BasicRuleStatement(new NotExpr(TrueExpr.INSTANCE), stateExpr(0), OUT_STATE)));
+            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
   }
 
   @Test
