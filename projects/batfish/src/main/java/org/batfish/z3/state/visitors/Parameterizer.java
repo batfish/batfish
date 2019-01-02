@@ -5,11 +5,16 @@ import static org.batfish.z3.state.StateParameter.Type.ACL_LINE;
 import static org.batfish.z3.state.StateParameter.Type.INTERFACE;
 import static org.batfish.z3.state.StateParameter.Type.NODE;
 import static org.batfish.z3.state.StateParameter.Type.QUERY_NUMBER;
+import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_NUMBER;
+import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_STEP_NUMBER;
+import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_TAG;
 import static org.batfish.z3.state.StateParameter.Type.VRF;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.TransformationExpr;
+import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -322,6 +327,28 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(preOutEdgePostNat.getSrcIface(), INTERFACE),
         new StateParameter(preOutEdgePostNat.getDstNode(), NODE),
         new StateParameter(preOutEdgePostNat.getDstIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitTransformation(TransformationExpr transformationExpr) {
+    return ImmutableList.of(
+        new StateParameter(transformationExpr.getNode(), NODE),
+        new StateParameter(transformationExpr.getIface(), INTERFACE),
+        new StateParameter(transformationExpr.getTag(), TRANSFORMATION_TAG),
+        new StateParameter(Integer.toString(transformationExpr.getId()), TRANSFORMATION_NUMBER));
+  }
+
+  @Override
+  public List<StateParameter> visitTransformationStep(
+      TransformationStepExpr transformationStepExpr) {
+    return ImmutableList.of(
+        new StateParameter(transformationStepExpr.getNode(), NODE),
+        new StateParameter(transformationStepExpr.getIface(), INTERFACE),
+        new StateParameter(transformationStepExpr.getTag(), TRANSFORMATION_TAG),
+        new StateParameter(
+            Integer.toString(transformationStepExpr.getTransformationId()), TRANSFORMATION_NUMBER),
+        new StateParameter(
+            Integer.toString(transformationStepExpr.getId()), TRANSFORMATION_STEP_NUMBER));
   }
 
   @Override
