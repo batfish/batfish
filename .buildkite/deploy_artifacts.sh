@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 set -x
+S3_BUCKET="s3://batfish-build-artifacts-arifogel"
 BATFISH_TAG="$(git rev-parse HEAD)"
 BATFISH_VERSION="$(grep -1 batfish-parent "projects/pom.xml" | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
 ARTIFACTS_DIR=artifacts/batfish
@@ -13,6 +14,6 @@ echo "${BATFISH_TAG}" > tag
 echo "${BATFISH_VERSION}" > version
 tar -cf "${ARTIFACT_TAR}" allinone.jar questions.tgz tag version
 ln "${ARTIFACT_TAR}" dev.tar
-buildkite-agent artifact upload "${ARTIFACT_TAR}" s3://batfish-build-artifacts-arifogel
-buildkite-agent artifact upload dev.tar s3://batfish-build-artifacts-arifogel
+buildkite-agent artifact upload "${ARTIFACT_TAR}" "${S3_BUCKET}/${ARTIFACTS_DIR}/"
+buildkite-agent artifact upload dev.tar "${S3_BUCKET}/${ARTIFACTS_DIR}/"
 
