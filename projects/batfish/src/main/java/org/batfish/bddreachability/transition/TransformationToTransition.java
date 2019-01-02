@@ -31,20 +31,20 @@ public class TransformationToTransition {
     _stepToTransition = new TransformationStepToTransition();
   }
 
-  private static EraseAndSetTransition assignIpFromPool(BDDInteger var, Ip poolStart, Ip poolEnd) {
+  private static EraseAndSet assignIpFromPool(BDDInteger var, Ip poolStart, Ip poolEnd) {
     BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
     BDD setValue =
         poolStart.equals(poolEnd)
             ? var.value(poolStart.asLong())
             : var.geq(poolStart.asLong()).and(var.leq(poolEnd.asLong()));
-    return new EraseAndSetTransition(erase, setValue);
+    return new EraseAndSet(erase, setValue);
   }
 
-  private static EraseAndSetTransition shiftIpIntoPrefix(BDDInteger var, Prefix prefix) {
+  private static EraseAndSet shiftIpIntoPrefix(BDDInteger var, Prefix prefix) {
     int len = prefix.getPrefixLength();
     BDD erase = Arrays.stream(var.getBitvec()).limit(len).reduce(var.getFactory().one(), BDD::and);
     BDD setValue = new IpSpaceToBDD(var).toBDD(prefix);
-    return new EraseAndSetTransition(erase, setValue);
+    return new EraseAndSet(erase, setValue);
   }
 
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
@@ -81,10 +81,10 @@ public class TransformationToTransition {
     Transition trueBranch =
         transformation.getAndThen() == null
             ? steps
-            : new CompositeTransition(steps, toTransition(transformation.getAndThen()));
+            : new Composite(steps, toTransition(transformation.getAndThen()));
     Transition falseBranch =
         transformation.getOrElse() == null
-            ? IdentityTransition.INSTANCE
+            ? Identity.INSTANCE
             : toTransition(transformation.getOrElse());
     return new BranchTransition(guard, trueBranch, falseBranch);
   }
@@ -93,7 +93,7 @@ public class TransformationToTransition {
     return transformationSteps
         .stream()
         .map(_stepToTransition::visit)
-        .reduce(CompositeTransition::new)
-        .orElse(IdentityTransition.INSTANCE);
+        .reduce(Composite::new)
+        .orElse(Identity.INSTANCE);
   }
 }

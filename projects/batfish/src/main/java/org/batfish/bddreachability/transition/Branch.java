@@ -3,13 +3,13 @@ package org.batfish.bddreachability.transition;
 import net.sf.javabdd.BDD;
 
 /** A transition that branches to two other transitions */
-class BranchTransition implements Transition {
+public final class Branch implements Transition {
   private final BDD _trueGuard;
   private final BDD _falseGuard;
   private final Transition _trueBranch;
   private final Transition _falseBranch;
 
-  BranchTransition(BDD trueGuard, Transition trueBranch, Transition falseBranch) {
+  Branch(BDD trueGuard, Transition trueBranch, Transition falseBranch) {
     _trueGuard = trueGuard;
     _falseGuard = trueGuard.not();
     _trueBranch = trueBranch;

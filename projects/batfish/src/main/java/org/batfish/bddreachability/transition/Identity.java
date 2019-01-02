@@ -3,10 +3,10 @@ package org.batfish.bddreachability.transition;
 import net.sf.javabdd.BDD;
 
 /** A transition that permits all flows unmodified. */
-final class IdentityTransition implements Transition {
-  public static IdentityTransition INSTANCE = new IdentityTransition();
+public final class Identity implements Transition {
+  public static Identity INSTANCE = new Identity();
 
-  private IdentityTransition() {}
+  private Identity() {}
 
   @Override
   public BDD transitForward(BDD bdd) {

@@ -3,11 +3,11 @@ package org.batfish.bddreachability.transition;
 import net.sf.javabdd.BDD;
 
 /** A transition that erases a variable and then constrains it to have a new value. */
-class EraseAndSetTransition implements Transition {
+public final class EraseAndSet implements Transition {
   private final BDD _eraseVars;
   private final BDD _setValue;
 
-  EraseAndSetTransition(BDD eraseVars, BDD setValue) {
+  EraseAndSet(BDD eraseVars, BDD setValue) {
     _eraseVars = eraseVars;
     _setValue = setValue;
   }

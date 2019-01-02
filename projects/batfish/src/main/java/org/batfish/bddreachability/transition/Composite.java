@@ -3,11 +3,11 @@ package org.batfish.bddreachability.transition;
 import net.sf.javabdd.BDD;
 
 /** The functional composition of two transitions */
-final class CompositeTransition implements Transition {
+public final class Composite implements Transition {
   private final Transition _first;
   private final Transition _second;
 
-  CompositeTransition(Transition first, Transition second) {
+  Composite(Transition first, Transition second) {
     _first = first;
     _second = second;
   }
