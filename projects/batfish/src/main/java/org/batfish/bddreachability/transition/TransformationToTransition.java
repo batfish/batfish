@@ -1,4 +1,4 @@
-package org.batfish.bddreachability;
+package org.batfish.bddreachability.transition;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
