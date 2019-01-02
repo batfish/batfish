@@ -11,15 +11,15 @@ import org.junit.Test;
 
 /** Tests of {@link Transition} classes. */
 public class TransitionTest {
-  private final BDDPacket PKT = new BDDPacket();
-  private final BDD ONE = PKT.getFactory().one();
-  private final BDD ZERO = PKT.getFactory().zero();
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final BDD ONE = PKT.getFactory().one();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
-  private BDD dstIp(String ip) {
+  private static BDD dstIp(String ip) {
     return PKT.getDstIp().value(new Ip(ip).asLong());
   }
 
-  private BDD srcIp(String ip) {
+  private static BDD srcIp(String ip) {
     return PKT.getSrcIp().value(new Ip(ip).asLong());
   }
 
