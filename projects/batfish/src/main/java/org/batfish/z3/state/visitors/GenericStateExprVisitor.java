@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import org.batfish.z3.expr.TransformationExpr;
+import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -133,6 +135,10 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
+
+  R visitTransformation(TransformationExpr transformationExpr);
+
+  R visitTransformationStep(TransformationStepExpr transformationStepExpr);
 
   R visitQuery(Query query);
 }
