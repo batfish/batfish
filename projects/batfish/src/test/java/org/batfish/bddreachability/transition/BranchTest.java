@@ -15,11 +15,11 @@ public class BranchTest {
   private static final BDD ZERO = PKT.getFactory().zero();
 
   private static BDD dstIp(String ip) {
-    return PKT.getDstIp().value(new Ip(ip).asLong());
+    return PKT.getDstIp().value(Ip.parse(ip).asLong());
   }
 
   private static BDD srcIp(String ip) {
-    return PKT.getSrcIp().value(new Ip(ip).asLong());
+    return PKT.getSrcIp().value(Ip.parse(ip).asLong());
   }
 
   @Test

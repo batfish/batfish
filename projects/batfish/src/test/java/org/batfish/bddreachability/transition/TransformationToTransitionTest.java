@@ -72,7 +72,8 @@ public class TransformationToTransitionTest {
     assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- constrained
-    expectedIn = _dstIpSpaceToBdd.toBDD(new IpWildcard(new Ip("0.0.3.0"), new Ip("255.255.0.255")));
+    expectedIn =
+        _dstIpSpaceToBdd.toBDD(new IpWildcard(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255")));
     actualIn = transition.transitBackward(expectedOut);
     assertThat(actualIn, equalTo(expectedIn));
   }
@@ -104,9 +105,9 @@ public class TransformationToTransitionTest {
     assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- constrained
-    Ip address = new Ip("0.0.0.12");
+    Ip address = Ip.parse("0.0.0.12");
     // all bits wild except 28,29,30
-    Ip mask = new Ip("255.255.255.227");
+    Ip mask = Ip.parse("255.255.255.227");
     expectedIn = _dstIpSpaceToBdd.toBDD(new IpWildcard(address, mask));
     actualIn = transition.transitBackward(expectedOut);
     assertThat(actualIn, equalTo(expectedIn));
@@ -147,7 +148,8 @@ public class TransformationToTransitionTest {
     // backward -- matched and transformed or not matched
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     expectedIn =
-        out.or(_dstIpSpaceToBdd.toBDD(new IpWildcard(new Ip("1.0.3.0"), new Ip("0.255.0.255"))));
+        out.or(
+            _dstIpSpaceToBdd.toBDD(new IpWildcard(Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))));
     actualIn = transition.transitBackward(out);
     assertThat(actualIn, equalTo(expectedIn));
   }
@@ -188,7 +190,7 @@ public class TransformationToTransitionTest {
     // backward -- matched and transformed or not matched
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     IpWildcard preTransformationDestIps =
-        new IpWildcard(new Ip("0.0.3.0"), new Ip("255.255.0.255"));
+        new IpWildcard(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255"));
     expectedIn = guardBdd.ite(_dstIpSpaceToBdd.toBDD(preTransformationDestIps), out);
     actualIn = transition.transitBackward(out);
     assertThat(actualIn, equalTo(expectedIn));
@@ -196,8 +198,8 @@ public class TransformationToTransitionTest {
 
   @Test
   public void testAssignFromPool() {
-    Ip poolStart = new Ip("1.1.1.5");
-    Ip poolEnd = new Ip("1.1.1.13");
+    Ip poolStart = Ip.parse("1.1.1.5");
+    Ip poolEnd = Ip.parse("1.1.1.13");
     Transformation transformation = always().apply(assignSourceIp(poolStart, poolEnd)).build();
     Transition transition = _toTransition.toTransition(transformation);
 
@@ -231,8 +233,8 @@ public class TransformationToTransitionTest {
 
   @Test
   public void testMultipleSteps() {
-    Ip dstPoolIp = new Ip("1.1.1.1");
-    Ip srcPoolIp = new Ip("2.2.2.2");
+    Ip dstPoolIp = Ip.parse("1.1.1.1");
+    Ip srcPoolIp = Ip.parse("2.2.2.2");
 
     Transformation transformation =
         always()
@@ -249,10 +251,10 @@ public class TransformationToTransitionTest {
 
   @Test
   public void testMultipleTrasnformations() {
-    Ip matchDstIp = new Ip("1.1.1.1");
-    Ip matchSrcIp = new Ip("2.2.2.2");
-    Ip truePoolIp = new Ip("3.3.3.3");
-    Ip falsePoolIp = new Ip("4.4.4.4");
+    Ip matchDstIp = Ip.parse("1.1.1.1");
+    Ip matchSrcIp = Ip.parse("2.2.2.2");
+    Ip truePoolIp = Ip.parse("3.3.3.3");
+    Ip falsePoolIp = Ip.parse("4.4.4.4");
     Transformation transformation =
         when(matchDst(matchDstIp))
             .setAndThen(
