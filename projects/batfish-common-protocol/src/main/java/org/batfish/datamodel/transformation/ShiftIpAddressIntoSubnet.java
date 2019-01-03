@@ -1,5 +1,7 @@
 package org.batfish.datamodel.transformation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
@@ -17,6 +19,9 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   private final Prefix _subnet;
 
   public ShiftIpAddressIntoSubnet(IpField ipField, Prefix subnet) {
+    checkArgument(
+        subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
+        "subnet prefix must be less than the maximum prefix length");
     _ipField = ipField;
     _subnet = subnet;
   }

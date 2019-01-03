@@ -10,10 +10,10 @@ public class StateParameter {
     INTERFACE,
     NODE,
     QUERY_NUMBER,
-    VRF,
-    TRANSFORMATION_NUMBER,
+    TRANSFORMATION_ID,
     TRANSFORMATION_TAG,
-    TRANSFORMATION_STEP_NUMBER
+    TRANSFORMATION_STEP_ID,
+    VRF,
   }
 
   private final String _id;

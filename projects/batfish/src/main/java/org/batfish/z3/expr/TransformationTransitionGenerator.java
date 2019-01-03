@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.z3.expr.ExtractExpr.newExtractExpr;
 import static org.batfish.z3.expr.HeaderSpaceMatchExpr.matchPrefix;
 import static org.batfish.z3.expr.visitors.Simplifier.simplifyBooleanExpr;
@@ -152,6 +153,10 @@ public final class TransformationTransitionGenerator {
 
   @VisibleForTesting
   static BooleanExpr shiftTransformationExpr(Field field, Prefix subnet) {
+    checkArgument(
+        subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
+        "subnet prefix must be less than the maximum prefix length");
+
     TransformedVarIntExpr transformedField = new TransformedVarIntExpr(field);
 
     // The shifting constraint has two parts: the transformed field is in the subnet, and

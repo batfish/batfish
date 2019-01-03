@@ -5,8 +5,8 @@ import static org.batfish.z3.state.StateParameter.Type.ACL_LINE;
 import static org.batfish.z3.state.StateParameter.Type.INTERFACE;
 import static org.batfish.z3.state.StateParameter.Type.NODE;
 import static org.batfish.z3.state.StateParameter.Type.QUERY_NUMBER;
-import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_NUMBER;
-import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_STEP_NUMBER;
+import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_ID;
+import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_STEP_ID;
 import static org.batfish.z3.state.StateParameter.Type.TRANSFORMATION_TAG;
 import static org.batfish.z3.state.StateParameter.Type.VRF;
 
@@ -335,7 +335,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(transformationExpr.getNode(), NODE),
         new StateParameter(transformationExpr.getIface(), INTERFACE),
         new StateParameter(transformationExpr.getTag(), TRANSFORMATION_TAG),
-        new StateParameter(Integer.toString(transformationExpr.getId()), TRANSFORMATION_NUMBER));
+        new StateParameter(Integer.toString(transformationExpr.getId()), TRANSFORMATION_ID));
   }
 
   @Override
@@ -346,9 +346,9 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(transformationStepExpr.getIface(), INTERFACE),
         new StateParameter(transformationStepExpr.getTag(), TRANSFORMATION_TAG),
         new StateParameter(
-            Integer.toString(transformationStepExpr.getTransformationId()), TRANSFORMATION_NUMBER),
+            Integer.toString(transformationStepExpr.getTransformationId()), TRANSFORMATION_ID),
         new StateParameter(
-            Integer.toString(transformationStepExpr.getId()), TRANSFORMATION_STEP_NUMBER));
+            Integer.toString(transformationStepExpr.getId()), TRANSFORMATION_STEP_ID));
   }
 
   @Override
