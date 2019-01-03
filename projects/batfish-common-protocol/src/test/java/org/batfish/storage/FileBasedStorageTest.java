@@ -11,6 +11,7 @@ import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,6 +31,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -38,6 +40,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -323,5 +326,38 @@ public final class FileBasedStorageTest {
             Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])),
             StandardCharsets.UTF_8),
         equalTo(testSting));
+  }
+
+  @Test
+  public void testCompletionMetadataRoundtrip() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    CompletionMetadata completionMetadata =
+        new CompletionMetadata(
+            ImmutableSet.of("addressBook1"),
+            ImmutableSet.of("addressGroup1"),
+            ImmutableSet.of("filter1"),
+            ImmutableSet.of(new NodeInterfacePair("node", "iface")),
+            ImmutableSet.of("1.1.1.1"),
+            ImmutableSet.of("1.1.1.1/30"),
+            ImmutableSet.of("structure1"),
+            ImmutableSet.of("vrf1"),
+            ImmutableSet.of("zone1"));
+
+    _storage.storeCompletionMetadata(completionMetadata, networkId, snapshotId);
+
+    assertThat(_storage.loadCompletionMetadata(networkId, snapshotId), equalTo(completionMetadata));
+  }
+
+  @Test
+  public void testLoadCompletionMetadataMissing() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    // if CompletionMetadata file is missing, should return a CompletionMetadata object with all
+    // fields empty
+    assertThat(
+        _storage.loadCompletionMetadata(networkId, snapshotId), equalTo(new CompletionMetadata()));
   }
 }
