@@ -10,6 +10,13 @@ import org.batfish.datamodel.Prefix;
  * A {@link TransformationStep} that transforms the an IP by shifting it into a subnet. For example,
  * the result of shifting {@code 1.2.3.4} into the subnet {@code 5.5.0.0/24} is {@code 5.5.0.4}. The
  * result of shifting {@code 1.2.3.4} into the subnet {@code 1.2.3.32/27} is {@code 1.2.3.36}.
+ *
+ * <p>/32 subnets are not supported -- they correspond to always setting the transformed IP address
+ * to a signle value. For that, use {@link AssignIpAddressFromPool} with a single pool IP.
+ *
+ * <p>All subnets shorter than 32 bits are supported. Note that the /0 subnet is a noop -- in
+ * general, this transformation is a noop whenever the transformed IP is already in the specified
+ * subnet.
  */
 public final class ShiftIpAddressIntoSubnet implements TransformationStep, Serializable {
   /** */

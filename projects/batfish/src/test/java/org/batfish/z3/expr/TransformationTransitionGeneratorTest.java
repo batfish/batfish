@@ -7,7 +7,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.shiftSourc
 import static org.batfish.z3.expr.ExtractExpr.newExtractExpr;
 import static org.batfish.z3.expr.HeaderSpaceMatchExpr.matchIp;
 import static org.batfish.z3.expr.TransformationTransitionGenerator.assignFromPoolExpr;
-import static org.batfish.z3.expr.TransformationTransitionGenerator.shiftTransformationExpr;
+import static org.batfish.z3.expr.TransformationTransitionGenerator.shiftIntoSubnetExpr;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -23,10 +23,16 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 import org.batfish.z3.state.Query;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link TransformationTransitionGenerator}. */
 public class TransformationTransitionGeneratorTest {
+
+  /** */
+  @Rule public ExpectedException _exception = ExpectedException.none();
+
   private static final String NODE = "node";
   private static final String IFACE = "iface";
   private static final String TAG = "tag";
@@ -86,7 +92,7 @@ public class TransformationTransitionGeneratorTest {
         containsInAnyOrder(
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
             new BasicRuleStatement(
-                shiftTransformationExpr(Field.DST_IP, prefix), stepStateExpr(0, 0), OUT_STATE),
+                shiftIntoSubnetExpr(Field.DST_IP, prefix), stepStateExpr(0, 0), OUT_STATE),
             new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
   }
 
@@ -121,7 +127,7 @@ public class TransformationTransitionGeneratorTest {
         containsInAnyOrder(
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
             new BasicRuleStatement(
-                shiftTransformationExpr(Field.SRC_IP, prefix),
+                shiftIntoSubnetExpr(Field.SRC_IP, prefix),
                 stepStateExpr(0, 0),
                 stepStateExpr(0, 1)),
             new BasicRuleStatement(
@@ -158,24 +164,29 @@ public class TransformationTransitionGeneratorTest {
   }
 
   @Test
-  public void testShiftTransformationExpr() {
+  public void testShiftIntoSubnetExpr() {
     Prefix subnet = Prefix.parse("1.1.1.0/24");
-    int high = Prefix.MAX_PREFIX_LENGTH - subnet.getPrefixLength() - 1;
     TransformedVarIntExpr transformedDst = new TransformedVarIntExpr(Field.DST_IP);
 
     // the high bits are transformed
     BooleanExpr transformedExpr =
         new EqExpr(
-            newExtractExpr(transformedDst, high + 1, Prefix.MAX_PREFIX_LENGTH - 1),
-            new LitIntExpr(subnet.getStartIp().asLong(), high + 1, Prefix.MAX_PREFIX_LENGTH - 1));
+            newExtractExpr(transformedDst, 8, 31),
+            new LitIntExpr(subnet.getStartIp().asLong(), 8, 31));
 
     // the low bits are preserved
     BooleanExpr preservedExpr =
-        new EqExpr(newExtractExpr(transformedDst, 0, high), newExtractExpr(Field.DST_IP, 0, high));
+        new EqExpr(newExtractExpr(transformedDst, 0, 7), newExtractExpr(Field.DST_IP, 0, 7));
 
     assertThat(
-        shiftTransformationExpr(Field.DST_IP, subnet),
+        shiftIntoSubnetExpr(Field.DST_IP, subnet),
         equalTo(new AndExpr(ImmutableList.of(transformedExpr, preservedExpr))));
+  }
+
+  @Test
+  public void testShiftIntoSubnetExpr_32() {
+    _exception.expect(IllegalArgumentException.class);
+    shiftIntoSubnetExpr(Field.DST_IP, Prefix.parse("1.1.1.1/32"));
   }
 
   @Test

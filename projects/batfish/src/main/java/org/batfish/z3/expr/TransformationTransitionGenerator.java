@@ -87,7 +87,7 @@ public final class TransformationTransitionGenerator {
     public BasicRuleStatement visitShiftIpAddressIntoSubnet(
         ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
       return new BasicRuleStatement(
-          shiftTransformationExpr(
+          shiftIntoSubnetExpr(
               getField(shiftIpAddressIntoSubnet.getIpField()),
               shiftIpAddressIntoSubnet.getSubnet()),
           _preState,
@@ -152,7 +152,7 @@ public final class TransformationTransitionGenerator {
   }
 
   @VisibleForTesting
-  static BooleanExpr shiftTransformationExpr(Field field, Prefix subnet) {
+  static BooleanExpr shiftIntoSubnetExpr(Field field, Prefix subnet) {
     checkArgument(
         subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
         "subnet prefix must be less than the maximum prefix length");
