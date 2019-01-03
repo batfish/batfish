@@ -11,8 +11,8 @@ import org.junit.Test;
 public class ShiftIpAddressIntoSubnetTest {
   @Test
   public void testEquals() {
-    Prefix subnet1 = Prefix.parse("1.1.1.1/32");
-    Prefix subnet2 = Prefix.parse("2.2.2.2/32");
+    Prefix subnet1 = Prefix.parse("1.1.1.1/30");
+    Prefix subnet2 = Prefix.parse("2.2.2.2/30");
     new EqualsTester()
         .addEqualityGroup(
             new ShiftIpAddressIntoSubnet(DESTINATION, subnet1),
