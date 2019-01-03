@@ -456,9 +456,9 @@ public interface StorageProvider {
    *
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
-   * @throws IOException if there is an error reading the CompletionMetadata
    * @return The CompletionMetadata found for the provided network and snapshot. If none is found a
    *     CompletionMetadata will be returned with all fields empty
+   * @throws IOException if there is an error reading the CompletionMetadata
    */
   CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws IOException;

@@ -3050,8 +3050,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
     return new CompletionMetadata(
-        getAddressBooks(),
-        getAddressGroups(),
+        getAddressBooks(getReferenceLibraryData()),
+        getAddressGroups(getReferenceLibraryData()),
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
@@ -3062,11 +3062,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @VisibleForTesting
-  Set<String> getAddressBooks() {
+  static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
     return addressBooks
         .addAll(
-            getReferenceLibraryData()
+            referenceLibrary
                 .getReferenceBooks()
                 .stream()
                 .map(ReferenceBook::getName)
@@ -3075,9 +3075,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @VisibleForTesting
-  Set<String> getAddressGroups() {
+  static Set<String> getAddressGroups(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressGroups = ImmutableSet.builder();
-    getReferenceLibraryData()
+    referenceLibrary
         .getReferenceBooks()
         .forEach(
             referenceBook ->
