@@ -99,8 +99,6 @@ public class IsisProcess implements Serializable {
     }
   }
 
-  public static final int DEFAULT_ISIS_INTERFACE_COST = 10;
-
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
 
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
