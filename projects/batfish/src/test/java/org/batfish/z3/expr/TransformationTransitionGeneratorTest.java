@@ -64,7 +64,7 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testGuard() {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     Transformation transformation = Transformation.when(matchDst(ip)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
@@ -92,8 +92,8 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testAssignDestIpFromPoolStep() {
-    Ip startIp = new Ip("1.1.1.0");
-    Ip endIp = new Ip("1.1.1.10");
+    Ip startIp = Ip.parse("1.1.1.0");
+    Ip endIp = Ip.parse("1.1.1.10");
     Transformation transformation =
         Transformation.always().apply(assignDestinationIp(startIp, endIp)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
@@ -109,8 +109,8 @@ public class TransformationTransitionGeneratorTest {
   @Test
   public void testTwoSteps() {
     Prefix prefix = Prefix.parse("1.1.0.0/16");
-    Ip startIp = new Ip("1.1.1.0");
-    Ip endIp = new Ip("1.1.1.10");
+    Ip startIp = Ip.parse("1.1.1.0");
+    Ip endIp = Ip.parse("1.1.1.10");
     Transformation transformation =
         Transformation.always()
             .apply(shiftSourceIp(prefix), assignDestinationIp(startIp, endIp))
@@ -131,9 +131,9 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testBranch() {
-    Ip match1 = new Ip("1.1.1.1");
-    Ip match2 = new Ip("1.1.1.2");
-    Ip match3 = new Ip("1.1.1.3");
+    Ip match1 = Ip.parse("1.1.1.1");
+    Ip match2 = Ip.parse("1.1.1.2");
+    Ip match3 = Ip.parse("1.1.1.3");
     Transformation transformation =
         Transformation.when(matchDst(match1))
             .setAndThen(Transformation.when(matchDst(match2)).build())
@@ -180,8 +180,8 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testAssignFromPoolExpr() {
-    Ip poolStart = new Ip("1.1.1.0");
-    Ip poolEnd = new Ip("1.1.1.7");
+    Ip poolStart = Ip.parse("1.1.1.0");
+    Ip poolEnd = Ip.parse("1.1.1.7");
     assertThat(
         assignFromPoolExpr(Field.DST_IP, poolStart, poolEnd),
         equalTo(
